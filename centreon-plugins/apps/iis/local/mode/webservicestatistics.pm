@@ -43,33 +43,33 @@ sub set_counters {
     $self->{maps_counters}->{sites} = [
         { label => 'connections-attempt', nlabel => 'site.connections.attempt.persecond', set => {
                 key_values => [ { name => 'connections_attempt', per_second => 1 } ],
-                output_template => 'connections attempt: %s/s',
+                output_template => 'connections attempt: %.2f/s',
                 perfdatas => [
-                    { template => '%d', unit => '/s', min => 0, label_extra_instance => 1 }
+                    { template => '%.2f', unit => '/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'users-anonymous', nlabel => 'site.users.anonymous.persecond', display_ok => 0, set => {
                 key_values => [ { name => 'anonymous_users', per_second => 1 } ],
-                output_template => 'anonymous users: %s/s',
+                output_template => 'anonymous users: %.2f/s',
                 perfdatas => [
-                    { template => '%d', unit => '/s', min => 0, label_extra_instance => 1 }
+                    { template => '%.2f', unit => '/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'requests-post', nlabel => 'site.requests.post.persecond', set => {
                 key_values => [ { name => 'requests_post', per_second => 1 } ],
-                output_template => 'requests post: %s/s',
+                output_template => 'requests post: %.2f/s',
                 perfdatas => [
-                    { template => '%d', unit => '/s', min => 0, label_extra_instance => 1 }
+                    { template => '%.2f', unit => '/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'requests-get', nlabel => 'site.requests.get.persecond', set => {
                 key_values => [ { name => 'requests_get', per_second => 1 } ],
-                output_template => 'requests get: %s/s',
+                output_template => 'requests get: %.2f/s',
                 perfdatas => [
-                    { template => '%d', unit => '/s', min => 0, label_extra_instance => 1 }
+                    { template => '%.2f', unit => '/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
