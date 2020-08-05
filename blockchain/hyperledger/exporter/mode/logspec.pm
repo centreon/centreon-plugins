@@ -36,7 +36,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->request_api();
+    my $result = $options{custom}->request_api(url_path => '/logspec');
 
     if ($result->{spec}) {    
         $self->{output}->output_add(severity  => 'OK', short_msg => 'Peer/Orderer active logging spec: [' . $result->{spec} . ']');

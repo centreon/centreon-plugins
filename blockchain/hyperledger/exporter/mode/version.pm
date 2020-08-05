@@ -35,7 +35,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->request_api();
+    my $result = $options{custom}->request_api(url_path => '/version');
 
     $self->{output}->output_add(severity  => 'OK', short_msg => 'Peer/Orderer version: [' . $result->{Version} . ']');
  
