@@ -32,8 +32,12 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = ( 
         'channels' => 'blockchain::hyperledger::exporter::mode::channels',
+        'health' => 'blockchain::hyperledger::exporter::mode::health',
+        'logspec' => 'blockchain::hyperledger::exporter::mode::logspec',
+        'version' => 'blockchain::hyperledger::exporter::mode::version',
     );
     $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';
+    $self->{custom_modes}{api} = 'blockchain::hyperledger::exporter::custom::api';
     $self->{custom_modes}{file} = 'centreon::common::monitoring::openmetrics::custom::file';
     return $self;
 }
