@@ -87,7 +87,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : undef;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : undef;
+    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
  
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
@@ -156,9 +156,9 @@ sub request_api {
     $self->settings;
     
     $self->{output}->output_add(long_msg => "Query URL: '" . $self->{proto} . "://" . $self->{hostname} .
-        $self->{url_path} . "'", debug => 1);
+        $self->{url_path} . $options{url_path} . "'", debug => 1);
 
-    my $content = $self->{http}->request(url_path => $self->{url_path});
+    my $content = $self->{http}->request(url_path => $self->{url_path} . $options{url_path});
 
     my $decoded;
     eval {

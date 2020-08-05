@@ -74,10 +74,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->request_api();
-
-    use Data::Dumper;
-    print Dumper($result->{status});
+    my $result = $options{custom}->request_api(url_path => '/healthz');
 
     $self->{global} = {};
 
@@ -87,13 +84,6 @@ sub manage_selection {
     if ($result->{failed_checks}) {    
         $self->{output}->output_add(severity  => 'OK', long_msg => 'Failed ckeck: [component: ' . $result->{component} . '] Reason: [' . $result->{reason} . ' ]');
     }
-
-    # $self->{cache_name} = 'hyperledger_' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' .
-    #     (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
-    #     (defined($self->{option_results}->{port}) ? $self->{option_results}->{port} : 'default') . '_' .
-    #     (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-    #     (defined($self->{option_results}->{filter_channel}) ? md5_hex($self->{option_results}->{filter_channel}) : md5_hex('all'));
-
 }
 
 1;
