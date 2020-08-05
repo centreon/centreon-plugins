@@ -153,7 +153,7 @@ sub manage_selection {
         $self->{licenses}->{ $obj->{PLD} }->{used} = $obj->{InUseCount};
         $self->{licenses}->{ $obj->{PLD} }->{total} = $obj->{Count};
         $self->{licenses}->{ $obj->{PLD} }->{prct_used} = $obj->{InUseCount} * 100 / $obj->{Count};
-        $self->{licenses}->{ $obj->{PLD} }->{prct_free} = 100 - $self->{license}->{$obj->{PLD}}->{prct_used};
+        $self->{licenses}->{ $obj->{PLD} }->{prct_free} = 100 - $self->{licenses}->{ $obj->{PLD} }->{prct_used};
         $self->{licenses}->{ $obj->{PLD} }->{free} = $obj->{Count} - $obj->{InUseCount};
     }
 
