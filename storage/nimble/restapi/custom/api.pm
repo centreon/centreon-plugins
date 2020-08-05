@@ -193,7 +193,7 @@ sub request_api {
     }
 
     my $content = $self->{http}->request(
-        endpoint => $options{endpoint},
+        url_path => $options{endpoint},
         warning_status => '', unknown_status => '', critical_status => ''
     );
 
