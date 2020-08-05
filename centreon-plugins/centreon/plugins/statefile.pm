@@ -27,6 +27,9 @@ use vars qw($datas);
 use centreon::plugins::misc;
 
 my $default_dir = '/var/lib/centreon/centplugins';
+if ($^O eq 'MSWin32') {
+    $default_dir = 'C:/Windows/Temp';
+}
 
 sub new {
     my ($class, %options) = @_;
