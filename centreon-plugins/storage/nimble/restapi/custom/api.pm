@@ -202,7 +202,7 @@ sub request_api {
         $self->clean_token(statefile => $self->{cache});
         $self->authenticate(statefile => $self->{cache});
         $content = $self->{http}->request(
-            endpoint => $options{endpoint},
+            url_path => $options{endpoint},
             warning_status => '', unknown_status => '', critical_status => ''
         );
     }
