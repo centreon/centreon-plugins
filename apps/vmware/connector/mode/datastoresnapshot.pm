@@ -73,7 +73,7 @@ sub set_counters {
     
     $self->{maps_counters}->{files} = [
         { label => 'snapshot', nlabel => 'datastore.snapshot.usage.bytes', set => {
-                key_values => [ { name => 'total' } ]
+                key_values => [ { name => 'total' } ],
                 output_template => '[size = %s %s]',
                 output_change_bytes => 1,
                 closure_custom_perfdata => sub { return 0; }
