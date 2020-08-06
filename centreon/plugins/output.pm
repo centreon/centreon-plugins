@@ -1104,7 +1104,7 @@ sub apply_pfdata_max {
     my ($self, %options) = @_;
 
     my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    eval "\$pattern_pf = '$options{args}->{pattern_pf}'";
     my $max;
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
