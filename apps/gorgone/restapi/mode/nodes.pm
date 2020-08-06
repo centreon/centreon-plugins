@@ -35,7 +35,19 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All nodes are ok' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'nodes-total', nlabel => 'nodes.total.count', set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'total nodes: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        }
     ];
 
     $self->{maps_counters}->{nodes} = [
@@ -67,6 +79,7 @@ sub manage_selection {
 
     my $nodes = $options{custom}->request_api(endpoint => '/api/internal/constatus');
 
+    $self->{global} = { total => 0 };
     $self->{nodes} = {};
     foreach my $node_id (keys %{$nodes->{data}}) {
         if (defined($self->{option_results}->{filter_node_id}) && $self->{option_results}->{filter_node_id} ne '' &&
@@ -80,6 +93,7 @@ sub manage_selection {
             last_ping_recv => defined($nodes->{data}->{$node_id}->{last_ping_recv}) ? 
                 time() - $nodes->{data}->{$node_id}->{last_ping_recv} : -1
         };
+        $self->{global}->{total}++;
     }
 }
 
@@ -100,7 +114,7 @@ Filter nodes (can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'ping-received-lasttime' (s).
+Can be: 'nodes-total', 'ping-received-lasttime' (s).
 
 =back
 
