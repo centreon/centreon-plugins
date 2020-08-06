@@ -147,11 +147,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'units:s'           => { name => 'units', default => '%' },
-        'free'              => { name => 'free' },
-        'swap'              => { name => 'check_swap' },
-        'redhat'            => { name => 'redhat' }, # for legacy (do nothing)
-        'autodetect-redhat' => { name => 'autodetect_redhat' } # for legacy (do nothing)
+        'units:s'            => { name => 'units', default => '%' },
+        'free'               => { name => 'free' },
+        'swap'               => { name => 'check_swap' },
+        'patch-redhat'       => { name => 'patch_redhat' },
+        'redhat'             => { name => 'redhat' }, # for legacy (do nothing)
+        'autodetect-redhat'  => { name => 'autodetect_redhat' } # for legacy (do nothing)
     });
 
     return $self;
@@ -196,9 +197,12 @@ sub memory_calc {
     my $cached = ($options{result}->{memCached}) ? $options{result}->{memCached} * 1024 : 0;
     my ($used, $free, $prct_used, $prct_free) = (0, 0, 0, 0);
 
+    # rhel patch introduced: net-snmp-5.7.2-43.el7 (https://bugzilla.redhat.com/show_bug.cgi?id=1250060)
+    # rhel patch reverted:   net-snmp-5.7.2-47.el7 (https://bugzilla.redhat.com/show_bug.cgi?id=1779609)
+
     if ($total != 0) {
-        $used = $total - $available - $buffer - $cached;
-        $free = $total - $used;
+        $used = (defined($self->{option_results}->{patch_redhat})) ? $total - $available : $total - $available - $buffer - $cached;
+        $free = (defined($self->{option_results}->{patch_redhat})) ? $available : $total - $used;
         $prct_used = $used * 100 / $total;
         $prct_free = 100 - $prct_used;
     }
@@ -280,6 +284,14 @@ Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%), 
 'swap' (B), 'swap-free' (B), 'swap-prct' (%),
 'buffer' (B), 'cached' (B), 'shared' (B).
+
+=item B<--patch-redhat>
+
+If using RedHat distribution with net-snmp >= 5.7.2-43 and net-snmp < 5.7.2-47. But you should update net-snmp!!!!
+
+This version: used = memTotalReal - memAvailReal // free = memAvailReal
+
+Others versions: used = memTotalReal - memAvailReal - memBuffer - memCached // free = total - used
 
 =back
 
