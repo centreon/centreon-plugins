@@ -665,6 +665,26 @@ sub sqs_list_queues {
     return $queues_results;
 }
 
+sub sns_list_topics {
+    my ($self, %options) = @_;
+    my $topics_results = [];
+    eval {
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $topics = Paws->service('SNS', caller => $lwp_caller, region => $self->{option_results}->{region});
+        my $raw_results = $topics->ListTopics();
+        foreach my $topic (@{$raw_results->{Topics}}) {
+            push @{$topics_results}, { name => $topic->{TopicArn} };
+        };
+    };
+
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $topics_results;
+}
+
 1;
 
 __END__
