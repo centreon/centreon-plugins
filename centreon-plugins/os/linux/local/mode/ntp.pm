@@ -84,13 +84,13 @@ sub custom_status_calc {
 
     $self->{result_values}->{rawtype} = $options{new_datas}->{$self->{instance} . '_type'};
     $self->{result_values}->{rawstate} = $options{new_datas}->{$self->{instance} . '_state'};
-    if ($self->{instance_mode}->{option_results}->{command} eq 'ntpq') {
+    if ($self->{instance_mode}->{command} eq 'ntpq') {
         $self->{result_values}->{type} = $type_map_ntpq{$options{new_datas}->{$self->{instance} . '_type'}};
     } else {
         $self->{result_values}->{type} = $type_map_chronyc{$options{new_datas}->{$self->{instance} . '_type'}};
     }
     $self->{result_values}->{reach} = $options{new_datas}->{$self->{instance} . '_reach'};
-    if ($self->{instance_mode}->{option_results}->{command} eq 'ntpq') {
+    if ($self->{instance_mode}->{command} eq 'ntpq') {
         $self->{result_values}->{state} = $state_map_ntpq{$options{new_datas}->{$self->{instance} . '_state'}};
     } else {
         $self->{result_values}->{state} = $state_map_chronyc{$options{new_datas}->{$self->{instance} . '_state'}};
@@ -256,7 +256,7 @@ sub manage_selection {
             next;
         }
         
-        if ($self->{option_results}->{command} eq 'ntpq') {
+        if ($self->{command} eq 'ntpq') {
             my ($refid, $stratum, $type, $last_time, $polling_intervall, $reach, $delay, $offset, $jitter) = ($3, $4, $5, $6, $7, $8, $9, $10, $11);
             $self->{peers}->{$remote_peer} = {
                 display => $remote_peer,
@@ -266,7 +266,7 @@ sub manage_selection {
                 reach   => centreon::plugins::misc::trim($reach),
                 offset  => centreon::plugins::misc::trim($offset)
             };
-        } elsif ($self->{option_results}->{command} eq 'chronyc') {
+        } elsif ($self->{command} eq 'chronyc') {
             #210 Number of sources = 4
             #MS Name/IP address         Stratum Poll Reach LastRx Last sample               
             #===============================================================================
