@@ -308,7 +308,7 @@ Default mode for parsing and command: 'ntpq' (default) or 'chronyc'.
 
 Filter peer name (can be a regexp).
 
-=item B<--filter-name>
+=item B<--filter-state>
 
 Filter peer state (can be a regexp).
 
