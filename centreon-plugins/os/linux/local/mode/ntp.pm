@@ -300,7 +300,7 @@ Command used: 'ntpq -p -n 2>&1' or 'chronyc -n sources 2>&1'
 
 =over 8
 
-=item B<--con-mode>
+=item B<--ntp-mode>
 
 Default mode for parsing and command: 'ntpq' (default) or 'chronyc'.
 
