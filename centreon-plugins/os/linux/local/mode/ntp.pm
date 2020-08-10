@@ -241,7 +241,7 @@ sub manage_selection {
         next if ($line !~ /$self->{regex}/);
         
         my ($remote_peer, $peer_fate) = (centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($1));
-        if ($self->{option_results}->{command} eq 'chronyc') {
+        if ($self->{command} eq 'chronyc') {
             $remote_peer = centreon::plugins::misc::trim($3);
             $peer_fate = centreon::plugins::misc::trim($2);
         }
