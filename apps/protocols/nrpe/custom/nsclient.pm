@@ -55,7 +55,10 @@ sub new {
             'password:s'        => { name => 'password' },
             'legacy-password:s' => { name => 'legacy_password' },
             'new-api'           => { name => 'new_api' },
-            'timeout:s'         => { name => 'timeout' }
+            'timeout:s'         => { name => 'timeout' },
+            'unknown-status:s'  => { name => 'unknown_status' },
+            'warning-status:s'  => { name => 'warning_status' },
+            'critical-status:s' => { name => 'critical_status' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM MODE OPTIONS', once => 1);
@@ -84,6 +87,9 @@ sub check_options {
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{legacy_password} = (defined($self->{option_results}->{legacy_password})) ? $self->{option_results}->{legacy_password} : undef;
+    $self->{unknown_status} = (defined($self->{option_results}->{unknown_status})) ? $self->{option_results}->{unknown_status} : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_status} = (defined($self->{option_results}->{warning_status})) ? $self->{option_results}->{warning_status} : '';
+    $self->{critical_status} = (defined($self->{option_results}->{critical_status})) ? $self->{option_results}->{critical_status} : '';
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -100,9 +106,9 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{warning_status} = '';
-    $self->{option_results}->{critical_status} = '';
-    $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{option_results}->{warning_status} = $self->{warning_status};
+    $self->{option_results}->{critical_status} = $self->{critical_status};
+    $self->{option_results}->{unknown_status} = $self->{unknown_status};
 
     if (defined($self->{username})) {
         $self->{option_results}->{username} = $self->{username};
