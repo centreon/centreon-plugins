@@ -32,7 +32,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'prettify' => { name => 'prettify' }
+        'prettify'        => { name => 'prettify' },
+        'resource-type:s' => { name => 'resource_type'},
     });
 
     return $self;
@@ -41,6 +42,45 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+}
+
+sub discovery_devices {
+    my ($self, %options) = @_;
+    
+    my $disco_data = [];
+    foreach (values %{$options{devices}}) {
+        my $node = {
+            %$_,
+            %{$options{devices_statuses}->{$_->{serial}}},
+            networkName => $options{networks}->{ $options{devices_statuses}->{$_->{serial}}->{networkId} }->{name},
+            organizationName => $options{organizations}->{ $options{networks}->{ $options{devices_statuses}->{$_->{serial}}->{networkId} }->{organizationId} }->{name},
+            type => 'device'
+        };
+
+     push @$disco_data, $node;
+
+     }
+
+    return $disco_data;
+
+}
+
+sub discovery_networks {
+    my ($self, %options) = @_;
+
+    my $disco_data = [];
+    foreach (values %{$options{networks}}) {
+        my $node = {
+            %$_,
+            organizationName => $options{organizations}->{ $_->{organizationId} }->{name},
+            type => 'network'
+        };
+
+     push @$disco_data, $node;
+
+     }
+
+    return $disco_data;
 }
 
 sub run {
@@ -63,30 +103,22 @@ sub run {
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
 
-    foreach (values %$devices) {
-        my $node = {
-            %$_,
-            %{$devices_statuses->{$_->{serial}}},
-            networkName => $networks->{ $devices_statuses->{$_->{serial}}->{networkId} }->{name},
-            organizationName => $organizations->{ $networks->{ $devices_statuses->{$_->{serial}}->{networkId} }->{organizationId} }->{name},
-            type => 'device'
-        };
-
-        push @disco_data, $node;
+    my $results = [];
+    if ($self->{option_results}->{resource_type} eq 'network') {
+        $results = $self->discovery_networks(
+            networks => $networks,
+            organizations => $organizations
+        );
+    } else {
+        $results = $self->discovery_devices(
+            devices => $devices,
+            networks => $networks,
+            devices_statuses => $devices_statuses,
+            organizations => $organizations
+        );
     }
-
-    foreach (values %$networks) {
-        my $node = {
-            %$_,
-            organizationName => $organizations->{ $_->{organizationId} }->{name},
-            type => 'network'
-        };
-
-        push @disco_data, $node;
-    }
-   
-    $disco_stats->{discovered_items} = @disco_data;
-    $disco_stats->{results} = \@disco_data;
+    $disco_stats->{discovered_items} = scalar(@$results);
+    $disco_stats->{results} = $results;
 
     my $encoded_data;
     eval {
@@ -118,6 +150,10 @@ Resources discovery.
 =item B<--prettify>
 
 Prettify JSON output.
+
+=item B<--resource-type>
+
+Choose the type of resources to discover (Can be: 'device', 'network').
 
 =item B<--ignore-permission-errors>
 
