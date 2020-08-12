@@ -162,6 +162,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-cluster:s' => { name => 'filter_cluster' },
     });
     return $self;
 }
@@ -245,13 +246,25 @@ Check Global and per-cluster conference manager metrics usage.
 
 =over 8
 
-=item B<--warning-TODO>
+=item B<--filter-cluster>
 
-Threshold warning.
+Filter on one or several cluster (POSIX regexp)
 
-=item B<--critical-TODO>
+=item B<--warning-*>
 
-Threshold critical.
+Threshold warning. Following value are available: 
+(cluster-conferences, cluster-participants, cluster-local-users, cluster-custom-rooms,
+cluster-video-ports-usage, cluster-video-ports-free, cluster-video-ports-prct,
+cluster-voice-ports-usage, cluster-voice-ports-free, cluster-voice-ports-prct,
+dma-conferences)
+
+=item B<--critical-*>
+
+Threshold critical. Following value are available: 
+(cluster-conferences, cluster-participants, cluster-local-users, cluster-custom-rooms,
+cluster-video-ports-usage, cluster-video-ports-free, cluster-video-ports-prct,
+cluster-voice-ports-usage, cluster-voice-ports-free, cluster-voice-ports-prct,
+dma-conferences)
 
 =back
 
