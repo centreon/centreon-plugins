@@ -59,7 +59,7 @@ sub set_counters {
         { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok', skipped_code => { -10 => 1 } }
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'dma-conferences', nlabel => 'manager.conferences.active.count', set => {
+        { label => 'dma-total-conferences', nlabel => 'manager.conferences.active.count', set => {
                 key_values => [ { name => 'useConfMgrUsageCount' } ],
                 output_template => 'Total conferences : %s',
                 perfdatas => [
@@ -190,8 +190,6 @@ my $oid_useConfMgrUsageEntry = '.1.3.6.1.4.1.13885.13.2.3.2.1.2.1';
 sub manage_selection {
     my ($self, %options) = @_;
 
-
-
     my $oid_useConfMgrUsageCount = '.1.3.6.1.4.1.13885.13.2.3.2.1.1.0';
     my $global_result = $options{snmp}->get_leef(oids => [$oid_useConfMgrUsageCount], nothing_quit => 1);
 
@@ -242,7 +240,7 @@ __END__
 
 =head1 MODE
 
-Check Global and per-cluster conference manager metrics usage.
+Check Global and per-cluster devices registrations metrics.
 
 =over 8
 
@@ -256,7 +254,7 @@ Threshold warning. Following value are available:
 (cluster-conferences, cluster-participants, cluster-local-users, cluster-custom-rooms,
 cluster-video-ports-usage, cluster-video-ports-free, cluster-video-ports-prct,
 cluster-voice-ports-usage, cluster-voice-ports-free, cluster-voice-ports-prct,
-dma-conferences)
+dma-total-conferences)
 
 =item B<--critical-*>
 
@@ -264,7 +262,7 @@ Threshold critical. Following value are available:
 (cluster-conferences, cluster-participants, cluster-local-users, cluster-custom-rooms,
 cluster-video-ports-usage, cluster-video-ports-free, cluster-video-ports-prct,
 cluster-voice-ports-usage, cluster-voice-ports-free, cluster-voice-ports-prct,
-dma-conferences)
+dma-total-conferences)
 
 =back
 
