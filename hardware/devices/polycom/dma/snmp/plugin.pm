@@ -33,7 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'alerts'                => 'hardware::devices::polycom::dma::snmp::mode::alerts',
         'cpu'                   => 'snmp_standard::mode::cpu',
-        'cpu-detailed'          => 'snmp_standard::mode::cpudetailed'
+        'cpu-detailed'          => 'snmp_standard::mode::cpudetailed',
         'conference-manager'    => 'hardware::devices::polycom::dma::snmp::mode::conferencemanager',
         'devices-registrations' => 'hardware::devices::polycom::dma::snmp::mode::devicesregistration',
         'interfaces'            => 'snmp_standard::mode::interfaces',
