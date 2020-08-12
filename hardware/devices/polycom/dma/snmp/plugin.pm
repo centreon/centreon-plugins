@@ -34,6 +34,7 @@ sub new {
         'alerts'                => 'hardware::devices::polycom::dma::snmp::mode::alerts',
         'conference-manager'    => 'hardware::devices::polycom::dma::snmp::mode::conferencemanager',
         'devices-registrations' => 'hardware::devices::polycom::dma::snmp::mode::devicesregistration',
+        'servers-usage'         => 'hardware::devices::polycom::dma::snmp::mode::serversusage',
     );
 
     return $self;
