@@ -47,78 +47,99 @@ sub check_options {
 sub discovery_devices {
     my ($self, %options) = @_;
     
-    my $disco_data = [];
-    foreach (values %{$options{devices}}) {
+    my $devices = $options{custom}->get_devices(
+        organizations => [keys %{$options{organizations}}],
+        disable_cache => 1
+    );
+    my $devices_statuses = $options{custom}->get_organization_device_statuses();
+    
+    my @results;
+    foreach (values %{$devices}) {
         my $node = {
-            %$_,
-            %{$options{devices_statuses}->{$_->{serial}}},
-            networkName => $options{networks}->{ $options{devices_statuses}->{$_->{serial}}->{networkId} }->{name},
-            organizationName => $options{organizations}->{ $options{networks}->{ $options{devices_statuses}->{$_->{serial}}->{networkId} }->{organizationId} }->{name},
-            type => 'device'
+            name => $_->{name},
+            status => $devices_statuses->{$_->{serial}}->{status},
+            address => $_->{address},
+            latitude => $_->{lat},
+            longitude => $_->{lng},
+            mac => $_->{mac},
+            url => $_->{url},
+            notes => $_->{notes},
+            tags => $_->{tags},
+            model => $_->{model},
+            firmware => $_->{firmware},
+            serial => $_->{serial},
+            public_ip => $devices_statuses->{$_->{serial}}->{publicIp},
+            lan_ip => $_->{lanIp},
+            network_id => $_->{networkId},
+            network_name => $options{networks}->{ $devices_statuses->{$_->{serial}}->{networkId} }->{name},
+            organization_name => $options{organizations}->{ $options{networks}->{ $devices_statuses->{$_->{serial}}->{networkId} }->{organizationId} }->{name},
+            configuration_updated_at => $_->{configurationUpdatedAt},
+            last_reported_at => $devices_statuses->{$_->{serial}}->{lastReportedAt},
         };
 
-     push @$disco_data, $node;
+        push @results, $node;
+    }
 
-     }
-
-    return $disco_data;
+    return @results;
 
 }
 
 sub discovery_networks {
     my ($self, %options) = @_;
 
-    my $disco_data = [];
+    my @results;
     foreach (values %{$options{networks}}) {
         my $node = {
-            %$_,
-            organizationName => $options{organizations}->{ $_->{organizationId} }->{name},
-            type => 'network'
+            name => $_->{name},
+            id => $_->{id},
+            type => $_->{type},
+            timezone => $_->{timeZone},
+            tags => $_->{tags},
+            product_types => $_->{productTypes},
+            organization_id => $_->{organizationId},
+            organization_name => $options{organizations}->{ $_->{organizationId} }->{name},
+            disable_remote_status_page => $_->{disableRemoteStatusPage},
+            disable_my_meraki_com => $_->{disableMyMerakiCom}
         };
 
-     push @$disco_data, $node;
+        push @results, $node;
+    }
 
-     }
-
-    return $disco_data;
+    return @results;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my (@disco_data, $disco_stats);
+    my @disco_data;
+    my $disco_stats;
+
     $disco_stats->{start_time} = time();
 
     my $organizations = $options{custom}->get_organizations(disable_cache => 1);
+    
     my $networks = $options{custom}->get_networks(
-        organizations => [keys %{$self->{organizations}}],
+        organizations => [keys %{$organizations}],
         disable_cache => 1
     );
-    my $devices = $options{custom}->get_devices(
-        organizations => [keys %{$self->{organizations}}],
-        disable_cache => 1
-    );
-    my $devices_statuses = $options{custom}->get_organization_device_statuses();
 
-    $disco_stats->{end_time} = time();
-    $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
-
-    my $results = [];
     if ($self->{option_results}->{resource_type} eq 'network') {
-        $results = $self->discovery_networks(
+        @disco_data = $self->discovery_networks(
             networks => $networks,
             organizations => $organizations
         );
     } else {
-        $results = $self->discovery_devices(
-            devices => $devices,
+        @disco_data = $self->discovery_devices(
             networks => $networks,
-            devices_statuses => $devices_statuses,
-            organizations => $organizations
+            organizations => $organizations,
+            %options
         );
     }
-    $disco_stats->{discovered_items} = scalar(@$results);
-    $disco_stats->{results} = $results;
+
+    $disco_stats->{end_time} = time();
+    $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
+    $disco_stats->{discovered_items} = @disco_data;
+    $disco_stats->{results} = \@disco_data;
 
     my $encoded_data;
     eval {
