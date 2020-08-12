@@ -78,8 +78,8 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "filter-msg:s"        => { name => 'filter_msg' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /minor|warning/i' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /critical|major/i' },
+                                  "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /warn/i' },
+                                  "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /severe/i' },
                                   "memory"              => { name => 'memory' },
                                 });
     
@@ -178,7 +178,7 @@ Filter by message (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{severity} =~ /severe/i')
+Set warning threshold for status (Default: '%{severity} =~ /warn/i')
 Can used special variables like: %{severity}, %{text}, %{code}, %{since}
 
 =item B<--critical-status>
