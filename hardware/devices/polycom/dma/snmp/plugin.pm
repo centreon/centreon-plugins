@@ -35,7 +35,7 @@ sub new {
         'cpu'                   => 'snmp_standard::mode::cpu',
         'cpu-detailed'          => 'snmp_standard::mode::cpudetailed',
         'conference-manager'    => 'hardware::devices::polycom::dma::snmp::mode::conferencemanager',
-        'devices-registrations' => 'hardware::devices::polycom::dma::snmp::mode::devicesregistration',
+        'device-registrations'  => 'hardware::devices::polycom::dma::snmp::mode::deviceregistrations',
         'interfaces'            => 'snmp_standard::mode::interfaces',
         'load'                  => 'snmp_standard::mode::loadaverage',
         'memory'                => 'snmp_standard::mode::memory',

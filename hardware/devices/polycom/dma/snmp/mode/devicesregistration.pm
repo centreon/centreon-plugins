@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::polycom::dma::snmp::mode::devicesregistration;
+package hardware::devices::polycom::dma::snmp::mode::deviceregistrations;
 
 use base qw(centreon::plugins::templates::counter);
 
