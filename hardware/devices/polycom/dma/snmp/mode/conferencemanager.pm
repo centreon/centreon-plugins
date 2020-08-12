@@ -63,7 +63,8 @@ sub set_counters {
                 key_values => [ { name => 'useConfMgrUsageCount' } ],
                 output_template => 'Total conferences : %s',
                 perfdatas => [
-                    { label => 'conferences', value => 'useConfMgrUsageCount', template => '%d', min => 0 },
+                    { label => 'conferences', value => 'useConfMgrUsageCount', template => '%d', min => 0,
+                      instance_use => 'display', template => '%d', min => 0 },
                 ],
             }
         },
@@ -73,7 +74,8 @@ sub set_counters {
                 key_values => [ { name => 'useCMUsageActiveConfs' }, { name => 'display'} ],
                 output_template => 'current conferences : %s',
                 perfdatas => [
-                    { label => 'conferences_active', value => 'useCMUsageActiveConfs', template => '%d', min => 0 },
+                    { label => 'conferences_active', value => 'useCMUsageActiveConfs', label_extra_instance => 1,
+                      instance_use => 'display', template => '%d', min => 0 },
                 ],
             }
         },
@@ -81,7 +83,8 @@ sub set_counters {
                 key_values => [ { name => 'useCMUsageActiveParts' }, { name => 'display'} ],
                 output_template => 'current participants : %s',
                 perfdatas => [
-                    { label => 'participants', value => 'useCMUsageActiveParts', template => '%d', min => 0 },
+                    { label => 'participants', value => 'useCMUsageActiveParts',label_extra_instance => 1, 
+                      instance_use => 'display', template => '%d', min => 0 },
                 ],
             }
         },
@@ -89,7 +92,8 @@ sub set_counters {
                 key_values => [ { name => 'useCMUsageLocalUsers' }, { name => 'display'} ],
                 output_template => 'local users : %s',
                 perfdatas => [
-                    { label => 'local_users', value => 'useCMUsageLocalUsers', template => '%d', min => 0 },
+                    { label => 'local_users', value => 'useCMUsageLocalUsers', label_extra_instance => 1,
+                      instance_use => 'display', template => '%d', min => 0 },
                 ],
             }
         },
@@ -97,59 +101,67 @@ sub set_counters {
                 key_values => [ { name => 'useCMUsageCustomConfRooms' }, { name => 'display'} ],
                 output_template => 'custom conference rooms : %s',
                 perfdatas => [
-                    { label => 'custom_rooms', value => 'useCMUsageCustomConfRooms', template => '%d', min => 0 },
+                    { label => 'custom_rooms', value => 'useCMUsageCustomConfRooms', label_extra_instance => 1,
+                      instance_use => 'display', template => '%d', min => 0 },
                 ],
             }
         },
         { label => 'cluster-video-ports-usage', nlabel => 'cluster.video.port.usage.count', set => {
-                key_values => [ { name => 'vp_used' }, { name => 'vp_free' }, { name => 'vp_prct_used' }, { name => 'vp_prct_free' }, { name => 'vp_total' } ],
+                key_values => [ { name => 'vp_used' }, { name => 'vp_free' }, { name => 'vp_prct_used' }, 
+                                { name => 'vp_prct_free' }, { name => 'vp_total' }, { name => 'display'} ],
                 closure_custom_output => $self->can('custom_video_port_output'),
                 perfdatas => [
-                    { value => 'vp_used', template => '%d', min => 0, max => 'total',
-                      cast_int => 1 },
+                    { value => 'vp_used', template => '%d', instance_use => 'display', label_extra_instance => 1,
+                      instance_use => 'display', template => '%d', min => 0, max => 'total', cast_int => 1 },
+                      
                 ],
             }
         },
         { label => 'cluster-video-ports-free', display_ok => 0, nlabel => 'cluster.video.port.free.count', set => {
-                key_values => [ { name => 'vp_free' }, { name => 'vp_used' }, { name => 'vp_prct_used' }, { name => 'vp_prct_free' }, { name => 'vp_total' } ],
+                key_values => [ { name => 'vp_free' }, { name => 'vp_used' }, { name => 'vp_prct_used' },
+                                { name => 'vp_prct_free' }, { name => 'vp_total' }, { name => 'display'} ],
                 closure_custom_output => $self->can('custom_video_port_output'),
                 perfdatas => [
-                    { value => 'vp_free', template => '%d', min => 0, max => 'total',
-                      cast_int => 1 },
+                    { value => 'vp_free', template => '%d', label_extra_instance => 1, instance_use => 'display',
+                      min => 0, max => 'total', cast_int => 1 },
                 ],
             }
         },
         { label => 'cluster-video-ports-prct', display_ok => 0, nlabel => 'cluster.video.port.percentage', set => {
-                key_values => [ { name => 'vp_prct_used' } ],
+                key_values => [ { name => 'vp_prct_used' }, { name => 'display'} ],
                 output_template => 'video ports used: %.2f %%',
                 perfdatas => [
-                    { value => 'vp_prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { value => 'vp_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display',
+                      min => 0, max => 100, unit => '%' },
                 ],
             }
         },
         { label => 'cluster-voice-ports-usage', nlabel => 'cluster.voice.port.usage.count', set => {
-                key_values => [ { name => 'vop_used' }, { name => 'vop_free' }, { name => 'vop_prct_used' }, { name => 'vop_prct_free' }, { name => 'vop_total' } ],
+                key_values => [ { name => 'vop_used' }, { name => 'vop_free' }, { name => 'vop_prct_used' },
+                                { name => 'vop_prct_free' }, { name => 'vop_total' }, { name => 'display'} ],
                 closure_custom_output => $self->can('custom_voice_port_output'),
                 perfdatas => [
-                    { value => 'vop_used', template => '%d', min => 0, max => 'total',
-                      cast_int => 1 },
+                    { value => 'vop_used', template => '%d', label_extra_instance => 1, instance_use => 'display',
+                      min => 0, max => 'total', cast_int => 1 },
                 ],
             }
         },
         { label => 'cluster-voice-ports-free', display_ok => 0, nlabel => 'cluster.voice.port.free.count', set => {
-                key_values => [ { name => 'vop_free' }, { name => 'vop_used' }, { name => 'vop_prct_used' }, { name => 'vop_prct_free' }, { name => 'vop_total' } ],
+                key_values => [ { name => 'vop_free' }, { name => 'vop_used' }, { name => 'vop_prct_used' },
+                                { name => 'vop_prct_free' }, { name => 'vop_total' }, { name => 'display'} ],
                 closure_custom_output => $self->can('custom_voice_port_output'),
                 perfdatas => [
-                    { value => 'vop_free', template => '%d', min => 0, max => 'total',
-                      cast_int => 1 },
+                    { value => 'vop_free', template => '%d', label_extra_instance => 1, instance_use => 'display',
+                      min => 0, max => 'total', cast_int => 1 },
                 ],
             }
         },
         { label => 'cluster-voice-ports-prct', display_ok => 0, nlabel => 'cluster.voice.port.percentage', set => {
-                key_values => [ { name => 'vop_prct_used' } ],
+                key_values => [ { name => 'vop_prct_used' }, { name => 'display'} ],
                 output_template => 'voice ports used: %.2f %%',
                 perfdatas => [
-                    { value => 'vop_prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { value => 'vop_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display',
+                      min => 0, max => 100, unit => '%' },
                 ],
             }
         },
