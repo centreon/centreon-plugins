@@ -32,9 +32,17 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'alerts'                => 'hardware::devices::polycom::dma::snmp::mode::alerts',
+        'cpu'                   => 'snmp_standard::mode::cpu',
+        'cpu-detailed'          => 'snmp_standard::mode::cpudetailed'
         'conference-manager'    => 'hardware::devices::polycom::dma::snmp::mode::conferencemanager',
         'devices-registrations' => 'hardware::devices::polycom::dma::snmp::mode::devicesregistration',
+        'interfaces'            => 'snmp_standard::mode::interfaces',
+        'load'                  => 'snmp_standard::mode::loadaverage',
+        'memory'                => 'snmp_standard::mode::memory',
         'servers-usage'         => 'hardware::devices::polycom::dma::snmp::mode::serversusage',
+        'storage'               => 'snmp_standard::mode::storage',
+        'swap'                  => 'snmp_standard::mode::swap',
+        'uptime'                => 'snmp_standard::mode::uptime',
     );
 
     return $self;
