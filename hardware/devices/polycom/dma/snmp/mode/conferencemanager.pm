@@ -25,6 +25,32 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub custom_video_port_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("video ports [total: %s used: %s (%.2f%%) free: %s (%.2f%%)]",
+        $self->{result_values}->{vp_total},
+        $self->{result_values}->{vp_used},
+        $self->{result_values}->{vp_prct_used},
+        $self->{result_values}->{vp_free},
+        $self->{result_values}->{vp_prct_free}
+    );
+    return $msg;
+}
+
+sub custom_voice_port_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("voice ports [total: %s used: %s (%.2f%%) free: %s (%.2f%%)]",
+        $self->{result_values}->{vop_total},
+        $self->{result_values}->{vop_used},
+        $self->{result_values}->{vop_prct_used},
+        $self->{result_values}->{vop_free},
+        $self->{result_values}->{vop_prct_free}
+    );
+    return $msg;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -33,9 +59,9 @@ sub set_counters {
         { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok', skipped_code => { -10 => 1 } }
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-conferences', nlabel => 'manager.conferences.active.count', set => {
+        { label => 'dma-conferences', nlabel => 'manager.conferences.active.count', set => {
                 key_values => [ { name => 'useConfMgrUsageCount' } ],
-                output_template => 'Current conferences (total): %s',
+                output_template => 'Total conferences : %s',
                 perfdatas => [
                     { label => 'conferences', value => 'useConfMgrUsageCount', template => '%d', min => 0 },
                 ],
@@ -51,7 +77,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-participants', nlabel => 'cluster.conferences.active.count', set => {
+        { label => 'cluster-participants', nlabel => 'cluster.participants.active.count', set => {
                 key_values => [ { name => 'useCMUsageActiveParts' }, { name => 'display'} ],
                 output_template => 'current participants : %s',
                 perfdatas => [
@@ -72,6 +98,58 @@ sub set_counters {
                 output_template => 'custom conference rooms : %s',
                 perfdatas => [
                     { label => 'custom_rooms', value => 'useCMUsageCustomConfRooms', template => '%d', min => 0 },
+                ],
+            }
+        },
+        { label => 'cluster-video-ports-usage', nlabel => 'cluster.video.port.usage.count', set => {
+                key_values => [ { name => 'vp_used' }, { name => 'vp_free' }, { name => 'vp_prct_used' }, { name => 'vp_prct_free' }, { name => 'vp_total' } ],
+                closure_custom_output => $self->can('custom_video_port_output'),
+                perfdatas => [
+                    { value => 'vp_used', template => '%d', min => 0, max => 'total',
+                      cast_int => 1 },
+                ],
+            }
+        },
+        { label => 'cluster-video-ports-free', display_ok => 0, nlabel => 'cluster.video.port.free.count', set => {
+                key_values => [ { name => 'vp_free' }, { name => 'vp_used' }, { name => 'vp_prct_used' }, { name => 'vp_prct_free' }, { name => 'vp_total' } ],
+                closure_custom_output => $self->can('custom_video_port_output'),
+                perfdatas => [
+                    { value => 'vp_free', template => '%d', min => 0, max => 'total',
+                      cast_int => 1 },
+                ],
+            }
+        },
+        { label => 'cluster-video-ports-prct', display_ok => 0, nlabel => 'cluster.video.port.percentage', set => {
+                key_values => [ { name => 'vp_prct_used' } ],
+                output_template => 'video ports used: %.2f %%',
+                perfdatas => [
+                    { value => 'vp_prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+        { label => 'cluster-voice-ports-usage', nlabel => 'cluster.voice.port.usage.count', set => {
+                key_values => [ { name => 'vop_used' }, { name => 'vop_free' }, { name => 'vop_prct_used' }, { name => 'vop_prct_free' }, { name => 'vop_total' } ],
+                closure_custom_output => $self->can('custom_voice_port_output'),
+                perfdatas => [
+                    { value => 'vop_used', template => '%d', min => 0, max => 'total',
+                      cast_int => 1 },
+                ],
+            }
+        },
+        { label => 'cluster-voice-ports-free', display_ok => 0, nlabel => 'cluster.voice.port.free.count', set => {
+                key_values => [ { name => 'vop_free' }, { name => 'vop_used' }, { name => 'vop_prct_used' }, { name => 'vop_prct_free' }, { name => 'vop_total' } ],
+                closure_custom_output => $self->can('custom_voice_port_output'),
+                perfdatas => [
+                    { value => 'vop_free', template => '%d', min => 0, max => 'total',
+                      cast_int => 1 },
+                ],
+            }
+        },
+        { label => 'cluster-voice-ports-prct', display_ok => 0, nlabel => 'cluster.voice.port.percentage', set => {
+                key_values => [ { name => 'vop_prct_used' } ],
+                output_template => 'voice ports used: %.2f %%',
+                perfdatas => [
+                    { value => 'vop_prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -136,8 +214,21 @@ sub manage_selection {
             next;
         }
 
+        my ($video_port_used, $video_port_total) = ($result->{useCMUsageUsedVideoPorts},$result->{useCMUsageTotalVideoPorts});
+        my ($voice_port_used, $voice_port_total) = ($result->{useCMUsageUsedVoicePorts},$result->{useCMUsageTotalVoicePorts});
+
         $self->{cluster}->{$instance} = {
             display => $result->{useCMUsageClusterName}, 
+            vp_free => $video_port_total - $video_port_used,
+            vp_prct_free => ($video_port_total != 0) ? 100 - ($video_port_used * 100 / $video_port_total) : '0',
+            vp_prct_used => ($video_port_total != 0) ? $video_port_used * 100 / $video_port_total : '0',
+            vp_total => $video_port_total,
+            vp_used => $video_port_used,
+            vop_free => $voice_port_total - $voice_port_used,
+            vop_prct_free => ($voice_port_total != 0) ? 100 - ($voice_port_used * 100 / $voice_port_total) : '0',
+            vop_prct_used => ($voice_port_total != 0) ? $voice_port_used * 100 / $voice_port_total : '0',
+            vop_total => $voice_port_total,
+            vop_used => $voice_port_used,
             %$result,
         };
     }
