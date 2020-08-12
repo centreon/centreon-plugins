@@ -248,21 +248,13 @@ Check Global and per-cluster devices registrations metrics.
 
 Filter on one or several cluster (POSIX regexp)
 
-=item B<--warning-*>
+=item B<--warning-* --critical-*>
 
-Threshold warning. Following value are available: 
-(cluster-conferences, cluster-participants, cluster-local-users, cluster-custom-rooms,
+TWarning & Critical Thresholds. Possible values:
+[PER-CLUSTER] cluster-conferences, cluster-participants, cluster-local-users, cluster-custom-rooms,
 cluster-video-ports-usage, cluster-video-ports-free, cluster-video-ports-prct,
-cluster-voice-ports-usage, cluster-voice-ports-free, cluster-voice-ports-prct,
-dma-total-conferences)
-
-=item B<--critical-*>
-
-Threshold critical. Following value are available: 
-(cluster-conferences, cluster-participants, cluster-local-users, cluster-custom-rooms,
-cluster-video-ports-usage, cluster-video-ports-free, cluster-video-ports-prct,
-cluster-voice-ports-usage, cluster-voice-ports-free, cluster-voice-ports-prct,
-dma-total-conferences)
+cluster-voice-ports-usage, cluster-voice-ports-free, cluster-voice-ports-prct
+[GLOBAL] dma-total-conferences
 
 =back
 

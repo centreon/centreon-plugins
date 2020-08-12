@@ -138,17 +138,12 @@ Check Global and per-cluster devices registrations metrics.
 
 Filter on one or several cluster (POSIX regexp)
 
-=item B<--warning-*>
+=item B<--warning-* --critical-*>
 
-Threshold warning. Following value are available: 
-(cluster-endpoint-active-registration, cluster-endpoint-inactive-registration,
- dma-total-registrations)
+Warning & Critical Thresholds. Possible values:
 
-=item B<--critical-*>
-
-Threshold critical. Following value are available: 
-(cluster-endpoint-active-registration, cluster-endpoint-inactive-registration,
- dma-total-registrations)
+[PER-CLUSTER] cluster-endpoint-active-registration cluster-endpoint-inactive-registration
+[GLOBAL] dma-total-registrations
 
 =back
 
