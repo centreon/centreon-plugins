@@ -68,7 +68,7 @@ sub discovery_robots {
             company => $robot->{Company}->{Name},
             location => $robot->{Location}->{Name},
             version => $robot->{Version},
-            ipaddress => $robot->{IPAddress},
+            ip => $robot->{IPAddress},
             scenarios => []
         };
 
