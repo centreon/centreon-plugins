@@ -262,7 +262,7 @@ sub manage_selection {
     $self->{tunnel} = {};    
     my $request_oids = [
         { oid => $oid_cikeTunnelEntry, start => $mapping->{cikeTunLocalValue}->{oid}, end => $mapping->{cikeTunActiveTime}->{oid} },
-        { oid => $oid_cipSecTunnelEntry, start => $mapping2->{cipSecTunInOctets}->{oid} end => $mapping2->{cipSecTunOutDropPkts}->{oid} },
+        { oid => $oid_cipSecTunnelEntry, start => $mapping2->{cipSecTunInOctets}->{oid}, end => $mapping2->{cipSecTunOutDropPkts}->{oid} },
         { oid => $oid_cipSecEndPtEntry, start => $mapping3->{cipSecEndPtLocalAddr1}->{oid}, end => $mapping3->{cipSecEndPtRemoteAddr2}->{oid} },
         { oid => $oid_cipSecTunIkeTunnelIndex }
     ];
