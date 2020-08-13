@@ -27,38 +27,39 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' }
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'h323-packet-loss', nlabel => 'viewstation.h323.packet.loss.percentage', set => {
                 key_values => [ { name => 'polycomVSPercentPacketLoss' }, { name => 'display' } ],
                 output_template => 'H323 Packet Loss %.2f %%',
                 perfdatas => [
-                    { label => 'vs_packet_loss', value => 'polycomVSPercentPacketLoss', template => '%.2f', 
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { value => 'polycomVSPercentPacketLoss', template => '%.2f',
+                      min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'h323-jitter', nlabel => 'viewstation.h323.jitter.milliseconds', set => {
                 key_values => [ { name => 'polycomVSJitter' }, { name => 'display' } ],
                 output_template => 'H323 (audio/video) Jitter %.2f ms',
                 perfdatas => [
-                    { label => 'vs_packet_loss', value => 'polycomVSJitter', template => '%.2f', 
-                      min => 0, max => 100, unit => 'ms' },
-                ],
+                    { value => 'polycomVSJitter', template => '%.2f',
+                      min => 0, max => 100, unit => 'ms' }
+                ]
             }
         },
         { label => 'h323-latency', nlabel => 'viewstation.h323.latency.count', set => {
                 key_values => [ { name => 'polycomVSLatency' }, { name => 'display' } ],
                 output_template => 'H323 (audio/video) Latency %.2f',
                 perfdatas => [
-                    { label => 'vs_latency', value => 'polycomVSLatency', template => '%.2f', 
-                      min => 0, max => 100, unit => '' },
-                ],
+                    { label => 'vs_latency', value => 'polycomVSLatency', template => '%.2f',
+                      min => 0, max => 100, unit => '' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -72,10 +73,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => {
-    });
-                                
+
+   $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -87,31 +87,36 @@ sub manage_selection {
     my $oid_polycomVSJitter = '.1.3.6.1.4.1.2684.1.1.22.0';
     my $oid_polycomVSLatency = '.1.3.6.1.4.1.2684.1.1.23.0';
 
-    my $result = $options{snmp}->get_leef(oids => [$oid_polycomVSPhoneNumber, $oid_polycomVSPercentPacketLoss,
-                                                   $oid_polycomVSJitter, $oid_polycomVSLatency],
-                                         nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(
+        oids => [
+            $oid_polycomVSPhoneNumber,
+            $oid_polycomVSPercentPacketLoss,
+            $oid_polycomVSJitter,
+            $oid_polycomVSLatency
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global} = {
         display => $result->{$oid_polycomVSPhoneNumber},
         polycomVSPercentPacketLoss => $result->{$oid_polycomVSPercentPacketLoss},
         polycomVSJitter => $result->{$oid_polycomVSJitter},
-        polycomVSLatency => $result->{$oid_polycomVSLatency},
+        polycomVSLatency => $result->{$oid_polycomVSLatency}
     };
 }
-    
 1;
 
 __END__
 
 =head1 MODE
 
-Check HDX ViewStation statistics during H323 communications 
+Check HDX ViewStation statistics during H323 communications
 
 =over 8
 
-=item B<--warning-* --critical>
+=item B<--warning-* --critical-*>
 
-Warning and Critical Thresholds. 
+Warning and Critical thresholds.
 Possible values are: h323-packet-loss, h323-jitter, h323-latency
 
 =back

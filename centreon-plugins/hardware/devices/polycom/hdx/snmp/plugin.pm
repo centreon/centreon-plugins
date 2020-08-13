@@ -36,7 +36,7 @@ sub new {
         'load'              => 'snmp_standard::mode::loadaverage',
         'memory '           => 'snmp_standard::mode::memory',
         'uptime'            => 'snmp_standard::mode::uptime',
-        'viewstation-stats' => 'hardware::devices::polycom::hdx::snmp::mode::viewstationstats',
+        'viewstation-stats' => 'hardware::devices::polycom::hdx::snmp::mode::viewstationstats'
     );
 
     return $self;
