@@ -42,8 +42,8 @@ sub set_counters {
             }
         },
     ];
-    $self->{maps_counters}->{cluster} = [
 
+    $self->{maps_counters}->{cluster} = [
         { label => 'cluster-status', threshold => 0, display_ok => 0, set => {
                 key_values => [ { name => 'cluster_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_cluster_status_output'),

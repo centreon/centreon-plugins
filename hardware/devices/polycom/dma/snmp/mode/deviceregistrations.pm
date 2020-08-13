@@ -32,25 +32,27 @@ sub set_counters {
         { name => 'global', type => 0 },
         { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok', skipped_code => { -10 => 1 } }
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'dma-total-registrations', nlabel => 'dma.registrations.count', set => {
                 key_values => [ { name => 'useDevRegistrationsCount' } ],
                 output_template => 'Total registrations : %s',
                 perfdatas => [
                     { label => 'dma_registrations', value => 'useDevRegistrationsCount', label_extra_instance => 1, 
-                      instance_use => 'display', template => '%d', min => 0 },
-                ],
+                      instance_use => 'display', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{cluster} = [
         { label => 'cluster-endpoint-active-registration', nlabel => 'dma.cluster.endpoint.registrations.active.count', set => {
                 key_values => [ { name => 'useDevRegActiveEndpointReg' }, { name => 'display'} ],
                 output_template => 'endpoint active registrations : %s',
                 perfdatas => [
                     { label => 'endpoint_registration_active', value => 'useDevRegActiveEndpointReg', label_extra_instance => 1,
-                      instance_use => 'display', template => '%d', min => 0 },
-                ],
+                      instance_use => 'display', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'cluster-endpoint-inactive-registration', nlabel => 'dma.cluster.endpoint.registrations.inactive.count', set => {
@@ -58,10 +60,10 @@ sub set_counters {
                 output_template => 'endpoint inactive registrations : %s',
                 perfdatas => [
                     { label => 'endpoint_registration_inactive', value => 'useDevRegInactiveEndpointReg', label_extra_instance => 1,
-                      instance_use => 'display',template => '%d', min => 0 },
-                ],
+                      instance_use => 'display',template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -97,7 +99,7 @@ sub manage_selection {
     my $global_result = $options{snmp}->get_leef(
         oids => [$oid_useDevRegistrationsCount],
         nothing_quit => 1
-        );
+    );
 
     $self->{global} = { useDevRegistrationsCount => $global_result->{$oid_useDevRegistrationsCount} };
 
@@ -120,8 +122,8 @@ sub manage_selection {
         }
 
         $self->{cluster}->{$instance} = {
-            display => $result->{useDevRegClusterName}, 
-            %$result,
+            display => $result->{useDevRegClusterName},
+            %$result
         };
     }
 
@@ -133,7 +135,7 @@ __END__
 
 =head1 MODE
 
-Check Global and per-cluster devices registrations metrics.
+Check global and per-cluster devices registrations metrics.
 
 =over 8
 
@@ -146,6 +148,7 @@ Filter on one or several cluster (POSIX regexp)
 Warning & Critical Thresholds. Possible values:
 
 [PER-CLUSTER] cluster-endpoint-active-registration cluster-endpoint-inactive-registration
+
 [GLOBAL] dma-total-registrations
 
 =back

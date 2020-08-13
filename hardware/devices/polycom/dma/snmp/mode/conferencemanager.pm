@@ -58,25 +58,27 @@ sub set_counters {
         { name => 'global', type => 0 },
         { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok', skipped_code => { -10 => 1 } }
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'dma-total-conferences', nlabel => 'dma.conferences.active.count', set => {
                 key_values => [ { name => 'useConfMgrUsageCount' } ],
                 output_template => 'Total conferences : %s',
                 perfdatas => [
                     { label => 'conferences', value => 'useConfMgrUsageCount', template => '%d', min => 0,
-                      instance_use => 'display', template => '%d', min => 0 },
-                ],
+                      instance_use => 'display', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{cluster} = [
         { label => 'cluster-conferences', nlabel => 'dma.cluster.conferences.active.count', set => {
                 key_values => [ { name => 'useCMUsageActiveConfs' }, { name => 'display'} ],
                 output_template => 'current conferences : %s',
                 perfdatas => [
                     { label => 'conferences_active', value => 'useCMUsageActiveConfs', label_extra_instance => 1,
-                      instance_use => 'display', template => '%d', min => 0 },
-                ],
+                      instance_use => 'display', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'cluster-participants', nlabel => 'dma.cluster.participants.active.count', set => {
@@ -84,8 +86,8 @@ sub set_counters {
                 output_template => 'current participants : %s',
                 perfdatas => [
                     { label => 'participants', value => 'useCMUsageActiveParts',label_extra_instance => 1, 
-                      instance_use => 'display', template => '%d', min => 0 },
-                ],
+                      instance_use => 'display', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'cluster-local-users', nlabel => 'dma.cluster.local.database.users.count', set => {
@@ -93,8 +95,8 @@ sub set_counters {
                 output_template => 'local users : %s',
                 perfdatas => [
                     { label => 'local_users', value => 'useCMUsageLocalUsers', label_extra_instance => 1,
-                      instance_use => 'display', template => '%d', min => 0 },
-                ],
+                      instance_use => 'display', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'cluster-custom-rooms', nlabel => 'dma.cluster.custom.conference.rooms.count', set => {
@@ -102,8 +104,8 @@ sub set_counters {
                 output_template => 'custom conference rooms : %s',
                 perfdatas => [
                     { label => 'custom_rooms', value => 'useCMUsageCustomConfRooms', label_extra_instance => 1,
-                      instance_use => 'display', template => '%d', min => 0 },
-                ],
+                      instance_use => 'display', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'cluster-video-ports-usage', nlabel => 'dma.cluster.video.port.usage.count', set => {
@@ -112,9 +114,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_video_port_output'),
                 perfdatas => [
                     { value => 'vp_used', template => '%d', instance_use => 'display', label_extra_instance => 1,
-                      instance_use => 'display', template => '%d', min => 0, max => 'total', cast_int => 1 },
-                      
-                ],
+                      instance_use => 'display', template => '%d', min => 0, max => 'total', cast_int => 1 }
+                ]
             }
         },
         { label => 'cluster-video-ports-free', display_ok => 0, nlabel => 'dma.cluster.video.port.free.count', set => {
@@ -123,8 +124,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_video_port_output'),
                 perfdatas => [
                     { value => 'vp_free', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                      min => 0, max => 'total', cast_int => 1 },
-                ],
+                      min => 0, max => 'total', cast_int => 1 }
+                ]
             }
         },
         { label => 'cluster-video-ports-prct', display_ok => 0, nlabel => 'dma.cluster.video.port.percentage', set => {
@@ -132,8 +133,8 @@ sub set_counters {
                 output_template => 'video ports used: %.2f %%',
                 perfdatas => [
                     { value => 'vp_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                      min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'cluster-voice-ports-usage', nlabel => 'dma.cluster.voice.port.usage.count', set => {
@@ -142,8 +143,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_voice_port_output'),
                 perfdatas => [
                     { value => 'vop_used', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                      min => 0, max => 'total', cast_int => 1 },
-                ],
+                      min => 0, max => 'total', cast_int => 1 }
+                ]
             }
         },
         { label => 'cluster-voice-ports-free', display_ok => 0, nlabel => 'dma.cluster.voice.port.free.count', set => {
@@ -152,8 +153,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_voice_port_output'),
                 perfdatas => [
                     { value => 'vop_free', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                      min => 0, max => 'total', cast_int => 1 },
-                ],
+                      min => 0, max => 'total', cast_int => 1 }
+                ]
             }
         },
         { label => 'cluster-voice-ports-prct', display_ok => 0, nlabel => 'dma.cluster.voice.port.percentage', set => {
@@ -161,10 +162,10 @@ sub set_counters {
                 output_template => 'voice ports used: %.2f %%',
                 perfdatas => [
                     { value => 'vop_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                      min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -176,6 +177,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-cluster:s' => { name => 'filter_cluster' },
     });
+
     return $self;
 }
 
@@ -229,7 +231,7 @@ sub manage_selection {
         my ($voice_port_used, $voice_port_total) = ($result->{useCMUsageUsedVoicePorts},$result->{useCMUsageTotalVoicePorts});
 
         $self->{cluster}->{$instance} = {
-            display => $result->{useCMUsageClusterName}, 
+            display => $result->{useCMUsageClusterName},
             vp_free => $video_port_total - $video_port_used,
             vp_prct_free => ($video_port_total != 0) ? 100 - ($video_port_used * 100 / $video_port_total) : '0',
             vp_prct_used => ($video_port_total != 0) ? $video_port_used * 100 / $video_port_total : '0',
@@ -252,7 +254,7 @@ __END__
 
 =head1 MODE
 
-Check Global and per-cluster devices registrations metrics.
+Check conferences metrics.
 
 =over 8
 
@@ -266,6 +268,7 @@ TWarning & Critical Thresholds. Possible values:
 [PER-CLUSTER] cluster-conferences, cluster-participants, cluster-local-users, cluster-custom-rooms,
 cluster-video-ports-usage, cluster-video-ports-free, cluster-video-ports-prct,
 cluster-voice-ports-usage, cluster-voice-ports-free, cluster-voice-ports-prct
+
 [GLOBAL] dma-total-conferences
 
 =back

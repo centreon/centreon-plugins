@@ -83,14 +83,15 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'server', type => 1, cb_prefix_output => 'prefix_server_output', message_multiple => 'All servers are ok' }
     ];
+
     $self->{maps_counters}->{server} = [
         { label => 'server-cpu-usage', nlabel => 'dma.server.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'stRsrcCPUUsageCPUUtilizationPct' }, { name => 'display'} ],
                 output_template => 'CPU Utilization : %.2f %%',
                 perfdatas => [
                     { label => 'cpu_utilization', value => 'stRsrcCPUUsageCPUUtilizationPct', template => '%d',
-                      label_extra_instance => 1, instance_use => 'display', min => 0, max => 100, unit => '%' },
-                ],
+                      label_extra_instance => 1, instance_use => 'display', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         # Memory counters
@@ -100,8 +101,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { value => 'memory_used', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                      cast_int => 1, min => 0, max => 'total' },
-                ],
+                      cast_int => 1, min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'server-memory-free', display_ok => 0, nlabel => 'dma.server.memory.free.bytes', set => {
@@ -109,9 +110,9 @@ sub set_counters {
                                 { name => 'memory_prct_free' }, { name => 'memory_total' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { value => 'memory_free', template => '%d', label_extra_instance => 1, instance_use => 'display', 
-                      cast_int => 1, min => 0, max => 'total' },
-                ],
+                    { value => 'memory_free', template => '%d', label_extra_instance => 1, instance_use => 'display',
+                      cast_int => 1, min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'server-memory-prct', display_ok => 0, nlabel => 'dma.server.memory.usage.percentage', set => {
@@ -119,8 +120,8 @@ sub set_counters {
                 output_template => 'RAM used: %.2f %%',
                 perfdatas => [
                     { value => 'memory_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display', 
-                     min => 0, max => 100, unit => '%' },
-                ],
+                     min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         # Swap counters
@@ -130,8 +131,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
                     { value => 'swap_used', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                    cast_int => 1, min => 0, max => 'total' },
-                ],
+                    cast_int => 1, min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'server-swap-free', display_ok => 0, nlabel => 'dma.server.swap.free.bytes', set => {
@@ -140,8 +141,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
                     { value => 'swap_free', template => '%d', min => 0, max => 'total',
-                      cast_int => 1, min => 0, max => 'total' },
-                ],
+                      cast_int => 1, min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'server-swap-prct', display_ok => 0, nlabel => 'dma.server.swap.usage.percentage', set => {
@@ -149,8 +150,8 @@ sub set_counters {
                 output_template => 'RAM used: %.2f %%',
                 perfdatas => [
                     { value => 'swap_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                      min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         # Disk counters
@@ -161,8 +162,8 @@ sub set_counters {
                 perfdatas => [
                     { value => 'disk_used', template => '%d', label_extra_instance => 1, instance_use => 'display',
                      min => 0, max => 'total',
-                      cast_int => 1 },
-                ],
+                      cast_int => 1 }
+                ]
             }
         },
         { label => 'server-disk-free', display_ok => 0, nlabel => 'dma.server.disk.free.bytes', set => {
@@ -171,8 +172,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_disk_output'),
                 perfdatas => [
                     { value => 'disk_free', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                      cast_int => 1, min => 0, max => 'total' },
-                ],
+                      cast_int => 1, min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'server-disk-prct', display_ok => 0, nlabel => 'dma.server.disk.usage.percentage', set => {
@@ -180,19 +181,19 @@ sub set_counters {
                 output_template => 'RAM used: %.2f %%',
                 perfdatas => [
                     { value => 'disk_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                      min => 0, max => 100, unit => '%' }
+                ]
             }
         },
-        # Log counters        
+        # Log counters
         { label => 'server-logs-usage', nlabel => 'dma.server.logs.usage.bytes', set => {
                 key_values => [ { name => 'logs_used' }, { name => 'logs_free' }, { name => 'logs_prct_used' },
                                 { name => 'logs_prct_free' }, { name => 'logs_total' } ],
                 closure_custom_output => $self->can('custom_logs_output'),
                 perfdatas => [
                     { value => 'logs_used', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                      cast_int => 1, min => 0, max => 'total' },
-                ],
+                      cast_int => 1, min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'server-logs-free', display_ok => 0, nlabel => 'dma.server.logs.free.bytes', set => {
@@ -201,8 +202,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_logs_output'),
                 perfdatas => [
                     { value => 'logs_free', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                        cast_int => 1, min => 0, max => 'total' },
-                ],
+                        cast_int => 1, min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'server-logs-prct', display_ok => 0, nlabel => 'dma.server.logs.usage.percentage', set => {
@@ -210,8 +211,8 @@ sub set_counters {
                 output_template => 'RAM used: %.2f %%',
                 perfdatas => [
                     { value => 'logs_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display',
-                    min => 0, max => 100, unit => '%' },
-                ],
+                    min => 0, max => 100, unit => '%' }
+                ]
             }
         },
     ];
@@ -225,6 +226,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-server:s' => { name => 'filter_server' },
     });
+
     return $self;
 }
 
@@ -236,7 +238,7 @@ sub prefix_server_output {
 
 my $mapping_cpu = {
     stRsrcCPUUsageHostName          => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.1.1.2' },
-    stRsrcCPUUsageCPUUtilizationPct => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.1.1.3' },
+    stRsrcCPUUsageCPUUtilizationPct => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.1.1.3' }
 };
 
 my $mapping_memory = {
@@ -244,25 +246,25 @@ my $mapping_memory = {
     stRsrcMemUsageTotalMemory       => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.2.1.3' },
     stRsrcMemUsageBuffersAndCache   => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.2.1.4' },
     stRsrcMemUsageUsed              => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.2.1.5' },
-    stRsrcMemUsageFree              => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.2.1.6' },
+    stRsrcMemUsageFree              => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.2.1.6' }
 };
 
 my $mapping_swap = {
     stRsrcSwapHostName  => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.3.1.2' },
     stRsrcSwapTotal     => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.3.1.3' },
-    stRsrcSwapUsed      => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.3.1.4' },
+    stRsrcSwapUsed      => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.3.1.4' }
 };
 
 my $mapping_disk = {
     stRsrcDiskHostName  => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.4.1.2' },
     stRsrcDiskTotal     => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.4.1.3' },
-    stRsrcDiskUsed      => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.4.1.4' },
+    stRsrcDiskUsed      => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.4.1.4' }
 };
 
 my $mapping_logs = {
     stRsrcLogHostName   => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.5.1.2'},
     stRsrcLogTotal      => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.5.1.3'},
-    stRsrcLogUsed       => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.5.1.4'},
+    stRsrcLogUsed       => { oid => '.1.3.6.1.4.1.13885.13.2.2.1.4.5.1.4'}
 };
 
 my $oid_stRsrcCPUUsageEntry = '.1.3.6.1.4.1.13885.13.2.2.1.4.1.1';
@@ -275,15 +277,17 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{server} = {};
- 
-    $self->{server_result} = $options{snmp}->get_multiple_table(oids => [ 
-                                                            { oid => $oid_stRsrcCPUUsageEntry },
-                                                            { oid => $oid_stRsrcMemoryUsageEntry },
-                                                            { oid => $oid_stRsrcSwapUsageEntry },
-                                                            { oid => $oid_stRsrcDiskSpaceEntry },
-                                                            { oid => $oid_stRsrcLogSpaceEntry },
-                                                        ],
-                                                        nothing_quit => 1);
+
+    $self->{server_result} = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_stRsrcCPUUsageEntry },
+            { oid => $oid_stRsrcMemoryUsageEntry },
+            { oid => $oid_stRsrcSwapUsageEntry },
+            { oid => $oid_stRsrcDiskSpaceEntry },
+            { oid => $oid_stRsrcLogSpaceEntry },
+        ],
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$self->{server_result}->{$oid_stRsrcCPUUsageEntry}}) {
         next if ($oid !~ /^$mapping_cpu->{stRsrcCPUUsageHostName}->{oid}\.(.*)$/);
@@ -298,8 +302,8 @@ sub manage_selection {
         $result_cpu->{stRsrcCPUUsageHostName} = centreon::plugins::misc::trim($result_cpu->{stRsrcCPUUsageHostName});
         if (defined($self->{option_results}->{filter_server}) && $self->{option_results}->{filter_server} ne '' &&
             $result_cpu->{stRsrcCPUUsageHostName} !~ /$self->{option_results}->{filter_server}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result_cpu->{stRsrcCPUUsageHostName} . "': no matching filter.", debug => 1);
-            next;
+                $self->{output}->output_add(long_msg => "skipping '" . $result_cpu->{stRsrcCPUUsageHostName} . "': no matching filter.", debug => 1);
+                next;
         }
 
         my ($memory_used, $memory_total) = (($result_memory->{stRsrcMemUsageUsed} + $result_memory->{stRsrcMemUsageBuffersAndCache} * 1024 * 1024),
@@ -309,7 +313,7 @@ sub manage_selection {
         my ($logs_used, $logs_total) = (($result_logs->{stRsrcLogUsed} * 1024 * 1024, $result_logs->{stRsrcLogTotal} * 1024 * 1024));
 
         $self->{server}->{$instance} = {
-            display => $result_cpu->{stRsrcCPUUsageHostName}, 
+            display => $result_cpu->{stRsrcCPUUsageHostName},
             stRsrcCPUUsageCPUUtilizationPct => $result_cpu->{stRsrcCPUUsageCPUUtilizationPct},
             memory_free => $memory_total - $memory_used,
             memory_prct_free => 100 - ($memory_used * 100 / $memory_total),
@@ -342,7 +346,7 @@ __END__
 
 =head1 MODE
 
-Check managed servers system usage metrics 
+Check managed servers system usage metrics
 
 =over 8
 
