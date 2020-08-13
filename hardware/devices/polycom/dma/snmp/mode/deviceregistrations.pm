@@ -33,7 +33,7 @@ sub set_counters {
         { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok', skipped_code => { -10 => 1 } }
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'dma-total-registrations', nlabel => 'manager.registrations.count', set => {
+        { label => 'dma-total-registrations', nlabel => 'dma.manager.registrations.count', set => {
                 key_values => [ { name => 'useDevRegistrationsCount' } ],
                 output_template => 'Total registrations : %s',
                 perfdatas => [
@@ -44,7 +44,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{cluster} = [
-        { label => 'cluster-endpoint-active-registration', nlabel => 'cluster.endpoint.registrations.active.count', set => {
+        { label => 'cluster-endpoint-active-registration', nlabel => 'dma.cluster.endpoint.registrations.active.count', set => {
                 key_values => [ { name => 'useDevRegActiveEndpointReg' }, { name => 'display'} ],
                 output_template => 'endpoint active registrations : %s',
                 perfdatas => [
@@ -53,7 +53,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-endpoint-inactive-registration', nlabel => 'cluster.endpoint.registrations.inactive.count', set => {
+        { label => 'cluster-endpoint-inactive-registration', nlabel => 'dma.cluster.endpoint.registrations.inactive.count', set => {
                 key_values => [ { name => 'useDevRegInactiveEndpointReg' }, { name => 'display'} ],
                 output_template => 'endpoint inactive registrations : %s',
                 perfdatas => [
