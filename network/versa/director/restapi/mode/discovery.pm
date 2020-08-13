@@ -61,7 +61,7 @@ sub discovery_devices {
         $node->{uuid} = $device->{uuid};
         $node->{name} = $device->{name};
         $node->{type} = $device->{type};
-        $node->{'ip-address'} = $device->{'ip-address'};
+        $node->{ip} = $device->{'ip-address'};
         $node->{organizations} = [];
         foreach (@{$device->{orgs}}) {
             push @{$node->{organizations}}, $options{organizations}->{entries}->{ $_->{uuid} }->{name};
