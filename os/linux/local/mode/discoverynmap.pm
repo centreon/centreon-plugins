@@ -183,6 +183,8 @@ __END__
 Resources discovery.
 Command used: nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__
 
+Timeout defaults to 120 seconds.
+
 =over 8
 
 =item B<--subnet>
