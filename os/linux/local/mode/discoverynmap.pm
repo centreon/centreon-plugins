@@ -35,8 +35,6 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'subnet:s'              => { name => 'subnet' },
-        'timeout:s'             => { name => 'timeout', default => 120 },
-        'sudo'                  => { name => 'sudo' },
         'prettify'              => { name => 'prettify' }
     });
                                     
@@ -114,8 +112,7 @@ sub run {
         command => 'nmap',
         command_options => '-sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - ',
         command_options_suffix => $self->{option_results}->{subnet},
-        sudo => $self->{option_results}->{sudo},
-        timeout => $self->{option_results}->{timeout}
+        timeout => 120
     );
 
     my $results = $self->decode_xml_response(
@@ -192,14 +189,6 @@ Command used: nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21
 
 Specify subnet from which discover
 resources (Must be <ip>/<cidr> format) (Mandatory).
-
-=item B<--timeout>
-
-Timeout in seconds (Default: 120).
-
-=item B<--sudo>
-
-Defines if 'sudo' must be used to execute the 'nmap' command.
 
 =item B<--prettify>
 
