@@ -84,7 +84,7 @@ sub set_counters {
         { name => 'server', type => 1, cb_prefix_output => 'prefix_server_output', message_multiple => 'All servers are ok' }
     ];
     $self->{maps_counters}->{server} = [
-        { label => 'server-cpu-usage', nlabel => 'server.cpu.utilization.percentage', set => {
+        { label => 'server-cpu-usage', nlabel => 'dma.server.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'stRsrcCPUUsageCPUUtilizationPct' }, { name => 'display'} ],
                 output_template => 'CPU Utilization : %.2f %%',
                 perfdatas => [
@@ -94,7 +94,7 @@ sub set_counters {
             }
         },
         # Memory counters
-        { label => 'server-memory-usage', nlabel => 'server.memory.usage.bytes', set => {
+        { label => 'server-memory-usage', nlabel => 'dma.server.memory.usage.bytes', set => {
                 key_values => [ { name => 'memory_used' }, { name => 'memory_free' }, { name => 'memory_prct_used' },
                                 { name => 'memory_prct_free' }, { name => 'memory_total' }, { name => 'display'} ],
                 closure_custom_output => $self->can('custom_memory_output'),
@@ -104,7 +104,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'server-memory-free', display_ok => 0, nlabel => 'server.memory.free.bytes', set => {
+        { label => 'server-memory-free', display_ok => 0, nlabel => 'dma.server.memory.free.bytes', set => {
                 key_values => [ { name => 'memory_free' }, { name => 'memory_used' }, { name => 'memory_prct_used' },
                                 { name => 'memory_prct_free' }, { name => 'memory_total' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
@@ -114,7 +114,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'server-memory-prct', display_ok => 0, nlabel => 'server.memory.usage.percentage', set => {
+        { label => 'server-memory-prct', display_ok => 0, nlabel => 'dma.server.memory.usage.percentage', set => {
                 key_values => [ { name => 'memory_prct_used' } ],
                 output_template => 'RAM used: %.2f %%',
                 perfdatas => [
@@ -124,7 +124,7 @@ sub set_counters {
             }
         },
         # Swap counters
-        { label => 'server-swap-usage', nlabel => 'server.swap.usage.percentage', set => {
+        { label => 'server-swap-usage', nlabel => 'dma.server.swap.usage.percentage', set => {
                 key_values => [ { name => 'swap_used' }, { name => 'swap_free' }, { name => 'swap_prct_used' },
                                 { name => 'swap_prct_free' }, { name => 'swap_total' } ],
                 closure_custom_output => $self->can('custom_swap_output'),
@@ -134,7 +134,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'server-swap-free', display_ok => 0, nlabel => 'server.swap.free.bytes', set => {
+        { label => 'server-swap-free', display_ok => 0, nlabel => 'dma.server.swap.free.bytes', set => {
                 key_values => [ { name => 'swap_free' }, { name => 'swap_used' }, { name => 'swap_prct_used' },
                                 { name => 'swap_prct_free' }, { name => 'swap_total' } ],
                 closure_custom_output => $self->can('custom_swap_output'),
@@ -144,7 +144,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'server-swap-prct', display_ok => 0, nlabel => 'server.swap.usage.percentage', set => {
+        { label => 'server-swap-prct', display_ok => 0, nlabel => 'dma.server.swap.usage.percentage', set => {
                 key_values => [ { name => 'swap_prct_used' } ],
                 output_template => 'RAM used: %.2f %%',
                 perfdatas => [
@@ -154,7 +154,7 @@ sub set_counters {
             }
         },
         # Disk counters
-        { label => 'server-disk-usage', nlabel => 'server.disk.usage.bytes', set => {
+        { label => 'server-disk-usage', nlabel => 'dma.server.disk.usage.bytes', set => {
                 key_values => [ { name => 'disk_used' }, { name => 'disk_free' }, { name => 'disk_prct_used' },
                                 { name => 'disk_prct_free' }, { name => 'disk_total' } ],
                 closure_custom_output => $self->can('custom_disk_output'),
@@ -165,7 +165,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'server-disk-free', display_ok => 0, nlabel => 'server.disk.free.bytes', set => {
+        { label => 'server-disk-free', display_ok => 0, nlabel => 'dma.server.disk.free.bytes', set => {
                 key_values => [ { name => 'disk_free' }, { name => 'disk_used' }, { name => 'disk_prct_used' },
                                 { name => 'disk_prct_free' }, { name => 'disk_total' } ],
                 closure_custom_output => $self->can('custom_disk_output'),
@@ -175,7 +175,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'server-disk-prct', display_ok => 0, nlabel => 'server.disk.usage.percentage', set => {
+        { label => 'server-disk-prct', display_ok => 0, nlabel => 'dma.server.disk.usage.percentage', set => {
                 key_values => [ { name => 'disk_prct_used' } ],
                 output_template => 'RAM used: %.2f %%',
                 perfdatas => [
@@ -185,7 +185,7 @@ sub set_counters {
             }
         },
         # Log counters        
-        { label => 'server-logs-usage', nlabel => 'server.logs.usage.bytes', set => {
+        { label => 'server-logs-usage', nlabel => 'dma.server.logs.usage.bytes', set => {
                 key_values => [ { name => 'logs_used' }, { name => 'logs_free' }, { name => 'logs_prct_used' },
                                 { name => 'logs_prct_free' }, { name => 'logs_total' } ],
                 closure_custom_output => $self->can('custom_logs_output'),
@@ -195,7 +195,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'server-logs-free', display_ok => 0, nlabel => 'server.logs.free.bytes', set => {
+        { label => 'server-logs-free', display_ok => 0, nlabel => 'dma.server.logs.free.bytes', set => {
                 key_values => [ { name => 'logs_free' }, { name => 'logs_used' }, { name => 'logs_prct_used' },
                                 { name => 'logs_prct_free' }, { name => 'logs_total' } ],
                 closure_custom_output => $self->can('custom_logs_output'),
@@ -205,7 +205,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'server-logs-prct', display_ok => 0, nlabel => 'server.logs.usage.percentage', set => {
+        { label => 'server-logs-prct', display_ok => 0, nlabel => 'dma.server.logs.usage.percentage', set => {
                 key_values => [ { name => 'logs_prct_used' } ],
                 output_template => 'RAM used: %.2f %%',
                 perfdatas => [

@@ -59,7 +59,7 @@ sub set_counters {
         { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok', skipped_code => { -10 => 1 } }
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'dma-total-conferences', nlabel => 'manager.conferences.active.count', set => {
+        { label => 'dma-total-conferences', nlabel => 'dma.conferences.active.count', set => {
                 key_values => [ { name => 'useConfMgrUsageCount' } ],
                 output_template => 'Total conferences : %s',
                 perfdatas => [
@@ -70,7 +70,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{cluster} = [
-        { label => 'cluster-conferences', nlabel => 'cluster.conferences.active.count', set => {
+        { label => 'cluster-conferences', nlabel => 'dma.cluster.conferences.active.count', set => {
                 key_values => [ { name => 'useCMUsageActiveConfs' }, { name => 'display'} ],
                 output_template => 'current conferences : %s',
                 perfdatas => [
@@ -79,7 +79,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-participants', nlabel => 'cluster.participants.active.count', set => {
+        { label => 'cluster-participants', nlabel => 'dma.cluster.participants.active.count', set => {
                 key_values => [ { name => 'useCMUsageActiveParts' }, { name => 'display'} ],
                 output_template => 'current participants : %s',
                 perfdatas => [
@@ -88,7 +88,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-local-users', nlabel => 'cluster.local.database.users.count', set => {
+        { label => 'cluster-local-users', nlabel => 'dma.cluster.local.database.users.count', set => {
                 key_values => [ { name => 'useCMUsageLocalUsers' }, { name => 'display'} ],
                 output_template => 'local users : %s',
                 perfdatas => [
@@ -97,7 +97,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-custom-rooms', nlabel => 'cluster.custom.conference.rooms.count', set => {
+        { label => 'cluster-custom-rooms', nlabel => 'dma.cluster.custom.conference.rooms.count', set => {
                 key_values => [ { name => 'useCMUsageCustomConfRooms' }, { name => 'display'} ],
                 output_template => 'custom conference rooms : %s',
                 perfdatas => [
@@ -106,7 +106,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-video-ports-usage', nlabel => 'cluster.video.port.usage.count', set => {
+        { label => 'cluster-video-ports-usage', nlabel => 'dma.cluster.video.port.usage.count', set => {
                 key_values => [ { name => 'vp_used' }, { name => 'vp_free' }, { name => 'vp_prct_used' }, 
                                 { name => 'vp_prct_free' }, { name => 'vp_total' }, { name => 'display'} ],
                 closure_custom_output => $self->can('custom_video_port_output'),
@@ -117,7 +117,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-video-ports-free', display_ok => 0, nlabel => 'cluster.video.port.free.count', set => {
+        { label => 'cluster-video-ports-free', display_ok => 0, nlabel => 'dma.cluster.video.port.free.count', set => {
                 key_values => [ { name => 'vp_free' }, { name => 'vp_used' }, { name => 'vp_prct_used' },
                                 { name => 'vp_prct_free' }, { name => 'vp_total' }, { name => 'display'} ],
                 closure_custom_output => $self->can('custom_video_port_output'),
@@ -127,7 +127,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-video-ports-prct', display_ok => 0, nlabel => 'cluster.video.port.percentage', set => {
+        { label => 'cluster-video-ports-prct', display_ok => 0, nlabel => 'dma.cluster.video.port.percentage', set => {
                 key_values => [ { name => 'vp_prct_used' }, { name => 'display'} ],
                 output_template => 'video ports used: %.2f %%',
                 perfdatas => [
@@ -136,7 +136,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-voice-ports-usage', nlabel => 'cluster.voice.port.usage.count', set => {
+        { label => 'cluster-voice-ports-usage', nlabel => 'dma.cluster.voice.port.usage.count', set => {
                 key_values => [ { name => 'vop_used' }, { name => 'vop_free' }, { name => 'vop_prct_used' },
                                 { name => 'vop_prct_free' }, { name => 'vop_total' }, { name => 'display'} ],
                 closure_custom_output => $self->can('custom_voice_port_output'),
@@ -146,7 +146,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-voice-ports-free', display_ok => 0, nlabel => 'cluster.voice.port.free.count', set => {
+        { label => 'cluster-voice-ports-free', display_ok => 0, nlabel => 'dma.cluster.voice.port.free.count', set => {
                 key_values => [ { name => 'vop_free' }, { name => 'vop_used' }, { name => 'vop_prct_used' },
                                 { name => 'vop_prct_free' }, { name => 'vop_total' }, { name => 'display'} ],
                 closure_custom_output => $self->can('custom_voice_port_output'),
@@ -156,7 +156,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cluster-voice-ports-prct', display_ok => 0, nlabel => 'cluster.voice.port.percentage', set => {
+        { label => 'cluster-voice-ports-prct', display_ok => 0, nlabel => 'dma.cluster.voice.port.percentage', set => {
                 key_values => [ { name => 'vop_prct_used' }, { name => 'display'} ],
                 output_template => 'voice ports used: %.2f %%',
                 perfdatas => [
