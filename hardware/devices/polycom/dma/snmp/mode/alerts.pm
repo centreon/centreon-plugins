@@ -52,12 +52,12 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'alarms', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'alerts', min => 0 },
-          group => [ { name => 'alarm', skipped_code => { -11 => 1 } } ] 
+        { name => 'alerts', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'dma.alerts.total.count', min => 0 },
+          group => [ { name => 'alert', skipped_code => { -11 => 1 } } ] 
         }
     ];
     
-    $self->{maps_counters}->{alarm} = [
+    $self->{maps_counters}->{alert} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'alActAlertCode' }, { name => 'alActAlertSeverity' },
                                 { name => 'since' }, { name => 'alActAlertDescription' }, { name => 'alActAlertTimestamp' } ],
@@ -113,7 +113,7 @@ my $oid_alActiveAlertsEntry = '.1.3.6.1.4.1.13885.13.2.4.1.2.1';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{alarms}->{global} = { alarm => {} };
+    $self->{alerts}->{global} = { alarm => {} };
 
     my $alert_result = $options{snmp}->get_table(
         oid => $oid_alActiveAlertsEntry,
@@ -153,7 +153,7 @@ sub manage_selection {
         
         my $diff_time = $current_time - $create_time;
         
-        $self->{alarms}->{global}->{alarm}->{$i} = { %$result, since => $diff_time };
+        $self->{alerts}->{global}->{alert}->{$i} = { %$result, since => $diff_time };
         $i++;
     }
     
