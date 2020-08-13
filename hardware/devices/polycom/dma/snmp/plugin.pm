@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'alerts'                => 'hardware::devices::polycom::dma::snmp::mode::alerts',
+        'clusters'              => 'hardware::devices::polycom::dma::snmp::mode::clusters',
         'cpu'                   => 'snmp_standard::mode::cpu',
         'cpu-detailed'          => 'snmp_standard::mode::cpudetailed',
         'conference-manager'    => 'hardware::devices::polycom::dma::snmp::mode::conferencemanager',
