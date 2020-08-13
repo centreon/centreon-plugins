@@ -42,6 +42,14 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
+        $self->{option_results}->{resource_type} = 'device';
+    }
+    if ($self->{option_results}->{resource_type} !~ /^device|network$/) {
+        $self->{output}->add_option_msg(short_msg => 'unknown resource type');
+        $self->{output}->option_exit();
+    }
 }
 
 sub discovery_devices {
