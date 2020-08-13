@@ -33,7 +33,7 @@ sub set_counters {
         { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok', skipped_code => { -10 => 1 } }
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'dma-total-registrations', nlabel => 'dma.manager.registrations.count', set => {
+        { label => 'dma-total-registrations', nlabel => 'dma.registrations.count', set => {
                 key_values => [ { name => 'useDevRegistrationsCount' } ],
                 output_template => 'Total registrations : %s',
                 perfdatas => [
