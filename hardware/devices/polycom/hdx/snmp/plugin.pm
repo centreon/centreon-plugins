@@ -34,7 +34,7 @@ sub new {
         'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
         'interfaces'        => 'snmp_standard::mode::interfaces',
         'load'              => 'snmp_standard::mode::loadaverage',
-        'memory '           => 'snmp_standard::mode::memory',
+        'memory'            => 'snmp_standard::mode::memory',
         'uptime'            => 'snmp_standard::mode::uptime',
         'viewstation-stats' => 'hardware::devices::polycom::hdx::snmp::mode::viewstationstats'
     );
