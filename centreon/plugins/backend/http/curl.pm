@@ -240,7 +240,7 @@ sub set_extra_curl_opt {
             }
         }
 
-        $self->curl_setopt(option => $fields->{key}, parameter => $fields->{value});
+        $self->curl_setopt(option => $fields->{key}, parameter => eval $fields->{value});
     }
 }
 
