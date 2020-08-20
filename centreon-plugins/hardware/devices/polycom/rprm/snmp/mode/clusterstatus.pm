@@ -57,7 +57,6 @@ sub prefix_global_output {
     return 'RPRM HA Super Cluster: ';
 }
 
-
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
@@ -103,33 +102,37 @@ sub manage_selection {
         cluster_change_cause => $result->{$oid_serviceHAStatusChgReason}
     };
 }
+
 1;
 
 __END__
 
 =head1 MODE
 
-Check Polycom RPRM updates jobs
+Check Polycom HA SuperCluster status
 
 =over 8
 
-=item B<--warning-updates-status>
+=item B<--warning-cluster-status>
 
-Custom Warning threshold of the updates state (Default: none)
-Syntax: --warning-updates-status='%{updates_status} =~ /clear/i'
+Custom Warning threshold of the cluster state (Default: none)
+Syntax: --warning-cluster-status='%{cluster_status} =~ /busyOut/i'
 
+=item B<--critical-cluster-status>
 
-=item B<--critical-updates-status>
+Custom Critical threshold of the cluster state
+(Default: '%{cluster_status} =~ /outOfService/i' )
+Syntax: --critical-cluster-status='%{cluster_status} =~ /failed/i'
 
-Custom Critical threshold of the updates state
-(Default: '%{updates_status} =~ /failed/i' )
-Syntax: --critical-updates-status='%{updates_status} =~ /failed/i'
+=item B<--warning-cluster-change-cause>
 
+Custom Warning threshold of the cluster state change cause (Default: none)
+Syntax: --warning-cluster-change-cause='%{cluster_change_cause} =~ /manualFailover/i'
 
-=item B<--warning-* --critical-*>
+=item B<--critical-cluster-change-cause>
 
-Warning and Critical thresholds.
-Possible values are: updates-failed, updates-successed
+Custom Critical threshold of the cluster state change cause (Default: none)
+Syntax: --critical-cluster-change-cause='%{cluster_change_cause} =~ /manualFailover/i'
 
 =back
 

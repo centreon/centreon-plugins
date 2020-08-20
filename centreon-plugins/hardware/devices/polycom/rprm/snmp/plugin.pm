@@ -36,7 +36,7 @@ sub new {
         'provisioning'   => 'hardware::devices::polycom::rprm::snmp::mode::provisioning',
         'sitelinks'      => 'hardware::devices::polycom::rprm::snmp::mode::sitelinks',
         'sites'          => 'hardware::devices::polycom::rprm::snmp::mode::sites',
-        'updates'        => 'hardware::devices::polycom::rprm::snmp::mode::updates',
+        'updates'        => 'hardware::devices::polycom::rprm::snmp::mode::updates'
     );
 
     return $self;

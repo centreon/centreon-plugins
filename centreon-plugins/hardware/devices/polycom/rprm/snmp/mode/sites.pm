@@ -25,7 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -64,7 +63,6 @@ sub set_counters {
         },
         { label => 'site-bandwidth-total', nlabel => 'rprm.site.bandwidth.total.bytespersecond', set => {
                 key_values => [ { name => 'site_bandwidth_total' }, { name => 'display'} ],
-                #output_template => 'Total allowed bandwidth : %.2f b/s',
                 closure_custom_output => $self->can('custom_bandwidth_total_output'),
                 perfdatas => [
                     { value => 'site_bandwidth_total', label_extra_instance => 1, unit => 'B/s',
@@ -136,29 +134,28 @@ sub custom_bandwidth_total_output {
     return sprintf("Total allowed bandwidth: %.2f %s/s", $bandwidth, $unit);
 }
 
-my $mapping = {
-    serviceTopologySiteName               => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.2' },
-    serviceTopologySiteTerritoryId        => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.3' },
-    serviceTopologySiteCallCount          => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.4' },
-    serviceTopologySiteBandwidthUsed      => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.5' },
-    serviceTopologySiteBandwidthTotal     => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.6' },
-    serviceTopologySiteAverageCallBitRate => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.7' },
-    serviceTopologySitePacketLoss         => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.8' },
-    serviceTopologySiteAverageJitter      => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.9' },
-    serviceTopologySiteAverageDelay       => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.10' },
-};
-
-my $oid_serviceTopologySiteEntry = '.1.3.6.1.4.1.13885.102.1.2.14.4.1';
-
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $mapping = {
+        serviceTopologySiteName               => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.2' },
+        serviceTopologySiteTerritoryId        => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.3' },
+        serviceTopologySiteCallCount          => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.4' },
+        serviceTopologySiteBandwidthUsed      => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.5' },
+        serviceTopologySiteBandwidthTotal     => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.6' },
+        serviceTopologySiteAverageCallBitRate => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.7' },
+        serviceTopologySitePacketLoss         => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.8' },
+        serviceTopologySiteAverageJitter      => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.9' },
+        serviceTopologySiteAverageDelay       => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.10' },
+    };
+
+    my $oid_serviceTopologySiteEntry = '.1.3.6.1.4.1.13885.102.1.2.14.4.1';
     my $oid_serviceTopologySiteCount = '.1.3.6.1.4.1.13885.102.1.2.14.3.0';
+
     my $global_result = $options{snmp}->get_leef(oids => [$oid_serviceTopologySiteCount], nothing_quit => 1);
 
     $self->{global} = { sites_count => $global_result->{$oid_serviceTopologySiteCount} };
 
-    $self->{site} = {};
     my $site_result = $options{snmp}->get_table(
         oid => $oid_serviceTopologySiteEntry,
         nothing_quit => 1
@@ -215,7 +212,6 @@ Warning & Critical Thresholds. Possible values:
 [SITE] site-active-calls, site-bandwidth-used-prct,
 site-bandwidth-total, site-callbitrate, site-packetloss-prct,
 site-jitter, site-delay
-
 
 =back
 
