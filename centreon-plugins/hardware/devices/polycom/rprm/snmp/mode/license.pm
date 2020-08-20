@@ -77,7 +77,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options();
 
     return $self;
 }
@@ -126,7 +126,6 @@ sub manage_selection {
     };
 }
 
-
 1;
 
 __END__
@@ -145,5 +144,3 @@ total-license-usage, audio-license-usage, video-license-usage.
 =back
 
 =cut
-
-
