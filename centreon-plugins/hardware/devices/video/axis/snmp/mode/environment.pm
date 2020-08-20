@@ -39,7 +39,7 @@ sub set_system {
         ],
         psu => [
             ['failure', 'CRITICAL'],
-            ['ok', 'OK'],
+            ['ok', 'OK']
         ],
         fan => [
             ['failed', 'CRITICAL'],
