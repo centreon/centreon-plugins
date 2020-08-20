@@ -74,7 +74,6 @@ sub prefix_global_output {
     return 'RPRM Provisioning jobs stats: ';
 }
 
-
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
@@ -121,6 +120,7 @@ sub manage_selection {
         provisioning_success => $result->{$oid_serviceProvisioningSuccessLast60Mins}
     };
 }
+
 1;
 
 __END__
@@ -136,13 +136,11 @@ Check Polycom RPRM provisioning jobs
 Custom Warning threshold of the provisioning state (Default: none)
 Syntax: --warning-provisioning-status='%{provisioning_status} =~ /clear/i'
 
-
 =item B<--critical-provisioning-status>
 
 Custom Critical threshold of the provisioning state
 (Default: '%{provisioning_status} =~ /failed/i' )
 Syntax: --critical-provisioning-status='%{provisioning_status} =~ /failed/i'
-
 
 =item B<--warning-* --critical-*>
 

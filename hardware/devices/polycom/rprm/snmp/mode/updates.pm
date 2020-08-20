@@ -74,7 +74,6 @@ sub prefix_global_output {
     return 'RPRM Updates jobs stats: ';
 }
 
-
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
@@ -121,6 +120,7 @@ sub manage_selection {
         updates_success => $result->{$oid_serviceSoftwareUpdateSuccessLast60Mins}
     };
 }
+
 1;
 
 __END__
@@ -136,13 +136,11 @@ Check Polycom RPRM updates jobs
 Custom Warning threshold of the updates state (Default: none)
 Syntax: --warning-updates-status='%{updates_status} =~ /clear/i'
 
-
 =item B<--critical-updates-status>
 
 Custom Critical threshold of the updates state
 (Default: '%{updates_status} =~ /failed/i' )
 Syntax: --critical-updates-status='%{updates_status} =~ /failed/i'
-
 
 =item B<--warning-* --critical-*>
 

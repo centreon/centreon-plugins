@@ -26,7 +26,6 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 use strict;
 use warnings;
 
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -39,14 +38,14 @@ sub set_counters {
         { label => 'rprm-total-sitelinks', nlabel => 'rprm.sitelinks.total.count', set => {
                 key_values => [ { name => 'sitelinks_count' } ],
                 output_template => 'Total sitelinks : %s',
-                perfdatas => [ { value => 'sitelinks_count', template => '%d', min => 0 } ]
+                perfdatas => [ { value => 'sitelinks_count', template => '%s', min => 0 } ]
             }
         }
     ];
 
     $self->{maps_counters}->{sitelink} = [
         { label => 'sitelink-status', threshold => 0, set => {
-                key_values => [ { name => 'sitelink_status' } ],
+                key_values => [ { name => 'sitelink_status' }, { name => 'display'} ],
                 closure_custom_output => $self->can('custom_sitelink_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
@@ -72,7 +71,6 @@ sub set_counters {
         },
         { label => 'sitelink-bandwidth-total', nlabel => 'rprm.sitelink.bandwidth.total.bytespersecond', set => {
                 key_values => [ { name => 'sitelink_bandwidth_total' }, { name => 'display'} ],
-                #output_template => 'Total allowed bandwidth : %.2f b/s',
                 closure_custom_output => $self->can('custom_bandwidth_total_output'),
                 perfdatas => [
                     { value => 'sitelink_bandwidth_total', label_extra_instance => 1, unit => 'B/s',
@@ -134,7 +132,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-sitelink:s' => { name => 'filter_sitelink' },
+        'filter-sitelink:s'          => { name => 'filter_sitelink' },
         'warning-sitelink-status:s'  => { name => 'warning_sitelink_status', default => '' },
         'critical-sitelink-status:s' => { name => 'critical_sitelink_status', default => '%{sitelink_status} =~ /failed/i' }
     });
@@ -158,36 +156,33 @@ sub custom_bandwidth_total_output {
      my ($self, %options) = @_;
 
     my ($bandwidth, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{sitelink_bandwidth_total}, network => 1);
-    return sprintf("Total allowed bandwidth: %.2f %s/s",
-       $bandwidth, $unit
-    );
+
+    return sprintf("Total allowed bandwidth: %.2f %s/s", $bandwidth, $unit);
 }
-
-my $mapping = {
-    serviceTopologySiteLinkName               => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.3' },
-    serviceTopologySiteLinkStatus             => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.4' },
-    serviceTopologySiteLinkCallCount          => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.7' },
-    serviceTopologySiteLinkBandwidthUsed      => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.8' },
-    serviceTopologySiteLinkBandwidthTotal     => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.9' },
-    serviceTopologySiteLinkAverageCallBitRate => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.10' },
-    serviceTopologySiteLinkPacketLoss         => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.11' },
-    serviceTopologySiteLinkAverageJitter      => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.12' },
-    serviceTopologySiteLinkAverageDelay       => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.13' },
-};
-
-my %sitelink_status = ( 1 => 'disabled', 2 => 'ok', 3 => 'failed' );
-
-my $oid_serviceTopologySiteLinkEntry = '.1.3.6.1.4.1.13885.102.1.2.14.6.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $mapping = {
+        serviceTopologySiteLinkName               => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.3' },
+        serviceTopologySiteLinkStatus             => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.4' },
+        serviceTopologySiteLinkCallCount          => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.7' },
+        serviceTopologySiteLinkBandwidthUsed      => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.8' },
+        serviceTopologySiteLinkBandwidthTotal     => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.9' },
+        serviceTopologySiteLinkAverageCallBitRate => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.10' },
+        serviceTopologySiteLinkPacketLoss         => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.11' },
+        serviceTopologySiteLinkAverageJitter      => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.12' },
+        serviceTopologySiteLinkAverageDelay       => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.6.1.13' },
+    };
+
+    my %sitelink_status = ( 1 => 'disabled', 2 => 'ok', 3 => 'failed' );
+    my $oid_serviceTopologySiteLinkEntry = '.1.3.6.1.4.1.13885.102.1.2.14.6.1';
     my $oid_serviceTopologySiteLinkCount = '.1.3.6.1.4.1.13885.102.1.2.14.5.0';
+
     my $global_result = $options{snmp}->get_leef(oids => [$oid_serviceTopologySiteLinkCount], nothing_quit => 1);
 
     $self->{global} = { sitelinks_count => $global_result->{$oid_serviceTopologySiteLinkCount} };
 
-    $self->{sitelink} = {};
     my $sitelink_result = $options{snmp}->get_table(
         oid => $oid_serviceTopologySiteLinkEntry,
         nothing_quit => 1
@@ -220,7 +215,6 @@ sub manage_selection {
             sitelink_delay => $result->{serviceTopologySiteLinkAverageDelay}
         };
     }
-
 }
 
 1;
@@ -229,7 +223,7 @@ __END__
 
 =head1 MODE
 
-Check Polycom RPRM sitelinks.
+Check Polycom RPRM SiteLinks.
 
 =over 8
 
@@ -242,13 +236,11 @@ Filter on one or several SiteLinks (POSIX regexp)
 Custom Warning threshold of the SiteLink state (Default: none)
 Syntax: --warning-sitelink-status='%{sitelink_status} =~ /disabled/i'
 
-
 =item B<--critical-sitelink-status>
 
 Custom Critical threshold of the SiteLink state
 (Default: '%{sitelink_status} =~ /failed/i' )
 Syntax: --critical-sitelink-status='%{sitelink_status} =~ /failed/i'
-
 
 =item B<--warning-* --critical-*>
 
@@ -259,7 +251,6 @@ Warning & Critical Thresholds. Possible values:
 [SITE] sitelink-active-calls, sitelink-bandwidth-used-prct,
 sitelink-bandwidth-total, sitelink-callbitrate, sitelink-packetloss-prct,
 sitelink-jitter, sitelink-delay
-
 
 =back
 
