@@ -24,8 +24,15 @@ use strict;
 use warnings;
 use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_status %map_pdisk_state %map_pdisk_smartstate);
 
+my %map_pdisk_sparestate = (
+    1 => '',
+    2 => 'SpareDedicated',
+    3 => 'SpareGlobal'
+);
+
 my $mapping = {
     physicalDiskState                => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.4', map => \%map_pdisk_state },
+    physicalDiskSpareState           => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.22', map => \%map_pdisk_sparestate },
     physicalDiskComponentStatus      => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.24', map => \%map_status },
     physicalDiskSmartAlertIndication => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.31', map => \%map_pdisk_smartstate },
     physicalDiskFQDD                 => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.54' },
@@ -56,7 +63,11 @@ sub check {
         $oid =~ /^$mapping->{physicalDiskComponentStatus}->{oid}\.(.*)$/;
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
-        
+
+        if ($result->{physicalDiskState} eq 'ready') {
+            $result->{physicalDiskState} .= $result->{physicalDiskSpareState};
+        }
+
         next if ($self->check_filter(section => 'pdisk', instance => $instance));
         $self->{components}->{pdisk}->{total}++;
 

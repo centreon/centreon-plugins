@@ -61,7 +61,9 @@ sub set_system {
         ],
         'pdisk.state' => [
             ['unknown', 'UNKNOWN'],
-            ['ready', 'OK'],
+            ['readySpareDedicated', 'OK'],
+            ['readySpareGlobal', 'OK'],
+            ['ready', 'WARNING'],
             ['online', 'OK'],
             ['foreign', 'OK'],
             ['offline', 'WARNING'],
