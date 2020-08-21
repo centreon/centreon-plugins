@@ -47,7 +47,7 @@ sub set_counters {
                 output_template => 'H323 (audio/video) Jitter %.2f ms',
                 perfdatas => [
                     { value => 'polycomVSJitter', template => '%.2f',
-                      min => 0, max => 100, unit => 'ms' }
+                      min => 0, unit => 'ms' }
                 ]
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'polycomVSLatency' }, { name => 'display' } ],
                 output_template => 'H323 (audio/video) Latency %.2f',
                 perfdatas => [
-                    { label => 'vs_latency', value => 'polycomVSLatency', template => '%.2f',
-                      min => 0, max => 100, unit => '' }
+                    { value => 'polycomVSLatency', template => '%.2f',
+                      min => 0, unit => '' }
                 ]
             }
         }
@@ -69,12 +69,19 @@ sub prefix_global_output {
     return "View Station Phone Number: '" . $options{instance_value}->{display} . "' Stats: ";
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    return $self;
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-   $options{options}->add_options(arguments => {});
+    $options{options}->add_options();
 
     return $self;
 }
