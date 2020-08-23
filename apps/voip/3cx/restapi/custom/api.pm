@@ -147,7 +147,9 @@ sub authenticate {
         my $content = $self->{http}->request(
             method => 'POST', query_form_post => $post_data,
             url_path => '/api/login',
-            warning_status => '', unknown_status => '', critical_status => '%{http_code} < 200 or %{http_code} >= 300'
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
         );
 
         my $header = $self->{http}->get_header(name => 'Set-Cookie');
@@ -184,7 +186,7 @@ sub request_api {
         %options,
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
-        critical_status => $self->{critical_http_status},
+        critical_status => $self->{critical_http_status}
     );
 
     # Some content may be strangely returned, for example :
