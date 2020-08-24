@@ -32,7 +32,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'name:s'        => { name => 'name' },
-        'regexp"        => { name => 'use_regexp' },
+        'regexp'        => { name => 'use_regexp' },
         'filter-type:s' => { name => 'filter_type' },
     });
 
