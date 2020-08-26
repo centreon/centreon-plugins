@@ -47,11 +47,14 @@ sub custom_usage_perfdata {
     my $value_perf = $self->{result_values}->{used};
     my %total_options = ( total => $self->{result_values}->{total}, cast_int => 1);
 
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label} . '_' . $label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{label} . '_' . $label, unit => 'B',
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        min => 0,
+        max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -81,10 +84,16 @@ sub custom_usage_calc {
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label} . '_total'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label} . '_used'};
-    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
-    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
-    
+
+    if ($self->{result_values}->{total} != 0) {
+        $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+        $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+        $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
+    } else {
+        $self->{result_values}->{free} = '0';
+        $self->{result_values}->{prct_used} = '0';
+        $self->{result_values}->{prct_free} = '0';
+    }
     return 0;
 }
 
@@ -128,11 +137,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{status} =~ /warning/i' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /error/i' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "warning-status:s"    => { name => 'warning_status', default => '%{status} =~ /warning/i' },
+        "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /error/i' },
+    });
     
     return $self;
 }
