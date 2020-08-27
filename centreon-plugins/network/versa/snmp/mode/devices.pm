@@ -99,7 +99,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'sessions-failed-prct', nlabel => 'device.sessions.active.percentage', display_ok => 0, set => {
+        { label => 'sessions-failed-prct', nlabel => 'device.sessions.failed.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'sessions_failed_prct' } ],
                 output_template => 'sessions failed: %.2f %%',
                 perfdatas => [
