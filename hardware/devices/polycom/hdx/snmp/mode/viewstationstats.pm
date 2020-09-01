@@ -34,29 +34,26 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'h323-packet-loss', nlabel => 'viewstation.h323.packet.loss.percentage', set => {
-                key_values => [ { name => 'polycomVSPercentPacketLoss' }, { name => 'display' } ],
+                key_values => [ { name => 'polycomVSPercentPacketLoss' } ],
                 output_template => 'H323 Packet Loss %.2f %%',
                 perfdatas => [
-                    { value => 'polycomVSPercentPacketLoss', template => '%.2f',
-                      min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
         { label => 'h323-jitter', nlabel => 'viewstation.h323.jitter.milliseconds', set => {
-                key_values => [ { name => 'polycomVSJitter' }, { name => 'display' } ],
+                key_values => [ { name => 'polycomVSJitter' } ],
                 output_template => 'H323 (audio/video) Jitter %.2f ms',
                 perfdatas => [
-                    { value => 'polycomVSJitter', template => '%.2f',
-                      min => 0, unit => 'ms' }
+                    { template => '%.2f', min => 0, unit => 'ms' }
                 ]
             }
         },
         { label => 'h323-latency', nlabel => 'viewstation.h323.latency.count', set => {
-                key_values => [ { name => 'polycomVSLatency' }, { name => 'display' } ],
+                key_values => [ { name => 'polycomVSLatency' }],
                 output_template => 'H323 (audio/video) Latency %.2f',
                 perfdatas => [
-                    { value => 'polycomVSLatency', template => '%.2f',
-                      min => 0, unit => '' }
+                    { template => '%.2f', min => 0 }
                 ]
             }
         }

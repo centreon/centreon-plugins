@@ -38,8 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'useDevRegistrationsCount' } ],
                 output_template => 'Total registrations : %s',
                 perfdatas => [
-                    { label => 'dma_registrations', value => 'useDevRegistrationsCount', label_extra_instance => 1, 
-                      instance_use => 'display', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         }
@@ -48,19 +47,17 @@ sub set_counters {
     $self->{maps_counters}->{cluster} = [
         { label => 'cluster-endpoint-active-registration', nlabel => 'dma.cluster.endpoint.registrations.active.count', set => {
                 key_values => [ { name => 'useDevRegActiveEndpointReg' }, { name => 'display'} ],
-                output_template => 'endpoint active registrations : %s',
+                output_template => 'endpoint active registrations: %s',
                 perfdatas => [
-                    { label => 'endpoint_registration_active', value => 'useDevRegActiveEndpointReg', label_extra_instance => 1,
-                      instance_use => 'display', template => '%d', min => 0 }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'cluster-endpoint-inactive-registration', nlabel => 'dma.cluster.endpoint.registrations.inactive.count', set => {
                 key_values => [ { name => 'useDevRegInactiveEndpointReg' }, { name => 'display'} ],
-                output_template => 'endpoint inactive registrations : %s',
+                output_template => 'endpoint inactive registrations: %s',
                 perfdatas => [
-                    { label => 'endpoint_registration_inactive', value => 'useDevRegInactiveEndpointReg', label_extra_instance => 1,
-                      instance_use => 'display',template => '%d', min => 0 }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -126,7 +123,6 @@ sub manage_selection {
             %$result
         };
     }
-
 }
 
 1;

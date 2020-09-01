@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'alerts'                => 'hardware::devices::polycom::dma::snmp::mode::alerts',
         'clusters'              => 'hardware::devices::polycom::dma::snmp::mode::clusters',
         'cpu'                   => 'snmp_standard::mode::cpu',
@@ -43,8 +43,8 @@ sub new {
         'servers-usage'         => 'hardware::devices::polycom::dma::snmp::mode::serversusage',
         'storage'               => 'snmp_standard::mode::storage',
         'swap'                  => 'snmp_standard::mode::swap',
-        'uptime'                => 'snmp_standard::mode::uptime',
-    );
+        'uptime'                => 'snmp_standard::mode::uptime'
+    };
 
     return $self;
 }
