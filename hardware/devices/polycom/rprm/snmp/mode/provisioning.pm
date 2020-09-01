@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'provisioning-status', threshold => 0, set => {
+        { label => 'provisioning-status', type => 2, critical_default => '%{provisioning_status} =~ /failed/i', set => {
                 key_values => [ { name => 'provisioning_status' } ],
                 closure_custom_output => $self->can('custom_provisioning_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -45,8 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'provisioning_failed' } ],
                 output_template => 'Failed last 60m: %s',
                 perfdatas => [
-                    { value => 'provisioning_failed', template => '%s',
-                      min => 0, unit => '' }
+                    { template => '%s', min => 0, unit => '' }
                 ]
             }
         },
@@ -54,8 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'provisioning_success' } ],
                 output_template => 'Successed last 60m: %s',
                 perfdatas => [
-                    { value => 'provisioning_success', template => '%s',
-                      min => 0, unit => '' }
+                    { template => '%s', min => 0, unit => '' }
                 ]
             }
         }
@@ -74,23 +72,12 @@ sub prefix_global_output {
     return 'RPRM Provisioning jobs stats: ';
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [ 'warning_provisioning_status', 'critical_provisioning_status' ]);
-
-    return $self;
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-   $options{options}->add_options(arguments => {
-        'warning-provisioning-status:s'  => { name => 'warning_provisioning_status', default => '' },
-        'critical-provisioning-status:s' => { name => 'critical_provisioning_status', default => '%{provisioning_status} =~ /failed/i' },
+    $options{options}->add_options(arguments => {
     });
 
     return $self;

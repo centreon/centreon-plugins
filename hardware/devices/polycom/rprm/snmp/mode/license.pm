@@ -37,19 +37,19 @@ sub set_counters {
         { label => 'total-license-usage', nlabel => 'rprm.license.total.usage.count', set => {
                 key_values => [ { name => 'total_license_usage' }, { name => 'total_license_capability' }, { name => 'total_license_usage_prct' }, { name => 'license_mode' } ],
                 closure_custom_output => $self->can('custom_license_output'),
-                perfdatas => [ { value => 'total_license_usage', template => '%d', max => 'total_license_capability' } ]
+                perfdatas => [ { template => '%d', max => 'total_license_capability' } ]
             }
         },
         { label => 'audio-license-usage', nlabel => 'rprm.license.audio.usage.count', set => {
                 key_values => [ { name => 'audio_license_usage' }, { name => 'audio_license_capability' }, { name => 'audio_license_usage_prct' } ],
                 output_template => 'Audio licenses used: %s',
-                perfdatas => [ { value => 'audio_license_usage', template => '%d', max => 'audio_license_capability' } ]
+                perfdatas => [ {  template => '%d', max => 'audio_license_capability' } ]
             }
         },
         { label => 'video-license-usage', nlabel => 'rprm.license.video.usage.count', set => {
                 key_values => [ { name => 'video_license_usage' }, { name => 'video_license_capability' }, { name => 'video_license_usage_prct' } ],
                 output_template => 'Video licenses used: %s',
-                perfdatas => [ { value => 'video_license_usage', template => '%d', max => 'video_license_capability' } ]
+                perfdatas => [ { template => '%d', max => 'video_license_capability' } ]
             }
         }
     ];
@@ -65,11 +65,6 @@ sub custom_license_output {
         $self->{result_values}->{total_license_capability},
         $self->{result_values}->{total_license_usage_prct}
     );
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 }
 
 sub new {

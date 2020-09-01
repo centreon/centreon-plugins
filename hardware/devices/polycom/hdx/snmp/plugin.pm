@@ -30,14 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
         'interfaces'        => 'snmp_standard::mode::interfaces',
         'load'              => 'snmp_standard::mode::loadaverage',
         'memory'            => 'snmp_standard::mode::memory',
         'uptime'            => 'snmp_standard::mode::uptime',
         'viewstation-stats' => 'hardware::devices::polycom::hdx::snmp::mode::viewstationstats'
-    );
+    };
 
     return $self;
 }
