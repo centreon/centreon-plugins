@@ -23,13 +23,23 @@ package hardware::devices::cisco::ces::restapi::mode::components::aic;
 use strict;
 use warnings;
 
+#<Connectors item="1">
+#    <Microphone item="1">
+#        <EcReferenceDelay item="1">0</EcReferenceDelay>
+#    </Microphone>
+#    <Microphone item="2">
+#        <EcReferenceDelay item="1">0</EcReferenceDelay>
+#    </Microphone>
+#</Connectors>
+
 sub check_aic {
     my ($self, %options) = @_;
 
     foreach (@{$options{entry}->{ $options{element} }}) {
         my $instance = $options{element} . ':' . $_->{item};
 
-        next if (!defined($_->{ConnectionStatus}) && !defined($_->{EcReferenceDelay}));
+        my $ec_reference_delay = ref($_->{EcReferenceDelay}) eq 'HASH' ? $_->{EcReferenceDelay}->{content} : $_->{EcReferenceDelay};
+        next if (!defined($_->{ConnectionStatus}) && !defined($ec_reference_delay));
 
         next if ($self->check_filter(section => 'aic', instance => $instance));
         $self->{components}->{aic}->{total}++;
@@ -40,7 +50,7 @@ sub check_aic {
                 $instance,
                 defined($_->{ConnectionStatus}) ? $_->{ConnectionStatus} : 'n/a',
                 $instance,
-                defined($_->{EcReferenceDelay}) ? $_->{EcReferenceDelay} : '-'
+                defined($ec_reference_delay) ? $ec_reference_delay : '-'
             )
         );
 
@@ -54,15 +64,15 @@ sub check_aic {
             }
         }
 
-        if (defined($_->{EcReferenceDelay})) {
-            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'aiclatency', instance => $instance, value => $_->{EcReferenceDelay});
+        if (defined($ec_reference_delay)) {
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'aiclatency', instance => $instance, value => $ec_reference_delay);
 
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
                     severity => $exit,
                     short_msg => sprintf(
                         "audio input connector '%s' latency is %s ms",
-                        $instance, $_->{EcReferenceDelay}
+                        $instance, $ec_reference_delay
                     )
                 );
             }
@@ -70,9 +80,9 @@ sub check_aic {
                 unit => 'ms',
                 nlabel => 'component.audio.input.connector.latency.milliseconds',
                 instances => [$options{element}, $_->{item}],
-                value => $_->{EcReferenceDelay},
+                value => $ec_reference_delay,
                 warning => $warn,
-                critical => $crit,
+                critical => $crit
             );
         }
     }

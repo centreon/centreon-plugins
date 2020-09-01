@@ -163,6 +163,24 @@ sub authenticate {
 sub request_api {
     my ($self, %options) = @_;
 
+    my $content2 = do {
+            local $/ = undef;
+            if (!open my $fh, "<", '/tmp/plop.txt') {
+                $self->{output}->add_option_msg(short_msg => "Could not open file: $!");
+                $self->{output}->option_exit();
+            }
+            <$fh>;
+    };
+    my $result2;
+    eval {
+        $result2 = XMLin($content2, ForceArray => $options{ForceArray}, KeyAttr => []);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
+        $self->{output}->option_exit();
+    }
+    return $result2;
+
     $self->settings();
     if (!defined($self->{session_cookie})) {
         $self->authenticate(statefile => $self->{cache});
