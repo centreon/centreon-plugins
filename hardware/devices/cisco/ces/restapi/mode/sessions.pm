@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::cisco::tc::restapi::mode::sessions;
+package hardware::devices::cisco::ces::restapi::mode::sessions;
 
 use base qw(centreon::plugins::templates::counter);
 

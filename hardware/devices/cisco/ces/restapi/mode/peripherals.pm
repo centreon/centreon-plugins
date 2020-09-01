@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::cisco::tc::restapi::mode::peripherals;
+package hardware::devices::cisco::ces::restapi::mode::peripherals;
 
 use base qw(centreon::plugins::templates::counter);
 
