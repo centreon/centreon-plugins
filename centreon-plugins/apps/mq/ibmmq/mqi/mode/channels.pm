@@ -162,7 +162,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
             && $_->{ChannelName} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' 
-            && $_->{ChannelType} !~ /$self->{option_results}->{filter_type}/);
+            && $_->{ChannelType} !~ /$self->{option_results}->{filter_type}/i);
     
         if (!defined($self->{channel}->{$_->{ChannelName}})) {
             $self->{channel}->{$_->{ChannelName}} = {
@@ -195,7 +195,19 @@ Filter channel name (Can use regexp).
 
 =item B<--filter-type>
 
-Filter channel type (Can use regexp).
+Filter channel type (Can use regexp, insensitive search).
+
+Here is the IBM - Perl mapping about Channel types: 
+
+SDR - Sender
+SVR - Server
+RCVR - Receiver
+RQSTR - Requester
+CLNTCONN - Clntconn
+SVRCONN - Svrconn
+CLUSSDR - ClusterSender
+CLUSRCVR - ClusterReceiver
+MQTT - Telemetry
 
 =item B<--unknown-status>
 
