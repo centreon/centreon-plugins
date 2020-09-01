@@ -38,92 +38,76 @@ sub set_counters {
         { label => 'rprm-total-sitelinks', nlabel => 'rprm.sitelinks.total.count', set => {
                 key_values => [ { name => 'sitelinks_count' } ],
                 output_template => 'Total sitelinks : %s',
-                perfdatas => [ { value => 'sitelinks_count', template => '%s', min => 0 } ]
+                perfdatas => [ { template => '%s', min => 0 } ]
             }
         }
     ];
 
     $self->{maps_counters}->{sitelink} = [
-        { label => 'sitelink-status', threshold => 0, set => {
-                key_values => [ { name => 'sitelink_status' }, { name => 'display'} ],
+        { label => 'sitelink-status', type => 2, critical_default => '%{sitelink_status} =~ /failed/i', set => {
+                key_values => [ { name => 'sitelink_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_sitelink_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'sitelink-active-calls', nlabel => 'rprm.sitelink.calls.active.count', set => {
-                key_values => [ { name => 'sitelink_active_calls' }, { name => 'display'} ],
-                output_template => 'current active calls : %s',
+                key_values => [ { name => 'sitelink_active_calls' }, { name => 'display' } ],
+                output_template => 'current active calls: %s',
                 perfdatas => [
-                    { value => 'sitelink_active_calls', label_extra_instance => 1,
-                      instance_use => 'display', template => '%s', min => 0 }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'sitelink-bandwidth-used-prct', nlabel => 'rprm.sitelink.bandwidth.used.percentage', set => {
-                key_values => [ { name => 'sitelink_bandwidth_used_prct' }, { name => 'display'} ],
-                output_template => 'current bandwidth usage : %.2f %%',
+                key_values => [ { name => 'sitelink_bandwidth_used_prct' }, { name => 'display' } ],
+                output_template => 'current bandwidth usage: %.2f %%',
                 perfdatas => [
-                    { value => 'sitelink_bandwidth_used_prct', label_extra_instance => 1, unit => '%',
-                      instance_use => 'display', template => '%.2f', min => 0, max => 100 }
+                    { unit => '%', template => '%.2f', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'sitelink-bandwidth-total', nlabel => 'rprm.sitelink.bandwidth.total.bytespersecond', set => {
-                key_values => [ { name => 'sitelink_bandwidth_total' }, { name => 'display'} ],
+                key_values => [ { name => 'sitelink_bandwidth_total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_bandwidth_total_output'),
                 perfdatas => [
-                    { value => 'sitelink_bandwidth_total', label_extra_instance => 1, unit => 'B/s',
-                      instance_use => 'display', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'sitelink-callbitrate', nlabel => 'rprm.sitelink.callbitrate.average.ratio', set => {
-                key_values => [ { name => 'sitelink_callbitrate' }, { name => 'display'} ],
-                output_template => 'Average call bit rate : %.2f',
+                key_values => [ { name => 'sitelink_callbitrate' }, { name => 'display' } ],
+                output_template => 'Average call bit rate: %.2f',
                 perfdatas => [
-                    { value => 'sitelink_callbitrate', label_extra_instance => 1,
-                      instance_use => 'display', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'sitelink-packetloss-prct', nlabel => 'rprm.sitelink.packetloss.average.percentage', set => {
-                key_values => [ { name => 'sitelink_packetloss_prct' }, { name => 'display'} ],
-                output_template => 'Average packetloss : %.2f %%',
+                key_values => [ { name => 'sitelink_packetloss_prct' }, { name => 'display' } ],
+                output_template => 'Average packetloss: %.2f %%',
                 perfdatas => [
-                    { value => 'sitelink_packetloss_prct', label_extra_instance => 1, unit => '%',
-                      instance_use => 'display', template => '%.2f', min => 0, max => 100 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'sitelink-jitter', nlabel => 'rprm.sitelink.jitter.average.milliseconds', set => {
-                key_values => [ { name => 'sitelink_jitter' }, { name => 'display'} ],
-                output_template => 'Average jitter time : %.2f ms',
+                key_values => [ { name => 'sitelink_jitter' }, { name => 'display' } ],
+                output_template => 'Average jitter time: %.2f ms',
                 perfdatas => [
-                    { value => 'sitelink_jitter', label_extra_instance => 1, unit => 'ms',
-                      instance_use => 'display', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display'  }
                 ]
             }
         },
         { label => 'sitelink-delay', nlabel => 'rprm.sitelink.delay.average.milliseconds', set => {
                 key_values => [ { name => 'sitelink_delay' }, { name => 'display'} ],
-                output_template => 'Average delay time : %.2f ms',
+                output_template => 'Average delay time: %.2f ms',
                 perfdatas => [
-                    { value => 'sitelink_delay', label_extra_instance => 1, unit => 'ms',
-                      instance_use => 'display', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
     ];
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [ 'warning_sitelink_status', 'critical_sitelink_status' ]);
-
-    return $self;
 }
 
 sub new {
@@ -132,9 +116,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-sitelink:s'          => { name => 'filter_sitelink' },
-        'warning-sitelink-status:s'  => { name => 'warning_sitelink_status', default => '' },
-        'critical-sitelink-status:s' => { name => 'critical_sitelink_status', default => '%{sitelink_status} =~ /failed/i' }
+        'filter-sitelink:s' => { name => 'filter_sitelink' }
     });
 
     return $self;

@@ -34,14 +34,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'cluster-status', threshold => 0, set => {
+        { label => 'cluster-status', type => 2, critical_default => '%{cluster_status} =~ /outOfService/i', set => {
                 key_values => [ { name => 'cluster_status' } ],
                 output_template => 'Current status %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
-        { label => 'cluster-change-cause', threshold => 0, set => {
+        { label => 'cluster-change-cause', type => 2, set => {
                 key_values => [ { name => 'cluster_change_cause' } ],
                 output_template => 'Last change cause: %s',
                 closure_custom_perfdata => sub { return 0; },
@@ -57,25 +57,12 @@ sub prefix_global_output {
     return 'RPRM HA Super Cluster: ';
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [ 'warning_cluster_status', 'critical_cluster_status', 'warning_cluster_change_cause', 'critical_cluster_change_cause' ]);
-
-    return $self;
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-   $options{options}->add_options(arguments => {
-        'warning-cluster-status:s'        => { name => 'warning_cluster_status', default => '' },
-        'critical-cluster-status:s'       => { name => 'critical_cluster_status', default => '%{cluster_status} =~ /outOfService/i' },
-        'warning-cluster-change-cause:s'  => { name => 'warning_cluster_change_cause', default => '' },
-        'critical-cluster-change-cause:s' => { name => 'critical_cluster_change_cause', default => '' }
+    $options{options}->add_options(arguments => {
     });
 
     return $self;
@@ -87,7 +74,7 @@ sub manage_selection {
     my $oid_serviceHASuperClstrStatus = '.1.3.6.1.4.1.13885.102.1.2.16.1.0';
     my $oid_serviceHAStatusChgReason = '.1.3.6.1.4.1.13885.102.1.2.16.2.0';
 
-    my %cluster_status = ( 1 => 'inService', 2 => 'busyOut', 3 => 'outOfService' );
+    my %cluster_status = (  1 => 'inService', 2 => 'busyOut', 3 => 'outOfService' );
 
     my $result = $options{snmp}->get_leef(
         oids => [

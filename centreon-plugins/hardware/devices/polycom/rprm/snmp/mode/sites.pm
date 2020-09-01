@@ -36,73 +36,66 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'rprm-total-sites', nlabel => 'rprm.sites.total.count', set => {
                 key_values => [ { name => 'sites_count' } ],
-                output_template => 'Total sites : %s',
-                perfdatas => [ { value => 'sites_count', template => '%d', min => 0 } ]
+                output_template => 'Total sites: %s',
+                perfdatas => [ { template => '%d', min => 0 } ]
             }
         }
     ];
 
     $self->{maps_counters}->{site} = [
         { label => 'site-active-calls', nlabel => 'rprm.site.calls.active.count', set => {
-                key_values => [ { name => 'site_active_calls' }, { name => 'display'} ],
-                output_template => 'current active calls : %s',
+                key_values => [ { name => 'site_active_calls' }, { name => 'display' } ],
+                output_template => 'current active calls: %s',
                 perfdatas => [
-                    { value => 'site_active_calls', label_extra_instance => 1,
-                      instance_use => 'display', template => '%s', min => 0 }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'site-bandwidth-used-prct', nlabel => 'rprm.site.bandwidth.used.percentage', set => {
-                key_values => [ { name => 'site_bandwidth_used_prct' }, { name => 'display'} ],
-                output_template => 'current bandwidth usage : %.2f %%',
+                key_values => [ { name => 'site_bandwidth_used_prct' }, { name => 'display' } ],
+                output_template => 'current bandwidth usage: %.2f %%',
                 perfdatas => [
-                    { value => 'site_bandwidth_used_prct', label_extra_instance => 1, unit => '%',
-                      instance_use => 'display', template => '%.2f', min => 0, max => 100 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'site-bandwidth-total', nlabel => 'rprm.site.bandwidth.total.bytespersecond', set => {
-                key_values => [ { name => 'site_bandwidth_total' }, { name => 'display'} ],
+                key_values => [ { name => 'site_bandwidth_total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_bandwidth_total_output'),
                 perfdatas => [
-                    { value => 'site_bandwidth_total', label_extra_instance => 1, unit => 'B/s',
-                      instance_use => 'display', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'site-callbitrate', nlabel => 'rprm.site.callbitrate.average.ratio', set => {
-                key_values => [ { name => 'site_callbitrate' }, { name => 'display'} ],
-                output_template => 'Average call bit rate : %.2f',
+                key_values => [ { name => 'site_callbitrate' }, { name => 'display' } ],
+                output_template => 'Average call bit rate: %.2f',
                 perfdatas => [
-                    { value => 'site_callbitrate', label_extra_instance => 1,
-                      instance_use => 'display', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'site-packetloss-prct', nlabel => 'rprm.site.packetloss.average.percentage', set => {
-                key_values => [ { name => 'site_packetloss_prct' }, { name => 'display'} ],
-                output_template => 'Average packetloss : %.2f %%',
+                key_values => [ { name => 'site_packetloss_prct' }, { name => 'display' } ],
+                output_template => 'Average packetloss: %.2f %%',
                 perfdatas => [
-                    { value => 'site_packetloss_prct', label_extra_instance => 1, unit => '%',
-                      instance_use => 'display', template => '%.2f', min => 0, max => 100 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'site-jitter', nlabel => 'rprm.site.jitter.average.milliseconds', set => {
-                key_values => [ { name => 'site_jitter' }, { name => 'display'} ],
-                output_template => 'Average jitter time : %.2f ms',
+                key_values => [ { name => 'site_jitter' }, { name => 'display' } ],
+                output_template => 'Average jitter time: %.2f ms',
                 perfdatas => [
-                    { value => 'site_jitter', label_extra_instance => 1, unit => 'ms',
-                      instance_use => 'display', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'site-delay', nlabel => 'rprm.site.delay.average.milliseconds', set => {
-                key_values => [ { name => 'site_delay' }, { name => 'display'} ],
-                output_template => 'Average delay time : %.2f ms',
+                key_values => [ { name => 'site_delay' }, { name => 'display' } ],
+                output_template => 'Average delay time: %.2f ms',
                 perfdatas => [
-                    { value => 'site_delay', label_extra_instance => 1, unit => 'ms',
-                      instance_use => 'display', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -115,7 +108,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-site:s' => { name => 'filter_site' },
+        'filter-site:s' => { name => 'filter_site' }
     });
 
     return $self;
@@ -146,7 +139,7 @@ sub manage_selection {
         serviceTopologySiteAverageCallBitRate => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.7' },
         serviceTopologySitePacketLoss         => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.8' },
         serviceTopologySiteAverageJitter      => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.9' },
-        serviceTopologySiteAverageDelay       => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.10' },
+        serviceTopologySiteAverageDelay       => { oid => '.1.3.6.1.4.1.13885.102.1.2.14.4.1.10' }
     };
 
     my $oid_serviceTopologySiteEntry = '.1.3.6.1.4.1.13885.102.1.2.14.4.1';

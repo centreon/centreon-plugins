@@ -30,14 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cluster-status' => 'hardware::devices::polycom::rprm::snmp::mode::clusterstatus',
         'license'        => 'hardware::devices::polycom::rprm::snmp::mode::license',
         'provisioning'   => 'hardware::devices::polycom::rprm::snmp::mode::provisioning',
         'sitelinks'      => 'hardware::devices::polycom::rprm::snmp::mode::sitelinks',
         'sites'          => 'hardware::devices::polycom::rprm::snmp::mode::sites',
         'updates'        => 'hardware::devices::polycom::rprm::snmp::mode::updates'
-    );
+    };
 
     return $self;
 }
