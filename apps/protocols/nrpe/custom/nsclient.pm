@@ -186,7 +186,7 @@ sub format_result {
     
     my $decoded;
     eval {
-        $decoded = decode_json($options{content});
+        $decoded = JSON::XS->new->decode($options{content});
     };
     if ($@) {
         $self->{output}->output_add(long_msg => $options{content}, debug => 1);
