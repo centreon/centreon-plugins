@@ -36,29 +36,35 @@ sub check {
     return if ($self->check_filter(section => 'software', instance => $instance));
     $self->{components}->{software}->{total}++;
 
+    my $status = ref($self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Status}) eq 'HASH' ?
+        $self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Status}->{content} : $self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Status};
+    my $urgency = ref($self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Urgency}) eq 'HASH' ?
+        $self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Urgency}->{content} : $self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Urgency};
+    $urgency = 'n/a' if (!defined($urgency));
+
     $self->{output}->output_add(
         long_msg => sprintf(
             "software '%s' status is '%s' [instance: %s, urgency: %s]",
             $instance,
-            $self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Status},
+            $status,
             $instance,
-            $self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Urgency}
+            $urgency
         )
     );
 
-    my $exit = $self->get_severity(section => 'software_status', value => $self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Status});
+    my $exit = $self->get_severity(section => 'software_status', value => $status);
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(
             severity => $exit,
-            short_msg => sprintf("software '%s' status is '%s'", $instance, $self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Status})
+            short_msg => sprintf("software '%s' status is '%s'", $instance, $status)
         );
     }
 
-    $exit = $self->get_severity(section => 'software_urgency', value => $self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Urgency});
+    $exit = $self->get_severity(section => 'software_urgency', value => $urgency);
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(
             severity => $exit,
-            short_msg => sprintf("software '%s' urgency is '%s'", $instance, $self->{results}->{Provisioning}->{Software}->{UpgradeStatus}->{Urgency})
+            short_msg => sprintf("software '%s' urgency is '%s'", $instance, $urgency)
         );
     }
 }

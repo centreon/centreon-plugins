@@ -30,7 +30,12 @@ sub check {
     $self->{components}->{temperature} = { name => 'temperature', total => 0, skip => 0 }  ;
     return if ($self->check_filter(section => 'temperature'));
 
-    return if (!defined($self->{results}->{SystemUnit}->{Hardware}->{Monitoring}->{Temperature}));
+    my $temp_status = $self->{results}->{SystemUnit}->{Hardware}->{Monitoring}->{Temperature}->{Status};
+    $temp_status = 'n/a' if (!defined($temp_status));
+    my $temp_value = ref($self->{results}->{SystemUnit}->{Hardware}->{Temperature}) eq 'HASH' ?
+        $self->{results}->{SystemUnit}->{Hardware}->{Temperature}->{content} : undef;
+
+    return if (!defined($temp_status) && !defined($temp_value));
 
     my $instance = 1;
     return if ($self->check_filter(section => 'temperature', instance => $instance));
@@ -38,20 +43,43 @@ sub check {
 
     $self->{output}->output_add(
         long_msg => sprintf(
-            "temperature '%s' status is '%s' [instance: %s]",
+            "temperature '%s' status is '%s' [instance: %s, value: %s]",
             $instance,
-            $self->{results}->{SystemUnit}->{Hardware}->{Monitoring}->{Temperature}->{Status},
-            $instance
+            $temp_status,
+            $instance,
+            defined($temp_value) ? $temp_value : '-'
         )
     );
 
-    my $exit = $self->get_severity(section => 'temperature', value => $self->{results}->{SystemUnit}->{Hardware}->{Monitoring}->{Temperature}->{Status});
+    my $exit = $self->get_severity(section => 'temperature', value => $temp_status);
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(
             severity => $exit,
-            short_msg => sprintf("temperarture '%s' status is '%s'", $instance, $self->{results}->{SystemUnit}->{Hardware}->{Monitoring}->{Temperature})
+            short_msg => sprintf("temperature '%s' status is '%s'", $instance, $temp_status)
         );
     }
+
+    return if (!defined($temp_value));
+
+    my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $temp_value);
+
+    if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf(
+                "temperature '%s' is %s C",
+                $instance, $temp_value
+            )
+        );
+    }
+    $self->{output}->perfdata_add(
+        unit => 'C',
+        nlabel => 'component.hardware.temperature.celsius',
+        instances => 'system',
+        value => $temp_value,
+        warning => $warn,
+        critical => $crit
+    );
 }
 
 1;
