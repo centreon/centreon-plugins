@@ -28,53 +28,53 @@ use warnings;
 sub custom_memory_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Memory Total: %s %s, Used: %s %s (%.2f%%), Free: %s %s (%.2f%%)",
+    return sprintf(
+        'Memory Total: %s %s, Used: %s %s (%.2f%%), Free: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_total}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_used}),
         $self->{result_values}->{memory_prct_used},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_free}),
         $self->{result_values}->{memory_prct_free}
     );
-    return $msg;
 }
 
 sub custom_swap_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Swap Total: %s %s, Used: %s %s (%.2f%%), Free: %s %s (%.2f%%)",
+    return sprintf(
+        'Swap Total: %s %s, Used: %s %s (%.2f%%), Free: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{swap_total}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{swap_used}),
         $self->{result_values}->{swap_prct_used},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{swap_free}),
         $self->{result_values}->{swap_prct_free}
     );
-    return $msg;
 }
 
 sub custom_disk_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Disk Total: %s %s, Used: %s %s (%.2f%%), Free: %s %s (%.2f%%)",
+    return sprintf(
+        'Disk Total: %s %s, Used: %s %s (%.2f%%), Free: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{disk_total}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{disk_used}),
         $self->{result_values}->{disk_prct_used},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{disk_free}),
         $self->{result_values}->{disk_prct_free}
     );
-    return $msg;
 }
 
 sub custom_logs_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Logs Total: %s %s, Used: %s %s (%.2f%%), Free: %s %s (%.2f%%)",
+    return sprintf(
+        'Logs Total: %s %s, Used: %s %s (%.2f%%), Free: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{logs_total}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{logs_used}),
         $self->{result_values}->{logs_prct_used},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{logs_free}),
         $self->{result_values}->{logs_prct_free}
     );
-    return $msg;
 }
 
 sub set_counters {
@@ -87,134 +87,136 @@ sub set_counters {
     $self->{maps_counters}->{server} = [
         { label => 'server-cpu-usage', nlabel => 'dma.server.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'stRsrcCPUUsageCPUUtilizationPct' }, { name => 'display'} ],
-                output_template => 'CPU Utilization : %.2f %%',
+                output_template => 'CPU Utilization: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_utilization', value => 'stRsrcCPUUsageCPUUtilizationPct', template => '%d',
-                      label_extra_instance => 1, instance_use => 'display', min => 0, max => 100, unit => '%' }
+                    { template => '%d', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         # Memory counters
         { label => 'server-memory-usage', nlabel => 'dma.server.memory.usage.bytes', set => {
-                key_values => [ { name => 'memory_used' }, { name => 'memory_free' }, { name => 'memory_prct_used' },
-                                { name => 'memory_prct_free' }, { name => 'memory_total' }, { name => 'display'} ],
+                key_values => [
+                    { name => 'memory_used' }, { name => 'memory_free' }, { name => 'memory_prct_used' },
+                    { name => 'memory_prct_free' }, { name => 'memory_total' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { value => 'memory_used', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                      cast_int => 1, min => 0, max => 'total' }
+                    { template => '%d', cast_int => 1, min => 0, max => 'memory_total', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'server-memory-free', display_ok => 0, nlabel => 'dma.server.memory.free.bytes', set => {
-                key_values => [ { name => 'memory_free' }, { name => 'memory_used' }, { name => 'memory_prct_used' },
-                                { name => 'memory_prct_free' }, { name => 'memory_total' } ],
+                key_values => [
+                    { name => 'memory_free' }, { name => 'memory_used' }, { name => 'memory_prct_used' },
+                    { name => 'memory_prct_free' }, { name => 'memory_total' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { value => 'memory_free', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                      cast_int => 1, min => 0, max => 'total' }
+                    { template => '%d', cast_int => 1, min => 0, max => 'memory_total', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'server-memory-prct', display_ok => 0, nlabel => 'dma.server.memory.usage.percentage', set => {
-                key_values => [ { name => 'memory_prct_used' } ],
+                key_values => [ { name => 'memory_prct_used' }, { name => 'display' } ],
                 output_template => 'RAM used: %.2f %%',
                 perfdatas => [
-                    { value => 'memory_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display', 
-                     min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         # Swap counters
         { label => 'server-swap-usage', nlabel => 'dma.server.swap.usage.percentage', set => {
-                key_values => [ { name => 'swap_used' }, { name => 'swap_free' }, { name => 'swap_prct_used' },
-                                { name => 'swap_prct_free' }, { name => 'swap_total' } ],
+                key_values => [
+                    { name => 'swap_used' }, { name => 'swap_free' }, { name => 'swap_prct_used' },
+                    { name => 'swap_prct_free' }, { name => 'swap_total' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
-                    { value => 'swap_used', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                    cast_int => 1, min => 0, max => 'total' }
+                    { template => '%d', cast_int => 1, min => 0, max => 'swap_total', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'server-swap-free', display_ok => 0, nlabel => 'dma.server.swap.free.bytes', set => {
-                key_values => [ { name => 'swap_free' }, { name => 'swap_used' }, { name => 'swap_prct_used' },
-                                { name => 'swap_prct_free' }, { name => 'swap_total' } ],
+                key_values => [
+                    { name => 'swap_free' }, { name => 'swap_used' }, { name => 'swap_prct_used' },
+                    { name => 'swap_prct_free' }, { name => 'swap_total' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
-                    { value => 'swap_free', template => '%d', min => 0, max => 'total',
-                      cast_int => 1, min => 0, max => 'total' }
+                    { template => '%d', cast_int => 1, min => 0, max => 'swap_total', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'server-swap-prct', display_ok => 0, nlabel => 'dma.server.swap.usage.percentage', set => {
-                key_values => [ { name => 'swap_prct_used' } ],
-                output_template => 'RAM used: %.2f %%',
+                key_values => [ { name => 'swap_prct_used' }, { name => 'display' } ],
+                output_template => 'swap used: %.2f %%',
                 perfdatas => [
-                    { value => 'swap_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display',
-                      min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         # Disk counters
         { label => 'server-disk-usage', nlabel => 'dma.server.disk.usage.bytes', set => {
-                key_values => [ { name => 'disk_used' }, { name => 'disk_free' }, { name => 'disk_prct_used' },
-                                { name => 'disk_prct_free' }, { name => 'disk_total' } ],
+                key_values => [
+                    { name => 'disk_used' }, { name => 'disk_free' }, { name => 'disk_prct_used' },
+                    { name => 'disk_prct_free' }, { name => 'disk_total' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_disk_output'),
                 perfdatas => [
-                    { value => 'disk_used', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                     min => 0, max => 'total',
-                      cast_int => 1 }
+                    { template => '%d', min => 0, max => 'disk_total', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'server-disk-free', display_ok => 0, nlabel => 'dma.server.disk.free.bytes', set => {
-                key_values => [ { name => 'disk_free' }, { name => 'disk_used' }, { name => 'disk_prct_used' },
-                                { name => 'disk_prct_free' }, { name => 'disk_total' } ],
+                key_values => [
+                    { name => 'disk_free' }, { name => 'disk_used' }, { name => 'disk_prct_used' },
+                    { name => 'disk_prct_free' }, { name => 'disk_total' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_disk_output'),
                 perfdatas => [
-                    { value => 'disk_free', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                      cast_int => 1, min => 0, max => 'total' }
+                    { template => '%d', cast_int => 1, min => 0, max => 'disk_total', label_extra_instance => 1, instance_use => 'display', }
                 ]
             }
         },
         { label => 'server-disk-prct', display_ok => 0, nlabel => 'dma.server.disk.usage.percentage', set => {
-                key_values => [ { name => 'disk_prct_used' } ],
-                output_template => 'RAM used: %.2f %%',
+                key_values => [ { name => 'disk_prct_used' }, { name => 'display' } ],
+                output_template => 'disk used: %.2f %%',
                 perfdatas => [
-                    { value => 'disk_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display',
-                      min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         # Log counters
         { label => 'server-logs-usage', nlabel => 'dma.server.logs.usage.bytes', set => {
-                key_values => [ { name => 'logs_used' }, { name => 'logs_free' }, { name => 'logs_prct_used' },
-                                { name => 'logs_prct_free' }, { name => 'logs_total' } ],
+                key_values => [
+                    { name => 'logs_used' }, { name => 'logs_free' }, { name => 'logs_prct_used' },
+                    { name => 'logs_prct_free' }, { name => 'logs_total' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_logs_output'),
                 perfdatas => [
-                    { value => 'logs_used', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                      cast_int => 1, min => 0, max => 'total' }
+                    { template => '%d', cast_int => 1, min => 0, max => 'logs_total', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'server-logs-free', display_ok => 0, nlabel => 'dma.server.logs.free.bytes', set => {
-                key_values => [ { name => 'logs_free' }, { name => 'logs_used' }, { name => 'logs_prct_used' },
-                                { name => 'logs_prct_free' }, { name => 'logs_total' } ],
+                key_values => [
+                    { name => 'logs_free' }, { name => 'logs_used' }, { name => 'logs_prct_used' },
+                    { name => 'logs_prct_free' }, { name => 'logs_total' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_logs_output'),
                 perfdatas => [
-                    { value => 'logs_free', template => '%d', label_extra_instance => 1, instance_use => 'display',
-                        cast_int => 1, min => 0, max => 'total' }
+                    { template => '%d', cast_int => 1, min => 0, max => 'logs_total', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'server-logs-prct', display_ok => 0, nlabel => 'dma.server.logs.usage.percentage', set => {
-                key_values => [ { name => 'logs_prct_used' } ],
-                output_template => 'RAM used: %.2f %%',
+                key_values => [ { name => 'logs_prct_used' }, { name => 'display' } ],
+                output_template => 'logs used: %.2f %%',
                 perfdatas => [
-                    { value => 'logs_prct_used', template => '%.2f', label_extra_instance => 1, instance_use => 'display',
-                    min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
-        },
+        }
     ];
 }
 
@@ -224,7 +226,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-server:s' => { name => 'filter_server' },
+        'filter-server:s' => { name => 'filter_server' }
     });
 
     return $self;
@@ -276,28 +278,27 @@ my $oid_stRsrcLogSpaceEntry = '.1.3.6.1.4.1.13885.13.2.2.1.4.5.1';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{server} = {};
-
-    $self->{server_result} = $options{snmp}->get_multiple_table(
+    my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $oid_stRsrcCPUUsageEntry },
             { oid => $oid_stRsrcMemoryUsageEntry },
             { oid => $oid_stRsrcSwapUsageEntry },
             { oid => $oid_stRsrcDiskSpaceEntry },
-            { oid => $oid_stRsrcLogSpaceEntry },
+            { oid => $oid_stRsrcLogSpaceEntry }
         ],
         nothing_quit => 1
     );
 
-    foreach my $oid (keys %{$self->{server_result}->{$oid_stRsrcCPUUsageEntry}}) {
+    $self->{server} = {};
+    foreach my $oid (keys %{$snmp_result->{$oid_stRsrcCPUUsageEntry}}) {
         next if ($oid !~ /^$mapping_cpu->{stRsrcCPUUsageHostName}->{oid}\.(.*)$/);
         my $instance = $1;
 
-        my $result_cpu = $options{snmp}->map_instance(mapping => $mapping_cpu, results => $self->{server_result}->{$oid_stRsrcCPUUsageEntry}, instance => $instance);
-        my $result_memory = $options{snmp}->map_instance(mapping => $mapping_memory, results => $self->{server_result}->{$oid_stRsrcMemoryUsageEntry}, instance => $instance);
-        my $result_swap = $options{snmp}->map_instance(mapping => $mapping_swap, results => $self->{server_result}->{$oid_stRsrcSwapUsageEntry}, instance => $instance);
-        my $result_disk = $options{snmp}->map_instance(mapping => $mapping_disk, results => $self->{server_result}->{$oid_stRsrcDiskSpaceEntry}, instance => $instance);
-        my $result_logs = $options{snmp}->map_instance(mapping => $mapping_logs, results => $self->{server_result}->{$oid_stRsrcLogSpaceEntry}, instance => $instance);
+        my $result_cpu = $options{snmp}->map_instance(mapping => $mapping_cpu, results => $snmp_result->{$oid_stRsrcCPUUsageEntry}, instance => $instance);
+        my $result_memory = $options{snmp}->map_instance(mapping => $mapping_memory, results => $snmp_result->{$oid_stRsrcMemoryUsageEntry}, instance => $instance);
+        my $result_swap = $options{snmp}->map_instance(mapping => $mapping_swap, results => $snmp_result->{$oid_stRsrcSwapUsageEntry}, instance => $instance);
+        my $result_disk = $options{snmp}->map_instance(mapping => $mapping_disk, results => $snmp_result->{$oid_stRsrcDiskSpaceEntry}, instance => $instance);
+        my $result_logs = $options{snmp}->map_instance(mapping => $mapping_logs, results => $snmp_result->{$oid_stRsrcLogSpaceEntry}, instance => $instance);
 
         $result_cpu->{stRsrcCPUUsageHostName} = centreon::plugins::misc::trim($result_cpu->{stRsrcCPUUsageHostName});
         if (defined($self->{option_results}->{filter_server}) && $self->{option_results}->{filter_server} ne '' &&

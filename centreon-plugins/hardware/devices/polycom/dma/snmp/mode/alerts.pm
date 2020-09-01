@@ -31,9 +31,10 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("alarm [code: %s] [severity: %s] [description: %s] %s", $self->{result_values}->{code},
-        $self->{result_values}->{severity}, $self->{result_values}->{description}, $self->{result_values}->{timestamp});
-    return $msg;
+    return sprintf(
+        "alarm [code: %s] [severity: %s] [description: %s] %s", $self->{result_values}->{code},
+        $self->{result_values}->{severity}, $self->{result_values}->{description}, $self->{result_values}->{timestamp}
+    );
 }
 
 sub custom_status_calc {
@@ -46,7 +47,6 @@ sub custom_status_calc {
     $self->{result_values}->{since} = $options{new_datas}->{$self->{instance} . '_since'};
     return 0;
 }
-
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -76,10 +76,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-msg:s"      => { name => 'filter_msg' },
-        "warning-status:s"  => { name => 'warning_status', default => '%{severity} =~ /warn/i' },
-        "critical-status:s" => { name => 'critical_status', default => '%{severity} =~ /severe/i' },
-        "memory"            => { name => 'memory' }
+        'filter-msg:s'      => { name => 'filter_msg' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{severity} =~ /warn/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{severity} =~ /severe/i' },
+        'memory'            => { name => 'memory' }
     });
 
     centreon::plugins::misc::mymodule_load(
@@ -126,7 +126,7 @@ sub manage_selection {
 
     my $last_time;
     if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache}->read(statefile => "cache_polycom_dma_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port(). '_' . $self->{mode});
+        $self->{statefile_cache}->read(statefile => 'cache_polycom_dma_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port(). '_' . $self->{mode});
         $last_time = $self->{statefile_cache}->get(name => 'last_time');
     }
 

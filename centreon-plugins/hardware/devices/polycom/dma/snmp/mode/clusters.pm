@@ -38,20 +38,30 @@ sub set_counters {
         { label => 'dma-total-clusters', nlabel => 'dma.clusters.total.count', set => {
                 key_values => [ { name => 'clusters_count' } ],
                 output_template => 'Total clusters : %s',
-                perfdatas => [ { value => 'clusters_count', template => '%d', min => 0 } ]
+                perfdatas => [ { template => '%d', min => 0 } ]
             }
         },
     ];
 
     $self->{maps_counters}->{cluster} = [
-        { label => 'cluster-status', threshold => 0, display_ok => 0, set => {
+        {
+            label => 'cluster-status',
+            type => 2,
+            critical_default => '%{cluster_status} =~ /outOfService/i',
+            display_ok => 0,
+            set => {
                 key_values => [ { name => 'cluster_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_cluster_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
-        { label => 'license-status', threshold => 0, display_ok => 0, set => {
+        {
+            label => 'license-status',
+            type => 2,
+            critical_default => '%{license_status} =~ /invalid/i',
+            display_ok => 0,
+            set => {
                 key_values => [ { name => 'license_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_license_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -59,29 +69,26 @@ sub set_counters {
             }
         },
         { label => 'cluster-active-calls', nlabel => 'dma.cluster.activecalls.count', set => {
-                key_values => [ { name => 'active_calls' }, { name => 'licenses_total'}, { name => 'display'} ],
+                key_values => [ { name => 'active_calls' }, { name => 'licenses_total' }, { name => 'display' } ],
                 output_template => 'Active calls : %s',
                 perfdatas => [
-                    { value => 'active_calls', label_extra_instance => 1,
-                      instance_use => 'display', template => '%s', max => 'licenses_total' }
+                    { template => '%s', max => 'licenses_total', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'cluster-license-usage-free', nlabel => 'dma.cluster.licenses.free.count', set => {
-                key_values => [ { name => 'licenses_free' }, { name => 'display'} ],
+                key_values => [ { name => 'licenses_free' }, { name => 'display' } ],
                 output_template => 'Free licenses : %s',
                 perfdatas => [
-                    { value => 'licenses_free', label_extra_instance => 1,
-                      instance_use => 'display', template => '%s', min => 0 }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'cluster-license-usage-prct', nlabel => 'dma.cluster.licenses.usage.percentage', set => {
-                key_values => [ { name => 'licenses_used_prct' }, { name => 'display'} ],
+                key_values => [ { name => 'licenses_used_prct' }, { name => 'display' } ],
                 output_template => 'Licenses percentage usage : %.2f%%',
                 perfdatas => [
-                    { value => 'licenses_used_prct', label_extra_instance => 1, unit => '%',
-                      instance_use => 'display', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0, unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -106,31 +113,20 @@ sub custom_license_status_output {
     return sprintf('License status: %s', $self->{result_values}->{license_status});
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_cluster_status', 'critical_cluster_status','warning_license_status', 'critical_license_status']);
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-cluster:s'          => { name => 'filter_cluster' },
-        'warning-cluster-status:s'  => { name => 'warning_cluster_status', default => '' },
-        'critical-cluster-status:s' => { name => 'critical_cluster_status', default => '%{cluster_status} =~ /outOfService/i' },
-        'warning-license-status:s'  => { name => 'warning_license_status', default => '' },
-        'critical-license-status:s' => { name => 'critical_license_status', default => '%{license_status} =~ /invalid/i' },
+        'filter-cluster:s'          => { name => 'filter_cluster' }
     });
+
     return $self;
 }
 
 my %map_cluster_status   = (1 => 'inService', 2 => 'busyOut', 3 => 'outOfService');
 my %map_licensing_status = (1 => 'valid', 2 => 'invalid', 3 => 'notInstalled');
-
 
 my $mapping_status = {
     stClClusterName   => { oid => '.1.3.6.1.4.1.13885.13.2.2.3.2.1.2' },
@@ -144,12 +140,10 @@ my $mapping_licenses = {
     stLicCallserverActiveCalls => { oid => '.1.3.6.1.4.1.13885.13.2.2.3.3.1.5' }
 };
 
-
 my $oid_stClustersEntry = '.1.3.6.1.4.1.13885.13.2.2.3.2.1';
 my $oid_stLicensesEntry = '.1.3.6.1.4.1.13885.13.2.2.3.3.1';
 
 my $oid_stClustersCount = '.1.3.6.1.4.1.13885.13.2.2.3.1.0'; #global
-
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -157,7 +151,7 @@ sub manage_selection {
     my $global_result = $options{snmp}->get_leef(
         oids => [ $oid_stClustersCount ],
         nothing_quit => 1
-        );
+    );
 
     $self->{global} = { clusters_count => $global_result->{$oid_stClustersCount} };
 
@@ -196,7 +190,6 @@ sub manage_selection {
             licenses_used_prct => ( $licenses_used * 100 ) / $licenses_total
         };
     }
-
 }
 
 1;
