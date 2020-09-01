@@ -47,16 +47,12 @@ Try {
     ## Setting CBSRebootPend to null since not all versions of Windows has this value 
     $CBSRebootPend = $null 
 
-    ## Querying WMI for build version 
-    $WMI_OS = Get-WmiObject -Class Win32_OperatingSystem -Property BuildNumber, CSName -ComputerName $ComputerName -ErrorAction Stop 
- 
     ## Making registry connection to the local/remote computer 
     $HKLM = [UInt32] "0x80000002" 
     $WMI_Reg = [WMIClass] "\\\\$ComputerName\\root\\default:StdRegProv" 
 
-    ## If Vista/2008 & Above query the CBS Reg Key 
-    If ([Int32]$WMI_OS.BuildNumber -ge 6001) { 
-        $RegSubKeysCBS = $WMI_Reg.EnumKey($HKLM,"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\") 
+    $RegSubKeysCBS = $WMI_Reg.EnumKey($HKLM,"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\")
+    If ($RegSubKeysCBS.ReturnValue -eq 0) {
         $CBSRebootPend = $RegSubKeysCBS.sNames -contains "RebootPending"     
     } 
 
