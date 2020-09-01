@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::cisco::ces::restapi::mode::sessions;
+package hardware::devices::cisco::tc::restapi::mode::sessions;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -89,7 +89,7 @@ __END__
 
 =head1 MODE
 
-Check sessions.
+Check sessions (since CE 8.2)
 
 =over 8
 

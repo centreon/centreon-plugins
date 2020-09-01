@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::cisco::ces::restapi::mode::callssummary;
+package hardware::devices::cisco::tc::restapi::mode::callssummary;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -207,7 +207,7 @@ __END__
 
 =head1 MODE
 
-Check call history.
+Check call history (since TC 6.3)
 
 =over 8
 

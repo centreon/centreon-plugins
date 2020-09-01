@@ -318,7 +318,7 @@ sub request {
     my $headers = [];
     my $content_type_forced = 0;
     foreach my $key (keys %{$options{request}->{headers}}) {
-        push @$headers, $key . ':' . $options{request}->{headers}->{$key};
+        push @$headers, $key . ':' . (defined($options{request}->{headers}->{$key}) ? $options{request}->{headers}->{$key} : '');
         if ($key =~ /content-type/i) {
             $content_type_forced = 1;
         }

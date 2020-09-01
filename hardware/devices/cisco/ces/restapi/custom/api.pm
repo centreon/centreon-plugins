@@ -116,21 +116,6 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-sub json_decode {
-    my ($self, %options) = @_;
-
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($options{content});
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-
-    return $decoded;
-}
-
 sub clean_session_cookie {
     my ($self, %options) = @_;
 

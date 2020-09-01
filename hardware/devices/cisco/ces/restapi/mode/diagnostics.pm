@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::cisco::ces::restapi::mode::diagnostics;
+package hardware::devices::cisco::tc::restapi::mode::diagnostics;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -119,6 +119,8 @@ __END__
 =head1 MODE
 
 Check diagnostic messages.
+Since TC 6.0: SystemUnit Diagnostics Run
+Since CE 8.0: Diagnostics Run
 
 =over 8
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::cisco::ces::restapi::mode::certificates;
+package hardware::devices::cisco::tc::restapi::mode::certificates;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -119,7 +119,7 @@ __END__
 
 =head1 MODE
 
-Check certificates validity.
+Check certificates validity (since CE 9.2)
 
 =over 8
 

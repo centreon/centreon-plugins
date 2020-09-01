@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::cisco::ces::restapi::mode::components;
+package hardware::devices::cisco::tc::restapi::mode::components;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -92,7 +92,7 @@ sub set_system {
 
     $self->{components_exec_load} = 0;
 
-    $self->{components_path} = 'hardware::devices::cisco::ces::restapi::mode::components';
+    $self->{components_path} = 'hardware::devices::cisco::tc::restapi::mode::components';
     $self->{components_module} = [
         'ad', 'aic', 'aoc', 'camera', 'st', 'software', 'temperature', 'vic',
         'vis', 'voc', 'webex'
