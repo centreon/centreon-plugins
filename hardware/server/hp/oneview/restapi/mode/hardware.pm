@@ -36,7 +36,8 @@ sub set_system {
             ['disabled', 'OK'],
             ['critical', 'CRITICAL'],
             ['warning', 'WARNING'],
-            ['unknown', 'UNKNOWN']
+            ['unknown', 'UNKNOWN'],
+            ['n/a', 'OK']
         ]
     };
 
