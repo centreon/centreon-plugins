@@ -30,11 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' }
+    });
 
     return $self;
 }
@@ -44,75 +43,51 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'dbname', value => $self->{option_results}->{dbname})) eq 'postgres') {
-       $self->{output}->add_option_msg(short_msg => "Invalid db.");
-       $self->{output}->option_exit();
-    }
-
-    
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
 
-    # Ensures a DB has been specified
-    # otherwise we endup in default system table (postgres)
-    # and the check does not support this behaviour (empty pg_stat_user_table => no need to check)
-    # FIXME this check should be performed in check_options() but these settings are not available at the moment
-    my $data_source = $self->{sql}->{data_source};
-    if ($data_source =~ /.*;database=(.*)/) {
-       if ($1 eq 'postgres') {
-          $self->{output}->add_option_msg(short_msg => "Cannot use system 'postgres' database ; you must use a real database.");
-          $self->{output}->option_exit();
-       } elsif ($1 eq '') {
-          $self->{output}->add_option_msg(short_msg => "Database must be specified.");
-          $self->{output}->option_exit();
-       }
-    } else { 
-       $self->{output}->add_option_msg(short_msg => "Need to specify database argument.");
-       $self->{output}->option_exit();
-    }
-
-    $self->{sql}->connect();
+    $options{sql}->connect();
     
-    my $target_fields = undef;
-
+    my $target_fields = 'last_vacuum';
     # Autovacuum feature has only been impleted starting PG 8.2 
     # (options needed http://www.postgresql.org/docs/8.2/static/runtime-config-autovacuum.html, no need starting 8.3)
     if ($self->{sql}->is_version_minimum(version => '8.2.0')) {
         $target_fields = 'greatest(last_autovacuum,last_vacuum)';
-    } else {
-        $target_fields = 'last_vacuum';
     }
 
-    my $query = sprintf("SELECT ROUND(EXTRACT(EPOCH from (select min (now() - %s) 
-                 from pg_stat_user_tables where %s is not null)))", $target_fields, $target_fields);
-    $self->{sql}->query(query => $query);
-
-    my $result = $self->{sql}->fetchrow_array();
-    
+    my $query = sprintf(
+        'SELECT ROUND(EXTRACT(EPOCH from (select min (now() - %s) from pg_stat_all_tables where %s is not null)))',
+        $target_fields,
+        $target_fields
+    );
+    $options{sql}->query(query => $query);
+    my $result = $options{sql}->fetchrow_array();
     if (defined($result)) {
-        
-        my $exit_code = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Most recent vacuum dates back from %d seconds", $result));
-        
-        $self->{output}->perfdata_add(label => 'last_vacuum',
-                                      value => $result,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+        my $exit_code = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf('Most recent vacuum dates back from %d seconds', $result)
+        );
+        $self->{output}->perfdata_add(
+            label => 'last_vacuum',
+            value => $result,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
+        );
     } else {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'No vacuum performed on this BD yet.');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'No vacuum performed on this BD yet.'
+        );
     }
 
     $self->{output}->display();
