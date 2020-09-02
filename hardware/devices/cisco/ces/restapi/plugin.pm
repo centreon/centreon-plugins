@@ -39,9 +39,9 @@ sub new {
         'diagnostics'   => 'hardware::devices::cisco::ces::restapi::mode::diagnostics',
         'peripherals'   => 'hardware::devices::cisco::ces::restapi::mode::peripherals',
         'sessions'      => 'hardware::devices::cisco::ces::restapi::mode::sessions'
-    );
+    };
 
-    $self->{custom_modes}{api} = 'hardware::devices::cisco::ces::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'hardware::devices::cisco::ces::restapi::custom::api';
     return $self;
 }
 
