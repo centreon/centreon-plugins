@@ -207,7 +207,7 @@ __END__
 
 =head1 MODE
 
-Check call history.
+Check call history (since TC 6.3)
 
 =over 8
 

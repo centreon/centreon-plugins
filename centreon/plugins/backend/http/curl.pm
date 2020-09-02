@@ -158,6 +158,7 @@ sub set_method {
     my ($self, %options) = @_;
 
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CUSTOMREQUEST'), parameter => undef);
+    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => undef);
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPGET'), parameter => 1);
 
     if ($options{request}->{method} eq 'GET') {
@@ -318,7 +319,7 @@ sub request {
     my $headers = [];
     my $content_type_forced = 0;
     foreach my $key (keys %{$options{request}->{headers}}) {
-        push @$headers, $key . ':' . $options{request}->{headers}->{$key};
+        push @$headers, $key . ':' . (defined($options{request}->{headers}->{$key}) ? $options{request}->{headers}->{$key} : '');
         if ($key =~ /content-type/i) {
             $content_type_forced = 1;
         }

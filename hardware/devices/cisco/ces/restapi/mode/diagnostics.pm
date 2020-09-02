@@ -39,15 +39,6 @@ sub custom_status_output {
     );
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{description} = $options{new_datas}->{$self->{instance} . '_Description'};
-    $self->{result_values}->{level} = $options{new_datas}->{$self->{instance} . '_Level'};
-    $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_Type'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -59,8 +50,7 @@ sub set_counters {
 
     $self->{maps_counters}->{alarm} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'Description' }, { name => 'Level' }, { name => 'Type' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                key_values => [ { name => 'description' }, { name => 'level' }, { name => 'type' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
@@ -75,9 +65,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-msg:s'        => { name => 'filter_msg' },
-        'warning-status:s'    => { name => 'warning_status', default => '%{level} =~ /warning|minor/i' },
-        'critical-status:s'   => { name => 'critical_status', default => '%{level} =~ /critical|major/i' }
+        'filter-msg:s'      => { name => 'filter_msg' },
+        'legacy-tc'         => { name => 'legacy_tc' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{level} =~ /warning|minor/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{level} =~ /critical|major/i' }
     });
 
     return $self;
@@ -90,25 +81,50 @@ sub check_options {
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
+#<Command>
+#<DiagnosticsResult status="OK">
+#  <Message item="1">
+#    <Description item="1">System is in standby mode.</Description>
+#    <Level item="1">Skipped</Level>
+#    <References item="1"/>
+#    <Type item="1">SelectedVideoInputSourceConnected</Type>
+#  </Message>
+#</DiagnosticsResult>
+#</Command>
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{alarms}->{global} = { alarm => {} };
+    my $post = '<Command><Diagnostics><Run><ResultSet>Alerts</ResultSet></Run></Diagnostics></Command>';
+    my $label = 'DiagnosticsRunResult';
+    if (defined($self->{option_results}->{legacy_tc})) {
+        $post = '<Command><SystemUnit><Diagnostics><Run><ResultSet>Alerts</ResultSet></Run></Diagnostics></SystemUnit></Command>';
+        $label = 'DiagnosticsResult';
+    }
     my $result = $options{custom}->request_api(
         method => 'POST',
         url_path => '/putxml',
-        query_form_post => '<Command><Diagnostics><Run><ResultSet>Alerts</ResultSet></Run></Diagnostics></Command>',
+        query_form_post => $post,
         ForceArray => ['Message']
     );
 
-    foreach (@{$result->{DiagnosticsRunResult}->{Message}}) {
+    $self->{alarms}->{global} = { alarm => {} };
+    foreach (@{$result->{$label}->{Message}}) {
+        my $description = ref($_->{Description}) eq 'HASH' ? $_->{Description}->{content} : $_->{Description};
+        my $level = ref($_->{Level}) eq 'HASH' ? $_->{Level}->{content} : $_->{Level};
+        my $type = ref($_->{Type}) eq 'HASH' ? $_->{Type}->{content} : $_->{Type};
+
         if (defined($self->{option_results}->{filter_msg}) && $self->{option_results}->{filter_msg} ne '' &&
-            $_->{Description} !~ /$self->{option_results}->{filter_msg}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $_->{Description} . "': no matching filter.", debug => 1);
+            $description !~ /$self->{option_results}->{filter_msg}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $description . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{alarms}->{global}->{alarm}->{$_->{item}} = $_;
+        $self->{alarms}->{global}->{alarm}->{ $_->{item} } = {
+            description => $description,
+            level => $level,
+            type => $type
+        };
     }
 }
         
@@ -119,12 +135,18 @@ __END__
 =head1 MODE
 
 Check diagnostic messages.
+Since TC 6.0: SystemUnit Diagnostics Run (use --legacy-tc option)
+Since CE 8.0: Diagnostics Run
 
 =over 8
 
 =item B<--filter-msg>
 
 Filter by message (can be a regexp).
+
+=item B<--legacy-tc>
+
+Use old legacy command.
 
 =item B<--warning-status>
 

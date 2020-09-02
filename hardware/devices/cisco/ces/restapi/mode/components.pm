@@ -44,6 +44,7 @@ sub set_system {
             ['Unknown', 'UNKNOWN']
         ],
         temperature => [
+            ['n/a', 'OK'],
             ['Normal', 'OK'],
             ['.*', 'CRITICAL']
         ],
@@ -55,6 +56,7 @@ sub set_system {
             ['Succeeded', 'OK']
         ],
         software_urgency => [
+            ['n/a', 'OK'],
             ['Low', 'OK'],
             ['Medium', 'OK'],
             ['Critical', 'CRITICAL']
@@ -116,6 +118,11 @@ sub execute_custom {
         url_path => '/status.xml',
         ForceArray => ['Microphone', 'HDMI', 'Line', 'InternalSpeaker', 'Camera', 'Connector', 'Source']
     );
+
+    my $system_version = 'unknown';
+    $system_version = $self->{results}->{version} if (defined($self->{results}->{version}));
+
+    $self->{output}->output_add(long_msg => 'system version: ' . $system_version);
 }
 
 1;

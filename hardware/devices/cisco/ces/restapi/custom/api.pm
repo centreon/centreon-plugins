@@ -50,7 +50,8 @@ sub new {
             'proto:s'        => { name => 'proto' },
             'api-username:s' => { name => 'api_username' },
             'api-password:s' => { name => 'api_password' },
-            'timeout:s'      => { name => 'timeout', default => 30 }
+            'timeout:s'      => { name => 'timeout', default => 30 },
+            'no-session'     => { name => 'no_session' }
         });
     }
 
@@ -74,27 +75,28 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
+    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{no_session} = (defined($self->{option_results}->{no_session})) ? 1 : 0;
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_username}) || $self->{api_username} eq '') {
+    if ($self->{api_username} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_password}) || $self->{api_password} eq '') {
+    if ($self->{api_password} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
         $self->{output}->option_exit();
     }
 
-    $self->{cache}->check_options(option_results => $self->{option_results});
+    $self->{cache}->check_options(option_results => $self->{option_results}) if ($self->{no_session} == 0);
     return 0;
 }
 
@@ -105,6 +107,12 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{timeout} = $self->{timeout};
+    if ($self->{no_session} == 1) {
+        $self->{option_results}->{credentials} = 1;
+        $self->{option_results}->{basic} = 1;
+        $self->{option_results}->{username} = $self->{api_username};
+        $self->{option_results}->{password} = $self->{api_password};
+    }
 }
 
 sub settings {
@@ -114,21 +122,6 @@ sub settings {
     $self->{http}->add_header(key => 'Content-Type', value => 'text/xml');
     $self->{http}->add_header(key => 'Accept', value => 'text/xml');
     $self->{http}->set_options(%{$self->{option_results}});
-}
-
-sub json_decode {
-    my ($self, %options) = @_;
-
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($options{content});
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-
-    return $decoded;
 }
 
 sub clean_session_cookie {
@@ -179,7 +172,7 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-    if (!defined($self->{session_cookie})) {
+    if ($self->{no_session} == 0 && !defined($self->{session_cookie})) {
         $self->authenticate(statefile => $self->{cache});
     }
 
@@ -189,7 +182,7 @@ sub request_api {
     );
 
     # Maybe there is an issue with the session_cookie. So we retry.
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+    if ($self->{no_session} == 0 && ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300)) {
         $self->clean_session_cookie(statefile => $self->{cache});
         $self->authenticate(statefile => $self->{cache});
         $content = $self->{http}->request(
@@ -250,6 +243,10 @@ Set password.
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: '30').
+
+=item B<--no-session>
+
+To be used for legacy version (before CE 8.0).
 
 =back
 

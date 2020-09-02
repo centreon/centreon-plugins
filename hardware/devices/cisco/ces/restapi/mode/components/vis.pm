@@ -38,20 +38,24 @@ sub check {
         next if ($self->check_filter(section => 'vis', instance => $instance));
         $self->{components}->{vis}->{total}++;
 
+        my $format_status = defined($_->{Resolution}->{FormatStatus}) && ref($_->{Resolution}->{FormatStatus}) eq 'HASH' ? 
+            $_->{Resolution}->{FormatStatus}->{content} :
+            $_->{FormatStatus};
+
         $self->{output}->output_add(
             long_msg => sprintf(
                 "video input source '%s' format status is '%s' [instance: %s]",
                 $instance,
-                $_->{FormatStatus},
+                $format_status,
                 $instance
             )
         );
 
-        my $exit = $self->get_severity(section => 'format_status', value => $_->{FormatStatus});
+        my $exit = $self->get_severity(section => 'format_status', value => $format_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("video input source '%s' format status is '%s'", $instance, $_->{FormatStatus})
+                short_msg => sprintf("video input source '%s' format status is '%s'", $instance, $format_status)
             );
         }
     }

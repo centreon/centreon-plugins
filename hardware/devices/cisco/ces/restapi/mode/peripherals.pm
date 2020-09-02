@@ -108,7 +108,7 @@ __END__
 
 =head1 MODE
 
-Check peripherals device connected.
+Check peripherals device connected (since TC 7.2).
 
 =over 8
 

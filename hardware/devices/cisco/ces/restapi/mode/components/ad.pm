@@ -55,11 +55,13 @@ sub check {
     $self->{components}->{ad} = { name => 'audio devices', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'ad'));
 
+    # since CE 9.8
     check_ad(
         $self,
         entry => $self->{results}->{Audio}->{Devices}->{HandsetUSB},
         instance => 'handsetUSB'
     );
+    # since CE 9.8
     check_ad(
         $self,
         entry => $self->{results}->{Audio}->{Devices}->{HeadsetUSB},
