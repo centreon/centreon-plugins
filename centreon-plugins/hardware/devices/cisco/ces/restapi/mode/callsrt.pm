@@ -29,6 +29,11 @@ use Digest::MD5 qw(md5_hex);
 sub custom_traffic_calc {
     my ($self, %options) = @_;
 
+    if (!defined($options{delta_time})) {
+        $self->{error_msg} = 'Buffer creation';
+        return -1;
+    }
+
     my $total_bytes = 0;
     foreach (keys %{$options{new_datas}}) {
         if (/\Q$self->{instance}\E_.*_bytes/) {
