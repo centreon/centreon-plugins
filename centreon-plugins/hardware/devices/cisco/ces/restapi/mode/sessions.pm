@@ -89,7 +89,7 @@ __END__
 
 =head1 MODE
 
-Check sessions.
+Check sessions (since CE 8.2)
 
 =over 8
 

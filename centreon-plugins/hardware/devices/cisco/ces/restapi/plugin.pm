@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes}} = {
         'components'    => 'hardware::devices::cisco::ces::restapi::mode::components',
         'calls-summary' => 'hardware::devices::cisco::ces::restapi::mode::callssummary',
         'calls-rt'      => 'hardware::devices::cisco::ces::restapi::mode::callsrt',
@@ -39,9 +39,9 @@ sub new {
         'diagnostics'   => 'hardware::devices::cisco::ces::restapi::mode::diagnostics',
         'peripherals'   => 'hardware::devices::cisco::ces::restapi::mode::peripherals',
         'sessions'      => 'hardware::devices::cisco::ces::restapi::mode::sessions'
-    );
+    };
 
-    $self->{custom_modes}{api} = 'hardware::devices::cisco::ces::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'hardware::devices::cisco::ces::restapi::custom::api';
     return $self;
 }
 

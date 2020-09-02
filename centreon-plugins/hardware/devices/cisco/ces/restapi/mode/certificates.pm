@@ -119,7 +119,7 @@ __END__
 
 =head1 MODE
 
-Check certificates validity.
+Check certificates validity (since CE 9.2)
 
 =over 8
 
