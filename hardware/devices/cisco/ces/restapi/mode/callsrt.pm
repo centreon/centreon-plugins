@@ -204,6 +204,16 @@ sub manage_selection {
         $self->{channels}->{$_} = { display => $_ };
     }
 
+    if (!defined($result->{version}) || $result->{version} !~ /^(?:CE|TC)(\d+\.\d+)/i) {
+        $self->{output}->add_option_msg(short_msg => 'cannot find firmware version');
+        $self->{output}->option_exit();
+    }
+    my ($version_major, $version_minor) = split(/\./, $1);
+    if (($version_major < 8) || ($version_major == 8 && $version_minor < 3)) {
+        $self->{output}->add_option_msg(short_msg => 'firmware version is too old (' . $version_major . '.' . $version_minor . ')');
+        $self->{output}->option_exit();
+    }
+
     return if (!defined($result->{MediaChannels}->{Call}));
 
     foreach my $call (@{$result->{MediaChannels}->{Call}}) {

@@ -37,7 +37,7 @@ sub check_subpart {
         
         next if ($self->check_filter(section => 'enclosure.' . $options{section}, instance => $instance));
 
-        my $status = $_->{status};
+        my $status = defined($_->{status}) ? $_->{status} : 'n/a';
         $self->{output}->output_add(
             long_msg => sprintf(
                 "enclosure %s '%s' status is '%s' [instance = %s]",

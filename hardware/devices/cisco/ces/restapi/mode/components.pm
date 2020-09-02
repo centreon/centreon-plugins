@@ -122,7 +122,7 @@ sub execute_custom {
     my $system_version = 'unknown';
     $system_version = $self->{results}->{version} if (defined($self->{results}->{version}));
 
-    $self->{output}->output_add(long_msg => 'system version: ' . $system_version);
+    $self->{output}->output_add(long_msg => 'firmware version: ' . $system_version);
 }
 
 1;
