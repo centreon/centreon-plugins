@@ -158,6 +158,7 @@ sub set_method {
     my ($self, %options) = @_;
 
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CUSTOMREQUEST'), parameter => undef);
+    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => undef);
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPGET'), parameter => 1);
 
     if ($options{request}->{method} eq 'GET') {
