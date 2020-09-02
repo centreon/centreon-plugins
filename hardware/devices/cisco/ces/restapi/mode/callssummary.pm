@@ -157,17 +157,18 @@ sub manage_selection {
     $self->{global_video_outgoing} = { loss => 0, pkts => 0, loss_prct => 0, maxjitter => 0, label => 'video outgoing' };
     $self->{global_audio_incoming} = { loss => 0, pkts => 0, loss_prct => 0, maxjitter => 0, label => 'audio incoming' };
     $self->{global_audio_outgoing} = { loss => 0, pkts => 0, loss_prct => 0, maxjitter => 0, label => 'audio outgoing' };
-    $self->{global_roomanalytics} = { peoplecount => 0 };
+    $self->{global_roomanalytics} = {};
 
     return if (!defined($result->{CallHistoryGetResult}->{Entry}));
 
     my $save_last_time = 0;
     foreach (@{$result->{CallHistoryGetResult}->{Entry}}) {
-        my $end_time = Date::Parse::str2time($_->{EndTimeUTC});
+        my $end_time_utc = ref($_->{EndTimeUTC}) eq 'HASH' ? $_->{EndTimeUTC}->{content} : $_->{EndTimeUTC};
+        my $end_time = Date::Parse::str2time($end_time_utc);
         if (!defined($end_time)) {
             $self->{output}->output_add(
                 severity => 'UNKNOWN',
-                short_msg => "can't parse date '" . $_->{EndTimeUTC} . "'"
+                short_msg => "can't parse date '" . $end_time_utc . "'"
             );
             next;
         }
@@ -177,17 +178,21 @@ sub manage_selection {
         $self->{global}->{new_calls}++;
         foreach my $type (('Video', 'Audio')) {
             foreach my $direction (('Incoming', 'Outgoing')) {
-                $self->{'global_' . lc($type) . '_' . lc($direction)}->{maxjitter}  = $_->{$type}->{$direction}->{MaxJitter}
-                    if ($self->{'global_' . lc($type) . '_' . lc($direction)}->{maxjitter} < $_->{$type}->{$direction}->{MaxJitter});
-                if ($_->{$type}->{$direction}->{PacketLoss} =~ /^(\d+)\/(\d+)/) {
+                my $max_jitter = ref($_->{$type}->{$direction}->{MaxJitter}) eq 'HASH' ? $_->{$type}->{$direction}->{MaxJitter}->{content} : $_->{$type}->{$direction}->{MaxJitter};
+                my $packet_loss = ref($_->{$type}->{$direction}->{PacketLoss}) eq 'HASH' ? $_->{$type}->{$direction}->{PacketLoss}->{content} : $_->{$type}->{$direction}->{PacketLoss};
+                $self->{'global_' . lc($type) . '_' . lc($direction)}->{maxjitter} = $max_jitter
+                    if ($self->{'global_' . lc($type) . '_' . lc($direction)}->{maxjitter} < $max_jitter);
+                if ($packet_loss =~ /^(\d+)\/(\d+)/) {
                     $self->{'global_' . lc($type) . '_' . lc($direction)}->{loss} += $1;
                     $self->{'global_' . lc($type) . '_' . lc($direction)}->{pkts} += $2;
                 }
             }
         }
-        $self->{global_roomanalytics}->{peoplecount} = $_->{RoomAnalytics}->{PeopleCount};
-        if ($_->{RoomAnalytics}->{PeopleCount} =~ /^N\/A$/) {
-            $self->{global_roomanalytics}->{peoplecount} = 0;
+        if (defined($_->{RoomAnalytics}->{PeopleCount})) {
+            $self->{global_roomanalytics}->{peoplecount} = $_->{RoomAnalytics}->{PeopleCount};
+            if ($_->{RoomAnalytics}->{PeopleCount} =~ /^N\/A$/) {
+                $self->{global_roomanalytics}->{peoplecount} = 0;
+            }
         }
     }
 

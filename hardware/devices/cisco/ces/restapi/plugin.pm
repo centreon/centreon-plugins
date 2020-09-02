@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'components'    => 'hardware::devices::cisco::ces::restapi::mode::components',
         'calls-summary' => 'hardware::devices::cisco::ces::restapi::mode::callssummary',
         'calls-rt'      => 'hardware::devices::cisco::ces::restapi::mode::callsrt',
