@@ -226,7 +226,7 @@ __END__
 
 =head1 MODE
 
-Check call channels in real-time.
+Check call channels in real-time (since CE 8.3)
 
 =over 8
 

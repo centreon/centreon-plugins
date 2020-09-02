@@ -23,6 +23,15 @@ package hardware::devices::cisco::ces::restapi::mode::components::camera;
 use strict;
 use warnings;
 
+#<Camera item="1">
+#    <Capabilities item="1">
+#      <Options item="1">ptzf</Options>
+#    </Capabilities>
+#    <Connected item="1">True</Connected>
+#    ...
+#</Camera>
+#
+
 sub check {
     my ($self) = @_;
 
@@ -30,28 +39,32 @@ sub check {
     $self->{components}->{camera} = { name => 'cameras', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'camera'));
 
-    return if (!defined($self->{results}->{Cameras}->{Camera}));
+    my $cameras = defined($self->{results}->{Cameras}->{Camera}) ? $self->{results}->{Cameras}->{Camera} : $self->{results}->{Camera};
 
-    foreach (@{$self->{results}->{Cameras}->{Camera}}) {
+    return if (!$cameras);
+
+    foreach (@$cameras) {
         my $instance = $_->{item};
 
         next if ($self->check_filter(section => 'camera', instance => $instance));
         $self->{components}->{camera}->{total}++;
 
+        my $connected = ref($_->{Connected}) eq 'HASH' ? $_->{Connected}->{content} : $_->{Connected};
+
         $self->{output}->output_add(
             long_msg => sprintf(
                 "camera '%s' connection status is '%s' [instance: %s]",
                 $instance,
-                $_->{Connected},
-                $instance,
+                $connected,
+                $instance
             )
         );
 
-        my $exit = $self->get_severity(label => 'connected', section => 'camera.status', value => $_->{Connected});
+        my $exit = $self->get_severity(label => 'connected', section => 'camera.status', value => $connected);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("camera '%s' connection status is '%s'", $instance, $_->{Connected})
+                short_msg => sprintf("camera '%s' connection status is '%s'", $instance, $connected)
             );
         }
     }
