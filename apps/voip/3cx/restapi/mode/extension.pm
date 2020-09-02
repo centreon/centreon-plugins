@@ -80,9 +80,10 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
+        'filter:s'          => { name => 'filter' },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' }
     });
 
     return $self;
@@ -116,6 +117,11 @@ sub manage_selection {
     my $extension = $options{custom}->api_extension_list();
     $self->{extension} = {};
     foreach my $item (@$extension) {
+        if (defined($self->{option_results}->{filter}) && $self->{option_results}->{filter} ne '' &&
+            $item->{_str} !~ /$self->{option_results}->{filter}/) {
+            $self->{output}->output_add(long_msg => "skipping extension '" . $item->{_str} . "': no matching filter.", debug => 1);
+            next;
+        }
         $self->{extension}->{$item->{_str}} = {
             extension => $item->{_str},
             registered => $item->{IsRegistered} ? 'true' : 'false',
@@ -137,6 +143,10 @@ __END__
 Check extentions status
 
 =over 8
+
+=item B<--filter>
+
+Filter extension.
 
 =item B<--unknown-status>
 
