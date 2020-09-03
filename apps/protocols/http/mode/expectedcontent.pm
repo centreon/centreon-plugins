@@ -200,7 +200,7 @@ sub manage_selection {
     };
 
     if (defined($self->{option_results}->{extracted_pattern}) && $self->{option_results}->{extracted_pattern} ne '' &&
-        $webcontent =~ /$self->{option_results}->{extracted_pattern}/mi) {
+        $webcontent =~ /($self->{option_results}->{extracted_pattern})/mi) {
         my $extracted = $1;
         if (defined($extracted) && $extracted =~ /(\d+([\.,]\d+)?)/) {
             $extracted =~ s/,/\./;
