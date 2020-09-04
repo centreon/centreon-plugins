@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::microsoft::office365::sharepoint::mode::usersactivity;
+package cloud::microsoft::office365::onedrive::mode::usersactivity;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -38,7 +38,7 @@ sub custom_active_perfdata {
     $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
     $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
 
-    $self->{output}->perfdata_add(label => 'active_users', nlabel => 'sharepoint.users.active.count',
+    $self->{output}->perfdata_add(label => 'active_users', nlabel => 'onedrive.users.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -113,7 +113,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-viewed-edited-file-count', nlabel => 'sharepoint.users.files.viewed.total.count', set => {
+        { label => 'total-viewed-edited-file-count', nlabel => 'onedrive.users.files.viewed.total.count', set => {
                 key_values => [ { name => 'viewed_edited_file_count' } ],
                 output_template => 'Viewed or Edited File Count: %d',
                 perfdatas => [
@@ -122,7 +122,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-synced-file-count', nlabel => 'sharepoint.users.files.synced.total.count', set => {
+        { label => 'total-synced-file-count', nlabel => 'onedrive.users.files.synced.total.count', set => {
                 key_values => [ { name => 'synced_file_count' } ],
                 output_template => 'Synced File Count: %d',
                 perfdatas => [
@@ -131,7 +131,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-shared-int-file-count', nlabel => 'sharepoint.users.files.shared.internally.total.count', set => {
+        { label => 'total-shared-int-file-count', nlabel => 'onedrive.users.files.shared.internally.total.count', set => {
                 key_values => [ { name => 'shared_int_file_count' } ],
                 output_template => 'Shared Internally File Count: %d',
                 perfdatas => [
@@ -140,7 +140,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-shared-ext-file-count', nlabel => 'sharepoint.users.files.shared.externally.total.count', set => {
+        { label => 'total-shared-ext-file-count', nlabel => 'onedrive.users.files.shared.externally.total.count', set => {
                 key_values => [ { name => 'shared_ext_file_count' } ],
                 output_template => 'Shared Externally File Count: %d',
                 perfdatas => [
@@ -149,18 +149,9 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-visited-page-count', nlabel => 'sharepoint.users.pages.visited.total.count', set => {
-                key_values => [ { name => 'visited_page_count' } ],
-                output_template => 'Visited Page Count (active sites): %d',
-                perfdatas => [
-                    { label => 'total_visited_page_count', value => 'visited_page_count', template => '%d',
-                      min => 0 },
-                ],
-            }
-        },
     ];
     $self->{maps_counters}->{users} = [
-        { label => 'viewed-edited-file-count', nlabel => 'sharepoint.users.files.viewed.count', set => {
+        { label => 'viewed-edited-file-count', nlabel => 'onedrive.users.files.viewed.count', set => {
                 key_values => [ { name => 'viewed_edited_file_count' }, { name => 'name' } ],
                 output_template => 'Viewed or Edited File Count: %d',
                 perfdatas => [
@@ -169,7 +160,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'synced-file-count', nlabel => 'sharepoint.users.files.synced.count', set => {
+        { label => 'synced-file-count', nlabel => 'onedrive.users.files.synced.count', set => {
                 key_values => [ { name => 'synced_file_count' }, { name => 'name' } ],
                 output_template => 'Synced File Count: %d',
                 perfdatas => [
@@ -178,7 +169,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'shared-int-file-count', nlabel => 'sharepoint.users.files.shared.internally.count', set => {
+        { label => 'shared-int-file-count', nlabel => 'onedrive.users.files.shared.internally.count', set => {
                 key_values => [ { name => 'shared_int_file_count' }, { name => 'name' } ],
                 output_template => 'Shared Internally File Count: %d',
                 perfdatas => [
@@ -187,20 +178,11 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'shared-ext-file-count', nlabel => 'sharepoint.users.files.shared.externally.count', set => {
+        { label => 'shared-ext-file-count', nlabel => 'onedrive.users.files.shared.externally.count', set => {
                 key_values => [ { name => 'shared_ext_file_count' }, { name => 'name' } ],
                 output_template => 'Shared Externally File Count: %d',
                 perfdatas => [
                     { label => 'shared_ext_file_count', value => 'shared_ext_file_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
-            }
-        },
-        { label => 'visited-page-count', nlabel => 'sharepoint.users.pages.visited.count', set => {
-                key_values => [ { name => 'visited_page_count' }, { name => 'name' } ],
-                output_template => 'Visited Page Count: %d',
-                perfdatas => [
-                    { label => 'visited_page_count', value => 'visited_page_count', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
@@ -227,15 +209,14 @@ sub manage_selection {
     
     $self->{active} = { active => 0, total => 0, report_date => '' };
     $self->{global} = { viewed_edited_file_count => 0, synced_file_count => 0,
-                        shared_int_file_count => 0, shared_ext_file_count => 0,
-                        visited_page_count => 0 };
+                        shared_int_file_count => 0, shared_ext_file_count => 0 };
     $self->{users} = {};
 
-    my $results = $options{custom}->office_get_sharepoint_activity(param => "period='D7'");
+    my $results = $options{custom}->office_get_onedrive_activity(param => "period='D7'");
     my $results_daily = [];
     if (scalar(@{$results})) {
        $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
-       $results_daily = $options{custom}->office_get_sharepoint_activity(param => "date=" . $self->{active}->{report_date});
+       $results_daily = $options{custom}->office_get_onedrive_activity(param => "date=" . $self->{active}->{report_date});
     }
 
     foreach my $user (@{$results}, @{$results_daily}) {
@@ -259,14 +240,12 @@ sub manage_selection {
         $self->{global}->{synced_file_count} += ($user->{'Synced File Count'} ne '') ? $user->{'Synced File Count'} : 0;
         $self->{global}->{shared_int_file_count} += ($user->{'Shared Internally File Count'} ne '') ? $user->{'Shared Internally File Count'} : 0;
         $self->{global}->{shared_ext_file_count} += ($user->{'Shared Externally File Count'} ne '') ? $user->{'Shared Externally File Count'} : 0;
-        $self->{global}->{visited_page_count} += ($user->{'Visited Page Count'} ne '') ? $user->{'Visited Page Count'} : 0;
 
         $self->{users}->{$user->{'User Principal Name'}}->{name} = $user->{'User Principal Name'};
         $self->{users}->{$user->{'User Principal Name'}}->{viewed_edited_file_count} = $user->{'Viewed Or Edited File Count'};
         $self->{users}->{$user->{'User Principal Name'}}->{synced_file_count} = $user->{'Synced File Count'};
         $self->{users}->{$user->{'User Principal Name'}}->{shared_int_file_count} = $user->{'Shared Internally File Count'};
         $self->{users}->{$user->{'User Principal Name'}}->{shared_ext_file_count} = $user->{'Shared Externally File Count'};
-        $self->{users}->{$user->{'User Principal Name'}}->{visited_page_count} = $user->{'Visited Page Count'};
     }
 }
 
@@ -279,7 +258,7 @@ __END__
 Check users activity (reporting period over the last refreshed day).
 
 (See link for details about metrics :
-https://docs.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-activity?view=o365-worldwide)
+https://docs.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-activity?view=o365-worldwide)
 
 =over 8
 
@@ -293,10 +272,8 @@ Threshold warning.
 Can be: 'active-users',
 'total-viewed-edited-file-count' (count), 'total-synced-file-count' (count),
 'total-shared-int-file-count' (count), 'total-shared-ext-file-count' (count),
-'total-visited-page-count' (count),
 'viewed-edited-file-count' (count), 'synced-file-count' (count),
-'shared-int-file-count' (count), 'shared-ext-file-count' (count),
-'visited-page-count' (count).
+'shared-int-file-count' (count), 'shared-ext-file-count' (count).
 
 =item B<--critical-*>
 
@@ -304,10 +281,8 @@ Threshold critical.
 Can be: 'active-users',
 'total-viewed-edited-file-count' (count), 'total-synced-file-count' (count),
 'total-shared-int-file-count' (count), 'total-shared-ext-file-count' (count),
-'total-visited-page-count' (count),
 'viewed-edited-file-count' (count), 'synced-file-count' (count),
-'shared-int-file-count' (count), 'shared-ext-file-count' (count),
-'visited-page-count' (count).
+'shared-int-file-count' (count), 'shared-ext-file-count' (count).
 
 =item B<--filter-counters>
 

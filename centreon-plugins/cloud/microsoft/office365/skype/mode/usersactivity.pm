@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Time::Local;
 
 sub custom_active_perfdata {
     my ($self, %options) = @_;
@@ -34,7 +35,10 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_users',
+    $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
+    $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+
+    $self->{output}->perfdata_add(label => 'active_users', nlabel => 'skype.users.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -109,7 +113,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-peer-to-peer-sessions', set => {
+        { label => 'total-peer-to-peer-sessions', nlabel => 'skype.users.sessions.p2p.total.count', set => {
                 key_values => [ { name => 'peer_to_peer_sessions' } ],
                 output_template => 'Peer-to-peer Sessions Count: %d',
                 perfdatas => [
@@ -118,7 +122,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-organized-conference', set => {
+        { label => 'total-organized-conference', nlabel => 'skype.users.conferences.organized.total.count', set => {
                 key_values => [ { name => 'organized_conference' } ],
                 output_template => 'Organized Conference Count: %d',
                 perfdatas => [
@@ -127,7 +131,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-participated-conference', set => {
+        { label => 'total-participated-conference', nlabel => 'skype.users.conferences.participated.total.count', set => {
                 key_values => [ { name => 'participated_conference' } ],
                 output_template => 'Participated Conference Count: %d',
                 perfdatas => [
@@ -138,7 +142,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{users} = [
-        { label => 'peer-to-peer-sessions', set => {
+        { label => 'peer-to-peer-sessions', nlabel => 'skype.users.sessions.p2p.count', set => {
                 key_values => [ { name => 'peer_to_peer_sessions' }, { name => 'name' } ],
                 output_template => 'Peer-to-peer Sessions Count: %d',
                 perfdatas => [
@@ -147,7 +151,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'organized-conference', set => {
+        { label => 'organized-conference', nlabel => 'skype.users.conferences.organized.count', set => {
                 key_values => [ { name => 'organized_conference' }, { name => 'name' } ],
                 output_template => 'Organized Conference Count: %d',
                 perfdatas => [
@@ -156,7 +160,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'participated-conference', set => {
+        { label => 'participated-conference', nlabel => 'skype.users.conferences.participated.count', set => {
                 key_values => [ { name => 'participated_conference' }, { name => 'name' } ],
                 output_template => 'Participated Conference Count: %d',
                 perfdatas => [
@@ -189,22 +193,25 @@ sub manage_selection {
     $self->{global} = { peer_to_peer_sessions => 0, organized_conference => 0, participated_conference => 0 };
     $self->{users} = {};
 
-    my $results = $options{custom}->office_get_skype_activity();
+    my $results = $options{custom}->office_get_skype_activity(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       $results_daily = $options{custom}->office_get_skype_activity(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $user (@{$results}) {
-        $self->{active}->{report_date} = $user->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
-
+    foreach my $user (@{$results}, @{$results_daily}) {
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
             next;
         }
     
-        $self->{active}->{total}++;
-
-        if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
-            ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
-            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+        if ($user->{'Report Period'} != 1) {
+            if (!defined($user->{'Last Activity Date'}) || ($user->{'Last Activity Date'} ne $self->{active}->{report_date})) {
+                $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+            }
+            $self->{active}->{total}++;
             next;
         }
 
@@ -227,7 +234,7 @@ __END__
 
 =head1 MODE
 
-Check users activity (reporting period over the last 7 days).
+Check users activity (reporting period over the last refreshed day).
 
 (See link for details about metrics :
 https://docs.microsoft.com/en-us/SkypeForBusiness/skype-for-business-online-reporting/activity-report)

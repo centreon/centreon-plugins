@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Time::Local;
 
 sub custom_active_perfdata {
     my ($self, %options) = @_;
@@ -34,11 +35,14 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_users',
+    $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
+    $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+
+    $self->{output}->perfdata_add(label => 'active_devices', nlabel => 'teams.devices.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  unit => 'users', min => 0, max => $self->{result_values}->{total});
+                                  unit => 'devices', min => 0, max => $self->{result_values}->{total});
 }
 
 sub custom_active_threshold {
@@ -58,7 +62,7 @@ sub custom_active_threshold {
 sub custom_active_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Active users on %s : %d/%d (%.2f%%)",
+    my $msg = sprintf("Active devices on %s : %d/%d (%.2f%%)",
                         $self->{result_values}->{report_date},
                         $self->{result_values}->{active},
                         $self->{result_values}->{total},
@@ -92,7 +96,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{active} = [
-        { label => 'active-users', set => {
+        { label => 'active-devices', set => {
                 key_values => [ { name => 'active' }, { name => 'total' }, { name => 'report_date' } ],
                 closure_custom_calc => $self->can('custom_active_calc'),
                 closure_custom_output => $self->can('custom_active_output'),
@@ -102,7 +106,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'windows', set => {
+        { label => 'windows', nlabel => 'teams.devices.windows.count', set => {
                 key_values => [ { name => 'windows' } ],
                 output_template => 'Windows: %d',
                 perfdatas => [
@@ -111,7 +115,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'mac', set => {
+        { label => 'mac', nlabel => 'teams.devices.mac.count', set => {
                 key_values => [ { name => 'mac' } ],
                 output_template => 'Mac: %d',
                 perfdatas => [
@@ -120,7 +124,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'web', set => {
+        { label => 'web', nlabel => 'teams.devices.web.count', set => {
                 key_values => [ { name => 'web' } ],
                 output_template => 'Web: %d',
                 perfdatas => [
@@ -129,7 +133,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'ios', set => {
+        { label => 'ios', nlabel => 'teams.devices.ios.count', set => {
                 key_values => [ { name => 'ios' } ],
                 output_template => 'iOS: %d',
                 perfdatas => [
@@ -138,7 +142,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'android-phone', set => {
+        { label => 'android-phone', nlabel => 'teams.devices.android.count', set => {
                 key_values => [ { name => 'android_phone' } ],
                 output_template => 'Android Phone: %d',
                 perfdatas => [
@@ -147,7 +151,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'windows-phone', set => {
+        { label => 'windows-phone', nlabel => 'teams.devices.windowsphone.count', set => {
                 key_values => [ { name => 'windows_phone' } ],
                 output_template => 'Windows Phone: %d',
                 perfdatas => [
@@ -178,25 +182,37 @@ sub manage_selection {
     $self->{active} = { active => 0, total => 0, report_date => '' };
     $self->{global} = { windows => 0, mac => 0, web => 0, ios => 0, android_phone => 0, windows_phone => 0 };
 
-    my $results = $options{custom}->office_get_teams_device_usage();
+    my $results = $options{custom}->office_get_teams_device_usage(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       $results_daily = $options{custom}->office_get_teams_device_usage(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $user (@{$results}) {
+    foreach my $user (@{$results}, @{$results_daily}) {
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
             next;
         }
-    
-        $self->{active}->{total}++;
 
-        if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
-            ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
-            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+        my $used_devices = 0;
+        $used_devices++ if ($user->{'Used Windows'} =~ /Yes/);
+        $used_devices++ if ($user->{'Used Mac'} =~ /Yes/);
+        $used_devices++ if ($user->{'Used Web'} =~ /Yes/);
+        $used_devices++ if ($user->{'Used iOS'} =~ /Yes/);
+        $used_devices++ if ($user->{'Used Android Phone'} =~ /Yes/);
+        $used_devices++ if ($user->{'Used Windows Phone'} =~ /Yes/);
+
+        if ($user->{'Report Period'} != 1) {
+            if (!defined($user->{'Last Activity Date'}) || ($user->{'Last Activity Date'} ne $self->{active}->{report_date})) {
+                $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+            }
+            $self->{active}->{total} += $used_devices;
             next;
         }
 
-        $self->{active}->{report_date} = $user->{'Report Refresh Date'};
-        $self->{active}->{active}++;
+        $self->{active}->{active} += $used_devices;
 
         $self->{global}->{windows}++ if ($user->{'Used Windows'} =~ /Yes/);
         $self->{global}->{mac}++ if ($user->{'Used Mac'} =~ /Yes/);
@@ -213,7 +229,7 @@ __END__
 
 =head1 MODE
 
-Check devices usage (reporting period over the last 7 days).
+Check devices usage (reporting period over the last refreshed day).
 
 (See link for details about metrics :
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/microsoft-teams-device-usage?view=o365-worldwide)
@@ -227,14 +243,14 @@ Filter users.
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-users', 'windows' (count), 'mac' (count),
+Can be: 'active-devices', 'windows' (count), 'mac' (count),
 'web' (count), 'ios' (count), 'android-phone' (count),
 'windows-phone' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'active-users', 'windows' (count), 'mac' (count),
+Can be: 'active-devices', 'windows' (count), 'mac' (count),
 'web' (count), 'ios' (count), 'android-phone' (count),
 'windows-phone' (count).
 

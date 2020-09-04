@@ -272,7 +272,7 @@ sub request_api_csv {
 sub office_get_sharepoint_site_usage_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSharePointSiteUsageDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSharePointSiteUsageDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -289,7 +289,7 @@ sub office_get_sharepoint_site_usage {
 sub office_get_sharepoint_activity_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSharePointActivityUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSharePointActivityUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -306,7 +306,7 @@ sub office_get_sharepoint_activity {
 sub office_get_onedrive_usage_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getOneDriveUsageAccountDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getOneDriveUsageAccountDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -316,6 +316,23 @@ sub office_get_onedrive_usage {
 
     my $full_url = $self->office_get_onedrive_usage_set_url(%options);
     my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
+sub office_get_onedrive_activity_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getOneDriveActivityUserDetail(" . $options{param} . ")";
+
+    return $url;
+}
+
+sub office_get_onedrive_activity {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_onedrive_activity_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
     
     return $response;
 }
@@ -323,7 +340,7 @@ sub office_get_onedrive_usage {
 sub office_get_exchange_activity_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getEmailActivityUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getEmailActivityUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -340,7 +357,7 @@ sub office_get_exchange_activity {
 sub office_get_exchange_mailbox_usage_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getMailboxUsageDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getMailboxUsageDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -357,7 +374,7 @@ sub office_get_exchange_mailbox_usage {
 sub office_get_teams_activity_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsUserActivityUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsUserActivityUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -374,7 +391,7 @@ sub office_get_teams_activity {
 sub office_get_teams_device_usage_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsDeviceUsageUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsDeviceUsageUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -391,7 +408,7 @@ sub office_get_teams_device_usage {
 sub office_get_skype_activity_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSkypeForBusinessActivityUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSkypeForBusinessActivityUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -408,7 +425,7 @@ sub office_get_skype_activity {
 sub office_get_skype_device_usage_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSkypeForBusinessDeviceUsageUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSkypeForBusinessDeviceUsageUserDetail(" . $options{param} . ")";
 
     return $url;
 }

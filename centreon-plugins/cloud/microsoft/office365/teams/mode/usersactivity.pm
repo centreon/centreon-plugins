@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Time::Local;
 
 sub custom_active_perfdata {
     my ($self, %options) = @_;
@@ -34,7 +35,10 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_users',
+    $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
+    $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+
+    $self->{output}->perfdata_add(label => 'active_users', nlabel => 'teams.users.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -109,7 +113,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-team-chat', set => {
+        { label => 'total-team-chat', nlabel => 'teams.users.messages.team.total.count', set => {
                 key_values => [ { name => 'team_chat' } ],
                 output_template => 'Team Chat Message Count: %d',
                 perfdatas => [
@@ -118,7 +122,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-private-chat', set => {
+        { label => 'total-private-chat', nlabel => 'teams.users.messages.private.total.count', set => {
                 key_values => [ { name => 'private_chat' } ],
                 output_template => 'Private Chat Message Count: %d',
                 perfdatas => [
@@ -127,7 +131,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-call', set => {
+        { label => 'total-call', nlabel => 'teams.users.call.total.count', set => {
                 key_values => [ { name => 'call' } ],
                 output_template => 'Call Count: %d',
                 perfdatas => [
@@ -136,7 +140,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-meeting', set => {
+        { label => 'total-meeting', nlabel => 'teams.users.meeting.total.count', set => {
                 key_values => [ { name => 'meeting' } ],
                 output_template => 'Meeting Count: %d',
                 perfdatas => [
@@ -147,7 +151,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{users} = [
-        { label => 'team-chat', set => {
+        { label => 'team-chat', nlabel => 'teams.users.messages.team.count', set => {
                 key_values => [ { name => 'team_chat' }, { name => 'name' } ],
                 output_template => 'Team Chat Message Count: %d',
                 perfdatas => [
@@ -156,7 +160,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'private-chat', set => {
+        { label => 'private-chat', nlabel => 'teams.users.messages.private.count', set => {
                 key_values => [ { name => 'private_chat' }, { name => 'name' } ],
                 output_template => 'Private Chat Message Count: %d',
                 perfdatas => [
@@ -165,7 +169,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'call', set => {
+        { label => 'call', nlabel => 'teams.users.call.count', set => {
                 key_values => [ { name => 'call' }, { name => 'name' } ],
                 output_template => 'Call Count: %d',
                 perfdatas => [
@@ -174,7 +178,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'meeting', set => {
+        { label => 'meeting', nlabel => 'teams.users.meeting.count', set => {
                 key_values => [ { name => 'meeting' }, { name => 'name' } ],
                 output_template => 'Meeting Count: %d',
                 perfdatas => [
@@ -207,24 +211,28 @@ sub manage_selection {
     $self->{global} = { team_chat => 0, private_chat => 0, call => 0, meeting => 0 };
     $self->{users} = {};
 
-    my $results = $options{custom}->office_get_teams_activity();
+    my $results = $options{custom}->office_get_teams_activity(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       $results_daily = $options{custom}->office_get_teams_activity(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $user (@{$results}) {
+    foreach my $user (@{$results}, @{$results_daily}) {
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
             next;
         }
     
-        $self->{active}->{total}++;
-
-        if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
-            ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
-            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+        if ($user->{'Report Period'} != 1) {
+            if (!defined($user->{'Last Activity Date'}) || ($user->{'Last Activity Date'} ne $self->{active}->{report_date})) {
+                $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+            }
+            $self->{active}->{total}++;
             next;
         }
 
-        $self->{active}->{report_date} = $user->{'Report Refresh Date'};
         $self->{active}->{active}++;
 
         $self->{global}->{team_chat} += $user->{'Team Chat Message Count'};
@@ -237,7 +245,6 @@ sub manage_selection {
         $self->{users}->{$user->{'User Principal Name'}}->{private_chat} = $user->{'Private Chat Message Count'};
         $self->{users}->{$user->{'User Principal Name'}}->{call} = $user->{'Call Count'};
         $self->{users}->{$user->{'User Principal Name'}}->{meeting} = $user->{'Meeting Count'};
-        $self->{users}->{$user->{'User Principal Name'}}->{last_activity_date} = $user->{'Last Activity Date'};
     }
 }
 
@@ -247,7 +254,7 @@ __END__
 
 =head1 MODE
 
-Check users activity (reporting period over the last 7 days).
+Check users activity (reporting period over the last refreshed day).
 
 (See link for details about metrics :
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/microsoft-teams-user-activity?view=o365-worldwide)

@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Time::Local;
 
 sub custom_active_perfdata {
     my ($self, %options) = @_;
@@ -34,7 +35,10 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_mailboxes',
+    $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
+    $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+
+    $self->{output}->perfdata_add(label => 'active_mailboxes', nlabel => 'exchange.mailboxes.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -83,7 +87,7 @@ sub custom_usage_perfdata {
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     
-    $self->{output}->perfdata_add(label => 'used' . $extra_label,
+    $self->{output}->perfdata_add(label => 'used' . $extra_label, nlabel => $self->{result_values}->{display} . '#exchange.mailboxes.usage.bytes',
                                   unit => 'B',
                                   value => $self->{result_values}->{used},
                                   min => 0);
@@ -172,22 +176,22 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-usage-active', set => {
+        { label => 'total-usage-active', nlabel => 'exchange.mailboxes.active.usage.total.bytes', set => {
                 key_values => [ { name => 'storage_used_active' } ],
                 output_template => 'Usage (active mailboxes): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_active', value => 'storage_used_active', template => '%d',
+                    { label => 'total_usage_active', value => 'storage_used_active', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
         },
-        { label => 'total-usage-inactive', set => {
+        { label => 'total-usage-inactive', nlabel => 'exchange.mailboxes.inactive.usage.total.bytes', set => {
                 key_values => [ { name => 'storage_used_inactive' } ],
                 output_template => 'Usage (inactive mailboxes): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_inactive', value => 'storage_used_inactive', template => '%d',
+                    { label => 'total_usage_inactive', value => 'storage_used_inactive', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -203,12 +207,12 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
-        { label => 'items', set => {
-                key_values => [ { name => 'items' } ],
+        { label => 'items', nlabel => 'exchange.mailboxes.items.count', set => {
+                key_values => [ { name => 'items' }, { name => 'name' } ],
                 output_template => 'Items: %d',
                 perfdatas => [
                     { label => 'items', value => 'items', template => '%d',
-                      min => 0 },
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -245,25 +249,28 @@ sub manage_selection {
     $self->{global} = { storage_used_active => 0, storage_used_inactive => 0 };
     $self->{mailboxes} = {};
 
-    my $results = $options{custom}->office_get_exchange_mailbox_usage();
+    my $results = $options{custom}->office_get_exchange_mailbox_usage(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       #$results_daily = $options{custom}->office_get_exchange_mailbox_usage(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $mailbox (@{$results}) {
+    foreach my $mailbox (@{$results}, @{$results_daily}) {
         if (defined($self->{option_results}->{filter_mailbox}) && $self->{option_results}->{filter_mailbox} ne '' &&
             $mailbox->{'User Principal Name'} !~ /$self->{option_results}->{filter_mailbox}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $mailbox->{'User Principal Name'} . "': no matching filter name.", debug => 1);
             next;
         }
-    
+
         $self->{active}->{total}++;
 
-        if (!defined($mailbox->{'Last Activity Date'}) || $mailbox->{'Last Activity Date'} eq '' ||
-            ($mailbox->{'Last Activity Date'} ne $mailbox->{'Report Refresh Date'})) {
+        if (!defined($mailbox->{'Last Activity Date'}) || ($mailbox->{'Last Activity Date'} ne $self->{active}->{report_date})) {
             $self->{global}->{storage_used_inactive} += ($mailbox->{'Storage Used (Byte)'} ne '') ? $mailbox->{'Storage Used (Byte)'} : 0;
             $self->{output}->output_add(long_msg => "skipping '" . $mailbox->{'User Principal Name'} . "': no activity.", debug => 1);
             next;
         }
 
-        $self->{active}->{report_date} = $mailbox->{'Report Refresh Date'};
         $self->{active}->{active}++;
         
         $self->{global}->{storage_used_active} += ($mailbox->{'Storage Used (Byte)'} ne '') ? $mailbox->{'Storage Used (Byte)'} : 0;
@@ -283,7 +290,7 @@ __END__
 
 =head1 MODE
 
-Check mailbox usage (reporting period over the last 7 days).
+Check mailbox usage (reporting period over the last refreshed day).
 
 (See link for details about metrics :
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/mailbox-usage?view=o365-worldwide)
