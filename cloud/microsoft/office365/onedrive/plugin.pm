@@ -32,7 +32,8 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'list-sites'            => 'cloud::microsoft::office365::onedrive::mode::listsites',
-        'usage'                 => 'cloud::microsoft::office365::onedrive::mode::usage',
+        'site-usage'            => 'cloud::microsoft::office365::onedrive::mode::siteusage',
+        'users-activity'        => 'cloud::microsoft::office365::onedrive::mode::usersactivity',
     );
 
     $self->{custom_modes}{graphapi} = 'cloud::microsoft::office365::custom::graphapi';

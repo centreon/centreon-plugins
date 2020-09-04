@@ -18,12 +18,13 @@
 # limitations under the License.
 #
 
-package cloud::microsoft::office365::onedrive::mode::usage;
+package cloud::microsoft::office365::onedrive::mode::siteusage;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Time::Local;
 
 sub custom_active_perfdata {
     my ($self, %options) = @_;
@@ -34,7 +35,10 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_sites',
+    $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
+    $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+
+    $self->{output}->perfdata_add(label => 'active_sites', nlabel => 'onedrive.sites.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -83,7 +87,7 @@ sub custom_usage_perfdata {
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     
-    $self->{output}->perfdata_add(label => 'used' . $extra_label,
+    $self->{output}->perfdata_add(label => 'used' . $extra_label, nlabel => $self->{result_values}->{display} . '#onedrive.sites.usage.bytes',
                                   unit => 'B',
                                   value => $self->{result_values}->{used},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -173,36 +177,45 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-usage-active', set => {
+        { label => 'total-usage-active', nlabel => 'onedrive.sites.active.usage.total.bytes', set => {
                 key_values => [ { name => 'storage_used_active' } ],
                 output_template => 'Usage (active sites): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_active', value => 'storage_used_active', template => '%d',
+                    { label => 'total_usage_active', value => 'storage_used_active', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
         },
-        { label => 'total-usage-inactive', set => {
+        { label => 'total-usage-inactive', nlabel => 'onedrive.sites.inactive.usage.total.bytes', set => {
                 key_values => [ { name => 'storage_used_inactive' } ],
                 output_template => 'Usage (inactive sites): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_inactive', value => 'storage_used_inactive', template => '%d',
+                    { label => 'total_usage_inactive', value => 'storage_used_inactive', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
         },
-        { label => 'total-file-count', set => {
-                key_values => [ { name => 'file_count' } ],
+        { label => 'total-file-count-active', nlabel => 'onedrive.sites.active.files.total.count', set => {
+                key_values => [ { name => 'file_count_active' } ],
                 output_template => 'File Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_file_count', value => 'file_count', template => '%d',
+                    { label => 'total_file_count_active', value => 'file_count_active', template => '%d',
                       min => 0 },
                 ],
             }
         },
-        { label => 'total-active-file-count', set => {
+        { label => 'total-file-count-inactive', nlabel => 'onedrive.sites.inactive.files.total.count', set => {
+                key_values => [ { name => 'file_count_inactive' } ],
+                output_template => 'File Count (inactive sites): %d',
+                perfdatas => [
+                    { label => 'total_file_count_inactive', value => 'file_count_inactive', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'total-active-file-count', nlabel => 'onedrive.sites.files.active.total.count', set => {
                 key_values => [ { name => 'active_file_count' } ],
                 output_template => 'Active File Count (active sites): %d',
                 perfdatas => [
@@ -221,7 +234,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
-        { label => 'file-count', set => {
+        { label => 'file-count', nlabel => 'onedrive.sites.files.count', set => {
                 key_values => [ { name => 'file_count' }, { name => 'url' }, { name => 'owner' } ],
                 output_template => 'File Count: %d',
                 perfdatas => [
@@ -230,7 +243,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'active-file-count', set => {
+        { label => 'active-file-count', nlabel => 'onedrive.sites.files.active.count', set => {
                 key_values => [ { name => 'active_file_count' }, { name => 'url' }, { name => 'owner' } ],
                 output_template => 'Active File Count: %d',
                 perfdatas => [
@@ -262,12 +275,18 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $self->{active} = { active => 0, total => 0, report_date => '' };
-    $self->{global} = { storage_used_active => 0, storage_used_inactive => 0, file_count => 0, active_file_count => 0 };
+    $self->{global} = { storage_used_active => 0, storage_used_inactive => 0,
+                        file_count_active => 0, file_count_inactive => 0, active_file_count => 0 };
     $self->{sites} = {};
 
-    my $results = $options{custom}->office_get_onedrive_usage();
+    my $results = $options{custom}->office_get_onedrive_usage(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       $results_daily = $options{custom}->office_get_onedrive_usage(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $site (@{$results}) {
+    foreach my $site (@{$results}, @{$results_daily}) {
         if (defined($self->{option_results}->{filter_url}) && $self->{option_results}->{filter_url} ne '' &&
             $site->{'Site URL'} !~ /$self->{option_results}->{filter_url}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site URL'} . "': no matching filter name.", debug => 1);
@@ -279,20 +298,20 @@ sub manage_selection {
             next;
         }
 
-        $self->{active}->{total}++;
-
-        if (!defined($site->{'Last Activity Date'}) || $site->{'Last Activity Date'} eq '' ||
-            ($site->{'Last Activity Date'} ne $site->{'Report Refresh Date'})) {
-            $self->{global}->{storage_used_inactive} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
-            $self->{output}->output_add(long_msg => "skipping '" . $site->{'Site URL'} . "': no activity.", debug => 1);
+        if ($site->{'Report Period'} != 1) {
+            if (!defined($site->{'Last Activity Date'}) || ($site->{'Last Activity Date'} ne $self->{active}->{report_date})) {
+                $self->{global}->{storage_used_inactive} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
+                $self->{global}->{file_count_inactive} += ($site->{'File Count'} ne '') ? $site->{'File Count'} : 0;
+                $self->{output}->output_add(long_msg => "skipping '" . $site->{'Site URL'} . "': no activity.", debug => 1);
+            }
+            $self->{active}->{total}++;
             next;
         }
-    
-        $self->{active}->{report_date} = $site->{'Report Refresh Date'};
+
         $self->{active}->{active}++;
 
         $self->{global}->{storage_used_active} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
-        $self->{global}->{file_count} += ($site->{'File Count'} ne '') ? $site->{'File Count'} : 0;
+        $self->{global}->{file_count_active} += ($site->{'File Count'} ne '') ? $site->{'File Count'} : 0;
         $self->{global}->{active_file_count} += ($site->{'Active File Count'} ne '') ? $site->{'Active File Count'} : 0;
 
         $self->{sites}->{$site->{'Site URL'}}->{url} = $site->{'Site URL'};
@@ -310,10 +329,10 @@ __END__
 
 =head1 MODE
 
-Check usage (reporting period over the last 7 days).
+Check sites usage (reporting period over the last refreshed day).
 
 (See link for details about metrics :
-https://docs.microsoft.com/en-us/office365/admin/activity-reports/onedrive-for-business-usage?view=o365-worldwide)
+https://docs.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage?view=o365-worldwide)
 
 =over 8
 
@@ -325,18 +344,20 @@ Can be: 'url', 'owner' (can be a regexp).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-sites', 'total-usage-active' (count),
-'total-usage-inactive' (count), 'total-file-count' (count),
-'active-file-count' (count), 'usage' (count),
-'file-count' (count), 'active-file-count' (count).
+Can be: 'active-sites',
+'total-usage-active' (count), 'total-usage-inactive' (count),
+'total-file-count-active' (count), 'total-file-count-inactive' (count),
+'total-active-file-count' (count),
+'usage' (count), 'file-count' (count), 'active-file-count' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'active-sites', 'total-usage-active' (count),
-'total-usage-inactive' (count), 'total-file-count' (count),
-'active-file-count' (count), 'usage' (count),
-'file-count' (count), 'active-file-count' (count).
+Can be: 'active-sites',
+'total-usage-active' (count), 'total-usage-inactive' (count),
+'total-file-count-active' (count), 'total-file-count-inactive' (count),
+'total-active-file-count' (count),
+'usage' (count), 'file-count' (count), 'active-file-count' (count).
 
 =item B<--filter-counters>
 
