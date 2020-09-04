@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::linux::local::custom::cli;
+package centreon::plugins::script_custom::cli;
 
 use strict;
 use warnings;
@@ -38,9 +38,6 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-
-    # discovery-snmp cannot be used at distance.
-    return $self if (defined($options{mode_name}) && $options{mode_name} eq 'discovery-snmp');
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
