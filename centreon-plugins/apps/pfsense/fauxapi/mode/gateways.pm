@@ -46,7 +46,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{gateways} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} !~ /none/i', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -86,20 +86,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /none/i' }
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 sub manage_selection {
@@ -116,9 +106,9 @@ sub manage_selection {
                 next;
             }
 
-            my $delay = $_->{delay} =~ /([0-9\.])+/ ? $1 : undef;
-            my $stddev = $_->{stddev} =~ /([0-9\.])+/ ? $1 : undef;
-            my $loss = $_->{loss} =~ /([0-9\.])+/ ? $1 : undef;
+            my $delay = $_->{delay} =~ /([0-9\.]+)/ ? $1 : undef;
+            my $stddev = $_->{stddev} =~ /([0-9\.]+)/ ? $1 : undef;
+            my $loss = $_->{loss} =~ /([0-9\.]+)/ ? $1 : undef;
             $self->{gateways}->{ $_->{name} } = {
                 display => $_->{name},
                 status => $_->{status},
@@ -130,7 +120,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{gateways}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "no gateway found");
+        $self->{output}->add_option_msg(short_msg => 'no gateway found');
         $self->{output}->option_exit();
     }
 }
