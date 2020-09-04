@@ -22,7 +22,7 @@ package apps::pacemaker::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,11 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'clustat'      => 'apps::pacemaker::local::mode::clustat',
         'constraints'  => 'apps::pacemaker::local::mode::constraints',
-        'crm'          => 'apps::pacemaker::local::mode::crm',
-    );
+        'crm'          => 'apps::pacemaker::local::mode::crm'
+    };
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }
