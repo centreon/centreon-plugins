@@ -30,14 +30,15 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'             => 'snmp_standard::mode::cpu',
         'hardware'        => 'storage::lenovo::iomega::snmp::mode::hardware',
         'interfaces'      => 'storage::lenovo::iomega::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-storages'   => 'snmp_standard::mode::liststorages',
         'memory'          => 'storage::lenovo::iomega::snmp::mode::memory',
         'storage'         => 'snmp_standard::mode::storage'
-    );
+    };
 
     return $self;
 }
