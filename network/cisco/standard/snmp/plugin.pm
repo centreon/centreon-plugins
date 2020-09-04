@@ -48,6 +48,7 @@ sub new {
         'stack'               => 'centreon::common::cisco::standard::snmp::mode::stack',
         'uptime'              => 'snmp_standard::mode::uptime',
         'voice-call'          => 'centreon::common::cisco::standard::snmp::mode::voicecall',
+        'vpc'                 => 'centreon::common::cisco::standard::snmp::mode::vpc',
         'vss'                 => 'centreon::common::cisco::standard::snmp::mode::vss',
         'wan3g'               => 'centreon::common::cisco::standard::snmp::mode::wan3g'
     };
