@@ -30,21 +30,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'crm_resource' },
-                                  "command-path:s"    => { name => 'command_path', default => '/usr/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => ' --constraints -r' },
-                                  "resource:s"        => { name => 'resource' },
-                                  "warning"           => { name => 'warning' },
-                                });
+    $options{options}->add_options(arguments => {
+        'resource:s' => { name => 'resource' },
+        'warning'    => { name => 'warning' }
+    });
+
     $self->{threshold} = 'CRITICAL';
     return $self;
 }
@@ -54,8 +44,8 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
-       $self->{output}->add_option_msg(short_msg => "Please set the resource name with --resource option");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Please set the resource name with --resource option");
+        $self->{output}->option_exit();
     }
 
     $self->{threshold} = 'WARNING' if (defined $self->{option_results}->{warning});
@@ -64,13 +54,17 @@ sub check_options {
 sub parse_output {
     my ($self, %options) = @_;
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("Resource '%s' constraint location is OK", $self->{option_results}->{resource}));
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("Resource '%s' constraint location is OK", $self->{option_results}->{resource})
+    );
 
     if ($options{output} =~ /Connection to cluster failed\:(.*)/i ) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => "Connection to cluster FAILED: $1");
-            return ;
+        $self->{output}->output_add(
+            severity => 'CRITICAL',
+            short_msg => "Connection to cluster FAILED: $1"
+        );
+        return ;
     }
 
     my @lines = split /\n/, $options{output};
@@ -81,12 +75,16 @@ sub parse_output {
             $line =~ /^\s+:\sNode\s([a-zA-Z0-9-_]+)\s+\(score=([a-zA-Z0-9-_]+),\sid=([a-zA-Z0-9-_]+)/;
             my ($node, $score, $rule) = ($1, $2, $3);
             if ($score eq '-INFINITY' && $rule =~ /^cli-ban/) {
-                $self->{output}->output_add(severity => $self->{threshold},
-                                            short_msg => sprintf("Resource '%s' is locked on node '%s' ('%s')", $self->{option_results}->{resource}, $node, $rule));
+                $self->{output}->output_add(
+                    severity => $self->{threshold},
+                    short_msg => sprintf("Resource '%s' is locked on node '%s' ('%s')", $self->{option_results}->{resource}, $node, $rule)
+                );
             }
         } else {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => "ERROR: $line");
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => "ERROR: $line"
+            );
         }
     }
 }
@@ -94,12 +92,11 @@ sub parse_output {
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options}." ".$self->{option_results}->{resource});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'crm_resource',
+        command_path => '/usr/sbin',
+        command_options => '--constraints -r'
+    );
 
     $self->parse_output(output => $stdout);
 
@@ -116,6 +113,8 @@ __END__
 Check that a resource has no location constraint (migrate without unmigrate)
 Can be executed from any cluster node.
 
+Command used: /usr/sbin/crm_resource --constraints -r
+
 =over 8
 
 =item B<--resource>
@@ -125,47 +124,6 @@ Set the resource name you want to check
 =item B<--warning>
 
 Return a warning instead of a critical
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'crm_resource').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/usr/sbin').
-
-=item B<--command-options>
-
-Command options (Default: ' --constraints -r').
 
 =back
 

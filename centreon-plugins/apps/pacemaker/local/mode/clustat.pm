@@ -37,16 +37,7 @@ my %map_node_state = (
 sub custom_state_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("state is '%s'", $self->{result_values}->{state});
-    return $msg;
-}
-
-sub custom_state_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return sprintf("state is '%s'", $self->{result_values}->{state});
 }
 
 sub set_counters {
@@ -58,24 +49,23 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{nodes} = [
-        { label => 'node', threshold => 0, set => {
+        { label => 'node', type => 2, critical_default => '%{state} !~ /up|clean/', set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_threshold_check => \&catalog_status_threshold,
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub { return 0; }
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{groups} = [
-        { label => 'group', threshold => 0, set => {
+        { label => 'group', type => 2, critical_default => '%{state} !~ /starting|started/', set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_threshold_check => \&catalog_status_threshold,
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub { return 0; }
             }
-        },
+        }
     ];
 }
 
@@ -96,44 +86,22 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"          => { name => 'hostname' },
-                                  "remote"              => { name => 'remote' },
-                                  "ssh-option:s@"       => { name => 'ssh_option' },
-                                  "ssh-path:s"          => { name => 'ssh_path' },
-                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "sudo"                => { name => 'sudo' },
-                                  "command:s"           => { name => 'command', default => 'clustat' },
-                                  "command-path:s"      => { name => 'command_path', default => '/usr/sbin' },
-                                  "command-options:s"   => { name => 'command_options', default => ' -x 2>&1' },
-                                  "warning-group:s"     => { name => 'warning_group' },
-                                  "critical-group:s"    => { name => 'critical_group' },
-                                  "warning-node:s"      => { name => 'warning_node' },
-                                  "critical-node:s"     => { name => 'critical_node' },
-                                  "filter-node:s"       => { name => 'filter_node', default => '%{state} !~ /up|clean/' },
-                                  "filter-groups:s"     => { name => 'filter_groups', default => '%{state} !~ /starting|started/' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-node:s'    => { name => 'filter_node' },
+        'filter-groups:s'  => { name => 'filter_groups' }
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_group', 'critical_group', 'warning_node', 'critical_node']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'clustat',
+        command_path => '/usr/sbin',
+        command_options => '-x 2>&1'
+    );
 
     my $clustat_hash = XMLin($stdout);
 
@@ -143,8 +111,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping peer '" . $node . "': no matching filter.", debug => 1);
             next;
         }
-        $self->{nodes}->{$node} = { state => $map_node_state{$clustat_hash->{nodes}->{node}->{$node}->{state}},
-                                    display => $node };
+
+        $self->{nodes}->{$node} = {
+            display => $node,
+            state => $map_node_state{$clustat_hash->{nodes}->{node}->{$node}->{state}}
+        };
     }
 
     foreach my $group_name (keys %{$clustat_hash->{groups}->{group}}) {
@@ -153,8 +124,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping peer '" . $group_name . "': no matching filter.", debug => 1);
             next;
         }
-        $self->{groups}->{$group_name} = { state => $clustat_hash->{groups}->{group}->{$group_name}->{state_str},
-                                           display => $group_name };
+
+        $self->{groups}->{$group_name} = {
+            display => $group_name,
+            state => $clustat_hash->{groups}->{group}->{$group_name}->{state_str}
+        };
     }
 
 }
@@ -168,6 +142,8 @@ __END__
 Check Cluster Resource Manager (need 'clustat' command).
 Should be executed on a cluster node.
 
+Command used: /usr/sbin/clustat -x 2>&1
+
 =over 8
 
 =item B<--warning-*>
@@ -179,47 +155,6 @@ Warning threshold for status.
 
 Can be ('group','node')
 Critical threshold for status. (Default: --critical-node '%{state} !~ /up|clean/' --critical-group '%{state} !~ /started|starting/')
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'crm_mon').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/usr/sbin').
-
-=item B<--command-options>
-
-Command options (Default: ' -x 2>&1').
 
 =back
 
