@@ -98,7 +98,7 @@ sub run {
         $self->{output}->perfdata_add(
             label => 'servers',
             nlabel => 'folder.servers.count',
-            instances => $folderDN
+            instances => $folderDN,
             value => $numServers,
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
