@@ -43,7 +43,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $result = $options{custom}->query(url_path => '/api/nodes/?columns=name');
+    my $result = $options{custom}->query(url_path => '/api/nodes/?columns=name,running');
     $self->{node} = {};
     foreach (@$result) {
         $self->{node}->{$_->{name}} = {
