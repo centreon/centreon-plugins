@@ -35,14 +35,14 @@ my %map_keepalive_status = (
     7 => 'suspendedAsVRFUnusable',
     8 => 'misconfigured'
 );
-my %map_role_states = (
+my %map_role_status = (
     1 => 'primarySecondary',
     2 => 'primary',
     3 => 'secondaryPrimary',
     4 => 'secondary',
     5 => 'noneEstablished'
 );
-my %map_link_states = (
+my %map_link_status = (
     1 => 'down',
     2 => 'downStar',
     3 => 'up'
@@ -63,20 +63,14 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
-    # if ($self->{option_results}->{role} !~ /^primary|secondary$/) {
-    #     $self->{output}->add_option_msg(short_msg => "You must use either primary either secondary for --role option");
-    #     $self->{output}->option_exit();
-    # }
 }
 
 sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
     
-    # my $vridout = '';
     my $oid_cVpcRoleState = ".1.3.6.1.4.1.9.9.807.1.2.1.1.2";    # VPC Role Status
-    my $oid_cVpcStatusHostLinkStatus = ".1.3.6.1.4.1.9.9.807.1.4.2.1.4";   # HostLink Status
+    my $oid_cVpcStatusHostLinkStatus = ".1.3.6.1.4.1.9.9.807.1.4.2.1.4.2";   # HostLink Status
     my $oid_cVpcPeerKeepAliveStatus = ".1.3.6.1.4.1.9.9.807.1.1.2.1.2"; # Peer Keepalive Status
 
     my $results = $self->{snmp}->get_multiple_table(oids => 
@@ -90,36 +84,44 @@ sub run {
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("VPC Peer Established and Connected"));
+
+    use Data::Dumper;
+    print Dumper $results;
+
+    my ($roleState,$linkState,$keepAliveState);
+
     foreach my $oid (keys %{$results->{$oid_cVpcRoleState}}) {
-        $oid =~ /(\d+\.\d+)$/; 
+        $roleState = $results->{$oid_cVpcRoleState}->{$oid};
+    }
+    foreach my $oid (keys %{$results->{$oid_cVpcStatusHostLinkStatus}}) {
+        $linkState = $results->{$oid_cVpcStatusHostLinkStatus}->{$oid};
+    }
+    foreach my $oid (keys %{$results->{$oid_cVpcPeerKeepAliveStatus}}) {
+        $keepAliveState = $results->{$oid_cVpcPeerKeepAliveStatus}->{$oid};
+    }
 
-        my $keepAliveState = $results->{$oid_cVpcPeerKeepAliveStatus}->{$oid};
-        my $linkState = $results->{$oid_cVpcStatusHostLinkStatus}->{$oid};
-        my $roleState = $results->{$oid_cVpcRoleState}->{$oid};
+    $self->{output}->output_add(long_msg => sprintf("[Role Status is '%s'] [Peer Established Status is '%s'] [KeepAlive Status is '%s']",
+                                                    $map_role_status{$roleState}, $map_link_status{$linkState}, $map_keepalive_status{$keepAliveState}));
+    
+    if ($map_link_status{$linkState} =~ /^downStar$/i) {
+        $self->{output}->output_add(severity => 'WARNING',
+    			                    short_msg => sprintf("Local Link is Down, Forwarding via peer link"));
+    }
+    
+    if ($map_link_status{$linkState} =~ /^down$/i) {
+        $self->{output}->output_add(severity => 'CRITICAL',
+    			                    short_msg => sprintf("Peer Link is '%s'", $map_link_status{$linkState}));
+    }
 
-        $self->{output}->output_add(long_msg => sprintf("[Role Status is '%s'] [Peer Established Status is '%s'] [KeepAlive Status is '%s']",
-                                                        $map_role_states{$roleState}, $map_link_status{$linkState}, $map_keepalive_status{$KeepAliveState}));
-        
-        if ($map_link_status{$linkState} =~ /^downStar$/i) {
-            $self->{output}->output_add(severity => 'WARNING',
-					                    short_msg => sprintf("Local Link is Down, Forwarding via peer link"));
-        }
-        
-        if ($map_link_status{$linkState} =~ /^down$/i) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-					                    short_msg => sprintf("Peer Link is '%s'", $map_link_status{$linkState}));
-        }
+    if ($map_keepalive_status{$keepAliveState} !~ /^alive$/i) {
+        $self->{output}->output_add(severity => 'CRITICAL',
+    			                    short_msg => sprintf("Keep Alive state is '%s'", $map_keepalive_status{$keepAliveState}));
+    }
 
-        if ($map_keepalive_status{$keepAliveState} !~ /^alive$/i) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-					                    short_msg => sprintf("Keep Alive state is '%s'", $map_keepalive_status{$keepAliveState}));
-        }
-
-        if ($map_role_states{$roleState} !~ /^primarySecondary|secondaryPrimary$/i) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-					                    short_msg => sprintf("Switch role state is '%s'", $map_role_status{$roleState}));
-        }
-    }       
+    if ($map_role_status{$roleState} !~ /^primarySecondary|secondaryPrimary$/i) {
+        $self->{output}->output_add(severity => 'CRITICAL',
+    			                    short_msg => sprintf("Switch role state is '%s'", $map_role_status{$roleState}));
+    }    
 
     $self->{output}->display();
     $self->{output}->exit();
