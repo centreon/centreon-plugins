@@ -70,7 +70,7 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     my $oid_cVpcRoleState = ".1.3.6.1.4.1.9.9.807.1.2.1.1.2";    # VPC Role Status
-    my $oid_cVpcStatusHostLinkStatus = ".1.3.6.1.4.1.9.9.807.1.4.2.1.4.2";   # HostLink Status
+    my $oid_cVpcStatusHostLinkStatus = ".1.3.6.1.4.1.9.9.807.1.4.2.1.4";   # HostLink Status
     my $oid_cVpcPeerKeepAliveStatus = ".1.3.6.1.4.1.9.9.807.1.1.2.1.2"; # Peer Keepalive Status
 
     my $results = $self->{snmp}->get_multiple_table(oids => 
@@ -85,9 +85,6 @@ sub run {
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("VPC Peer Established and Connected"));
 
-    use Data::Dumper;
-    print Dumper $results;
-
     my ($roleState,$linkState,$keepAliveState);
 
     foreach my $oid (keys %{$results->{$oid_cVpcRoleState}}) {
@@ -100,7 +97,7 @@ sub run {
         $keepAliveState = $results->{$oid_cVpcPeerKeepAliveStatus}->{$oid};
     }
 
-    $self->{output}->output_add(long_msg => sprintf("[Role Status is '%s'] [Peer Established Status is '%s'] [KeepAlive Status is '%s']",
+    $self->{output}->output_add(short_msg => sprintf("[Role Status is '%s'] [Peer Established Status is '%s'] [KeepAlive Status is '%s']",
                                                     $map_role_status{$roleState}, $map_link_status{$linkState}, $map_keepalive_status{$keepAliveState}));
     
     if ($map_link_status{$linkState} =~ /^downStar$/i) {
@@ -119,9 +116,15 @@ sub run {
     }
 
     if ($map_role_status{$roleState} !~ /^primarySecondary|secondaryPrimary$/i) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-    			                    short_msg => sprintf("Switch role state is '%s'", $map_role_status{$roleState}));
-    }    
+        if ($map_role_status{$roleState} =~ /^primary|secondary$/i) {
+            $self->{output}->output_add(severity => 'WARNING',
+    			                        short_msg => sprintf("Check Switch Role State - Currently '%s'", $map_role_status{$roleState}));
+        }
+        else {
+            $self->{output}->output_add(severity => 'CRITICAL',
+    			                        short_msg => sprintf("Switch role state is '%s'", $map_role_status{$roleState}));
+        }
+    }   
 
     $self->{output}->display();
     $self->{output}->exit();
