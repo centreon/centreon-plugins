@@ -21,7 +21,7 @@
 package hardware::devices::polycom::dma::snmp::mode::clusters;
 
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 use strict;
 use warnings;
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'cluster_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_cluster_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         {

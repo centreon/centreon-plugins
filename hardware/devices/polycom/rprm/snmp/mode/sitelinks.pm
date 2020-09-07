@@ -21,7 +21,7 @@
 package hardware::devices::polycom::rprm::snmp::mode::sitelinks;
 
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 use strict;
 use warnings;
@@ -48,7 +48,7 @@ sub set_counters {
                 key_values => [ { name => 'sitelink_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_sitelink_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'sitelink-active-calls', nlabel => 'rprm.sitelink.calls.active.count', set => {
