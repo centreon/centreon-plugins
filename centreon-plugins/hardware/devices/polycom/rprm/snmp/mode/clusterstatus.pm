@@ -21,7 +21,7 @@
 package hardware::devices::polycom::rprm::snmp::mode::clusterstatus;
 
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 use strict;
 use warnings;
@@ -38,14 +38,14 @@ sub set_counters {
                 key_values => [ { name => 'cluster_status' } ],
                 output_template => 'Current status %s',
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'cluster-change-cause', type => 2, set => {
                 key_values => [ { name => 'cluster_change_cause' } ],
                 output_template => 'Last change cause: %s',
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];

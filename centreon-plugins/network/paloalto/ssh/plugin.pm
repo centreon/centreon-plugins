@@ -30,14 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'environment' => 'network::paloalto::ssh::mode::environment',
         'ha'          => 'network::paloalto::ssh::mode::ha',
         'interfaces'  => 'network::paloalto::ssh::mode::interfaces',
         'ipsec'       => 'network::paloalto::ssh::mode::ipsec',
         'licenses'    => 'network::paloalto::ssh::mode::licenses',
         'system'      => 'network::paloalto::ssh::mode::system'
-    );
+    };
 
     $self->{custom_modes}{ssh} = 'network::paloalto::ssh::custom::cli';
     return $self;

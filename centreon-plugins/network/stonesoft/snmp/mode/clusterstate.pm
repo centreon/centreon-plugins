@@ -20,57 +20,81 @@
 
 package network::stonesoft::snmp::mode::clusterstate;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 use strict;
 use warnings;
 
-my %oper_state = (
-    0 => ['unknown', 'UNKNOWN'],
-    1 => ['online', 'OK'], 
-    2 => ['goingOnline', 'WARNING'], 
-    3 => ['lockedOnline', 'WARNING'],
-    4 => ['goingLockedOnline', 'WARNING'],
-    5 => ['offline', 'CRITICAL'],
-    6 => ['goingOffline', 'CRITICAL'],
-    7 => ['lockedOffline', 'CRITICAL'],
-    8 => ['goingLockedOffline', 'CRITICAL'],
-    9 => ['standby', 'CRITICAL'],
-    10 => ['goingStandby', 'CRITICAL'],
-);
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Node status is '%s' [Member id: %s]",
+        $self->{result_values}->{node_status},
+        $self->{result_values}->{node_member_id}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 }
+    ];
+
+     $self->{maps_counters}->{global} = [
+        {
+            label => 'status',
+            type => 2,
+            unknown_default => '%{node_status} =~ /unknown/i',
+            warning_default => '%{node_status} =~ /lockedOnline/i',
+            critical_default => '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i',
+            set => {
+                key_values => [ { name => 'node_status' }, { name => 'node_member_id' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ]
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
+my $map_oper_state = {
+    0 => 'unknown',
+    1 => 'online',
+    2 => 'goingOnline',
+    3 => 'lockedOnline',
+    4 => 'goingLockedOnline',
+    5 => 'offline',
+    6 => 'goingOffline',
+    7 => 'lockedOffline',
+    8 => 'goingLockedOffline',
+    9 => 'standby',
+    10 => 'goingStandby'
+};
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_nodeMemberId = '.1.3.6.1.4.1.1369.6.1.1.2.0';
     my $oid_nodeOperState = '.1.3.6.1.4.1.1369.6.1.1.3.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_nodeMemberId, $oid_nodeOperState], nothing_quit => 1);
-    
-    $self->{output}->output_add(severity => ${$oper_state{$result->{$oid_nodeOperState}}}[1],
-                                short_msg => sprintf("Node status is '%s' [Member id : %s]", 
-                                            ${$oper_state{$result->{$oid_nodeOperState}}}[0],
-                                            $result->{$oid_nodeMemberId}));
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_nodeMemberId, $oid_nodeOperState], nothing_quit => 1);
+    $self->{global} = {
+        node_status => $map_oper_state->{ $snmp_result->{$oid_nodeOperState} },
+        node_member_id => $snmp_result->{$oid_nodeMemberId}
+    };
 }
 
 1;
@@ -82,6 +106,21 @@ __END__
 Check status of clustered node.
 
 =over 8
+
+=item B<--unknown-status>
+
+Set unknown threshold for status (Default: '%{node_status} =~ /unknown/i').
+Can used special variables like: %{node_status}, %{node_member_id}.
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '%{node_status} =~ /lockedOnline/i').
+Can used special variables like: %{node_status}, %{node_member_id}.
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{node_status} =~ /^(?:offline|goingOffline|lockedOffline|goingLockedOffline|standby|goingStandby)$/i').
+Can used special variables like: %{node_status}, %{node_member_id}.
 
 =back
 
