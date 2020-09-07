@@ -30,10 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'global-status'    => 'hardware::server::dell::idrac::snmp::mode::globalstatus',
-        'hardware'         => 'hardware::server::dell::idrac::snmp::mode::hardware',
-    );
+    $self->{modes} = {
+        'global-status' => 'hardware::server::dell::idrac::snmp::mode::globalstatus',
+        'hardware'      => 'hardware::server::dell::idrac::snmp::mode::hardware'
+    };
 
     return $self;
 }

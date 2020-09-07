@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output { 
     my ($self, %options) = @_;
@@ -56,14 +56,16 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{extension} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'extension' }, { name => 'registered' }, { name => 'dnd' }, { name => 'profile' }, { name => 'status' }, { name => 'duration' } ],
-                closure_custom_calc => \&catalog_status_calc,
+        { label => 'status', type => 2, set => {
+                key_values => [
+                    { name => 'extension' }, { name => 'registered' }, { name => 'dnd' },
+                    { name => 'profile' }, { name => 'status' }, { name => 'duration' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -78,23 +80,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
+        'filter-extension:s' => { name => 'filter_extension' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [
-        'warning_status', 'critical_status', 'unknown_status',
-    ]);
 }
 
 sub manage_selection {
@@ -116,6 +106,12 @@ sub manage_selection {
     my $extension = $options{custom}->api_extension_list();
     $self->{extension} = {};
     foreach my $item (@$extension) {
+        if (defined($self->{option_results}->{filter_extension}) && $self->{option_results}->{filter_extension} ne '' &&
+            $item->{_str} !~ /$self->{option_results}->{filter_extension}/) {
+            $self->{output}->output_add(long_msg => "skipping extension '" . $item->{_str} . "': no matching filter.", debug => 1);
+            next;
+        }
+
         $self->{extension}->{$item->{_str}} = {
             extension => $item->{_str},
             registered => $item->{IsRegistered} ? 'true' : 'false',
@@ -137,6 +133,10 @@ __END__
 Check extentions status
 
 =over 8
+
+=item B<--filter-extension>
+
+Filter extension.
 
 =item B<--unknown-status>
 

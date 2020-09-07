@@ -31,12 +31,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'extension' => 'apps::voip::3cx::restapi::mode::extension',
-        'system'    => 'apps::voip::3cx::restapi::mode::system',
-    );
+        'system'    => 'apps::voip::3cx::restapi::mode::system'
+    };
 
-    $self->{custom_modes}{api} = 'apps::voip::3cx::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::voip::3cx::restapi::custom::api';
     return $self;
 }
 

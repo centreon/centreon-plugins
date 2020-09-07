@@ -31,11 +31,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "command:s"             => { name => 'command' },
-        "arg:s@"                => { name => 'arg' },
-        "sanitize-message:s"    => { name => 'sanitize_message' },
+        'command:s'          => { name => 'command' },
+        'arg:s@'             => { name => 'arg' },
+        'sanitize-message:s' => { name => 'sanitize_message' }
     });
-                                
+
     return $self;
 }
 
@@ -44,7 +44,7 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Please set --command option");
+        $self->{output}->add_option_msg(short_msg => 'Please set --command option');
         $self->{output}->option_exit();
     }
 }
