@@ -45,12 +45,12 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
-            'hostname:s'            => { name => 'hostname' },
-            'port:s'                => { name => 'port'},
-            'proto:s'               => { name => 'proto' },
-            'api-username:s'        => { name => 'api_username' },
-            'api-password:s'        => { name => 'api_password' },
-            'timeout:s'             => { name => 'timeout', default => 30 },
+            'hostname:s'             => { name => 'hostname' },
+            'port:s'                 => { name => 'port'},
+            'proto:s'                => { name => 'proto' },
+            'api-username:s'         => { name => 'api_username' },
+            'api-password:s'         => { name => 'api_password' },
+            'timeout:s'              => { name => 'timeout', default => 30 },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' }
@@ -77,27 +77,27 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
+    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
+    if ($self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_username}) || $self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
+    if ($self->{api_username} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-username option.');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_password}) || $self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
+    if ($self->{api_password} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-password option.');
         $self->{output}->option_exit();
     }
 
@@ -147,14 +147,15 @@ sub authenticate {
         my $content = $self->{http}->request(
             method => 'POST', query_form_post => $post_data,
             url_path => '/api/login',
-            warning_status => '', unknown_status => '', critical_status => '%{http_code} < 200 or %{http_code} >= 300'
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
         );
 
         my $header = $self->{http}->get_header(name => 'Set-Cookie');
         if (defined ($header) && $header =~ /(?:^| ).AspNetCore.Cookies=([^;]+);.*/) {
             $cookie = $1;
         } else {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Error retrieving cookie");
             $self->{output}->option_exit();
         }
@@ -184,7 +185,7 @@ sub request_api {
         %options,
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
-        critical_status => $self->{critical_http_status},
+        critical_status => $self->{critical_http_status}
     );
 
     # Some content may be strangely returned, for example :
@@ -201,12 +202,10 @@ sub request_api {
         $decoded = JSON::XS->new->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
     if (!defined($decoded)) {
-        $self->{output}->output_add(long_msg => $decoded, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
         $self->{output}->option_exit();
     }

@@ -32,7 +32,7 @@ sub new {
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
         $options{options}->add_options(arguments => {
-            'curl-opt:s@'   => { name => 'curl_opt' },
+            'curl-opt:s@' => { name => 'curl_opt' }
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'BACKEND CURL OPTIONS', once => 1);
     }
@@ -109,7 +109,7 @@ my $http_code_explained = {
     502 => 'Bad Gateway',
     503 => 'Service Unavailable',
     504 => 'Gateway Timeout',
-    505 => 'HTTP Version Not Supported',
+    505 => 'HTTP Version Not Supported'
 };
 
 sub cb_debug {
@@ -208,7 +208,7 @@ sub set_auth {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSLKEY'), parameter => $options{request}->{key_file});
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_KEYPASSWD'), parameter => $options{request}->{cert_pwd});
     }
-    
+
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSLCERTTYPE'), parameter => "PEM");
     if (defined($options{request}->{cert_pkcs12})) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSLCERTTYPE'), parameter => "P12");
@@ -231,17 +231,38 @@ sub set_proxy {
 sub set_extra_curl_opt {
     my ($self, %options) = @_;
 
-    my $fields = { key => '', value => '' };
+    my $entries = {};
     foreach (@{$options{request}->{curl_opt}}) {
-        ($fields->{key}, $fields->{value}) = split /=>/;
-        foreach my $label ('key', 'value') {
-            $fields->{$label} = centreon::plugins::misc::trim($fields->{$label});
-            if ($fields->{$label} =~ /^CURLOPT|CURL/) {
-                $fields->{$label} = $self->{constant_cb}->(name => $fields->{$label});
-            }
+        my ($key, $value) = split /=>/;
+        $key = centreon::plugins::misc::trim($key);
+
+        if (!defined($entries->{$key})) {
+            $entries->{$key} = { val => [], force_array => 0 };
         }
 
-        $self->curl_setopt(option => $fields->{key}, parameter => $fields->{value});
+        $value = centreon::plugins::misc::trim($value);
+        if ($value =~ /^\[(.*)\]$/) {
+            $entries->{$key}->{force_array} = 1;
+            $value = centreon::plugins::misc::trim($1);
+        }
+        if ($value  =~ /^CURLOPT|CURL/) {
+            $value = $self->{constant_cb}->(name => $value);
+        }
+
+        push @{$entries->{$key}->{val}}, $value; 
+    }
+
+    foreach (keys %$entries) {
+        my $key = $_;
+        if (/^CURLOPT|CURL/) {
+            $key = $self->{constant_cb}->(name => $_);
+        }
+
+        if ($entries->{$_}->{force_array} == 1 || scalar(@{$entries->{$_}->{val}}) > 1) {
+            $self->curl_setopt(option => $key, parameter => $entries->{$_}->{val});
+        } else {
+            $self->curl_setopt(option => $key, parameter => pop @{$entries->{$_}->{val}});
+        }
     }
 }
 

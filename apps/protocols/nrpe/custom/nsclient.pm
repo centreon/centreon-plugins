@@ -46,16 +46,19 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'        => { name => 'hostname' },
-            'port:s'            => { name => 'port' },
-            'proto:s'           => { name => 'proto' },
-            'credentials'       => { name => 'credentials' },
-            'basic'             => { name => 'basic' },
-            'username:s'        => { name => 'username' },
-            'password:s'        => { name => 'password' },
-            'legacy-password:s' => { name => 'legacy_password' },
-            'new-api'           => { name => 'new_api' },
-            'timeout:s'         => { name => 'timeout' }
+            'hostname:s'             => { name => 'hostname' },
+            'port:s'                 => { name => 'port' },
+            'proto:s'                => { name => 'proto' },
+            'credentials'            => { name => 'credentials' },
+            'basic'                  => { name => 'basic' },
+            'username:s'             => { name => 'username' },
+            'password:s'             => { name => 'password' },
+            'legacy-password:s'      => { name => 'legacy_password' },
+            'new-api'                => { name => 'new_api' },
+            'timeout:s'              => { name => 'timeout' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM MODE OPTIONS', once => 1);
@@ -84,9 +87,12 @@ sub check_options {
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{legacy_password} = (defined($self->{option_results}->{legacy_password})) ? $self->{option_results}->{legacy_password} : undef;
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
+    if ($self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
         $self->{output}->option_exit();
     }
     return 0;
@@ -100,9 +106,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{warning_status} = '';
-    $self->{option_results}->{critical_status} = '';
-    $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 300';
 
     if (defined($self->{username})) {
         $self->{option_results}->{username} = $self->{username};
@@ -228,7 +231,12 @@ sub request {
     } else {
         $url = '/query/' . $options{command} . '?' . $encoded_args
     }
-    my ($content) = $self->{http}->request(url_path => $url);
+    my ($content) = $self->{http}->request(
+        url_path => $url,
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status}
+    );
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
