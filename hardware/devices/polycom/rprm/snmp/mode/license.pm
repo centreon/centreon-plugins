@@ -21,7 +21,6 @@
 package hardware::devices::polycom::rprm::snmp::mode::license;
 
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 use strict;
 use warnings;

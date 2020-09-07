@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use XML::Simple;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my %map_node_state = (
     0 => 'down',
@@ -52,7 +52,7 @@ sub set_counters {
         { label => 'node', type => 2, critical_default => '%{state} !~ /up|clean/', set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_state_output'),
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
                 closure_custom_perfdata => sub { return 0; }
             }
         }
@@ -62,7 +62,7 @@ sub set_counters {
         { label => 'group', type => 2, critical_default => '%{state} !~ /starting|started/', set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_state_output'),
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
                 closure_custom_perfdata => sub { return 0; }
             }
         }
