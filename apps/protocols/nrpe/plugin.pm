@@ -30,12 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'query' => 'apps::protocols::nrpe::mode::query',
-    );
+    $self->{modes} = {
+        'query' => 'apps::protocols::nrpe::mode::query'
+    };
 
-    $self->{custom_modes}{nrpe} = 'apps::protocols::nrpe::custom::nrpe';
-    $self->{custom_modes}{nsclient} = 'apps::protocols::nrpe::custom::nsclient';
+    $self->{custom_modes}->{nrpe} = 'apps::protocols::nrpe::custom::nrpe';
+    $self->{custom_modes}->{nsclient} = 'apps::protocols::nrpe::custom::nsclient';
     return $self;
 }
 

@@ -24,14 +24,14 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output { 
     my ($self, %options) = @_;
 
     my $msg = '';
     if ($self->{result_values}->{service} !~ /^Has[A-Z]/) {
-        $msg .= 'error ';
+        $msg .= 'error';
     }
     $msg .= ': ' . $self->{result_values}->{error};
     return $msg;
@@ -48,33 +48,30 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'calls-active', nlabel => 'system.calls.active.current', set => {
                 key_values => [ { name => 'calls_active' } ],
-                output_template => 'calls active : %s',
+                output_template => 'calls active: %s',
                 perfdatas => [
-                    { label => 'calls_active',  template => '%s', value => 'calls_active',
-                      min => 0 },
-                ],
+                    { label => 'calls_active', template => '%s', min => 0 }
+                ]
             }
         },
-         { label => 'extensions-registered', nlabel => 'system.extensions.registered.current', set => {
+        { label => 'extensions-registered', nlabel => 'system.extensions.registered.current', set => {
                 key_values => [ { name => 'extensions_registered' } ],
-                output_template => 'extensions registered : %s',
+                output_template => 'extensions registered: %s',
                 perfdatas => [
-                    { label => 'extensions_registered',  template => '%s', value => 'extensions_registered',
-                      min => 0 },
-                ],
+                    { label => 'extensions_registered', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{service} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{error} =~ /true/', set => {
                 key_values => [ { name => 'error' }, { name => 'service' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -89,23 +86,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{error} =~ /true/' },
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [
-        'warning_status', 'critical_status', 'unknown_status',
-    ]);
 }
 
 sub manage_selection {
