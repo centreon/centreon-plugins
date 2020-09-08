@@ -1354,7 +1354,7 @@ sub add_result_cast {
     $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}} : 0;
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         my $iucast = $self->{results}->{$self->{oid_ifHCInUcastPkts} . '.' . $options{instance}};
-        if (defined($iucast) && $iucast =~ /[1-9]/) {
+        if (defined($iucast) && $iucast ne '' && (($iucast != 0) || !defined($self->{results}->{$self->{oid_ifInUcastPkts} . '.' . $options{instance}}))) {
             $self->{int}->{$options{instance}}->{iucast} = $iucast;
             $self->{int}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}} : 0;
             $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}} : 0;
