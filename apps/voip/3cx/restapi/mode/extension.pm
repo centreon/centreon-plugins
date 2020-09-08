@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use Date::Parse;
 
 sub custom_status_output { 
     my ($self, %options) = @_;
@@ -96,16 +97,21 @@ sub manage_selection {
         $status{$item->{Caller}} = {
             Status => $item->{Status},
             Duration => $item->{Duration},
+            EstablishedAt => $item->{EstablishedAt},
         };
         $status{$item->{Callee}} = {
             Status => $item->{Status},
             Duration => $item->{Duration},
+            EstablishedAt => $item->{EstablishedAt},
         };
     }
 
     my $extension = $options{custom}->api_extension_list();
     $self->{extension} = {};
     foreach my $item (@$extension) {
+        if (!defined($item->{_str})) { # 3CX >= 16.0.6.641
+            $item->{_str} = $item->{Number} . (length($item->{FirstName}) ? ' ' . $item->{FirstName} : '') . (length($item->{LastName}) ? ' ' . $item->{LastName} : '');
+        }
         if (defined($self->{option_results}->{filter_extension}) && $self->{option_results}->{filter_extension} ne '' &&
             $item->{_str} !~ /$self->{option_results}->{filter_extension}/) {
             $self->{output}->output_add(long_msg => "skipping extension '" . $item->{_str} . "': no matching filter.", debug => 1);
@@ -118,9 +124,13 @@ sub manage_selection {
             dnd => $item->{DND} ? 'true' : 'false',
             profile => $item->{CurrentProfile},
             status => $status{$item->{_str}}->{Status} ? $status{$item->{_str}}->{Status} : '',
-            duration => $status{$item->{_str}}->{Duration} && $status{$item->{_str}}->{Duration} =~ /(\d\d):(\d\d):(\d\d).*/ ? 
-                $1 * 3600 + $2 * 60 + $3 : 0
+            duration => 0
         };
+        if (defined($status{$item->{_str}}->{EstablishedAt})) { # 3CX >= 16.0.6.641 (#2020-09-08T08:26:05+00:00)
+            $self->{extension}->{$item->{_str}}->{duration} = time - Date::Parse::str2time($status{$item->{_str}}->{EstablishedAt});
+        } elsif (defined($status{$item->{_str}}->{Duration}) && $status{$item->{_str}}->{Duration} =~ /(\d\d):(\d\d):(\d\d).*/) {
+            $self->{extension}->{$item->{_str}}->{duration} = $1 * 3600 + $2 * 60 + $3;
+        }
     }
 }
 
