@@ -180,7 +180,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'session-rate', nlabel => 'virtualdomain.sessions.rate.persecond', set => {
+        { label => 'sessions-rate', nlabel => 'virtualdomain.sessions.rate.persecond', set => {
                 key_values => [ { name => 'session_rate' }, { name => 'display' } ],
                 output_template => 'session setup rate: %d/s',
                 perfdatas => [
