@@ -53,7 +53,19 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'extension', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'All extensions are ok' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'count', nlabel => '3cx.extensions.count', display_ok => 0, set => {
+                key_values => [ { name => 'count' } ],
+                output_template => 'Extensions count : %d',
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        }
     ];
 
     $self->{maps_counters}->{extension} = [
@@ -118,6 +130,8 @@ sub manage_selection {
             next;
         }
 
+        $self->{global}->{count}++;
+
         $self->{extension}->{$item->{_str}} = {
             extension => $item->{_str},
             registered => $item->{IsRegistered} ? 'true' : 'false',
@@ -162,6 +176,10 @@ Can used special variables like: %{extension}, %{registered}, %{dnd}, %{profile}
 
 Set critical threshold for status.
 Can used special variables like: %{extension}, %{registered}, %{dnd}, %{profile}, %{status}, %{duration}
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds (Can be: 'count').
 
 =back
 
