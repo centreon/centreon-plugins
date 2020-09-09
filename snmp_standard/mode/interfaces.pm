@@ -1356,7 +1356,7 @@ sub add_result_cast {
         my $iucast = $self->{results}->{$self->{oid_ifHCInUcastPkts} . '.' . $options{instance}};
 
         if (defined($iucast) && $iucast ne '' &&
-            ($iucast != 0 || !defined($self->{option_results}->{force_counters64}))) {
+            ($iucast != 0 || defined($self->{option_results}->{force_counters64}))) {
             $self->{int}->{$options{instance}}->{iucast} = $iucast;
             $self->{int}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}} : 0;
             $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}} : 0;
