@@ -1296,7 +1296,7 @@ sub add_result_traffic {
     $self->{int}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         if (defined($self->{results}->{$self->{oid_in64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} ne '' &&
-            $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0) {
+            ($self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0 || defined($self->{option_results}->{force_counters64}))) {
             $self->{int}->{$options{instance}}->{mode_traffic} = 64;
             $self->{int}->{$options{instance}}->{in} = $self->{results}->{$self->{oid_in64} . '.' . $options{instance}};
             $self->{int}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out64} . '.' . $options{instance}};
@@ -1319,7 +1319,7 @@ sub add_result_traffic {
         if (defined($self->{results}->{$self->{oid_speed64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} ne '') {
             $interface_speed = $self->{results}->{$self->{oid_speed64} . '.' . $options{instance}} * 1000000;
             # If 0, we put the 32 bits
-            if ($interface_speed == 0) {
+            if ($interface_speed == 0 && !defined($self->{option_results}->{force_counters64})) {
                 $interface_speed = $self->{results}->{$self->{oid_speed32} . '.' . $options{instance}};
             }
         } else {
@@ -1354,7 +1354,9 @@ sub add_result_cast {
     $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}} : 0;
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         my $iucast = $self->{results}->{$self->{oid_ifHCInUcastPkts} . '.' . $options{instance}};
-        if (defined($iucast) && $iucast =~ /[1-9]/) {
+
+        if (defined($iucast) && $iucast ne '' &&
+            ($iucast != 0 || !defined($self->{option_results}->{force_counters64}))) {
             $self->{int}->{$options{instance}}->{iucast} = $iucast;
             $self->{int}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}} : 0;
             $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}} : 0;
@@ -1392,7 +1394,7 @@ sub add_result_speed {
     if (defined($self->{results}->{$self->{oid_speed64} . "." . $options{instance}}) && $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} ne '') {
         $interface_speed = $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} * 1000000;
         # If 0, we put the 32 bits
-        if ($interface_speed == 0) {
+        if ($interface_speed == 0 && !defined($self->{option_results}->{force_counters64})) {
             $interface_speed = $self->{results}->{$self->{oid_speed32} . "." . $options{instance}};
         }
     } else {
@@ -1410,7 +1412,7 @@ sub add_result_volume {
     $self->{int}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         if (defined($self->{results}->{$self->{oid_in64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} ne '' &&
-            $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0) {
+            ($self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0 || defined($self->{option_results}->{force_counters64}))) {
             $self->{int}->{$options{instance}}->{mode_traffic} = 64;
             $self->{int}->{$options{instance}}->{in_volume} = $self->{results}->{$self->{oid_in64} . '.' . $options{instance}};
             $self->{int}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out64} . '.' . $options{instance}};
