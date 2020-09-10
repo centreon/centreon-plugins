@@ -48,7 +48,7 @@ sub check_options {
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        self->{output}->option_exit();
+        $self->{output}->option_exit();
     }
 }
 
