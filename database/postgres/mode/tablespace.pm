@@ -20,72 +20,68 @@
 
 package database::postgres::mode::tablespace;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub prefix_tablespace_output {
+    my ($self, %options) = @_;
+
+    return "Tablespace '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'tablespaces', type => 1, cb_prefix_output => 'prefix_tablespace_output', message_multiple => 'All tablespaces are ok' }
+    ];
+
+    $self->{maps_counters}->{tablespaces} = [
+        { label => 'space-usage', nlabel => 'tablespace.space.usage.bytes', set => {
+                key_values => [ { name => 'space_used' } ],
+                output_template => 'space used: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%d', min => 0, unit => 'B', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'warning:s'    => { name => 'warning', default => '' },
-        'critical:s'   => { name => 'critical', default => '' },
-        'tablespace:s' => { name => 'tablespace' } # tablespace name to check
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+
+    $options{sql}->connect();
+    $options{sql}->query(query => 'SELECT spcname, pg_tablespace_size(spcname) FROM pg_tablespace');
+
+    $self->{tablespaces} = {};
+    while (my $row = $options{sql}->fetchrow_array()) {
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $row->[0] !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping tablespace '" . $row->[0] . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{tablespaces}->{ $_->[0] } = {
+            display => $_->[0],
+            space_used => $_->[1]
+        };
     }
-    
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{sql} = $options{sql};
-
-    $self->{sql}->connect();
-    
-    my $target_fields = undef;
-
-    # Query to get tablespace size
-    my $query = sprintf("SELECT pg_tablespace_size('%s') FROM pg_tablespace LIMIT 1;", $self->{option_results}->{tablespace});
-    $self->{sql}->query(query => $query);
-
-    my $result = $self->{sql}->fetchrow_array();
-    
-    if (defined($result)) {
-        my $exit_code = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        my ($value, $value_unit) = $self->{perfdata}->change_bytes(value => $result);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf('Tablespace "%s" size is %s %s',$self->{option_results}->{tablespace}, $value, $value_unit));
-        
-        $self->{output}->perfdata_add(label => $self->{option_results}->{tablespace}, unit => 'B',
-                                      value => $result,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-    } else {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => sprintf('Table space "%s" is unknown ...', $self->{option_results}->{tablespace}));
-    }
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -94,21 +90,18 @@ __END__
 
 =head1 MODE
 
-Check a tablespace size
+Check a tablespaces.
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-name>
 
-Threshold warning in bytes, maximum size allowed.
+Filter tablespace name (can be a regexp).
 
-=item B<--critical>
+=item B<--warning-*> B<--critical-*>
 
-Threshold critical in bytes, maximum size allowed.
-
-=item B<--tablespace>
-
-The of the tablespace to check.
+Thresholds.
+Can be: 'space-usage' (B).
 
 =back
 
