@@ -30,12 +30,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', default => ''},
-                                  "critical:s"              => { name => 'critical', default => ''},
-                                  "tablespace:s"            => { name => 'tablespace', }, # tablespace name to check
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'    => { name => 'warning', default => '' },
+        'critical:s'   => { name => 'critical', default => '' },
+        'tablespace:s' => { name => 'tablespace' } # tablespace name to check
+    });
     
     return $self;
 }
@@ -64,7 +63,7 @@ sub run {
     my $target_fields = undef;
 
     # Query to get tablespace size
-    my $query = sprintf("SELECT pg_tablespace_size('%s') FROM pg_tablespace LIMIT 1;",$self->{option_results}->{tablespace});
+    my $query = sprintf("SELECT pg_tablespace_size('%s') FROM pg_tablespace LIMIT 1;", $self->{option_results}->{tablespace});
     $self->{sql}->query(query => $query);
 
     my $result = $self->{sql}->fetchrow_array();
