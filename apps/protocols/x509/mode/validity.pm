@@ -31,22 +31,22 @@ use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"        => { name => 'hostname' },
-         "port:s"            => { name => 'port' },
-         "servername:s"      => { name => 'servername' },
-         "validity-mode:s"   => { name => 'validity_mode' },
-         "warning-date:s"    => { name => 'warning' },
-         "critical-date:s"   => { name => 'critical' },
-         "subjectname:s"     => { name => 'subjectname', default => '' },
-         "issuername:s"      => { name => 'issuername', default => '' },
-         "timeout:s"         => { name => 'timeout', default => 5 },
-         'ssl-opt:s%'        => { name => 'ssl_opt' },
-         });
+    $options{options}->add_options(arguments => {
+        'hostname:s'        => { name => 'hostname' },
+        'port:s'            => { name => 'port' },
+        'servername:s'      => { name => 'servername' },
+        'validity-mode:s'   => { name => 'validity_mode' },
+        'warning-date:s'    => { name => 'warning' },
+        'critical-date:s'   => { name => 'critical' },
+        'subjectname:s'     => { name => 'subjectname', default => '' },
+        'issuername:s'      => { name => 'issuername', default => '' },
+        'timeout:s'         => { name => 'timeout', default => 5 },
+        'ssl-opt:s%'        => { name => 'ssl_opt' }
+    });
+
     return $self;
 }
 
@@ -100,7 +100,7 @@ sub run {
         $self->{output}->exit()
     }
 
-    #Retrieve Certificat
+    #Retrieve Certificate
     my $cert;
     eval { $cert = $client->peer_certificate() };
     if ($@) {
@@ -124,6 +124,12 @@ sub run {
                                                       threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Certificate expiration for '%s' in days: %s - Validity Date: %s", $subject, $daysbefore, $notafterdate));
+        $self->{output}->perfdata_add(
+            nlabel => 'certificate.expiration.days.count',
+            value => $daysbefore,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
+        );
     #Subject Name
     } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
         my @subject_matched = ();
