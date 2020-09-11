@@ -24,13 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_health_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("health current: %d%%, previous: %d%%", $self->{result_values}->{current}, $self->{result_values}->{previous});
-    return $msg;
+    return sprintf('health current: %d%%, previous: %d%%', $self->{result_values}->{current}, $self->{result_values}->{previous});
 }
 
 sub custom_health_perfdata {
@@ -38,7 +37,6 @@ sub custom_health_perfdata {
 
     foreach ('current', 'previous') {
         $self->{output}->perfdata_add(
-            label => $_,
             nlabel => 'tenant.health.' . $_ . '.percentage', 
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{dn} : undef,
             value => $self->{result_values}->{$_},
@@ -51,19 +49,18 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'tenant', type => 1, cb_prefix_output => 'prefix_tenant_output', message_multiple => 'All tenants are ok' },
+        { name => 'tenant', type => 1, cb_prefix_output => 'prefix_tenant_output', message_multiple => 'All tenants are ok' }
     ];
 
     $self->{maps_counters}->{tenant} = [
-        { label => 'health', threshold => 0, set => {
+        { label => 'health', type => 2, set => {
                 key_values => [ { name => 'current' }, { name => 'previous' }, { name => 'dn' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_health_output'),
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
                 closure_custom_perfdata => $self->can('custom_health_perfdata')
             }
-        },
-    ];    
+        }
+    ];
 }
 
 sub prefix_tenant_output {
@@ -78,19 +75,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments =>  {
-        'filter-tenant:s'   => { name => 'filter_tenant' },
-        'warning-health:s'  => { name => 'warning_health' },
-        'critical-health:s' => { name => 'critical_health' },
+        'filter-tenant:s' => { name => 'filter_tenant' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_health', 'critical_health']);
 }
 
 sub manage_selection {
@@ -103,8 +91,8 @@ sub manage_selection {
     foreach my $object (@{$result->{imdata}}) {
         my $dn = $object->{fvTenant}->{attributes}->{name};
         if (defined($self->{option_results}->{filter_tenant}) && $self->{option_results}->{filter_tenant} ne '' &&
-            $dn =~ /$self->{option_results}->{filter_tenant}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $dn . "': no matching filter ", debug => 1);
+            $dn !~ /$self->{option_results}->{filter_tenant}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $dn . "': no matching filter", debug => 1);
             next;
         }
         $self->{tenant}->{$dn} = {
