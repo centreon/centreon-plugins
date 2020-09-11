@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All fabric nodes are ok' },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All fabric nodes are ok' }
     ];
 
     $self->{maps_counters}->{nodes} = [
@@ -38,29 +38,26 @@ sub set_counters {
                 key_values => [ { name => 'current' }, { name => 'dn' } ],
                 output_template => 'current: %s %%', output_error_template => "current: %s %%",
                 perfdatas => [
-                    { label => 'health_current', value => 'current', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn' },
-                ],
+                    { template => '%d', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn' }
+                ]
             }
         },
         { label => 'health-minimum', nlabel => 'node.health.minimum.percentage', set => {
                 key_values => [ { name => 'min' }, { name => 'dn' } ],
                 output_template => 'min: %s %%', output_error_template => "min: %s %%",
                 perfdatas => [
-                    { label => 'health_min', value => 'min', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn' },
-                ],
+                    { template => '%d', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn' }
+                ]
             }
         },
         { label => 'health-average', nlabel => 'node.health.average.percentage', set => {
                 key_values => [ { name => 'avg' }, { name => 'dn' } ],
                 output_template => 'average: %s %%', output_error_template => "average %s %%",
                 perfdatas => [
-                    { label => 'health_avg', value => 'avg', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn' },
-                ],
+                    { template => '%d', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -76,7 +73,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-node:s'  => { name => 'filter_node' },
+        'filter-node:s' => { name => 'filter_node' }
     });
     
     return $self;
@@ -91,8 +88,8 @@ sub manage_selection {
         $node->{fabricNodeHealth5min}->{attributes}->{dn} =~ /^topology\/(.*)\/sys\/CDfabricNodeHealth5min$/; 
         my $node_dn = $1;
         if (defined($self->{option_results}->{filter_node}) && $self->{option_results}->{filter_node} ne '' &&
-            $node_dn =~ /$self->{option_results}->{filter_node}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $node_dn . "': no matching filter node '" . $node . "'", debug => 1);
+            $node_dn !~ /$self->{option_results}->{filter_node}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $node_dn . "': no matching filter", debug => 1);
             next;
         }
         $self->{nodes}->{$node_dn} = { 
