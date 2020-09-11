@@ -100,7 +100,7 @@ sub run {
         $self->{output}->exit()
     }
 
-    #Retrieve Certificat
+    #Retrieve Certificate
     my $cert;
     eval { $cert = $client->peer_certificate() };
     if ($@) {
@@ -124,6 +124,12 @@ sub run {
                                                       threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Certificate expiration for '%s' in days: %s - Validity Date: %s", $subject, $daysbefore, $notafterdate));
+    
+		$self->{output}->perfdata_add(label => 'days', unit => undef,
+	                                value => $daysbefore,
+	                                warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+	                                critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+	                                min => undef, max => undef);    
     #Subject Name
     } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
         my @subject_matched = ();
