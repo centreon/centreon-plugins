@@ -77,9 +77,9 @@ sub manage_selection {
             next;
         }
 
-        $self->{tablespaces}->{ $_->[0] } = {
-            display => $_->[0],
-            space_used => $_->[1]
+        $self->{tablespaces}->{ $row->[0] } = {
+            display => $row->[0],
+            space_used => $row->[1]
         };
     }
 }
