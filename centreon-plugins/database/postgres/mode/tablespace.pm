@@ -70,16 +70,16 @@ sub manage_selection {
     $options{sql}->query(query => 'SELECT spcname, pg_tablespace_size(spcname) FROM pg_tablespace');
 
     $self->{tablespaces} = {};
-    while (my $row = $options{sql}->fetchrow_array()) {
+    while (my @row = $options{sql}->fetchrow_array()) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $row->[0] !~ /$self->{option_results}->{filter_name}/) {
+            $row[0] !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping tablespace '" . $row->[0] . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{tablespaces}->{ $row->[0] } = {
-            display => $row->[0],
-            space_used => $row->[1]
+        $self->{tablespaces}->{ $row[0] } = {
+            display => $row[0],
+            space_used => $row[1]
         };
     }
 }
