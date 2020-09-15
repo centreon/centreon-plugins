@@ -73,7 +73,7 @@ sub manage_selection {
     while (my @row = $options{sql}->fetchrow_array()) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $row[0] !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping tablespace '" . $row->[0] . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping tablespace '" . $row[0] . "': no matching filter.", debug => 1);
             next;
         }
 
