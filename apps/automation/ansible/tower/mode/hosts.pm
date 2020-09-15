@@ -68,8 +68,8 @@ sub set_counters {
     $self->{maps_counters}->{hosts} = [
         {
             label => 'job-status', type => 2,
-            unknown_default => '%{last_job_status} =~ /default/',
-            critical_default => '%{last_job_status} =~ /failed/',
+            unknown_default => $self->{option_results}->{unknown_job_status},
+            critical_default => $self->{option_results}->{critical_job_status},
             set => {
                 key_values => [ { name => 'last_job_status' }, { name => 'display' } ],
                 output_template => "last job status is '%s'",
@@ -87,7 +87,10 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-name:s'        => { name => 'filter_name' },
-        'display-failed-hosts' => { name => 'display_failed_hosts' }
+        'display-failed-hosts' => { name => 'display_failed_hosts' },
+        'unknown-job-status:s' => { name => 'unknown_job_status', default => '%{last_job_status} =~ /default/' },
+        'warning-job-status:s' => { name => 'warning_job_status', default => '' },
+        'critical-job-status:s' => { name => 'critical_job_status', default => '%{last_job_status} =~ /failed/' }
     });
 
     return $self;
