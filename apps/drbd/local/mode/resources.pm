@@ -371,9 +371,9 @@ disk-status:
 
 =over 4
 
-[unknown] %{disk_status} =~ /dunknown/i'
+[unknown] %{disk_status} =~ /dunknown/i
 
-[warning] %{disk_status} =~ /attaching|detaching|negotiating/i'
+[warning] %{disk_status} =~ /attaching|detaching|negotiating/i
 
 [critical] %{disk_status} =~ /outdated|inconsistent|failed|diskless/i
 
