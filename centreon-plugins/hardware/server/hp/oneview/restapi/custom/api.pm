@@ -50,6 +50,7 @@ sub new {
             'proto:s'        => { name => 'proto' },
             'api-username:s' => { name => 'api_username' },
             'api-password:s' => { name => 'api_password' },
+            'api-domain:s'   => { name => 'api_domain' },
             'timeout:s'      => { name => 'timeout', default => 30 }
         });
     }
@@ -78,18 +79,19 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
+    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{api_domain} = $self->{option_results}->{api_domain};
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_username}) || $self->{api_username} eq '') {
+    if ($self->{api_username} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_password}) || $self->{api_password} eq '') {
+    if ($self->{api_password} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
         $self->{output}->option_exit();
     }
@@ -168,12 +170,14 @@ sub authenticate {
     
     if ($has_cache_file == 0 || !defined($session_id)) {
         my $json_request = { userName => $self->{api_username}, password => $self->{api_password} };
+        $json_request->{authLoginDomain} = $self->{api_domain} if (defined($self->{api_domain}) && $self->{api_domain} ne '');
+
         my $encoded;
         eval {
             $encoded = encode_json($json_request);
         };
         if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
+            $self->{output}->add_option_msg(short_msg => 'Cannot encode json request');
             $self->{output}->option_exit();
         }
 
@@ -209,7 +213,7 @@ sub authenticate {
     );
     my $decoded = $self->decode_api_response(content => $content);
     if (!defined($decoded->{currentVersion})) {
-        $self->{output}->add_option_msg(short_msg => 'annot get api version');
+        $self->{output}->add_option_msg(short_msg => 'Cannot get api version');
         $self->{output}->option_exit();
     }
     $self->{http}->add_header(key => 'X-Api-Version', value => $decoded->{currentVersion});
@@ -270,6 +274,10 @@ Set username.
 =item B<--api-password>
 
 Set password.
+
+=item B<--api-domain>
+
+Set domain.
 
 =item B<--timeout>
 

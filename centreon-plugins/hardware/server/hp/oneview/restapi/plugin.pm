@@ -31,12 +31,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'hardware'      => 'hardware::server::hp::oneview::restapi::mode::hardware',
-        'storage-pools' => 'hardware::server::hp::oneview::restapi::mode::storagepools',
-    );
+        'storage-pools' => 'hardware::server::hp::oneview::restapi::mode::storagepools'
+    };
 
-    $self->{custom_modes}{api} = 'hardware::server::hp::oneview::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'hardware::server::hp::oneview::restapi::custom::api';
     return $self;
 }
 

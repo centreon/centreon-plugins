@@ -34,8 +34,9 @@ sub check_subpart {
 
     foreach (@{$options{entries}}) {
         my $instance = $options{enclosure} . ':' . $_->{$options{instance}};
-        
+
         next if ($self->check_filter(section => 'enclosure.' . $options{section}, instance => $instance));
+        next if ($_->{devicePresence} =~ /absent/i);
 
         my $status = defined($_->{status}) ? $_->{status} : 'n/a';
         $self->{output}->output_add(
