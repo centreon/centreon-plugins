@@ -30,57 +30,53 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'oline', type => 1, cb_prefix_output => 'prefix_oline_output', message_multiple => 'All output lines are ok', skipped_code => { -10 => 1 } },
+        { name => 'oline', type => 1, cb_prefix_output => 'prefix_oline_output', message_multiple => 'All output lines are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'stdev-3phases', nlabel => 'output.3phases.stdev.gauge', set => {
                 key_values => [ { name => 'stdev' } ],
-                output_template => 'Load Standard Deviation : %.2f',
+                output_template => 'Load standard deviation: %.2f',
                 perfdatas => [
-                    { label => 'stdev', value => 'stdev', template => '%.2f' },
-                ],
+                    { label => 'stdev', template => '%.2f' }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{oline} = [
         { label => 'load', nlabel => 'line.output.load.percentage', set => {
                 key_values => [ { name => 'upsOutputPercentLoad' } ],
-                output_template => 'Load : %.2f %%',
+                output_template => 'load: %.2f %%',
                 perfdatas => [
-                    { value => 'upsOutputPercentLoad', template => '%.2f', 
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'current', nlabel => 'line.output.current.ampere', set => {
                 key_values => [ { name => 'upsOutputCurrent' } ],
-                output_template => 'Current : %.2f A',
+                output_template => 'current: %.2f A',
                 perfdatas => [
-                    { value => 'upsOutputCurrent', template => '%.2f', 
-                      min => 0, unit => 'A', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', min => 0, unit => 'A', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'voltage', nlabel => 'line.output.voltage.volt', set => {
                 key_values => [ { name => 'upsOutputVoltage' } ],
-                output_template => 'Voltage : %.2f V',
+                output_template => 'voltage: %.2f V',
                 perfdatas => [
-                    { value => 'upsOutputVoltage', template => '%.2f', 
-                      unit => 'V', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => 'V', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'power', nlabel => 'line.output.power.watt', set => {
                 key_values => [ { name => 'upsOutputPower' } ],
-                output_template => 'Power : %.2f W',
+                output_template => 'power: %.2f W',
                 perfdatas => [
-                    { value => 'upsOutputPower', template => '%.2f', 
-                      unit => 'W', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => 'W', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -90,6 +86,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'ignore-zero-counters' => { name => 'ignore_zero_counters' }
     });
 
     return $self;
@@ -98,7 +95,7 @@ sub new {
 sub prefix_oline_output {
     my ($self, %options) = @_;
 
-    return "Output Line '" . $options{instance_value}->{display} . "' ";
+    return "Output line '" . $options{instance_value}->{display} . "' ";
 }
 
 sub stdev {
@@ -126,7 +123,7 @@ my $mapping = {
     upsOutputVoltage        => { oid => '.1.3.6.1.2.1.33.1.4.4.1.2' }, # in Volt 
     upsOutputCurrent        => { oid => '.1.3.6.1.2.1.33.1.4.4.1.3' },  # in dA 
     upsOutputPower          => { oid => '.1.3.6.1.2.1.33.1.4.4.1.4' }, # in Watt 
-    upsOutputPercentLoad    => { oid => '.1.3.6.1.2.1.33.1.4.4.1.5' },
+    upsOutputPercentLoad    => { oid => '.1.3.6.1.2.1.33.1.4.4.1.5' }
 };
 my $oid_upsOutputEntry = '.1.3.6.1.2.1.33.1.4.4.1';
 
@@ -138,16 +135,24 @@ sub manage_selection {
         oid => $oid_upsOutputEntry,
         nothing_quit => 1
     );
-    foreach my $oid (keys %{$snmp_result}) {
+    foreach my $oid (keys %$snmp_result) {
         $oid =~ /^$oid_upsOutputEntry\.\d+\.(.*)$/;
         my $instance = $1;
         next if (defined($self->{oline}->{$instance}));
-        
+
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        if (defined($self->{option_results}->{ignore_zero_counters})) {
+            foreach (keys %$result) {
+                delete $result->{$_} if ($result->{$_} == 0);
+            }
+        }
         $result->{upsOutputCurrent} *= 0.1 if (defined($result->{upsOutputCurrent}));
-        $self->{oline}->{$instance} = { display => $instance, %$result };
+
+        if (scalar(keys %$result) > 0) {
+            $self->{oline}->{$instance} = { display => $instance, %$result };
+        }
     }
-    
+
     if (scalar(keys %{$self->{oline}}) > 1) {
         $self->stdev();
     }
@@ -162,6 +167,10 @@ __END__
 Check Output lines metrics (load, voltage, current and true power).
 
 =over 8
+
+=item B<--ignore-zero-counters>
+
+Ignore counters equals to 0.
 
 =item B<--warning-*>
 

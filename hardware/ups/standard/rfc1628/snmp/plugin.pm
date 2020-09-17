@@ -30,13 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'alarms'           => 'hardware::ups::standard::rfc1628::snmp::mode::alarms',
-        'battery-status'   => 'hardware::ups::standard::rfc1628::snmp::mode::batterystatus',
-        'input-lines'      => 'hardware::ups::standard::rfc1628::snmp::mode::inputlines',
-        'output-lines'     => 'hardware::ups::standard::rfc1628::snmp::mode::outputlines',
-        'output-source'    => 'hardware::ups::standard::rfc1628::snmp::mode::outputsource',
-    );
+    $self->{modes} = {
+        'alarms'         => 'hardware::ups::standard::rfc1628::snmp::mode::alarms',
+        'battery-status' => 'hardware::ups::standard::rfc1628::snmp::mode::batterystatus',
+        'input-lines'    => 'hardware::ups::standard::rfc1628::snmp::mode::inputlines',
+        'output-lines'   => 'hardware::ups::standard::rfc1628::snmp::mode::outputlines',
+        'output-source'  => 'hardware::ups::standard::rfc1628::snmp::mode::outputsource'
+    };
 
     return $self;
 }
