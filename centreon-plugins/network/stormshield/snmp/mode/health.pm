@@ -26,11 +26,11 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub custom_status_output {
+sub custom_service_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "health is '%s'",
+        "health: %s",
         $self->{result_values}->{health}
     );
 }
