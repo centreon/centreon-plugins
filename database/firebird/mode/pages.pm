@@ -38,34 +38,34 @@ sub set_counters {
                 key_values => [ { name => 'reads', per_second => 1 } ],
                 output_template => 'Reads : %.2f',
                 perfdatas => [
-                    { label => 'reads', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'reads', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'writes', nlabel => 'pages.writes.persecond', set => {
                 key_values => [ { name => 'writes', per_second => 1 } ],
                 output_template => 'Writes : %.2f',
                 perfdatas => [
-                    { label => 'writes', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'writes', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'fetches', nlabel => 'pages.fetches.persecond', set => {
                 key_values => [ { name => 'fetches', per_second => 1 } ],
                 output_template => 'Fetches : %.2f',
                 perfdatas => [
-                    { label => 'fetches', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'fetches', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'marks', nlabel => 'pages.marks.persecond', set => {
                 key_values => [ { name => 'marks', per_second => 1 } ],
                 output_template => 'Marks : %.2f',
                 perfdatas => [
-                    { label => 'marks', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'marks', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -90,7 +90,7 @@ sub manage_selection {
 
     $options{sql}->connect();
     $options{sql}->query(query => q{SELECT MON$PAGE_READS as PAGE_READS, MON$PAGE_WRITES as PAGE_WRITES, MON$PAGE_FETCHES as PAGE_FETCHES, MON$PAGE_MARKS as PAGE_MARKS FROM MON$IO_STATS mi WHERE mi.MON$STAT_GROUP = 0});    
-    my $row = $self->{sql}->fetchrow_hashref();
+    my $row = $options{sql}->fetchrow_hashref();
     if (!defined($row)) {
         $self->{output}->add_option_msg(short_msg => "Cannot get page informations");
         $self->{output}->option_exit();
@@ -99,7 +99,7 @@ sub manage_selection {
     $self->{global} = { reads => $row->{PAGE_READS}, writes => $row->{PAGE_WRITES}, 
         fetches => $row->{PAGE_FETCHES}, marks => $row->{PAGE_MARKS} };
     
-    $self->{cache_name} = "firebird_" . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
+    $self->{cache_name} = 'firebird_' . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 

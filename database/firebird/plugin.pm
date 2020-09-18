@@ -31,15 +31,15 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
         'users'            => 'database::firebird::mode::users',
         'pages'            => 'database::firebird::mode::pages',
         'memory'           => 'database::firebird::mode::memory',
         'queries'          => 'database::firebird::mode::queries',
         'long-queries'     => 'database::firebird::mode::longqueries',
-        'sql'              => 'centreon::common::protocols::sql::mode::sql',
-    );
+        'sql'              => 'centreon::common::protocols::sql::mode::sql'
+    };
 
     return $self;
 }
