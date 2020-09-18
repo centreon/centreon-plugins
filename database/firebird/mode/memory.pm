@@ -38,39 +38,39 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'database' },
                 closure_custom_output => $self->can('custom_used_output'),
                 threshold_use => 'prct',
-                closure_custom_perfdata => $self->can('custom_used_perfdata'),
+                closure_custom_perfdata => $self->can('custom_used_perfdata')
             }
         },
         { label => 'attachment', nlabel => 'attachment.usage.bytes', set => {
-                key_values => [ { name => 'attachment_used' }, { name => 'database_allocated' } ],
+                key_values => [ { name => 'attachment_used' }, { name => 'attachment_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'attachment' },
                 closure_custom_output => $self->can('custom_unit_output'),
                 threshold_use => 'prct',
-                closure_custom_perfdata => $self->can('custom_unit_perfdata'),
+                closure_custom_perfdata => $self->can('custom_unit_perfdata')
             }
         },
         { label => 'transaction', nlabel => 'transaction.usage.bytes', set => {
-                key_values => [ { name => 'transaction_used' }, { name => 'database_allocated' } ],
+                key_values => [ { name => 'transaction_used' }, { name => 'transaction_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'transaction' },
                 closure_custom_output => $self->can('custom_unit_output'),
                 threshold_use => 'prct',
-                closure_custom_perfdata => $self->can('custom_unit_perfdata'),
+                closure_custom_perfdata => $self->can('custom_unit_perfdata')
             }
         },
         { label => 'statement', nlabel => 'statement.usage.bytes', set => {
-                key_values => [ { name => 'statement_used' }, { name => 'database_allocated' } ],
+                key_values => [ { name => 'statement_used' }, { name => 'statement_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'statement' },
                 closure_custom_output => $self->can('custom_unit_output'),
                 threshold_use => 'prct',
-                closure_custom_perfdata => $self->can('custom_unit_perfdata'),
+                closure_custom_perfdata => $self->can('custom_unit_perfdata')
             }
         },
         { label => 'call', nlabel => 'call.usage.bytes', set => {
-                key_values => [ { name => 'call_used' }, { name => 'database_allocated' } ],
+                key_values => [ { name => 'call_used' }, { name => 'call_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'call' },
                 closure_custom_output => $self->can('custom_unit_output'),
                 threshold_use => 'prct',
-                closure_custom_perfdata => $self->can('custom_unit_perfdata'),
+                closure_custom_perfdata => $self->can('custom_unit_perfdata')
             }
         },
     ];
@@ -83,11 +83,12 @@ sub custom_used_output {
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $free);
-    my $msg = sprintf("Total: %s Used : %s (%.2f %%) Free : %s (%.2f %%)",
-                      $total_value . ' ' . $total_unit,
-                      $used_value . ' ' . $used_unit, $self->{result_values}->{prct},
-                      $free_value . ' ' . $free_unit, 100 - $self->{result_values}->{prct});
-    return $msg;
+    return sprintf(
+        "Total: %s Used : %s (%.2f %%) Free : %s (%.2f %%)",
+        $total_value . ' ' . $total_unit,
+        $used_value . ' ' . $used_unit, $self->{result_values}->{prct},
+        $free_value . ' ' . $free_unit, 100 - $self->{result_values}->{prct}
+    );
 }
 
 sub custom_used_perfdata {
@@ -120,10 +121,11 @@ sub custom_unit_output {
     my ($self, %options) = @_;
     
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    my $msg = sprintf("%s : %s (%.2f %%)",
-                      ucfirst($self->{result_values}->{label}),
-                      $used_value . ' ' . $used_unit, $self->{result_values}->{prct});
-    return $msg;
+    return sprintf(
+        "%s : %s (%.2f %%)",
+        ucfirst($self->{result_values}->{label}),
+        $used_value . ' ' . $used_unit, $self->{result_values}->{prct}
+    );
 }
 
 sub custom_unit_calc {
@@ -164,15 +166,15 @@ sub manage_selection {
     $options{sql}->query(query => q{SELECT MON$STAT_GROUP as MYGROUP, MON$MEMORY_ALLOCATED AS MYTOTAL, MON$MEMORY_USED AS MYUSED FROM MON$MEMORY_USAGE});
     
     my %map_group = (0 => 'database', 1 => 'attachment', 2 => 'transaction', 3 => 'statement', 4 => 'call'); 
-    
+
     $self->{global} = {};
     while ((my $row = $options{sql}->fetchrow_hashref())) {
         if (!defined($self->{firebird}->{$map_group{$row->{MYGROUP}} . '_used'})) {
-            $self->{global}->{$map_group{$row->{MYGROUP}} . '_used'} = 0;
-            $self->{global}->{$map_group{$row->{MYGROUP}} . '_allocated'} = 0;
+            $self->{global}->{$map_group{ $row->{MYGROUP} } . '_used'} = 0;
+            $self->{global}->{$map_group{ $row->{MYGROUP} } . '_allocated'} = 0;
         }
-        $self->{global}->{$map_group{$row->{MYGROUP}} . '_used'} += $row->{MYUSED};
-        $self->{global}->{$map_group{$row->{MYGROUP}} . '_allocated'} += $row->{MYTOTAL};
+        $self->{global}->{$map_group{ $row->{MYGROUP} } . '_used'} += $row->{MYUSED};
+        $self->{global}->{$map_group{ $row->{MYGROUP} } . '_allocated'} += $row->{MYTOTAL};
     }
 }
 
