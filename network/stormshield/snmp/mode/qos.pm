@@ -189,7 +189,7 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{qos}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No QoS found.");
+        $self->{output}->add_option_msg(short_msg => 'No QoS found.');
         $self->{output}->option_exit();
     }
 
