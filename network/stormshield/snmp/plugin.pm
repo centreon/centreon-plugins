@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'               => 'snmp_standard::mode::cpu',
         'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
         'connections'       => 'network::stormshield::snmp::mode::connections',
@@ -39,10 +39,11 @@ sub new {
         'load'              => 'snmp_standard::mode::loadaverage',
         'ha-nodes'          => 'network::stormshield::snmp::mode::hanodes',
         'memory'            => 'os::freebsd::snmp::mode::memory',
+        'qos'               => 'network::stormshield::snmp::mode::qos',
         'storage'           => 'snmp_standard::mode::storage',
         'swap'              => 'snmp_standard::mode::swap',
         'vpn-status'        => 'network::stormshield::snmp::mode::vpnstatus',
-    );
+    };
 
     return $self;
 }
