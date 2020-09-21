@@ -237,7 +237,8 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-device-name:s' => { name => 'filter_device_name' },
-        'filter-network-id:s'  => { name => 'filter_network_id' }
+        'filter-network-id:s'  => { name => 'filter_network_id' },
+        'filter-tags:s'        => { name => 'filter_tags' }
     });
 
     return $self;
@@ -356,7 +357,9 @@ sub manage_selection {
 
     $self->{cache_name} = 'meraki_' . $self->{mode} . '_' . $options{custom}->get_token()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_device_name}) ? md5_hex($self->{option_results}->{filter_device_name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_device_name}) ? md5_hex($self->{option_results}->{filter_device_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_network_id}) ? md5_hex($self->{option_results}->{filter_network_id}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_tags}) ? md5_hex($self->{option_results}->{filter_tags}) : md5_hex('all'));
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     my $timespan = 300;
     $timespan = time() - $last_timestamp if (defined($last_timestamp));
@@ -371,6 +374,11 @@ sub manage_selection {
         }
         if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
             $_->{networkId} !~ /$self->{option_results}->{filter_network_id}/) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
+            (!defined($_->{tags}) || $_->{tags} !~ /$self->{option_results}->{filter_tags}/)) {
             $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
             next;
         }
@@ -462,11 +470,15 @@ Check devices.
 
 =item B<--filter-device-name>
 
-Filter device name (Can be a regexp).
+Filter devices by name (Can be a regexp).
 
 =item B<--filter-network-id>
 
-Filter network id (Can be a regexp).
+Filter devices by network id (Can be a regexp).
+
+=item B<--filter-tags>
+
+Filter devices by tags (Can be a regexp).
 
 =item B<--unknown-status>
 
@@ -503,7 +515,8 @@ Can used special variables like: %{link_status}, %{display}
 Thresholds.
 Can be: 'total-online', 'total-offline', 'total-alerting',
 'traffic-in', 'traffic-out', 'connections-success', 'connections-auth',
-'connections-assoc', 'connections-dhcp', 'connections-dns'.
+'connections-assoc', 'connections-dhcp', 'connections-dns',
+'load', 'link-latency' (ms), ''link-loss' (%).
 
 =back
 
