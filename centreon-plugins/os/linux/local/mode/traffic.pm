@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
@@ -104,11 +104,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{interface} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} ne "RU"', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'in', set => {
@@ -140,10 +140,7 @@ sub new {
         'filter-interface:s' => { name => 'filter_interface' },
         'units:s'            => { name => 'units', default => 'b/s' },
         'speed:s'            => { name => 'speed' },
-        'no-loopback'        => { name => 'no_loopback', },
-        'unknown-status:s'   => { name => 'unknown_status', default => '' },
-        'warning-status:s'   => { name => 'warning_status', default => '' },
-        'critical-status:s'  => { name => 'critical_status', default => '%{status} ne "RU"' },
+        'no-loopback'        => { name => 'no_loopback' }
     });
     
     return $self;
@@ -172,8 +169,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "To use percent, you need to set --speed option.");
         $self->{output}->option_exit();
     }
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub do_selection {

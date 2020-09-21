@@ -29,16 +29,16 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "swap"                    => { name => 'check_swap' },
-                                  "warning-swap:s"          => { name => 'warning_swap' },
-                                  "critical-swap:s"         => { name => 'critical_swap' },
-                                  "no-swap:s"               => { name => 'no_swap' },
-                                });
+
+    $options{options}->add_options(arguments => { 
+        "warning:s"       => { name => 'warning' },
+        "critical:s"      => { name => 'critical' },
+        "swap"            => { name => 'check_swap' },
+        "warning-swap:s"  => { name => 'warning_swap' },
+        "critical-swap:s" => { name => 'critical_swap' },
+        "no-swap:s"       => { name => 'no_swap' }
+    });
+
     $self->{no_swap} = 'critical';
     return $self;
 }
@@ -93,8 +93,10 @@ sub run {
         push @$oids, ($oid_memTotalSwap, $oid_memAvailSwap);
     }
     
-    my $result = $self->{snmp}->get_leef(oids => $oids, 
-                                         nothing_quit => 1);
+    my $result = $self->{snmp}->get_leef(
+        oids => $oids, 
+        nothing_quit => 1
+    );
 
     my $cached_used = $result->{$oid_memCached} * 1024;
     my $physical_used = ($result->{$oid_memTotalReal} * 1024) - ($result->{$oid_memAvailReal} * 1024);
@@ -112,32 +114,42 @@ sub run {
     my ($nobuf_value, $nobuf_unit) = $self->{perfdata}->change_bytes(value => $nobuf_used);
     my ($cached_value, $cached_unit) = $self->{perfdata}->change_bytes(value => $cached_used);
     
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Ram Total: %s, Used (-cache): %s (%.2f%%), Cached: %s",
-                                            $total_value . " " . $total_unit,
-                                            $nobuf_value . " " . $nobuf_unit, $prct_used,
-                                            $cached_value . " " . $cached_unit));
-    
-    $self->{output}->perfdata_add(label => "cached", nlabel => 'memory.cached.bytes', unit => 'B',
-                                  value => $cached_used,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => "used", nlabel => 'memory.usage.bytes', unit => 'B',
-                                  value => $nobuf_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => $total_size);
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf(
+            "Ram Total: %s, Used (-cache): %s (%.2f%%), Cached: %s",
+            $total_value . " " . $total_unit,
+            $nobuf_value . " " . $nobuf_unit, $prct_used,
+            $cached_value . " " . $cached_unit
+        )
+    );
+
+    $self->{output}->perfdata_add(
+        label => "cached", nlabel => 'memory.cached.bytes', unit => 'B',
+        value => $cached_used,
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => "used", nlabel => 'memory.usage.bytes', unit => 'B',
+        value => $nobuf_used,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
+        min => 0, max => $total_size
+    );
 
     if (defined($self->{option_results}->{check_swap})) {
         if ($result->{$oid_memTotalSwap} == 0) {
-            $self->{output}->output_add(severity => $self->{no_swap},
-                                        short_msg => 'No active swap.');
+            $self->{output}->output_add(
+                severity => $self->{no_swap},
+                short_msg => 'No active swap.'
+            );
             $self->{output}->display();
             $self->{output}->exit();
         }
-    
+
         $total_size = $result->{$oid_memTotalSwap} * 1024;
         my $swap_used = ($result->{$oid_memTotalSwap} - $result->{$oid_memAvailSwap}) * 1024;
-    
+
         $prct_used = $swap_used * 100 / $total_size;
         $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical-swap', 'exit_litteral' => 'critical' }, { label => 'warning-swap', exit_litteral => 'warning' } ]);
 
@@ -145,19 +157,25 @@ sub run {
         my ($swap_used_value, $swap_used_unit) = $self->{perfdata}->change_bytes(value => $swap_used);
         my ($swap_free_value, $swap_free_unit) = $self->{perfdata}->change_bytes(value => ($total_size - $swap_used));
     
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                                            $total_value . " " . $total_unit,
-                                            $swap_used_value . " " . $swap_used_unit, $prct_used,
-                                            $swap_free_value . " " . $swap_free_unit, (100 - $prct_used)));
-    
-        $self->{output}->perfdata_add(label => "swap", nlabel => 'swap.usage.bytes', unit => 'B',
-                                      value => $swap_used,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-swap', total => $total_size, cast_int => 1),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-swap', total => $total_size, cast_int => 1),
-                                      min => 0, max => $total_size);
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf(
+                "Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                $total_value . " " . $total_unit,
+                $swap_used_value . " " . $swap_used_unit, $prct_used,
+                $swap_free_value . " " . $swap_free_unit, (100 - $prct_used)
+            )
+        );
+
+        $self->{output}->perfdata_add(
+            label => "swap", nlabel => 'swap.usage.bytes', unit => 'B',
+            value => $swap_used,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-swap', total => $total_size, cast_int => 1),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-swap', total => $total_size, cast_int => 1),
+            min => 0, max => $total_size
+        );
     }
-                                  
+
     $self->{output}->display();
     $self->{output}->exit();
 }

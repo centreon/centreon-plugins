@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my %state_map_ntpq = (
     '<sp>' => 'discarded due to high stratum and/or failed sanity checks',
@@ -149,12 +149,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{peers} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, set => {
                 key_values => [ { name => 'state' }, { name => 'type' }, { name => 'reach' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'offset', display_ok => 0, set => {
@@ -190,12 +190,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'ntp-mode:s'        => { name => 'ntp_mode', default => 'ntpq' },
-        'filter-name:s'     => { name => 'filter_name' },
-        'filter-state:s'    => { name => 'filter_state' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
+        'ntp-mode:s'     => { name => 'ntp_mode', default => 'ntpq' },
+        'filter-name:s'  => { name => 'filter_name' },
+        'filter-state:s' => { name => 'filter_state' }
     });
 
     return $self;
@@ -216,9 +213,7 @@ sub check_options {
     } else {
         $self->{output}->add_option_msg(short_msg => "ntp mode '" . $self->{option_results}->{ntp_mode} . "' not implemented" );
         $self->{output}->option_exit();
-    }
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+    }    
 }
 
 sub manage_selection {

@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -46,11 +46,15 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{mountpoints} = [
-        { label => 'status', set => {
+        {
+            label => 'status',
+            type => 2,
+            critical_default => '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i',
+            set => {
                 key_values => [ { name => 'display' }, { name => 'options' }, { name => 'type' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -64,19 +68,10 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-device:s'       => { name => 'filter_device' },
         'filter-mountpoint:s'   => { name => 'filter_mountpoint' },
-        'filter-type:s'         => { name => 'filter_type' },
-        'warning-status:s'      => { name => 'warning_status', default => '' },
-        'critical-status:s'     => { name => 'critical_status', default => '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i' }
+        'filter-type:s'         => { name => 'filter_type' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -114,12 +109,12 @@ sub manage_selection {
         $self->{mountpoints}->{$mountpoint} = {
             display => $mountpoint,
             type => $type,
-            options => $options,
+            options => $options
         };
     }
     
     if (scalar(keys %{$self->{mountpoints}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No mount points found");
+        $self->{output}->add_option_msg(short_msg => 'No mount points found');
         $self->{output}->option_exit();
     }
 }

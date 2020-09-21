@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'              => 'snmp_standard::mode::cpu',
         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
         'diskio'           => 'snmp_standard::mode::diskio',
@@ -48,8 +48,8 @@ sub new {
         'swap'             => 'snmp_standard::mode::swap',
         'time'             => 'snmp_standard::mode::ntp',
         'tcpcon'           => 'snmp_standard::mode::tcpcon',
-        'uptime'           => 'snmp_standard::mode::uptime',
-    );
+        'uptime'           => 'snmp_standard::mode::uptime'
+    };
 
     return $self;
 }
