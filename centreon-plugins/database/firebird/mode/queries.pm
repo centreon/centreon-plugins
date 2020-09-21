@@ -38,66 +38,66 @@ sub set_counters {
                 key_values => [ { name => 'total', per_second => 1 } ],
                 output_template => 'Total : %d',
                 perfdatas => [
-                    { label => 'total', template => '%d', unit => '/s', min => 0 },
-                ],
+                    { label => 'total', template => '%d', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'seq-reads', nlabel => 'queries.sequentialreads.persecond', set => {
                 key_values => [ { name => 'seq_reads', per_second => 1 } ],
                 output_template => 'Seq Reads : %d',
                 perfdatas => [
-                    { label => 'seq_reads', template => '%d', unit => '/s', min => 0 },
-                ],
+                    { label => 'seq_reads', template => '%d', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'inserts', nlabel => 'queries.insert.persecond', set => {
                 key_values => [ { name => 'inserts', per_second => 1 } ],
                 output_template => 'Inserts : %d',
                 perfdatas => [
-                    { label => 'inserts', template => '%d', unit => '/s', min => 0 },
-                ],
+                    { label => 'inserts', template => '%d', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'updates', nlabel => 'queries.updates.persecond', set => {
                 key_values => [ { name => 'updates', per_second => 1 } ],
                 output_template => 'Updates : %d',
                 perfdatas => [
-                    { label => 'updates', template => '%d', unit => '/s', min => 0 },
-                ],
+                    { label => 'updates', template => '%d', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'deletes', nlabel => 'queries.deletes.persecond', set => {
                key_values => [ { name => 'deletes', per_second => 1 } ],
                 output_template => 'Deletes : %d',
                 perfdatas => [
-                    { label => 'deletes', template => '%d', unit => '/s', min => 0 },
-                ],
+                    { label => 'deletes', template => '%d', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'backouts', nlabel => 'queries.backout.persecond', set => {
                 key_values => [ { name => 'backouts', per_second => 1 } ],
                 output_template => 'Backouts : %d',
                 perfdatas => [
-                    { label => 'backouts', template => '%d', unit => '/s', min => 0 },
-                ],
+                    { label => 'backouts', template => '%d', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'purges', nlabel => 'queries.purges.persecond', set => {
                 key_values => [ { name => 'purges', per_second => 1 } ],
                 output_template => 'Purges : %d',
                 perfdatas => [
-                    { label => 'purges', template => '%d', unit => '/s', min => 0 },
-                ],
+                    { label => 'purges', template => '%d', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'expunges', nlabel => 'queries.expunges.persecond', set => {
                 key_values => [ { name => 'expunges', per_second => 1 } ],
                 output_template => 'Expunges : %d',
                 perfdatas => [
-                    { label => 'expunges', template => '%d', unit => '/s', min => 0 },
-                ],
+                    { label => 'expunges', template => '%d', unit => '/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -122,22 +122,25 @@ sub manage_selection {
 
     $options{sql}->connect();
     $options{sql}->query(query => q{SELECT MON$RECORD_SEQ_READS as MYREADS,MON$RECORD_INSERTS as MYINSERTS,
-            MON$RECORD_UPDATES as MYUPDATES, MON$RECORD_DELETES as MYDELETES, MON$RECORD_BACKOUTS as MYBACKOUTS,
-            MON$RECORD_PURGES as MYPURGES, MON$RECORD_EXPUNGES as MYEXPUNGES
-            FROM MON$RECORD_STATS mr WHERE mr.MON$STAT_GROUP = '0'});    
+        MON$RECORD_UPDATES as MYUPDATES, MON$RECORD_DELETES as MYDELETES, MON$RECORD_BACKOUTS as MYBACKOUTS,
+        MON$RECORD_PURGES as MYPURGES, MON$RECORD_EXPUNGES as MYEXPUNGES
+        FROM MON$RECORD_STATS mr WHERE mr.MON$STAT_GROUP = '0'}
+    );    
     my $row = $options{sql}->fetchrow_hashref();
     if (!defined($row)) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get query informations");
+        $self->{output}->add_option_msg(short_msg => 'Cannot get query informations');
         $self->{output}->option_exit();
     }
     
-    $self->{global} = { seq_reads => $row->{MYREADS}, inserts => $row->{MYINSERTS}, 
+    $self->{global} = {
+        seq_reads => $row->{MYREADS}, inserts => $row->{MYINSERTS}, 
         updates => $row->{MYUPDATES}, deletes => $row->{MYDELETES},
-        backouts => $row->{MYBACKOUTS}, purges => $row->{MYPURGES}, expunges => $row->{MYEXPUNGES} };
+        backouts => $row->{MYBACKOUTS}, purges => $row->{MYPURGES}, expunges => $row->{MYEXPUNGES}
+    };
     $self->{global}->{total} = $row->{MYREADS} + $row->{MYINSERTS} + $row->{MYUPDATES} +
         $row->{MYDELETES} + $row->{MYBACKOUTS} + $row->{MYPURGES} + $row->{MYEXPUNGES};
-    
-    $self->{cache_name} = "firebird_" . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
+
+    $self->{cache_name} = 'firebird_' . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
