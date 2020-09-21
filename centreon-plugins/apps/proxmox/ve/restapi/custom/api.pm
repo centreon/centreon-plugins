@@ -42,7 +42,7 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
             'hostname:s'          => { name => 'hostname' },
@@ -76,23 +76,23 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8006;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
+    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
     $self->{realm} = (defined($self->{option_results}->{realm})) ? $self->{option_results}->{realm} : 'pam';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_username}) || $self->{api_username} eq '') {
+    if ($self->{api_username} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_password}) || $self->{api_password} eq '') {
+    if ($self->{api_password} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
         $self->{output}->option_exit();
     }
@@ -152,8 +152,10 @@ sub get_ticket {
         
         $self->settings();
 
-        my $content = $self->{http}->request(method => 'POST', query_form_post => $post_data,
-                                             url_path => '/api2/json/access/ticket');
+        my $content = $self->{http}->request(
+            method => 'POST', query_form_post => $post_data,
+            url_path => '/api2/json/access/ticket'
+        );
 
         my $decoded;
         eval {
@@ -194,12 +196,10 @@ sub request_api {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
     if (!defined($decoded->{data})) {
-        $self->{output}->output_add(long_msg => $decoded, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
         $self->{output}->option_exit();
     }
@@ -294,11 +294,11 @@ sub cache_vms {
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time})))) {
         $vms = {};
         my $list_vms = $self->internal_api_list_vms();
-        foreach my $vm (@{$list_vms}) {
+        foreach my $vm (@$list_vms) {
             $vms->{$vm->{id}} = {
                 State => $vm->{status},
                 Node => $vm->{node},
-                Name => $vm->{name},
+                Name => $vm->{name}
             };
         }
         $options{statefile}->write(data => $vms);
@@ -394,12 +394,15 @@ sub api_get_vms {
     my $content_total = $self->cache_vms(statefile => $options{statefile});
 
     if (defined($options{vm_id}) && $options{vm_id} ne '') {
-        if (defined($content_total->{$options{vm_id}})) {
-            $content_total->{$options{vm_id}}->{Stats} = $self->internal_api_get_vm_stats(node_id => $self->internal_api_get_vm_node(vm_id => $options{vm_id}), vm_id => $options{vm_id});
+        if (defined($content_total->{ $options{vm_id} })) {
+            $content_total->{ $options{vm_id} }->{Stats} = $self->internal_api_get_vm_stats(
+                node_id => $content_total->{ $options{vm_id} }->{Node},
+                vm_id => $options{vm_id}
+            );
         }
     } elsif (defined($options{vm_name}) && $options{vm_name} ne '') {
         my $vm_id;
-        foreach (keys %{$content_total}) {
+        foreach (keys %$content_total) {
             if ($content_total->{$_}->{Name} eq $options{vm_name}) {
                 $vm_id = $_;
                 last;
@@ -409,7 +412,7 @@ sub api_get_vms {
             $content_total->{$vm_id}->{Stats} = $self->internal_api_get_vm_stats(node_id => $content_total->{$vm_id}->{Node}, vm_id => $vm_id);
         }
     } else {
-        foreach my $vm_id (keys %{$content_total}) {
+        foreach my $vm_id (keys %$content_total) {
             $content_total->{$vm_id}->{Stats} = $self->internal_api_get_vm_stats(node_id => $content_total->{$vm_id}->{Node}, vm_id => $vm_id);
         }
     }

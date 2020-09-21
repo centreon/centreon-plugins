@@ -25,20 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return 'state : ' . $self->{result_values}->{state};
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    return 0;
 }
 
 sub custom_cpu_calc {
@@ -157,12 +149,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{vms} = [
-         { label => 'vm-status', threshold => 0, set => {
+         { label => 'vm-status', type => 2, set => {
                 key_values => [ { name => 'state' }, { name => 'name' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'cpu', set => {
@@ -242,12 +233,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'vm-id:s'                 => { name => 'vm_id' },
-        'vm-name:s'               => { name => 'vm_name' },
-        'filter-name:s'           => { name => 'filter_name' },
-        'use-name'                => { name => 'use_name' },
-        'warning-vm-status:s'     => { name => 'warning_vm_status', default => '' },
-        'critical-vm-status:s'    => { name => 'critical_vm_status', default => '' }
+        'vm-id:s'       => { name => 'vm_id' },
+        'vm-name:s'     => { name => 'vm_name' },
+        'filter-name:s' => { name => 'filter_name' },
+        'use-name'      => { name => 'use_name' }
     });
 
     $self->{statefile_cache_vms} = centreon::plugins::statefile->new(%options);
@@ -258,7 +247,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_vm_status', 'critical_vm_status']);
     $self->{statefile_cache_vms}->check_options(%options);
 }
 

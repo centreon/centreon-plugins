@@ -31,17 +31,17 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'list-nodes'        => 'apps::proxmox::ve::restapi::mode::listnodes',
         'list-storages'     => 'apps::proxmox::ve::restapi::mode::liststorages',
         'list-vms'          => 'apps::proxmox::ve::restapi::mode::listvms',
         'node-usage'        => 'apps::proxmox::ve::restapi::mode::nodeusage',
         'storage-usage'     => 'apps::proxmox::ve::restapi::mode::storageusage',
         'version'           => 'apps::proxmox::ve::restapi::mode::version',
-        'vm-usage'          => 'apps::proxmox::ve::restapi::mode::vmusage',
-    );
+        'vm-usage'          => 'apps::proxmox::ve::restapi::mode::vmusage'
+    };
 
-    $self->{custom_modes}{api} = 'apps::proxmox::ve::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::proxmox::ve::restapi::custom::api';
     return $self;
 }
 
