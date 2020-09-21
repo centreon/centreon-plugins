@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
@@ -68,11 +68,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{interface} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} ne "RU"', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'in-discard', set => {
@@ -130,10 +130,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-state:s'     => { name => 'filter_state', },
         'filter-interface:s' => { name => 'filter_interface' },
-        'no-loopback'        => { name => 'no_loopback', },
-        'unknown-status:s'   => { name => 'unknown_status', default => '' },
-        'warning-status:s'   => { name => 'warning_status', default => '' },
-        'critical-status:s'  => { name => 'critical_status', default => '%{status} ne "RU"' }
+        'no-loopback'        => { name => 'no_loopback' }
     });
 
     return $self;
@@ -143,13 +140,6 @@ sub prefix_interface_output {
     my ($self, %options) = @_;
 
     return "Interface '" . $options{instance_value}->{display} . "' ";
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub do_selection {
