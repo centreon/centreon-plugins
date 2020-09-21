@@ -60,7 +60,7 @@ sub run {
     my $target_fields = 'last_vacuum';
     # Autovacuum feature has only been impleted starting PG 8.2 
     # (options needed http://www.postgresql.org/docs/8.2/static/runtime-config-autovacuum.html, no need starting 8.3)
-    if ($self->{sql}->is_version_minimum(version => '8.2.0')) {
+    if ($options{sql}->is_version_minimum(version => '8.2.0')) {
         $target_fields = 'greatest(last_autovacuum,last_vacuum)';
     }
 
