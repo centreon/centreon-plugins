@@ -134,11 +134,10 @@ sub request_api {
     my ($self, %options) = @_;
 
     my $results = [];
-    my $page = 1;
+    my $path = defined($options{force_endpoint}) ? $self->{api_path} . $options{force_endpoint} : $self->{api_path} . $options{endpoint} . '?page_size=100&page=1';
 
     $self->settings();
     while (1) {
-        my $path = defined($options{force_endpoint}) ? $self->{api_path} . $options{force_endpoint} : $self->{api_path} . $options{endpoint} . '?page_size=100&page=' . $page;
         my $content = $self->{http}->request(
             method => defined($options{method}) ? $options{method} : 'GET', 
             url_path => $path,
@@ -167,6 +166,8 @@ sub request_api {
 
         push @$results, @{$decoded->{results}};
         last if (!defined($decoded->{next}));
+
+        $path = $decoded->{next};
     }
 
     return $results;
