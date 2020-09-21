@@ -103,9 +103,9 @@ my $mapping = {
     raid            => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.10' }, # snsRaidHealth
     certificate     => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.11' }, # snsCertHealth
     CRL             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.12' }, # snsCRLHealth
-    password        => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.13' }, # snsPasswdHealth
-    cpu_temperature => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.14' }, # snsCpuTempHealth
-    TPM             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.15' }  # snsTPMHealth
+    #password        => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.13' }, # snsPasswdHealth
+    #cpu_temperature => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.14' }, # snsCpuTempHealth
+    #TPM             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.15' }  # snsTPMHealth
 };
 my $oid_snsSerialHealth = '.1.3.6.1.4.1.11256.1.16.2.1.2';
 
