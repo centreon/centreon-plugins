@@ -118,10 +118,10 @@ sub run {
                                             $nobuf_value . " " . $nobuf_unit, $prct_used,
                                             $cached_value . " " . $cached_unit));
     
-    $self->{output}->perfdata_add(label => "cached", unit => 'B',
+    $self->{output}->perfdata_add(label => "cached", nlabel => 'memory.cached.bytes', unit => 'B',
                                   value => $cached_used,
                                   min => 0);
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
+    $self->{output}->perfdata_add(label => "used", nlabel => 'memory.usage.bytes', unit => 'B',
                                   value => $nobuf_used,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
@@ -151,7 +151,7 @@ sub run {
                                             $swap_used_value . " " . $swap_used_unit, $prct_used,
                                             $swap_free_value . " " . $swap_free_unit, (100 - $prct_used)));
     
-        $self->{output}->perfdata_add(label => "swap", unit => 'B',
+        $self->{output}->perfdata_add(label => "swap", nlabel => 'swap.usage.bytes', unit => 'B',
                                       value => $swap_used,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-swap', total => $total_size, cast_int => 1),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-swap', total => $total_size, cast_int => 1),
