@@ -24,132 +24,147 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf(
+    return sprintf(
         'status: %s [state: %s] [reason: %s]',
         $self->{result_values}->{status},
         $self->{result_values}->{state},
-        $self->{result_values}->{reason},
+        $self->{result_values}->{reason}
     );
-    return $msg;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vs', type => 1, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual Servers are ok' },
+        { name => 'vs', type => 1, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All virtual servers are ok' }
     ];
+
     $self->{maps_counters}->{vs} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'status' }, { name => 'reason' },{ name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
+        {
+            label => 'status',
+            type => 2,
+            warning_default => '%{state} eq "enabled" and %{status} eq "yellow"',
+            critical_default => '%{state} eq "enabled" and %{status} eq "red"',
+            set => {
+                key_values => [ { name => 'state' }, { name => 'status' }, { name => 'reason' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
+        { label => 'current-client-connections', nlabel => 'virtualserver.connections.client.current.count', set => {
+                key_values => [ { name => 'client_current_connections' }, { name => 'display' } ],
+                output_template => 'current client connections: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
     ];
 }
 
 sub prefix_vs_output {
     my ($self, %options) = @_;
     
-    return "Virtual Server '" . $options{instance_value}->{display} . "' ";
+    return "Virtual server '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{state} eq "enabled" and %{status} eq "yellow"' },
-        'critical-status:s' => { name => 'critical_status', default => '%{state} eq "enabled" and %{status} eq "red"' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
-}
-
 my $map_vs_status = {
     0 => 'none', 1 => 'green',
     2 => 'yellow', 3 => 'red',
-    4 => 'blue', 5 => 'gray',
+    4 => 'blue', 5 => 'gray'
 };
 my $map_vs_enabled = {
     0 => 'none', 1 => 'enabled',
-    2 => 'disabled', 3 => 'disabledbyparent',
+    2 => 'disabled', 3 => 'disabledbyparent'
 };
 
 my $mapping = {
     new => {
-        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.2', map => $map_vs_status },
-        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.3', map => $map_vs_enabled },
-        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.5' },
+        state  => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.3', map => $map_vs_enabled }, # EnabledState
+        reason => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.5' }, # StatusReason
+        client_current_connections => { oid => '.1.3.6.1.4.1.3375.2.2.10.2.3.1.12' } # ltmVirtualServStatClientCurConns
     },
     old => {
-        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.22', map => $map_vs_status },
-        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.23', map => $map_vs_enabled },
-        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.25' },
-    },
+        state  => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.23', map => $map_vs_enabled }, # EnabledState
+        reason => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.25' }, # StatusReason
+        client_current_connections => { oid => '.1.3.6.1.4.1.3375.2.2.10.2.3.1.12' } # ltmVirtualServStatClientCurConns
+    }
 };
-my $oid_ltmVsStatusEntry = '.1.3.6.1.4.1.3375.2.2.10.13.2.1'; # new
-my $oid_ltmVirtualServEntry = '.1.3.6.1.4.1.3375.2.2.10.1.2.1'; # old
+# AvailState
+my $oid_status = {
+    new => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.2',
+    old => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.22'
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $options{snmp}->get_multiple_table(
+    my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid}, end => $mapping->{old}->{StatusReason}->{oid} },
-            { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid}, end => $mapping->{new}->{StatusReason}->{oid} },
+            { oid => $oid_status->{new} },
+            { oid => $oid_status->{old} }
         ],
         nothing_quit => 1
     );
     
-    my ($branch, $map) = ($oid_ltmVsStatusEntry, 'new');
-    if (!defined($self->{results}->{$oid_ltmVsStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmVsStatusEntry}}) == 0)  {
-        ($branch, $map) = ($oid_ltmVirtualServEntry, 'old');
+    my $map = 'new';
+    if (!defined($snmp_result->{ $oid_status->{new} }) || scalar(keys %{$snmp_result->{ $oid_status->{new} }}) == 0)  {
+        $map = 'old';
     }
-    
+
     $self->{vs} = {};
-    foreach my $oid (keys %{$self->{results}->{$branch}}) {
-        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*?)\.(.*)$/);
+    foreach my $oid (keys %{$snmp_result->{ $oid_status->{$map} }}) {
+        $oid =~ /^$oid_status->{$map}\.(.*?)\.(.*)$/;
         my ($num, $index) = ($1, $2);
-        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $num . '.' . $index);
-        
+
         my $name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $index))));
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter name.", debug => 1);
             next;
         }
-        $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
         
+
         $self->{vs}->{$num . '.' . $index} = {
             display => $name,
-            status => $result->{AvailState},
-            state => $result->{EnabledState},
-            reason => $result->{StatusReason}
+            status => $map_vs_status->{ $snmp_result->{ $oid_status->{$map} }->{$oid} }
         };
     }
-    
+
     if (scalar(keys %{$self->{vs}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->add_option_msg(short_msg => 'No entry found.');
         $self->{output}->option_exit();
+    }
+
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%{$mapping->{$map}})) ],
+        instances => [ keys %{$self->{vs}} ],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef();
+    foreach (keys %{$self->{vs}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result, instance => $_);
+
+        $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
+        $self->{vs}->{$_} = { %{$self->{vs}->{$_}}, %$result };
     }
 }
 
@@ -159,7 +174,7 @@ __END__
 
 =head1 MODE
 
-Check Virtual Servers status.
+Check virtual servers.
 
 =over 8
 
@@ -181,6 +196,11 @@ Can used special variables like: %{state}, %{status}, %{display}
 
 Set critical threshold for status (Default: '%{state} eq "enabled" and %{status} eq "red"').
 Can used special variables like: %{state}, %{status}, %{display}
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'current-client-connections'.
 
 =back
 
