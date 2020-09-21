@@ -58,6 +58,7 @@ sub new {
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
     $self->{cache_checked} = 0;
+    $self->{cache_uplink_loss_latency} = {};
 
     return $self;
 }
@@ -100,6 +101,28 @@ sub get_token {
     return md5_hex($self->{api_token});
 }
 
+sub get_shard_hostname {
+    my ($self, %options) = @_;
+
+    my $organization_id = $options{organization_id};
+    my $network_id = $options{network_id};
+    if (defined($options{serial}) && defined($self->{cache_devices}->{ $options{serial} })) {
+        $network_id = $self->{cache_devices}->{ $options{serial} }->{networkId};
+    }
+    if (defined($network_id) && defined($self->{cache_networks}->{$network_id})) {
+        $organization_id = $self->{cache_networks}->{$network_id}->{organizationId};
+    }
+
+    if (defined($organization_id)) {
+        if (defined($self->{cache_organizations}->{$organization_id})
+            && $self->{cache_organizations}->{$organization_id}->{url} =~ /^(?:http|https):\/\/(.*?)\//) {
+            return $1;
+        }
+    }
+
+    return undef;
+}
+
 sub get_cache_organizations {
     my ($self, %options) = @_;
 
@@ -114,6 +137,13 @@ sub get_cache_networks {
     return $self->{cache_networks};
 }
 
+sub get_organization_id {
+    my ($self, %options) = @_;
+
+    $self->cache_meraki_entities();
+    return $self->{cache_networks}->{ $options{network_id} }->{organizationId};
+}
+
 sub get_cache_devices {
     my ($self, %options) = @_;
 
@@ -124,7 +154,6 @@ sub get_cache_devices {
 sub build_options_for_httplib {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{hostname} = $self->{hostname};
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
@@ -143,24 +172,36 @@ sub request_api {
 
     $self->settings();
 
+    my $hostname = $self->{hostname};
+    if (defined($options{hostname})) {
+        $hostname = $options{hostname};
+    }
+
     #400: Bad Request- You did something wrong, e.g. a malformed request or missing parameter.
     #403: Forbidden- You don't have permission to do that.
     #404: Not found- No such URL, or you don't have access to the API or organization at all. 
     #429: Too Many Requests- You submitted more than 5 calls in 1 second to an Organization, triggering rate limiting. This also applies for API calls made across multiple organizations that triggers rate limiting for one of the organizations.
     while (1) {
         my $response =  $self->{http}->request(
+            hostname => $hostname,
             url_path => '/api/v0' . $options{endpoint},
             critical_status => '',
             warning_status => '',
-            unknown_status => '(%{http_code} < 200 or %{http_code} >= 300) and %{http_code} != 429'
+            unknown_status => ''
         );
 
         my $code = $self->{http}->get_code();
         return [] if ($code == 403 && $self->{ignore_permission_errors} == 1);
+        return undef if (defined($options{ignore_codes}) && defined($options{ignore_codes}->{$code}));
 
         if ($code == 429) {
             sleep(1);
             continue;
+        }
+
+        if ($code < 200 || $code >= 300) {
+            $self->{output}->add_option_msg(short_msg => $code . ' ' . $self->{http}->get_message());
+            $self->{output}->option_exit();
         }
 
         my $content;
@@ -232,7 +273,8 @@ sub get_networks {
     my $results = {};
     foreach my $id (keys %{$self->{cache_organizations}}) {
         my $datas = $self->request_api(
-            endpoint => '/organizations/' . $id . '/networks'
+            endpoint => '/organizations/' . $id . '/networks',
+            hostname => $self->get_shard_hostname(organization_id => $id)
         );
         $results->{$_->{id}} = $_ foreach (@$datas);
     }
@@ -249,7 +291,8 @@ sub get_devices {
     my $results = {};
     foreach my $id (keys %{$self->{cache_organizations}}) {
         my $datas = $self->request_api(
-            endpoint => '/organizations/' . $id . '/devices'
+            endpoint => '/organizations/' . $id . '/devices',
+            hostname => $self->get_shard_hostname(organization_id => $id)
         );
         $results->{$_->{serial}} = $_ foreach (@$datas);
     }
@@ -267,11 +310,6 @@ sub filter_networks {
         } elsif ($_->{name} =~ /$options{filter_name}/) {
             push @$network_ids, $_->{id};
         }
-    }
-
-    if (scalar(@$network_ids) > 5) {
-        $self->{output}->add_option_msg(short_msg => 'cannot check than 5 networks at once (api rate limit)');
-        $self->{output}->option_exit();
     }
 
     return $network_ids;
@@ -302,7 +340,11 @@ sub get_networks_connection_stats {
     $timespan = 1 if ($timespan <= 0);
     my $results = {};
     foreach my $id (@$network_ids) {
-        my $datas = $self->request_api(endpoint => '/networks/' . $id . '/connectionStats?timespan=' . $options{timespan});
+        my $datas = $self->request_api(
+            endpoint => '/networks/' . $id . '/connectionStats?timespan=' . $options{timespan},
+            hostname => $self->get_shard_hostname(network_id => $id),
+            ignore_codes => { 400 => 1 }
+        );
         $results->{$id} = $datas;
     }
 
@@ -321,6 +363,8 @@ sub get_networks_clients {
     foreach my $id (@$network_ids) {
         my $datas = $self->request_api(
             endpoint => '/networks/' . $id . '/clients?timespan=' . $options{timespan},
+            hostname => $self->get_shard_hostname(network_id => $id),
+            ignore_codes => { 400 => 1 }
         );
         $results->{$id} = $datas;
     }
@@ -336,7 +380,8 @@ sub get_organization_device_statuses {
     my $results = {};
     foreach my $id (@$organization_ids) {
         my $datas = $self->request_api(
-            endpoint => '/organizations/' . $id . '/deviceStatuses'
+            endpoint => '/organizations/' . $id . '/deviceStatuses',
+            hostname => $self->get_shard_hostname(organization_id => $id)
         );
         foreach (@$datas) {
             $results->{$_->{serial}} = $_;
@@ -358,7 +403,8 @@ sub get_organization_api_requests_overview {
     my $results = {};
     foreach my $id (@$organization_ids) {
         $results->{$id} = $self->request_api(
-            endpoint => '/organizations/' . $id . '/apiRequests/overview?timespan=' . $options{timespan}
+            endpoint => '/organizations/' . $id . '/apiRequests/overview?timespan=' . $options{timespan},
+            hostname => $self->get_shard_hostname(organization_id => $id)
         );
     }
 
@@ -368,68 +414,77 @@ sub get_organization_api_requests_overview {
 sub get_network_device_connection_stats {
     my ($self, %options) = @_;
 
-    if (scalar(keys %{$options{devices}}) > 5) {
-        $self->{output}->add_option_msg(short_msg => 'cannot check more than 5 devices at once (api rate limit)');
-        $self->{output}->option_exit();
-    }
-
     $self->cache_meraki_entities();
     my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
     $timespan = 1 if ($timespan <= 0);
 
-    my $results = {};
-    foreach (keys %{$options{devices}}) {
-        my $data = $self->request_api(
-            endpoint => '/networks/' . $options{devices}->{$_} . '/devices/' . $_ . '/connectionStats?timespan=' . $options{timespan}
-        );
-        $results->{$_} = $data;
-    }
-
-    return $results;
+    return $self->request_api(
+        endpoint => '/networks/' . $options{network_id} . '/devices/' . $options{serial} . '/connectionStats?timespan=' . $options{timespan},
+        hostname => $self->get_shard_hostname(network_id => $options{network_id})
+    );
 }
 
 sub get_network_device_uplink {
     my ($self, %options) = @_;
 
-    if (scalar(keys %{$options{devices}}) > 5) {
-        $self->{output}->add_option_msg(short_msg => 'cannot check more than 5 devices at once (api rate limit)');
-        $self->{output}->option_exit();
-    }
-
     $self->cache_meraki_entities();
 
-    my $results = {};
-    foreach (keys %{$options{devices}}) {
-        my $data = $self->request_api(
-            endpoint => '/networks/' . $options{devices}->{$_} . '/devices/' . $_ . '/uplink'
-        );
-        $results->{$_} = $data;
-    }
-
-    return $results;
+    return $self->request_api(
+        endpoint => '/networks/' . $options{network_id} . '/devices/' . $options{serial} . '/uplink',
+        hostname => $self->get_shard_hostname(network_id => $options{network_id})
+    );
 }
 
 sub get_device_clients {
     my ($self, %options) = @_;
 
-    if (scalar(keys %{$options{devices}}) > 5) {
-        $self->{output}->add_option_msg(short_msg => 'cannot check more than 5 devices at once (api rate limit)');
-        $self->{output}->option_exit();
-    }
+    $self->cache_meraki_entities();
+    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
+    $timespan = 1 if ($timespan <= 0);
+
+    return $self->request_api(
+        endpoint => '/devices/' . $options{serial} . '/clients?timespan=' . $options{timespan},
+        hostname => $self->get_shard_hostname(serial => $options{serial})
+    );
+}
+
+sub get_network_device_performance {
+    my ($self, %options) = @_;
+
+    $self->cache_meraki_entities();
+
+    # 400 = feature not supported. 204 = no content
+    return $self->request_api(
+        endpoint => '/networks/' . $options{network_id} . '/devices/' . $options{serial} . '/performance',
+        hostname => $self->get_shard_hostname(network_id => $options{network_id}),
+        ignore_codes => { 400 => 1, 204 => 1 }
+    );
+}
+
+sub get_organization_uplink_loss_and_latency {
+    my ($self, %options) = @_;
 
     $self->cache_meraki_entities();
     my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
     $timespan = 1 if ($timespan <= 0);
 
-    my $results = {};
-    foreach (keys %{$options{devices}}) {
-        my $data = $self->request_api(
-            endpoint => '/devices/' . $_ . '/clients?timespan=' . $options{timespan}
+    if (!defined($self->{cache_uplink_loss_latency}->{ $options{organization_id} })) {
+        $self->{cache_uplink_loss_latency}->{ $options{organization_id} } = $self->request_api(
+            endpoint => '/organizations/' . $options{organization_id} . '/uplinksLossAndLatency?timespan=' . $options{timespan},
+            hostname => $self->get_shard_hostname(organization_id => $options{organization_id})
         );
-        $results->{$_} = $data;
     }
 
-    return $results;
+    my $result = {};
+    if (defined($self->{cache_uplink_loss_latency}->{ $options{organization_id} })) {
+        foreach (@{$self->{cache_uplink_loss_latency}->{ $options{organization_id} }}) {
+            if ($options{serial} eq $_->{serial}) {
+                $result->{ $_->{uplink} } = $_;
+            }
+        }
+    }
+
+    return $result;
 }
 
 1;
