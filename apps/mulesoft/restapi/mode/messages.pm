@@ -24,8 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use DateTime;
-use POSIX qw(strftime);
+use POSIX;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -45,37 +44,37 @@ sub set_counters {
     $self->{maps_counters}->{queues} = [
         { label => 'total', nlabel => 'mulesoft.mq.messages.total.count', set => {
                 key_values      => [ { name => 'total' }, { name => 'display' } ],
-                output_template => 'Total : %s',
+                output_template => 'total: %s',
                 perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'inflight', nlabel => 'mulesoft.mq.inflight.count', set => {
                 key_values      => [ { name => 'inflight' }, { name => 'display' } ],
-                output_template => 'inflight : %s',
+                output_template => 'inflight: %s',
                 perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'received', nlabel => 'mulesoft.mq.received.count', set => {
                 key_values      => [ { name => 'received' }, { name => 'display' } ],
-                output_template => 'received : %s',
+                output_template => 'received: %s',
                 perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'sent', nlabel => 'mulesoft.mq.sent.count', set => {
                 key_values      => [ { name => 'sent' }, { name => 'display' } ],
-                output_template => 'sent : %s',
+                output_template => 'sent: %s',
                 perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'visible', nlabel => 'mulesoft.mq.visible.count', set => {
                 key_values      => [ { name => 'visible' }, { name => 'display' } ],
-                output_template => 'visible : %s',
+                output_template => 'visible: %s',
                 perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'acked', nlabel => 'mulesoft.mq.acked.count', set => {
                 key_values      => [ { name => 'acked' }, { name => 'display' } ],
-                output_template => 'acked : %s',
+                output_template => 'acked: %s',
                 perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         }
@@ -110,9 +109,10 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    POSIX::setlocale(LC_ALL, "C");
     my $time = time();
-    my $end_time = strftime('%a, %d %b %Y %H:%M:%S', gmtime()) . ' GMT';
-    my $start_time = strftime('%a, %d %b %Y %H:%M:%S', gmtime($time - $self->{option_results}->{timeframe})) . ' GMT';
+    my $end_time = POSIX::strftime('%a, %d %b %Y %H:%M:%S', gmtime()) . ' GMT';
+    my $start_time = POSIX::strftime('%a, %d %b %Y %H:%M:%S', gmtime($time - $self->{option_results}->{timeframe})) . ' GMT';
 
     my $destinations = $options{custom}->list_objects(
         api_type  => 'mq',
@@ -149,7 +149,7 @@ sub manage_selection {
             }
             my $points = scalar(@{$self->{raw_results}->{$queue->{queueId}}->{$message_type}});
 
-        $self->{raw_results}->{$queue->{queueId}}{$message_type} =  $total_value / $points;
+            $self->{raw_results}->{$queue->{queueId}}{$message_type} =  $total_value / $points;
         }
 
         $self->{queues}->{$queue->{queueId}} = {
