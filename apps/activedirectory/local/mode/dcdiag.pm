@@ -88,7 +88,7 @@ sub check_version {
 sub read_config {
     my ($self, %options) = @_;
 
-    my $content_file = <<END_FILE
+    my $content_file = <<\END_FILE
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
 	<dcdiag language="en">
@@ -109,6 +109,7 @@ sub read_config {
 	</dcdiag>
 </root>
 END_FILE
+;
 
     if (defined($self->{option_results}->{config}) && $self->{option_results}->{config} ne '') {
         $content_file = do {
