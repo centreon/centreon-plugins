@@ -68,7 +68,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'containers-running', set => {
+        { label => 'containers-paused', set => {
                 key_values => [ { name => 'containers_paused' }, { name => 'display' } ],
                 output_template => 'Containers Paused : %s',
                 perfdatas => [
