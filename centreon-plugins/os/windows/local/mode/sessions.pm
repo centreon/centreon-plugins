@@ -105,7 +105,7 @@ sub new {
 sub read_config {
     my ($self, %options) = @_;
 
-    my $content_file = <<END_FILE
+    my $content_file = <<'END_FILE';
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
     <qwinsta language="en">
