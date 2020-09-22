@@ -37,45 +37,44 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'sessions-created', nlabel => 'sessions.created.total.count', set => {
                 key_values => [ { name => 'sessions_created', diff => 1 } ],
-                output_template => 'created : %s',
+                output_template => 'created: %s',
                 perfdatas => [
-                    { label => 'sessions_created', value => 'sessions_created', template => '%s', min => 0 },
-                ],
+                    { label => 'sessions_created', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'sessions-disconnected', nlabel => 'sessions.disconnected.total.count', set => {
                 key_values => [ { name => 'sessions_disconnected', diff => 1 } ],
-                output_template => 'disconnected : %s',
+                output_template => 'disconnected: %s',
                 perfdatas => [
-                    { label => 'sessions_disconnected', value => 'sessions_disconnected', template => '%s', min => 0 },
-                ],
+                    { label => 'sessions_disconnected', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'sessions-reconnected', nlabel => 'sessions.reconnected.total.count', set => {
                 key_values => [ { name => 'sessions_reconnected', diff => 1 } ],
                 output_template => 'reconnected : %s',
                 perfdatas => [
-                    { label => 'sessions_reconnected', value => 'sessions_reconnected', template => '%s', min => 0 },
-                ],
+                    { label => 'sessions_reconnected', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'sessions-active', nlabel => 'sessions.active.current.count', set => {
                 key_values => [ { name => 'sessions_active' } ],
                 output_template => 'current active : %s',
                 perfdatas => [
-                    { label => 'sessions_active', value => 'sessions_active', template => '%s', min => 0 },
-                ],
+                    { label => 'sessions_active', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'sessions-disconnected-current', nlabel => 'sessions.disconnected.current.count', set => {
                 key_values => [ { name => 'sessions_disconnected_current' } ],
                 output_template => 'current disconnected : %s',
                 perfdatas => [
-                    { label => 'sessions_disconnected_current', value => 'sessions_disconnected_current', 
-                      template => '%s', min => 0 },
-                ],
+                    { label => 'sessions_disconnected_current', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -91,42 +90,56 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'command:s'             => { name => 'command', default => 'qwinsta' },
-        'command-path:s'        => { name => 'command_path' },
-        'command-options:s'     => { name => 'command_options', default => '/COUNTER' },
-        'timeout:s'             => { name => 'timeout', default => 30 },
-        'filter-sessionname:s'  => { name => 'filter_sessionname' },
-        'config:s'              => { name => 'config' },
-        'language:s'            => { name => 'language', default => 'en' },
+        'command:s'            => { name => 'command', default => 'qwinsta' },
+        'command-path:s'       => { name => 'command_path' },
+        'command-options:s'    => { name => 'command_options', default => '/COUNTER' },
+        'timeout:s'            => { name => 'timeout', default => 30 },
+        'filter-sessionname:s' => { name => 'filter_sessionname' },
+        'config:s'             => { name => 'config' },
+        'language:s'           => { name => 'language', default => 'en' }
     });
     
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-
-    $self->SUPER::check_options(%options);
-    if (defined($self->{option_results}->{config})) {
-        $self->{config_file} = $self->{option_results}->{config};
-    } else {
-        $self->{output}->add_option_msg(short_msg => "Need to specify config file option.");
-        $self->{output}->option_exit();;
-    }
-}
-
 sub read_config {
     my ($self, %options) = @_;
-    
-    my $content_file = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $self->{option_results}->{config}) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{config} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-    
+
+    my $content_file = <<END_FILE
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <qwinsta language="en">
+        <created>Total sessions created</created>
+        <disconnected>Total sessions disconnected</disconnected>
+        <reconnected>Total sessions reconnected</reconnected>
+        <activestate>Active</activestate>
+        <disconnectedstate>Disc</disconnectedstate>
+        <header_sessionname>SESSIONNAME</header_sessionname>
+        <header_state>STATE</header_state>
+    </qwinsta>
+    <qwinsta language="fr">
+        <created>Nombre total de sessions c.*?s</created>
+        <disconnected>Nombre total de sessions d.*?connect.*?es</disconnected>
+        <reconnected>Nombre total de sessions reconnect.*?es</reconnected>
+        <activestate>Actif</activestate>
+        <disconnectedstate>D.*?co</disconnectedstate>
+        <header_sessionname>SESSION</header_sessionname>
+        <header_state>^.*?TAT</header_state>
+    </qwinsta>
+</root>
+END_FILE
+
+    if (defined($self->{option_results}->{config}) && $self->{option_results}->{config} ne '') {
+        $content_file = do {
+            local $/ = undef;
+            if (!open my $fh, "<", $self->{option_results}->{config}) {
+                $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{config} : $!");
+                $self->{output}->option_exit();
+            }
+            <$fh>;
+        };
+    }
+
     my $content;
     eval {
         $content = XMLin($content_file, ForceArray => ['qwinsta'], KeyAttr => ['language']);
@@ -135,7 +148,7 @@ sub read_config {
         $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
         $self->{output}->option_exit();
     }
-    
+
     if (!defined($content->{qwinsta}->{$self->{option_results}->{language}})) {
         $self->{output}->add_option_msg(short_msg => "Cannot find language '$self->{option_results}->{language}' in config file");
         $self->{output}->option_exit();
@@ -146,7 +159,7 @@ sub read_config {
 
 sub read_qwinsta {
     my ($self, %options) = @_;
-    
+
     $self->{output}->output_add(long_msg => $options{stdout}, debug => 1);
     if ($options{stdout} !~ /^(.*?)$options{config}->{created}/si) {
         $self->{output}->add_option_msg(short_msg => "Cannot find information in command output");
@@ -166,7 +179,7 @@ sub read_qwinsta {
         my $data = {};
         for (my $pos = 0; $pos <= $#position_wrap; $pos++) {
             my $area;
-            
+
             if (length($line) < $position_wrap[$pos]->{begin}) {
                 $area = '';
             } else {
@@ -176,7 +189,7 @@ sub read_qwinsta {
                     $area = substr($line, $position_wrap[$pos]->{begin});
                 }
             }
-            
+
             $data->{$position_wrap[$pos]->{label}} = '-';
             while ($area =~ /([^\s]+)/g) {
                 if (($-[1] >= $position_wrap[$pos]->{word_begin} - $position_wrap[$pos]->{begin} && $-[1] <= $position_wrap[$pos]->{end} - $position_wrap[$pos]->{begin}) 
@@ -189,7 +202,7 @@ sub read_qwinsta {
         }
         push @$session_data, $data;
     }
-    
+
     return $session_data;
 }
 
@@ -203,7 +216,7 @@ sub read_qwinsta_counters {
         if ($options{stdout} =~ /$options{config}->{disconnected}.*?(\d+)/si);
     $counters->{sessions_reconnected} = $1
         if ($options{stdout} =~ /$options{config}->{reconnected}.*?(\d+)/si);
-    
+
     return $counters;
 }
 
@@ -218,7 +231,7 @@ sub manage_selection {
         command_path => $self->{option_results}->{command_path},
         command_options => $self->{option_results}->{command_options}
     );
-    
+
     my $datas = $self->read_qwinsta(stdout => $stdout, config => $config);
     my $counters = $self->read_qwinsta_counters(stdout => $stdout, config => $config);
 
@@ -229,7 +242,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $session->{$config->{header_sessionname}} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         my ($matching_active, $matching_discon) = (0, 0);
         foreach my $label (keys %$session) {
             $matching_active = 1 if ($label =~ /$config->{header_state}/ && 
@@ -237,7 +250,7 @@ sub manage_selection {
             $matching_discon = 1 if ($label =~ /$config->{header_state}/ && 
                 $session->{$label} =~ /$config->{disconnectedstate}/);  
         }
-        
+
         if ($matching_active == 1 || $matching_discon == 1) {
             $active++ if ($matching_active == 1);
             $disconnected++ if ($matching_discon == 1);
@@ -249,7 +262,7 @@ sub manage_selection {
 
     $self->{global} = { %$counters, sessions_active => $active, sessions_disconnected_current => $disconnected };
 
-    $self->{cache_name} = "windows_" . $self->{mode} . '_' .
+    $self->{cache_name} = 'windows_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

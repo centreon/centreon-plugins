@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use File::Basename;
-use XML::LibXML;
+use XML::Simple;
 use Win32;
 
 sub new {
@@ -35,32 +35,25 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'config:s'          => { name => 'config' },
-        'language:s'        => { name => 'language', default => 'en' },
-        'dfsr'              => { name => 'dfsr' },
-        'noeventlog'        => { name => 'noeventlog' },
-        'nomachineaccount'  => { name => 'nomachineaccount' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
+        'config:s'         => { name => 'config' },
+        'language:s'       => { name => 'language', default => 'en' },
+        'dfsr'             => { name => 'dfsr' },
+        'noeventlog'       => { name => 'noeventlog' },
+        'nomachineaccount' => { name => 'nomachineaccount' },
+        'timeout:s'        => { name => 'timeout', default => 30 }
     });
 
     $self->{os_is2003} = 0;
     $self->{os_is2008} = 0;
     $self->{os_is2012} = 0;
     $self->{os_is2016} = 0;
-    
-    $self->{msg} = { global => undef, ok => undef, warning => undef, critical => undef };
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    if (defined($self->{option_results}->{config})) {
-        $self->{config_file} = $self->{option_results}->{config};
-    } else {
-        $self->{output}->add_option_msg(short_msg => "Need to specify config file option.");
-        $self->{output}->option_exit();;
-    }
 }
 
 sub check_version {
@@ -82,55 +75,67 @@ sub check_version {
     } elsif ($ver_major == 10 && $ver_minor == 0) {
         $self->{os_is2016} = 1;
     } else {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'OS version ' . $ver_major . '.' . $ver_minor . ' not managed.');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'OS version ' . $ver_major . '.' . $ver_minor . ' not managed.'
+        );
         return 1;
     }
+
     return 0;
 }
 
-sub load_xml {
+sub read_config {
     my ($self, %options) = @_;
 
-    # Load XML File
-    my $parser = XML::LibXML->new();
-    my $doc = $parser->parse_file($self->{config_file});
-    my $nodes = $doc->getElementsByTagName('dcdiag');
-    if ($nodes->size() == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot find a <dcdiag> node in XML Config file');
-        return 1;
-    }
-    
-    my $language_found = 0;
-    foreach my $node ($nodes->get_nodelist()) {
-        if ($node->getAttribute('language') eq $self->{option_results}->{language}) {
-            $language_found = 1;
-            my $messages_node = $node->getElementsByTagName('messages');
-            foreach my $node2 ($messages_node->get_nodelist()) {
-                foreach my $element_msg ($node2->getChildrenByTagName('*')) {
-                    $self->{msg}->{$element_msg->nodeName} = $element_msg->textContent if (exists($self->{msg}->{$element_msg->nodeName}));
-                }
+    my $content_file = <<END_FILE
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<dcdiag language="en">
+		<messages>
+			<global>Starting test.*?:\s+(.*?)\n.*?(passed|warning|failed)</global>
+			<ok>passed</ok>
+			<warning>warning</warning>
+			<critical>failed</critical>
+		</messages>
+	</dcdiag>
+	<dcdiag language="fr">
+		<messages>
+			<global>D.*?marrage du test.*?:\s+(.*?)\n.*?(a r.*?ussi|a .*?chou.|warning)</global>
+			<ok>a r.*?ussi</ok>
+			<warning>warning</warning>
+			<critical>a .*?chou.</critical>
+		</messages>
+	</dcdiag>
+</root>
+END_FILE
+
+    if (defined($self->{option_results}->{config}) && $self->{option_results}->{config} ne '') {
+        $content_file = do {
+            local $/ = undef;
+            if (!open my $fh, "<", $self->{option_results}->{config}) {
+                $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{config} : $!");
+                $self->{output}->option_exit();
             }
-            last;
-        }
+            <$fh>;
+        };
     }
-    
-    if ($language_found == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Cannot found language '" . $self->{option_results}->{language} . "' in XML Config file");
-        return 1;
+
+    my $content;
+    eval {
+        $content = XMLin($content_file, ForceArray => ['dcdiag'], KeyAttr => ['language']);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
+        $self->{output}->option_exit();
     }
-    
-    foreach my $label (keys %{$self->{msg}}) {
-        if (!defined($self->{msg}->{$label})) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => "Message '" . $label . "' for language '" . $self->{option_results}->{language} . "' not defined in XML Config file");
-            return 1;
-        }
+
+    if (!defined($content->{dcdiag}->{$self->{option_results}->{language}})) {
+        $self->{output}->add_option_msg(short_msg => "Cannot find language '$self->{option_results}->{language}' in config file");
+        $self->{output}->option_exit();
     }
-        
-    return 0;
+
+    return $content->{dcdiag}->{ $self->{option_results}->{language} };
 }
 
 sub dcdiag {
@@ -140,13 +145,13 @@ sub dcdiag {
     $dcdiag_cmd .= ' /test:machineaccount' if (!defined($self->{option_results}->{nomachineaccount}));
     $dcdiag_cmd .= ' /test:frssysvol' if ($self->{os_is2003} == 1);
     $dcdiag_cmd .= ' /test:sysvolcheck' if ($self->{os_is2008} == 1 || $self->{os_is2012} == 1 || $self->{os_is2016} == 1);
-    
+
     if (!defined($self->{option_results}->{noeventlog})) {
         $dcdiag_cmd .= ' /test:frsevent /test:kccevent' if ($self->{os_is2003} == 1);
         $dcdiag_cmd .= ' /test:frsevent /test:kccevent' if (($self->{os_is2008} == 1 || $self->{os_is2012} == 1 || $self->{os_is2016} == 1) && !defined($self->{option_results}->{dfsr}));
         $dcdiag_cmd .= ' /test:dfsrevent /test:kccevent' if (($self->{os_is2008} == 1 || $self->{os_is2012} == 1 || $self->{os_is2016} == 1) && defined($self->{option_results}->{dfsr}));
     }
-    
+
     my ($stdout) = centreon::plugins::misc::windows_execute(
         output => $self->{output},
         timeout => $self->{option_results}->{timeout},
@@ -154,42 +159,51 @@ sub dcdiag {
         command_path => undef,
         command_options => undef
     );
-    
+
     my $match = 0;
-    while ($stdout =~ /$self->{msg}->{global}/imsg) {
+    while ($stdout =~ /$options{config}->{messages}->{global}/imsg) {
         my ($test_name, $pattern) = ($1, lc($2));
-		    
-        if ($pattern =~ /$self->{msg}->{ok}/i) {
+
+        if ($pattern =~ /$options{config}->{messages}->{ok}/i) {
             $match = 1;
-            $self->{output}->output_add(severity => 'OK',
-                                        short_msg => $test_name);
-        } elsif ($pattern =~ /$self->{msg}->{critical}/i) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $test_name
+            );
+        } elsif ($pattern =~ /$options{config}->{messages}->{critical}/i) {
             $match = 1;
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => 'test ' . $test_name);
-        } elsif ($pattern =~ /$self->{msg}->{warning}/i) {
+            $self->{output}->output_add(
+                severity => 'CRITICAL',
+                short_msg => 'test ' . $test_name
+            );
+        } elsif ($pattern =~ /$options{config}->{messages}->{warning}/i) {
             $match = 1;
-            $self->{output}->output_add(severity => 'WARNING',
-                                        short_msg => 'test ' . $test_name);
+            $self->{output}->output_add(
+                severity => 'WARNING',
+                short_msg => 'test ' . $test_name
+            );
         }
     }
-    
+
     if ($match == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot match output test (maybe you need to set the good language)');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot match output test (maybe you need to set the good language)'
+        );
         return 1;
     }
-    
+
     return 0;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    if ($self->load_xml() == 0 && $self->check_version() == 0) {
-        $self->dcdiag();
+    my $config = $self->read_config();
+    if ($self->check_version() == 0) {
+        $self->dcdiag(config => $config);
     }
-   
+
     $self->{output}->display();
     $self->{output}->exit();
 }
