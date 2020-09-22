@@ -167,6 +167,8 @@ sub request_api {
 
         push @$results, @{$decoded->{results}};
         last if (!defined($decoded->{next}));
+
+        $page++;
     }
 
     return $results;
