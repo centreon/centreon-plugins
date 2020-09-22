@@ -1,3 +1,12 @@
+2020-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: DRBD
+ * Plugin added: Pexip Infinity Management API
+ * Plugin added: Polycom RPRM SNMP
+ * Plugin added: Polycom DMA SNMP
+ * Plugin added: Polycom HDX SNMP
+ * Plugin added: Aws SQS
+ * Plugin added: Aws SNS
+
 2020-08-03 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Netapp Ontap Rest API
  * Plugin added: Netdata Rest API
