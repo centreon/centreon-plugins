@@ -24,22 +24,26 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
     my $msg = 'status : ' . $self->{result_values}->{status};
-    $msg .= ' [Description: ' . $self->{result_values}->{description} . ']' if (defined($self->{result_values}->{description}) && $self->{result_values}->{description} ne '');
+    $msg .= ' [description: ' . $self->{result_values}->{description} . ']' if (defined($self->{result_values}->{description}) && $self->{result_values}->{description} ne '');
     return $msg;
 }
 
-sub custom_status_calc {
+sub prefix_phone_output {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_ccmPhoneStatus'};
-    $self->{result_values}->{description} = $options{new_datas}->{$self->{instance} . 'ccmPhoneDescription'};
-    return 0;
+    return "Phone '" . $options{instance_value}->{name} . "' ";
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return "Total ";
 }
 
 sub set_counters {
@@ -47,26 +51,25 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'phone', type => 1, cb_prefix_output => 'prefix_phone_output', message_multiple => 'All phones are ok' },
+        { name => 'phone', type => 1, cb_prefix_output => 'prefix_phone_output', message_multiple => 'All phones are ok' }
     ];
     
     $self->{maps_counters}->{phone} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'ccmPhoneDescription' }, { name => 'ccmPhoneStatus' }, { name => 'ccmPhoneName' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+        { label => 'status', type => 2, critical_default => '%{status} !~ /^registered/', set => {
+                key_values => [ { name => 'status' }, { name => 'status' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
     
     my @map = (
-        ['total-registered', 'Registered : %s', 'registered'],
-        ['total-unregistered', 'Unregistered : %s', 'unregistered'],
-        ['total-rejected', 'Rejected : %s', 'rejected'],
-        ['total-unknown', 'Unknown : %s', 'unknown'],
-        ['total-partiallyregistered', 'Partially Registered : %s', 'partiallyregistered'],
+        ['total-registered', 'registered: %s', 'registered'],
+        ['total-unregistered', 'unregistered: %s', 'unregistered'],
+        ['total-rejected', 'rejected: %s', 'rejected'],
+        ['total-unknown', 'unknown: %s', 'unknown'],
+        ['total-partiallyregistered', 'partially registered: %s', 'partiallyregistered']
     );
     
     $self->{maps_counters}->{global} = [];
@@ -77,10 +80,10 @@ sub set_counters {
                 key_values => [ { name => $_->[2] } ],
                 output_template => $_->[1],
                 perfdatas => [
-                    { label => $label, value => $_->[2] , template => '%s', min => 0 },
-                ],
+                    { label => $label, template => '%s', min => 0 }
+                ]
             }
-        },
+        };
     }
 }
 
@@ -90,41 +93,22 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /^registered/' },
+        'filter-name:s'        => { name => 'filter_name' },
+        'filter-description:s' => { name => 'filter_description' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_phone_output {
-    my ($self, %options) = @_;
-
-    return "Phone '" . $options{instance_value}->{ccmPhoneName} . "' ";
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return "Total ";
-}
-
-my %mapping_status = (
+my $mapping_status = {
     1 => 'unknown', 2 => 'registered', 3 => 'unregistered',
-    4 => 'rejected', 5 => 'partiallyregistered',
-);
+    4 => 'rejected', 5 => 'partiallyregistered'
+};
 
 my $mapping = {
-    ccmPhoneDescription => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.4' },
-    ccmPhoneStatus      => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.7', map => \%mapping_status },
-    ccmPhoneName        => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.20' },
+    description => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.4' }, # ccmPhoneDescription
+    status      => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.7', map => $mapping_status }, # ccmPhoneStatus
+    name        => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.20' } # ccmPhoneName
 };
 
 sub manage_selection {
@@ -132,23 +116,36 @@ sub manage_selection {
     
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $mapping->{ccmPhoneDescription}->{oid} },
-            { oid => $mapping->{ccmPhoneStatus}->{oid} },
-            { oid => $mapping->{ccmPhoneName}->{oid} }
+            { oid => $mapping->{description}->{oid} },
+            { oid => $mapping->{status}->{oid} },
+            { oid => $mapping->{name}->{oid} }
         ],
         return_type => 1,
         nothing_quit => 1
     );
-    
+
     $self->{phone} = {};
     $self->{global} = { unknown => 0, registered => 0, unregistered => 0, rejected => 0, partiallyregistered => 0 };
     foreach my $oid (keys %$snmp_result) {
-        next if ($oid !~ /^$mapping->{ccmPhoneStatus}->{oid}\.(.*)/);
+        next if ($oid !~ /^$mapping->{status}->{oid}\.(.*)/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        
-        $self->{phone}->{$instance} = { %$result };
-        $self->{global}->{$result->{ccmPhoneStatus}}++;
+
+        if (defined($result->{name}) &&
+            defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $result->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping phone '" . $instance . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($result->{description}) &&
+            defined($self->{option_results}->{filter_description}) && $self->{option_results}->{filter_description} ne '' &&
+            $result->{description} !~ /$self->{option_results}->{filter_description}/) {
+            $self->{output}->output_add(long_msg => "skipping phone '" . $instance . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{phone}->{$instance} = $result;
+        $self->{global}->{ $result->{status} }++;
     }
 }
     
@@ -167,15 +164,23 @@ Check phone usage.
 Only display some counters (regexp can be used).
 Example: --filter-counters='status'
 
+=item B<--filter-name>
+
+Filter phone by name (can be a regexp).
+
+=item B<--filter-description>
+
+Filter phone by description (can be a regexp).
+
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+Set warning threshold for status.
+Can used special variables like: %{status}, %{name}, %{description}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /^registered/').
-Can used special variables like: %{status}, %{display}
+Can used special variables like: %{status}, %{name}, %{description}
 
 =item B<--warning-*> B<--critical-*>
 
