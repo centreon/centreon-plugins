@@ -208,8 +208,8 @@ sub set_counters {
         {
             label => 'peer-device-replication-status',
             type => 2,
-            warning_default => '%{device_replication_status} =~ /^(?:ahead|off|startingsyncs|startingsynct|syncsource|synctarget|verifys|verifyt|wfsyncuuid)$/i',
-            critical_default => '%{device_replication_status} =~ /^(?:behind|pausedsyncs|pausedsynct|wfbitmaps|wfbitmapt)$/i',
+            warning_default => '%{device_replication_status} =~ /^(?:ahead|off|startingsyncs|startingsynct|syncsource|synctarget|verifys|verifyt|wfsyncuuid|syncingall|syncingquick)$/i',
+            critical_default => '%{device_replication_status} =~ /^(?:behind|pausedsyncs|pausedsynct|wfbitmaps|wfbitmapt|syncpaused|skippedsyncs|skippedsynct)$/i',
             set => {
                 key_values => [ { name => 'device_replication_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_peer_device_replication_output'),
@@ -256,13 +256,185 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-         'filter-resource-name:s' => { name => 'filter_resource_name' }
+         'filter-resource-name:s' => { name => 'filter_resource_name' },
+         'legacy-proc'            => { name => 'legacy_proc' }
     });
 
     return $self;
 }
 
-sub manage_selection {
+=pod
+replication:
+    ahead          [WARN]
+    behind         [CRIT]
+    off            [WARN]
+    established    [OK]
+    pausedsyncs    [CRIT]
+    pausedsynct    [CRIT]
+    startingsyncs  [WARN]
+    startingsynct  [WARN]
+    syncsource     [WARN]
+    synctarget     [WARN]
+    verifys        [WARN]
+    verifyt        [WARN]
+    wfbitmaps      [CRIT]
+    wfbitmapt      [CRIT]
+    wfsyncuuid     [WARN]
+
+connection states:
+    brokenpipe     [CRIT]
+    connected      [OK]
+    connecting     [WARN]
+    disconnecting  [WARN]
+    networkfailure [CRIT]
+    protocolerror  [CRIT]
+    standalone     [WARN]
+    teardown       [WARN]
+    timeout        [CRIT]
+    unconnected    [CRIT]
+    wfconnection   [CRIT]
+    wfreportparams [CRIT]
+
+    # old version - connection and replication are merged (and also unconfigured)
+    unconfigured   [CRIT]
+    syncingall     [WARN]
+    syncingquick   [WARN]
+    syncpaused     [CRIT]
+    skippedsyncs   [CRIT]
+    skippedsynct   [CRIT]
+
+disk states:
+    attaching      [WARN]
+    consistent     [OK]
+    detaching      [WARN]
+    diskless       [CRIT]
+    dunknown       [WARN]
+    failed         [CRIT]
+    inconsistent   [CRIT]
+    negotiating    [WARN]
+    outdated       [CRIT]
+    uptodate       [OK]
+
+peer-disk: 
+    attaching      [WARN]
+    consistent     [OK]
+    detaching      [WARN]
+    diskless       [WARN]
+    dunknown       [WARN]
+    failed         [WARN]
+    inconsistent   [WARN]
+    negotiating    [WARN]
+    outdated       [WARN]
+    uptodate       [OK]
+
+role:
+    primary        [OK]
+    secondary      [OK]
+    unknown        [WARN]
+    unconfigured   [CRIT]
+
+-----------------------
+old versions /proc/drbd
+-----------------------
+
+0: cs:Connected st:Secondary/Secondary ld:Inconsistent
+   ns:0 nr:0 dw:0 dr:0 al:0 bm:17408 lo:0 pe:0 ua:0 ap:0
+1: cs:Unconfigured
+
+st = role
+ld = Local data consistency
+
+-------------------------
+
+version: 8.3.7 (api:88/proto:86-91)
+GIT-hash: ea9e28dbff98e331a62bcbcc63a6135808fe2917 build by root@xxxx, 2012-05-09 11:46:08
+ 0: cs:Connected ro:Secondary/Primary ds:UpToDate/UpToDate C r----
+    ns:17 nr:4207 dw:4224 dr:24 al:1 bm:1 lo:0 pe:0 ua:0 ap:0 ep:1 wo:f oos:0
+ 1: cs:Connected ro:Secondary/Primary ds:UpToDate/UpToDate C r----
+    ns:100808 nr:1272593360 dw:1272711944 dr:19001 al:13 bm:23 lo:0 pe:0 ua:0 ap:0 ep:1 wo:d oos:0
+
+=cut
+
+sub legacy_proc {
+    my ($self, %options) = @_;
+
+    # 0 = replication
+    # 1 = connection
+    # 2 = role
+    my $map_connection = {
+        ahead => 0, behind => 0, off => 0, established => 0, pausedsyncs => 0,
+        pausedsynct => 0, startingsyncs => 0, startingsynct => 0,
+        syncsource => 0, synctarget => 0, verifys => 0, verifyt => 0, wfbitmaps => 0,
+        wfbitmapt => 0, wfsyncuuid => 0, syncingall => 0, syncingquick => 0,
+        syncpaused => 0, skippedsyncs => 0, skippedsynct => 0,
+        brokenpipe => 1, connected => 1, connecting => 1,
+        disconnecting => 1, networkfailure => 1, protocolerror => 1,
+        standalone => 1, teardown => 1, timeout => 1,
+        unconnected => 1, wfconnection => 1, wfreportparams => 1,
+        unconfigured => 2
+    };
+
+    $self->{resources} = {};
+    while ($options{stdout} =~ /^\s*(\d+):(.*?)(?=\n\s*(\d+):|\Z$)/msg) {
+        my ($res_name, $content) = ($1, $2);
+
+        if (defined($self->{option_results}->{filter_resource_name}) && $self->{option_results}->{filter_resource_name} ne '' &&
+            $res_name !~ /$self->{option_results}->{filter_resource_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $res_name . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{resources}->{$res_name} = {
+            display => $res_name,
+            role => { display => $res_name, role => '-' },
+            device => { display => $res_name, disk_status => '-' },
+            peers => {
+                0 => {
+                    display => 0,
+                    role => '-',
+                    connection_status => '-',
+                    device_replication_status => '-',
+                    device_disk_status => '-'
+                }
+            }
+        };
+
+        if ($content =~ /cs:(\S+)/ms) {
+            my $cs = lc($1);
+            if ($map_connection->{$cs} == 0) {
+                $self->{resources}->{$res_name}->{peers}->{0}->{device_replication_status} = $cs;
+            } elsif ($map_connection->{$cs} == 1) {
+                $self->{resources}->{$res_name}->{peers}->{0}->{connection_status} = $cs;
+            } elsif ($map_connection->{$cs} == 2) {
+                $self->{resources}->{$res_name}->{role}->{role} = $cs;
+            }
+        }
+
+        if ($content =~ /(?:ro|st):(.*?)\/(.*?)\s/ms) {
+            $self->{resources}->{$res_name}->{role}->{role} = lc($1);
+            $self->{resources}->{$res_name}->{peers}->{0}->{role} = lc($2);
+        }
+
+        if ($content =~ /ds:(.*?)\/(.*?)\s/ms) {
+            $self->{resources}->{$res_name}->{device}->{disk_status} = lc($1);
+            $self->{resources}->{$res_name}->{peers}->{0}->{device_disk_status} = lc($2);
+        }
+        if ($content =~ /ld:(\S+)/ms) {
+            $self->{resources}->{$res_name}->{device}->{disk_status} = lc($1);
+        }
+
+        if ($content =~ /dw:(\d+).*?dr:(\d+)/ms) {
+            $self->{resources}->{$res_name}->{device}->{data_written} = $1 * 1024;
+            $self->{resources}->{$res_name}->{device}->{data_read} = $2 * 1024;
+        }
+        if ($content =~ /ns:(\d+).*?nr:(\d+)/ms) {
+            $self->{resources}->{$res_name}->{peers}->{0}->{traffic_out} = $1 * 1024 * 8;
+            $self->{resources}->{$res_name}->{peers}->{0}->{traffic_in} = $2 * 1024 * 8;
+        }
+    }
+}
+
+sub drbdsetup_events2 {
     my ($self, %options) = @_;
 
     #exists resource name:drbd1 role:Secondary suspended:no write-ordering:flush
@@ -273,14 +445,8 @@ sub manage_selection {
     #exists peer-device name:drbd1 peer-node-id:1 conn-name:poller-2004-1 volume:0 replication:Established peer-disk:UpToDate peer-client:no resync-suspended:no received:0 sent:0 out-of-sync:0 pending:0 unacked:0
     #exists -
 
-    my ($stdout) = $options{custom}->execute_command(
-        command => 'drbdsetup',
-        command_path => '/usr/sbin',
-        command_options => 'events2 --now --statistics all 2>&1'
-    );
-
     $self->{resources} = {};
-    foreach my $line (split /\n/, $stdout) {
+    foreach my $line (split /\n/, $options{stdout}) {
         next if ($line !~ /^exists\s+(?:resource|connection|device|peer-device)\s+name:(\S+)/);
 
         my $res_name = $1;
@@ -315,6 +481,26 @@ sub manage_selection {
             $self->{resources}->{ $res_name }->{peers}->{ $1 }->{traffic_out} = $5 * 1024 * 8;
         }
     }
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my ($command, $command_path, $command_options) = ('drbdsetup', '/usr/sbin', 'events2 --now --statistics all 2>&1');
+    if (defined($self->{option_results}->{legacy_proc})) {
+        ($command, $command_path, $command_options) = ('cat', undef, '/proc/drbd');
+    }
+    my ($stdout) = $options{custom}->execute_command(
+        command => $command,
+        command_path => $command_path,
+        command_options => $command_options
+    );
+
+    if (defined($self->{option_results}->{legacy_proc})) {
+        $self->legacy_proc(stdout => $stdout);
+    } else {
+        $self->drbdsetup_events2(stdout => $stdout);
+    }
 
     $self->{global} = {
         resources_total => scalar(keys %{$self->{resources}})
@@ -335,11 +521,17 @@ Check DRBD resources.
 
 Command used: /usr/sbin/drbdsetup events2 --now --statistics all 2>&1
 
+Legacy used: cat /proc/drbd
+
 =over 8
 
 =item B<--filter-resource-name>
 
 Filter resource name (Can be a regexp).
+
+=item B<--legacy-proc>
+
+Use legacy proc file.
 
 =item B<--unknown-*> B<--warning-*> B<--critical-*>
 
@@ -403,9 +595,9 @@ peer-device-replication-status:
 
 =over 4
 
-[warning] %{device_replication_status} =~ /^(?:ahead|off|startingsyncs|startingsynct|syncsource|synctarget|verifys|verifyt|wfsyncuuid)$/i
+[warning] %{device_replication_status} =~ /^(?:ahead|off|startingsyncs|startingsynct|syncsource|synctarget|verifys|verifyt|wfsyncuuid|syncingall|syncingquick)$/i
 
-[critical] %{device_replication_status} =~ /^(?:behind|pausedsyncs|pausedsynct|wfbitmaps|wfbitmapt)$/i 
+[critical] %{device_replication_status} =~ /^(?:behind|pausedsyncs|pausedsynct|wfbitmaps|wfbitmapt|syncpaused|skippedsyncs|skippedsynct)$/i 
 
 =back
 
