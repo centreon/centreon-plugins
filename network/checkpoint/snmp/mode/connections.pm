@@ -97,7 +97,8 @@ sub run {
         value => $result->{$oid_fwNumCom},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
-        min => 0
+        min => 0,
+        max => (defined($result->{$oid_fwConnTableLimit}) && $result->{$oid_fwConnTableLimit} > 0) ? $result->{$oid_fwConnTableLimit} : undef
     );
 
     $self->{output}->display();
