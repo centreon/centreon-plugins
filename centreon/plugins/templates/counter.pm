@@ -705,11 +705,31 @@ sub compat_threshold_counter {
         foreach my $th (@{$options{compat}->{th}}) {
             next if (!defined($options{option_results}->{$_ . '-' . $th->[0]}) || $options{option_results}->{$_ . '-' . $th->[0]} eq '');
 
-            if (defined($options{compat}->{free})) {
-                $options{option_results}->{$_ . '-' . $th->[1]->{free}} = $options{option_results}->{$_ . '-' . $th->[0]};
+            my $src_threshold = $options{option_results}->{$_ . '-' . $th->[0]};
+            if (defined($options{compat}->{units}) && $options{compat}->{units} eq '%') {
                 $options{option_results}->{$_ . '-' . $th->[0]} = undef;
-            } elsif (defined($options{compat}->{units}) && $options{compat}->{units} eq '%') {
-                $options{option_results}->{$_ . '-' . $th->[1]->{prct}} = $options{option_results}->{$_ . '-' . $th->[0]};
+                if (defined($options{compat}->{free})) {
+                    $options{option_results}->{$_ . '-' . $th->[0]} = undef;
+                    my ($status, $result) = centreon::plugins::misc::parse_threshold(threshold => $src_threshold);
+                    next if ($status == 0);
+
+                    my $tmp = { arobase => $result->{arobase}, infinite_pos => 0, infinite_neg => 0, start => $result->{start}, end => $result->{end} };
+                    $tmp->{infinite_neg} = 1 if ($result->{infinite_pos} == 1);
+                    $tmp->{infinite_pos} = 1 if ($result->{infinite_neg} == 1);
+
+                    if ($result->{start} ne '' && $result->{infinite_neg} == 0) {
+                        $tmp->{end} = 100 - $result->{start};
+                    }
+                    if ($result->{end} ne '' && $result->{infinite_pos} == 0) {
+                        $tmp->{start} = 100 - $result->{end};
+                    }
+
+                    $options{option_results}->{$_ . '-' . $th->[1]->{prct}} = centreon::plugins::misc::get_threshold_litteral(%$tmp);
+                } else {
+                    $options{option_results}->{$_ . '-' . $th->[1]->{prct}} = $src_threshold;
+                }
+            } elsif (defined($options{compat}->{free})) {
+                $options{option_results}->{$_ . '-' . $th->[1]->{free}} = $options{option_results}->{$_ . '-' . $th->[0]};
                 $options{option_results}->{$_ . '-' . $th->[0]} = undef;
             }
         }

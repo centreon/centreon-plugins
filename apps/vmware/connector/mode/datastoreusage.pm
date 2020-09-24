@@ -150,7 +150,7 @@ sub new {
         'filter'             => { name => 'filter' },
         'scope-datacenter:s' => { name => 'scope_datacenter' },
         'filter-host:s'      => { name => 'filter_host' },
-        'units:s'            => { name => 'units', default => '%' },
+        'units:s'            => { name => 'units', default => '' },
         'free'               => { name => 'free' }
     });
 
@@ -173,11 +173,6 @@ sub check_options {
     );
 
     $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{units}) || $self->{option_results}->{units} !~ /^(%|B)$/) {
-        $self->{output}->add_option_msg(short_msg => "Wrong units option '" . $self->{option_results}->{units} . "'.");
-        $self->{output}->option_exit();
-    }
 }
 
 sub custom_usage_calc {
