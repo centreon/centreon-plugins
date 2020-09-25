@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
+        'alerts'           => 'network::cisco::vcs::restapi::mode::alerts',
         'calls'            => 'network::cisco::vcs::restapi::mode::calls',
         'http-proxy-stats' => 'network::cisco::vcs::restapi::mode::httpproxystats',
         'zones'            => 'network::cisco::vcs::restapi::mode::zones'
