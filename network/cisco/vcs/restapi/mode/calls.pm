@@ -24,158 +24,140 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use Date::Parse;
+use Digest::MD5 qw(md5_hex);
 
-sub custom_status_output {
+sub prefix_global_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("state is '%s' [Duration: %s s]",
-        $self->{result_values}->{state}, $self->{result_values}->{duration});
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{serial_number} = $options{new_datas}->{$self->{instance} . '_SerialNumber'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_State'};
-    $self->{result_values}->{duration} = $options{new_datas}->{$self->{instance} . '_Duration'};
-    return 0;
+    return 'Calls ';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-        { name => 'calls', type => 1, cb_prefix_output => 'prefix_call_output', message_multiple => 'All calls are ok' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'traversal', set => {
-                key_values => [ { name => 'Traversal' } ],
-                output_template => 'Traversal: %d',
-                perfdatas => [
-                    { label => 'traversal', value => 'Traversal', template => '%d',
-                      min => 0, unit => 'calls' },
-                ],
+         { label => 'dummy', threshold => 0, display_ok => 0, set => {
+                key_values => [ { name => 'last_cdr_start_time' } ],
+                output_template => 'none',
+                perfdatas => []
             }
-        },
-        { label => 'non-traversal', set => {
-                key_values => [ { name => 'NonTraversal' } ],
-                output_template => 'Non Traversal: %d',
-                perfdatas => [
-                    { label => 'non_traversal', value => 'NonTraversal', template => '%d',
-                      min => 0, unit => 'calls' },
-                ],
-            }
-        },
-        { label => 'collaboration-edge', set => {
-                key_values => [ { name => 'CollaborationEdge' } ],
-                output_template => 'Collaboration Edge: %d',
-                perfdatas => [
-                    { label => 'collaboration_edge', value => 'CollaborationEdge', template => '%d',
-                      min => 0, unit => 'calls' },
-                ],
-            }
-        },
-        { label => 'cloud', set => {
-                key_values => [ { name => 'Cloud' } ],
-                output_template => 'Cloud: %d',
-                perfdatas => [
-                    { label => 'cloud', value => 'Cloud', template => '%d',
-                      min => 0, unit => 'calls' },
-                ],
-            }
-        },
-        { label => 'microsoft-content', set => {
-                key_values => [ { name => 'MicrosoftContent' } ],
-                output_template => 'Microsoft Content: %d',
-                perfdatas => [
-                    { label => 'microsoft_content', value => 'MicrosoftContent', template => '%d',
-                      min => 0, unit => 'calls' },
-                ],
-            }
-        },
-        { label => 'microsoft-imp', set => {
-                key_values => [ { name => 'MicrosoftIMP' } ],
-                output_template => 'Microsoft IMP: %d',
-                perfdatas => [
-                    { label => 'microsoft_imp', value => 'MicrosoftIMP', template => '%d',
-                      min => 0, unit => 'calls' },
-                ],
-            }
-        },
+        }
     ];
-    $self->{maps_counters}->{calls} = [
-        { label => 'status', set => {
-                key_values => [ { name => 'State' }, { name => 'Duration' }, { name => 'SerialNumber' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-    ];
-}
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
+    foreach ((
+        ['traversal', 1, 'traversal'], ['nontraversal', 1, 'non traversal'],
+        ['cloud', 1, 'cloud'], ['collaborationedge', 0, 'collaboration edge'],
+        ['microsoftcontent', 0, 'microsoft content'], ['microsoftimp', 0, 'microsoft imp']
+    )) {
+        push @{$self->{maps_counters}->{global}},
+            {
+                label => $_->[0] . '-current', nlabel => 'calls.' . $_->[0] . '.current.count', display_ok => $_->[1], set => {
+                    key_values => [ { name => $_->[0] . '_current' } ],
+                    output_template => $_->[2] . ' current: %d',
+                    perfdatas => [
+                        { template => '%d', min => 0 }
+                    ]
+                }
+            },
+            {
+                label => $_->[0] . '-total', nlabel => 'calls.' . $_->[0] . '.total.count', display_ok => 0, set => {
+                    key_values => [ { name => $_->[0] . '_total', diff => 1 } ],
+                    output_template => $_->[2] . ' total: %d',
+                    perfdatas => [
+                        { template => '%d', min => 0 }
+                    ]
+                }
+            };
+    }
 
-    return "Number of Calls ";
-}
-
-sub prefix_call_output {
-    my ($self, %options) = @_;
-
-    return "Call '" . $options{instance_value}->{SerialNumber} . "' ";
+    foreach ((
+        ['connectionfailed', 1, 'connection failed'], ['disconnected', 1, 'disconnected']
+    )) {
+        push @{$self->{maps_counters}->{global}}, {
+                label => $_->[0] . '-total', nlabel => 'calls.' . $_->[0] . '.total.count', display_ok => $_->[1], set => {
+                    key_values => [ { name => $_->[0] } ],
+                    output_template => $_->[2] . ': %d',
+                    perfdatas => [
+                        { template => '%d', min => 0 }
+                    ]
+                }
+        };
+    }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "warning-status:s"      => { name => 'warning_status' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{state} ne "Connected"' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $usages = $options{custom}->get_endpoint(method => '/Status/ResourceUsage/Calls');
+    $self->{cache_name} = 'cisco_vcs_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
-    $self->{global}->{Traversal} = $usages->{ResourceUsage}->{Calls}->{Traversal}->{Current}->{content};
-    $self->{global}->{NonTraversal} = $usages->{ResourceUsage}->{Calls}->{NonTraversal}->{Current}->{content};
-    $self->{global}->{CollaborationEdge} = $usages->{ResourceUsage}->{Calls}->{CollaborationEdge}->{Current}->{content};
-    $self->{global}->{Cloud} = $usages->{ResourceUsage}->{Calls}->{Cloud}->{Current}->{content};
-    $self->{global}->{MicrosoftContent} = $usages->{ResourceUsage}->{Calls}->{MicrosoftContent}->{Current}->{content};
-    $self->{global}->{MicrosoftIMP} = $usages->{ResourceUsage}->{Calls}->{MicrosoftIMP}->{Current}->{content};
+    my $calls = $options{custom}->get_endpoint(
+        endpoint => '/getxml?location=/Status/ResourceUsage/Calls'
+    );
 
-    my $results = $options{custom}->get_endpoint(method => '/Status/Calls');
+    $self->{global} = {
+        traversal_current => $calls->{ResourceUsage}->{Calls}->{Traversal}->{Current}->{content},
+        traversal_total => $calls->{ResourceUsage}->{Calls}->{Traversal}->{Total}->{content},
+        nontraversal_current => $calls->{ResourceUsage}->{Calls}->{NonTraversal}->{Current}->{content},
+        nontraversal_total => $calls->{ResourceUsage}->{Calls}->{NonTraversal}->{Total}->{content},
+        cloud_current => $calls->{ResourceUsage}->{Calls}->{Cloud}->{Current}->{content},
+        cloud_total => $calls->{ResourceUsage}->{Calls}->{Cloud}->{Total}->{content},
+        collaborationedge_current => $calls->{ResourceUsage}->{Calls}->{CollaborationEdge}->{Current}->{content},
+        collaborationedge_total => $calls->{ResourceUsage}->{Calls}->{CollaborationEdge}->{Total}->{content},
+        microsoftcontent_current => $calls->{ResourceUsage}->{Calls}->{MicrosoftContent}->{Current}->{content},
+        microsoftcontent_total => $calls->{ResourceUsage}->{Calls}->{MicrosoftContent}->{Total}->{content},
+        microsoftimp_current => $calls->{ResourceUsage}->{Calls}->{MicrosoftIMP}->{Current}->{content},
+        microsoftimp_total => $calls->{ResourceUsage}->{Calls}->{MicrosoftIMP}->{Total}->{content},
+        connectionfailed => 0,
+        disconnected => 0
+    };
 
-    $self->{calls} = {};
+    my $last_cdr_start_time = $self->read_statefile_key(key => 'global_last_cdr_start_time');
+    $last_cdr_start_time = 0 if (!defined($last_cdr_start_time));
 
+    my $results = $options{custom}->get_endpoint(
+        endpoint => '/history.xml?location=/Calls',
+        force_array => ['Call']
+    );
+
+    #<StartTime item="1">2020-09-24 12:28:52.267179</StartTime>
+    my $max_start_time = $last_cdr_start_time;
     foreach my $call (@{$results->{Calls}->{Call}}) {
-        next if (!defined($call->{SerialNumber}));
-        $self->{calls}->{$call->{SerialNumber}->{content}} = {
-            SerialNumber => $call->{SerialNumber}->{content},
-            Duration => $call->{Duration}->{content},
-            State => $call->{State}->{content},
-        };
+        my $tmp_time = Date::Parse::str2time($call->{StartTime}->{content});
+        if (!defined($tmp_time)) {
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => "can't parse date '" . $call->{StartTime}->{content} . "'"
+            );
+            next;
+        }
+
+        $tmp_time = int($tmp_time * 10000);
+        $max_start_time = $tmp_time if ($max_start_time < $tmp_time);
+        if ($tmp_time > $last_cdr_start_time) {
+            $call->{State}->{content} =~ s/\s+//g;
+            $self->{global}->{ lc($call->{State}->{content}) }++
+                if (defined($self->{global}->{ lc($call->{State}->{content}) }));
+        }
     }
+
+    $self->{global}->{last_cdr_start_time} = $max_start_time;
 }
 
 1;
@@ -184,31 +166,20 @@ __END__
 
 =head1 MODE
 
-Check calls count and state.
+Check current calls and history.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'traversal', 'non-traversal', 'collaboration-edge',
-'cloud', 'microsoft-content', 'microsoft-imp'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'traversal', 'non-traversal', 'collaboration-edge',
-'cloud', 'microsoft-content', 'microsoft-imp'.
-
-=item B<--warning-status>
-
-Set warning threshold for status. (Default: '').
-Can use special variables like: %{state}, %{serial_number}, %{duration}.
-
-=item B<--critical-status>
-
-Set critical threshold for status. (Default: '%{state} ne "Connected"').
-Can use special variables like: %{state}, %{serial_number}, %{duration}.
+Thresholds.
+Can be: 'traversal-current', 'traversal-total',
+'nontraversal-current', 'nontraversal-total',
+'cloud-current', 'cloud-total', '
+'collaborationedge-current', 'collaborationedge-total',
+'microsoftcontent-current', 'microsoftcontent-total', 
+'microsoftimp-current', 'microsoftimp-total',
+'connectionfailed-total', 'disconnected-total'.
 
 =back
 

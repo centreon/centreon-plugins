@@ -23,7 +23,7 @@ package network::cisco::vcs::restapi::custom::xmlapi;
 use strict;
 use warnings;
 use centreon::plugins::http;
-use XML::Simple;
+use XML::LibXML::Simple;
 
 sub new {
     my ($class, %options) = @_;
@@ -41,13 +41,15 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s' => { name => 'hostname' },
-            'url-path:s' => { name => 'url_path' },
-            'port:s'     => { name => 'port' },
-            'proto:s'    => { name => 'proto' },
-            'username:s' => { name => 'username' },
-            'password:s' => { name => 'password' },
-            'timeout:s'  => { name => 'timeout' }
+            'hostname:s'     => { name => 'hostname' },
+            'port:s'         => { name => 'port' },
+            'proto:s'        => { name => 'proto' },
+            'api-username:s' => { name => 'api_username' },
+            'api-password:s' => { name => 'api_password' },
+            'timeout:s'      => { name => 'timeout' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'XMLAPI OPTIONS', once => 1);
@@ -69,24 +71,26 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
-    $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/getxml?location=';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
+    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 20;
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
-    if (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{username}) || $self->{option_results}->{username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --username option.");
+    if ($self->{api_username} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{password}) || $self->{option_results}->{password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --password option.");
+    if ($self->{api_password} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
         $self->{output}->option_exit();
     }
 
@@ -100,26 +104,17 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{username} = $self->{username};
-    $self->{option_results}->{password} = $self->{password};
+    $self->{option_results}->{username} = $self->{api_username};
+    $self->{option_results}->{password} = $self->{api_password};
     $self->{option_results}->{credentials} = 1;
     $self->{option_results}->{basic} = 1;
-    $self->{option_results}->{warning_status} = '';
-    $self->{option_results}->{critical_status} = '';
 }
 
 sub settings {
     my ($self, %options) = @_;
 
     $self->build_options_for_httplib();
-
     $self->{http}->set_options(%{$self->{option_results}});
-}
-
-sub get_connection_info {
-    my ($self, %options) = @_;
-
-    return $self->{hostname} . ":" . $self->{port};
 }
 
 sub get_hostname {
@@ -137,21 +132,23 @@ sub get_port {
 sub get_endpoint {
     my ($self, %options) = @_;
 
-    $self->settings;
-
-    my $content = $self->{http}->request(url_path => $self->{url_path} . $options{method});
+    $self->settings();
+    my $content = $self->{http}->request(
+        url_path => $options{endpoint},
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status}
+    );
 
     my $xml_result;
     eval {
-        $xml_result = XMLin($content, ForceArray => ['Call', 'Zone'], KeyAttr => []);
+        $xml_result = XMLin($content, ForceArray => $options{force_array}, KeyAttr => []);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
         $self->{output}->option_exit();
     }
     if (defined($xml_result->{XPathError})) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Api return error: " . $xml_result->{XPathError}->{Reason});
         $self->{output}->option_exit();
     }
@@ -179,10 +176,6 @@ Cisco VCS XML API
 
 API hostname.
 
-=item B<--url-path>
-
-API url path (Default: '/getxml?location=')
-
 =item B<--port>
 
 API port (Default: 443)
@@ -191,11 +184,11 @@ API port (Default: 443)
 
 Specify https if needed (Default: 'https')
 
-=item B<--username>
+=item B<--api-username>
 
 Set API username
 
-=item B<--password>
+=item B<--api-password>
 
 Set API password
 

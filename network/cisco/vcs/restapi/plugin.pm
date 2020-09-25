@@ -30,13 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'calls'            => 'network::cisco::vcs::restapi::mode::calls',
         'http-proxy-stats' => 'network::cisco::vcs::restapi::mode::httpproxystats',
-        'zones'            => 'network::cisco::vcs::restapi::mode::zones',
-    );
+        'zones'            => 'network::cisco::vcs::restapi::mode::zones'
+    };
 
-    $self->{custom_modes}{xmlapi} = 'network::cisco::vcs::restapi::custom::xmlapi';
+    $self->{custom_modes}->{xmlapi} = 'network::cisco::vcs::restapi::custom::xmlapi';
     return $self;
 }
 
