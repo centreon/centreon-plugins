@@ -173,6 +173,8 @@ sub set_counters {
     foreach (('critical', 'major', 'minor', 'warning', 'indeterminate')) {
         push @{$self->{maps_counters}->{device_alarms}}, {
             label => 'alarms-' . $_, nlabel => 'alarms.' . $_ . '.count', 
+            set => {
+                key_values => [ { name => $_ }, { name => 'display' } ],
                 output_template => $_ . ': %s',
                 perfdatas => [
                     { template => '%d', min => 0, label_extra_instance => 1 }
@@ -201,9 +203,8 @@ sub set_counters {
     ];
 
     foreach my $monitor (('bgp', 'config', 'ike', 'interface', 'port', 'path', 'reachability', 'service')) {
-        $self->{maps_counters}->{'device_' . $monitor . '_health'} = [];
         foreach my $status (('up', 'down', 'disabled')) {
-            push @{$self->{maps_counters}->{'device_' . $monitor . '_health'}}, {
+            push @{$self->{maps_counters}->{$monitor}}, {
                 label => $monitor . '-health-' . $status, nlabel => 'health.' . $status . '.count', 
                 set => {
                     key_values => [ { name => $status }, { name => 'display' } ],
@@ -213,12 +214,6 @@ sub set_counters {
                     ]
                 }
             };
-
-    $self->{maps_counters}->{device_health} = [];
-    foreach my $monitor (('bgp', 'config', 'ike', 'interface', 'port', 'path', 'reachability', 'service')) {
-        foreach my $status (('up', 'down', 'disabled')) {
-            push @{$self->{maps_counters}->{$monitor}}, {
-
         }
     }
 }
@@ -455,7 +450,14 @@ Thresholds.
 Can be: 'total','memory-usage', 'memory-usage-free', 'memory-usage-prct',
 'disk-usage', 'disk-usage-free', 'disk-usage-prct',
 'alarms-critical', 'alarms-major', 'alarms-minor', 'alarms-warning', 'alarms-indeterminate',
-'health-up', 'health-down', 'health-disabled',
+'bgp-health-up' 'bgp-health-down' 'bgp-health-disabled' 
+'path-health-up' 'path-health-down' 'path-health-disabled'
+'service-health-up' 'service-health-down' 'service-health-disabled' 
+'port-health-up' 'port-health-down' 'port-health-disabled'
+'reachability-health-up' 'reachability-health-down' 'reachability-health-disabled'
+'interface-health-up' 'interface-health-down' 'interface-health-disabled' 
+'ike-health-up' 'ike-health-down' 'ike-health-disabled'
+'config-health-up' 'config-health-down' 'config-health-disabled'
 'packets-dropped-novalidlink', 'packets dropped by sla action'.
 
 =back
