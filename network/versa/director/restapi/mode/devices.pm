@@ -79,13 +79,14 @@ sub set_counters {
                 { name => 'device_disk', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_alarms', type => 0, cb_prefix_output => 'prefix_alarm_output', skipped_code => { -10 => 1 } },
                 { name => 'device_policy', type => 0, cb_prefix_output => 'prefix_policy_output', skipped_code => { -10 => 1 } },
-                { name => 'device_bgp_health', display_long => 0, cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'device_config_health', display_long => 0, cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'device_ike_health', display_long => 0, cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'device_port_health', display_long => 0, cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'device_path_health', display_long => 0, cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'device_reachability_health', display_long => 0, cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'device_service_health', display_long => 0, cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_bgp_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_config_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_ike_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_interface_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_port_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_path_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_reachability_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_service_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
             ]
         }
     ];
