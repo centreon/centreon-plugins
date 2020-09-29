@@ -79,7 +79,14 @@ sub set_counters {
                 { name => 'device_disk', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_alarms', type => 0, cb_prefix_output => 'prefix_alarm_output', skipped_code => { -10 => 1 } },
                 { name => 'device_policy', type => 0, cb_prefix_output => 'prefix_policy_output', skipped_code => { -10 => 1 } },
-                { name => 'device_health', display_long => 1, cb_prefix_output => 'prefix_health_output',  message_multiple => 'all health monitors are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'device_bgp_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_config_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_ike_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_interface_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_port_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_path_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_reachability_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_service_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
             ]
         }
     ];
@@ -196,32 +203,20 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{device_health} = [
-        { label => 'health-up', nlabel => 'health.up.count', set => {
-                key_values => [ { name => 'up' }, { name => 'total' }, { name => 'display' } ],
-                output_template => 'up: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
-                ]
-            }
-        },
-        { label => 'health-down', nlabel => 'health.down.count', set => {
-                key_values => [ { name => 'down' }, { name => 'total' }, { name => 'display' } ],
-                output_template => 'down: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
-                ]
-            }
-        },
-        { label => 'health-disabled', nlabel => 'health.disabled.count', set => {
-                key_values => [ { name => 'disabled' }, { name => 'total' }, { name => 'display' } ],
-                output_template => 'disabled: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
-                ]
-            }
+    foreach my $monitor (('bgp', 'config', 'ike', 'interface', 'port', 'path', 'reachability', 'service')) {
+        foreach my $status (('up', 'down', 'disabled')) {
+            push @{$self->{maps_counters}->{$monitor}}, {
+                label => $monitor . '-health-' . $status, nlabel => 'health.' . $status . '.count', 
+                set => {
+                    key_values => [ { name => $status }, { name => 'display' } ],
+                    output_template => $status . ': %s',
+                    perfdatas => [
+                        { template => '%d', min => 0, label_extra_instance => 1 }
+                    ]
+                }
+            };
         }
-    ];
+    }
 }
 
 sub device_long_output {
@@ -298,6 +293,7 @@ sub manage_selection {
 
     $self->{global} = { total => 0 };
     $self->{devices} = {};
+
     foreach my $device (@$devices) {
         if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
             $device->{name} !~ /$self->{option_results}->{filter_device_name}/) {
@@ -383,8 +379,19 @@ sub manage_selection {
             $self->{devices}->{ $device->{name} }->{device_alarms}->{ lc($_->{firstColumnValue}) } = $_->{columnValues}->[0];
         }
 
+        my $health_mapping = {
+            'BGP Adjacencies'       => 'device_bgp_health',
+            'Config Sync Status'    => 'device_config_health',
+            'IKE Status'            => 'device_ike_health',
+            'Interfaces'            => 'device_interface_health',
+            'Paths'                 => 'device_path_health',
+            'Physical Ports'        => 'device_port_health',
+            'Reachability Status'   => 'device_reachability_health',
+            'Service Status'        => 'device_service_health'
+        };
+
         foreach (@{$device->{cpeHealth}->{rows}}) {
-            $self->{devices}->{ $device->{name} }->{device_health}->{ lc($_->{firstColumnValue}) } = {
+            $self->{devices}->{ $device->{name} }->{ $health_mapping->{$_->{firstColumnValue}} } = {
                 display => lc($_->{firstColumnValue}),
                 up => $_->{columnValues}->[0],
                 down => $_->{columnValues}->[1],
@@ -392,7 +399,6 @@ sub manage_selection {
                 total => $_->{columnValues}->[0] + $_->{columnValues}->[1] + $_->{columnValues}->[2]
             };
         }
-
         $self->{global}->{total}++;
     }
 
@@ -445,7 +451,14 @@ Thresholds.
 Can be: 'total','memory-usage', 'memory-usage-free', 'memory-usage-prct',
 'disk-usage', 'disk-usage-free', 'disk-usage-prct',
 'alarms-critical', 'alarms-major', 'alarms-minor', 'alarms-warning', 'alarms-indeterminate',
-'health-up', 'health-down', 'health-disabled',
+'bgp-health-up' 'bgp-health-down' 'bgp-health-disabled' 
+'path-health-up' 'path-health-down' 'path-health-disabled'
+'service-health-up' 'service-health-down' 'service-health-disabled' 
+'port-health-up' 'port-health-down' 'port-health-disabled'
+'reachability-health-up' 'reachability-health-down' 'reachability-health-disabled'
+'interface-health-up' 'interface-health-down' 'interface-health-disabled' 
+'ike-health-up' 'ike-health-down' 'ike-health-disabled'
+'config-health-up' 'config-health-down' 'config-health-disabled'
 'packets-dropped-novalidlink', 'packets dropped by sla action'.
 
 =back
