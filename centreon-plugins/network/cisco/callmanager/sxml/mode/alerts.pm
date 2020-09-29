@@ -116,7 +116,7 @@ sub get_list_files {
     # format: AlertLog_MM_DD_YYYY_hh_mm.csv
     for (; $last_timestamp <= ($current_timestamp + 86400); $last_timestamp += 86400) {
         my $dt = DateTime->from_epoch(epoch => $last_timestamp);
-        push @$list_files, sprintf('/var/log/active/cm/log/amc/AlertLog/AlertLog_%02d_%02d_%d_00_0',  $dt->month(), $dt->day(), $dt->year());
+        push @$list_files, sprintf('/var/log/active/cm/log/amc/AlertLog/AlertLog_%02d_%02d_%d_00_0', $dt->month(), $dt->day(), $dt->year());
     }
     
     $self->{seek_infos}->{last_timestamp} = $current_timestamp;
