@@ -142,6 +142,7 @@ sub get_endpoint {
 
     my $xml_result;
     eval {
+        $SIG{__WARN__} = sub {};
         $xml_result = XMLin($content, ForceArray => $options{force_array}, KeyAttr => []);
     };
     if ($@) {
