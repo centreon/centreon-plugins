@@ -236,9 +236,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-device-name:s' => { name => 'filter_device_name' },
-        'filter-network-id:s'  => { name => 'filter_network_id' },
-        'filter-tags:s'        => { name => 'filter_tags' }
+        'filter-device-name:s'       => { name => 'filter_device_name' },
+        'filter-network-id:s'        => { name => 'filter_network_id' },
+        'filter-organization-name:s' => { name => 'filter_organization_name' },
+        'filter-organization-id:s'   => { name => 'filter_organization_id' },
+        'filter-tags:s'              => { name => 'filter_tags' }
     });
 
     return $self;
@@ -359,6 +361,8 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_device_name}) ? md5_hex($self->{option_results}->{filter_device_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_network_id}) ? md5_hex($self->{option_results}->{filter_network_id}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_organization_id}) ? md5_hex($self->{option_results}->{filter_organization_id}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_organization_name}) ? md5_hex($self->{option_results}->{filter_organization_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_tags}) ? md5_hex($self->{option_results}->{filter_tags}) : md5_hex('all'));
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     my $timespan = 300;
@@ -379,6 +383,18 @@ sub manage_selection {
         }
         if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
             (!defined($_->{tags}) || $_->{tags} !~ /$self->{option_results}->{filter_tags}/)) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        
+        my $organization = $options{custom}->get_organization(network_id => $_->{networkId});
+        if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
+            $organization->{id} !~ /$self->{option_results}->{filter_organization_id}/) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
+            $organization->{name} !~ /$self->{option_results}->{filter_organization_name}/) {
             $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
             next;
         }
@@ -475,6 +491,14 @@ Filter devices by name (Can be a regexp).
 =item B<--filter-network-id>
 
 Filter devices by network id (Can be a regexp).
+
+=item B<--filter-organization-id>
+
+Filter devices by organization id (Can be a regexp).
+
+=item B<--filter-organization-name>
+
+Filter devices by organization name (Can be a regexp).
 
 =item B<--filter-tags>
 
