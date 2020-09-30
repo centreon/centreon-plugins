@@ -137,6 +137,21 @@ sub get_cache_networks {
     return $self->{cache_networks};
 }
 
+sub get_organization {
+    my ($self, %options) = @_;
+
+    $self->cache_meraki_entities();
+    my $organization_id;
+    if (defined($options{network_id})) {
+        $organization_id = $self->{cache_networks}->{ $options{network_id} }->{organizationId};
+    }
+    my $organization;
+    $organization = $self->{cache_organizations}->{$organization_id}
+        if (defined($organization_id) && defined($self->{cache_organizations}->{$organization_id}));
+
+    return $organization;
+}
+
 sub get_organization_id {
     my ($self, %options) = @_;
 
