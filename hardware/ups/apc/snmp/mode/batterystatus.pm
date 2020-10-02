@@ -25,9 +25,9 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use DateTime;
-use centreon::plugins::templates::catalog_functions;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub custom_status_output {
+sub custom_battery_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
@@ -47,78 +47,131 @@ sub custom_status_calc {
     return 0;
 }
 
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "status is '%s'",
+        $self->{result_values}->{status}
+    );
+}
+
+sub bpack_long_output {
+    my ($self, %options) = @_;
+
+    return "checking battery pack '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_bpack_output {
+    my ($self, %options) = @_;
+
+    return "battery pack '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_cartridge_output {
+    my ($self, %options) = @_;
+
+    return "cartridge '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'bpacks', type => 3, cb_prefix_output => 'prefix_bpack_output', cb_long_output => 'bpack_long_output', indent_long_output => '    ', message_multiple => 'All storage systems are ok',
+            group => [
+                { name => 'bpack_global', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'cartridges', display_long => 1, cb_prefix_output => 'prefix_cartridge_output', message_multiple => 'cartridges are ok', type => 1, skipped_code => { -10 => 1 } }
+            ]
+        }
     ];
 
     $self->{maps_counters}->{global} = [
-         { label => 'status', threshold => 0, set => {
+         {
+             label => 'status',
+             type => 2,
+             unknown_default => '%{status} =~ /unknown/i',
+             warning_default => '%{status} =~ /batteryLow/i',
+             critical_default => '%{replace} =~ /yes/i',
+             set => {
                 key_values => [
                     { name => 'upsBasicBatteryStatus' },
                     { name => 'upsAdvBatteryReplaceIndicator' },
                     { name => 'upsBasicBatteryLastReplaceDate' }
                 ],
                 closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_output => $self->can('custom_battery_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&centreon::plugins::templates::catalog_functions::catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'load', nlabel => 'battery.charge.remaining.percent', set => {
                 key_values => [ { name => 'upsAdvBatteryCapacity' } ],
                 output_template => 'remaining capacity: %s %%',
                 perfdatas => [
-                    { label => 'load', value => 'upsAdvBatteryCapacity', template => '%s', 
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'load', template => '%s', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'time', nlabel => 'battery.charge.remaining.minutes', set => {
                 key_values => [ { name => 'upsAdvBatteryRunTimeRemaining' } ],
                 output_template => 'remaining time: %.2f minutes',
                 perfdatas => [
-                    { label => 'load_time', value => 'upsAdvBatteryRunTimeRemaining', template => '%.2f', 
-                      min => 0, unit => 'm' },
-                ],
+                    { label => 'load_time', template => '%.2f', min => 0, unit => 'm' }
+                ]
             }
         },
         { label => 'current', nlabel => 'battery.current.ampere', set => {
                 key_values => [ { name => 'upsAdvBatteryCurrent' } ],
                 output_template => 'current: %s A',
                 perfdatas => [
-                    { label => 'current', value => 'upsAdvBatteryCurrent', template => '%s', 
-                      min => 0, unit => 'A' },
-                ],
+                    { label => 'current', template => '%s', min => 0, unit => 'A' }
+                ]
             }
         },
         { label => 'voltage', nlabel => 'battery.voltage.volt', set => {
                 key_values => [ { name => 'upsAdvBatteryActualVoltage' } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'upsAdvBatteryActualVoltage', template => '%s', 
-                      unit => 'V' },
-                ],
+                    { label => 'voltage', template => '%s', unit => 'V' }
+                ]
             }
         },
         { label => 'temperature', nlabel => 'battery.temperature.celsius', set => {
                 key_values => [ { name => 'upsAdvBatteryTemperature' } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
-                    { label => 'temperature', value => 'upsAdvBatteryTemperature', template => '%s', 
-                      unit => 'C'},
-                ],
+                    { label => 'temperature', template => '%s', unit => 'C'}
+                ]
             }
         },
         { label => 'replace-lasttime', nlabel => 'battery.replace.lasttime.seconds', display_ok => 0, set => {
                 key_values => [ { name => 'last_replace_time' } ],
                 output_template => 'replace last time: %s s',
                 perfdatas => [
-                    { label => 'replace_last_time', value => 'last_replace_time', template => '%s', 
-                      unit => 's'},
-                ],
+                    { label => 'replace_last_time', template => '%s', unit => 's'}
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{bpack_global} = [
+        { label => 'battery-pack-status', type => 2, critical_default => '%{status} ne "OK"', set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{cartridges} = [
+        { label => 'cartridge-status', type => 2, critical_default => '%{status} ne "OK"', set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -130,19 +183,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /batteryLow/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{replace} =~ /yes/i' },
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 my $map_battery_status = {
@@ -155,7 +198,7 @@ my $map_replace_status = {
 my $mapping = {
     upsBasicBatteryStatus           => { oid => '.1.3.6.1.4.1.318.1.1.1.2.1.1', map => $map_battery_status },
     upsBasicBatteryTimeOnBattery    => { oid => '.1.3.6.1.4.1.318.1.1.1.2.1.2' },
-    upsBasicBatteryLastReplaceDate  => { oid => '.1.3.6.1.4.1.318.1.1.1.2.1.3' },
+    upsBasicBatteryLastReplaceDate  => { oid => '.1.3.6.1.4.1.318.1.1.1.2.1.3' }
 };
 my $mapping2 = {
     upsAdvBatteryCapacity           => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.1' },
@@ -163,10 +206,83 @@ my $mapping2 = {
     upsAdvBatteryRunTimeRemaining   => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.3' },
     upsAdvBatteryReplaceIndicator   => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.4', map => $map_replace_status },
     upsAdvBatteryActualVoltage      => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.8' },
-    upsAdvBatteryCurrent            => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.9' },
+    upsAdvBatteryCurrent            => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.9' }
 };
 my $oid_upsBasicBattery = '.1.3.6.1.4.1.318.1.1.1.2.1';
 my $oid_upsAdvBattery = '.1.3.6.1.4.1.318.1.1.1.2.2';
+my $oid_upsHighPrecBatteryPackOnlyStatus = '.1.3.6.1.4.1.318.1.1.1.2.3.10.4.1.5';
+my $oid_upsHighPrecBatteryPackCartridgeStatus = '.1.3.6.1.4.1.318.1.1.1.2.3.10.2.1.10';
+
+my $map_battery_pack_status = {
+    0 => 'disconnected', 1 => 'overvoltage',
+    2 => 'needsReplacement', 3 => 'overtemperatureCritical',
+    4 => 'charger', 5 => 'temperatureSensor',
+    6 => 'busSoftStart', 7 => 'overtemperatureWarning',
+    8 => 'generalError', 9 => 'communication',
+    10 => 'disconnectedFrame', 11 => 'firmwareMismatch'
+};
+
+sub add_battery_pack {
+    my ($self, %options) = @_;
+
+    $self->{bpacks} = {};
+    foreach my $oid (keys %{$options{snmp_result}->{$oid_upsHighPrecBatteryPackOnlyStatus}}) {
+        next if ($options{snmp_result}->{$oid_upsHighPrecBatteryPackOnlyStatus}->{$oid} eq '');
+
+        $oid =~ /^$oid_upsHighPrecBatteryPackOnlyStatus\.(\d+)/;
+        my $pack_index = $1;
+        $self->{bpacks}->{$pack_index} = {
+            display => $pack_index,
+            bpack_global => {
+                display => $pack_index,
+                status => 'OK'
+            },
+            cartridges => {}
+        };
+
+        my $status = '';
+        my ($i, $append) = (0, '');
+        foreach my $bit (split //, $options{snmp_result}->{$oid_upsHighPrecBatteryPackOnlyStatus}->{$oid}) {
+            if ($bit) {
+                $status .= $append . $map_battery_pack_status->{$i};
+                $append = ',';
+            }
+            $i++;
+        }
+
+        $self->{bpacks}->{$pack_index}->{bpack_global}->{status} = $status if ($status ne '');
+    }
+
+    foreach my $oid (keys %{$options{snmp_result}->{$oid_upsHighPrecBatteryPackCartridgeStatus}}) {
+        next if ($options{snmp_result}->{$oid_upsHighPrecBatteryPackCartridgeStatus}->{$oid} eq '');
+
+        $oid =~ /^$oid_upsHighPrecBatteryPackCartridgeStatus\.(\d+)\.\d+\.(\d+)/;
+        my ($pack_index, $cartridge_index) = ($1, $2);
+        if (!defined($self->{bpacks}->{$pack_index})) {
+            $self->{bpacks}->{$pack_index} = {
+                display => $pack_index,
+                cartridges => {}
+            };
+        }
+
+        $self->{bpacks}->{$pack_index}->{cartridges}->{$cartridge_index} = {
+            display => $cartridge_index,
+            status => 'OK'
+        };
+
+        my $status = '';
+        my ($i, $append) = (0, '');
+        foreach my $bit (split //, $options{snmp_result}->{$oid_upsHighPrecBatteryPackCartridgeStatus}->{$oid}) {
+            if ($bit) {
+                $status .= $append . $map_battery_pack_status->{$i};
+                $append = ',';
+            }
+            $i++;
+        }
+
+        $self->{bpacks}->{$pack_index}->{cartridges}->{$cartridge_index}->{status} = $status if ($status ne '');
+    }
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -174,7 +290,9 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $oid_upsBasicBattery },
-            { oid => $oid_upsAdvBattery },
+            { oid => $oid_upsAdvBattery, end => $mapping2->{upsAdvBatteryCurrent}->{oid} },
+            { oid => $oid_upsHighPrecBatteryPackCartridgeStatus },
+            { oid => $oid_upsHighPrecBatteryPackOnlyStatus }
         ],
         nothing_quit => 1
     );
@@ -190,6 +308,9 @@ sub manage_selection {
         my $dt = DateTime->new(year => $3, month => $1, day => $2, hour => 0, minute => 0, second => 0);
         $self->{global}->{last_replace_time} = time() - $dt->epoch;
     }
+
+    $self->add_battery_pack(snmp_result => $snmp_result);
+    
 }
 
 1;
@@ -221,6 +342,36 @@ Can used special variables like: %{status}, %{replace}
 
 Set critical threshold for status (Default: '%{replace} =~ /yes/i').
 Can used special variables like: %{status}, %{replace}
+
+=item B<--unknown-battery-pack-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{status}
+
+=item B<--warning-battery-pack-status>
+
+Set warning threshold for status.
+Can used special variables like: %{status}
+
+=item B<--critical-battery-pack-status>
+
+Set critical threshold for status (Default: '%{status} ne "OK"').
+Can used special variables like: %{status}
+
+=item B<--unknown-cartridge-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{status}
+
+=item B<--warning-cartridge-status>
+
+Set warning threshold for status.
+Can used special variables like: %{status}
+
+=item B<--critical-cartridge-status>
+
+Set critical threshold for status (Default: '%{status} ne "OK"').
+Can used special variables like: %{status}
 
 =item B<--warning-*> B<--critical-*>
 
