@@ -19,6 +19,7 @@
 #
 
 package snmp_standard::mode::cpu;
+use centreon::plugins::statefile;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -76,9 +77,19 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'average-counters:s' => { name => 'average_counters' },
     });
 
+    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{statefile_cache}->check_options(%options);
 }
 
 sub manage_selection {
@@ -92,9 +103,30 @@ sub manage_selection {
 
     my $cpu = 0;
     my $i = 0;
+    my $t = time();
+    my $counters_history;
+
+    if (defined($self->{option_results}->{average_counters})) {
+        $self->{statefile_cache}->read(statefile => 'cache_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
+        $counters_history = $self->{statefile_cache}->get(name => 'counters_history');
+    }
+
     foreach my $key ($options{snmp}->oid_lex_sort(keys %$result)) {
         $key =~ /\.([0-9]+)$/;
         my $cpu_num = $1;
+
+        if (defined($self->{option_results}->{average_counters})) {
+            $counters_history->{$i}->{$t} = $result->{$key};
+            $result->{$key} = 0;
+            foreach (keys $counters_history->{$i}) {
+                if ($_ <= ($t - $self->{option_results}->{average_counters})) {
+                    delete($counters_history->{$i}->{$_});
+                } else {
+                    $result->{$key} += $counters_history->{$i}->{$_};
+                }
+            }
+            $result->{$key} /= scalar(keys $counters_history->{$i});
+        }
 
         $cpu += $result->{$key};
         $self->{cpu_core}->{$i} = {
@@ -110,6 +142,11 @@ sub manage_selection {
         average => $avg_cpu,
         count => $i
     };
+
+    if (defined($self->{option_results}->{average_counters})) {
+        $self->{new_datas} = { counters_history => $counters_history };
+        $self->{statefile_cache}->write(data => $self->{new_datas});
+    }
 }
 
 1;
@@ -123,6 +160,10 @@ Check system CPUs (HOST-RESOURCES-MIB)
 of time that this processor was not idle)
 
 =over 8
+
+=item B<--average-counters>
+
+Average the counters over the specified period of time.
 
 =item B<--warning-average>
 
