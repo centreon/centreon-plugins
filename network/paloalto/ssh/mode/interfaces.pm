@@ -25,17 +25,16 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf(
+    return sprintf(
         'state: %s [type: %s]',
         $self->{result_values}->{state},
         $self->{result_values}->{type}
     );
-    return $msg;
 }
 
 sub set_counters {
@@ -51,22 +50,21 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total interfaces: %s',
                 perfdatas => [
-                    { value => 'total', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
     ];
 
     $self->{maps_counters}->{interface} = [
-        { label => 'status',  threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{state} ne "up"', set => {
                 key_values => [
                     { name => 'state' }, { name => 'type' },
                     { name => 'ha_state' }, { name => 'display' }
                 ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -84,24 +82,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'       => { name => 'filter_name' },
-        'unknown-status:s'    => { name => 'unknown_status', default => '' },
-        'warning-status:s'    => { name => 'warning_status', default => '' },
-        'critical-status:s'   => { name => 'critical_status', default => '%{state} ne "up"' }
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(
-        macros => [
-            'unknown_status', 'warning_status', 'critical_status'
-        ]
-    );
 }
 
 sub manage_selection {

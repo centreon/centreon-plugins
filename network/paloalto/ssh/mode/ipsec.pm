@@ -83,6 +83,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -96,7 +97,13 @@ sub manage_selection {
     $self->{global} = { total_ipsec => 0 };
     $self->{tunnels} = {};
     foreach (@{$result->{entry}}) {
-        $self->{tunnels}->{$_->{gwid}} = {
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+           $_->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $_->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{tunnels}->{ $_->{gwid} } = {
             display => $_->{name},
             ike_phase1_state => defined($_->{created}) && $_->{created} ne '' ? 'up' : 'down',
             monitor_status => 'unknown', # could be 'up', 'down', 'off'
@@ -105,6 +112,8 @@ sub manage_selection {
 
         $self->{global}->{total_ipsec}++;
     }
+
+    return if ($self->{global}->{total_ipsec} == 0);
 
     $result = $options{custom}->execute_command(command => 'show vpn ipsec-sa', ForceArray => ['entry']);
     foreach (@{$result->{entries}->{entry}}) {
@@ -118,8 +127,8 @@ sub manage_selection {
         next if (!defined($self->{tunnels}->{$gwid}->{tid}));
         foreach (@{$result->{IPSec}->{entry}}) {
             next if ($self->{tunnels}->{$gwid}->{tid} ne $_->{id});
-            $self->{tunnels}->{$_->{gwid}}->{state} = $_->{state};
-            $self->{tunnels}->{$_->{gwid}}->{monitor_status} = $_->{mon};
+            $self->{tunnels}->{ $_->{gwid} }->{state} = $_->{state};
+            $self->{tunnels}->{ $_->{gwid} }->{monitor_status} = $_->{mon};
         }
     }
 }
@@ -133,6 +142,10 @@ __END__
 Check ipsec tunnels.
 
 =over 8
+
+=item B<--filter-name>
+
+Filter tunnels by name (can be a regexp).
 
 =item B<--unknown-status>
 

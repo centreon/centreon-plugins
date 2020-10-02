@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use DateTime;
 use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
@@ -32,8 +32,7 @@ use Digest::MD5 qw(md5_hex);
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'system operational mode: ' . $self->{result_values}->{oper_mode};
-    return $msg;
+    return 'system operational mode: ' . $self->{result_values}->{oper_mode};
 }
 
 sub custom_av_output {
@@ -64,28 +63,27 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{system} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{oper_mode} !~ /normal/i', set => {
                 key_values => [ { name => 'oper_mode' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'av-update', nlabel => 'system.antivirus.lastupdate.time.seconds', set => {
                 key_values => [ { name => 'av_lastupdate_time' }, { name => 'av_version' } ],
                 closure_custom_output => $self->can('custom_av_output'),
                 perfdatas => [
-                    { value => 'av_lastupdate_time', template => '%d', min => 0, unit => 's' }
-                ],
+                    { template => '%d', min => 0, unit => 's' }
+                ]
             }
         },
         { label => 'threat-update', nlabel => 'system.threat.lastupdate.time.seconds', set => {
                 key_values => [ { name => 'threat_lastupdate_time' }, { name => 'threat_version' } ],
                 closure_custom_output => $self->can('custom_threat_output'),
                 perfdatas => [
-                    { value => 'threat_lastupdate_time', template => '%d', min => 0, unit => 's' }
-                ],
+                    { template => '%d', min => 0, unit => 's' }
+                ]
             }
         },
         { label => 'sessions-traffic', nlabel => 'system.sessions.traffic.count', set => {
@@ -93,19 +91,18 @@ sub set_counters {
                 output_template => 'session traffic: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'throughput', template => '%s',
-                      unit => 'b/s', min => 0 },
-                ],
+                    { template => '%s', unit => 'b/s', min => 0 }
+                ]
             }
         },
         { label => 'sessions-total-active', nlabel => 'system.sessions.total.active.count', display_ok => 0, set => {
                 key_values => [ { name => 'active_sessions' } ],
                 output_template => 'total active sessions: %s',
                 perfdatas => [
-                    { value => 'active_sessions', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -114,10 +111,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{oper_mode} !~ /normal/i' },
-        'timezone:s'        => { name => 'timezone' }
+    $options{options}->add_options(arguments => {
+        'timezone:s' => { name => 'timezone' }
     });
     
     return $self;
@@ -127,7 +122,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
     $self->{option_results}->{timezone} = 'GMT' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
 }
 
