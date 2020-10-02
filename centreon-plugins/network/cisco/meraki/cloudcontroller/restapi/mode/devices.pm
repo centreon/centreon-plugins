@@ -39,6 +39,54 @@ sub custom_link_status_output {
     return 'status: ' . $self->{result_values}->{link_status};
 }
 
+sub custom_port_status_output {
+    my ($self, %options) = @_;
+
+    return 'status: ' . $self->{result_values}->{port_status} . ' [enabled: ' . $self->{result_values}->{port_enabled} . ']';
+}
+
+sub device_long_output {
+    my ($self, %options) = @_;
+
+    return "checking device '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_device_output {
+    my ($self, %options) = @_;
+
+    return "Device '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Devices ';
+}
+
+sub prefix_connection_output {
+    my ($self, %options) = @_;
+
+    return 'connection ';
+}
+
+sub prefix_traffic_output {
+    my ($self, %options) = @_;
+
+    return 'traffic ';
+}
+
+sub prefix_link_output {
+    my ($self, %options) = @_;
+
+    return "link '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_port_output {
+    my ($self, %options) = @_;
+
+    return "port '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -51,6 +99,7 @@ sub set_counters {
                 { name => 'device_connections', type => 0, cb_prefix_output => 'prefix_connection_output', skipped_code => { -10 => 1 } },
                 { name => 'device_traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1, -11 => 1 } },
                 { name => 'device_links', display_long => 1, cb_prefix_output => 'prefix_link_output',  message_multiple => 'All links are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'device_ports', display_long => 1, cb_prefix_output => 'prefix_port_output',  message_multiple => 'All ports are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -192,42 +241,34 @@ sub set_counters {
             }
         }
     ];
-}
 
-sub device_long_output {
-    my ($self, %options) = @_;
-
-    return "checking device '" . $options{instance_value}->{display} . "'";
-}
-
-sub prefix_device_output {
-    my ($self, %options) = @_;
-
-    return "Device '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Devices ';
-}
-
-sub prefix_connection_output {
-    my ($self, %options) = @_;
-
-    return 'connection ';
-}
-
-sub prefix_traffic_output {
-    my ($self, %options) = @_;
-
-    return 'traffic ';
-}
-
-sub prefix_link_output {
-    my ($self, %options) = @_;
-
-    return "link '" . $options{instance_value}->{display} . "' ";
+    $self->{maps_counters}->{device_ports} = [
+        { label => 'port-status', type => 2, critical_default => '%{port_enabled} == 1 and %{port_status} !~ /^connected/i', set => {
+                key_values => [ { name => 'port_status' }, { name => 'port_enabled' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_port_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'port-traffic-in', nlabel => 'device.port.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'traffic_in' } ],
+                output_template => 'traffic in: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'port-traffic-out', nlabel => 'device.port.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'traffic_out' } ],
+                output_template => 'traffic out: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
 }
 
 sub new {
@@ -236,11 +277,13 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-device-name:s'       => { name => 'filter_device_name' },
-        'filter-network-id:s'        => { name => 'filter_network_id' },
-        'filter-organization-name:s' => { name => 'filter_organization_name' },
-        'filter-organization-id:s'   => { name => 'filter_organization_id' },
-        'filter-tags:s'              => { name => 'filter_tags' }
+        'filter-device-name:s'         => { name => 'filter_device_name' },
+        'filter-network-id:s'          => { name => 'filter_network_id' },
+        'filter-organization-name:s'   => { name => 'filter_organization_name' },
+        'filter-organization-id:s'     => { name => 'filter_organization_id' },
+        'filter-tags:s'                => { name => 'filter_tags' },
+        'add-switch-ports'             => { name => 'add_switch_ports' },
+        'skip-traffic-disconnect-port' => { name => 'skip_traffic_disconnect_port' }
     });
 
     return $self;
@@ -354,6 +397,26 @@ sub add_performance {
     }
 }
 
+sub add_switch_port_statuses {
+    my ($self, %options) = @_;
+
+    my $ports = $options{custom}->get_device_switch_port_statuses(
+        timespan => $options{timespan},
+        serial => $options{serial}
+    );
+    foreach (@$ports) {
+        $self->{devices}->{ $options{serial} }->{device_ports}->{ $_->{portId} } = {
+            display => $_->{portId},
+            port_status => lc($_->{status}),
+            port_enabled => $_->{enabled} =~ /True|1/i ? 1 : 0
+        };
+        next if (defined($self->{option_results}->{skip_traffic_disconnect_port}) && $_->{status} =~ /disconnected/i);
+        
+        $self->{devices}->{ $options{serial} }->{device_ports}->{ $_->{portId} }->{traffic_in} = $_->{usageInKb}->{recv} * 1000 * 8,
+        $self->{devices}->{ $options{serial} }->{device_ports}->{ $_->{portId} }->{traffic_out} = $_->{usageInKb}->{sent} * 1000 * 8;
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -404,13 +467,13 @@ sub manage_selection {
 
     my $device_statuses = $options{custom}->get_organization_device_statuses();
 
-    #                   | /clients | /connectionStats | /performance | /uplink | /uplinksLossAndLatency
-    #-------------------|----------|---------------------------------|---------|-------------------------
-    # MV [camera]       |          |                  |              |    X    |
-    # MS [switch]       |    X     |                  |              |    X    |
-    # MG [cellullar gw] |    X     |         X        |              |    X    |
-    # MX [appliance]    |    X     |                  |      X       |    X    |            X
-    # MR [wireless]     |    X     |         X        |              |    X    |  
+    #                   | /clients | /connectionStats | /performance | /uplink | /uplinksLossAndLatency | /switchPortStatuses
+    #-------------------|----------|---------------------------------|---------|------------------------|-----------------------
+    # MV [camera]       |          |                  |              |    X    |                        |
+    # MS [switch]       |    X     |                  |              |    X    |                        |        X
+    # MG [cellullar gw] |    X     |         X        |              |    X    |                        |
+    # MX [appliance]    |    X     |                  |      X       |    X    |            X           |
+    # MR [wireless]     |    X     |         X        |              |    X    |                        |
 
     $self->{global} = { total => 0, online => 0, offline => 0, alerting => 0 };
     $self->{devices} = {};
@@ -421,7 +484,8 @@ sub manage_selection {
                 display => $cache_devices->{$serial}->{name},
                 status => $device_statuses->{$serial}->{status}
             },
-            device_links => {}
+            device_links => {},
+            device_ports => {}
         };
 
         if ($devices->{$serial} =~ /^(?:MG|MR)/) {
@@ -447,6 +511,13 @@ sub manage_selection {
                 serial => $serial,
                 name => $cache_devices->{$serial}->{name},
                 network_id => $cache_devices->{$serial}->{networkId}
+            );
+        }
+        if (defined($self->{option_results}->{add_switch_ports}) && $devices->{$serial} =~ /^MS/) {
+            $self->add_switch_port_statuses(
+                custom => $options{custom},
+                timespan => $timespan,
+                serial => $serial
             );
         }
         if ($devices->{$serial} =~ /^MX/) {
@@ -504,6 +575,14 @@ Filter devices by organization name (Can be a regexp).
 
 Filter devices by tags (Can be a regexp).
 
+=item B<--add-switch-ports>
+
+Add switch port statuses and traffic.
+
+=item B<--skip-traffic-disconnect-port>
+
+Skip port traffic counters if port status is disconnected.
+
 =item B<--unknown-status>
 
 Set unknown threshold for status.
@@ -534,13 +613,29 @@ Can used special variables like: %{link_status}, %{display}
 Set critical threshold for status (Default: '%{link_status} =~ /failed/i').
 Can used special variables like: %{link_status}, %{display}
 
+=item B<--unknown-port-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{port_status}, %{port_enabled}, %{display}
+
+=item B<--warning-port-status>
+
+Set warning threshold for status.
+Can used special variables like: %{port_status}, %{port_enabled}, %{display}
+
+=item B<--critical-port-status>
+
+Set critical threshold for status (Default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
+Can used special variables like: %{port_status}, %{port_enabled}, %{display}
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 'total-online', 'total-offline', 'total-alerting',
 'traffic-in', 'traffic-out', 'connections-success', 'connections-auth',
 'connections-assoc', 'connections-dhcp', 'connections-dns',
-'load', 'link-latency' (ms), ''link-loss' (%).
+'load', 'link-latency' (ms), ''link-loss' (%),
+'port-traffic-in', 'port-traffic-out'.
 
 =back
 

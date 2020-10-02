@@ -463,6 +463,19 @@ sub get_device_clients {
     );
 }
 
+sub get_device_switch_port_statuses {
+    my ($self, %options) = @_;
+
+    $self->cache_meraki_entities();
+    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
+    $timespan = 1 if ($timespan <= 0);
+
+    return $self->request_api(
+        endpoint => '/devices/' . $options{serial} . '/switchPortStatuses?timespan=' . $options{timespan},
+        hostname => $self->get_shard_hostname(serial => $options{serial})
+    );
+}
+
 sub get_network_device_performance {
     my ($self, %options) = @_;
 
