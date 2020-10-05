@@ -151,7 +151,7 @@ sub manage_selection {
         force_array => ['Zone', 'Call']
     );
 
-    $self->{global}->{count} = 0;
+    $self->{global} = { count =>  0 };
     $self->{searches} = {
         total => $results->{Zones}->{Searches}->{Total}->{content},
         dropped => $results->{Zones}->{Searches}->{Dropped}->{content},
@@ -181,7 +181,7 @@ sub manage_selection {
 
     $self->{cache_name} = 'cisco_vcs_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_zone_name}) ? md5_hex($self->{option_results}->{filter_zone_name}) : md5_hex('all'))
+        (defined($self->{option_results}->{filter_zone_name}) ? md5_hex($self->{option_results}->{filter_zone_name}) : md5_hex('all'));
 }
 
 1;
