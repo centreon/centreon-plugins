@@ -227,7 +227,7 @@ Check alerts.
 
 Filter alerts by name (Can use regexp).
 
-=item B<--display-alerts
+=item B<--display-alerts>
 
 Display alerts in verbose output.
 
