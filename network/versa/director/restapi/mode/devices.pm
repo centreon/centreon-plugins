@@ -206,7 +206,7 @@ sub set_counters {
     foreach my $monitor (('bgp', 'config', 'ike', 'interface', 'port', 'path', 'reachability', 'service')) {
         foreach my $status (('up', 'down', 'disabled')) {
             push @{$self->{maps_counters}->{'device_' . $monitor . '_health'}}, {
-                label => $monitor . '-health-' . $status, nlabel => 'health.' . $status . '.count', 
+                label => $monitor . '-health-' . $status, nlabel => $monitor . '.health.' . $status . '.count', 
                 set => {
                     key_values => [ { name => $status }, { name => 'display' } ],
                     output_template => $status . ': %s',
