@@ -79,7 +79,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'bpacks', type => 3, cb_prefix_output => 'prefix_bpack_output', cb_long_output => 'bpack_long_output', indent_long_output => '    ', message_multiple => 'All storage systems are ok',
+        { name => 'bpacks', type => 3, cb_prefix_output => 'prefix_bpack_output', cb_long_output => 'bpack_long_output', indent_long_output => '    ', message_multiple => 'All battery packs are ok',
             group => [
                 { name => 'bpack_global', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'cartridges', display_long => 1, cb_prefix_output => 'prefix_cartridge_output', message_multiple => 'cartridges are ok', type => 1, skipped_code => { -10 => 1 } }
