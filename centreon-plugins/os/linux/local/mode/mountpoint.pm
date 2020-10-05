@@ -87,8 +87,8 @@ sub manage_selection {
     
     my @lines = split /\n/, $stdout;
     foreach my $line (@lines) {
-        next if ($line !~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+\((.*)\)/);
-        my ($device, $mountpoint, $type, $options) = ($1, $3, $5, $6);
+        next if ($line !~ /^\s*(.*?)\s+on\s+(.*?)\s+type\s+(\S+)\s+\((.*)\)/);
+        my ($device, $mountpoint, $type, $options) = ($1, $2, $3, $4);
         
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $type !~ /$self->{option_results}->{filter_type}/) {
