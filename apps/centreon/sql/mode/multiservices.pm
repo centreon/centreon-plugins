@@ -460,8 +460,6 @@ sub manage_selection {
                 $self->{logicalgroups}->{$group}->{$map_service_state{$row->{sstate}}}++;
             }
         }
-        use Data::Dumper;
-        print Dumper($self->{instance_mode}->{inventory});
     } elsif ($config_data->{mode} eq 'exactmatch') {
         foreach my $group (keys %{$config_data->{selection}}) {
             $self->{logicalgroups}->{$group} = {
