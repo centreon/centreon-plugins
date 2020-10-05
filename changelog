@@ -1,4 +1,5 @@
 2020-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Cisco CUCM SXML
  * Plugin added: DRBD
  * Plugin added: Pexip Infinity Management API
  * Plugin added: Polycom RPRM SNMP
