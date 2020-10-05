@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Socket;
 use IO::Socket::SSL;
 use Net::SSLeay 1.42;
 use DateTime;
