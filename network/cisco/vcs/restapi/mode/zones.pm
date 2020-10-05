@@ -165,7 +165,7 @@ sub manage_selection {
 
         if (defined($self->{option_results}->{filter_zone_name}) && $self->{option_results}->{filter_zone_name} ne '' &&
             $zone->{Name}->{content} !~ /$self->{option_results}->{filter_zone_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $zone->{Name}->{content} . "': no matching filter vserver.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $zone->{Name}->{content} . "': no matching filter.", debug => 1);
             next;
         }
 
