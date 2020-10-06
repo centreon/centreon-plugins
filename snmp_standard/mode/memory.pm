@@ -77,8 +77,8 @@ sub set_counters {
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
-                key_values => [ { name => 'prct_used' } ],
-                output_template => 'Ram Used : %.2f %%',
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { label => 'used_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
