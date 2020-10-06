@@ -167,7 +167,7 @@ sub request_api {
 
         push @$results, @{$decoded->{results}};
         last if (!defined($decoded->{next}));
-        last if if (defined($options{nonext}) && $options{nonext} == 1);
+        last if (defined($options{nonext}) && $options{nonext} == 1);
 
         $page++;
     }
