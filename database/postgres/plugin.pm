@@ -40,6 +40,7 @@ sub new {
         'list-databases'   => 'database::postgres::mode::listdatabases',
         'query-time'       => 'database::postgres::mode::querytime',
         'sql'              => 'centreon::common::protocols::sql::mode::sql',
+        'sql-string'       => 'centreon::common::protocols::sql::mode::sqlstring',
         'statistics'       => 'database::postgres::mode::statistics',
         'tablespace'       => 'database::postgres::mode::tablespace',
         'timesync'         => 'database::postgres::mode::timesync',
