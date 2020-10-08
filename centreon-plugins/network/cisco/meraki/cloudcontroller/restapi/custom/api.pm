@@ -315,21 +315,6 @@ sub get_devices {
     return $results;
 }
 
-sub filter_networks {
-    my ($self, %options) = @_;
-
-    my $network_ids = [];
-    foreach (values %{$self->{cache_networks}}) {
-        if (!defined($options{filter_name}) || $options{filter_name} eq '') {
-            push @$network_ids, $_->{id};
-        } elsif ($_->{name} =~ /$options{filter_name}/) {
-            push @$network_ids, $_->{id};
-        }
-    }
-
-    return $network_ids;
-}
-
 sub filter_organizations {
     my ($self, %options) = @_;
 
@@ -349,42 +334,30 @@ sub get_networks_connection_stats {
     my ($self, %options) = @_;
 
     $self->cache_meraki_entities();
-    my $network_ids = $self->filter_networks(filter_name => $options{filter_name});
 
     my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
     $timespan = 1 if ($timespan <= 0);
-    my $results = {};
-    foreach my $id (@$network_ids) {
-        my $datas = $self->request_api(
-            endpoint => '/networks/' . $id . '/connectionStats?timespan=' . $options{timespan},
-            hostname => $self->get_shard_hostname(network_id => $id),
-            ignore_codes => { 400 => 1 }
-        );
-        $results->{$id} = $datas;
-    }
 
-    return $results;
+    return $self->request_api(
+        endpoint => '/networks/' . $options{network_id} . '/connectionStats?timespan=' . $options{timespan},
+        hostname => $self->get_shard_hostname(network_id => $options{network_id}),
+        ignore_codes => { 400 => 1 }
+    );
 }
 
 sub get_networks_clients {
     my ($self, %options) = @_;
 
     $self->cache_meraki_entities();
-    my $network_ids = $self->filter_networks(filter_name => $options{filter_name});
 
     my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
     $timespan = 1 if ($timespan <= 0);
-    my $results = {};
-    foreach my $id (@$network_ids) {
-        my $datas = $self->request_api(
-            endpoint => '/networks/' . $id . '/clients?timespan=' . $options{timespan},
-            hostname => $self->get_shard_hostname(network_id => $id),
-            ignore_codes => { 400 => 1 }
-        );
-        $results->{$id} = $datas;
-    }
 
-    return $results;
+    return $self->request_api(
+        endpoint => '/networks/' . $options{network_id} . '/clients?timespan=' . $options{timespan},
+        hostname => $self->get_shard_hostname(network_id => $options{network_id}),
+        ignore_codes => { 400 => 1 }
+    );
 }
 
 sub get_organization_device_statuses {
