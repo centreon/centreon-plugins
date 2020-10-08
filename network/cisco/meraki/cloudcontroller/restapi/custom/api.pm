@@ -221,7 +221,7 @@ sub request_api {
 
         my $content;
         eval {
-            $content = JSON::XS->new->allow_nonref(1)->decode($response);
+            $content = JSON::XS->new->utf8->allow_nonref(1)->decode($response);
         };
         if ($@) {
             $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
