@@ -107,7 +107,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-network-name:s' => { name => 'filter_network_name' }
+        'filter-network-name:s'      => { name => 'filter_network_name' },
+        'filter-organization-name:s' => { name => 'filter_organization_name' },
+        'filter-organization-id:s'   => { name => 'filter_organization_id' }
     });
 
     return $self;
@@ -118,37 +120,64 @@ sub manage_selection {
 
     $self->{cache_name} = 'meraki_' . $self->{mode} . '_' . $options{custom}->get_token()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_network_name}) ? md5_hex($self->{option_results}->{filter_network_name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_network_name}) ? md5_hex($self->{option_results}->{filter_network_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_organization_id}) ? md5_hex($self->{option_results}->{filter_organization_id}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_organization_name}) ? md5_hex($self->{option_results}->{filter_organization_name}) : md5_hex('all'));
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     my $timespan = 300;
     $timespan = time() - $last_timestamp if (defined($last_timestamp));
 
-    my $cache_networks = $options{custom}->get_cache_networks();
-    my $connections = $options{custom}->get_networks_connection_stats(timespan => $timespan, filter_name => $self->{option_results}->{filter_network_name});
-    my $clients = $options{custom}->get_networks_clients(timespan => $timespan, filter_name => $self->{option_results}->{filter_network_name});
-
     $self->{networks} = {};
-    foreach my $id (keys %$connections) {
-        $self->{networks}->{$id} = {
-            display => $cache_networks->{$id}->{name},
-            assoc => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{assoc} : 0,
-            auth => defined($connections->{$id}->{auth}) ? $connections->{$id}->{auth} : 0,
-            dhcp => defined($connections->{$id}->{dhcp}) ? $connections->{$id}->{dhcp} : 0,
-            dns => defined($connections->{$id}->{dns}) ? $connections->{$id}->{dns} : 0,
-            success => defined($connections->{$id}->{success}) ? $connections->{$id}->{success} : 0,
+
+    my $cache_networks = $options{custom}->get_cache_networks();
+    foreach (values %$cache_networks) {
+        if (defined($self->{option_results}->{filter_network_name}) && $self->{option_results}->{filter_network_name} ne '' &&
+            $_->{name} !~ /$self->{option_results}->{filter_device_name}/) {
+            $self->{output}->output_add(long_msg => "skipping network '" . $_->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        
+        my $organization = $options{custom}->get_organization(network_id => $_->{id});
+        if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
+            $organization->{id} !~ /$self->{option_results}->{filter_organization_id}/) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
+            $organization->{name} !~ /$self->{option_results}->{filter_organization_name}/) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        my $connections = $options{custom}->get_networks_connection_stats(
+            timespan => $timespan,
+            network_id => $_->{id}
+        );
+        my $clients = $options{custom}->get_networks_clients(
+            timespan => $timespan,
+            network_id => $_->{id}
+        );
+
+        $self->{networks}->{ $_->{id} } = {
+            display => $_->{name},
+            assoc => defined($connections->{assoc}) ? $connections->{assoc} : 0,
+            auth => defined($connections->{auth}) ? $connections->{auth} : 0,
+            dhcp => defined($connections->{dhcp}) ? $connections->{dhcp} : 0,
+            dns => defined($connections->{dns}) ? $connections->{dns} : 0,
+            success => defined($connections->{success}) ? $connections->{success} : 0,
             traffic_in => 0, traffic_out => 0
         };
 
-        if (defined($clients->{$id})) {
-            foreach (@{$clients->{$id}}) {
-                $self->{networks}->{$id}->{traffic_in} += $_->{usage}->{recv} * 8;
-                $self->{networks}->{$id}->{traffic_out} += $_->{usage}->{sent} * 8;
+        if (defined($clients)) {
+            foreach my $client (@$clients) {
+                $self->{networks}->{ $_->{id} }->{traffic_in} += $client->{usage}->{recv} * 8;
+                $self->{networks}->{ $_->{id} }->{traffic_out} += $client->{usage}->{sent} * 8;
             }
         }
     }
 
     if (scalar(keys %{$self->{networks}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No networks found.");
+        $self->{output}->add_option_msg(short_msg => 'No networks found.');
         $self->{output}->option_exit();
     }
 }
@@ -166,6 +195,14 @@ Check networks.
 =item B<--filter-network-name>
 
 Filter network name (Can be a regexp).
+
+=item B<--filter-organization-id>
+
+Filter networks by organization id (Can be a regexp).
+
+=item B<--filter-organization-name>
+
+Filter networks by organization name (Can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
