@@ -232,9 +232,9 @@ sub manage_selection {
         next if (!defined($result2->{nUserApBSSID}));
         my $bssid = join('.', unpack('C*', $result2->{nUserApBSSID}));
         next if (defined($self->{option_results}->{filter_ip_address}) && $self->{option_results}->{filter_ip_address} ne '' &&
-            $map_ap{$bssid}->{ip} !~ /$self->{option_results}->{filter_ip_address}/);
+            defined($map_ap{$bssid}->{ip}) && $map_ap{$bssid}->{ip} !~ /$self->{option_results}->{filter_ip_address}/);
         next if (defined($self->{option_results}->{filter_essid}) && $self->{option_results}->{filter_essid} ne '' &&
-            $map_ap{$bssid}->{essid} !~ /$self->{option_results}->{filter_essid}/);
+            defined($map_ap{$bssid}->{essid}) && $map_ap{$bssid}->{essid} !~ /$self->{option_results}->{filter_essid}/);
         next if (defined($self->{option_results}->{filter_bssid}) && $self->{option_results}->{filter_bssid} ne '' &&
             $bssid !~ /$self->{option_results}->{filter_bssid}/);
     
@@ -244,8 +244,10 @@ sub manage_selection {
         $self->{ap}->{$bssid} = { users => 0, ap_id => $ap_id } if (!defined($self->{ap}->{$bssid}));
         $self->{ap}->{$bssid}->{users}++;
     
-        $self->{essid}->{$map_ap{$bssid}->{essid}} = { users => 0, essid => $map_ap{$bssid}->{essid} } if (!defined($self->{essid}->{$map_ap{$bssid}->{essid}}));
-        $self->{essid}->{$map_ap{$bssid}->{essid}}->{users}++;
+        if (defined($map_ap{$bssid}->{essid})) {
+            $self->{essid}->{$map_ap{$bssid}->{essid}} = { users => 0, essid => $map_ap{$bssid}->{essid} } if (!defined($self->{essid}->{$map_ap{$bssid}->{essid}}));
+            $self->{essid}->{$map_ap{$bssid}->{essid}}->{users}++;
+        }
 
         $self->{global}->{total}++;
         $self->{global}->{'total_' . $result->{nUserAuthenticationMethod}}++;
