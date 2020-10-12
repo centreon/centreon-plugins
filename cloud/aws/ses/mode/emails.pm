@@ -215,7 +215,7 @@ __END__
 
 =head1 MODE
 
-Check SES sending activity.
+Check Amazon SES sending activity.
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::aws::ses::plugin --custommode=awscli --mode=emails --region='eu-west-1' --name='ses-1234abcd'

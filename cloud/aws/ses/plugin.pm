@@ -45,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Amazon Simple Notification Service (Amazon SNS).
+Check Amazon Simple Email Service (Amazon SES).
 
 =cut
