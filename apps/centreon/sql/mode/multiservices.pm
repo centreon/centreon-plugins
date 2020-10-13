@@ -290,7 +290,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'config-file:s'     => { name => 'config_file' },
+        'config:s'          => { name => 'config' },
         'json-data:s'       => { name => 'json_data' },
         'warning-groups:s'  => { name => 'warning_groups' },
         'critical-groups:s' => { name => 'critical_groups' },
@@ -305,18 +305,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{config_file}) && !defined($self->{option_results}->{json_data})) {
-        $self->{output}->add_option_msg(short_msg => "Please define --config-file or --json-data option");
+    if (!defined($self->{option_results}->{config}) || $self->{option_results}->{config} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Please define --config option");
         $self->{output}->option_exit();
     }
-    if (defined($self->{option_results}->{config_file}) && $self->{option_results}->{config_file} ne '') {
-        $config_data = $self->parse_json_config(config => $self->{option_results}->{config_file});
-    } elsif (defined($self->{option_results}->{json_data}) && $self->{option_results}->{json_data} ne  '') {
-        $config_data = $self->parse_json_config(config => $self->{option_results}->{json_data});
-    } else {
-        $self->{output}->add_option_msg(short_msg => "Can't find plugin configuration file / Cannot read from --json-data option");
-        $self->{output}->option_exit();
-    }
+
+    $config_data = $self->parse_json_config(config => $self->{option_results}->{config});
 
     if (!exists($config_data->{mode})) {
         $config_data->{mode} = 'sqlmatching';
@@ -364,23 +358,27 @@ sub prefix_groups_output {
 
 sub parse_json_config {
     my ($self, %options) = @_;
-    my $data;
-    my $message;
+    my ($data, $json_text);
 
-    my $json_text = do {
-       open(my $json_fh, "<:encoding(UTF-8)", $options{config})
-         or die("Can't open '$options{config}': $!");
-         local $/;
-         <$json_fh>
-    };
+    if (-f $options{config} and -r $options{config}) {
+        $json_text = do {
+            local $/;
+            my $fh;
+            if (!open($fh, "<:encoding(UTF-8)", $options{config})) {
+                $self->{output}->add_option_msg(short_msg => "Can't open file $options{config}: $!");
+                $self->{output}->option_exit();
+            }
+            <$fh>;
+        };
+    } else {
+        $json_text = $options{config};
+    }
 
     eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        $data = JSON->new->utf8->decode($json_text);
+        $data = decode_json($json_text);
     };
-    if ($message) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json config file: $message");
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json config file: $@");
         $self->{output}->option_exit();
     }
     return $data
@@ -502,13 +500,9 @@ __END__
 
 =over 8
 
-=item B<--config-file>
+=item B<--config>
 
-Specify the full path to a json config file
-
-=item B<--json-data>
-
-JSON input
+Specify the config (can be a file or a json string directly).
 
 =item B<--filter-counters>
 
@@ -517,7 +511,7 @@ Can be 'totalhost','totalservice','groups'. Better to manage it in config file
 =item B<--warning-*>
 
 Can be 'total' for host and service, 'groups' for groups
-e.g --warning-total '%{total_unreachable} > 4' --warning-groups '%{instance} eq 'ESX' && %{total_down} > 2 && %{total_critical} > 4'
+e.g --warning-total '%{total_unreachable} > 4' --warning-groups '%{instance} eq 'ESX' && %{total_down} > 2 && %{critical_total} > 4'
 
 =item B<--critical-*>
 
