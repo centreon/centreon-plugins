@@ -105,7 +105,7 @@ sub disco_show {
             name => $_->{name},
             status => $_->{status},
             network_name => $_->{network_name},
-            network_id => $_->{network_id},
+            network_id => $_->{networkId},
             organization_name => $_->{organization_name},
             tags => defined($_->{tags}) ? $_->{tags} : ''
         );
