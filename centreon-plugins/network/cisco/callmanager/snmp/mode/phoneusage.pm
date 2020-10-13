@@ -56,7 +56,7 @@ sub set_counters {
     
     $self->{maps_counters}->{phone} = [
         { label => 'status', type => 2, critical_default => '%{status} !~ /^registered/', set => {
-                key_values => [ { name => 'status' }, { name => 'status' }, { name => 'name' } ],
+                key_values => [ { name => 'status' }, { name => 'description' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
