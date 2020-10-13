@@ -38,12 +38,12 @@ my %metrics_mapping = (
     },
     'Reputation.BounceRate' => {
         'output' => 'rate of rejected sent emails',
-        'label'  => 'emails-rejected-rate',
+        'label'  => 'emails-rejected',
         'nlabel' => 'ses.emails.rejected.rate',
     },
     '"Reputation.ComplaintRate' => {
         'output' => 'rate of sent emails marked as spam',
-        'label'  => 'emails-spam-rate',
+        'label'  => 'emails-spam',
         'nlabel' => 'ses.emails.spam.rate',
     }
 );
@@ -229,11 +229,11 @@ Set the instance name (Required) (Can be multiple).
 
 =item B<--warning-emails-*>
 
-Set warning threshold where '*' can be 'calls', 'delivered', 'spam-rate' or 'rejected-rate'.
+Set warning threshold where '*' can be 'calls', 'delivered', 'spam' or 'rejected'.
 
 =item B<--critical-emails-*>
 
-Set critical threshold where '*' can be 'calls', 'delivered', 'spam-rate' or 'rejected-rate'.
+Set critical threshold where '*' can be 'calls', 'delivered', 'spam' or 'rejected'.
 
 =back
 
