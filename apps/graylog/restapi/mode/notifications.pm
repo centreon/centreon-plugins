@@ -135,11 +135,11 @@ Filter notifications by node ID.
 
 =item B<--warning-notifications-*>
 
-Set Warning threshold for notifications count (Default: '') where '*' can be warning or 'critical'.
+Set warning threshold for notifications count (Default: '') where '*' can be 'total', 'normal'  or 'urgent'.
 
 =item B<--critical-notifications-*>
 
-Set Critical threshold for notifications count (Default: '') where '*' can be 'warning' or 'critical'.
+Set critical threshold for notifications count (Default: '') where '*' can be 'total', 'normal'  or 'urgent'.
 
 =back
 

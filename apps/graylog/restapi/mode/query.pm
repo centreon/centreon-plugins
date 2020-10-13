@@ -33,11 +33,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'queue-messages', nlabel => 'graylog.query.match.count', set => {
-                key_values => [ { name => 'queue_messages' } ],
+        { label => 'query-matches', nlabel => 'graylog.query.match.count', set => {
+                key_values => [ { name => 'query_matches' } ],
                 output_template => 'current queue messages : %s',
                 perfdatas => [
-                    { label => 'queue_msg', value => 'queue_messages', template => '%d',
+                    { label => 'query_match', value => 'query_matches', template => '%d',
                       min => 0 },
                 ],
             }
@@ -64,7 +64,7 @@ sub manage_selection {
     my $result = $options{custom}->query_absolute(query => $self->{option_results}->{query},
                                                   timeframe => $self->{option_results}->{timeframe});
     $self->{global} = {
-	queue_messages => $result->{total_results}
+	query_matches => $result->{total_results}
     };
 }
 
@@ -92,7 +92,7 @@ Set a Lucene query.
 
 Set timeframe in seconds (E.g '300' to check last 5 minutes).
 
-=item B<--warning-queue-messages> B<--critical-queue-messages>
+=item B<--warning-query-matches> B<--critical-query-matches>
 
 Threshold on the number of results.
 

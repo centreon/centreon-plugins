@@ -33,7 +33,6 @@ sub new {
     %{$self->{modes}} = ( 
         'query'         => 'apps::graylog::restapi::mode::query',
         'notifications' => 'apps::graylog::restapi::mode::notifications',
-	'cluster'       => 'apps::graylog::restapi::mode::cluster', 
     );
     $self->{custom_modes}{api} = 'apps::graylog::restapi::custom::api';
     return $self;
