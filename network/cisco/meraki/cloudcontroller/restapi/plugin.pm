@@ -34,6 +34,7 @@ sub new {
         'api-requests' => 'network::cisco::meraki::cloudcontroller::restapi::mode::apirequests',
         'devices'      => 'network::cisco::meraki::cloudcontroller::restapi::mode::devices',
         'discovery'    => 'network::cisco::meraki::cloudcontroller::restapi::mode::discovery',
+        'list-devices' => 'network::cisco::meraki::cloudcontroller::restapi::mode::listdevices',
         'networks'     => 'network::cisco::meraki::cloudcontroller::restapi::mode::networks'
     );
 
