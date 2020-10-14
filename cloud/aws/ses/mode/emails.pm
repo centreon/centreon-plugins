@@ -142,7 +142,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'name:s@' => { name => 'name' },
         'dimension:s%' => { name => 'dimension' },
     });
 
@@ -243,15 +242,15 @@ See 'https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activ
 
 =item B<--dimension>
 
-Set the identity (email adresses  or domains) (Required) (Can be multiple).
+Set SES dimensions (Can be multiple).
 
 =item B<--warning-emails-*>
 
-Set warning threshold where '*' can be 'calls', 'delivered', 'spam' or 'rejected'.
+Set warning threshold where '*' can be 'sent', 'delivered', 'spam' or 'rejected'.
 
 =item B<--critical-emails-*>
 
-Set critical threshold where '*' can be 'calls', 'delivered', 'spam' or 'rejected'.
+Set critical threshold where '*' can be 'sent', 'delivered', 'spam' or 'rejected'.
 
 =back
 
