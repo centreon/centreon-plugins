@@ -24,9 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
-use JSON::XS;
-
 
 sub new {
     my ($class, %options) = @_;
@@ -34,67 +31,42 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'hostname:s'    => { name => 'hostname', default => 'www.google.com' },
-        'port:s'        => { name => 'port', default => '443'},
-        'proto:s'       => { name => 'proto', default => 'https' },
-        'urlpath:s'     => { name => 'url_path', default => '/appsstatus/json' },
-        'language:s'    => { name => 'language', default => 'en' },
-        'timeout:s'     => { name => 'timeout', default => '30' },
-        'filter-name:s' => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
-    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    $self->{option_results}->{url_path} .= "/" . $self->{option_results}->{language};
-    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-     my $content = $self->{http}->request(%options);
-     $content =~ s/dashboard.jsonp\((.+)\)\;$/$1/g;
-
-    if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-        $self->{output}->option_exit();
-    }
-
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-        $self->{output}->option_exit();
-    }
-    if (defined($decoded->{error_code})) {
-        $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}, debug => 1);
-        $self->{output}->option_exit();
-    }
-    foreach my $application (@{$decoded->{services}}) {
+    my $results = $options{custom}->request_api();
+    my $applications = {};
+    foreach my $application (@{$results->{services}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $application->{name} !~ /$self->{option_results}->{filter_name}/);
-        $self->{applications}{$application->{id}} = $application->{name};
-    };
+        $applications->{ $application->{id} } = $application->{name};
+    }
+
+    return $applications;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach (keys %{$self->{applications}}) {
+    my $applications = $self->manage_selection(%options);
+    foreach (keys %$applications) {
         $self->{output}->output_add(
-            long_msg => sprintf("[name = %s]", $self->{applications}{$_})
+            long_msg => sprintf("[name = %s]", $applications->{$_})
         );
     }
 
-    $self->{output}->output_add(severity => 'OK', short_msg => 'Google Gsuite Applications');
+    $self->{output}->output_add(severity => 'OK', short_msg => 'Google Gsuite Applications:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -108,10 +80,10 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach (keys %{$self->{applications}}) {
+    my $applications = $self->manage_selection(%options);
+    foreach (keys %$applications) {
         $self->{output}->add_disco_entry(
-            name => $self->{applications}{$_}
+            name => $applications->{$_}
         );
     }
 }

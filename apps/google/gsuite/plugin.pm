@@ -22,7 +22,7 @@ package apps::google::gsuite::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,11 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'list-applications' => 'apps::google::gsuite::mode::listapplications',
-        'status'            => 'apps::google::gsuite::mode::status'
-    );
+    $self->{modes} = {
+        'applications'      => 'apps::google::gsuite::mode::applications',
+        'list-applications' => 'apps::google::gsuite::mode::listapplications'
+    };
 
+    $self->{custom_modes}->{api} = 'apps::google::gsuite::custom::api';
     return $self;
 }
 
