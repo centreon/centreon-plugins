@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{ $self->{modes} } = (
-        'emails' => 'cloud::aws::ses::mode::emails',
+        'emails'          => 'cloud::aws::ses::mode::emails',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

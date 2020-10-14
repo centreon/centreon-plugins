@@ -27,9 +27,9 @@ use warnings;
 
 my %metrics_mapping = (
     'Send' => {
-        'output' => 'number of successful calls',
-        'label'  => 'emails-calls',
-        'nlabel' => 'ses.emails.calls.count',
+        'output' => 'number of sent emails',
+        'label'  => 'emails-sent',
+        'nlabel' => 'ses.emails.sent.count',
     },
     'Delivery' => {
         'output' => 'number of emails successfully delivered',
@@ -143,6 +143,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'name:s@' => { name => 'name' },
+        'dimension:s%' => { name => 'dimension' },
     });
 
     return $self;
@@ -157,11 +158,11 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    foreach my $instance (@{$self->{option_results}->{name}}) {
-        if ($instance ne '') {
-            push @{$self->{aws_instance}}, $instance;
-        }
-    }
+    #foreach my $instance (@{$self->{option_results}->{name}}) {
+    #    if ($instance ne '') {
+    #        push @{$self->{aws_instance}}, $instance;
+    #    }
+    #}
 
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 172800;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 86400;
@@ -172,6 +173,22 @@ sub check_options {
             && $metric !~ /$self->{option_results}->{filter_metric}/);
         push @{$self->{aws_metrics}}, $metric;
     }
+
+    $self->{dimension_name} = '';
+    my $append = '';
+    $self->{aws_dimensions} = [];
+    if (defined($self->{option_results}->{dimension})) {
+        foreach (keys %{$self->{option_results}->{dimension}}) {
+            push @{$self->{aws_dimensions}}, { Name => $_, Value => $self->{option_results}->{dimension}->{$_} };
+            $self->{dimension_name} .= $append . $_ . '.' . $self->{option_results}->{dimension}->{$_};
+            $append = '-';
+            push @{$self->{aws_instance}}, $self->{option_results}->{dimension}->{$_};
+        }
+
+    } else {
+        $self->{aws_instance} = ["SES"];
+        # to change!!!       
+    }
 }
 
 sub manage_selection {
@@ -181,7 +198,7 @@ sub manage_selection {
     foreach my $instance (@{$self->{aws_instance}}) {
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
             namespace => 'AWS/SES',
-            dimensions => [],
+            dimensions => $self->{aws_dimensions},
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
@@ -218,14 +235,15 @@ __END__
 Check Amazon SES sending activity.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::ses::plugin --custommode=awscli --mode=emails --region='eu-west-1' --name='ses-1234abcd'
+perl centreon_plugins.pl --plugin=cloud::aws::ses::plugin --custommode=awscli --mode=emails --region='eu-west-1' --dimension='ses-1234abcd'
+--dimension='ses-5678-efgh'
 See 'https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html' for more information.
 
 =over 8
 
-=item B<--name>
+=item B<--dimension>
 
-Set the instance name (Required) (Can be multiple).
+Set the identity (email adresses  or domains) (Required) (Can be multiple).
 
 =item B<--warning-emails-*>
 
