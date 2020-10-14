@@ -133,7 +133,7 @@ sub get_items {
         my $engine_name;
         
         if (defined($options{parent})) {
-            $context->{parent} =~ /\/$options{parent}-(.*?)\//;
+            $context->{parent} =~ /\/clusters\/(.*?)\//;
             $engine_name = $options{parent} . '-' . $1;
             $items->{$engine_name} = {} if (!defined($items->{$engine_name}));
         }
