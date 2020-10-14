@@ -131,8 +131,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $jsonResponse = $options{custom}->get_endpoint(api_path => '/settings/sysadmin/spool-message-counts');
-    # my $jsonResponse = '{"counts":{"default":6,"waiting":31,"virus":0,"spam":0,"throttledUsers":1,"throttledMailingLists":0,"throttledDomains":0,"spool_limit":50000,"quarantine_limit":5000},"success":true,"message":""}';
-
+    
     my $response;
     eval {
         $response = decode_json($jsonResponse);

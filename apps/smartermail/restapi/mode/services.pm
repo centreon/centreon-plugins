@@ -89,8 +89,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $jsonResponse = $options{custom}->get_endpoint(api_path => '/settings/sysadmin/services');
-    # my $jsonResponse = '{"services":{"spool":true,"smtp":true,"pop":true,"xmpp":true,"imap":true,"ldap":true,"popretrieval":true,"imapretrieval":true,"indexing":true},"success":true,"message":""}';
-
+   
     my $response;
     eval {
         $response = decode_json($jsonResponse);
