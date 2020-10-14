@@ -132,7 +132,7 @@ sub manage_selection {
     my $cache_networks = $options{custom}->get_cache_networks();
     foreach (values %$cache_networks) {
         if (defined($self->{option_results}->{filter_network_name}) && $self->{option_results}->{filter_network_name} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_device_name}/) {
+            $_->{name} !~ /$self->{option_results}->{filter_network_name}/) {
             $self->{output}->output_add(long_msg => "skipping network '" . $_->{name} . "': no matching filter.", debug => 1);
             next;
         }
