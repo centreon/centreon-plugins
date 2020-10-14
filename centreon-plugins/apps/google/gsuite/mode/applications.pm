@@ -126,14 +126,8 @@ sub manage_selection {
         };
     };
 
-    $self->{global}->{issues} = 0;
     foreach my $issue (@{$results->{messages}}) {
         next if (!defined($self->{gapps}->{ $issue->{service} }));
-
-        next if (
-            (!defined($self->{option_results}->{display_extra}))
-            && $self->{gapps}->{ $issue->{service} } != 0
-        );
 
         next if ($issue->{resolved});
 
@@ -147,7 +141,7 @@ sub manage_selection {
         };
     }
 
-    $self->{global}->{apps} = scalar(keys %{$self->{gapps}});
+    $self->{global} = { apps => scalar(keys %{$self->{gapps}}) };
 }
 
 1;
