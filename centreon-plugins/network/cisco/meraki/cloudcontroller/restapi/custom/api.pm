@@ -211,7 +211,7 @@ sub request_api {
 
         if ($code == 429) {
             sleep(1);
-            continue;
+            next;
         }
 
         if ($code < 200 || $code >= 300) {
