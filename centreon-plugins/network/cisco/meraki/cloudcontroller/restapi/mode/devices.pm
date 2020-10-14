@@ -106,7 +106,7 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'total-online', nlabel => 'devices.total.online.count', display_ok => 0, set => {
-                key_values => [ { name => 'online'}, { name => 'total'} ],
+                key_values => [ { name => 'online' }, { name => 'total' } ],
                 output_template => 'online: %s',
                 perfdatas => [
                     { template => '%s', min => 0, max => 'total' }
@@ -114,7 +114,7 @@ sub set_counters {
             }
         },
         { label => 'total-offline', nlabel => 'devices.total.offline.count', display_ok => 0, set => {
-                key_values => [ { name => 'offline'}, { name => 'total'} ],
+                key_values => [ { name => 'offline' }, { name => 'total' } ],
                 output_template => 'offline: %s',
                 perfdatas => [
                     { template => '%s', min => 0, max => 'total' }
@@ -122,7 +122,7 @@ sub set_counters {
             }
         },
         { label => 'total-alerting', nlabel => 'devices.total.alerting.count', display_ok => 0, set => {
-                key_values => [ { name => 'alerting'}, { name => 'total'} ],
+                key_values => [ { name => 'alerting' }, { name => 'total' } ],
                 output_template => 'alerting: %s',
                 perfdatas => [
                     { template => '%s', min => 0, max => 'total' }
@@ -537,7 +537,7 @@ sub manage_selection {
 
         $self->{global}->{total}++;
         $self->{global}->{ lc($device_statuses->{$serial}->{status}) }++
-            if (!defined($self->{global}->{ lc($device_statuses->{$serial}->{status}) }))
+            if (defined($self->{global}->{ lc($device_statuses->{$serial}->{status}) }));
     }
 
     if (scalar(keys %{$self->{devices}}) <= 0) {
