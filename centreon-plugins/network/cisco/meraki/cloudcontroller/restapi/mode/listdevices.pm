@@ -59,37 +59,29 @@ sub manage_selection {
     );
 
     my $devices_statuses = $options{custom}->get_organization_device_statuses();
+    my $results = {};
     foreach (keys %$devices) {
-        if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
-            $devices->{$_}->{networkId} !~ /$self->{option_results}->{filter_network_id}/) {
-            delete $devices->{$_};
-            next;
-        }
-        if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
-            (!defined($devices->{$_}->{tags}) || $devices->{$_}->{tags} !~ /$self->{option_results}->{filter_tags}/)) {
-            delete $devices->{$_};
-            next;
-        }
-        if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
-            $networks->{ $devices->{$_}->{networkId} }->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/) {
-            delete $devices->{$_};
-            next;
-        }
+        next if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
+            $devices->{$_}->{networkId} !~ /$self->{option_results}->{filter_network_id}/);
+        next if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
+            (!defined($devices->{$_}->{tags}) || $devices->{$_}->{tags} !~ /$self->{option_results}->{filter_tags}/));
+        next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
+            $networks->{ $devices->{$_}->{networkId} }->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
 
         my $organization_name = $organizations->{ $networks->{ $devices->{$_}->{networkId} }->{organizationId} }->{name};
-        if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
-            $organization_name !~ /$self->{option_results}->{filter_organization_name}/) {
-            delete $devices->{$_};
-            next;
-        }
+        next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
+            $organization_name !~ /$self->{option_results}->{filter_organization_name}/);
 
-        $devices->{$_}->{status} = $devices_statuses->{ $devices->{$_}->{serial} }->{status};
-        $devices->{$_}->{public_ip} = $devices_statuses->{ $devices->{$_}->{serial} }->{publicIp};
-        $devices->{$_}->{network_name} = $networks->{ $devices->{$_}->{networkId} }->{name};
-        $devices->{$_}->{organization_name} = $organization_name;
+        $results->{$_} = {
+            %{$devices->{$_}},
+            status => $devices_statuses->{ $devices->{$_}->{serial} }->{status},
+            public_ip => $devices_statuses->{ $devices->{$_}->{serial} }->{publicIp},
+            network_name => $networks->{ $devices->{$_}->{networkId} }->{name},
+            organization_name => $organization_name
+        };
     }
 
-    return $devices;
+    return $results;
 }
 
 sub run {
