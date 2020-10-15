@@ -152,17 +152,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{name}) || $self->{option_results}->{name} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --name option.");
-        $self->{output}->option_exit();
-    }
-
-    #foreach my $instance (@{$self->{option_results}->{name}}) {
-    #    if ($instance ne '') {
-    #        push @{$self->{aws_instance}}, $instance;
-    #    }
-    #}
-
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 172800;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 86400;
     $self->{aws_statistics} = ['Average'];
