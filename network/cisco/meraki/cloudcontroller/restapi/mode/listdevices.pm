@@ -31,6 +31,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-network-id:s'        => { name => 'filter_network_id' },
+        'filter-organization-name:s' => { name => 'filter_organization_name' },
+        'filter-organization-id:s'   => { name => 'filter_organization_id' },
+        'filter-tags:s'              => { name => 'filter_tags' }
     });
 
     return $self;
@@ -56,10 +60,33 @@ sub manage_selection {
 
     my $devices_statuses = $options{custom}->get_organization_device_statuses();
     foreach (keys %$devices) {
+        if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
+            $devices->{$_}->{networkId} !~ /$self->{option_results}->{filter_network_id}/) {
+            delete $devices->{$_};
+            next;
+        }
+        if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
+            (!defined($devices->{$_}->{tags}) || $devices->{$_}->{tags} !~ /$self->{option_results}->{filter_tags}/)) {
+            delete $devices->{$_};
+            next;
+        }
+        if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
+            $networks->{ $devices->{$_}->{networkId} }->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/) {
+            delete $devices->{$_};
+            next;
+        }
+
+        my $organization_name = $organizations->{ $networks->{ $devices->{$_}->{networkId} }->{organizationId} }->{name};
+        if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
+            $organization_name !~ /$self->{option_results}->{filter_organization_name}/) {
+            delete $devices->{$_};
+            next;
+        }
+
         $devices->{$_}->{status} = $devices_statuses->{ $devices->{$_}->{serial} }->{status};
         $devices->{$_}->{public_ip} = $devices_statuses->{ $devices->{$_}->{serial} }->{publicIp};
-        $devices->{$_}->{network_name} = $networks->{ $devices_statuses->{ $devices->{$_}->{serial} }->{networkId} }->{name};
-        $devices->{$_}->{organization_name} = $organizations->{ $networks->{ $devices_statuses->{ $devices->{$_}->{serial} }->{networkId} }->{organizationId} }->{name};
+        $devices->{$_}->{network_name} = $networks->{ $devices->{$_}->{networkId} }->{name};
+        $devices->{$_}->{organization_name} = $organization_name;
     }
 
     return $devices;
@@ -121,6 +148,22 @@ __END__
 List devices.
 
 =over 8
+
+=item B<--filter-network-id>
+
+Filter devices by network id (Can be a regexp).
+
+=item B<--filter-organization-id>
+
+Filter devices by organization id (Can be a regexp).
+
+=item B<--filter-organization-name>
+
+Filter devices by organization name (Can be a regexp).
+
+=item B<--filter-tags>
+
+Filter devices by tags (Can be a regexp).
 
 =back
 
