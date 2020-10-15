@@ -34,6 +34,10 @@ sub set_system {
     
     $self->{thresholds} = {
         psu => [
+            ['inOperation', 'OK'],
+            ['failed', 'CRITICAL'],
+            ['empty', 'OK'],
+
             ['connect', 'OK'],
             ['working', 'OK'],
             ['other', 'UNKNOWN'],
@@ -43,6 +47,9 @@ sub set_system {
             ['disconnect', 'WARNING']
         ],
         fan => [
+            ['ok', 'OK'],
+            ['fault', 'CRITICAL'],
+
             ['working', 'OK'],
             ['fail', 'CRITICAL'],
             ['other', 'UNKNOWN'],
@@ -50,6 +57,10 @@ sub set_system {
             ['speed-low', 'WARNING'],
             ['speed-middle', 'OK'],
             ['speed-high', 'WARNING']
+        ],
+        temperature => [
+            ['ok', 'OK'],
+            ['abnormal', 'CRITICAL']
         ]
     };
     
@@ -66,7 +77,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
