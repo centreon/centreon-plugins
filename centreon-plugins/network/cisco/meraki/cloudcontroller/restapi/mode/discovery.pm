@@ -32,8 +32,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'prettify'        => { name => 'prettify' },
-        'resource-type:s' => { name => 'resource_type'},
+        'prettify'                   => { name => 'prettify' },
+        'resource-type:s'            => { name => 'resource_type'},
+        'filter-network-id:s'        => { name => 'filter_network_id' },
+        'filter-organization-name:s' => { name => 'filter_organization_name' },
+        'filter-organization-id:s'   => { name => 'filter_organization_id' },
+        'filter-tags:s'              => { name => 'filter_tags' }
     });
 
     return $self;
@@ -54,18 +58,27 @@ sub check_options {
 
 sub discovery_devices {
     my ($self, %options) = @_;
-    
+
     my $devices = $options{custom}->get_devices(
         organizations => [keys %{$options{organizations}}],
         disable_cache => 1
     );
     my $devices_statuses = $options{custom}->get_organization_device_statuses();
-    
+
     my @results;
-    foreach (values %{$devices}) {
+    foreach (values %$devices) {
+        next if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
+            $_->{networkId} !~ /$self->{option_results}->{filter_network_id}/);
+        next if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
+            (!defined($_->{tags}) || $_->{tags} !~ /$self->{option_results}->{filter_tags}/));
+        next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
+            $options{networks}->{ $_->{networkId} }->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
+        next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
+            $options{organizations}->{ $options{networks}->{ $_->{networkId} }->{organizationId} }->{name} !~ /$self->{option_results}->{filter_organization_name}/);
+
         my $node = {
             name => $_->{name},
-            status => $devices_statuses->{$_->{serial}}->{status},
+            status => $devices_statuses->{ $_->{serial} }->{status},
             address => $_->{address},
             latitude => $_->{lat},
             longitude => $_->{lng},
@@ -76,13 +89,13 @@ sub discovery_devices {
             model => $_->{model},
             firmware => $_->{firmware},
             serial => $_->{serial},
-            public_ip => $devices_statuses->{$_->{serial}}->{publicIp},
+            public_ip => $devices_statuses->{ $_->{serial} }->{publicIp},
             lan_ip => $_->{lanIp},
             network_id => $_->{networkId},
-            network_name => $options{networks}->{ $devices_statuses->{$_->{serial}}->{networkId} }->{name},
-            organization_name => $options{organizations}->{ $options{networks}->{ $devices_statuses->{$_->{serial}}->{networkId} }->{organizationId} }->{name},
+            network_name => $options{networks}->{ $_->{networkId} }->{name},
+            organization_name => $options{organizations}->{ $options{networks}->{ $_->{networkId} }->{organizationId} }->{name},
             configuration_updated_at => $_->{configurationUpdatedAt},
-            last_reported_at => $devices_statuses->{$_->{serial}}->{lastReportedAt},
+            last_reported_at => $devices_statuses->{ $_->{serial} }->{lastReportedAt}
         };
 
         push @results, $node;
@@ -97,6 +110,13 @@ sub discovery_networks {
 
     my @results;
     foreach (values %{$options{networks}}) {
+        next if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
+            (!defined($_->{tags}) || $_->{tags} !~ /$self->{option_results}->{filter_tags}/));
+        next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
+            $_->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
+        next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
+            $options{organizations}->{ $_->{organizationId} }->{name} !~ /$self->{option_results}->{filter_organization_name}/);
+
         my $node = {
             name => $_->{name},
             id => $_->{id},
@@ -184,9 +204,21 @@ Prettify JSON output.
 
 Choose the type of resources to discover (Can be: 'device', 'network').
 
-=item B<--ignore-permission-errors>
+=item B<--filter-network-id>
 
-Continue the discovery and ignore permission errors (403 status code).
+Filter by network id (Can be a regexp).
+
+=item B<--filter-organization-id>
+
+Filter by organization id (Can be a regexp).
+
+=item B<--filter-organization-name>
+
+Filter by organization name (Can be a regexp).
+
+=item B<--filter-tags>
+
+Filter by tags (Can be a regexp).
 
 =back
 
