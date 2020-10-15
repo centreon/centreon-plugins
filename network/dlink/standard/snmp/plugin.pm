@@ -33,9 +33,10 @@ sub new {
     %{$self->{modes}} = (
         'cpu'              => 'network::dlink::standard::snmp::mode::cpu',
         'hardware'         => 'network::dlink::standard::snmp::mode::hardware',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'interfaces'       => 'network::dlink::standard::snmp::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::dlink::standard::snmp::mode::memory'
+        'memory'           => 'network::dlink::standard::snmp::mode::memory',
+        'stack'            => 'network::dlink::standard::snmp::mode::stack'
     );
 
     return $self;
