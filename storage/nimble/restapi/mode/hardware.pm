@@ -73,6 +73,24 @@ sub new {
     return $self;
 }
 
+sub use_serial {
+    my ($self, %options) = @_;
+
+    return $self->{use_serial} if (defined($self->{use_serial}));
+
+    $self->{use_serial} = 0;
+    my $array_names = {};
+    foreach (@{$self->{results}->{shelve}->{data}}) {
+        if (defined($array_names->{ $_->{array_name} })) {
+            $self->{use_serial} = 1;
+            last;
+        }
+        $array_names->{ $_->{array_name} } = 1;
+    }
+
+    return $self->{use_serial};
+}
+
 sub execute_custom {
     my ($self, %options) = @_;
 
