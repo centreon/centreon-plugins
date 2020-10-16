@@ -40,6 +40,7 @@ sub check {
 
     foreach my $array (@{$self->{results}->{shelve}->{data}}) {
         my $array_name = $array->{array_name};
+        $array_name .= ':' . $array->{serial} if ($self->use_serial());
 
         foreach my $sensor (@{$array->{chassis_sensors}}) {
             next if ($sensor->{type} ne 'power supply');
