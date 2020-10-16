@@ -108,7 +108,7 @@ sub get_items {
 
     if (defined($options{parent})) {
         if (defined($options{parent_filter}) && $options{parent_filter} ne '') {
-            if ($options{parent_filter} =~ /^[0-9\-]$/) {
+            if ($options{parent_filter} =~ /^[0-9\-]+$/) {
                 $options{url} .= $options{parent_filter_prefix} . $options{parent_filter} . '/';
             } else {
                 $options{url} .= $options{parent_filter} . '/';
