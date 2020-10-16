@@ -50,7 +50,7 @@ sub set_counters {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg .= 'state is ' . $self->{result_values}->{state_absolute};
+    my $msg .= 'state is ' . $self->{result_values}->{state};
     return $msg;
 }
 
@@ -70,7 +70,7 @@ sub new {
             "filter-service:s" => { name => 'filter_service' },
             'unknown-status:s'  => { name => 'unknown_status', default => '' },
             'warning-status:s'  => { name => 'warning_status', default => '' },
-            'critical-status:s' => { name => 'critical_status', default => '%{state_absolute} !~ /running/' },
+            'critical-status:s' => { name => 'critical_status', default => '%{state} !~ /running/' },
         });
 
     return $self;
@@ -148,7 +148,7 @@ default: ''.
 =item B<--critical-status>
 
 critical status.
-default: '%{state_absolute} !~ /running/'.
+default: '%{state} !~ /running/'.
 
 =back
 
