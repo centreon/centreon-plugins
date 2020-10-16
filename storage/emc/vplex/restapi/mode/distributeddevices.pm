@@ -99,9 +99,8 @@ sub run {
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All Distributed devices are OK');
-    
-    my $urlbase = '/vplex/distributed-storage/distributed-devices/';     
-    my $items = $vplex->get_items(url => $urlbase);
+
+    my $items = $vplex->get_items(url => '/vplex/distributed-storage/distributed-devices/');
     foreach my $name (sort keys %{$items}) {
         my $instance = $name;
 
