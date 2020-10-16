@@ -94,11 +94,14 @@ sub run {
     my ($self, %options) = @_;
     my $vplex = $options{custom};
     
-    my $urlbase = '/vplex/engines/';
-    my $items = $vplex->get_items(url => $urlbase,
-                                  parent => 'engine',
-                                  engine => $self->{option_results}->{engine},
-                                  obj => 'power-supplies');
+    my $items = $vplex->get_items(
+        url => '/vplex/engines/',
+        parent => 1,
+        parent_filter => $self->{option_results}->{engine},
+        parent_filter_prefix => 'engine-',
+        parent_select => '/engines/(.*?)/',
+        obj => 'power-supplies'
+    );
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All Power supplies are OK');

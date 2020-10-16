@@ -29,8 +29,8 @@ my $thresholds = {
     component_opstatus => [
         ['cluster-in-contact', 'OK'],
         ['in-contact', 'OK'],
-        ['.*', 'CRITICAL'],
-    ],
+        ['.*', 'CRITICAL']
+    ]
 };
 
 sub new {
@@ -38,11 +38,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-               {
-               "filter:s@"               => { name => 'filter' },
-               "threshold-overload:s@"   => { name => 'threshold_overload' },
-               });
+    $options{options}->add_options(arguments => {
+        'filter:s@'             => { name => 'filter' },
+        'threshold-overload:s@' => { name => 'threshold_overload' }
+    });
 
     return $self;
 }
@@ -92,9 +91,8 @@ sub run {
     
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All Cluster Witness components are OK');
-    
-    my $urlbase = '/vplex/cluster-witness/components/';     
-    my $items = $vplex->get_items(url => $urlbase);
+
+    my $items = $vplex->get_items(url => '/vplex/cluster-witness/components/');
     foreach my $name (sort keys %{$items}) {
         my $instance = $name;
 

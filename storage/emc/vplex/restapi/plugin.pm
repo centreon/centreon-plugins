@@ -30,17 +30,17 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'psus'                  => 'storage::emc::vplex::restapi::mode::psus',
         'fans'                  => 'storage::emc::vplex::restapi::mode::fans',
         'distributed-devices'   => 'storage::emc::vplex::restapi::mode::distributeddevices',
         'cluster-devices'       => 'storage::emc::vplex::restapi::mode::clusterdevices',
         'storage-volumes'       => 'storage::emc::vplex::restapi::mode::storagevolumes',
         'directors'             => 'storage::emc::vplex::restapi::mode::directors',
-        'cluster-communication' => 'storage::emc::vplex::restapi::mode::clustercommunication',
-    );
+        'cluster-communication' => 'storage::emc::vplex::restapi::mode::clustercommunication'
+    };
 
-    $self->{custom_modes}{vplexapi} = 'storage::emc::vplex::restapi::custom::vplexapi';
+    $self->{custom_modes}->{vplexapi} = 'storage::emc::vplex::restapi::custom::vplexapi';
     return $self;
 }
 
