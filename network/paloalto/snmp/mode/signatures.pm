@@ -98,7 +98,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'timezone:s'        => { name => 'timezone' }
+        'timezone:s' => { name => 'timezone' }
     });
     
     return $self;
@@ -115,7 +115,7 @@ sub get_diff_time {
     my ($self, %options) = @_;
 
     # '29/10/2018  08:44:54'
-    return if ($options{time} !~ /^\s*(\d{4})\/(\d{2})\/(\d{2})\s+(\d+):(\d+):(\d+)/);
+    return undef if ($options{time} !~ /^\s*(\d{4})\/(\d{2})\/(\d{2})\s+(\d+):(\d+):(\d+)/);
 
     my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     my $dt = DateTime->new(
