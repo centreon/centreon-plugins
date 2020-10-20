@@ -103,7 +103,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->get_object(path => '/volume?space=true');
+    my $results = $options{custom}->get_object(path => '/array?space=true');
 
     #[
     #    {"parity": 1.0, "capacity": 90089907364616, "provisioned": 98155035099136, "hostname": "frparadm224", "system": 0, "snapshots": 51928476177070, "volumes": 18963118791241, "data_reduction": 2.116144198166552, "total": 84076618640795, "shared_space": 13185023672484, "thin_provisioning": 0.5184735201906719, "total_reduction": 4.394658003033373}
