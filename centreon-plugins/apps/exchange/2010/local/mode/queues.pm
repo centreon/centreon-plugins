@@ -20,12 +20,58 @@
 
 package apps::exchange::2010::local::mode::queues;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::common::powershell::exchange::2010::queues;
+use apps::exchange::2010::local::mode::resources::types qw($queue_status $queue_delivery_type);
+use JSON::XS;
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'status: %s [last error: %s] [delivery type: %s] [identity: %s] [message count: %s]',
+        $self->{result_values}->{status},
+        $self->{result_values}->{last_error},
+        $self->{result_values}->{delivery_type},
+        $self->{result_values}->{identity},
+        $self->{result_values}->{message_count}
+    );
+}
+
+sub prefix_queue_output {
+    my ($self, %options) = @_;
+
+    return "Queue '" . $options{instance_value}->{nexthopdomain} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'queues', type => 1, cb_prefix_output => 'prefix_queue_output', message_multiple => 'All queues are ok', skipped_code => { -11 => 1 } }
+    ];
+
+    $self->{maps_counters}->{queues} = [
+         { label => 'status', type => 2, critical_default => '%{status} !~ /Ready|Active/i', set => {
+                key_values => [
+                    { name => 'nexthopdomain' }, { name => 'identity' },
+                    { name => 'is_valid' }, { name => 'isvalid' },
+                    { name => 'delivery_type' }, { name => 'deliverytype' },
+                    { name => 'message_count' }, { name => 'messagecount' },
+                    { name => 'status' }, { name => 'last_error' }
+                ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -42,32 +88,13 @@ sub new {
         'command-path:s'    => { name => 'command_path' },
         'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
         'ps-exec-only'      => { name => 'ps_exec_only' },
-        'ps-display'        => { name => 'ps_display' },
-        'warning:s'         => { name => 'warning' },
-        'critical:s'        => { name => 'critical', default => '%{status} !~ /Ready|Active/i' },
+        'ps-display'        => { name => 'ps_display' }
     });
 
     return $self;
 }
 
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach (('warning', 'critical')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{data}->{$1}/g;
-        }
-    }
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    $self->change_macros();
-}
-
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
@@ -103,10 +130,52 @@ sub run {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    centreon::common::powershell::exchange::2010::queues::check($self, stdout => $stdout);
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    my $perfdatas_queues = {};
+
+    $self->{queues} = {};
+    foreach my $queue (@$decoded) {
+        $queue->{is_valid} = $queue->{is_valid} =~ /True|1/i ? 1 : 0;
+        $queue->{status} = $queue_status->{ $queue->{status} }
+            if (defined($queue->{status}));
+        $queue->{delivery_type} = $queue_delivery_type->{ $queue->{delivery_type} }
+            if (defined($queue->{delivery_type}));
+
+        $self->{queues}->{ $queue->{identity} } = {
+            %$queue,
+            deliverytype => $queue->{delivery_type},
+            isvalid => $queue->{is_valid},
+            messagecount => $queue->{message_count}
+        };
+
+        if ($queue->{message_count} =~ /^(\d+)/) {
+            my $num = $1;
+            my $identity = $queue->{identity};
+
+            $identity = $1 if ($queue->{identity} =~ /^(.*\/)[0-9]+$/);
+            $perfdatas_queues->{$identity} = 0 if (!defined($perfdatas_queues->{$identity})); 
+            $perfdatas_queues->{$identity} += $num;
+        }
+    }
+
+    foreach (keys %$perfdatas_queues) {
+        $self->{output}->perfdata_add(
+            label => 'queue_length',
+            nlabel => 'queue.length.count',
+            instances => $_,
+            value => $perfdatas_queues->{$_},
+            min => 0
+        );
+    }
 }
 
 1;
@@ -160,15 +229,15 @@ Display powershell script.
 
 Print powershell output.
 
-=item B<--warning>
+=item B<--warning-status>
 
 Set warning threshold.
-Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}, %{messagecount}
+Can used special variables like: %{status}, %{identity}, %{is_valid}, %{delivery_type}, %{message_count}
 
-=item B<--critical>
+=item B<--critical-status>
 
 Set critical threshold (Default: '%{status} !~ /Ready|Active/i').
-Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}, %{messagecount}
+Can used special variables like: %{status}, %{identity}, %{is_valid}, %{delivery_type}, %{message_count}
 
 =back
 
