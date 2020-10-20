@@ -68,8 +68,8 @@ sub new {
     $self->{password} = undef;
     $self->{dbname} = undef;
     
-    $self->{record_separator} = '-====-';
-    $self->{field_separator} = '#====#';
+    $self->{record_separator} = '----====----';
+    $self->{field_separator} = '-====-';
     
     return $self;
 }
@@ -108,7 +108,7 @@ sub check_options {
     $self->{psql_cmd} = $self->{option_results}->{psql_cmd};
     
     # If we want a command line: password with variable "PGPASSWORD".
-    #  psql -d template1 -A -R "-====-" -F "#====#" -c "select code from films"
+    #  psql -d template1 -A -R "----====-----" -F "-====-" -c "select code from films"
  
     if (!defined($self->{host}) || $self->{host} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify host argument.");
