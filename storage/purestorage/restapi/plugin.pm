@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         'alarms'             => 'storage::purestorage::restapi::mode::alarms',
+        'arrays'             => 'storage::purestorage::restapi::mode::arrays',
         'hardware'           => 'storage::purestorage::restapi::mode::hardware',
         'list-pgroups'       => 'storage::purestorage::restapi::mode::listpgroups',
         'list-volumes'       => 'storage::purestorage::restapi::mode::listvolumes',
