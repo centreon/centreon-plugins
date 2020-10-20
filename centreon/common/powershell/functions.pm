@@ -67,7 +67,7 @@ function ConvertTo-JSON-20($maxDepth = 4,$forceArray = $false) {
                     return  "`"{0}`"" -f (Escape-JSONString $value )
                 }
                 '(System\.)?DateTime'  {return  "`"{0:yyyy-MM-dd}T{0:HH:mm:ss}`"" -f $value}
-                'Int32|Double' {return  "$value"}
+                'Int16|Int32|Double' {return  "$value"}
                 'Boolean' {return  "$value".ToLower()}
                 '(System\.)?Object\[\]' { # array
                     

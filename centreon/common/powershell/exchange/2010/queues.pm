@@ -22,13 +22,15 @@ package centreon::common::powershell::exchange::2010::queues;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use centreon::common::powershell::exchange::2010::powershell;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
     
     my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
     
     $ps .= '
 try {
@@ -39,78 +41,26 @@ try {
     exit 1
 }
 
+$items = New-Object System.Collections.Generic.List[Hashtable];
 Foreach ($result in $results) {
-    Write-Host "[identity=" $result.Identity "][nexthopdomain=" $result.NextHopDomain "][deliverytype=" $result.DeliveryType "][status=" $result.Status "][isvalid=" $result.IsValid "][messagecount=" $result.MessageCount "][[error=" $result.LastError "]]"
+    $item = @{}
+
+    $item.identity = $result.Identity.ToString().Replace("\\", "/")
+    $item.nexthopdomain = $result.NextHopDomain
+    $item.delivery_type = $result.DeliveryType.value__
+    $item.status = $result.Status.value__
+    $item.is_valid = $result.IsValid
+    $item.message_count = $result.MessageCount
+    $item.last_error = $result.LastError
+    $items.Add($item)
 }
+
+$jsonString = $items | ConvertTo-JSON-20 -forceArray $true
+Write-Host $jsonString
 exit 0
 ';
 
     return $ps;
-}
-
-sub check {
-    my ($self, %options) = @_;
-    # options: stdout
-    
-    # Following output:
-    #[identity=  ][nexthopdomain= xxxx][deliverytype= SmtpRelayWithinAdSite][status= Active ][isvalid= Yes][messagecount= 1 ][[error=...]]
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "All Queues are ok.");
-   
-    my $checked = 0;
-    $self->{output}->output_add(long_msg => $options{stdout});
-    
-    $self->{perfdatas_queues} = {};
-    while ($options{stdout} =~ /\[identity=(.*?)\]\[nexthopdomain=(.*?)\]\[deliverytype=(.*?)\]\[status=(.*?)\]\[isvalid=(.*?)\]\[messagecount=(.*?)\]\[\[error=(.*?)\]\]/msg) {
-        $self->{data} = {};
-        ($self->{data}->{identity}, $self->{data}->{nexthopdomain}, $self->{data}->{deliverytype}, $self->{data}->{status}, $self->{data}->{isvalid}, $self->{data}->{messagecount}, $self->{data}->{error}) = 
-            ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
-             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5), centreon::plugins::misc::trim($6), centreon::plugins::misc::trim($7));
-        
-        $checked++;
-        
-        my ($status, $message) = ('ok');
-        eval {
-            local $SIG{__WARN__} = sub { $message = $_[0]; };
-            local $SIG{__DIE__} = sub { $message = $_[0]; };
-            
-            if (defined($self->{option_results}->{critical}) && $self->{option_results}->{critical} ne '' &&
-                eval "$self->{option_results}->{critical}") {
-                $status = 'critical';
-            } elsif (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
-                     eval "$self->{option_results}->{warning}") {
-                $status = 'warning';
-            }
-        };
-        if (defined($message)) {
-            $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-        }
-        if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $status,
-                                        short_msg => sprintf("Queue '%s' status is '%s' [last error: %s]",
-                                                             $self->{data}->{nexthopdomain}, $self->{data}->{status}, $self->{data}->{error}));
-        }
-        
-        if ($self->{data}->{messagecount} =~ /^(\d+)/) {
-            my $num = $1;
-            my $identity = $self->{data}->{identity};
-            
-            $identity = $1 if ($self->{data}->{identity} =~ /^(.*\\)[0-9]+$/);
-            $self->{perfdatas_queues}->{$identity} = 0 if (!defined($self->{perfdatas_queues}->{$identity})); 
-            $self->{perfdatas_queues}->{$identity} += $num;
-        }
-    }
-    
-    foreach (keys %{$self->{perfdatas_queues}}) {
-        $self->{output}->perfdata_add(label => 'queue_length_' . $_,
-                                      value => $self->{perfdatas_queues}->{$_},
-                                      min => 0);
-    }
-    
-    if ($checked == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot find informations');
-    }
 }
 
 1;
