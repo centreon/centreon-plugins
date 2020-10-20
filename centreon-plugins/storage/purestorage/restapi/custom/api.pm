@@ -45,7 +45,10 @@ sub new {
             'username:s' => { name => 'username' },
             'password:s' => { name => 'password' },
             'timeout:s'  => { name => 'timeout' },
-            'api-path:s' => { name => 'api_path' }
+            'api-path:s' => { name => 'api_path' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -72,6 +75,9 @@ sub check_options {
     $self->{password}   = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{timeout}    = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_path}   = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/api/1.11';
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
  
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
@@ -119,20 +125,21 @@ sub settings {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $content = $self->{http}->request(method => $options{method}, url_path => $options{url_path}, query_form_post => $options{query_form_post},
-        critical_status => '', warning_status => '', unknown_status => '');
+    my $content = $self->{http}->request(
+        method => $options{method},
+        url_path => $options{url_path},
+        query_form_post => $options{query_form_post},
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status}
+    );
 
     my $decoded;
     eval {
         $decoded = decode_json($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-        $self->{output}->option_exit();
-    }
-    if ($self->{http}->get_code() != 200) {
-        $self->{output}->add_option_msg(short_msg => "Connection issue: " . $decoded->{msg});
         $self->{output}->option_exit();
     }
 
@@ -153,7 +160,11 @@ sub get_api_token {
     }
 
     $self->settings();
-    my $decoded = $self->request_api(method => 'POST', url_path => $self->{api_path} . '/auth/apitoken', query_form_post => $encoded);
+    my $decoded = $self->request_api(
+        method => 'POST',
+        url_path => $self->{api_path} . '/auth/apitoken',
+        query_form_post => $encoded
+    );
     if (!defined($decoded->{api_token})) {
         $self->{output}->add_option_msg(short_msg => "Cannot get api token");
         $self->{output}->option_exit();
@@ -200,7 +211,7 @@ sub get_object {
     if (!defined($self->{api_token})) {
         $self->connect();
     }
-    
+
     $self->settings();
     return $self->request_api(method => 'GET', url_path => $self->{api_path} . $options{path});
 }
