@@ -87,7 +87,7 @@ sub custom_copystatus_output {
     return sprintf(
         "copystatus state is %s [error: %s]",
         $self->{result_values}->{copystatus_indexstate},
-        $self->{result_values}->{mailflow_result}
+        $self->{result_values}->{copystatus_content_index_error_message}
     );
 }
 
@@ -140,7 +140,7 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{space} = [
+    $self->{maps_counters}->{global} = [
         { label => 'databases-space-size', nlabel => 'databases.space.size.bytes', set => {
                 key_values => [ { name => 'size' } ],
                 output_template => 'space size: %s %s',

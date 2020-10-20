@@ -34,11 +34,12 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'status: %s [last error: %s] [delivery type: %s] [identity: %s]',
+        'status: %s [last error: %s] [delivery type: %s] [identity: %s] [message count: %s]',
         $self->{result_values}->{status},
         $self->{result_values}->{last_error},
         $self->{result_values}->{delivery_type},
-        $self->{result_values}->{identity}
+        $self->{result_values}->{identity},
+        $self->{result_values}->{message_count}
     );
 }
 
@@ -160,7 +161,7 @@ sub manage_selection {
             my $num = $1;
             my $identity = $queue->{identity};
 
-            $identity = $1 if ($queue->{identity} =~ /^(.*\\)[0-9]+$/);
+            $identity = $1 if ($queue->{identity} =~ /^(.*\/)[0-9]+$/);
             $perfdatas_queues->{$identity} = 0 if (!defined($perfdatas_queues->{$identity})); 
             $perfdatas_queues->{$identity} += $num;
         }
@@ -231,7 +232,7 @@ Print powershell output.
 =item B<--warning-status>
 
 Set warning threshold.
-Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}, %{messagecount}
+Can used special variables like: %{status}, %{identity}, %{is_valid}, %{delivery_type}, %{message_count}
 
 =item B<--critical-status>
 

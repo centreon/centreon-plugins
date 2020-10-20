@@ -63,10 +63,10 @@ Foreach ($DB in $MountedDB) {
     $item = @{}
 
     $item.database = $DB.Name
-    $item.server = $DB.Server
+    $item.server = $DB.Server.Name
     $item.mounted = $DB.Mounted
-    $item.size = $DB.DatabaseSize.ToBytes()
-    $item.asize = $DB.AvailableNewMailboxSpace.ToBytes()    
+    $item.size = $DB.DatabaseSize.ToBytes().ToString()
+    $item.asize = $DB.AvailableNewMailboxSpace.ToBytes().ToString()
 ';
     
     if (defined($options{filter_database_test}) && $options{filter_database_test} ne '') {
