@@ -26,15 +26,17 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("alarm [component: %s] [severity: %s] [category: %s] [event: %s] %s", $self->{result_values}->{component_name},
+    return sprintf(
+        "alarm [component: %s] [severity: %s] [category: %s] [event: %s] %s",
+        $self->{result_values}->{component_name},
         $self->{result_values}->{severity}, $self->{result_values}->{category}, 
-        $self->{result_values}->{event}, centreon::plugins::misc::change_seconds(value => $self->{result_values}->{opened}));
-    return $msg;
+        $self->{result_values}->{event}, centreon::plugins::misc::change_seconds(value => $self->{result_values}->{opened})
+    );
 }
 
 sub custom_status_calc {
@@ -60,14 +62,19 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{alarm} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2,
+            warning_default => '%{severity} =~ /warning/i',
+            critical_default => '%{severity} =~ /critical/i',
+            set => {
                 key_values => [ { name => 'category' }, { name => 'code' }, { name => 'current_severity' }, { name => 'opened' }, { name => 'event' }, { name => 'component_name' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -76,16 +83,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-category:s"   => { name => 'filter_category' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /warning/i' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /critical/i' },
-                                  "memory"              => { name => 'memory' },
-                                });
-    
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Date::Parse',
-                                           error_msg => "Cannot load module 'Date::Parse'.");
+    $options{options}->add_options(arguments => {
+        "filter-category:s"   => { name => 'filter_category' },
+        "memory"              => { name => 'memory' }
+    });
+
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'Date::Parse',
+        error_msg => "Cannot load module 'Date::Parse'."
+    );
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -93,8 +99,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
     
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
@@ -104,9 +108,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{alarms}->{global} = { alarm => {} };
-    my $alarm_results = $options{custom}->get_object(path => '/message');
-    
+    # recent boolean:
+    #   Lists recent messages. An audit record is considered recent if it relates to a command issued within the past 24 hours.
+    #   An alert is considered recent if the situation that triggered it is unresolved, or has only been resolved within the past 24 hours.
+    #   A user session log event is considered recent if the login, logout, or authentication event occurred within the past 24 hours
+    my $alarm_results = $options{custom}->get_object(path => '/message?recent=true');
+
     my $last_time;
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->read(statefile => 'cache_purestorage_' . $self->{mode} . '_' . $options{custom}->get_connection_infos());
@@ -117,13 +124,17 @@ sub manage_selection {
     # {"category": "hardware", "code": 39, "actual": "2", "opened": "2017-11-27T11:32:51Z", "component_type": "hardware", "event": "Fibre Channel link failure", "current_severity": "warning", "details": "", "expected": null, "id": 10088813, "component_name": "ct1.fc3"},
     # ...
     #
-    
+
+    $self->{alarms}->{global} = { alarm => {} };
+
     my ($i, $current_time) = (1, time());
     foreach my $alarm (@{$alarm_results}) {        
         my $create_time = Date::Parse::str2time($alarm->{opened});
         if (!defined($create_time)) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => "Can't Parse date '" . $alarm->{opened} . "'");
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => "Can't Parse date '" . $alarm->{opened} . "'"
+            );
             next;
         }
         
@@ -133,16 +144,16 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $alarm->{category} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         my $diff_time = $current_time - $create_time;
-        
+
         $self->{alarms}->{global}->{alarm}->{$i} = { 
             %$alarm,
-            opened => $diff_time,
+            opened => $diff_time
         };
         $i++;
     }
-    
+
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->write(data => { last_time => $current_time });
     }
