@@ -22,13 +22,15 @@ package centreon::common::powershell::exchange::2010::queues;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use centreon::common::powershell::exchange::2010::powershell;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
     
     my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
     
     $ps .= '
 try {
@@ -39,9 +41,22 @@ try {
     exit 1
 }
 
+$items = New-Object System.Collections.Generic.List[Hashtable];
 Foreach ($result in $results) {
-    Write-Host "[identity=" $result.Identity "][nexthopdomain=" $result.NextHopDomain "][deliverytype=" $result.DeliveryType "][status=" $result.Status "][isvalid=" $result.IsValid "][messagecount=" $result.MessageCount "][[error=" $result.LastError "]]"
+    $item = @{}
+
+    $item.identity = $result.Identity
+    $item.nexthopdomain = $result.NextHopDomain
+    $item.delivery_type = $result.DeliveryType.value__
+    $item.status = $result.Status.value__
+    $item.is_valid = $result.IsValid
+    $item.message_count = $result.MessageCount
+    $item.last_error = $result.LastError
+    $items.Add($item)
 }
+
+$jsonString = $items | ConvertTo-JSON-20 -forceArray $true
+Write-Host $jsonString
 exit 0
 ';
 
