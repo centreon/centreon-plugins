@@ -29,11 +29,7 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{options} = options object
-    # $options{output} = output object
-    # $options{exit_value} = integer
-    # $options{noptions} = integer
-    
+
     if (!defined($options{output})) {
         print "Class psqlcmd: Need to specify 'output' argument.\n";
         exit 3;
@@ -61,16 +57,16 @@ sub new {
     $self->{stdout} = undef;
     $self->{columns} = undef;
     $self->{version} = undef;
-    
+
     $self->{host} = undef;
     $self->{port} = undef;
     $self->{username} = undef;
     $self->{password} = undef;
     $self->{dbname} = undef;
-    
+
     $self->{record_separator} = '----====----';
     $self->{field_separator} = '-====-';
-    
+
     return $self;
 }
 
@@ -98,7 +94,7 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-    
+
     $self->{host} = (defined($self->{option_results}->{host})) ? shift(@{$self->{option_results}->{host}}) : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
@@ -106,7 +102,7 @@ sub check_options {
     $self->{dbname} = (defined($self->{option_results}->{dbname})) ? shift(@{$self->{option_results}->{dbname}}) : undef;
     $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
     $self->{psql_cmd} = $self->{option_results}->{psql_cmd};
-    
+
     # If we want a command line: password with variable "PGPASSWORD".
     #  psql -d template1 -A -R "----====-----" -F "-====-" -c "select code from films"
  
@@ -114,7 +110,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify host argument.");
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
-    
+
     $self->{args} = ['-A', '-R', $self->{record_separator}, '-F', $self->{field_separator}, '--pset', 'footer=off', '-h', $self->{host}];
     if (defined($self->{port})) {
         push @{$self->{args}}, "-p", $self->{port};
@@ -138,7 +134,7 @@ sub check_options {
 sub is_version_minimum {
     my ($self, %options) = @_;
     # $options{version} = string version to check
-    
+
     my @version_src = split /\./, $self->{version};
     my @versions = split /\./, $options{version};
     for (my $i = 0; $i < scalar(@versions); $i++) {
@@ -155,7 +151,7 @@ sub is_version_minimum {
 
 sub get_id {
     my ($self, %options) = @_;
-    
+
     my $msg = $self->{host};
     if (defined($self->{port})) {
         $msg .= ":" . $self->{port};
@@ -181,16 +177,17 @@ sub quote {
 
 sub command_execution {
     my ($self, %options) = @_;
-    
+
     my ($stdout, $exit_code) = centreon::plugins::misc::execute(
         output => $self->{output},
         command => $self->{psql_cmd},
         command_options =>  join(' ', @{$self->{args}}) . ' -c "' . $options{request} . '"',
         wait_exit => 1,
         redirect_stderr => 1,
+        no_quit => 1,
         options => { timeout => 30 }
     );
-    
+
     return ($exit_code, $stdout); 
 }
 
