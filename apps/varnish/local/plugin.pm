@@ -22,7 +22,7 @@ package apps::varnish::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -33,6 +33,8 @@ sub new {
     %{$self->{modes}} = (        
         'stats' => 'apps::varnish::local::mode::stats',
     );
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }
