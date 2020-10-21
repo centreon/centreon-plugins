@@ -215,16 +215,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'hostname:s'         => { name => 'hostname' },
-        'remote'             => { name => 'remote' },
-        'ssh-option:s@'      => { name => 'ssh_option' },
-        'ssh-path:s'         => { name => 'ssh_path' },
-        'ssh-command:s'      => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'          => { name => 'timeout', default => 30 },
-        'sudo'               => { name => 'sudo' },
-        'command:s'          => { name => 'command', default => 'varnishstat' },
-        'command-path:s'     => { name => 'command_path', default => '/usr/bin' },
-        'command-options:s'  => { name => 'command_options', default => ' -1 -j 2>&1' }
     });
 
     return $self;
@@ -265,13 +255,10 @@ sub check_varnish_new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'varnishstat',
+        command_path => '/usr/bin',
+        command_options => '-1 -j 2>&1'
     );
 
     $self->{global} = {};
@@ -288,7 +275,7 @@ sub manage_selection {
     $self->check_varnish_old(json => $content);
     $self->check_varnish_new(json => $content);
 
-    $self->{cache_name} = "cache_varnish_" . $self->{mode} . '_' .
+    $self->{cache_name} = 'cache_varnish_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{hostname}) ? md5_hex($self->{option_results}->{hostname}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 };
@@ -300,33 +287,11 @@ __END__
 
 =head1 MODE
 
-Check statistics with varnishstat command
+Check statistics with varnishstat command.
+
+Command used: /usr/bin/varnishstat -1 -j 2>&1
 
 =over 8
-
-=item B<--remote>
-
-If you dont run this script locally, if you wanna use it remote, you can run it remotely with 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--command>
-
-Varnishstat Binary Filename (Default: varnishstat)
-
-=item B<--command-path>
-
-Directory Path to Varnishstat Binary File (Default: /usr/bin)
-
-=item B<--command-options>
-
-Parameter for Binary File (Default: ' -1 -j 2>&1')
 
 =item B<--warning-[countername]> B<--critical-[countername]>
 
