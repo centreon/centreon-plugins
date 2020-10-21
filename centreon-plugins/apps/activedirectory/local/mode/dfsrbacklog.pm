@@ -29,7 +29,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0 }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -37,10 +37,10 @@ sub set_counters {
                 key_values => [ { name => 'backlog' } ],
                 output_template => 'Backlog File Count : %s',
                 perfdatas => [
-                    { label => 'backlog', value => 'backlog', template => '%s', min => 0 },
-                ],
+                    { label => 'backlog', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -49,15 +49,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "sending-member:s"        => { name => 'sending_member' },
-                                  "receiving-member:s"      => { name => 'receiving_member' },
-                                  "replication-group:s"     => { name => 'replication_group' },
-                                  "replicated-folder:s"     => { name => 'replicated_folder' },
-                                  "timeout:s"               => { name => 'timeout', default => 30 },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'sending-member:s'    => { name => 'sending_member' },
+        'receiving-member:s'  => { name => 'receiving_member' },
+        'replication-group:s' => { name => 'replication_group' },
+        'replicated-folder:s' => { name => 'replicated_folder' },
+        'timeout:s'           => { name => 'timeout', default => 30 }
+    });
+
     return $self;
 }
 
@@ -67,38 +66,40 @@ sub check_options {
     $self->SUPER::check_options(%options);
     $self->{option_results}->{command} = 'dfsrdiag'; 
     $self->{option_results}->{command_options} = 'backlog ';
-    
+
     if (!defined($self->{option_results}->{sending_member}) || $self->{option_results}->{sending_member} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify sending-member option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify sending-member option.');
         $self->{output}->option_exit();
     }
-    $self->{option_results}->{command_options} .= '/SendingMember:' . $self->{option_results}->{sending_member} . ' ';
+    $self->{option_results}->{command_options} .= '/SendingMember:"' . $self->{option_results}->{sending_member} . '" ';
 
     if (defined($self->{option_results}->{receiving_member}) && $self->{option_results}->{receiving_member} ne '') {
-        $self->{option_results}->{command_options} .= '/ReceivingMember:' . $self->{option_results}->{receiving_member} . ' ';
+        $self->{option_results}->{command_options} .= '/ReceivingMember:"' . $self->{option_results}->{receiving_member} . '" ';
     }
-    
+
     if (!defined($self->{option_results}->{replication_group}) || $self->{option_results}->{replication_group} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify replication-group option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify replication-group option.');
         $self->{output}->option_exit();
     }
-    $self->{option_results}->{command_options} .= '/RGName:' . $self->{option_results}->{replication_group} . ' ';
-    
+    $self->{option_results}->{command_options} .= '/RGName:"' . $self->{option_results}->{replication_group} . '" ';
+
     if (!defined($self->{option_results}->{replicated_folder}) || $self->{option_results}->{replicated_folder} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify replicated-folder option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify replicated-folder option.');
         $self->{output}->option_exit();
     }
-    $self->{option_results}->{command_options} .= '/RFName:' . $self->{option_results}->{replicated_folder} . ' ';
+    $self->{option_results}->{command_options} .= '/RFName:"' . $self->{option_results}->{replicated_folder} . '" ';
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
 
     my $backlog = 0;
     my $pattern = 'Backlog\s+File\s+Count\s*:\s+(\d+)';
