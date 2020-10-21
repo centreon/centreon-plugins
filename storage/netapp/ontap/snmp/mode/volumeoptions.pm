@@ -24,73 +24,16 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_options_threshold {
     my ($self, %options) = @_;
 
-    my $status = catalog_status_threshold($self, %options);
+    my $status = catalog_status_threshold_ng($self, %options);
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
         $self->{instance_mode}->{global}->{failed}++;
     }
     return $status;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
-
-sub custom_options_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{options} = $options{new_datas}->{$self->{instance} . '_options'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'volumes', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes are ok', skipped_code => { -10 => 1 } },
-        { name => 'global', type => 0 },
-    ];
-
-    $self->{maps_counters}->{volumes} = [
-         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
-                output_template => "status is '%s'",
-                output_use => 'status',
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-        { label => 'options', threshold => 0, set => {
-                key_values => [ { name => 'options' }, { name => 'display' } ],
-                output_template => "options: '%s'",
-                output_use => 'options',
-                closure_custom_calc => $self->can('custom_options_calc'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_options_threshold'),
-            }
-        },
-    ];
-    
-    $self->{maps_counters}->{global} = [
-        { label => 'failed', display_ok => 0, set => {
-                key_values => [ { name => 'failed' } ],
-                output_template => 'Failed: %s',
-                perfdatas => [
-                    { label => 'failed', value => 'failed', template => '%s', min => 0 },
-                ],
-            }
-        },
-    ];
 }
 
 sub prefix_volume_output {
@@ -99,20 +42,52 @@ sub prefix_volume_output {
     return "Volume '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'volumes', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes are ok', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0 } # need to be after for counting failed
+    ];
+
+    $self->{maps_counters}->{volumes} = [
+         { label => 'status', type => 2, set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                output_template => "status is '%s'",
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'options', type => 2, set => {
+                key_values => [ { name => 'options' }, { name => 'display' } ],
+                output_template => "options: '%s'",
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_options_threshold')
+            }
+        }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'failed', display_ok => 0, set => {
+                key_values => [ { name => 'failed' } ],
+                output_template => 'Failed: %s',
+                perfdatas => [
+                    { label => 'failed', template => '%s', min => 0 }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s'      => { name => 'filter_name' },
-        'filter-status:s'    => { name => 'filter_status' },
-        'unknown-status:s'   => { name => 'unknown_status', default => '' },
-        'warning-status:s'   => { name => 'warning_status', default => '' },
-        'critical-status:s'  => { name => 'critical_status', default => '' },
-        'unknown-options:s'  => { name => 'unknown_options', default => '' },
-        'warning-options:s'  => { name => 'warning_options', default => '' },
-        'critical-options:s' => { name => 'critical_options', default => '' },
+        'filter-name:s'    => { name => 'filter_name' },
+        'filter-vserver:s' => { name => 'filter_vserver' },
+        'filter-status:s'  => { name => 'filter_status' }
     });
     
     return $self;
@@ -124,65 +99,78 @@ sub check_options {
 
     $self->{test_option} = 0;
     foreach ('warning', 'unknown', 'critical') {
-        $self->{test_option} = 1 if (defined($self->{option_results}->{$_ . '_options'}) && $self->{option_results}->{$_ . '_options'} ne '');
+        $self->{test_option} = 1 if (defined($self->{option_results}->{$_ . '-options'}) && $self->{option_results}->{$_ . '-options'} ne '');
     }
-    $self->change_macros(macros => ['warning_options', 'critical_options', 'unknown_options',
-        'warning_status', 'critical_status', 'unknown_status']);
 }
+
+my $mapping = {
+    name    => { oid => '.1.3.6.1.4.1.789.1.5.8.1.2' }, # volName
+    vserver => { oid => '.1.3.6.1.4.1.789.1.5.8.1.14' } # volVserver
+};
+my $mapping2 = {
+    status  => { oid => '.1.3.6.1.4.1.789.1.5.8.1.5' }, # volState
+    options => { oid => '.1.3.6.1.4.1.789.1.5.8.1.7' }  # volOptions
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_volName = '.1.3.6.1.4.1.789.1.5.8.1.2';    
-    my $id_selected = [];
-    my $snmp_result_name = $options{snmp}->get_table(oid => $oid_volName, nothing_quit => 1);
-    foreach my $oid (keys %{$snmp_result_name}) {
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping->{name}->{oid} },
+            { oid => $mapping->{vserver}->{oid} }
+        ],
+        return_type => 1,
+        nothing_quit => 1
+    );
+
+    $self->{volumes} = {};
+    foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /\.([0-9]+)$/);
         my $instance = $1;
-        
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $snmp_result_name->{oid} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $snmp_result_name->{oid} . "': no matching filter.", debug => 1);
-            next;
-        }
-        push @{$id_selected}, $instance; 
-    }
 
-    if (scalar(@{$id_selected}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No volume found for name '" . $self->{option_results}->{filter_name} . "'.");
-        $self->{output}->option_exit();
-    }
-    
-    my $mapping = {
-        volState     => { oid => '.1.3.6.1.4.1.789.1.5.8.1.5' },
-        volOptions   => { oid => '.1.3.6.1.4.1.789.1.5.8.1.7' },
-    };
-    
-    my $load_oids = [$mapping->{volState}->{oid}];
-    push @$load_oids, $mapping->{volOptions}->{oid} if ($self->{test_option} == 1);
-    $options{snmp}->load(oids => $load_oids, instances => $id_selected);
-    my $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    
-    $self->{global} = { failed => 0 };
-    $self->{volumes} = {};
-    foreach (@{$id_selected}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
-        if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
-            $result->{volState} !~ /$self->{option_results}->{filter_status}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $snmp_result_name->{$oid_volName . '.' . $_} . "': no matching filter.", debug => 1);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        my $name = defined($result->{vserver}) && $result->{vserver} ne '' ?
+            $result->{vserver} . ':' . $result->{name} :
+            $result->{name};
+        if (defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
+            $result->{vserver} !~ /$self->{option_results}->{filter_vserver}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
             next;
         }
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $result->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
+            next;
+        }
+
         
-        $self->{volumes}->{$_} = {
-            display => $snmp_result_name->{$oid_volName . '.' . $_},
-            status => $result->{volState},
-            options => $result->{volOptions},
+        $self->{volumes}->{$instance} = {
+            display => $name
         };
     }
-    
+
     if (scalar(keys %{$self->{volumes}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No volume found.");
         $self->{output}->option_exit();
+    }
+
+    my $load_oids = [$mapping2->{status}->{oid}];
+    push @$load_oids, $mapping2->{options}->{oid} if ($self->{test_option} == 1);
+    $options{snmp}->load(oids => $load_oids, instances => [keys %{$self->{volumes}}]);
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+
+    $self->{global} = { failed => 0 };
+    foreach (keys %{$self->{volumes}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
+        if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
+            $result->{status} !~ /$self->{option_results}->{filter_status}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $self->{volumes}->{$_}->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        
+        $self->{volumes}->{$_}->{status} = $result->{status};
+        $self->{volumes}->{$_}->{options} = $result->{options};
     }
 }
 
@@ -195,6 +183,10 @@ __END__
 Check options from volumes.
 
 =over 8
+
+=item B<--filter-vserver>
+
+Filter volumes by vserver name (can be a regexp).
 
 =item B<--filter-name>
 
