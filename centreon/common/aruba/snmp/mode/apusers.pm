@@ -31,105 +31,97 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'essid', type => 1, cb_prefix_output => 'prefix_essid_output', message_multiple => 'All users by ESSID are ok' },
-        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All users by AP are ok' },
+        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All users by AP are ok' }
     ];
     $self->{maps_counters}->{global} = [
         { label => 'total', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'Total Users : %s',
+                output_template => 'Total Users: %s',
                 perfdatas => [
-                    { label => 'total', value => 'total', template => '%s', 
-                      unit => 'users', min => 0 },
-                ],
+                    { label => 'total', template => '%s', unit => 'users', min => 0 }
+                ]
             }
         },
         { label => 'total-none', set => {
                 key_values => [ { name => 'total_none' } ],
-                output_template => 'Total Auth None : %s',
+                output_template => 'Total Auth None: %s',
                 perfdatas => [
-                    { label => 'total_none', value => 'total_none', template => '%s', 
-                      unit => 'users', min => 0 },
-                ],
+                    { label => 'total_none', template => '%s', unit => 'users', min => 0 }
+                ]
             }
         },
         { label => 'total-other', set => {
                 key_values => [ { name => 'total_other' } ],
-                output_template => 'Total Auth Other : %s',
+                output_template => 'Total Auth Other: %s',
                 perfdatas => [
-                    { label => 'total_other', value => 'total_other', template => '%s', 
-                      unit => 'users', min => 0 },
-                ],
+                    { label => 'total_other', template => '%s', unit => 'users', min => 0 }
+                ]
             }
         },
         { label => 'total-web', set => {
                 key_values => [ { name => 'total_web' } ],
-                output_template => 'Total Auth Web : %s',
+                output_template => 'Total Auth Web: %s',
                 perfdatas => [
-                    { label => 'total_web', value => 'total_web', template => '%s', 
-                      unit => 'users', min => 0 },
-                ],
+                    { label => 'total_web', template => '%s', unit => 'users', min => 0 }
+                ]
             }
         },
         { label => 'total-dot1x', set => {
                 key_values => [ { name => 'total_dot1x' } ],
-                output_template => 'Total Auth Dot1x : %s',
+                output_template => 'Total Auth Dot1x: %s',
                 perfdatas => [
-                    { label => 'total_dot1x', value => 'total_dot1x', template => '%s', 
-                      unit => 'users', min => 0 },
-                ],
+                    { label => 'total_dot1x', template => '%s', unit => 'users', min => 0 }
+                ]
             }
         },
         { label => 'total-vpn', set => {
                 key_values => [ { name => 'total_vpn' } ],
-                output_template => 'Total Auth Vpn : %s',
+                output_template => 'Total Auth Vpn: %s',
                 perfdatas => [
-                    { label => 'total_vpn', value => 'total_vpn', template => '%s', 
-                      unit => 'users', min => 0 },
-                ],
+                    { label => 'total_vpn', template => '%s', unit => 'users', min => 0 }
+                ]
             }
         },
         { label => 'total-mac', set => {
                 key_values => [ { name => 'total_mac' } ],
-                output_template => 'Total Auth Mac : %s',
+                output_template => 'Total Auth Mac: %s',
                 perfdatas => [
-                    { label => 'total_mac', value => 'total_mac', template => '%s', 
-                      unit => 'users', min => 0 },
-                ],
+                    { label => 'total_mac', template => '%s', unit => 'users', min => 0 }
+                ]
             }
         },
         { label => 'avg-connection-time', set => {
                 key_values => [ { name => 'avg_connection_time' } ],
-                output_template => 'Users average connection time : %.3f seconds',
+                output_template => 'Users average connection time: %.3f seconds',
                 perfdatas => [
-                    { label => 'avg_connection_time', value => 'avg_connection_time', template => '%.3f', 
-                      unit => 's', min => 0 },
-                ],
+                    { label => 'avg_connection_time', template => '%.3f', unit => 's', min => 0 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{essid} = [
         { label => 'total-essid', set => {
                 key_values => [ { name => 'users' }, { name => 'essid' } ],
-                output_template => 'users : %s',
+                output_template => 'users: %s',
                 perfdatas => [
-                    { label => 'essid', value => 'users', template => '%s', 
-                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'essid' },
-                ],
+                    { label => 'essid', template => '%s', 
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'essid' }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{ap} = [
         { label => 'total-ap', set => {
                 key_values => [ { name => 'users' }, { name => 'ap_id' } ],
-                output_template => 'users : %s',
+                output_template => 'users: %s',
                 perfdatas => [
-                    { label => 'ap', value => 'users', template => '%s', 
-                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'ap_id' },
-                ],
+                    { label => 'ap', template => '%s', 
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'ap_id' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -151,15 +143,15 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-ip-address:s"   => { name => 'filter_ip_address' },
-        "filter-bssid:s"        => { name => 'filter_bssid' },
-        "filter-essid:s"        => { name => 'filter_essid' },
+        'filter-ip-address:s' => { name => 'filter_ip_address' },
+        'filter-bssid:s'      => { name => 'filter_bssid' },
+        'filter-essid:s'      => { name => 'filter_essid' }
     });
                                 
     return $self;
 }
 
-my %map_auth_method = (
+my $map_auth_method = {
     0 => 'none', 1 => 'web',
     2 => 'mac', 3 => 'vpn',
     4 => 'dot1x', 5 => 'kerberos',
@@ -167,19 +159,19 @@ my %map_auth_method = (
     15 => 'pubcookie', 16 => 'xSec',
     17 => 'xSecMachine',
     28 => 'via-vpn',
-    255 => 'other',
-);
-my %map_role = (
+    255 => 'other'
+};
+my $map_role = {
     1 => 'master',
     2 => 'local',
-    3 => 'standbymaster',
-);
+    3 => 'standbymaster'
+};
 my $mapping = {
     nUserUpTime => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.5' },
-    nUserAuthenticationMethod => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.6', map => \%map_auth_method },
+    nUserAuthenticationMethod => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.6', map => $map_auth_method }
 };
 my $mapping2 = {
-    nUserApBSSID => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.11' },
+    nUserApBSSID => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.11' }
 };
 
 my $oid_wlsxUserEntry = '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1';
@@ -191,67 +183,74 @@ my $oid_apIpAddress = '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.5';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = { total => 0, total_none => 0, total_web => 0, total_mac => 0, total_vpn => 0,
-                        total_dot1x => 0, total_kerberos => 0, total_secureId => 0, total_pubcookie => 0,
-                        total_xSec => 0, xSecMachine => 0, 'total_via-vpn' => 0, total_other => 0 };
+    $self->{global} = {
+        total => 0, total_none => 0, total_web => 0, total_mac => 0, total_vpn => 0,
+        total_dot1x => 0, total_kerberos => 0, total_secureId => 0, total_pubcookie => 0,
+        total_xSec => 0, xSecMachine => 0, 'total_via-vpn' => 0, total_other => 0
+    };
     $self->{ap} = {};
     $self->{essid} = {};
 
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [ 
-                                                                   { oid => $oid_wlsxSwitchRole },
-                                                                   { oid => $oid_wlsxUserEntry, start => $mapping->{nUserUpTime}->{oid}, end => $mapping->{nUserAuthenticationMethod}->{oid} },
-                                                                   { oid => $mapping2->{nUserApBSSID}->{oid} },
-                                                                   { oid => $oid_apESSID },
-                                                                   { oid => $oid_apIpAddress },
-                                                                   #{ oid => $oid_wlanAPName },
-                                                                 ],
-                                                         nothing_quit => 1);
-    
-    my $role = $map_role{$self->{results}->{$oid_wlsxSwitchRole}->{$oid_wlsxSwitchRole . '.0'}};
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [ 
+            { oid => $oid_wlsxSwitchRole },
+            { oid => $oid_wlsxUserEntry, start => $mapping->{nUserUpTime}->{oid}, end => $mapping->{nUserAuthenticationMethod}->{oid} },
+            { oid => $mapping2->{nUserApBSSID}->{oid} },
+            { oid => $oid_apESSID },
+            { oid => $oid_apIpAddress }
+        ],
+        nothing_quit => 1
+    );
+
+    my $role = $map_role->{ $snmp_result->{$oid_wlsxSwitchRole}->{$oid_wlsxSwitchRole . '.0'} };
     if ($role =~ /standbymaster/) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Cannot get information. Switch role is '" . $role . "'.");
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "Cannot get information. Switch role is '" . $role . "'."
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
-    
-    my %map_ap = ();
-    foreach my $oid (keys %{$self->{results}->{$oid_apESSID}}) {
+
+    my $map_ap = {};
+    foreach my $oid (keys %{$snmp_result->{$oid_apESSID}}) {
         $oid =~ /^$oid_apESSID\.(.*)$/;
-        $map_ap{$1} = { essid => $self->{results}->{$oid_apESSID}->{$oid}, ip => $self->{results}->{$oid_apIpAddress}->{$oid_apIpAddress . '.' .  $1} };
+        $map_ap->{$1} = { essid => $snmp_result->{$oid_apESSID}->{$oid}, ip => $snmp_result->{$oid_apIpAddress}->{$oid_apIpAddress . '.' .  $1} };
     }
-    
+
     my $total_timeticks = 0;
-    foreach my $oid (keys %{$self->{results}->{$oid_wlsxUserEntry}}) {
+    foreach my $oid (keys %{$snmp_result->{$oid_wlsxUserEntry}}) {
         next if ($oid !~ /^$mapping->{nUserAuthenticationMethod}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_wlsxUserEntry}, instance => $instance);
-        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{nUserApBSSID}->{oid}}, instance => $instance);
-        
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_wlsxUserEntry}, instance => $instance);
+        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{ $mapping2->{nUserApBSSID}->{oid} }, instance => $instance);
+
         # security
         next if (!defined($result2->{nUserApBSSID}));
         my $bssid = join('.', unpack('C*', $result2->{nUserApBSSID}));
         next if (defined($self->{option_results}->{filter_ip_address}) && $self->{option_results}->{filter_ip_address} ne '' &&
-            $map_ap{$bssid}->{ip} !~ /$self->{option_results}->{filter_ip_address}/);
+            defined($map_ap->{$bssid}) && $map_ap->{$bssid}->{ip} !~ /$self->{option_results}->{filter_ip_address}/);
         next if (defined($self->{option_results}->{filter_essid}) && $self->{option_results}->{filter_essid} ne '' &&
-            $map_ap{$bssid}->{essid} !~ /$self->{option_results}->{filter_essid}/);
+            defined($map_ap->{$bssid}) && $map_ap->{$bssid}->{essid} !~ /$self->{option_results}->{filter_essid}/);
         next if (defined($self->{option_results}->{filter_bssid}) && $self->{option_results}->{filter_bssid} ne '' &&
             $bssid !~ /$self->{option_results}->{filter_bssid}/);
-    
+
         my $ap_id = $bssid;
         #$ap_id = $self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid} 
         #    if (defined($self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid}) && $self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid} ne '');
         $self->{ap}->{$bssid} = { users => 0, ap_id => $ap_id } if (!defined($self->{ap}->{$bssid}));
         $self->{ap}->{$bssid}->{users}++;
-    
-        $self->{essid}->{$map_ap{$bssid}->{essid}} = { users => 0, essid => $map_ap{$bssid}->{essid} } if (!defined($self->{essid}->{$map_ap{$bssid}->{essid}}));
-        $self->{essid}->{$map_ap{$bssid}->{essid}}->{users}++;
+
+        if (defined($map_ap->{$bssid})) {
+            $self->{essid}->{ $map_ap->{$bssid}->{essid} } = { users => 0, essid => $map_ap->{$bssid}->{essid} } if (!defined($self->{essid}->{ $map_ap->{$bssid}->{essid} }));
+            $self->{essid}->{ $map_ap->{$bssid}->{essid} }->{users}++;
+        }
 
         $self->{global}->{total}++;
         $self->{global}->{'total_' . $result->{nUserAuthenticationMethod}}++;
         $total_timeticks += $result->{nUserUpTime};
     }
-    
+
     if ($self->{global}->{total} > 0) {
         $self->{global}->{avg_connection_time} = $total_timeticks / $self->{global}->{total} * 0.01;
     }
