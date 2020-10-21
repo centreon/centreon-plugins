@@ -75,7 +75,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -169,7 +169,6 @@ sub manage_selection {
 
     foreach (keys %$perfdatas_queues) {
         $self->{output}->perfdata_add(
-            label => 'queue_length',
             nlabel => 'queue.length.count',
             instances => $_,
             value => $perfdatas_queues->{$_},
