@@ -91,9 +91,9 @@ sub new {
         'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
         'timeout:s'         => { name => 'timeout', default => 30 },
         'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'getreason' },
+        'command:s'         => { name => 'command', default => 'getreason;if [ "$?" -eq "255" ]; then exit 0; else exit 1;fi' },
         'command-path:s'    => { name => 'command_path', default => '/nas/sbin' },
-        'command-options:s' => { name => 'command_options', default => '2>&1' }
+        'command-options:s' => { name => 'command_options', default => '-q' }
     });
 
     return $self;
