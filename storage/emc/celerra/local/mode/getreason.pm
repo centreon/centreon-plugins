@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub set_system {
     my ($self, %options) = @_;
@@ -35,7 +34,7 @@ sub set_system {
         controlstation => [
             ['Primary Control Station', 'OK'], # 10
             ['Secondary Control Station', 'OK'], # 11
-            ['Control Station is ready, but is not running NAS service', 'CRITICAL'], # 6
+            ['Control Station is ready, but is not running NAS service', 'CRITICAL'] # 6
         ],
         datamover => [
             ['Reset (or unknown state)', 'WARNING'],
@@ -57,8 +56,8 @@ sub set_system {
             ['DM POST invalid Data Mover part number', 'CRITICAL'],
             ['DM POST Fibre Channel test failure. Error in blade Fibre connection', 'CRITICAL'],
             ['DM POST network test failure. Error in Ethernet controller', 'CRITICAL'],
-            ['DM T2NET Error. Unable to get blade reason code due to management switch problems', 'CRITICAL'],
-        ],
+            ['DM T2NET Error. Unable to get blade reason code due to management switch problems', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'storage::emc::celerra::local::mode::components';
@@ -67,15 +66,18 @@ sub set_system {
 
 sub cmd_execute {
     my ($self, %options) = @_;
-    
-    ($self->{stdout}) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+
+    my ($stdout, $exit_code) = $options{custom}->execute_command(
+        command => 'getreason',
+        command_path => '/nas/sbin',
+        command_options => '2>&1',
+        no_quit => 1
     );
+
+    if ($exit_code != 0 && $exit_code != 255) {
+        $self->{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $self->{output}->option_exit();
+    }
 }
 
 sub new {
@@ -84,16 +86,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'getreason' },
-        'command-path:s'    => { name => 'command_path', default => '/nas/sbin' },
-        'command-options:s' => { name => 'command_options', default => '2>&1' }
     });
 
     return $self;
@@ -105,7 +97,9 @@ __END__
 
 =head1 MODE
 
-Check control stations and data movers status (use 'getreason' command).
+Check control stations and data movers status.
+
+Command used: /nas/sbin/getreason 2>&1
 
 =over 8
 
@@ -129,47 +123,6 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='datamover,CRITICAL,^(?!(normal)$)'
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'getreason').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/nas/sbin').
-
-=item B<--command-options>
-
-Command options (Default: '2>&1').
 
 =back
 
