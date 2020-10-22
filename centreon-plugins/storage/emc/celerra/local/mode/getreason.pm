@@ -67,7 +67,7 @@ sub set_system {
 sub cmd_execute {
     my ($self, %options) = @_;
 
-    my ($stdout, $exit_code) = $options{custom}->execute_command(
+    ($self->{stdout}, my $exit_code) = $options{custom}->execute_command(
         command => 'getreason',
         command_path => '/nas/sbin',
         command_options => '2>&1',
@@ -75,7 +75,7 @@ sub cmd_execute {
     );
 
     if ($exit_code != 0 && $exit_code != 255) {
-        $self->{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $self->{output}->add_option_msg(short_msg => "Command error: $self->{stdout}");
         $self->{output}->option_exit();
     }
 }
