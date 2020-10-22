@@ -31,21 +31,20 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'connection-time'              => 'centreon::common::protocols::sql::mode::connectiontime',
-        'databases-size'               => 'database::mysql::mode::databasessize',
-        'innodb-bufferpool-hitrate'    => 'database::mysql::mode::innodbbufferpoolhitrate',
-        'long-queries'                 => 'database::mysql::mode::longqueries',
-        'myisam-keycache-hitrate'      => 'database::mysql::mode::myisamkeycachehitrate',
-        'open-files'                   => 'database::mysql::mode::openfiles',
-        'qcache-hitrate'               => 'database::mysql::mode::qcachehitrate',
-        'queries'                      => 'database::mysql::mode::queries',
-        'replication-master-slave'     => 'database::mysql::mode::replicationmasterslave',
-        'replication-master-master'    => 'database::mysql::mode::replicationmastermaster',
-        'slow-queries'                 => 'database::mysql::mode::slowqueries',
-        'sql'                          => 'centreon::common::protocols::sql::mode::sql',
-        'sql-string'                   => 'centreon::common::protocols::sql::mode::sqlstring',
-        'threads-connected'            => 'database::mysql::mode::threadsconnected',
-        'uptime'                       => 'database::mysql::mode::uptime'
+        'connection-time'           => 'centreon::common::protocols::sql::mode::connectiontime',
+        'databases-size'            => 'database::mysql::mode::databasessize',
+        'innodb-bufferpool-hitrate' => 'database::mysql::mode::innodbbufferpoolhitrate',
+        'long-queries'              => 'database::mysql::mode::longqueries',
+        'myisam-keycache-hitrate'   => 'database::mysql::mode::myisamkeycachehitrate',
+        'open-files'                => 'database::mysql::mode::openfiles',
+        'qcache-hitrate'            => 'database::mysql::mode::qcachehitrate',
+        'queries'                   => 'database::mysql::mode::queries',
+        'replication'               => 'database::mysql::mode::replication',
+        'slow-queries'              => 'database::mysql::mode::slowqueries',
+        'sql'                       => 'centreon::common::protocols::sql::mode::sql',
+        'sql-string'                => 'centreon::common::protocols::sql::mode::sqlstring',
+        'threads-connected'         => 'database::mysql::mode::threadsconnected',
+        'uptime'                    => 'database::mysql::mode::uptime'
     );
 
     $self->{sql_modes}->{dbi} = 'database::mysql::dbi';
@@ -72,15 +71,15 @@ sub init {
         @{$self->{sqldefault}->{dbi}} = ();
         @{$self->{sqldefault}->{mysqlcmd}} = ();
         for (my $i = 0; $i < scalar(@{$options_result->{db_host}}); $i++) {
-            $self->{sqldefault}->{dbi}[$i] = { data_source => 'mysql:host=' . $options_result->{db_host}[$i] };
-            $self->{sqldefault}->{mysqlcmd}[$i] = { host => $options_result->{db_host}[$i] };
+            $self->{sqldefault}->{dbi}->[$i] = { data_source => 'mysql:host=' . $options_result->{db_host}[$i] };
+            $self->{sqldefault}->{mysqlcmd}->[$i] = { host => $options_result->{db_host}[$i] };
             if (defined($options_result->{db_port}[$i])) {
-                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{db_port}[$i];
-                $self->{sqldefault}->{mysqlcmd}[$i]->{port} = $options_result->{db_port}[$i];
+                $self->{sqldefault}->{dbi}->[$i]->{data_source} .= ';port=' . $options_result->{db_port}[$i];
+                $self->{sqldefault}->{mysqlcmd}->[$i]->{port} = $options_result->{db_port}[$i];
             }
             if (defined($options_result->{db_socket}[$i])) {
-                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';mysql_socket=' . $options_result->{db_socket}[$i];
-                $self->{sqldefault}->{mysqlcmd}[$i]->{socket} = $options_result->{db_socket}[$i];
+                $self->{sqldefault}->{dbi}->[$i]->{data_source} .= ';mysql_socket=' . $options_result->{db_socket}[$i];
+                $self->{sqldefault}->{mysqlcmd}->[$i]->{socket} = $options_result->{db_socket}[$i];
             }
         }
     }
