@@ -255,7 +255,7 @@ sub check_master_slave_position {
     });
     my $master_result = $options{sql_master}->fetchrow_hashref();
 
-    $self->sql_query_show_slave_status(sql => $options{sql});
+    $self->sql_query_show_slave_status(sql => $options{sql_slave});
     my $slave_result = $options{sql_slave}->fetchrow_hashref();
 
     $self->{servers}->{ $options{name_slave} }->{position} = {
