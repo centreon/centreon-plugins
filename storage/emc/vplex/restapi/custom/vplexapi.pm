@@ -69,7 +69,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
     $self->{vplex_username} = (defined($self->{option_results}->{vplex_username})) ? shift(@{$self->{option_results}->{vplex_username}}) : '';
     $self->{vplex_password} = (defined($self->{option_results}->{vplex_password})) ? shift(@{$self->{option_results}->{vplex_password}}) : '';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 30;
  
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
