@@ -29,13 +29,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-host:s"   => { name => 'filter_host' },
-                                  "filter-path:s"   => { name => 'filter_path' },
-                                });
-    $self->{ds} = {};
+
+    $options{options}->add_options(arguments => {
+        'filter-host:s' => { name => 'filter_host' },
+        'filter-path:s' => { name => 'filter_path' }
+    });
+
     return $self;
 }
 
@@ -47,21 +46,36 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{request} = [
-         { mbean => "*:type=DataSource,class=*,context=*,host=*,name=*", attributes => 
-             [ { name => 'numActive' } ] },
-    ];
-    my $result = $options{custom}->get_attributes(request => $self->{request});
+    my $mbeans = $options{custom}->get_attributes(
+        request => [
+            { mbean => "*:type=DataSource,class=*,context=*,host=*,name=*", attributes => 
+                 [ { name => 'numActive' } ] },
+            { mbean => "*:type=DataSource,class=*,path=*,host=*,name=*", attributes => 
+                [ { name => 'numActive' } ] },
+            { mbean => "*:type=DataSource,class=*,name=*", attributes => 
+                [ { name => 'numActive' } ] }
+        ]
+    );
 
-    foreach my $mbean (keys %{$result}) {
-        $mbean =~ /(?:[:,])host=(.*?)(?:,|$)/;
-        my $host = $1;
-        $mbean =~ /(?:[:,])(?:path|context)=(.*?)(?:,|$)/;
-        my $path = $1;
+    my $results = {};
+    foreach my $mbean (keys %$mbeans) {
+        my ($ds_name, $path, $host, $append) = ('', '', '', '');
+
+        if ($mbean =~ /(?:[:,])host=(.*?)(?:,|$)/) {
+            $host = $1;
+            $ds_name = $host;
+            $append = '.';
+        }
+        if ($mbean =~ /(?:[:,])(?:path|context)=(.*?)(?:,|$)/) {
+            $path = $1;
+            $ds_name .= $append . $path;
+            $append = '.';
+        }
         $mbean =~ /(?:[:,])name=(.*?)(?:,|$)/;
         my $name = $1;
         $name =~ s/^"(.*)"$/$1/;
-        
+        $ds_name .= $append . $name;
+
         if (defined($self->{option_results}->{filter_host}) && $self->{option_results}->{filter_host} ne '' &&
             $host !~ /$self->{option_results}->{filter_host}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $host . "': no matching filter.", debug => 1);
@@ -72,43 +86,52 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $path . "': no matching filter.", debug => 1);
             next;
         }
-        
-        $self->{ds}->{$host . '.' . $path} = { 
-            host => $host, path => $path, name => $name,
+
+        $results->{$ds_name} = { 
+            host => $host,
+            path => $path,
+            name => $name,
+            fullname => $ds_name
         };
     }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
-  
-    $self->manage_selection(%options);
-    foreach my $instance (sort keys %{$self->{ds}}) { 
-        $self->{output}->output_add(long_msg => '[host = ' . $self->{ds}->{$instance}->{host} . "]" .
-            " [path = '" . $self->{ds}->{$instance}->{path} . "']" .
-            " [name = '" . $self->{ds}->{$instance}->{name} . "']"
+
+    my $results = $self->manage_selection(%options);
+    foreach my $instance (sort keys %$results) { 
+        $self->{output}->output_add(
+            long_msg => 
+                '[host = ' . $results->{$instance}->{host} . "]" .
+                " [path = '" . $results->{$instance}->{path} . "']" .
+                " [name = '" . $results->{$instance}->{name} . "']"
         );
     }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List data sources:');
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List data sources:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
-    $self->{output}->add_disco_format(elements => ['host', 'path', 'name']);
+
+    $self->{output}->add_disco_format(elements => ['host', 'path', 'name', 'fullname']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $instance (sort keys %{$self->{ds}}) {             
+    my $results = $self->manage_selection(%options);
+    foreach my $instance (sort keys %$results) {             
         $self->{output}->add_disco_entry(
-            %{$self->{ds}->{$instance}}
+            %{$results->{$instance}}
         );
     }
 }
