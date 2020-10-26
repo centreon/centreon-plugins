@@ -30,9 +30,9 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'datasource', type => 1, cb_prefix_output => 'prefix_ds_output', message_multiple => 'All datasources are ok' },
+        { name => 'datasource', type => 1, cb_prefix_output => 'prefix_ds_output', message_multiple => 'All datasources are ok' }
     ];
-    
+
     $self->{maps_counters}->{datasource} = [
         { label => 'num-active', set => {
                 key_values => [ { name => 'numActive' }, { name => 'maxActive' }, { name => 'display' } ],
@@ -40,7 +40,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { label_ref => 'Active', message => 'Current Num Active' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         },
         { label => 'num-idle', set => {
@@ -49,9 +49,9 @@ sub set_counters {
                 closure_custom_calc_extra_options => { label_ref => 'Idle', message => 'Current Num Idle' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
-        },
+        }
     ];
 }
 
@@ -133,12 +133,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
-        "units:s"       => { name => 'units', default => '%' },
+        'filter-name:s' => { name => 'filter_name' },
+        'units:s'       => { name => 'units', default => '%' }
     });
-    
+
     return $self;
 }
 
@@ -147,41 +147,49 @@ sub manage_selection {
 
     # maxActive or maxTotal
     $self->{request} = [
-         { mbean => "*:type=DataSource,class=*,context=*,host=*,name=*", attributes => 
-             [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
-         { mbean => "*:type=DataSource,class=*,path=*,host=*,name=*", attributes => 
-             [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
+        { mbean => "*:type=DataSource,class=*,context=*,host=*,name=*", attributes => 
+            [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
+        { mbean => "*:type=DataSource,class=*,path=*,host=*,name=*", attributes => 
+            [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
+        { mbean => "*:type=DataSource,class=*,name=*", attributes => 
+            [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] }
     ];
-    
+
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
     $self->{datasource} = {};
     foreach my $key (keys %$result) {
-        $key =~ /(?:[:,])host=(.*?)(?:,|$)/;
-        my $ds_name = $1;
-        $key =~ /(?:[:,])(?:path|context)=(.*?)(?:,|$)/;
-        $ds_name .= '.' . $1;
-        $key =~ /(?:[:,])name=(.*?)(?:,|$)/; # double quote a virer
+        my ($ds_name, $append) = ('', '');
+
+        if ($key =~ /(?:[:,])host=(.*?)(?:,|$)/) {
+            $ds_name = $1;
+            $append = '.';
+        }
+        if ($key =~ /(?:[:,])(?:path|context)=(.*?)(?:,|$)/) {
+            $ds_name .= $append . $1;
+            $append = '.';
+        }
+        $key =~ /(?:[:,])name=(.*?)(?:,|$)/;
         my $tmp_name = $1;
         $tmp_name =~ s/^"(.*)"$/$1/;
-        $ds_name .= '.' . $tmp_name;
-        
+        $ds_name .= $append . $tmp_name;
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $ds_name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $ds_name . "': no matching filter.", debug => 1);
             next;
         }
-     
+
         $self->{datasource}->{$ds_name} = {
             display => $ds_name,
             numActive => $result->{$key}->{numActive},
             maxActive => defined($result->{$key}->{maxTotal}) ? $result->{$key}->{maxTotal} : $result->{$key}->{maxActive},
             numIdle => $result->{$key}->{numIdle},
-            maxIdle => $result->{$key}->{maxIdle},
+            maxIdle => $result->{$key}->{maxIdle}
         };
     }
-    
-    $self->{cache_name} = "tomcat_" . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
+
+    $self->{cache_name} = 'tomcat_' . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
