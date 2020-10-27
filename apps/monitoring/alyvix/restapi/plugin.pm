@@ -45,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Alyvix using REST API.
+Check Alyvix Server using REST API.
 
 =cut

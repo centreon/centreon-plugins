@@ -93,34 +93,13 @@ __END__
 
 =head1 MODE
 
-Check Graylog system notifications using Graylog API
-
-Example:
-perl centreon_plugins.pl --plugin=apps::monitoring::alyvix::restapi::plugin
---mode=notifications --hostname=10.0.0.1 --username='username' --password='password' --credentials
-
-More information on https://docs.graylog.org/en/<version>/pages/configuration/rest_api.html
+List Alyvix Server test cases.
 
 =over 8
 
-=item B<--filter-severity>
+=item B<--filter-testcase>
 
-Filter on specific notification severity.
-Can be 'normal' or 'urgent'.
-(Default: both severities shown).
-
-=item B<--filter-node>
-
-Filter notifications by node ID.
-(Default: all notifications shown).
-
-=item B<--warning-notifications-*>
-
-Set warning threshold for notifications count (Default: '') where '*' can be 'total', 'normal'  or 'urgent'.
-
-=item B<--critical-notifications-*>
-
-Set critical threshold for notifications count (Default: '') where '*' can be 'total', 'normal'  or 'urgent'.
+Filter on specific test case.
 
 =back
 

@@ -74,31 +74,29 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'testcase-state', nlabel => 'testcase.state', set => {
-                key_values => [ { name => 'state' }, { name => 'display' } ],
-                output_template => 'state: %s',
-                perfdatas => [
-                    { template => '%d', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-    ];
-
-    $self->{maps_counters}->{testcases} = [
-        { label => 'transaction-status', nlabel => 'transaction.state', threshold => 0, set => {
+        { label => 'testcase-state', type => 2, critical_default => '%{state} eq "FAILED"', set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-         { label => 'transaction-duration',  nlabel => 'transaction.duration.milliseconds', set => {
+    ];
+
+    $self->{maps_counters}->{testcases} = [
+        { label => 'transaction-state', type => 2, critical_default => '%{state} eq "FAILED"', set => {
+                key_values => [ { name => 'state' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'transaction-duration',  nlabel => 'transaction.duration.milliseconds', set => {
                 key_values => [ { name => 'duration' }, { name => 'display' } ],
                 output_template => 'duration: %s ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
-                ]
-
+                ],
             }
         }
     ];
@@ -116,32 +114,10 @@ sub new {
     return $self;
 }
 
-# sub manage_selection {
-#     my ($self, %options) = @_;
-
-#     my $scenarios = $options{custom}->request_api(endpoint => 'testcases');
-#     use Data::Dumper; print Dumper($scenarios);
-
-#     foreach my $testcase (values $scenarios->{testcases}) {
-#         next if (defined($self->{option_results}->{filter_testcase})
-#             && $self->{option_results}->{filter_testcase} ne ''
-#             && $testcase->{testcase_alias} !~ /$self->{option_results}->{filter_testcase}/ );
-    
-#         my $transactions = $options{custom}->request_api(endpoint => 'testcases/' . $testcase->{testcase_alias} . '/');
-#         foreach my $step (values $transactions->{measures}) {
-#             $self->{cases}->{"hey"}->{total} = $step->{test_case_duration_ms};
-#             $self->{cases}->{"hey"}->{"display"} = "display";
-#             #use Data::Dumper; print Dumper($transactions);
-
-#         }
-#     }
-
-# }
-
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    use Data::Dumper;
+
+    my %status = (  0 => 'OK', 2 => 'FAILED' );
     my $results = $options{custom}->request_api(endpoint => '/testcases/');
     my $i;
     foreach (@{$results->{testcases}}) {
@@ -156,7 +132,7 @@ sub manage_selection {
                     global => {
                         display => $_->{testcase_alias},
                         duration => $measures->{measures}[0]->{test_case_duration_ms},
-                        state => $measures->{measures}[0]->{test_case_state}
+                        state => $status{$measures->{measures}[0]->{test_case_state}}
                     },
                     testcases => {}
         };
@@ -166,33 +142,13 @@ sub manage_selection {
             $instance =~ s/ /_/g;
             $self->{cases}->{$_->{testcase_alias}}->{testcases}->{$instance} = {
                 display => $instance,
-                state => $transaction->{transaction_state},
+                state => $status{$transaction->{transaction_state}},
                 duration => $transaction->{transaction_performance_ms}
             };
         $i++;
         }
     }
-    print Dumper($self->{cases});
 }
-
-    #     }
-    #     my $i = 0;
-    #     #use Data::Dumper; print Dumper($measures);
-    #     foreach my $step (@{$measures->{measures}}) {
-    #         $i++;
-    #         $self->{case}->{$case->{alias}} = {
-    #             state => $step->{test_case_state},
-    #             duration => $step->{test_case_duration_ms}
-    #         };
-    #         $self->{case}->{$case->{alias}}->{steps}->{$i} = {
-    #             name => $step->{transaction_alias},
-    #             state => $step->{transaction_state},
-    #             duration => $step->{transaction_performance_ms}
-    #         };
-    #     };
-    # }
-
-
 
 1;
 
@@ -200,34 +156,32 @@ __END__
 
 =head1 MODE
 
-Check Graylog system notifications using Graylog API
+Check Alyvix Server test cases using Alyvix Rest API
 
 Example:
-perl centreon_plugins.pl --plugin=apps::graylog::restapi::plugin
---mode=notifications --hostname=10.0.0.1 --username='username' --password='password' --credentials
-
-More information on https://docs.graylog.org/en/<version>/pages/configuration/rest_api.html
+perl centreon_plugins.pl --plugin=apps::monitoring::alyvix::restapi::plugin --mode=testcases --hostname='10.0.0.1'
 
 =over 8
 
-=item B<--filter-severity>
+=item B<--filter-testcase>
 
-Filter on specific notification severity.
-Can be 'normal' or 'urgent'.
-(Default: both severities shown).
+Filter on specific test case.
 
-=item B<--filter-node>
+=item B<--warning-*-state>
 
-Filter notifications by node ID.
-(Default: all notifications shown).
+Set warning status (Default: '') where '*' can be 'testcase' or 'transaction'.
 
-=item B<--warning-notifications-*>
+=item B<--critical-*-state>
 
-Set warning threshold for notifications count (Default: '') where '*' can be 'total', 'normal'  or 'urgent'.
+Set critical status (Default: '%{state} eq "FAILED"') where '*' can be 'testcase' or 'transaction'.
 
-=item B<--critical-notifications-*>
+=item B<--warning-*-duration>
 
-Set critical threshold for notifications count (Default: '') where '*' can be 'total', 'normal'  or 'urgent'.
+Set warning threshold for test cases or transactions duration (Default: '') where '*' can be 'testcase' or 'transaction'. 
+
+=item B<--critical-*-duration>
+
+Set critical threshold for test cases or transactions duration (Default: '') where '*' can be 'testcase' or 'transaction'.
 
 =back
 
