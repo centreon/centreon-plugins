@@ -25,33 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use JSON::XS;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
-
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'service', type => 1, cb_prefix_output => 'prefix_service_output',
-            message_multiple => 'All services are ok' },
-    ];
-
-    $self->{maps_counters}->{service} = [
-        { label => 'status', threshold => 0, set => {
-            key_values      => [ { name => 'state' }, { name => 'display' }],
-            closure_custom_perfdata => sub { return 0; },
-            closure_custom_output => $self->can('custom_status_output'),
-            closure_custom_threshold_check => \&catalog_status_threshold,
-        }
-        },
-    ];
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg .= 'state is ' . $self->{result_values}->{state};
-    return $msg;
+    return 'state is ' . $self->{result_values}->{state};
 }
 
 sub prefix_service_output {
@@ -60,61 +39,52 @@ sub prefix_service_output {
     return "Service '" . $options{instance_value}->{display} ."' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'services', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'All services are ok' }
+    ];
+
+    $self->{maps_counters}->{services} = [
+        { label => 'status', type => 2, critical_default => '%{state} !~ /running/', set => {
+                key_values => [ { name => 'state' }, { name => 'display' } ],
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-        {
-            "filter-service:s" => { name => 'filter_service' },
-            'unknown-status:s'  => { name => 'unknown_status', default => '' },
-            'warning-status:s'  => { name => 'warning_status', default => '' },
-            'critical-status:s' => { name => 'critical_status', default => '%{state} !~ /running/' },
-        });
+    $options{options}->add_options(arguments => {
+        'filter-service:s' => { name => 'filter_service' }
+    });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [
-        'warning_status', 'critical_status', 'unknown_status',
-    ]);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $jsonResponse = $options{custom}->get_endpoint(api_path => '/settings/sysadmin/services');
-   
-    my $response;
-    eval {
-        $response = decode_json($jsonResponse);
-    };
-    # the response was checked on "get_endpoint" if contains 'success=true'
-    if ($@) {
-        $self->{output}->output_add(long_msg => $jsonResponse, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-        $self->{output}->option_exit();
-    }
+    my $results = $options{custom}->request_api(endpoint => '/settings/sysadmin/services');
 
-    my $jsonServiceStates = $response->{services};
-    my @services = ('spool', 'smtp', 'pop', 'xmpp', 'imap', 'ldap', 'popretrieval', 'imapretrieval', 'indexing');
-
-    $self->{service} = {};
-    foreach (@services) {
+    $self->{services} = {};
+    foreach my $svc_name (keys %{$results->{services}}) {
         if (defined($self->{option_results}->{filter_service}) && $self->{option_results}->{filter_service} ne '' &&
-            $_ !~ /$self->{option_results}->{filter_service}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $_  . "': no matching filter.", debug => 1);
+            $svc_name !~ /$self->{option_results}->{filter_service}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $svc_name  . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{service}->{$_} = {
-            display => $_,
-            state => $jsonServiceStates->{$_} ? "running" : "inactive",
+        $self->{services}->{$svc_name} = {
+            display => $svc_name,
+            state => $results->{services}->{$svc_name} =~ /True|1/i ? 'running' : 'inactive'
         };
     }
 }
@@ -126,7 +96,7 @@ __END__
 
 =head1 MODE
 
-Check service states
+Check services.
 
 =over 8
 
@@ -137,18 +107,18 @@ Only display some counters (regexp can be used).
 
 =item B<--unknown-status>
 
-unknown status.
-default: ''.
+Set unknown threshold for status.
+Can used special variables like: %{state}, %{display}
 
 =item B<--warning-status>
 
-warning status.
-default: ''.
+Set warning threshold for status.
+Can used special variables like: %{state}, %{display}
 
 =item B<--critical-status>
 
-critical status.
-default: '%{state} !~ /running/'.
+Set critical threshold for status (Default: '%{state} !~ /running/').
+Can used special variables like: %{state}, %{display}
 
 =back
 
