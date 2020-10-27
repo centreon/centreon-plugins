@@ -30,14 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
          'array-usage'      => 'storage::dell::equallogic::snmp::mode::arrayusage',
          'disk-usage'       => 'storage::dell::equallogic::snmp::mode::diskusage',
          'hardware'         => 'storage::dell::equallogic::snmp::mode::hardware',
          'interfaces'       => 'snmp_standard::mode::interfaces',
          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-         'pool-usage'       => 'storage::dell::equallogic::snmp::mode::poolusage',
-    );
+         'pool-usage'       => 'storage::dell::equallogic::snmp::mode::poolusage'
+    };
 
     return $self;
 }
