@@ -114,7 +114,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'snapshot', set => {
@@ -123,8 +123,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'snapshost', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'replication', set => {
@@ -133,8 +133,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'replication', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'connections', set => {
@@ -142,8 +142,8 @@ sub set_counters {
                 output_template => 'iSCSI connections : %s',
                 perfdatas => [
                     { label => 'connections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'ext-connections', display_ok => 0, set => {
@@ -151,8 +151,8 @@ sub set_counters {
                 output_template => 'External iSCSI connections : %s',
                 perfdatas => [
                     { label => 'ext_connections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'global-read-avg-latency', display_ok => 0, set => {
@@ -160,8 +160,8 @@ sub set_counters {
                 output_template => 'Global read average latency : %s ms',
                 perfdatas => [
                     { label => 'global_read_avg_latency', template => '%s',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'global-write-avg-latency', display_ok => 0, set => {
@@ -169,8 +169,8 @@ sub set_counters {
                 output_template => 'Global write average latency : %s ms',
                 perfdatas => [
                     { label => 'global_write_avg_latency', template => '%s',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'read-avg-latency', set => {
@@ -179,8 +179,8 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_read_avg_latency_calc'),
                 perfdatas => [
                     { label => 'read_avg_latency', value => 'read_avg_latency', template => '%.2f',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-avg-latency', display_ok => 0, set => {
@@ -189,8 +189,8 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_write_avg_latency_calc'),
                 perfdatas => [
                     { label => 'write_avg_latency', value => 'write_avg_latency', template => '%.2f',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'read-iops', set => {
@@ -198,8 +198,8 @@ sub set_counters {
                 output_template => 'Read IOPs : %.2f',
                 perfdatas => [
                     { label => 'read_iops',  template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-iops', set => {
@@ -207,8 +207,8 @@ sub set_counters {
                 output_template => 'Write IOPs : %.2f',
                 perfdatas => [
                     { label => 'write_iops', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'traffic-in', display_ok => 0, set => {
@@ -216,9 +216,9 @@ sub set_counters {
                 output_template => 'Traffic In : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'eqlMemberRxData_per_second', template => '%s',
-                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'traffic_in', template => '%s',
+                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'traffic-out', display_ok => 0, set => {
@@ -227,10 +227,10 @@ sub set_counters {
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_out', template => '%s',
-                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -257,7 +257,7 @@ my $mapping = {
     eqlMemberUsedStorage            => { oid => '.1.3.6.1.4.1.12740.2.1.10.1.2' }, # MB
     eqlMemberSnapStorage            => { oid => '.1.3.6.1.4.1.12740.2.1.10.1.3' }, # MB
     eqlMemberReplStorage            => { oid => '.1.3.6.1.4.1.12740.2.1.10.1.4' }, # MB
-    
+
     eqlMemberNumberOfConnections    => { oid => '.1.3.6.1.4.1.12740.2.1.12.1.1' },
     eqlMemberReadLatency            => { oid => '.1.3.6.1.4.1.12740.2.1.12.1.2' },
     eqlMemberWriteLatency           => { oid => '.1.3.6.1.4.1.12740.2.1.12.1.3' },
@@ -267,17 +267,17 @@ my $mapping = {
     eqlMemberWriteOpCount           => { oid => '.1.3.6.1.4.1.12740.2.1.12.1.7' },
     eqlMemberTxData                 => { oid => '.1.3.6.1.4.1.12740.2.1.12.1.8' },
     eqlMemberRxData                 => { oid => '.1.3.6.1.4.1.12740.2.1.12.1.9' },
-    eqlMemberNumberOfExtConnections => { oid => '.1.3.6.1.4.1.12740.2.1.12.1.10' },
+    eqlMemberNumberOfExtConnections => { oid => '.1.3.6.1.4.1.12740.2.1.12.1.10' }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     if ($options{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
-    
+
     my $oid_eqlMemberName = '.1.3.6.1.4.1.12740.2.1.1.1.9';
     
     $self->{array} = {};
@@ -304,9 +304,11 @@ sub manage_selection {
     $options{snmp}->load(oids => [
             map($_->{oid}, values(%$mapping)) 
         ],
-        instances => [keys %{$self->{array}}], instance_regexp => '^(.*)$');
+        instances => [keys %{$self->{array}}],
+        instance_regexp => '^(.*)$'
+    );
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    
+
     foreach (keys %{$self->{array}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
 
@@ -317,11 +319,11 @@ sub manage_selection {
         $result->{eqlMemberUsedStorage} *= 1024 * 1024;
         $result->{eqlMemberSnapStorage} *= 1024 * 1024;
         $result->{eqlMemberReplStorage} *= 1024 * 1024;
-        
+
         $self->{array}->{$_} = { %{$self->{array}->{$_}}, %$result };
     }
-    
-    $self->{cache_name} = "dell_equallogic_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+
+    $self->{cache_name} = 'dell_equallogic_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
