@@ -32,13 +32,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'spoolmessagecount' => 'apps::smartermail::restapi::mode::spoolmessagecount',
-        'licensenotifications' => 'apps::smartermail::restapi::mode::licensenotifications',
-        'services' => 'apps::smartermail::restapi::mode::services',
-    );
-    $self->{custom_modes}{api} = 'apps::smartermail::restapi::custom::api';
+    $self->{modes} = {
+        'spools'   => 'apps::smartermail::restapi::mode::spools',
+        'licenses' => 'apps::smartermail::restapi::mode::licenses',
+        'services' => 'apps::smartermail::restapi::mode::services'
+    };
 
+    $self->{custom_modes}->{api} = 'apps::smartermail::restapi::custom::api';
     return $self;
 }
 
@@ -48,7 +48,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Custom mode (an example for creating test with a same line argument).
+Check SmarterMail software using Rest API.
 
 =over 8
 

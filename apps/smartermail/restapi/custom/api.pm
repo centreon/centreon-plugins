@@ -32,10 +32,6 @@ sub new {
     my ($class, %options) = @_;
     my $self = {};
     bless $self, $class;
-    # $options{options} = options object
-    # $options{output} = output object
-    # $options{exit_value} = integer
-    # $options{noptions} = integer
 
     if (!defined($options{output})) {
         print "Class Custom: Need to specify 'output' argument.\n";
@@ -48,72 +44,57 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s" => { name => 'hostname' },
-            "port:s"     => { name => 'port' },
-            "proto:s"    => { name => 'proto' },
-            "url_path:s" => { name => 'url_path' },
-            "username:s" => { name => 'username' },
-            "password:s" => { name => 'password' },
-            "timeout:s"  => { name => 'timeout' },
+            'hostname:s'     => { name => 'hostname' },
+            'port:s'         => { name => 'port' },
+            'proto:s'        => { name => 'proto' },
+            'url-path:s'     => { name => 'url_path' },
+            'api-username:s' => { name => 'api_username' },
+            'api-password:s' => { name => 'api_password' },
+            'timeout:s'      => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
-sub set_defaults {
-    my ($self, %options) = @_;
-    # options{default}
-
-    # Manage default value
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still customarg
-    # return 0 = no customarg left
 
-    $self->{hostname} = $self->{option_results}->{hostname};
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/v1';
-    $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
-    $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
+    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
 
-    if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+    if ($self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
+        $self->{output}->option_exit();
+    }
+    if ($self->{api_username} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
+        $self->{output}->option_exit();
+    }
+    if ($self->{api_password} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
         $self->{output}->option_exit();
     }
 
     $self->{cache}->check_options(option_results => $self->{option_results});
-
     return 0;
 }
 
@@ -135,14 +116,6 @@ sub get_port {
     return $self->{port};
 }
 
-sub get_endpoint {
-    my ($self, %options) = @_;
-
-    my $result = $self->request_api(%options);
-
-    return $result;
-}
-
 sub json_decode {
     my ($self, $content) = @_;
 
@@ -151,7 +124,6 @@ sub json_decode {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
@@ -165,88 +137,114 @@ sub build_options_for_httplib {
     $self->{option_results}->{hostname} = $self->{hostname};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{url_path} = $self->{url_path};
-    $self->{option_results}->{username} = $self->{username};
-    $self->{option_results}->{password} = $self->{password};
-    $self->{option_results}->{warning_status} = '';
-    $self->{option_results}->{critical_status} = '';
 }
 
 sub settings {
     my ($self, %options) = @_;
 
     $self->build_options_for_httplib();
-
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    if (defined($self->{api_token})) {
-        $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{api_token});
-        $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-    }
+    $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     $self->{http}->set_options(%{$self->{option_results}});
+}
+
+sub clean_token {
+    my ($self, %options) = @_;
+
+    my $datas = {};
+    $options{statefile}->write(data => $datas);
+    $self->{access_token} = undef;
+    $self->{http}->add_header(key => 'Authorization', value => undef);
 }
 
 sub get_auth_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'smatermail_api_' . md5_hex($self->{option_results}->{hostname}) .
-        '_' . md5_hex($self->{option_results}->{username}));
+    my $has_cache_file = $options{statefile}->read(statefile => 'smatermail_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $expires_on = $options{statefile}->get(name => 'expires_on');
-    my $accessToken = $options{statefile}->get(name => 'accessToken');
+    my $access_token = $options{statefile}->get(name => 'access_token');
 
-    if ($has_cache_file == 0 || !defined($accessToken) || (($expires_on - time()) < 60)) {
-        my $post_param = [ 'username=' . $self->{username}, 'password=' . $self->{password} ];
+    # Token expires every 15 minutes
+    if ($has_cache_file == 0 || !defined($access_token) || (time() > $expires_on)) {
+        my $json_request = { username => $self->{api_username}, password => $self->{api_password} };
+        my $encoded;
+        eval {
+            $encoded = encode_json($json_request);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
+            $self->{output}->option_exit();
+        }
 
-        $self->settings();
-        my $url = $self->{url_path} . '/auth/authenticate-user';
-
-        my $content = $self->{http}->request(method => 'POST', url_path => $url, post_param => $post_param);
+        my ($content) = $self->{http}->request(
+            method => 'POST',
+            url_path => $self->{url_path} . '/auth/authenticate-user',
+            query_form_post => $encoded,
+            warning_status => '', unknown_status => '', critical_status => ''
+        );
 
         if ($self->{http}->get_code() != 200) {
             $self->{output}->add_option_msg(short_msg => "Authentication error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
             $self->{output}->option_exit();
         }
 
-        my $jsonResponse = $self->json_decode($content);
-
-        if (!defined($jsonResponse->{"resultCode"}) || $jsonResponse->{"resultCode"} ne "200" || !defined($jsonResponse->{accessToken})) {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
+        my $decoded = $self->json_decode($content);
+        if (!defined($decoded->{accessToken})) {
             $self->{output}->add_option_msg(short_msg => "Cannot get token");
             $self->{output}->option_exit();
         }
 
-        $accessToken = $jsonResponse->{accessToken};
-        my $datas = { last_timestamp => time(), accessToken => $jsonResponse->{accessToken}, expires_on => time() + 900 };
+        $access_token = $decoded->{accessToken};
+        my $datas = {
+            access_token => $access_token,
+            expires_on => time() + 900
+        };
         $options{statefile}->write(data => $datas);
     }
 
-    return $accessToken;
+    $self->{access_token} = $access_token;
+    $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{acess_token});
 }
 
 sub request_api {
     my ($self, %options) = @_;
 
-    if (!defined($self->{api_token})) {
-        $self->{api_token} = $self->get_auth_token(statefile => $self->{cache});
+    $self->settings();
+    if (!defined($self->{access_token})) {
+        $self->get_auth_token(statefile => $self->{cache});
     }
 
-    $self->settings();
-
     my $content = $self->{http}->request(
-        method          => $options{method},
-        url_path        => $self->{url_path} . $options{api_path},
-        query_form_post => $options{query_form_post},
-        critical_status => '', warning_status => '', unknown_status => '');
+        method => 'GET',
+        url_path => $self->{url_path} . $options{endpoint},
+        warning_status => '', unknown_status => '', critical_status => ''
+    );
 
+    # Maybe there is an issue with the token. So we retry.
+    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+        $self->clean_token(statefile => $self->{cache});
+        $self->get_auth_token(statefile => $self->{cache});
+        $content = $self->{http}->request(
+            url_path => $self->{url_path} . $options{endpoint},
+            warning_status => '', unknown_status => '', critical_status => ''
+        );
+    }
 
-    my $jsonResponse = $self->json_decode($content);
-
-    if (!$jsonResponse->{success}) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Request could not be processed: $jsonResponse->{message}");
+    my $decoded = $self->json_decode(content => $content);
+    if (!defined($decoded)) {
+        $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
+        $self->{output}->option_exit();
+    }
+    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+        my $message = 'api request error';
+        if (defined($decoded->{message})) {
+            $message .= ': ' . $decoded->{message};
+        }
+        $self->{output}->add_option_msg(short_msg => $message);
         $self->{output}->option_exit();
     }
 
-    return ($jsonResponse, JSON::XS->new->utf8->pretty->encode($jsonResponse));
+    return $decoded;
 }
 
 1;
@@ -261,7 +259,7 @@ SmarterMail API
 
 smartermail api
 
-=head1 API OPTIONS
+=head1 REST API OPTIONS
 
 =over 8
 
@@ -281,11 +279,11 @@ API port (Default: 443)
 
 Specify https if needed (Default: 'https')
 
-=item B<--username>
+=item B<--api-username>
 
 Set API username
 
-=item B<--password>
+=item B<--api-password>
 
 Set API password
 
