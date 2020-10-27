@@ -130,6 +130,11 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
 
+    if (!defined($options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}})) {
+        $self->{error_msg} = "Buffer creation";
+        return -1;
+    }
+
     my $total_bytes = 0;
     foreach (keys %{$options{new_datas}}) {
         if (/$self->{instance}_cipSecTunHc$options{extra_options}->{label_ref}Octets_(\d+)/) {
@@ -190,6 +195,11 @@ sub custom_drop_output {
 
 sub custom_drop_calc {
     my ($self, %options) = @_;
+
+    if (!defined($options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}})) {
+        $self->{error_msg} = "Buffer creation";
+        return -1;
+    }
 
     my $total_pkts = 0;
     foreach (keys %{$options{new_datas}}) {
