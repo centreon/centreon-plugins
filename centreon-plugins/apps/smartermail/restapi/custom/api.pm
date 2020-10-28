@@ -117,11 +117,11 @@ sub get_port {
 }
 
 sub json_decode {
-    my ($self, $content) = @_;
+    my ($self, %options) = @_;
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
+        $decoded = JSON::XS->new->utf8->decode($options{content});
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
@@ -188,7 +188,7 @@ sub get_auth_token {
             $self->{output}->option_exit();
         }
 
-        my $decoded = $self->json_decode($content);
+        my $decoded = $self->json_decode(content => $content);
         if (!defined($decoded->{accessToken})) {
             $self->{output}->add_option_msg(short_msg => "Cannot get token");
             $self->{output}->option_exit();
