@@ -44,7 +44,7 @@ sub set_counters {
                 key_values      => [ { name => 'messages' }, { name => 'display' } ],
                 output_template => 'messages: %d',
                 perfdatas       => [
-                    { template => '%d', min => 0 }
+                    { template => '%d', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
