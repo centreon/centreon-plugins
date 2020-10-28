@@ -30,15 +30,15 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'              => 'network::cyberoam::snmp::mode::cpu',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'network::cyberoam::snmp::mode::memory',
         'requests'         => 'network::cyberoam::snmp::mode::requests',
         'services'         => 'network::cyberoam::snmp::mode::services',
-        'storage'          => 'network::cyberoam::snmp::mode::storage',
-    );
+        'storage'          => 'network::cyberoam::snmp::mode::storage'
+    };
 
     return $self;
 }

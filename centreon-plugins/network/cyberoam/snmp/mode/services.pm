@@ -38,7 +38,8 @@ sub set_system {
             ['running', 'OK'],
             ['exiting', 'CRITICAL'],
             ['dead', 'CRITICAL'],
-            ['unregistered', 'OK']
+            ['unregistered', 'OK'],
+            ['frozen', 'CRITICAL']
         ]
     };
 
@@ -50,12 +51,15 @@ sub snmp_execute {
     my ($self, %options) = @_;
 
     $self->{snmp} = $options{snmp};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+    $self->{results} = $self->{snmp}->get_multiple_table(
+        oids => $self->{request},
+        return_type => 1
+    );
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
