@@ -41,7 +41,7 @@ my %metrics_mapping = (
         'label'  => 'emails-rejected',
         'nlabel' => 'ses.emails.rejected.rate',
     },
-    '"Reputation.ComplaintRate' => {
+    'Reputation.ComplaintRate' => {
         'output' => 'rate of sent emails marked as spam',
         'label'  => 'emails-spam',
         'nlabel' => 'ses.emails.spam.rate',
@@ -104,7 +104,7 @@ sub prefix_statistics_output {
 sub long_output {
     my ($self, %options) = @_;
 
-    return "SES'" . $options{instance_value}->{display} . "' ";
+    return "SES '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -175,7 +175,6 @@ sub check_options {
 
     } else {
         $self->{aws_instance} = ["SES"];
-        # to change!!!       
     }
 }
 
@@ -223,7 +222,7 @@ __END__
 Check Amazon SES sending activity.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::ses::plugin --custommode=awscli --mode=emails --region='eu-west-1' --dimension='ses-1234abcd'
+perl centreon_plugins.pl --plugin=cloud::aws::ses::plugin --custommode=awscli --mode=emails --region='eu-west-1' --dimension='SESDimension=ses-1234abcd'
 --dimension='ses-5678-efgh'
 See 'https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html' for more information.
 
