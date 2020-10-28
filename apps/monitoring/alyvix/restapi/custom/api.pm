@@ -23,11 +23,7 @@ package apps::monitoring::alyvix::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
-use centreon::plugins::statefile;
-use DateTime;
 use JSON::XS;
-use URI::Encode;
-use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -61,8 +57,7 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
-    $self->{cache} = centreon::plugins::statefile->new(%options);
-    
+
     return $self;
 }
 
@@ -82,10 +77,12 @@ sub check_options {
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/v0/';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
- 
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_status} : '';
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_status} : '';
+
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
@@ -100,28 +97,13 @@ sub check_options {
 	#    $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
 	#    $self->{output}->option_exit();
 	#} 
-
-    $self->{cache}->check_options(option_results => $self->{option_results});
-
+    
     return 0;
-}
-
-sub build_options_for_httplib {
-    my ($self, %options) = @_;
-
-    $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{port} = $self->{port};
-    $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{url_path} = $self->{url_path};
-    $self->{option_results}->{warning_status} = '';
-    $self->{option_results}->{critical_status} = '';
 }
 
 sub settings {
     my ($self, %options) = @_;
 
-    $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     $self->{http}->set_options(%{$self->{option_results}});
 }
@@ -183,33 +165,29 @@ __END__
 
 =head1 NAME
 
-Alyvix Rest API
+Alyvix Server Rest API.
 
 =head1 SYNOPSIS
 
-Graylog Rest API custom mode
+Alyvix Rest API custom mode.
 
 =head1 REST API OPTIONS
 
-Graylog Rest API
+Alyvix Rest API.
 
 =over 8
 
-=item B<--timeframe>
-
-Set timeframe in seconds (E.g '300' to check last 5 minutes).
-
 =item B<--hostname>
 
-Graylog hostname.
+Alyvix Server hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/api/')
+API url path (Default: '/vO/')
 
 =item B<--port>
 
-API port (Default: 9000)
+API port (Default: 80)
 
 =item B<--proto>
 
@@ -238,12 +216,6 @@ Specify this option if you access the API over hidden basic authentication or yo
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--header>
-
-Set HTTP header (Can be multiple, example: --header='X-Requested-By: cli')
-
-Useful to check logs on Graylog side
 
 =back
 
