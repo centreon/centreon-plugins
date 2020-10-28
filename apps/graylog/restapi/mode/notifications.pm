@@ -38,26 +38,23 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total: %s',
                 perfdatas => [
-                    { label => 'notifications_total', value => 'total', template => '%d',
-                      min => 0 },
+                    { template => '%d', min => 0 },
                 ],
             }
         },
         { label => 'notifications-normal', nlabel => 'graylog.system.notifications.normal.count', set => {
                 key_values => [ { name => 'normal' } ],
-                output_template => 'Normal: %s',
+                output_template => 'normal: %s',
                 perfdatas => [
-                    { label => 'notification_normal', value => 'normal', template => '%d',
-                      min => 0 },
+                    { template => '%d', min => 0 },
                 ],
             }
         },
         { label => 'notifications-urgent', nlabel => 'graylog.system.notifications.urgent.count', set => {
                 key_values => [ { name => 'urgent' } ],
-                output_template => 'Urgent: %s',
+                output_template => 'urgent: %s',
                 perfdatas => [
-                    { label => 'notification_urgent', value => 'urgent', template => '%d',
-                      min => 0 },
+                    { template => '%d', min => 0 },
                 ],
             }
         },
@@ -80,27 +77,27 @@ sub new {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-        return 'System notifications ';
+    return 'System notifications ';
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get_endpoint(url_path => 'system/notifications');
+    my $result = $options{custom}->request_api(endpoint => 'system/notifications');
     $self->{global} = { normal => 0, urgent => 0 };
     $self->{notifications} = {};
 
     foreach my $notification (values $result->{notifications}) {
-    	next if ( defined($self->{option_results}->{filter_severity})
-         && $self->{option_results}->{filter_severity} ne ''
-    	 && $notification->{severity} !~ /$self->{option_results}->{filter_severity}/ );
+    	next if (defined($self->{option_results}->{filter_severity})
+        	&& $self->{option_results}->{filter_severity} ne ''
+    	 	&& $notification->{severity} !~ /$self->{option_results}->{filter_severity}/ );
     
-    	next if ( defined($self->{option_results}->{filter_node})
-         && $self->{option_results}->{filter_node} ne ''
-    	 && $notification->{node_id} !~ /$self->{option_results}->{filter_node}/ );
+    	next if (defined($self->{option_results}->{filter_node})
+			&& $self->{option_results}->{filter_node} ne ''
+			&& $notification->{node_id} !~ /$self->{option_results}->{filter_node}/ );
 
-    	$self->{global}->{normal}++ if ($notification->{severity} =~ m/normal/);
-        $self->{global}->{urgent}++ if ($notification->{severity} =~ m/urgent/);	
+	$self->{global}->{normal}++ if ($notification->{severity} =~ m/normal/);
+	$self->{global}->{urgent}++ if ($notification->{severity} =~ m/urgent/);	
     }
 
     $self->{global}->{total} = $self->{global}->{normal} + $self->{global}->{urgent};
