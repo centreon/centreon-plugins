@@ -89,15 +89,15 @@ sub manage_selection {
 
     foreach my $notification (values $result->{notifications}) {
     	next if (defined($self->{option_results}->{filter_severity})
-        	&& $self->{option_results}->{filter_severity} ne ''
-    	 	&& $notification->{severity} !~ /$self->{option_results}->{filter_severity}/ );
-    
-    	next if (defined($self->{option_results}->{filter_node})
-			&& $self->{option_results}->{filter_node} ne ''
-			&& $notification->{node_id} !~ /$self->{option_results}->{filter_node}/ );
+            && $self->{option_results}->{filter_severity} ne ''
+            && $notification->{severity} !~ /$self->{option_results}->{filter_severity}/ );
 
-	$self->{global}->{normal}++ if ($notification->{severity} =~ m/normal/);
-	$self->{global}->{urgent}++ if ($notification->{severity} =~ m/urgent/);	
+        next if (defined($self->{option_results}->{filter_node})
+            && $self->{option_results}->{filter_node} ne ''
+            && $notification->{node_id} !~ /$self->{option_results}->{filter_node}/ );
+
+    $self->{global}->{normal}++ if ($notification->{severity} =~ m/normal/);
+    $self->{global}->{urgent}++ if ($notification->{severity} =~ m/urgent/);	
     }
 
     $self->{global}->{total} = $self->{global}->{normal} + $self->{global}->{urgent};

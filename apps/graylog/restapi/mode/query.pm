@@ -52,7 +52,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         "query:s"       => { name => 'query' },
-		"timeframe:s"   => { name => 'timeframe', default => '300'}
+        "timeframe:s"   => { name => 'timeframe', default => '300'}
     });
 
     return $self;
@@ -60,14 +60,14 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-	
-	my $result = $options{custom}->query_relative(
-		query => $self->{option_results}->{query},
-		timeframe => $self->{option_results}->{timeframe}
-	);
+
+    my $result = $options{custom}->query_relative(
+        query => $self->{option_results}->{query},
+        timeframe => $self->{option_results}->{timeframe}
+    );
 
     $self->{global} = {
-		query_matches => $result->{total_results}
+        query_matches => $result->{total_results}
     };
 }
 
