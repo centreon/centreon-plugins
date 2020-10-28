@@ -30,9 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{ $self->{modes} } = (
+    $self->{modes} = {
         'emails'          => 'cloud::aws::ses::mode::emails',
-    );
+    };
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
     $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
