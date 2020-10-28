@@ -22,12 +22,42 @@ package network::mikrotik::snmp::mode::components::voltage;
 
 use strict;
 use warnings;
+use network::mikrotik::snmp::mode::components::resources qw($map_gauge_unit $mapping_gauge);
 
 my $mapping = {
-    mtxrHlVoltage => { oid => '.1.3.6.1.4.1.14988.1.1.3.8' },
+    mtxrHlVoltage => { oid => '.1.3.6.1.4.1.14988.1.1.3.8' }
 };
 
 sub load {}
+
+sub check_voltage {
+    my ($self, %options) = @_;
+
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "voltage '%s' is %s V",
+            $options{name},
+            $options{value}
+        )
+    );
+
+    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $options{instance}, value => $options{value});
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("Voltage '%s' is %s V", $options{name}, $options{value})
+        );
+    }
+    $self->{output}->perfdata_add(
+        nlabel => 'hardware.voltage.volt',
+        unit => 'V',
+        instances => $options{name},
+        value => $options{value},
+        warning => $warn,
+        critical => $crit
+    );
+    $self->{components}->{voltage}->{total}++;
+}
 
 sub check {
     my ($self) = @_;
@@ -35,29 +65,28 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking voltage");
     $self->{components}->{voltage} = {name => 'voltage', total => 0, skip => 0};
     return if ($self->check_filter(section => 'voltage'));
-    
-    my $instance = 0;
-    my ($exit, $warn, $crit, $checked);
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
-    
-    if (defined($result->{mtxrHlVoltage}) && $result->{mtxrHlVoltage} =~ /[0-9]+/) {
-        $self->{output}->output_add(long_msg => sprintf("Voltage is '%s' V", $result->{mtxrHlVoltage} / 10));
 
-        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{mtxrHlVoltage} / 10);
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(
-                severity => $exit,
-                short_msg => sprintf("Voltage is '%s' V", $result->{mtxrHlVoltage} / 10)
-            );
-        }
-        $self->{output}->perfdata_add(
-            label => 'voltage', unit => 'V',
-            nlabel => 'hardware.voltage.volt',
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
+    if (defined($result->{mtxrHlVoltage}) && $result->{mtxrHlVoltage} =~ /[0-9]+/) {
+        check_voltage(
+            $self,
             value => $result->{mtxrHlVoltage} / 10,
-            warning => $warn,
-            critical => $crit
+            instance => 1,
+            name => 'system'
         );
-        $self->{components}->{voltage}->{total}++;
+    }
+
+    foreach (keys %{$self->{results}}) {
+        next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
+        next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'dV');
+
+        $result = $self->{snmp}->map_instance(mapping => $mapping_gauge, results => $self->{results}, instance => $1);
+        check_voltage(
+            $self,
+            value => $result->{value} / 10,
+            instance => $1,
+            name => $result->{name}
+        );
     }
 }
 
