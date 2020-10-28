@@ -28,18 +28,13 @@ use warnings;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
    
-    $self->{output}->perfdata_add(label => 'used', unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
-}
-
-sub custom_usage_threshold {
-    my ($self, %options) = @_;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    return $exit;
+    $self->{output}->perfdata_add(
+        label => 'used', unit => 'B',
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_output {
@@ -49,11 +44,12 @@ sub custom_usage_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     
-    my $msg = sprintf("Storage Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "Storage Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -80,9 +76,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                threshold_use => 'prct_used'
             }
-        },
+        }
     ];
 }
 
@@ -90,23 +86,47 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-       
+
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
+}
+
+sub add_counters {
+    my ($self, %options) = @_;
+
+    return if (!defined($options{result}->{disk_total}));
+
+    $self->{storage} = {
+        used => $options{result}->{disk_used_prct} * $options{result}->{disk_total} * 1024 * 1024 / 100, 
+        total => $options{result}->{disk_total} * 1024 * 1024
+    };
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $oid_diskCapacity = '.1.3.6.1.4.1.21067.2.1.2.3.1.0'; # in MB
-    my $oid_diskPercentUsage = '.1.3.6.1.4.1.21067.2.1.2.3.2.0';
-    my $result = $options{snmp}->get_leef(oids => [$oid_diskCapacity, $oid_diskPercentUsage],
-                                          nothing_quit => 1);
-    $self->{storage} = { used => $result->{$oid_diskPercentUsage} * $result->{$oid_diskCapacity} * 1024 * 1024 / 100, 
-        total => $result->{$oid_diskCapacity} * 1024 * 1024 };
+
+    my $mapping = {
+        v17 => {
+            disk_total     => { oid => '.1.3.6.1.4.1.21067.2.1.2.3.1' }, # diskCapacity - MB
+            disk_used_prct => { oid => '.1.3.6.1.4.1.21067.2.1.2.3.2' }  # diskPercentUsage
+        },
+        v18 => {
+            disk_total     => { oid => '.1.3.6.1.4.1.2604.5.1.2.4.1' }, # sfosDiskCapacity - MB
+            disk_used_prct => { oid => '.1.3.6.1.4.1.2604.5.1.2.4.2' }  # sfosDiskPercentUsage
+        }
+    };
+
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%{$mapping->{v17}}), values(%{$mapping->{v18}})) ],
+        nothing_quit => 1
+    );
+
+    my $result = $options{snmp}->map_instance(mapping => $mapping->{v17}, results => $snmp_result, instance => 0);
+    $self->add_counters(result => $result);
+    $result = $options{snmp}->map_instance(mapping => $mapping->{v18}, results => $snmp_result, instance => 0);
+    $self->add_counters(result => $result);
 }
 
 1;
