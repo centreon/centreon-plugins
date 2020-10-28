@@ -28,18 +28,18 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan|current|psu)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature|voltage|fan|current|psu)$';
     
     $self->{cb_hook2} = 'snmp_execute';
      $self->{thresholds} = {
         'psu.primary' => [
             ['true', 'OK'],
-            ['false', 'CRITICAL'],
+            ['false', 'CRITICAL']
         ],
         'psu.backup' => [
             ['true', 'OK'],
-            ['false', 'CRITICAL'],
-        ],
+            ['false', 'CRITICAL']
+        ]
     };
 
     $self->{components_path} = 'network::mikrotik::snmp::mode::components';
@@ -56,7 +56,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 

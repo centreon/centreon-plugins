@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'               => 'snmp_standard::mode::cpu',
         'disk'              => 'network::mikrotik::snmp::mode::disk',
         'environment'       => 'network::mikrotik::snmp::mode::environment',
@@ -41,8 +41,8 @@ sub new {
         'memory'            => 'network::mikrotik::snmp::mode::memory',
         'signal'            => 'network::mikrotik::snmp::mode::signal',
         'time'              => 'snmp_standard::mode::ntp',
-        'uptime'            => 'snmp_standard::mode::uptime',
-    );
+        'uptime'            => 'snmp_standard::mode::uptime'
+    };
 
     return $self;
 }

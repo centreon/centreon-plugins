@@ -22,13 +22,14 @@ package network::mikrotik::snmp::mode::components::psu;
 
 use strict;
 use warnings;
+use network::mikrotik::snmp::mode::components::resources qw($map_gauge_unit $mapping_gauge);
 
 my $map_status = { 0 => 'false', 1 => 'true' };
 
 my $mapping = {
     mtxrHlPower                  => { oid => '.1.3.6.1.4.1.14988.1.1.3.12' },
     mtxrHlPowerSupplyState       => { oid => '.1.3.6.1.4.1.14988.1.1.3.15', map => $map_status },
-    mtxrHlBackupPowerSupplyState => { oid => '.1.3.6.1.4.1.14988.1.1.3.16', map => $map_status },
+    mtxrHlBackupPowerSupplyState => { oid => '.1.3.6.1.4.1.14988.1.1.3.16', map => $map_status }
 };
 
 sub load {}
@@ -56,38 +57,67 @@ sub check_psu {
     $self->{components}->{psu}->{total}++;
 }
 
+sub check_power {
+    my ($self, %options) = @_;
+
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "power '%s' is %s W",
+            $options{name},
+            $options{value}
+        )
+    );
+
+    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu', instance => $options{instance}, value => $options{value});
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("Power '%s' is %s W", $options{name}, $options{value})
+        );
+    }
+    $self->{output}->perfdata_add(
+        nlabel => 'hardware.power.watt',
+        unit => 'W',
+        instances => $options{name},
+        value => $options{value},
+        warning => $warn,
+        critical => $crit
+    );
+    $self->{components}->{psu}->{total}++;
+}
+
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psu', total => 0, skip => 0};
     return if ($self->check_filter(section => 'psu'));
-    
-    my $instance = '0';
-    my ($exit, $warn, $crit, $checked);
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
     
     check_psu($self, value => $result->{mtxrHlPowerSupplyState}, type => 'primary');
     check_psu($self, value => $result->{mtxrHlBackupPowerSupplyState}, type => 'backup');
-    
-    if (defined($result->{mtxrHlPower}) && $result->{mtxrHlPower} =~ /[0-9]+/) {
-        $self->{output}->output_add(long_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower} / 10));
 
-        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu', instance => $instance, value => $result->{mtxrHlPower} / 10);
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(
-                severity => $exit,
-                short_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower} / 10)
-            );
-        }
-        $self->{output}->perfdata_add(
-            label => 'power', unit => 'W',
-            nlabel => 'hardware.power.watt',
-            value => $result->{mtxrHlPower} / 10,
-            warning => $warn,
-            critical => $crit
+    if (defined($result->{mtxrHlPower}) && $result->{mtxrHlPower} =~ /[0-9]+/) {
+        check_power(
+            $self,
+            value => $result->{mtxrHlPower} / 100,
+            instance => 1,
+            name => 'system'
         );
-        $self->{components}->{psu}->{total}++;
+    }
+
+    foreach (keys %{$self->{results}}) {
+        next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
+        next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'dW');
+
+        $result = $self->{snmp}->map_instance(mapping => $mapping_gauge, results => $self->{results}, instance => $1);
+        check_power(
+            $self,
+            value => $result->{value} / 10,
+            instance => $1,
+            name => $result->{name}
+        );
     }
 }
 
