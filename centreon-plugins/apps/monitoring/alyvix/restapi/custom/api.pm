@@ -72,32 +72,22 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 80;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/v0/';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_status} : '';
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_status} : '';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+    if ($self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
         $self->{output}->option_exit();
     }
 
-    #if (!defined($self->{api_username}) || $self->{api_username} eq '') {
-    #    $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
-    #    $self->{output}->option_exit();
-    #}
-
-    #if (!defined($self->{api_password}) || $self->{api_password} eq '') {
-    #    $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
-    #    $self->{output}->option_exit();
-    #} 
-    
     return 0;
 }
 
@@ -110,19 +100,19 @@ sub settings {
 
 sub get_connection_info {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname} . ":" . $self->{port};
 }
 
 sub get_hostname {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname};
 }
 
 sub get_port {
     my ($self, %options) = @_;
-    
+
     return $self->{port};
 }
 
@@ -133,7 +123,7 @@ sub json_decode {
     eval {
         $decoded = JSON::XS->new->utf8->decode($options{content});
     };
-    
+
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
@@ -146,8 +136,7 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-    
-    my $content = $self->{http}->request(
+    my ($content) = $self->{http}->request(
         url_path => $self->{url_path} . $options{endpoint},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
@@ -155,7 +144,6 @@ sub request_api {
     );
 
     my $decoded = $self->json_decode(content => $content);
-
     return $decoded;
 }
 
