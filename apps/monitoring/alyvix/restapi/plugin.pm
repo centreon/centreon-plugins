@@ -32,7 +32,7 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = { 
         'list-testcases' => 'apps::monitoring::alyvix::restapi::mode::listtestcases',
-        'testcases' => 'apps::monitoring::alyvix::restapi::mode::testcases',
+        'testcases'      => 'apps::monitoring::alyvix::restapi::mode::testcases'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::alyvix::restapi::custom::api';

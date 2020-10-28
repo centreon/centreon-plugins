@@ -59,7 +59,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'cases', type => 3, cb_prefix_output => 'prefix_testcases_output', cb_long_output => 'testcase_long_output', indent_long_output => '    ', message_multiple => 'All test cases are ok',
             group => [
-                { name => 'global', type => '0' },
+                { name => 'global', type => 0 },
                 { name => 'testcases', display_long => 1, cb_prefix_output => 'prefix_testcase_output',  message_multiple => 'test cases are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
@@ -80,7 +80,7 @@ sub set_counters {
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{testcases} = [
@@ -96,7 +96,7 @@ sub set_counters {
                 output_template => 'duration: %s ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
-                ],
+                ]
             }
         }
     ];
@@ -108,7 +108,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-testcase:s'   => { name => 'filter_testcase' },
+        'filter-testcase:s' => { name => 'filter_testcase' }
     });
 
     return $self;
@@ -117,35 +117,36 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %status = (  0 => 'OK', 2 => 'FAILED' );
+    my $status = { 0 => 'OK', 2 => 'FAILED' };
     my $results = $options{custom}->request_api(endpoint => '/testcases/');
-    my $i;
     foreach (@{$results->{testcases}}) {
-        next if (defined($self->{option_results}->{filter_testcase})
+        next if (
+            defined($self->{option_results}->{filter_testcase})
             && $self->{option_results}->{filter_testcase} ne ''
-            && $_->{testcase_alias} !~ /$self->{option_results}->{filter_testcase}/ );
+            && $_->{testcase_alias} !~ /$self->{option_results}->{filter_testcase}/
+        );
 
         my $measures = $options{custom}->request_api(endpoint => '/testcases/' . $_->{testcase_alias} . '/');
-        $i = 1;
-        $self->{cases}->{$_->{testcase_alias}} = {
-                    display => $_->{testcase_alias},
-                    global => {
-                        display => $_->{testcase_alias},
-                        duration => $measures->{measures}[0]->{test_case_duration_ms},
-                        state => $status{$measures->{measures}[0]->{test_case_state}}
-                    },
-                    testcases => {}
+        $self->{cases}->{ $_->{testcase_alias} } = {
+            display => $_->{testcase_alias},
+            global => {
+                display  => $_->{testcase_alias},
+                duration => $measures->{measures}->[0]->{test_case_duration_ms},
+                state    => $status->{ $measures->{measures}->[0]->{test_case_state} }
+            },
+            testcases => {}
         };
 
-        foreach my $transaction (values $measures->{measures}){
+        my $i = 1;
+        foreach my $transaction (values %{$measures->{measures}}) {
             my $instance = $i . '_' . $transaction->{transaction_alias};
             $instance =~ s/ /_/g;
-            $self->{cases}->{$_->{testcase_alias}}->{testcases}->{$instance} = {
-                display => $instance,
-                state => $status{$transaction->{transaction_state}},
+            $self->{cases}->{ $_->{testcase_alias} }->{testcases}->{$instance} = {
+                display  => $instance,
+                state    => $status->{ $transaction->{transaction_state} },
                 duration => $transaction->{transaction_performance_ms}
             };
-        $i++;
+            $i++;
         }
     }
 }

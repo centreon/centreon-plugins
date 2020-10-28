@@ -32,7 +32,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-testcase:s'   => { name => 'filter_testcase' },
+        'filter-testcase:s' => { name => 'filter_testcase' }
     });
 
     return $self;
@@ -40,7 +40,7 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $result = $options{custom}->request_api(endpoint => 'testcases');
     return $result->{testcases};
 }
@@ -49,14 +49,14 @@ sub run {
     my ($self, %options) = @_;
 
     my $testcases = $self->manage_selection(%options);
-    foreach my $testcase (values $testcases) {
+    foreach my $testcase (@$testcases) {
         next if (defined($self->{option_results}->{filter_testcase})
             && $self->{option_results}->{filter_testcase} ne ''
-            && $testcase->{testcase_alias} !~ /$self->{option_results}->{filter_testcase}/ );
+            && $testcase->{testcase_alias} !~ /$self->{option_results}->{filter_testcase}/);
 
         $self->{output}->output_add(long_msg =>
             sprintf(
-                '[name = %s]',$testcase->{testcase_alias} 
+                '[name = %s]', $testcase->{testcase_alias}
             )
         );
     }
@@ -80,7 +80,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my $testcases = $self->manage_selection(%options);
-    foreach my $testcase (values  $testcases) {
+    foreach my $testcase (@$testcases) {
         next if (defined($self->{option_results}->{filter_case})
             && $self->{option_results}->{filter_case} ne ''
             && $testcase->{scenario} !~ /$self->{option_results}->{filter_case}/ );
