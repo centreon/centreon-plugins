@@ -30,64 +30,65 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'live-users', set => {
                 key_values => [ { name => 'live_users' } ],
-                output_template => 'live users = %s',
+                output_template => 'live users: %s',
                 perfdatas => [
-                    { label => 'live_users', value => 'live_users', template => '%s', min => 0 },
-                ],
+                    { label => 'live_users', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'http-hits', set => {
                 key_values => [ { name => 'http_hits', diff => 1 } ],
-                output_template => 'http hits = %s',
+                output_template => 'http hits: %s',
                 perfdatas => [
-                    { label => 'http_hits', value => 'http_hits', template => '%s', min => 0 },
-                ],
+                    { label => 'http_hits', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'ftp-hits', set => {
                 key_values => [ { name => 'ftp_hits', diff => 1 } ],
-                output_template => 'ftp hits = %s',
+                output_template => 'ftp hits: %s',
                 perfdatas => [
-                    { label => 'ftp_hits', value => 'ftp_hits', template => '%s', min => 0 },
-                ],
+                    { label => 'ftp_hits', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'pop3-hits', set => {
                 key_values => [ { name => 'pop3_hits', diff => 1 } ],
-                output_template => 'pop3 hits = %s',
+                output_template => 'pop3 hits: %s',
                 perfdatas => [
-                    { label => 'pop3_hits', value => 'pop3_hits', template => '%s', min => 0 },
-                ],
+                    { label => 'pop3_hits', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'imap-hits', set => {
                 key_values => [ { name => 'imap_hits', diff => 1 } ],
-                output_template => 'imap hits = %s',
+                output_template => 'imap hits: %s',
                 perfdatas => [
-                    { label => 'imap_hits', value => 'imap_hits', template => '%s', min => 0 },
-                ],
+                    { label => 'imap_hits', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'smtp-hits', set => {
                 key_values => [ { name => 'smtp_hits', diff => 1 } ],
-                output_template => 'smtp hits = %s',
+                output_template => 'smtp hits: %s',
                 perfdatas => [
-                    { label => 'smtp_hits', value => 'smtp_hits', template => '%s', min => 0 },
-                ],
+                    { label => 'smtp_hits', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub prefix_output {
     my ($self, %options) = @_;
 
-    return "Requests: ";
+    return 'Requests ';
 }
 
 sub new {
@@ -101,39 +102,53 @@ sub new {
     return $self;
 }
 
+sub add_counters {
+    my ($self, %options) = @_;
+
+    return if (!defined($options{result}->{live_users}));
+
+    $self->{global} = { %{$options{result}} };
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     if ($options{snmp}->is_snmpv1()) {
-        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
+        $self->{output}->add_option_msg(short_msg => 'Need to use SNMP v2c or v3.');
         $self->{output}->option_exit();
     }
-    
-    my $oid_liveUsers = '.1.3.6.1.4.1.21067.2.1.2.6.0';
-    my $oid_httpHits = '.1.3.6.1.4.1.21067.2.1.2.7.0';
-    my $oid_ftpHits = '.1.3.6.1.4.1.21067.2.1.2.8.0';
-    my $oid_pop3Hits = '.1.3.6.1.4.1.21067.2.1.2.9.1.0';
-    my $oid_imapHits = '.1.3.6.1.4.1.21067.2.1.2.9.2.0';
-    my $oid_smtpHits = '.1.3.6.1.4.1.21067.2.1.2.9.3.0';
-    my $result = $options{snmp}->get_leef(
-        oids => [
-            $oid_liveUsers, $oid_httpHits, $oid_ftpHits, $oid_pop3Hits,
-            $oid_imapHits, $oid_smtpHits
-        ],
+
+    my $mapping = {
+        v17 => {
+            live_users => { oid => '.1.3.6.1.4.1.21067.2.1.2.6' }, # liveUsers
+            http_hits  => { oid => '.1.3.6.1.4.1.21067.2.1.2.7' }, # httpHits
+            ftp_hits   => { oid => '.1.3.6.1.4.1.21067.2.1.2.8' }, # ftpHits
+            pop3_hits  => { oid => '.1.3.6.1.4.1.21067.2.1.2.9.1' }, # pop3Hits
+            imap_hits  => { oid => '.1.3.6.1.4.1.21067.2.1.2.9.2' }, # imapHits
+            smtp_hits  => { oid => '.1.3.6.1.4.1.21067.2.1.2.9.3' }  # smtpHits
+        },
+        v18 => {
+            live_users => { oid => '.1.3.6.1.4.1.2604.5.1.2.6' }, # sfosLiveUsersCount
+            http_hits  => { oid => '.1.3.6.1.4.1.2604.5.1.2.7' }, # sfosHTTPHits
+            ftp_hits   => { oid => '.1.3.6.1.4.1.2604.5.1.2.8' }, # sfosFTPHits
+            pop3_hits  => { oid => '.1.3.6.1.4.1.2604.5.1.2.9.1' }, # sfosPOP3Hits
+            imap_hits  => { oid => '.1.3.6.1.4.1.2604.5.1.2.9.2' }, # sfosImapHits
+            smtp_hits  => { oid => '.1.3.6.1.4.1.2604.5.1.2.9.3' }  # sfosSmtpHits
+        }
+    };
+
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%{$mapping->{v17}}), values(%{$mapping->{v18}})) ],
         nothing_quit => 1
     );
 
-    $self->{cache_name} = "cyberoam_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+    my $result = $options{snmp}->map_instance(mapping => $mapping->{v17}, results => $snmp_result, instance => 0);
+    $self->add_counters(result => $result);
+    $result = $options{snmp}->map_instance(mapping => $mapping->{v18}, results => $snmp_result, instance => 0);
+    $self->add_counters(result => $result);
 
-    $self->{global} = {
-        live_users => $result->{$oid_liveUsers},
-        http_hits => $result->{$oid_httpHits},
-        ftp_hits => $result->{$oid_ftpHits},
-        pop3_hits => $result->{$oid_pop3Hits},
-        imap_hits => $result->{$oid_imapHits}, 
-        smtp_hits => $result->{$oid_smtpHits}
-    };
+    $self->{cache_name} = 'cyberoam_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -151,14 +166,9 @@ Check request statistics.
 Only display some counters (regexp can be used).
 Example: --filter-counters='http-hits'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: live-users, http-hits, ftp-hits, pop3-hits, imap-hits, smtp-hits.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: live-users, http-hits, ftp-hits, pop3-hits, imap-hits, smtp-hits.
 
 =back
