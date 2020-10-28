@@ -203,7 +203,7 @@ sub get_auth_token {
     }
 
     $self->{access_token} = $access_token;
-    $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{acess_token});
+    $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
 }
 
 sub request_api {
