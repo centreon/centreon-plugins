@@ -173,7 +173,7 @@ Alyvix Rest API custom mode.
 
 =head1 REST API OPTIONS
 
-Alyvix Rest API.
+Alyvix Server Rest API.
 
 =over 8
 
