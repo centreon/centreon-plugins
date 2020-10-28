@@ -67,19 +67,22 @@ sub check {
     return if ($self->check_filter(section => 'fan'));
 
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
-    if (defined($result->{mtxrHlFanSpeed1}) && $result->{mtxrHlFanSpeed1} =~ /[0-9]+/) {
-        check_fan($self, value => $result->{mtxrHlFanSpeed1}, instance => 1);
-    }
-    if (defined($result->{mtxrHlFanSpeed2}) && $result->{mtxrHlFanSpeed2} =~ /[0-9]+/) {
-        check_fan($self, value => $result->{mtxrHlFanSpeed2}, instance => 2);
-    }
 
+    my $gauge_ok = 0;
     foreach (keys %{$self->{results}}) {
         next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
         next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'rpm');
 
         $result = $self->{snmp}->map_instance(mapping => $mapping_gauge, results => $self->{results}, instance => $1);
         check_fan($self, value => $result->{value}, instance => $result->{name});
+        $gauge_ok = 1;
+    }
+
+    if ($gauge_ok == 0 && defined($result->{mtxrHlFanSpeed1}) && $result->{mtxrHlFanSpeed1} =~ /[0-9]+/) {
+        check_fan($self, value => $result->{mtxrHlFanSpeed1}, instance => 1);
+    }
+    if ($gauge_ok == 0 && defined($result->{mtxrHlFanSpeed2}) && $result->{mtxrHlFanSpeed2} =~ /[0-9]+/) {
+        check_fan($self, value => $result->{mtxrHlFanSpeed2}, instance => 2);
     }
 }
 
