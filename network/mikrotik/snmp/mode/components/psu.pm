@@ -98,15 +98,7 @@ sub check {
     check_psu($self, value => $result->{mtxrHlPowerSupplyState}, type => 'primary');
     check_psu($self, value => $result->{mtxrHlBackupPowerSupplyState}, type => 'backup');
 
-    if (defined($result->{mtxrHlPower}) && $result->{mtxrHlPower} =~ /[0-9]+/) {
-        check_power(
-            $self,
-            value => $result->{mtxrHlPower} / 100,
-            instance => 1,
-            name => 'system'
-        );
-    }
-
+    my $gauge_ok = 0;
     foreach (keys %{$self->{results}}) {
         next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
         next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'dW');
@@ -117,6 +109,16 @@ sub check {
             value => $result->{value} / 10,
             instance => $1,
             name => $result->{name}
+        );
+        $gauge_ok = 1;
+    }
+
+    if ($gauge_ok == 0 && defined($result->{mtxrHlPower}) && $result->{mtxrHlPower} =~ /[0-9]+/) {
+        check_power(
+            $self,
+            value => $result->{mtxrHlPower} / 100,
+            instance => 1,
+            name => 'system'
         );
     }
 }

@@ -68,15 +68,7 @@ sub check {
 
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
 
-    if (defined($result->{mtxrHlCurrent}) && $result->{mtxrHlCurrent} =~ /[0-9]+/) {
-        check_current(
-            $self,
-            value => $result->{mtxrHlCurrent} / 100,
-            instance => 1,
-            name => 'system'
-        );
-    }
-
+    my $gauge_ok = 0;
     foreach (keys %{$self->{results}}) {
         next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
         next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'dA');
@@ -87,6 +79,16 @@ sub check {
             value => $result->{value} / 10,
             instance => $1,
             name => $result->{name}
+        );
+        $gauge_ok = 1;
+    }
+
+    if ($gauge_ok == 0 && defined($result->{mtxrHlCurrent}) && $result->{mtxrHlCurrent} =~ /[0-9]+/) {
+        check_current(
+            $self,
+            value => $result->{mtxrHlCurrent} / 100,
+            instance => 1,
+            name => 'system'
         );
     }
 }

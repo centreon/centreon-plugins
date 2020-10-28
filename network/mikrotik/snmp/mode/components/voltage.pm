@@ -67,15 +67,8 @@ sub check {
     return if ($self->check_filter(section => 'voltage'));
 
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
-    if (defined($result->{mtxrHlVoltage}) && $result->{mtxrHlVoltage} =~ /[0-9]+/) {
-        check_voltage(
-            $self,
-            value => $result->{mtxrHlVoltage} / 10,
-            instance => 1,
-            name => 'system'
-        );
-    }
 
+    my $gauge_ok = 0;
     foreach (keys %{$self->{results}}) {
         next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
         next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'dV');
@@ -86,6 +79,16 @@ sub check {
             value => $result->{value} / 10,
             instance => $1,
             name => $result->{name}
+        );
+        $gauge_ok = 1;
+    }
+
+    if ($gauge_ok == 0 && defined($result->{mtxrHlVoltage}) && $result->{mtxrHlVoltage} =~ /[0-9]+/) {
+        check_voltage(
+            $self,
+            value => $result->{mtxrHlVoltage} / 10,
+            instance => 1,
+            name => 'system'
         );
     }
 }

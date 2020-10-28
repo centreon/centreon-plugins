@@ -72,25 +72,7 @@ sub check {
 
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
 
-    if (defined($result->{mtxrHlTemperature}) && $result->{mtxrHlTemperature} =~ /[0-9]+/) {
-        check_temperature(
-            $self,
-            value => $result->{mtxrHlTemperature} / 10,
-            instance => 1,
-            name => 'system',
-            description => 'system temperature (SoC or PCB)'
-        );
-    }
-    if (defined($result->{mtxrHlProcessorTemperature}) && $result->{mtxrHlProcessorTemperature} =~ /[0-9]+/) {
-        check_temperature(
-            $self,
-            value => $result->{mtxrHlProcessorTemperature} / 10,
-            instance => 2,
-            name => 'processor',
-            description => 'processor temperature'
-        );
-    }
-
+    my $gauge_ok = 0;
     foreach (keys %{$self->{results}}) {
         next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
         next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'celsius');
@@ -102,6 +84,26 @@ sub check {
             instance => $1,
             name => $result->{name},
             description => "sensor temperature '$result->{name}'"
+        );
+        $gauge_ok = 1;
+    }
+
+    if ($gauge_ok == 0 && defined($result->{mtxrHlTemperature}) && $result->{mtxrHlTemperature} =~ /[0-9]+/) {
+        check_temperature(
+            $self,
+            value => $result->{mtxrHlTemperature} / 10,
+            instance => 1,
+            name => 'system',
+            description => 'system temperature (SoC or PCB)'
+        );
+    }
+    if ($gauge_ok == 0 && defined($result->{mtxrHlProcessorTemperature}) && $result->{mtxrHlProcessorTemperature} =~ /[0-9]+/) {
+        check_temperature(
+            $self,
+            value => $result->{mtxrHlProcessorTemperature} / 10,
+            instance => 2,
+            name => 'processor',
+            description => 'processor temperature'
         );
     }
 }
