@@ -88,15 +88,15 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-	#if (!defined($self->{api_username}) || $self->{api_username} eq '') {
-	#    $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
-	#    $self->{output}->option_exit();
-	#}
+    #if (!defined($self->{api_username}) || $self->{api_username} eq '') {
+    #    $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
+    #    $self->{output}->option_exit();
+    #}
 
-	#if (!defined($self->{api_password}) || $self->{api_password} eq '') {
-	#    $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
-	#    $self->{output}->option_exit();
-	#} 
+    #if (!defined($self->{api_password}) || $self->{api_password} eq '') {
+    #    $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
+    #    $self->{output}->option_exit();
+    #} 
     
     return 0;
 }
@@ -134,7 +134,7 @@ sub json_decode {
         $decoded = JSON::XS->new->utf8->decode($options{content});
     };
     
-	if ($@) {
+    if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
@@ -147,14 +147,14 @@ sub request_api {
 
     $self->settings();
     
-	my $content = $self->{http}->request(
+    my $content = $self->{http}->request(
         url_path => $self->{url_path} . $options{endpoint},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
     );
 
-	my $decoded = $self->json_decode(content => $content);
+    my $decoded = $self->json_decode(content => $content);
 
     return $decoded;
 }
@@ -183,7 +183,7 @@ Alyvix Server hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/vO/')
+API url path (Default: '/v0/')
 
 =item B<--port>
 

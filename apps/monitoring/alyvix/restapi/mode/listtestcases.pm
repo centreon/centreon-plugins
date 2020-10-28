@@ -41,22 +41,23 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
     
-	my $result = $options{custom}->request_api(endpoint => 'testcases');
-	return $result->{testcases};
+    my $result = $options{custom}->request_api(endpoint => 'testcases');
+    return $result->{testcases};
 }
 
 sub run {
-	my ($self, %options) = @_;
-	my $testcases = $self->manage_selection(%options);
-	foreach my $testcase (values $testcases) {
+    my ($self, %options) = @_;
+
+    my $testcases = $self->manage_selection(%options);
+    foreach my $testcase (values $testcases) {
         next if (defined($self->{option_results}->{filter_testcase})
             && $self->{option_results}->{filter_testcase} ne ''
             && $testcase->{testcase_alias} !~ /$self->{option_results}->{filter_testcase}/ );
 
-		$self->{output}->output_add(long_msg =>
+        $self->{output}->output_add(long_msg =>
             sprintf(
                 '[name = %s]',$testcase->{testcase_alias} 
- 			)
+            )
         );
     }
 
