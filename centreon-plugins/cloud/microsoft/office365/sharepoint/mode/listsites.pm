@@ -47,7 +47,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->office_get_sharepoint_site_usage();
+    my $results = $options{custom}->office_get_sharepoint_site_usage(param => "period='D7'");
 
     foreach my $site (@{$results}) {
         if (defined($self->{option_results}->{filter_url}) && $self->{option_results}->{filter_url} ne '' &&
