@@ -86,7 +86,7 @@ sub check {
     if ($gauge_ok == 0 && defined($result->{mtxrHlCurrent}) && $result->{mtxrHlCurrent} =~ /[0-9]+/) {
         check_current(
             $self,
-            value => $result->{mtxrHlCurrent} / 100,
+            value => $result->{mtxrHlCurrent} / 1000,
             instance => 1,
             name => 'system'
         );
