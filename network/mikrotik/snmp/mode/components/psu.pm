@@ -116,7 +116,7 @@ sub check {
     if ($gauge_ok == 0 && defined($result->{mtxrHlPower}) && $result->{mtxrHlPower} =~ /[0-9]+/) {
         check_power(
             $self,
-            value => $result->{mtxrHlPower} / 100,
+            value => $result->{mtxrHlPower} / 10,
             instance => 1,
             name => 'system'
         );
