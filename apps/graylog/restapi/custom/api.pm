@@ -197,7 +197,7 @@ sub authenticate {
 
     if ($has_cache_file == 0 || !defined($session_token) || $session_expiration < time()) {
         my $query_form_post = '{"username":"' . $self->{api_username} . '","password":"' . $self->{api_password} . '","host":"' . $self->{hostname} .'"}';
-   	    my $content = $self->{http}->request(
+        my $content = $self->{http}->request(
             url_path => $self->{url_path} . 'system/sessions/',
             credentials => 1,
             basic => 1,
