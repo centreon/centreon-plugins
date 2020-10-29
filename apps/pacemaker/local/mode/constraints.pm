@@ -95,7 +95,7 @@ sub run {
     my ($stdout) = $options{custom}->execute_command(
         command => 'crm_resource',
         command_path => '/usr/sbin',
-        command_options => '--constraints -r'
+        command_options => '--constraints -r ' . $self->{option_results}->{resource}
     );
 
     $self->parse_output(output => $stdout);
@@ -113,7 +113,7 @@ __END__
 Check that a resource has no location constraint (migrate without unmigrate)
 Can be executed from any cluster node.
 
-Command used: /usr/sbin/crm_resource --constraints -r
+Command used: /usr/sbin/crm_resource --constraints -r resource_name
 
 =over 8
 
