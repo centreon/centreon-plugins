@@ -341,39 +341,44 @@ sub manage_selection {
             device_health => {}
         };
 
-        my $total = centreon::plugins::misc::convert_bytes(
-            value => $device->{Hardware}->{memory},
-            pattern => '([0-9\.]+)(.*)$'
-        );
-        my $free = centreon::plugins::misc::convert_bytes(
-            value => $device->{Hardware}->{freeMemory},
-            pattern => '([0-9\.]+)(.*)$'
-        );
-        $self->{devices}->{ $device->{name} }->{device_memory} = {
-            display => $device->{name},
-            total => $total,
-            free => $free,
-            used => $total - $free,
-            prct_used => 100 - ($free * 100 / $total),
-            prct_free => ($free * 100 / $total)
-        };
+        my ($total, $free);
+        if (defined($device->{Hardware}->{memory})) {
+            $total = centreon::plugins::misc::convert_bytes(
+                value => $device->{Hardware}->{memory},
+                pattern => '([0-9\.]+)(.*)$'
+            );
+            $free = centreon::plugins::misc::convert_bytes(
+                value => $device->{Hardware}->{freeMemory},
+                pattern => '([0-9\.]+)(.*)$'
+            );
+            $self->{devices}->{ $device->{name} }->{device_memory} = {
+                display => $device->{name},
+                total => $total,
+                free => $free,
+                used => $total - $free,
+                prct_used => 100 - ($free * 100 / $total),
+                prct_free => ($free * 100 / $total)
+            };
+        }
 
-        $total = centreon::plugins::misc::convert_bytes(
-            value => $device->{Hardware}->{diskSize},
-            pattern => '([0-9\.]+)(.*)$'
-        );
-        $free = centreon::plugins::misc::convert_bytes(
-            value => $device->{Hardware}->{freeDisk},
-            pattern => '([0-9\.]+)(.*)$'
-        );
-        $self->{devices}->{ $device->{name} }->{device_disk} = {
-            display => $device->{name},
-            total => $total,
-            free => $free,
-            used => $total - $free,
-            prct_used => 100 - ($free * 100 / $total),
-            prct_free => ($free * 100 / $total)
-        };
+        if (defined($device->{Hardware}->{diskSize})) {
+            $total = centreon::plugins::misc::convert_bytes(
+                value => $device->{Hardware}->{diskSize},
+                pattern => '([0-9\.]+)(.*)$'
+            );
+            $free = centreon::plugins::misc::convert_bytes(
+                value => $device->{Hardware}->{freeDisk},
+                pattern => '([0-9\.]+)(.*)$'
+            );
+            $self->{devices}->{ $device->{name} }->{device_disk} = {
+                display => $device->{name},
+                total => $total,
+                free => $free,
+                used => $total - $free,
+                prct_used => 100 - ($free * 100 / $total),
+                prct_free => ($free * 100 / $total)
+            };
+        }
 
         foreach (@{$device->{alarmSummary}->{rows}}) {
             $self->{devices}->{ $device->{name} }->{device_alarms}->{ lc($_->{firstColumnValue}) } = $_->{columnValues}->[0];
