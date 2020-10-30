@@ -138,7 +138,7 @@ sub manage_selection {
         };
 
         my $i = 1;
-        foreach my $transaction (values %{$measures->{measures}}) {
+        foreach my $transaction (@{$measures->{measures}}) {
             my $instance = $i . '_' . $transaction->{transaction_alias};
             $instance =~ s/ /_/g;
             $self->{cases}->{ $_->{testcase_alias} }->{testcases}->{$instance} = {
