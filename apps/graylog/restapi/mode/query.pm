@@ -65,6 +65,11 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Please set --query option.');
         $self->{output}->option_exit();
     }
+    
+    if (defined($self->{option_results}->{timeframe}) && $self->{option_results}->{timeframe} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Please set --timeframe value.');
+        $self->{output}->option_exit();
+    }
 }
 
 sub manage_selection {
