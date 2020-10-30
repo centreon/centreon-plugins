@@ -186,7 +186,7 @@ sub get_auth_token {
 
         my ($content) = $self->{http}->request(
             method => 'POST',
-            url_path => $self->{url_path} . '/auth/authenticate-user',
+            url_path => $self->{url_path} . '/Login',
             query_form_post => $encoded,
             warning_status => '', unknown_status => '', critical_status => ''
         );

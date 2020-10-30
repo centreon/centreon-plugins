@@ -66,7 +66,7 @@ sub custom_long_calc {
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
 
-    return -11 if ($self->{result_values}->{status} !~ /running|queued/i);
+    return -11 if ($self->{result_values}->{status} !~ /running|queued|waiting/i);
 
     return 0;
 }
@@ -150,11 +150,9 @@ sub manage_selection {
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     $last_timestamp = time() - 300 if (!defined($last_timestamp));
 
+    # Also we get Pending/Waiting/Running jobs with that
     my $results = $options{custom}->request(
-        endpoint => '/Job?completedJobLookupTime=' . (time() . $last_timestamp)
-    );
-    my $results2 = $options{custom}->request(
-        endpoint => '/Job?jobCategory=Active'
+        endpoint => '/Job?completedJobLookupTime=' . (time() - $last_timestamp)
     );
 
     $self->{global} = { total => 0 };
@@ -162,7 +160,7 @@ sub manage_selection {
 
     my $jobs_checked = {};
     my $current_time = time();
-    foreach ((@{$results->{jobs}}, @{$results2->{jobs}})) {
+    foreach (@{$results->{jobs}}) {
         my $job = $_->{jobSummary};
         next if (defined($jobs_checked->{ $job->{jobId} }));
         $jobs_checked->{ $job->{jobId} } = 1;
