@@ -24,30 +24,35 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'System notifications ';
+}
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'notifications-total', nlabel => 'graylog.system.notifications.total.count', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'Total: %s',
+                output_template => 'total: %s',
                 perfdatas => [
-                    { template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'notifications-normal', nlabel => 'graylog.system.notifications.normal.count', set => {
                 key_values => [ { name => 'normal' } ],
                 output_template => 'normal: %s',
                 perfdatas => [
-                    { template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'notifications-urgent', nlabel => 'graylog.system.notifications.urgent.count', set => {
@@ -55,9 +60,9 @@ sub set_counters {
                 output_template => 'urgent: %s',
                 perfdatas => [
                     { template => '%d', min => 0 },
-                ],
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -67,37 +72,30 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-severity:s'   => { name => 'filter_severity' },
-        'filter-node:s'       => { name => 'filter_node' },
+        'filter-severity:s' => { name => 'filter_severity' },
+        'filter-node:s'     => { name => 'filter_node' }
     });
 
     return $self;
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'System notifications ';
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $result = $options{custom}->request_api(endpoint => 'system/notifications');
-    $self->{global} = { normal => 0, urgent => 0 };
-    $self->{notifications} = {};
 
-    foreach my $notification (values $result->{notifications}) {
+    $self->{global} = { normal => 0, urgent => 0 };
+    foreach my $notification (@{$result->{notifications}}) {
     	next if (defined($self->{option_results}->{filter_severity})
             && $self->{option_results}->{filter_severity} ne ''
-            && $notification->{severity} !~ /$self->{option_results}->{filter_severity}/ );
+            && $notification->{severity} !~ /$self->{option_results}->{filter_severity}/);
 
         next if (defined($self->{option_results}->{filter_node})
             && $self->{option_results}->{filter_node} ne ''
-            && $notification->{node_id} !~ /$self->{option_results}->{filter_node}/ );
+            && $notification->{node_id} !~ /$self->{option_results}->{filter_node}/);
 
-    $self->{global}->{normal}++ if ($notification->{severity} =~ m/normal/);
-    $self->{global}->{urgent}++ if ($notification->{severity} =~ m/urgent/);	
+        $self->{global}->{normal}++ if ($notification->{severity} =~ m/normal/);
+        $self->{global}->{urgent}++ if ($notification->{severity} =~ m/urgent/);	
     }
 
     $self->{global}->{total} = $self->{global}->{normal} + $self->{global}->{urgent};
@@ -113,7 +111,7 @@ Check Graylog system notifications using Graylog API
 
 Example:
 perl centreon_plugins.pl --plugin=apps::graylog::restapi::plugin
---mode=notifications --hostname=10.0.0.1 --username='username' --password='password' --credentials
+--mode=notifications --hostname=10.0.0.1 --api-username='username' --api-password='password' 
 
 More information on https://docs.graylog.org/en/<version>/pages/configuration/rest_api.html
 

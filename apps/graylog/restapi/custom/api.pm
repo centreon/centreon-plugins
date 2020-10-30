@@ -24,9 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use DateTime;
 use JSON::XS;
-use URI::Encode;
 use Digest::MD5 qw(md5_hex);
 
 sub new {
@@ -78,36 +76,32 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 9000;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
+    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
     $self->{requested_by} = (defined($self->{option_results}->{requested_by})) ? $self->{option_results}->{requested_by} : 'cli';
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_status} : '';
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
-
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+    if ($self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
         $self->{output}->option_exit();
     }
-
-    if (!defined($self->{api_username}) || $self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
+    if ($self->{api_username} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-username option.');
         $self->{output}->option_exit();
     }
-
-    if (!defined($self->{api_password}) || $self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
+    if ($self->{api_password} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-password option.');
         $self->{output}->option_exit();
     } 
 
     $self->{cache}->check_options(option_results => $self->{option_results});
-
     return 0;
 }
 
@@ -132,13 +126,13 @@ sub settings {
 
 sub get_connection_info {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname} . ":" . $self->{port};
 }
 
 sub get_hostname {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname};
 }
 
@@ -155,7 +149,7 @@ sub json_decode {
     eval {
         $decoded = JSON::XS->new->utf8->decode($options{content});
     };
-    
+
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
@@ -164,26 +158,10 @@ sub json_decode {
     return $decoded;
 }
 
-sub epoch_timestamp {
-    my ($self, %options) = @_;
-    
-    my ($year, $month, $day, $hour, $min, $sec) = split(/[-:^.T]/ , $options{session_expiration});
-    my $session_expiration = DateTime->new(
-        year => $year,
-        month => $month,
-        day => $day,
-        hour => $hour,
-        minute => $min,
-        second => $sec,
-    );
-
-    return $session_expiration->epoch();
-}
-
 sub clean_session_token {
     my ($self, %options) = @_;
 
-    my $datas = { valid_until => time() };
+    my $datas = {};
     $options{statefile}->write(data => $datas);
     $self->{session_token} = undef;
 }
@@ -193,21 +171,30 @@ sub authenticate {
    
     my $has_cache_file = $options{statefile}->read(statefile => 'graylog_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $session_token = $options{statefile}->get(name => 'session_token');
-    my $session_expiration = $options{statefile}->get(name => 'valid_until');
 
-    if ($has_cache_file == 0 || !defined($session_token) || $session_expiration < time()) {
-        my $query_form_post = '{"username":"' . $self->{api_username} . '","password":"' . $self->{api_password} . '","host":"' . $self->{hostname} .'"}';
-        my $content = $self->{http}->request(
-            url_path => $self->{url_path} . 'system/sessions/',
-            credentials => 1,
-            basic => 1,
+    if ($has_cache_file == 0 || !defined($session_token)) {
+        my $json_request = {
             username => $self->{api_username},
             password => $self->{api_password},
+            host => $self->{hostname}
+        };
+
+        my $encoded;
+        eval {
+            $encoded = encode_json($json_request);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
+            $self->{output}->option_exit();
+        }
+
+        my ($content) = $self->{http}->request(
             method => 'POST',
-            query_form_post => $query_form_post, 
+            url_path => $self->{url_path} . 'system/sessions/',
+            query_form_post => $encoded, 
             warning_status => '',
             unknown_status => '',
-            critical_status => '',
+            critical_status => ''
         );
 
         if ($self->{http}->get_code() != 200) {
@@ -223,9 +210,8 @@ sub authenticate {
         }
        
         $session_token = $decoded->{session_id};
-        $session_expiration = $self->epoch_timestamp(session_expiration => $decoded->{valid_until});
 
-        my $datas = { valid_until => $session_expiration, session_token => $session_token };
+        my $datas = { session_token => $session_token };
         $options{statefile}->write(data => $datas);
     }
 
@@ -235,9 +221,9 @@ sub authenticate {
 sub query_relative {
     my ($self, %options) = @_;
 
-    my $uri = URI::Encode->new({encode_reserved => 1});
     my $content = $self->request_api(
-        endpoint => 'search/universal/relative?query=' . $uri->encode($options{query}) . '&range=' . $options{timeframe}
+        endpoint => 'search/universal/relative',
+        get_param => ['query=' . $options{query}, 'range=' . $options{timeframe}]
     );
 
     return $content;
@@ -253,36 +239,36 @@ sub request_api {
     
     my $content = $self->{http}->request(
         url_path => $self->{url_path} . $options{endpoint},
+        get_param => $options{get_param},
         username => $self->{session_token},
-        password => "session",
+        password => 'session',
         credentials => 1,
         basic => 1,
-        unknown_status => $self->{unknown_http_status},
-        warning_status => $self->{warning_http_status},
-        critical_status => $self->{critical_http_status}
+        warning_status => '',
+        unknown_status => '',
+        critical_status => ''
     );
 
-    my $decoded = $self->json_decode(content => $content);
-
-    if (!defined($decoded)) {   
+    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->clean_session_token(statefile => $self->{cache});
         $self->authenticate(statefile => $self->{cache});
         $content = $self->{http}->request(
             url_path => $self->{url_path} . $options{endpoint},
+            get_param => $options{get_param},
             username => $self->{session_token},
-            password => "session",
+            password => 'session',
             credentials => 1,
             basic => 1,
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status}
         );
+    }
 
-        $decoded = $self->json_decode(content => $content);
-        if (!defined($decoded)) {
-            $self->{output}->add_option_msg(short_msg => 'error while retrieving data (add --debug option for detailed message)');
-            $self->{output}->option_exit();
-        }
+    my $decoded = $self->json_decode(content => $content);
+    if (!defined($decoded)) {
+        $self->{output}->add_option_msg(short_msg => 'error while retrieving data (add --debug option for detailed message)');
+        $self->{output}->option_exit();
     }
 
     return $decoded;

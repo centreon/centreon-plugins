@@ -32,7 +32,7 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = { 
         query         => 'apps::graylog::restapi::mode::query',
-        notifications => 'apps::graylog::restapi::mode::notifications',
+        notifications => 'apps::graylog::restapi::mode::notifications'
     };
 
     $self->{custom_modes}->{api} = 'apps::graylog::restapi::custom::api';

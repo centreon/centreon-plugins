@@ -29,19 +29,18 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'query-matches', nlabel => 'graylog.query.match.count', set => {
                 key_values => [ { name => 'query_matches' } ],
-                output_template => 'current queue messages : %s',
+                output_template => 'current queue messages: %s',
                 perfdatas => [
-                    { label => 'query_match', value => 'query_matches', template => '%d',
-                      min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -51,11 +50,21 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "query:s"       => { name => 'query' },
-        "timeframe:s"   => { name => 'timeframe', default => '300'}
+        'query:s'     => { name => 'query' },
+        'timeframe:s' => { name => 'timeframe', default => 300 }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{query}) || $self->{option_results}->{query} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Please set --query option.');
+        $self->{output}->option_exit();
+    }
 }
 
 sub manage_selection {
@@ -81,7 +90,7 @@ Perform Lucene queries against Graylog API
 
 Example:
 perl centreon_plugins.pl --plugin=apps::graylog::restapi::plugin 
---mode=query --hostname=10.0.0.1 --username='username' --password='password' --credentials --query='my query'
+--mode=query --hostname=10.0.0.1 --api-username='username' --api-password='password' --query='my query'
 
 More information on https://docs.graylog.org/en/<version>/pages/configuration/rest_api.html
 
