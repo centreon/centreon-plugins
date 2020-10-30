@@ -94,8 +94,8 @@ sub manage_selection {
             && $self->{option_results}->{filter_node} ne ''
             && $notification->{node_id} !~ /$self->{option_results}->{filter_node}/);
 
-        $self->{global}->{normal}++ if ($notification->{severity} =~ m/normal/);
-        $self->{global}->{urgent}++ if ($notification->{severity} =~ m/urgent/);	
+        $self->{global}->{normal}++ if ($notification->{severity} =~ /normal/);
+        $self->{global}->{urgent}++ if ($notification->{severity} =~ /urgent/);	
     }
 
     $self->{global}->{total} = $self->{global}->{normal} + $self->{global}->{urgent};
