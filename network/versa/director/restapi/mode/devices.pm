@@ -347,7 +347,7 @@ sub manage_selection {
                 value => $device->{Hardware}->{memory},
                 pattern => '([0-9\.]+)(.*)$'
             );
-            my $free = centreon::plugins::misc::convert_bytes(
+            $free = centreon::plugins::misc::convert_bytes(
                 value => $device->{Hardware}->{freeMemory},
                 pattern => '([0-9\.]+)(.*)$'
             );
