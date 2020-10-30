@@ -78,7 +78,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/webconsole/api/';
+    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/webconsole/api';
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
@@ -216,16 +216,6 @@ sub get_auth_token {
 sub request_internal {
     my ($self, %options) = @_;
 
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", '/home/qgarnier/clients/plugins/commvault/Alert.txt.pretty') {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     $self->settings();
     if (!defined($self->{access_token})) {
         $self->get_auth_token(statefile => $self->{cache});
@@ -252,11 +242,9 @@ sub request_internal {
             critical_status => ''
         );
     }
-=cut
 
     my $decoded = $self->json_decode(content => $content);
 
-=pod
     if (!defined($decoded)) {
         $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
         $self->{output}->option_exit();
@@ -265,9 +253,16 @@ sub request_internal {
         $self->{output}->add_option_msg(short_msg => 'api request error');
         $self->{output}->option_exit();
     }
-=cut
 
     return $decoded;
+}
+
+sub request {
+    my ($self, %options) = @_;
+
+    return $self->request_internal(
+        endpoint => $options{endpoint}
+    );
 }
 
 sub request_paging {

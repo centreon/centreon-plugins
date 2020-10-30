@@ -35,6 +35,7 @@ sub new {
     $self->{modes} = {
         'alerts'        => 'apps::backup::commvault::commserve::restapi::mode::alerts',
         'jobs'          => 'apps::backup::commvault::commserve::restapi::mode::jobs',
+        #'media-agents'  => 'apps::backup::commvault::commserve::restapi::mode::mediaagents',
         'storage-pools' => 'apps::backup::commvault::commserve::restapi::mode::storagepools'
     };
 
