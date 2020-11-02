@@ -20,11 +20,10 @@
 
 package apps::monitoring::alyvix::restapi::mode::listtestcases;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub new {
     my ($class, %options) = @_;
@@ -36,6 +35,11 @@ sub new {
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
 }
 
 sub manage_selection {
@@ -81,10 +85,11 @@ sub disco_show {
 
     my $testcases = $self->manage_selection(%options);
     foreach my $testcase (@$testcases) {
-        next if (defined($self->{option_results}->{filter_case})
-            && $self->{option_results}->{filter_case} ne ''
-            && $testcase->{scenario} !~ /$self->{option_results}->{filter_case}/ );
-        $self->{output}->add_disco_entry(name => $testcases->{testcase_alias});
+        next if (defined($self->{option_results}->{filter_testcase})
+            && $self->{option_results}->{filter_testcase} ne ''
+            && $testcase->{testcase_alias} !~ /$self->{option_results}->{filter_testcase}/ );
+
+        $self->{output}->add_disco_entry(name => $testcase->{testcase_alias});
     }
 }
 
