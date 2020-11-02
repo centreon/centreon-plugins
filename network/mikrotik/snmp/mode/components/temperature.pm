@@ -43,7 +43,7 @@ sub check_temperature {
     );
 
     my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $options{instance}, value => $options{value});
-    if ($options{value} == -2730) { # RouterOS returns this when the SNMP agent hangs...
+    if ($options{value} == -273) { # RouterOS returns this when the SNMP agent hangs...
         $exit = 'UNKNOWN';
     }
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -83,7 +83,7 @@ sub check {
             value => $result->{value},
             instance => $1,
             name => $result->{name},
-            description => "sensor temperature '$result->{name}'"
+            description => "temperature '$result->{name}'"
         );
         $gauge_ok = 1;
     }
