@@ -18,12 +18,6 @@ stage('Source') {
 
 try {
   stage('Package') {
-    parallel 'centos6': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh './centreon-build/jobs/vmware/vmware-package.sh centos6'
-      }
-    },
     'centos7': {
       node {
         sh 'setup_centreon_build.sh'
