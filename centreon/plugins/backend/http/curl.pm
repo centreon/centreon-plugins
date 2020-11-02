@@ -301,7 +301,7 @@ sub request {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_VERBOSE'), parameter => 1);
     }
 
-    if (defined($options{request}->{timeout})) {
+    if (defined($options{request}->{timeout}) && $options{request}->{timeout} =~ /\d/) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_TIMEOUT'), parameter => $options{request}->{timeout});
     }
     if (defined($options{request}->{cookies_file})) {
