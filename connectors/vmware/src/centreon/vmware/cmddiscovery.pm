@@ -153,6 +153,7 @@ sub run {
 
                 foreach my $vm (@{$vms}) {
                     next if ($vm->{'config.template'} eq 'true');
+                    next if (!defined($vm{uuid}) || $vm{uuid} eq '');
                     my %vm;
 
                     $vm{type} = 'vm';
