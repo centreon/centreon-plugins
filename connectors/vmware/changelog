@@ -1,3 +1,7 @@
+2020-11-02 Quentin Garnier <qgarnier@centreon.com> - 3.2.0
+ * Enhancement: add 'net-vm'
+ * Enhancement: add 'hosts' attached to datastores for 'datastore-usage'
+
 2020-04-06 Quentin Garnier <qgarnier@centreon.com> - 3.1.2
  * Enhancement: add drs and das config enable 'cluster-status'
  * Enhancement: remove carriage return from vm annotation in discovery
