@@ -49,7 +49,10 @@ sub set_system {
 sub snmp_execute {
     my ($self, %options) = @_;
     
-    my $oid_mtxrHealth = '.1.3.6.1.4.1.14988.1.1.3';
+    my $oid_mtxrHealth = '.1.3.6.1.4.1.14988.1.1.3.100.1';
+    if (defined($self->{option_results}->{legacy})) {
+        $oid_mtxrHealth = '.1.3.6.1.4.1.14988.1.1.3';
+    }
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_table(oid => $oid_mtxrHealth);
 }
@@ -60,6 +63,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
+        'legacy' => { name => 'legacy' }
     });
 
     return $self;
@@ -74,6 +78,10 @@ __END__
 Check hardware.
 
 =over 8
+
+=item B<--legacy>
+
+Look for legacy (prior ro RouterOS 6.47) OIDs.
 
 =item B<--component>
 
