@@ -222,15 +222,15 @@ __END__
 Check Amazon SES sending activity.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::ses::plugin --custommode=awscli --mode=emails --region='eu-west-1' --dimension='SESDimension=ses-1234abcd'
---dimension='ses-5678-efgh'
+perl centreon_plugins.pl --plugin=cloud::aws::ses::plugin --custommode=awscli --mode=emails --region='eu-west-1' --dimension='DimensionName1=ses-1234abcd' --dimension='DimensionName2=ses-5678efgh'
 See 'https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html' for more information.
 
 =over 8
 
 =item B<--dimension>
 
-Set SES dimensions (Can be multiple).
+Set SES dimensions (Can be multiple). Syntax: 
+--dimension='DimensionName1=Value1' --dimension='DimensionName2=Value2'.
 
 =item B<--warning-emails-*>
 
