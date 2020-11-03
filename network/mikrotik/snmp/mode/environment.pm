@@ -32,18 +32,14 @@ sub set_system {
     
     $self->{cb_hook2} = 'snmp_execute';
      $self->{thresholds} = {
-        'psu.primary' => [
-            ['true', 'OK'],
-            ['false', 'CRITICAL']
-        ],
-        'psu.backup' => [
-            ['true', 'OK'],
-            ['false', 'CRITICAL']
+        'status' => [
+            ['not ok', 'CRITICAL'],
+            ['ok', 'OK']
         ]
     };
 
     $self->{components_path} = 'network::mikrotik::snmp::mode::components';
-    $self->{components_module} = ['current', 'fan', 'power', 'temperature', 'voltage'];
+    $self->{components_module} = ['current', 'fan', 'power', 'status', 'temperature', 'voltage'];
 }
 
 sub snmp_execute {
@@ -86,7 +82,7 @@ Look for legacy (prior to RouterOS 6.47) OIDs.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'current', 'fan', 'power', 'temperature', 'voltage'.
+Can be: 'current', 'fan', 'power', 'status', 'temperature', 'voltage'.
 
 =item B<--filter>
 
