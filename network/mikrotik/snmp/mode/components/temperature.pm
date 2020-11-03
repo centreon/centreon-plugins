@@ -36,20 +36,20 @@ sub check_temperature {
 
     $self->{output}->output_add(
         long_msg => sprintf(
-            "%s is %s C",
-            $options{description},
+            "temperature '%s' is %s C",
+            $options{name},
             $options{value}
         )
     );
 
-    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $options{instance}, value => $options{value});
+    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $options{name}, value => $options{value});
     if ($options{value} == -273) { # RouterOS returns this when the SNMP agent hangs...
         $exit = 'UNKNOWN';
     }
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(
             severity => $exit,
-            short_msg => sprintf("%s is %s C", $options{instance}, $options{value})
+            short_msg => sprintf("Temperature '%s' is %s C", $options{name}, $options{value})
         );
     }
     $self->{output}->perfdata_add(
@@ -70,40 +70,31 @@ sub check {
     $self->{components}->{temperature} = { name => 'temperature', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'temperature'));
 
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
-
-    my $gauge_ok = 0;
     foreach (keys %{$self->{results}}) {
         next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
         next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'celsius');
-
-        $result = $self->{snmp}->map_instance(mapping => $mapping_gauge, results => $self->{results}, instance => $1);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_gauge, results => $self->{results}, instance => $1);
+        next if ($self->check_filter(section => 'temperature', instance => $result->{name}));
         check_temperature(
             $self,
             value => $result->{value},
-            instance => $1,
-            name => $result->{name},
-            description => "temperature '$result->{name}'"
+            name => $result->{name}
         );
-        $gauge_ok = 1;
     }
 
-    if ($gauge_ok == 0 && defined($result->{mtxrHlTemperature}) && $result->{mtxrHlTemperature} =~ /[0-9]+/) {
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
+    if (defined($result->{mtxrHlTemperature}) && ! $self->check_filter(section => 'temperature', instance => 'system')) {
         check_temperature(
             $self,
             value => $result->{mtxrHlTemperature} / 10,
-            instance => 1,
-            name => 'system',
-            description => 'system temperature (SoC or PCB)'
+            name => 'system'
         );
     }
-    if ($gauge_ok == 0 && defined($result->{mtxrHlProcessorTemperature}) && $result->{mtxrHlProcessorTemperature} =~ /[0-9]+/) {
+    if (defined($result->{mtxrHlProcessorTemperature}) && ! $self->check_filter(section => 'temperature', instance => 'processor')) {
         check_temperature(
             $self,
             value => $result->{mtxrHlProcessorTemperature} / 10,
-            instance => 2,
-            name => 'processor',
-            description => 'processor temperature'
+            name => 'processor'
         );
     }
 }
