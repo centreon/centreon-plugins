@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature|voltage|fan|current|psu)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:current|fan|power|temperature|voltage)$';
     
     $self->{cb_hook2} = 'snmp_execute';
      $self->{thresholds} = {
@@ -43,7 +43,7 @@ sub set_system {
     };
 
     $self->{components_path} = 'network::mikrotik::snmp::mode::components';
-    $self->{components_module} = ['current', 'fan', 'psu', 'temperature', 'voltage'];
+    $self->{components_module} = ['current', 'fan', 'power', 'temperature', 'voltage'];
 }
 
 sub snmp_execute {
@@ -81,17 +81,17 @@ Check hardware.
 
 =item B<--legacy>
 
-Look for legacy (prior ro RouterOS 6.47) OIDs.
+Look for legacy (prior to RouterOS 6.47) OIDs.
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'current', 'fan', 'psu', 'temperature', 'voltage'.
+Can be: 'current', 'fan', 'power', 'temperature', 'voltage'.
 
 =item B<--filter>
 
 Exclude some parts (comma seperated list) (Example: --filter=fan --filter=voltage)
-Can also exclude specific instance: --filter=fan,1.1
+Can also exclude specific instance: --filter=fan,fan2
 
 =item B<--no-component>
 
@@ -106,7 +106,7 @@ Example: --warning='temperature,.*,40'
 =item B<--critical>
 
 Set critical threshold for 'temperature', 'fan', 'voltage' (syntax: type,regexp,threshold)
-Example: --critical='temperature,.*,50'
+Example: --critical='temperature,cpu,50'
 
 =back
 
