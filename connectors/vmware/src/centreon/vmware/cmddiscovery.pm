@@ -153,7 +153,7 @@ sub run {
 
                 foreach my $vm (@{$vms}) {
                     next if ($vm->{'config.template'} eq 'true');
-                    next if (!defined($vm->{uuid}) || $vm->{uuid} eq '');
+                    next if (!defined($vm->{'config.uuid'}) || $vm->{'config.uuid'} eq '');
                     my $entry;
 
                     $entry->{type} = 'vm';
