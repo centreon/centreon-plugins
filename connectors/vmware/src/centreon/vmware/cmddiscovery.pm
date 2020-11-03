@@ -153,26 +153,26 @@ sub run {
 
                 foreach my $vm (@{$vms}) {
                     next if ($vm->{'config.template'} eq 'true');
-                    next if (!defined($vm{uuid}) || $vm{uuid} eq '');
-                    my %vm;
+                    next if (!defined($vm->{uuid}) || $vm->{uuid} eq '');
+                    my $entry;
 
-                    $vm{type} = 'vm';
-                    $vm{name} = $vm->{'config.name'};
-                    $vm{uuid} = $vm->{'config.uuid'};
-                    $vm{folder} = (defined($vm->parent) && $vm->parent->type eq 'Folder') ? $self->{paths}->{$vm->parent->value} : '';
-                    $vm{annotation} = $vm->{'config.annotation'};
-                    $vm{annotation} =~ s/\n/ /g if (defined($vm{annotation}));
-                    $vm{os} = $vm->{'config.guestId'};
-                    $vm{hardware} = $vm->{'config.version'};
-                    $vm{guest_name} = $vm->{'guest.hostName'};
-                    $vm{guest_ip} = $vm->{'guest.ipAddress'};
-                    $vm{guest_state} = $vm->{'guest.guestState'};
-                    $vm{power_state} = $vm->{'runtime.powerState'}->val;
-                    $vm{datacenter} = $datacenter->name;
-                    $vm{cluster} = $cluster->name;
-                    $vm{esx} = $esx->name;
+                    $entry->{type} = 'vm';
+                    $entry->{name} = $vm->{'config.name'};
+                    $entry->{uuid} = $vm->{'config.uuid'};
+                    $entry->{folder} = (defined($vm->parent) && $vm->parent->type eq 'Folder') ? $self->{paths}->{$vm->parent->value} : '';
+                    $entry->{annotation} = $vm->{'config.annotation'};
+                    $entry->{annotation} =~ s/\n/ /g if (defined($entry->{annotation}));
+                    $entry->{os} = $vm->{'config.guestId'};
+                    $entry->{hardware} = $vm->{'config.version'};
+                    $entry->{guest_name} = $vm->{'guest.hostName'};
+                    $entry->{guest_ip} = $vm->{'guest.ipAddress'};
+                    $entry->{guest_state} = $vm->{'guest.guestState'};
+                    $entry->{power_state} = $vm->{'runtime.powerState'}->val;
+                    $entry->{datacenter} = $datacenter->name;
+                    $entry->{cluster} = $cluster->name;
+                    $entry->{esx} = $esx->name;
 
-                    push @disco_data, \%vm;
+                    push @disco_data, $entry;
                 }
             }
         }
