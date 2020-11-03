@@ -36,7 +36,7 @@ sub check_fan {
 
     $self->{output}->output_add(
         long_msg => sprintf(
-            "fan '%s' speed is %s RPM",
+            "fan '%s' is %s RPM",
             $options{name},
             $options{value}
         )
@@ -46,7 +46,7 @@ sub check_fan {
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(
             severity => $exit,
-            short_msg => sprintf("Fan '%s' speed is %s RPM", $options{name}, $options{value})
+            short_msg => sprintf("Fan '%s' is %s RPM", $options{name}, $options{value})
         );
     }
     $self->{output}->perfdata_add(
@@ -63,7 +63,7 @@ sub check_fan {
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking fans");
+    $self->{output}->output_add(long_msg => "Checking fan");
     $self->{components}->{fan} = { name => 'fans', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
 
