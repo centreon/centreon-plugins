@@ -35,6 +35,7 @@ sub new {
         'health' => 'blockchain::hyperledger::exporter::mode::health',
         'logspec' => 'blockchain::hyperledger::exporter::mode::logspec',
         'version' => 'blockchain::hyperledger::exporter::mode::version',
+        'metrics' => 'blockchain::hyperledger::exporter::mode::metrics',
     );
     $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';
     $self->{custom_modes}{api} = 'blockchain::hyperledger::exporter::custom::api';
