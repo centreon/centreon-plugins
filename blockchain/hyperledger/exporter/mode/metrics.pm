@@ -126,20 +126,16 @@ sub search_metric {
     my ($self, %options) = @_;
 
     return if (!defined($options{metrics}->{$options{label}}));
-    use Data::Dumper;
 
-    
+    my $value = undef;
     foreach my $data (@{$options{metrics}->{$options{label}}->{data}}) {
-        print Dumper("data => " . $data);
         my $all_filters_ok = 1;
         foreach my $dimension (@{$options{dimensions}}) {
+            my $filter = "filter" . $dimension;
+            next if (defined($self->{option_results}->{$filter}));
             $all_filters_ok = 0;
-            print Dumper("Dimension > " . $dimension);
-            print Dumper("data > " . $data);
             last if (!defined($data->{dimensions}->{$dimension}));
             my $dimension_value = $data->{dimensions}->{$dimension};
-            print Dumper($dimension_value);
-            my $filter = "filter" . $dimension;
             last if (defined($self->{option_results}->{$filter}) && $self->{option_results}->{$filter} ne '' &&
                  $dimension_value !~ /$self->{option_results}->{$filter}/);
             $all_filters_ok = 1
@@ -149,13 +145,11 @@ sub search_metric {
         # if (!defined($self->{channel}->{$dimension})) {
         #     $self->{channel}->{$dimension} = { display => $dimension };
         # }
-        
-        $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
-        my $key = $self->change_macros(template => $options{key}, dimensions => $data->{dimensions});
-        print Dumper("key -> " . $key);
-        print Dumper("value -> " . $key);
-        $self->{$options{store}}->{$key} = $data->{value};
+        $value = undef($value) ? $data->{value} : $value + $data->{value};
     }
+    $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
+    # my $key = $self->change_macros(template => $options{key}, dimensions => $data->{dimensions});
+    $self->{$options{store}}->{$options{key}} = $value;
 }
 
 sub search_calc_avg_metric {
@@ -163,21 +157,17 @@ sub search_calc_avg_metric {
 
     return if (!defined($options{metrics}->{$options{numerator}}));
     return if (!defined($options{metrics}->{$options{denominator}}));
-    use Data::Dumper;
 
     my $numerator_value = undef;
     my $denominator_value = undef;
     foreach my $data (@{$options{metrics}->{$options{numerator}}->{data}}) {
-        print Dumper("data => " . $data);
         my $all_filters_ok = 1;
         foreach my $dimension (@{$options{dimensions}}) {
+            my $filter = "filter" . $dimension;
+            next if (!defined($self->{option_results}->{$filter}));
             $all_filters_ok = 0;
-            print Dumper("Dimension > " . $dimension);
-            print Dumper("data > " . $data);
             last if (!defined($data->{dimensions}->{$dimension}));
             my $dimension_value = $data->{dimensions}->{$dimension};
-            print Dumper($dimension_value);
-            my $filter = "filter" . $dimension;
             last if (defined($self->{option_results}->{$filter}) && $self->{option_results}->{$filter} ne '' &&
                  $dimension_value !~ /$self->{option_results}->{$filter}/);
             $all_filters_ok = 1
@@ -187,22 +177,18 @@ sub search_calc_avg_metric {
         # if (!defined($self->{channel}->{$dimension})) {
         #     $self->{channel}->{$dimension} = { display => $dimension };
         # }
-        $numerator_value = $data->{value};
-        last;
+        $numerator_value = undef($numerator_value) ? $data->{value} : $numerator_value + $data->{value};
     }
-    return if ($numerator_value eq undef);
+    return if (!defined($numerator_value));
 
     foreach my $data (@{$options{metrics}->{$options{denominator}}->{data}}) {
-        print Dumper("data => " . $data);
         my $all_filters_ok = 1;
         foreach my $dimension (@{$options{dimensions}}) {
+            my $filter = "filter" . $dimension;
+            next if (!defined($self->{option_results}->{$filter}));
             $all_filters_ok = 0;
-            print Dumper("Dimension > " . $dimension);
-            print Dumper("data > " . $data);
             last if (!defined($data->{dimensions}->{$dimension}));
             my $dimension_value = $data->{dimensions}->{$dimension};
-            print Dumper($dimension_value);
-            my $filter = "filter" . $dimension;
             last if (defined($self->{option_results}->{$filter}) && $self->{option_results}->{$filter} ne '' &&
                  $dimension_value !~ /$self->{option_results}->{$filter}/);
             $all_filters_ok = 1
@@ -212,15 +198,12 @@ sub search_calc_avg_metric {
         # if (!defined($self->{channel}->{$dimension})) {
         #     $self->{channel}->{$dimension} = { display => $dimension };
         # }
-        $numerator_value = $data->{value};
-        last;
+        $denominator_value = defined($denominator_value) ? $data->{value} : $denominator_value + $data->{value};
     }
-    return if ($numerator_value eq undef);
+    return if (!defined($denominator_value));
 
     $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
     # my $key = $self->change_macros(template => $options{key}, dimensions => $data->{dimensions});
-    print Dumper("key -> " . $options{key});
-    print Dumper("value -> " . $options{key});
     $self->{$options{store}}->{$options{key}} = Math::BigFloat->new($numerator_value / $denominator_value);
     
 }
@@ -230,18 +213,20 @@ sub manage_selection {
 
     my $metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
     $self->{channel} = {};
-
+    my @channel = ("channel");
+    my @chaincode_channel_succes =  ('chaincode', 'channel', 'success');
+    my @channel_status_type =  ('channel', 'status', 'type');
     $self->search_metric(
         metrics => $metrics,
         label => 'gossip_membership_total_peers_known',
-        dimensions =>  ("channel"),
+        dimensions =>  \@channel,
         key => 'gossip_membership_total_peers_known',
         store => 'peers'
     );
     $self->search_metric(
         metrics => $metrics,
         label => 'consensus_etcdraft_active_nodes',
-        dimensions =>  ('channel'),
+        dimensions =>  \@channel,
         key => 'consensus_etcdraft_active_nodes',
         store => 'orderers'
     );
@@ -249,14 +234,14 @@ sub manage_selection {
     $self->search_metric(
         metrics => $metrics,
         label => 'consensus_etcdraft_cluster_size',
-        dimensions =>  ('channel'),
+        dimensions =>  \@channel,
         key => 'consensus_etcdraft_cluster_size',
         store => 'orderers'
     );
 
     $self->search_calc_avg_metric(
         metrics => $metrics,
-        dimensions =>  ('channel', 'status'),
+        dimensions =>  \@chaincode_channel_succes,
         numerator => 'endorser_proposal_duration_sum',
         denominator => 'endorser_proposal_duration_count',
         key => 'endorser_propsal_duration_avg',
@@ -265,7 +250,7 @@ sub manage_selection {
 
     $self->search_calc_avg_metric(
         metrics => $metrics,
-        dimensions =>  ('channel', 'status', 'type'),
+        dimensions =>  \@channel_status_type ,
         numerator => 'broadcast_validate_duration_sum',
         denominator => 'broadcast_validate_duration_count',
         key => 'endorser_propsal_duration_avg',
@@ -277,7 +262,9 @@ sub manage_selection {
         (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
         (defined($self->{option_results}->{port}) ? $self->{option_results}->{port} : 'default') . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_channel}) ? md5_hex($self->{option_results}->{filter_channel}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_channel}) ? md5_hex($self->{option_results}->{filter_channel}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_status}) ? md5_hex($self->{option_results}->{filter_status}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_type}) ? md5_hex($self->{option_results}->{filter_type}) : md5_hex('all')) ;
 
 }
 
