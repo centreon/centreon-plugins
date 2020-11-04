@@ -25,14 +25,16 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::common::monitoring::openmetrics::scrape;
+use bigint;
+use Math::BigFloat;
 use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'peers', cb_prefix_output => 'prefix_output_block', type => 0 },
-        { name => 'orderers', cb_prefix_output => 'prefix_output_transaction', type => 0 }
+        { name => 'peers', cb_prefix_output => 'prefix_output_peer', type => 0 },
+        { name => 'orderers', cb_prefix_output => 'prefix_output_orderer', type => 0 }
     ];
 
     $self->{maps_counters}->{peers} = [
@@ -57,6 +59,15 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{orderers} = [
+        { label => 'validation-duration-avg', nlabel => 'broadcast.validate.duration.avg', set => {
+                key_values => [ { name => 'broadcast_validate_duration_avg' } ],
+                output_template => 'Average endorsing duration (ms) : %s',
+                perfdatas => [
+                    { value => 'broadcast_validate_duration_avg', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
         { label => 'orderers-connected', nlabel => 'consensus.etcdraft.active.nodes', set => {
                 key_values => [ { name => 'consensus_etcdraft_active_nodes' } ],
                 output_template => 'Connected orderers: %s',
@@ -78,30 +89,17 @@ sub set_counters {
     ];
 }
 
-sub channel_long_output {
+sub prefix_output_peer {
     my ($self, %options) = @_;
 
-    return "checking channel '" . $options{instance_value}->{display} . "'";
+    return "Peer metrics '";
 }
 
-sub prefix_channel_output {
+sub prefix_output_orderer {
     my ($self, %options) = @_;
 
-    return "channel '" . $options{instance_value}->{display} . "' ";
+    return "Orderer metrics '";
 }
-
-sub prefix_gscd_output {
-    my ($self, %options) = @_;
-
-    return 'time it takes to commit a block: ';
-}
-
-sub prefix_gpvd_output {
-    my ($self, %options) = @_;
-
-    return 'time it takes to validate a block: ';
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
@@ -130,20 +128,101 @@ sub search_metric {
     return if (!defined($options{metrics}->{$options{label}}));
     use Data::Dumper;
 
-    print Dumper($foo, $bar);
-    foreach (@{$options{metrics}->{$options{label}}->{data}}) {
-        next if (!defined($_->{dimensions}->{$options{dimension}}));
-        my $dimension = $_->{dimensions}->{$options{dimension}};
-        next if (defined($self->{option_results}->{filter_channel}) && $self->{option_results}->{filter_channel} ne '' &&
-            $dimension !~ /$self->{option_results}->{filter_channel}/);
-        
-        if (!defined($self->{channel}->{$dimension})) {
-            $self->{channel}->{$dimension} = { display => $dimension };
+    
+    foreach my $data (@{$options{metrics}->{$options{label}}->{data}}) {
+        print Dumper("data => " . $data);
+        my $all_filters_ok = 1;
+        foreach my $dimension (@{$options{dimensions}}) {
+            $all_filters_ok = 0;
+            print Dumper("Dimension > " . $dimension);
+            print Dumper("data > " . $data);
+            last if (!defined($data->{dimensions}->{$dimension}));
+            my $dimension_value = $data->{dimensions}->{$dimension};
+            print Dumper($dimension_value);
+            my $filter = "filter" . $dimension;
+            last if (defined($self->{option_results}->{$filter}) && $self->{option_results}->{$filter} ne '' &&
+                 $dimension_value !~ /$self->{option_results}->{$filter}/);
+            $all_filters_ok = 1
         }
-        $self->{channel}->{$dimension}->{$options{store}} = {} if (!defined($self->{channel}->{$dimension}->{$options{store}}));
-        my $key = $self->change_macros(template => $options{key}, dimensions => $_->{dimensions});
-        $self->{channel}->{$dimension}->{$options{store}}->{$key} = $_->{value};
+        next if (!$all_filters_ok);
+        
+        # if (!defined($self->{channel}->{$dimension})) {
+        #     $self->{channel}->{$dimension} = { display => $dimension };
+        # }
+        
+        $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
+        my $key = $self->change_macros(template => $options{key}, dimensions => $data->{dimensions});
+        print Dumper("key -> " . $key);
+        print Dumper("value -> " . $key);
+        $self->{$options{store}}->{$key} = $data->{value};
     }
+}
+
+sub search_calc_avg_metric {
+    my ($self, %options) = @_;
+
+    return if (!defined($options{metrics}->{$options{numerator}}));
+    return if (!defined($options{metrics}->{$options{denominator}}));
+    use Data::Dumper;
+
+    my $numerator_value = undef;
+    my $denominator_value = undef;
+    foreach my $data (@{$options{metrics}->{$options{numerator}}->{data}}) {
+        print Dumper("data => " . $data);
+        my $all_filters_ok = 1;
+        foreach my $dimension (@{$options{dimensions}}) {
+            $all_filters_ok = 0;
+            print Dumper("Dimension > " . $dimension);
+            print Dumper("data > " . $data);
+            last if (!defined($data->{dimensions}->{$dimension}));
+            my $dimension_value = $data->{dimensions}->{$dimension};
+            print Dumper($dimension_value);
+            my $filter = "filter" . $dimension;
+            last if (defined($self->{option_results}->{$filter}) && $self->{option_results}->{$filter} ne '' &&
+                 $dimension_value !~ /$self->{option_results}->{$filter}/);
+            $all_filters_ok = 1
+        }
+        next if (!$all_filters_ok);
+        
+        # if (!defined($self->{channel}->{$dimension})) {
+        #     $self->{channel}->{$dimension} = { display => $dimension };
+        # }
+        $numerator_value = $data->{value};
+        last;
+    }
+    return if ($numerator_value eq undef);
+
+    foreach my $data (@{$options{metrics}->{$options{denominator}}->{data}}) {
+        print Dumper("data => " . $data);
+        my $all_filters_ok = 1;
+        foreach my $dimension (@{$options{dimensions}}) {
+            $all_filters_ok = 0;
+            print Dumper("Dimension > " . $dimension);
+            print Dumper("data > " . $data);
+            last if (!defined($data->{dimensions}->{$dimension}));
+            my $dimension_value = $data->{dimensions}->{$dimension};
+            print Dumper($dimension_value);
+            my $filter = "filter" . $dimension;
+            last if (defined($self->{option_results}->{$filter}) && $self->{option_results}->{$filter} ne '' &&
+                 $dimension_value !~ /$self->{option_results}->{$filter}/);
+            $all_filters_ok = 1
+        }
+        next if (!$all_filters_ok);
+        
+        # if (!defined($self->{channel}->{$dimension})) {
+        #     $self->{channel}->{$dimension} = { display => $dimension };
+        # }
+        $numerator_value = $data->{value};
+        last;
+    }
+    return if ($numerator_value eq undef);
+
+    $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
+    # my $key = $self->change_macros(template => $options{key}, dimensions => $data->{dimensions});
+    print Dumper("key -> " . $options{key});
+    print Dumper("value -> " . $options{key});
+    $self->{$options{store}}->{$options{key}} = Math::BigFloat->new($numerator_value / $denominator_value);
+    
 }
 
 sub manage_selection {
@@ -151,64 +230,48 @@ sub manage_selection {
 
     my $metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
     $self->{channel} = {};
+
     $self->search_metric(
         metrics => $metrics,
         label => 'gossip_membership_total_peers_known',
-        dimension => 'channel',
+        dimensions =>  ("channel"),
         key => 'gossip_membership_total_peers_known',
         store => 'peers'
     );
     $self->search_metric(
         metrics => $metrics,
         label => 'consensus_etcdraft_active_nodes',
-        dimension => 'channel',
+        dimensions =>  ('channel'),
         key => 'consensus_etcdraft_active_nodes',
-        store => 'peers'
+        store => 'orderers'
     );
 
     $self->search_metric(
         metrics => $metrics,
         label => 'consensus_etcdraft_cluster_size',
-        dimension => 'channel',
+        dimensions =>  ('channel'),
         key => 'consensus_etcdraft_cluster_size',
-        store => 'peers'
-    );
-    $self->search_metric(
-        metrics => $metrics,
-        label => 'gossip_privdata_validation_duration_count',
-        dimension => 'channel',
-        key => 'gossip_privdata_validation_duration_count',
-        store => 'channel_gpvd'
+        store => 'orderers'
     );
 
-    $self->search_metric(
+    $self->search_calc_avg_metric(
         metrics => $metrics,
-        label => 'ledger_transaction_count',
-        dimension => 'channel',
-        key => 'ledger_transaction_count',
-        store => 'channel_global'
+        dimensions =>  ('channel', 'status'),
+        numerator => 'endorser_proposal_duration_sum',
+        denominator => 'endorser_proposal_duration_count',
+        key => 'endorser_propsal_duration_avg',
+        store => 'peers'
     );
-    $self->search_metric(
+
+    $self->search_calc_avg_metric(
         metrics => $metrics,
-        label => 'gossip_membership_total_peers_known',
-        dimension => 'channel',
-        key => 'gossip_membership_total_peers_known',
-        store => 'channel_global'
+        dimensions =>  ('channel', 'status', 'type'),
+        numerator => 'broadcast_validate_duration_sum',
+        denominator => 'broadcast_validate_duration_count',
+        key => 'endorser_propsal_duration_avg',
+        store => 'orderers'
     );
-    $self->search_metric(
-        metrics => $metrics,
-        label => 'gossip_state_height',
-        dimension => 'channel',
-        key => 'gossip_state_height',
-        store => 'channel_global'
-    );
-    $self->search_metric(
-        metrics => $metrics,
-        label => 'ledger_blockchain_height',
-        dimension => 'channel',
-        key => 'ledger_blockchain_height',
-        store => 'channel_global'
-    );
+    
 
     $self->{cache_name} = 'hyperledger_' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
