@@ -145,7 +145,7 @@ sub search_metric {
         # if (!defined($self->{channel}->{$dimension})) {
         #     $self->{channel}->{$dimension} = { display => $dimension };
         # }
-        $value = undef($value) ? $data->{value} : $value + $data->{value};
+        $value = !defined($value) ? $data->{value} : $value + $data->{value};
     }
     $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
     # my $key = $self->change_macros(template => $options{key}, dimensions => $data->{dimensions});
@@ -177,7 +177,7 @@ sub search_calc_avg_metric {
         # if (!defined($self->{channel}->{$dimension})) {
         #     $self->{channel}->{$dimension} = { display => $dimension };
         # }
-        $numerator_value = undef($numerator_value) ? $data->{value} : $numerator_value + $data->{value};
+        $numerator_value = !defined($numerator_value) ? $data->{value} : $numerator_value + $data->{value};
     }
     return if (!defined($numerator_value));
 
@@ -198,7 +198,7 @@ sub search_calc_avg_metric {
         # if (!defined($self->{channel}->{$dimension})) {
         #     $self->{channel}->{$dimension} = { display => $dimension };
         # }
-        $denominator_value = defined($denominator_value) ? $data->{value} : $denominator_value + $data->{value};
+        $denominator_value = !defined($denominator_value) ? $data->{value} : $denominator_value + $data->{value};
     }
     return if (!defined($denominator_value));
 
