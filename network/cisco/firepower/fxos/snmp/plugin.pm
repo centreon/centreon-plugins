@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'cpu'    => 'network::cisco::firepower::fxos::snmp::mode::cpu',
-        'memory' => 'network::cisco::firepower::fxos::snmp::mode::memory'
+        'cpu'      => 'network::cisco::firepower::fxos::snmp::mode::cpu',
+        'hardware' => 'network::cisco::firepower::fxos::snmp::mode::hardware',
+        'memory'   => 'network::cisco::firepower::fxos::snmp::mode::memory'
     };
 
     return $self;
