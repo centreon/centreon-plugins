@@ -26,7 +26,6 @@ use strict;
 use warnings;
 use centreon::common::monitoring::openmetrics::scrape;
 use bigint;
-use Math::BigFloat;
 use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
@@ -39,7 +38,7 @@ sub set_counters {
 
     $self->{maps_counters}->{peers} = [
         { label => 'peers-known', nlabel => 'peers.known.count', set => {
-                key_values => [ { name => 'gossip_membership_total_peers_known', diff => 1 } ],
+                key_values => [ { name => 'gossip_membership_total_peers_known' } ],
                 output_template => 'Number of known peers: %s',
                 perfdatas => [
                     { value => 'gossip_membership_total_peers_known', template => '%s', min => 0,
@@ -47,7 +46,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'endorsing-duration-avg', nlabel => 'endorser.propsal.duration.avg', set => {
+        { label => 'peer-endorsing-duration-avg', nlabel => 'endorser.propsal.duration.avg', set => {
                 key_values => [ { name => 'endorser_propsal_duration_avg' } ],
                 output_template => 'Average endorsing duration (ms) : %s',
                 perfdatas => [
@@ -59,7 +58,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{orderers} = [
-        { label => 'validation-duration-avg', nlabel => 'broadcast.validate.duration.avg', set => {
+        { label => 'orderer-validation-duration-avg', nlabel => 'broadcast.validate.duration.avg', set => {
                 key_values => [ { name => 'broadcast_validate_duration_avg' } ],
                 output_template => 'Average endorsing duration (ms) : %s',
                 perfdatas => [
@@ -131,7 +130,7 @@ sub search_metric {
     foreach my $data (@{$options{metrics}->{$options{label}}->{data}}) {
         my $all_filters_ok = 1;
         foreach my $dimension (@{$options{dimensions}}) {
-            my $filter = "filter" . $dimension;
+            my $filter = "filter_" . $dimension;
             next if (defined($self->{option_results}->{$filter}));
             $all_filters_ok = 0;
             last if (!defined($data->{dimensions}->{$dimension}));
@@ -163,7 +162,7 @@ sub search_calc_avg_metric {
     foreach my $data (@{$options{metrics}->{$options{numerator}}->{data}}) {
         my $all_filters_ok = 1;
         foreach my $dimension (@{$options{dimensions}}) {
-            my $filter = "filter" . $dimension;
+            my $filter = "filter_" . $dimension;
             next if (!defined($self->{option_results}->{$filter}));
             $all_filters_ok = 0;
             last if (!defined($data->{dimensions}->{$dimension}));
@@ -184,7 +183,7 @@ sub search_calc_avg_metric {
     foreach my $data (@{$options{metrics}->{$options{denominator}}->{data}}) {
         my $all_filters_ok = 1;
         foreach my $dimension (@{$options{dimensions}}) {
-            my $filter = "filter" . $dimension;
+            my $filter = "filter_" . $dimension;
             next if (!defined($self->{option_results}->{$filter}));
             $all_filters_ok = 0;
             last if (!defined($data->{dimensions}->{$dimension}));
@@ -204,8 +203,7 @@ sub search_calc_avg_metric {
 
     $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
     # my $key = $self->change_macros(template => $options{key}, dimensions => $data->{dimensions});
-    $self->{$options{store}}->{$options{key}} = Math::BigFloat->new($numerator_value / $denominator_value);
-    
+    $self->{$options{store}}->{$options{key}} = $numerator_value / $denominator_value;
 }
 
 sub manage_selection {
