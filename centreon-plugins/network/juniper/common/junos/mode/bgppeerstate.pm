@@ -24,12 +24,13 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("[Local IP '%s:%s', Type '%s', AS '%s'][Remote IP '%s:%s', Type '%s', AS '%s'] State is '%s', Status is '%s'",
+    return sprintf(
+        "[local IP '%s:%s', type '%s', AS '%s'][remote IP '%s:%s', type '%s', AS '%s'] state is '%s', status is '%s'",
         $self->{result_values}->{local_ip},
         $self->{result_values}->{local_port},
         $self->{result_values}->{local_type},
@@ -41,55 +42,37 @@ sub custom_status_output {
         $self->{result_values}->{peer_state},
         $self->{result_values}->{peer_status}        
     );
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{peer_state} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerState'};
-    $self->{result_values}->{peer_status} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerStatus'};
-    $self->{result_values}->{local_type} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerLocalAddrType'};
-    $self->{result_values}->{local_ip} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerLocalAddr'};
-    $self->{result_values}->{local_port} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerLocalPort'};
-    $self->{result_values}->{local_as} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerLocalAs'};
-    $self->{result_values}->{remote_type} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerRemoteAddrType'};
-    $self->{result_values}->{remote_ip} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerRemoteAddr'};
-    $self->{result_values}->{remote_port} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerRemotePort'};
-    $self->{result_values}->{remote_as} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerRemoteAs'};
-    $self->{result_values}->{peer_identifier} = $options{new_datas}->{$self->{instance} . '_jnxBgpM2PeerIdentifier'};
-
-    return 0;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'peers', type => 1, cb_prefix_output => 'prefix_peers_output',
-          message_multiple => 'All BGP peers are ok' },
+        { name => 'peers', type => 1, cb_prefix_output => 'prefix_peers_output', message_multiple => 'All BGP peers are ok' }
     ];
+
     $self->{maps_counters}->{peers} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'jnxBgpM2PeerState' }, { name => 'jnxBgpM2PeerStatus' },
-                    { name => 'jnxBgpM2PeerLocalAddrType' }, { name => 'jnxBgpM2PeerLocalAddr' },
-                    { name => 'jnxBgpM2PeerLocalPort' }, { name => 'jnxBgpM2PeerLocalAs' },
-                    { name => 'jnxBgpM2PeerRemoteAddrType' }, { name => 'jnxBgpM2PeerRemoteAddr' },
-                    { name => 'jnxBgpM2PeerRemotePort' }, { name => 'jnxBgpM2PeerRemoteAs' },
-                    { name => 'jnxBgpM2PeerIdentifier' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+        { label => 'status', type => 2, critical_default => '%{peer_status} =~ /running/ && %{peer_state} !~ /established/', set => {
+                key_values => [
+                    { name => 'local_ip' }, { name => 'local_port' },
+                    { name => 'local_type' }, { name => 'local_as' },
+                    { name => 'remote_ip' }, { name => 'remote_port' },
+                    { name => 'remote_type' }, { name => 'remote_as' },
+                    { name => 'peer_state' }, { name => 'peer_status' },
+                    { name => 'peer_identifier' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
 sub prefix_peers_output {
     my ($self, %options) = @_;
 
-    return "Peer '" . $options{instance_value}->{jnxBgpM2PeerIdentifier} . "' ";
+    return "Peer '" . $options{instance_value}->{peer_identifier} . "' ";
 }
 
 sub new {
@@ -98,76 +81,54 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-peer:s"         => { name => 'filter_peer' },
-        "filter-as:s"           => { name => 'filter_as' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status',
-            default => '%{peer_status} =~ /running/ && %{peer_state} !~ /established/' },
+        'filter-peer:s' => { name => 'filter_peer' },
+        'filter-as:s'   => { name => 'filter_as' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
+my $map_peer_state = {
+    1 => 'idle', 2 => 'connect', 3 => 'active',
+    4 => 'opensent', 5 => 'openconfirm', 6 => 'established'
+};
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
+my $map_peer_status = {
+    1 => 'halted', 2 => 'running'
+};
 
-my %map_peer_state = (
-    1 => 'idle',
-    2 => 'connect',
-    3 => 'active',
-    4 => 'opensent',
-    5 => 'openconfirm',
-    6 => 'established',
-);
-
-my %map_peer_status = (
-    1 => 'halted',
-    2 => 'running',
-);
-
-my %map_type = (
-    0 => 'unknown',
-    1 => 'ipv4',
-    2 => 'ipv6',
-    3 => 'ipv4z',
-    4 => 'ipv6z',
-    16 => 'dns',
-);
+my $map_type = {
+    0 => 'unknown', 1 => 'ipv4', 2 => 'ipv6', 3 => 'ipv4z', 4 => 'ipv6z', 16 => 'dns'
+};
 
 my $oid_jnxBgpM2PeerTable = '.1.3.6.1.4.1.2636.5.1.1.2.1.1';
 
 my $mapping = {
-    jnxBgpM2PeerIdentifier      => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.1' },
-    jnxBgpM2PeerState           => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.2', map => \%map_peer_state },
-    jnxBgpM2PeerStatus          => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.3', map => \%map_peer_status },
-    jnxBgpM2PeerLocalAddrType   => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.6', map => \%map_type },
-    jnxBgpM2PeerLocalAddr       => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.7' },
-    jnxBgpM2PeerLocalPort       => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.8' },
-    jnxBgpM2PeerLocalAs         => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.9' },
-    jnxBgpM2PeerRemoteAddrType  => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.10', map => \%map_type },
-    jnxBgpM2PeerRemoteAddr      => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.11' },
-    jnxBgpM2PeerRemotePort      => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.12' },
-    jnxBgpM2PeerRemoteAs        => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.13' },
+    peer_identifier => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.1' }, # jnxBgpM2PeerIdentifier
+    peer_state      => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.2', map => $map_peer_state }, # jnxBgpM2PeerState
+    peer_status     => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.3', map => $map_peer_status }, # jnxBgpM2PeerStatus
+    local_type      => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.6', map => $map_type }, # jnxBgpM2PeerLocalAddrType
+    local_ip        => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.7' }, # jnxBgpM2PeerLocalAddr
+    local_port      => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.8' }, # jnxBgpM2PeerLocalPort
+    local_as        => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.9' }, # jnxBgpM2PeerLocalAs
+    remote_type     => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.10', map => $map_type }, # jnxBgpM2PeerRemoteAddrType
+    remote_ip       => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.11' }, # jnxBgpM2PeerRemoteAddr
+    remote_port     => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.12' }, # jnxBgpM2PeerRemotePort
+    remote_as       => { oid => '.1.3.6.1.4.1.2636.5.1.1.2.1.1.1.13' }  # jnxBgpM2PeerRemoteAs
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{peers} = {};
-
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_jnxBgpM2PeerTable,
-        start => $mapping->{jnxBgpM2PeerIdentifier}->{oid},
-        end => $mapping->{jnxBgpM2PeerRemoteAs}->{oid},
+        end => $mapping->{remote_as}->{oid},
         nothing_quit => 1
     );
-    
+
+    $self->{peers} = {};
     foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping->{jnxBgpM2PeerIdentifier}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{peer_identifier}->{oid}\.(.*)$/);
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(
@@ -175,12 +136,17 @@ sub manage_selection {
             results => $snmp_result,
             instance => $instance
         );
-        $result->{jnxBgpM2PeerIdentifier} = join('.', map { hex($_) } unpack('(H2)*', $result->{jnxBgpM2PeerIdentifier}));
-        $result->{jnxBgpM2PeerLocalAddr} = join('.', map { hex($_) } unpack('(H2)*', $result->{jnxBgpM2PeerLocalAddr}));
-        $result->{jnxBgpM2PeerRemoteAddr} = join('.', map { hex($_) } unpack('(H2)*', $result->{jnxBgpM2PeerRemoteAddr}));
+        $result->{peer_identifier} = join('.', map { hex($_) } unpack('(H2)*', $result->{peer_identifier}));
+        $result->{local_ip} = join('.', map { hex($_) } unpack('(H2)*', $result->{local_ip}));
+
+        $result->{remote_ip} = defined($result->{remote_ip}) ? join('.', map { hex($_) } unpack('(H2)*', $result->{remote_ip})) : '-';
+        $result->{remote_port} = defined($result->{remote_port}) ? $result->{remote_port} : '-';
+        $result->{remote_as} = defined($result->{remote_as}) ? $result->{remote_as} : '-';
+        $result->{remote_type} = defined($result->{remote_type}) ? $result->{remote_type} : '-';
+        $result->{local_as} = defined($result->{local_as}) ? $result->{local_as} : '-';
 
         if (defined($self->{option_results}->{filter_peer}) && $self->{option_results}->{filter_peer} ne '' &&
-            $result->{jnxBgpM2PeerIdentifier} !~ /$self->{option_results}->{filter_peer}/) {
+            $result->{peer_identifier} !~ /$self->{option_results}->{filter_peer}/) {
             $self->{output}->output_add(
                 long_msg => "skipping peer '" . $result->{jnxBgpM2PeerIdentifier} . "': no matching filter.",
                 debug => 1
@@ -188,7 +154,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{peers}->{$instance} = { %{$result} };
+        $self->{peers}->{$instance} = $result;
     }
 
     if (scalar(keys %{$self->{peers}}) <= 0) {
