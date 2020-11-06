@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 use centreon::plugins::http;
+use centreon::plugins::misc;
 use JSON::Path;
 use JSON;
 
@@ -231,6 +232,7 @@ sub lookup {
     foreach my $value (@{$self->{values}}) {
         $count++;
         if ($value =~ /^[0-9.]+$/) {
+            $value = centreon::plugins::misc::expand_exponential(value => $value);
             if ($self->{option_results}->{threshold_value} eq 'values') {
                 my $exit = lc(
                     $self->{perfdata}->threshold_check(
