@@ -231,12 +231,12 @@ sub lookup {
     my $count = 0;
     foreach my $value (@{$self->{values}}) {
         $count++;
-        if ($value =~ /^[0-9.]+$/) {
-            $value = centreon::plugins::misc::expand_exponential(value => $value);
+        if ($value =~ /^(?:[0-9.]+|([0-9.]*)e([-+]?)(\d*))$/) {
+            my $value_expand = centreon::plugins::misc::expand_exponential(value => $value);
             if ($self->{option_results}->{threshold_value} eq 'values') {
                 my $exit = lc(
                     $self->{perfdata}->threshold_check(
-                        value => $value,
+                        value => $value_expand,
                         threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]
                     )
                 );
@@ -245,7 +245,7 @@ sub lookup {
             }
             $self->{output}->perfdata_add(
                 label => 'element_' . $count,
-                value => $value,
+                value => $value_expand,
                 warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
                 critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef
             );
