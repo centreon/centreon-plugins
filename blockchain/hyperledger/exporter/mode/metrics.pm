@@ -25,7 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::common::monitoring::openmetrics::scrape;
-use bigint;
 use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
@@ -67,7 +66,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'orderers-connected', nlabel => 'consensus.etcdraft.active.nodes', set => {
+        { label => 'raft-orderers-connected', nlabel => 'consensus.etcdraft.active.nodes', set => {
                 key_values => [ { name => 'consensus_etcdraft_active_nodes' } ],
                 output_template => 'Connected orderers: %s',
                 perfdatas => [
@@ -76,7 +75,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'max-orderers', nlabel => 'consensus.etcdraft.cluster.size', set => {
+        { label => 'raft-max-orderers', nlabel => 'consensus.etcdraft.cluster.size', set => {
                 key_values => [ { name => 'consensus_etcdraft_cluster_size' } ],
                 output_template => 'Max orderers: %s',
                 perfdatas => [
@@ -106,6 +105,10 @@ sub new {
 
     $options{options}->add_options(arguments => {
          'filter-channel:s' => { name => 'filter_channel' },
+         'filter-status:s' => { name => 'filter_status' },
+         'filter-chaincode:s' => { name => 'filter_chaincode' },
+         'filter-type:s' => { name => 'filter_type' },
+         'filter-success:s' => { name => 'filter_success' },
     });
 
     return $self;
@@ -262,6 +265,8 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_channel}) ? md5_hex($self->{option_results}->{filter_channel}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_status}) ? md5_hex($self->{option_results}->{filter_status}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_chaincode}) ? md5_hex($self->{option_results}->{filter_chaincode}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_success}) ? md5_hex($self->{option_results}->{filter_success}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_type}) ? md5_hex($self->{option_results}->{filter_type}) : md5_hex('all')) ;
 
 }
