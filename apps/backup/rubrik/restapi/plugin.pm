@@ -34,7 +34,8 @@ sub new {
         'cluster' => 'apps::backup::rubrik::restapi::mode::cluster',
         'disks'   => 'apps::backup::rubrik::restapi::mode::disks',
         'nodes'   => 'apps::backup::rubrik::restapi::mode::nodes',
-        'storage' => 'apps::backup::rubrik::restapi::mode::storage'
+        'storage' => 'apps::backup::rubrik::restapi::mode::storage',
+        'tasks'   => 'apps::backup::rubrik::restapi::mode::tasks'
     };
 
     $self->{custom_modes}->{api} = 'apps::backup::rubrik::restapi::custom::api';

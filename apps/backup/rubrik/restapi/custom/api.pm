@@ -121,35 +121,8 @@ sub get_connection_info {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /\/name$/) {
-        $file = '/home/qgarnier/clients/plugins/rubrik/name.json';
-    } elsif ($options{endpoint} =~ /\/system_status$/) {
-        $file = '/home/qgarnier/clients/plugins/rubrik/system_status.json';
-    } elsif ($options{endpoint} =~ /\/io_stats$/) {
-        $file = '/home/qgarnier/clients/plugins/rubrik/io_stat.json';
-    } elsif ($options{endpoint} =~ /\/node$/) {
-        $file = '/home/qgarnier/clients/plugins/rubrik/node.json';
-    } elsif ($options{endpoint} =~ /\/disk$/) {
-        $file = '/home/qgarnier/clients/plugins/rubrik/disk.json';
-    } elsif ($options{endpoint} =~ /\/runway_remaining$/) {
-        $file = '/home/qgarnier/clients/plugins/rubrik/runway_remaining.json';
-    } elsif ($options{endpoint} =~ /\/system_storage$/) {
-        $file = '/home/qgarnier/clients/plugins/rubrik/system_storage.json';
-    }
-
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     my $settings = $self->settings();
-    my $content = $self->{http}->request(
+    my ($content) = $self->{http}->request(
         url_path => '/api/internal' . $options{endpoint},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
@@ -157,7 +130,6 @@ sub request_api {
         get_param => $options{get_param},
         %$settings
     );
-=cut
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
