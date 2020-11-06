@@ -132,6 +132,10 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/rubrik/node.json';
     } elsif ($options{endpoint} =~ /\/disk$/) {
         $file = '/home/qgarnier/clients/plugins/rubrik/disk.json';
+    } elsif ($options{endpoint} =~ /\/runway_remaining$/) {
+        $file = '/home/qgarnier/clients/plugins/rubrik/runway_remaining.json';
+    } elsif ($options{endpoint} =~ /\/system_storage$/) {
+        $file = '/home/qgarnier/clients/plugins/rubrik/system_storage.json';
     }
 
     my $content = do {
