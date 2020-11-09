@@ -138,8 +138,8 @@ sub manage_selection {
         }
     };
     foreach (@{$nodes->{data}}) {
-        next if (defined($options{filter_node_id}) && $options{filter_node_id} ne '' &&
-            $_->{id} !~ /$options{filter_node_id}/);
+        next if (defined($self->{option_results}->{filter_node_id}) && $self->{option_results}->{filter_node_id} ne '' &&
+            $_->{id} !~ /$self->{option_results}->{filter_node_id}/);
 
         $self->{clusters}->{$name}->{nodes}->{ $_->{id} } = {
             id => $_->{id},
