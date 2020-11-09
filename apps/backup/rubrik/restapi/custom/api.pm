@@ -99,17 +99,15 @@ sub check_options {
 sub settings {
     my ($self, %options) = @_;
 
-    return {} if (defined($self->{settings_done}));
+    return if (defined($self->{settings_done}));
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
+    $self->{option_results}->{credentials} = 1;
+    $self->{option_results}->{basic} = 1;
+    $self->{option_results}->{username} = $self->{api_username};
+    $self->{option_results}->{password} = $self->{api_password};
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{settings_done} = 1;
-    return {
-        credentials => 1,
-        basic => 1,
-        username => $self->{api_username},
-        password => $self->{api_password}
-    };
 }
 
 sub get_connection_info {
@@ -121,14 +119,13 @@ sub get_connection_info {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $settings = $self->settings();
+    $self->settings();
     my ($content) = $self->{http}->request(
         url_path => '/api/internal' . $options{endpoint},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status},
-        get_param => $options{get_param},
-        %$settings
+        get_param => $options{get_param}
     );
 
     if (!defined($content) || $content eq '') {
