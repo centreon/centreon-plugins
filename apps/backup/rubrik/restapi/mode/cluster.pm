@@ -133,11 +133,7 @@ sub manage_selection {
     $self->{clusters} = {
         $name => {
             name => $name,
-            status => $status->{status},
-            read => 0,
-            write => 0,
-            read_iops => 0,
-            write_iops => 0
+            status => $status->{status}
         }
     };
 
@@ -147,10 +143,12 @@ sub manage_selection {
     )) {
         my $count = 0;
         foreach (@{$io_stats->{ $entry->[0] }->{ $entry->[1] }}) {
+            $self->{clusters}->{$name}->{ $entry->[2] } = 0 
+                if (!defined($self->{clusters}->{$name}->{ $entry->[2] }));
             $self->{clusters}->{$name}->{ $entry->[2] } += $_->{stat};
             $count++;
         }
-        $self->{clusters}->{$name}->{ $entry->[2] } = int($self->{clusters}->{$name}->{ $entry->[2] } / $count);
+        $self->{clusters}->{$name}->{ $entry->[2] } = int($self->{clusters}->{$name}->{ $entry->[2] } / $count) if ($count > 0);
     }
 }
 
