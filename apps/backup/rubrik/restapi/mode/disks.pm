@@ -139,8 +139,8 @@ sub manage_selection {
     };
     foreach (@{$disks->{data}}) {
         my $id = $_->{nodeId} . ':' . $_->{id};
-        next if (defined($options{filter_disk_id}) && $options{filter_disk_id} ne '' &&
-            $id !~ /$options{filter_disk_id}/);
+        next if (defined($self->{option_results}->{filter_disk_id}) && $self->{option_results}->{filter_disk_id} ne '' &&
+            $id !~ /$self->{option_results}->{filter_disk_id}/);
 
         $self->{clusters}->{$name}->{disks}->{$id} = {
             id => $id,
