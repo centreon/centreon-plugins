@@ -49,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Rubrik using Rest API.
+Check Oracle VM Manager using API.
 
 =cut
