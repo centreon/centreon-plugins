@@ -71,7 +71,7 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 7002;
     $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
@@ -119,32 +119,6 @@ sub get_connection_info {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /\/Manager$/) {
-        $file = '/home/qgarnier/clients/plugins/thales/ovm/manager.txt';
-    } elsif ($options{endpoint} =~ /\/Server$/) {
-        $file = '/home/qgarnier/clients/plugins/thales/ovm/server.txt';
-    } elsif ($options{endpoint} =~ /\/ServerPool$/) {
-        $file = '/home/qgarnier/clients/plugins/thales/ovm/serverpool.txt';
-    } elsif ($options{endpoint} =~ /\/FileSystem$/) {
-        $file = '/home/qgarnier/clients/plugins/thales/ovm/filesystem.txt';
-    } elsif ($options{endpoint} =~ /\/Vm$/) {
-        $file = '/home/qgarnier/clients/plugins/thales/ovm/vm.txt';
-    } elsif ($options{endpoint} =~ /\/Job$/) {
-        $file = '/home/qgarnier/clients/plugins/thales/ovm/job.txt';
-    } elsif ($options{endpoint} =~ /\/FileServer$/) {
-        $file = '/home/qgarnier/clients/plugins/thales/ovm/fileserver.txt';
-    }
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     $self->settings();
     my ($content) = $self->{http}->request(
         url_path => '/ovm/core/wsapi/rest' . $options{endpoint},
@@ -153,7 +127,6 @@ sub request_api {
         critical_status => $self->{critical_http_status},
         get_param => $options{get_param}
     );
-=cut
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
@@ -192,7 +165,7 @@ Set hostname.
 
 =item B<--port>
 
-Port used (Default: 443)
+Port used (Default: 7002)
 
 =item B<--proto>
 
