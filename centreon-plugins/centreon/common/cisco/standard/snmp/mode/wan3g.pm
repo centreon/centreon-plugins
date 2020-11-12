@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
 sub custom_connection_status_output {
@@ -49,8 +49,11 @@ sub custom_modem_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'modem status: %s',
-        $self->{result_values}->{modem_status}
+        'modem status: %s [imsi: %s][imei: %s][iccid: %s]',
+        $self->{result_values}->{modem_status},
+        $self->{result_values}->{imsi},
+        $self->{result_values}->{imei},
+        $self->{result_values}->{iccid}
     );
 }
 
@@ -101,28 +104,45 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-         { label => 'modem-status', threshold => 0, set => {
-                key_values => [ { name => 'modem_status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
+         {
+             label => 'modem-status',
+             type => 2,
+             unknown_default => '%{modem_status} =~ /unknown/i',
+             warning_default => '%{modem_status} =~ /lowPowerMode/i',
+             critical_default => '%{modem_status} =~ /offLine/i',
+             set => {
+                key_values => [
+                    { name => 'modem_status' }, { name => 'imsi' },
+                    { name => 'imei' }, { name => 'iccid' },
+                    { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_modem_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'connection-status', threshold => 0, set => {
+        {
+            label => 'connection-status',
+            type => 2,
+            unknown_default => '%{connection_status} =~ /unknown/i',
+            critical_default => '%{connection_status} =~ /inactive|idle|disconnected|error/i',
+            set => {
                 key_values => [ { name => 'connection_status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_connection_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'sim-status', threshold => 0, set => {
+        {
+            label => 'sim-status',
+            type => 2,
+            unknown_default => '%{sim_status} =~ /unknown/i',
+            critical_default => '%{sim_status} !~ /ok|unknown/i',
+            set => {
                 key_values => [ { name => 'sim_status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_sim_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'temperature', nlabel => 'modem.temperature.celsius', display_ok => 0, set => {
@@ -138,12 +158,16 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{radio} = [
-        { label => 'radio-status', threshold => 0, set => {
+        {
+            label => 'radio-status',
+            type => 2,
+            unknown_default => '%{current_band} =~ /unknown/i',
+            critical_default => '%{current_band} =~ /invalid|none/i',
+            set => {
                 key_values => [ { name => 'current_band' }, { name => 'channel_number' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_radio_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'radio-rssi', nlabel => 'modem.radio.rssi.dbm', set => {
@@ -159,12 +183,16 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{network} = [
-        { label => 'network-status', threshold => 0, set => {
+        {
+            label => 'network-status',
+            type => 2,
+            unknown_default => '%{service_status} =~ /unknown/i',
+            critical_default => '%{service_status} =~ /emergencyOnly|noService/i',
+            set => {
                 key_values => [ { name => 'service_status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_network_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'traffic-in', nlabel => 'modem.traffic.in.bitspersecond', set => {
@@ -194,40 +222,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'                => { name => 'filter_name' },
-        'unknown-modem-status:s'       => { name => 'unknown_modem_status', default => '%{modem_status} =~ /unknown/i' },
-        'warning-modem-status:s'       => { name => 'warning_modem_status', default => '%{modem_status} =~ /lowPowerMode/i' },
-        'critical-modem-status:s'      => { name => 'critical_modem_status', default => '%{modem_status} =~ /offLine/i' },
-        'unknown-connection-status:s'  => { name => 'unknown_connection_status', default => '%{connection_status} =~ /unknown/i' },
-        'warning-connection-status:s'  => { name => 'warning_connection_status', default => '' },
-        'critical-connection-status:s' => { name => 'critical_connection_status', default => '%{connection_status} =~ /inactive|idle|disconnected|error/i' },
-        'unknown-sim-status:s'         => { name => 'unknown_sim_status', default => '%{sim_status} =~ /unknown/i' },
-        'warning-sim-status:s'         => { name => 'warning_sim_status', default => '' },
-        'critical-sim-status:s'        => { name => 'critical_sim_status', default => '%{sim_status} !~ /ok|unknown/i' },
-        'unknown-radio-status:s'       => { name => 'unknown_radio_status', default => '%{current_band} =~ /unknown/i' },
-        'warning-radio-status:s'       => { name => 'warning_radio_status', default => '' },
-        'critical-radio-status:s'      => { name => 'critical_radio_status', default => '%{current_band} =~ /invalid|none/i' },
-        'unknown-network-status:s'     => { name => 'unknown_network_status', default => '%{service_status} =~ /unknown/i' },
-        'warning-network-status:s'     => { name => 'warning_network_status', default => '' },
-        'critical-network-status:s'    => { name => 'critical_network_status', default => '%{service_status} =~ /emergencyOnly|noService/i' }
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(
-        macros => [
-            'unknown_modem_status', 'warning_modem_status', 'critical_modem_status',
-            'unknown_connection_status', 'warning_connection_status', 'critical_connection_status',
-            'unknown_sim_status', 'warning_sim_status', 'critical_sim_status',
-            'unknown_radio_status', 'warning_radio_status', 'critical_radio_status',
-            'unknown_network_status', 'warning_network_status', 'critical_network_status',
-        ]
-    );
 }
 
 my $map_current_band = {
@@ -260,13 +258,16 @@ my $mapping = {
     rssi               => { oid => '.1.3.6.1.4.1.9.9.661.1.3.4.1.1.1' }, # c3gCurrentGsmRssi
     current_band       => { oid => '.1.3.6.1.4.1.9.9.661.1.3.4.1.1.3', map => $map_current_band }, # c3gGsmCurrentBand
     channel_number     => { oid => '.1.3.6.1.4.1.9.9.661.1.3.4.1.1.4' }, # c3gGsmChannelNumber
+    imsi               => { oid => '.1.3.6.1.4.1.9.9.661.1.3.1.1.1' }, # c3gImsi
+    imei               => { oid => '.1.3.6.1.4.1.9.9.661.1.3.1.1.2' }, # c3gImei
+    iccid              => { oid => '.1.3.6.1.4.1.9.9.661.1.3.1.1.3' }, # c3gIccId
     modem_status       => { oid => '.1.3.6.1.4.1.9.9.661.1.3.1.1.6', map => $map_modem_status }, # c3gModemStatus
     temperature        => { oid => '.1.3.6.1.4.1.9.9.661.1.1.1.12' }, # c3gModemTemperature
     connection_status  => { oid => '.1.3.6.1.4.1.9.9.661.1.1.1.8', map => $map_connection_status }, # c3gConnectionStatus
     sim_status         => { oid => '.1.3.6.1.4.1.9.9.661.1.3.5.1.1.2', map => $map_sim_status }, # c3gGsmSimStatus
     service_status     => { oid => '.1.3.6.1.4.1.9.9.661.1.3.2.1.2', map => $map_service_status }, # c3gGsmCurrentServiceStatus
     traffic_out        => { oid => '.1.3.6.1.4.1.9.9.661.1.3.2.1.19' }, # c3gGsmTotalByteTransmitted
-    traffic_in         => { oid => '.1.3.6.1.4.1.9.9.661.1.3.2.1.20' }, # c3gGsmTotalByteReceived
+    traffic_in         => { oid => '.1.3.6.1.4.1.9.9.661.1.3.2.1.20' }  # c3gGsmTotalByteReceived
 };
 
 sub manage_selection {
@@ -322,6 +323,9 @@ sub manage_selection {
     foreach (keys %{$self->{modem}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
         $self->{modem}->{$_}->{global}->{modem_status} = $result->{modem_status};
+        $self->{modem}->{$_}->{global}->{imsi} = $result->{imsi};
+        $self->{modem}->{$_}->{global}->{imei} = $result->{imei};
+        $self->{modem}->{$_}->{global}->{iccid} = $result->{iccid};
         $self->{modem}->{$_}->{global}->{connection_status} = $result->{connection_status};
         $self->{modem}->{$_}->{global}->{sim_status} = $result->{sim_status};
         $self->{modem}->{$_}->{global}->{temperature} = $result->{temperature};
