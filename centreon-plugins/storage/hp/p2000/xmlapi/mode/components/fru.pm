@@ -33,7 +33,7 @@ sub check {
     my ($results) = $self->{custom}->get_infos(
         cmd => 'show frus', 
         base_type => 'enclosure-fru',
-        key => 'part-number', 
+        key => 'fru-location', 
         properties_name => '^(fru-status|fru-location)$',
         no_quit => 1,
     );
@@ -45,13 +45,18 @@ sub check {
         
         my $state = $results->{$part_number}->{'fru-status'};
         
-        $self->{output}->output_add(long_msg => sprintf("fru '%s' status is %s [instance: %s]",
-                                                        $instance, $state, $instance)
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fru '%s' status is %s [instance: %s]",
+                $instance, $state, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'fru', value => $state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fru '%s' status is '%s'", $instance, $state));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fru '%s' status is '%s'", $instance, $state)
+            );
         }
     }
 }
