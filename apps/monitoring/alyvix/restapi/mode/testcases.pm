@@ -91,16 +91,10 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'testcase-date', set => {
-                key_values => [ { name => 'lastexec' }, { name => 'freshness' }, { name => 'display' } ],
+        { label => 'testcase-freshness', set => {
+                key_values => [ { name => 'freshness' }, { name => 'lastexec' },  { name => 'display' } ],
                 closure_custom_output => $self->can('custom_date_output'),
-                closure_custom_perfdata => sub { return 0; },
-            }
-        },
-        { label => 'testcase-freshness', display_ok => 0, set => {
-                key_values => [ { name => 'freshness' }, { name => 'display' } ],
-                output_template => 'last execution: %ds ago (too old)',
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub { return 0; }
             }
         }
     ];
