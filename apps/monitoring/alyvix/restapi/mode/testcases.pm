@@ -102,7 +102,7 @@ sub set_counters {
                 output_template => 'last execution: %ds ago (too old)',
                 closure_custom_perfdata => sub { return 0; },
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{testcases} = [
@@ -149,15 +149,15 @@ sub manage_selection {
         );
 
         my $measures = $options{custom}->request_api(endpoint => '/testcases/' . $_->{testcase_alias} . '/');
-        my $last_exec = $measures->{measures}->[0]->{timestamp_epoch}/1000000000;
+        my $lastexec = $measures->{measures}->[0]->{timestamp_epoch}/1000000000;
         $self->{cases}->{ $_->{testcase_alias} } = {
             display => $_->{testcase_alias},
             global => {
                 display   => $_->{testcase_alias},
                 duration  => $measures->{measures}->[0]->{test_case_duration_ms},
                 state     => $status->{ $measures->{measures}->[0]->{test_case_state} },
-                lastexec  => POSIX::strftime('%Y-%m-%dT%H:%M:%S', localtime($last_exec)),
-                freshness => (time() - $last_exec)
+                lastexec  => POSIX::strftime('%Y-%m-%dT%H:%M:%S', localtime($lastexec)),
+                freshness => (time() - $lastexec)
             },
             testcases => {}
         };
@@ -174,7 +174,6 @@ sub manage_selection {
             $i++;
         }
     }
-
 }
 
 1;
