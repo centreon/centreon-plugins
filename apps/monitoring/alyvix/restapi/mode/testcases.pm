@@ -35,6 +35,16 @@ sub custom_status_output {
     );
 }
 
+sub custom_date_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'last execution: %s (%s ago)',
+        $self->{result_values}->{lastexec},
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{freshness})
+    );
+}
+
 sub testcase_long_output {
     my ($self, %options) = @_;
 
@@ -80,7 +90,19 @@ sub set_counters {
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        }
+        },
+        { label => 'testcase-date', set => {
+                key_values => [ { name => 'lastexec' }, { name => 'freshness' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_date_output'),
+                closure_custom_perfdata => sub { return 0; },
+            }
+        },
+        { label => 'testcase-freshness', display_ok => 0, set => {
+                key_values => [ { name => 'freshness' }, { name => 'display' } ],
+                output_template => 'last execution: %ds ago (too old)',
+                closure_custom_perfdata => sub { return 0; },
+            }
+        },
     ];
 
     $self->{maps_counters}->{testcases} = [
@@ -127,12 +149,15 @@ sub manage_selection {
         );
 
         my $measures = $options{custom}->request_api(endpoint => '/testcases/' . $_->{testcase_alias} . '/');
+        my $last_exec = $measures->{measures}->[0]->{timestamp_epoch}/1000000000;
         $self->{cases}->{ $_->{testcase_alias} } = {
             display => $_->{testcase_alias},
             global => {
-                display  => $_->{testcase_alias},
-                duration => $measures->{measures}->[0]->{test_case_duration_ms},
-                state    => $status->{ $measures->{measures}->[0]->{test_case_state} }
+                display   => $_->{testcase_alias},
+                duration  => $measures->{measures}->[0]->{test_case_duration_ms},
+                state     => $status->{ $measures->{measures}->[0]->{test_case_state} },
+                lastexec  => POSIX::strftime('%Y-%m-%dT%H:%M:%S', localtime($last_exec)),
+                freshness => (time() - $last_exec)
             },
             testcases => {}
         };
@@ -149,6 +174,7 @@ sub manage_selection {
             $i++;
         }
     }
+
 }
 
 1;
@@ -178,11 +204,19 @@ Set critical status (Default: '%{state} eq "FAILED"') where '*' can be 'testcase
 
 =item B<--warning-*-duration>
 
-Set warning threshold for test cases or transactions duration (Default: '') where '*' can be 'testcase' or 'transaction'. 
+Set warning threshold for test cases or transactions duration (Default: '') where '*' can be 'testcase' or 'transaction'.
 
 =item B<--critical-*-duration>
 
 Set critical threshold for test cases or transactions duration (Default: '') where '*' can be 'testcase' or 'transaction'.
+
+=item B<--warning-tescase-freshness>
+
+Set warning threshold (in seconds) for a test case freshness (i.e number of seconds elapsed since the last test case execution, Default: '').
+
+=item B<--critical-testcase-freshness>
+
+Set critical threshold (in seconds) for a test case freshness (i.e number of seconds elapsed since the last test case execution, Default: '').
 
 =back
 
