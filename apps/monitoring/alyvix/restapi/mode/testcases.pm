@@ -168,6 +168,10 @@ sub manage_selection {
             $i++;
         }
     }
+    if (scalar(keys %{$self->{cases}}) <= 0) {
+            $self->{output}->add_option_msg(short_msg => "No test case found");
+            $self->{output}->option_exit();
+    }
 }
 
 1;
