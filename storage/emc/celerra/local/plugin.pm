@@ -31,7 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'getreason' => 'storage::emc::celerra::local::mode::getreason'
+        'filesystems' => 'storage::emc::celerra::local::mode::filesystems',
+        'getreason'   => 'storage::emc::celerra::local::mode::getreason',
+        'pools'       => 'storage::emc::celerra::local::mode::pools'
     };
 
     $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
