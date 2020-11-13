@@ -176,13 +176,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-tableentitycount-$aggregation$>
+=item B<--warning-tableentitycount-*>
 
-Thresholds warning ($aggregation$ can be: 'average', 'total').
+Thresholds warning (* can be: 'average', 'total').
 
-=item B<--critical-tableentitycount-$aggregation$>
+=item B<--critical-tableentitycount-*>
 
-Thresholds critical ($aggregation$ can be: 'average', 'total').
+Thresholds critical (* can be: 'average', 'total').
 
 =back
 

@@ -167,13 +167,13 @@ Set the cluster name (Required) (Can be multiple).
 
 Set the node id (Optional).
 
-=item B<--warning-cpuutilization-$statistic$>
+=item B<--warning-cpuutilization-*>
 
-Thresholds warning ($statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds warning (* can be: 'minimum', 'maximum', 'average', 'sum').
 
-=item B<--critical-cpuutilization-$statistic$>
+=item B<--critical-cpuutilization-*>
 
-Thresholds critical ($statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds critical (* can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back
 

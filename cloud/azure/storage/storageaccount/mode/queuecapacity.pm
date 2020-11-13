@@ -177,13 +177,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-queuecapacity-$aggregation$>
+=item B<--warning-queuecapacity-*>
 
-Thresholds warning ($aggregation$ can be: 'average', 'total').
+Thresholds warning (* can be: 'average', 'total').
 
-=item B<--critical-queuecapacity-$aggregation$>
+=item B<--critical-queuecapacity-*>
 
-Thresholds critical ($aggregation$ can be: 'average', 'total').
+Thresholds critical (* can be: 'average', 'total').
 
 =back
 

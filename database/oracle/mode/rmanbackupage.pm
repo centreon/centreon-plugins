@@ -209,7 +209,7 @@ Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 Threshold critical in seconds.
 Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 
-=item B<--no-*>
+=item B<  --no-*>
 
 Skip error if never executed.
 Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.

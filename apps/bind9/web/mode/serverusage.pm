@@ -115,7 +115,7 @@ Check bind global server usage.
 Only display some counters (regexp can be used).
 Example: --filter-counters='request'
 
-=item B<--warning-*> <--critical-*>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 'opcode-query', 'opcode-iquery', 'opcode-status', 'opcode-notify', 'opcode-update',
