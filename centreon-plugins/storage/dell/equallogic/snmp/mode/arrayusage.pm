@@ -343,14 +343,14 @@ Check array member usage.
 Threshold warning.
 Can be: 'used' (%), 'snapshot' (B), 'replication' (B),
 'connections', 'ext-connections', 'global-read-avg-latency' (ms), 'global-write-avg-latency'  (ms),
-'read-avg-latency' (ms), 'write-avg-latency' (ms), 'read-iops' (iops), 'write-iops (iops), 'traffic-in' (b/s), 'traffic-out' (b/s).
+'read-avg-latency' (ms), 'write-avg-latency' (ms), 'read-iops' (iops), 'write-iops' (iops), 'traffic-in' (b/s), 'traffic-out' (b/s).
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'used' (%), 'snapshot' (B), 'replication' (B),
 'connections', 'ext-connections', 'global-read-avg-latency' (ms), 'global-write-avg-latency'  (ms),
-'read-avg-latency' (ms), 'write-avg-latency' (ms), 'read-iops' (iops), 'write-iops (iops), 'traffic-in' (b/s), 'traffic-out' (b/s).
+'read-avg-latency' (ms), 'write-avg-latency' (ms), 'read-iops' (iops), 'write-iops' (iops), 'traffic-in' (b/s), 'traffic-out' (b/s).
 
 =item B<--filter-name>
 

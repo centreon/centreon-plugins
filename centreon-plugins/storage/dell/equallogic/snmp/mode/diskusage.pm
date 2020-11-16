@@ -225,12 +225,12 @@ Can used special variables like: %{health}, %{status}, %{display}
 =item B<--warning-*>
 
 Threshold warning.
-Can be:  'busy-time' (s), 'read-iops' (iops), 'write-iops (iops).
+Can be:  'busy-time' (s), 'read-iops' (iops), 'write-iops' (iops).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'busy-time' (s), 'read-iops' (iops), 'write-iops (iops).
+Can be: 'busy-time' (s), 'read-iops' (iops), 'write-iops' (iops).
 
 =back
 

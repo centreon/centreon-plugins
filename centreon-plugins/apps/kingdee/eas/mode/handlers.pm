@@ -250,7 +250,7 @@ Thresholds.
 Can be: 'threads-max', 'threads-spare-min', 'threads-spare-max', 'queue-size-max'
 'idle-timeout', 'threads-processed', 'threads-current', 'threads-current', 
 'threads-available', 'threads-busy', 'threads-available-max', 'threads-busy-max',
-'threads-processedtime-max', 'threads-created threads-destroyed'.
+'threads-processedtime-max', 'threads-created', 'threads-destroyed'.
 
 =back
 
