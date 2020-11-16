@@ -196,13 +196,13 @@ Set resource group (Required if resource's name is used).
 Set resource namespace (Can be: 'Blob', 'File', 'Table', 'Queue').
 Leave empty for account metric.
 
-=item B<--warning-availability-$aggregation$>
+=item B<--warning-availability-*>
 
-Thresholds warning ($aggregation$ can be: 'minimum', 'maximum', 'average').
+Thresholds warning (* can be: 'minimum', 'maximum', 'average').
 
-=item B<--critical-availability-$aggregation$>
+=item B<--critical-availability-*>
 
-Thresholds critical ($aggregation$ can be: 'minimum', 'maximum', 'average').
+Thresholds critical (* can be: 'minimum', 'maximum', 'average').
 
 =back
 

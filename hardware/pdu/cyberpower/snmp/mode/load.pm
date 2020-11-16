@@ -304,7 +304,7 @@ Can used special variables like: %{state}, %{display}
 Set unknown threshold for status.
 Can used special variables like: %{state}, %{display}
 
-=item B<--warning-pĥase-status>
+=item B<--warning-phase-status>
 
 Set warning threshold for status (Default: '%{state} =~ /low|nearOverload/i').
 Can used special variables like: %{state}, %{display}

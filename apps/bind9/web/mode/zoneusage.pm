@@ -139,7 +139,7 @@ Example: --filter-counters='request'
 
 Filter zone name (can be a regexp).
 
-=item B<--warning-*> <--critical-*>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: qtype-a', 'qtype-cname', 'qtype-mx', 'qtype-txt', 'qtype-soa', 'qtype-ptr', 'qtype-ns',
