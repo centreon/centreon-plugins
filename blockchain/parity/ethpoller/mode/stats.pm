@@ -73,7 +73,7 @@ sub set_counters {
 sub custom_block_output {
     my ($self, %options) = @_;
 
-    if (0 eq $self->{result_values}->{block_count}) {
+    if (0 eq $self->{result_values}->{block_count} && $self->{result_values}->{last_block} eq 0 ) {
         return sprintf("No block yet...");
     } else {
         return sprintf(
@@ -87,7 +87,7 @@ sub custom_block_output {
 sub custom_transaction_output {
     my ($self, %options) = @_;
 
-    if (0 eq $self->{result_values}->{transaction_count}) {
+    if (0 eq $self->{result_values}->{transaction_count} && 0 eq $self->{result_values}->{last_transaction}) {
         return sprintf("No transaction yet...");
     } else {
 
@@ -102,7 +102,7 @@ sub custom_transaction_output {
 sub custom_fork_output {
     my ($self, %options) = @_;
 
-    if (0 eq $self->{result_values}->{fork_count}) {
+    if (0 eq $self->{result_values}->{fork_count} && 0 eq $self->{result_values}->{last_fork}) {
         return sprintf("No fork occurred yet...");
     } else {
         
@@ -163,10 +163,12 @@ sub manage_selection {
     my $last_fork_timestamp = (defined($result->{fork}->{timestamp}) && $result->{fork}->{timestamp} != 0) ?
                                     $result->{fork}->{timestamp} :
                                     'NONE';
-
+    use Data::Dumper;
+    print Dumper($self->{block}->{ block_count});
     $self->{block} = { block_count => $result->{block}->{count},
                        last_block => $result->{block}->{count},
                        last_block_ts => $last_block_timestamp };
+    print Dumper($self->{block}->{ block_count});
 
     $self->{transaction} = { transaction_count => $result->{transaction}->{count},
                              last_transaction => $result->{transaction}->{count},
