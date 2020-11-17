@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::backup::rubrik::restapi::mode::tasks;
+package apps::backup::rubrik::restapi::mode::compliance;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,7 +28,7 @@ use warnings;
 sub prefix_global_output {
     my ($self, %options) = @_;
     
-    return 'Tasks last 24 hours ';
+    return 'Backup objects last 24 hours ';
 }
 
 sub set_counters {
@@ -39,25 +39,17 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'succeeded', nlabel => 'tasks.succeeded.24h.count', set => {
-                key_values => [ { name => 'succeeded' } ],
-                output_template => 'succeeded: %s',
+        { label => 'incompliance', nlabel => 'backup.objects.incompliance.24h.count', set => {
+                key_values => [ { name => 'incompliance' } ],
+                output_template => 'in compliance: %s',
                 perfdatas => [
                     { template => '%s',  min => 0 }
                 ]
             }
         },
-        { label => 'failed', nlabel => 'tasks.failed.24h.count', set => {
-                key_values => [ { name => 'failed' } ],
-                output_template => 'failed: %s',
-                perfdatas => [
-                    { template => '%s',  min => 0 }
-                ]
-            }
-        },
-        { label => 'canceled', nlabel => 'tasks.canceled.24h.count', set => {
-                key_values => [ { name => 'canceled' } ],
-                output_template => 'canceled: %s',
+        { label => 'noncompliance', nlabel => 'backup.objects.noncompliance.24h.count', set => {
+                key_values => [ { name => 'noncompliance' } ],
+                output_template => 'non compliance: %s',
                 perfdatas => [
                     { template => '%s',  min => 0 }
                 ]
@@ -83,13 +75,13 @@ sub manage_selection {
     my $reports = $options{custom}->request_api(endpoint => '/report');
     my $report_id;
     foreach (@{$reports->{data}}) {
-        if ($_->{name} eq 'Protection Tasks Details') {
+        if ($_->{name} eq 'SLA Compliance Summary') {
             $report_id = $_->{id};
             last;
         }
     }
     if (!defined($report_id)) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find report name 'Protection Tasks Details'");
+        $self->{output}->add_option_msg(short_msg => "Cannot find report name 'SLA Compliance Summary'");
         $self->{output}->option_exit();
     }
 
@@ -111,19 +103,19 @@ __END__
 
 =head1 MODE
 
-Check tasks.
+Check backup objects compliance.
 
 =over 8
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='failed'
+Example: --filter-counters='noncompliance'
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'succeeded', 'failed', 'canceled'.
+Can be: 'incompliance', 'noncompliance'.
 
 =back
 
