@@ -163,12 +163,10 @@ sub manage_selection {
     my $last_fork_timestamp = (defined($result->{fork}->{timestamp}) && $result->{fork}->{timestamp} != 0) ?
                                     $result->{fork}->{timestamp} :
                                     'NONE';
-    use Data::Dumper;
-    print Dumper($self->{block}->{ block_count});
+
     $self->{block} = { block_count => $result->{block}->{count},
                        last_block => $result->{block}->{count},
                        last_block_ts => $last_block_timestamp };
-    print Dumper($self->{block}->{ block_count});
 
     $self->{transaction} = { transaction_count => $result->{transaction}->{count},
                              last_transaction => $result->{transaction}->{count},
