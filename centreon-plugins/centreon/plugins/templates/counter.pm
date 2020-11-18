@@ -658,6 +658,12 @@ sub read_statefile_key {
     return $self->{statefile_value}->get(name => $options{key});
 }
 
+sub set_timestamp {
+    my ($self, %options) = @_;
+
+    $self->{override_timestamp} = $options{timestamp};
+}
+
 sub run {
     my ($self, %options) = @_;
     
@@ -667,7 +673,7 @@ sub run {
     if (defined($self->{statefile_value})) {
         $self->{new_datas} = {};
         $self->{statefile_value}->read(statefile => $self->{cache_name}) if (defined($self->{cache_name}));
-        $self->{new_datas}->{last_timestamp} = time();
+        $self->{new_datas}->{last_timestamp} = defined($self->{override_timestamp}) ? $self->{override_timestamp} : time();
     }
 
     foreach my $entry (@{$self->{maps_counters_type}}) {
