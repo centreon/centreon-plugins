@@ -20,13 +20,168 @@
 
 package os::linux::local::mode::process;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use Digest::MD5 qw(md5_hex);
+use Time::HiRes;
 
-my %state_map = (
+sub custom_cpu_calc {
+    my ($self, %options) = @_;
+
+    my $cpu_utime = $options{new_datas}->{$self->{instance} . '_cpu_utime'} - $options{old_datas}->{$self->{instance} . '_cpu_utime'};
+    my $cpu_stime = $options{new_datas}->{$self->{instance} . '_cpu_stime'} - $options{old_datas}->{$self->{instance} . '_cpu_stime'};
+
+    my $total_ticks = $options{delta_time} * $self->{instance_mode}->{option_results}->{clock_ticks};
+    $self->{result_values}->{cpu_prct} = 100 * ($cpu_utime + $cpu_stime) / $total_ticks;
+    $self->{instance_mode}->{global}->{cpu_prct} += $self->{result_values}->{cpu_prct};
+
+    return 0;
+}
+
+sub custom_disks_calc {
+    my ($self, %options) = @_;
+
+    my $diff = $options{new_datas}->{$self->{instance} . '_disks_' . $options{extra_options}->{label_ref}} - 
+        $options{old_datas}->{$self->{instance} . '_disks_' . $options{extra_options}->{label_ref}};
+    $self->{result_values}->{'disks_' . $options{extra_options}->{label_ref}} = $diff / $options{delta_time};
+    $self->{instance_mode}->{global}->{'disks_' . $options{extra_options}->{label_ref}} += $self->{result_values}->{'disks_' . $options{extra_options}->{label_ref}};
+
+    return 0;
+}
+
+sub prefix_process_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'Process: [command => %s] [arg => %s] [state => %s] ',
+        $options{instance_value}->{cmd},
+        $options{instance_value}->{args},
+        $options{instance_value}->{state}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'processes', type => 1, cb_prefix_output => 'prefix_process_output', skipped_code => { -10 => 1, -1 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'total', nlabel => 'processes.total.count', set => {
+                key_values => [ { name => 'processes' } ],
+                output_template => 'Number of current processes: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'total-memory-usage', nlabel => 'processes.memory.usage.bytes', set => {
+                key_values => [ { name => 'memory_used' } ],
+                output_template => 'memory used: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'B' }
+                ]
+            }
+        },
+        { label => 'total-cpu-utilization', nlabel => 'processes.cpu.utilization.percentage', set => {
+                key_values => [ { name => 'cpu_prct' } ],
+                output_template => 'cpu usage: %.2f %%',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0 }
+                ]
+            }
+        },
+        { label => 'total-disks-read', nlabel => 'processes.disks.io.read.usage.bytespersecond', set => {
+                key_values => [ { name => 'disks_read' } ],
+                output_template => 'disks read: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%d', unit => 'B/s', min => 0 }
+                ]
+            }
+        },
+        { label => 'total-disks-write', nlabel => 'processes.disks.io.write.usage.bytespersecond', set => {
+                key_values => [ { name => 'disks_write' } ],
+                output_template => 'disks write: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%d', unit => 'B/s', min => 0 }
+                ]
+            }
+        },
+    ];
+
+    $self->{maps_counters}->{processes} = [
+        { label => 'time', set => {
+                key_values => [ { name => 'duration_seconds' }, { name => 'duration_human' } ],
+                output_template => 'duration: %s',
+                output_use => 'duration_human',
+                closure_custom_perfdata => sub { return 0; }
+            }
+        },
+        { label => 'memory-usage', set => {
+                key_values => [ { name => 'memory_used' } ],
+                output_template => 'memory used: %s %s',
+                output_change_bytes => 1,
+                closure_custom_perfdata => sub { return 0; }
+            }
+        },
+        { label => 'cpu-utilization', set => {
+                key_values => [ { name => 'cpu_utime', diff => 1 }, { name => 'cpu_stime', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_cpu_calc'),
+                output_template => 'cpu usage: %.2f %%',
+                output_use => 'cpu_prct',
+                threshold_use => 'cpu_prct',
+                closure_custom_perfdata => sub { return 0; }
+            }
+        },
+        { label => 'disks-read', set => {
+                key_values => [ { name => 'disks_read', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_disks_calc'), closure_custom_calc_extra_options => { label_ref => 'read' },
+                output_template => 'disks read: %s %s/s',
+                output_change_bytes => 1,
+                closure_custom_perfdata => sub { return 0; }
+            }
+        },
+        { label => 'disks-write', set => {
+                key_values => [ { name => 'disks_write', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_disks_calc'), closure_custom_calc_extra_options => { label_ref => 'write' },
+                output_template => 'disks write: %s %s/s',
+                output_change_bytes => 1,
+                closure_custom_perfdata => sub { return 0; }
+            }
+        }
+    ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
+    bless $self, $class;
+
+    $options{options}->add_options(arguments => {
+        'filter-command:s' => { name => 'filter_command' },
+        'filter-arg:s'     => { name => 'filter_arg' },
+        'filter-state:s'   => { name => 'filter_state' },
+        'filter-ppid:s'	   => { name => 'filter_ppid' },
+        'add-cpu'          => { name => 'add_cpu' },
+        'add-memory'       => { name => 'add_memory' },
+        'add-disk-io'      => { name => 'add_disk_io' },
+        'page-size:s'      => { name => 'page_size', default => 4096 },
+        'clock-ticks:s'    => { name => 'clock_ticks', default => 100 }
+    });
+
+    return $self;
+}
+
+my $state_map = {
     Z => 'zombie',
     X => 'dead',
     W => 'paging',
@@ -35,48 +190,7 @@ my %state_map = (
     R => 'running',
     D => 'UninterrupibleSleep',
     I => 'IdleKernelThread'
-);
-
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-
-    $options{options}->add_options(arguments => {
-        'warning:s'        => { name => 'warning' },
-        'critical:s'       => { name => 'critical' },
-        'warning-time:s'   => { name => 'warning_time' },
-        'critical-time:s'  => { name => 'critical_time' },
-        'filter-command:s' => { name => 'filter_command' },
-        'filter-arg:s'     => { name => 'filter_arg' },
-        'filter-state:s'   => { name => 'filter_state' },
-        'filter-ppid:s'	   => { name => 'filter_ppid' }
-    });
-
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-time', value => $self->{option_results}->{warning_time})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-time threshold '" . $self->{option_results}->{warning_time} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-time', value => $self->{option_results}->{critical_time})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-time threshold '" . $self->{option_results}->{critical_time} . "'.");
-       $self->{output}->option_exit();
-    }
-}
+};
 
 sub parse_output {
     my ($self, %options) = @_;
@@ -86,30 +200,51 @@ sub parse_output {
         command_options => '-e -o state -o ===%t===%p===%P=== -o comm:50 -o ===%a  -w 2>&1'
     );
 
-    $self->{result} = {};
+    $self->{global} = { processes => 0 };
+    $self->{processes} = {};
+
     my @lines = split /\n/, $stdout;
     my $line = shift @lines;
     foreach my $line (@lines) {
         next if ($line !~ /^(.*?)===(.*?)===(.*?)===(.*?)===(.*?)===(.*)$/);
-        my ($state, $elapsed, $pid, $ppid, $cmd, $args) = ($1, $2, $3, $4, $5, $6);
+        my ($state, $elapsed, $pid, $ppid, $cmd, $args) = (
+            centreon::plugins::misc::trim($1),
+            centreon::plugins::misc::trim($2),
+            centreon::plugins::misc::trim($3),
+            centreon::plugins::misc::trim($4),
+            centreon::plugins::misc::trim($5),
+            centreon::plugins::misc::trim($6)
+        );
 
-        $self->{result}->{centreon::plugins::misc::trim($pid)} = {
-            ppid => centreon::plugins::misc::trim($ppid), 
-            state => centreon::plugins::misc::trim($state),
-            elapsed => centreon::plugins::misc::trim($elapsed), 
-            cmd => centreon::plugins::misc::trim($cmd), 
-            args => centreon::plugins::misc::trim($args)
+        next if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
+            $cmd !~ /$self->{option_results}->{filter_command}/);
+        next if (defined($self->{option_results}->{filter_arg}) && $self->{option_results}->{filter_arg} ne '' &&
+            $args !~ /$self->{option_results}->{filter_arg}/);
+        next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
+            $state_map->{$state} !~ /$self->{option_results}->{filter_state}/i);
+        next if (defined($self->{option_results}->{filter_ppid}) && $self->{option_results}->{filter_ppid} ne '' &&
+            $ppid !~ /$self->{option_results}->{filter_ppid}/);
+
+        $args =~ s/\|//g;
+        my $duration_seconds = $self->get_duration(elapsed => $elapsed);
+
+        $self->{processes}->{$pid} = {
+            ppid => $ppid, 
+            state => $state,
+            duration_seconds => $duration_seconds,
+            duration_human => centreon::plugins::misc::change_seconds(value => $duration_seconds),
+            cmd => $cmd, 
+            args => $args
         };
+        $self->{global}->{processes}++;
     }
 }
 
-sub check_time {
+sub get_duration {
     my ($self, %options) = @_;
 
-    my $time = $self->{result}->{$options{pid}}->{elapsed};
     # Format: [[dd-]hh:]mm:ss
-    my @values = split /:/, $time;
-    my ($seconds, $min, $lpart) = (pop @values, pop @values, pop @values);
+    my ($seconds, $min, $lpart) = split /:/, $options{elapsed};
     my $total_seconds_elapsed = $seconds + ($min * 60);
     if (defined($lpart)) {
         my ($day, $hour) = split /-/, $lpart;
@@ -121,56 +256,109 @@ sub check_time {
         }
     }
 
-    my $exit = $self->{perfdata}->threshold_check(value => $total_seconds_elapsed, threshold => [ { label => 'critical-time', 'exit_litteral' => 'critical' }, { label => 'warning-time', exit_litteral => 'warning' } ]);
-    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(
-            severity => $exit,
-            short_msg => "Time issue for process " . $self->{result}->{$options{pid}}->{cmd}
-        );
+    return $total_seconds_elapsed;
+}
+
+sub add_cpu {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{add_cpu}));
+
+    $self->{global}->{cpu_prct} = 0;
+    # /stat
+    #   utime (14) Amount of time that this process has been scheduled in user mode, measured in clock ticks (divide by sysconf(_SC_CLK_TCK))
+    #   stime (15) Amount of time that this process has been scheduled in kernel mode, measured in clock ticks
+    foreach my $pid (keys %{$self->{processes}}) {
+        next if ($options{content} !~ /==>\s*\/proc\/$pid\/stat\s+.*?\n(.*?)\n/ms);
+        my @values = split(/\s+/, $1);
+
+        $self->{processes}->{$pid}->{cpu_utime} = $values[13];
+        $self->{processes}->{$pid}->{cpu_stime} = $values[14];
     }
 }
 
-sub run {
+sub add_memory {
     my ($self, %options) = @_;
-	
-    $self->parse_output(custom => $options{custom});
-    
-    my $num_processes_match = 0;
-    foreach my $pid (keys %{$self->{result}}) {
-        next if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
-                 $self->{result}->{$pid}->{cmd} !~ /$self->{option_results}->{filter_command}/);
-        next if (defined($self->{option_results}->{filter_arg}) && $self->{option_results}->{filter_arg} ne '' &&
-                 $self->{result}->{$pid}->{args} !~ /$self->{option_results}->{filter_arg}/);
-        next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-                 $state_map{$self->{result}->{$pid}->{state}} !~ /$self->{option_results}->{filter_state}/i);
-        next if (defined($self->{option_results}->{filter_ppid}) && $self->{option_results}->{filter_ppid} ne '' &&
-                 $self->{result}->{$pid}->{ppid} !~ /$self->{option_results}->{filter_ppid}/);
-		 
-        $self->{output}->output_add(
-            long_msg =>
-                'Process: [command => ' . $self->{result}->{$pid}->{cmd} . 
-                '] [arg => ' . $self->{result}->{$pid}->{args} .
-                '] [state => ' . $state_map{$self->{result}->{$pid}->{state}} . ']'
-        );
-        $self->check_time(pid => $pid);
-        $num_processes_match++;
+
+    return if (!defined($self->{option_results}->{add_memory}));
+
+    $self->{global}->{memory_used} = 0;
+    # statm
+    #   resident (2) resident set size (inaccurate; same as VmRSS in /proc/[pid]/status)
+    #   data     (6) data + stack
+    # measured in page (default: 4096). can get with: getconf PAGESIZE
+    foreach my $pid (keys %{$self->{processes}}) {
+        next if ($options{content} !~ /==>\s*\/proc\/$pid\/statm.*?\n(.*?)\n/ms);
+        my @values = split(/\s+/, $1);
+
+        my $memory_used = ($values[1] * $self->{option_results}->{page_size}) + ($values[5] * $self->{option_results}->{page_size});
+        $self->{processes}->{$pid}->{memory_used} = $memory_used;
+        $self->{global}->{memory_used} += $memory_used;
     }
+}
+
+sub add_disk_io {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{add_disk_io}));
+
+    $self->{global}->{disks_read} = 0;
+    $self->{global}->{disks_write} = 0;
+    # /io
+    #   read_bytes: 2256896
+    #   write_bytes: 0
+    foreach my $pid (keys %{$self->{processes}}) {
+        next if ($options{content} !~ /==>\s*\/proc\/$pid\/io\s+.*?\n(.*?)(?:==>|\Z)/ms);
+        my $entries = $1;
+        next if ($entries !~ /read_bytes:\s*(\d+)/m);
+        $self->{processes}->{$pid}->{disks_read} = $1;
+
+        next if ($entries !~ /write_bytes:\s*(\d+)/m);
+        $self->{processes}->{$pid}->{disks_write} = $1;
+    }
+}
+
+sub add_extra_metrics {
+    my ($self, %options) = @_;
+
+    my $files = [];
+    push @$files, 'stat' if (defined($self->{option_results}->{add_cpu}));
+    push @$files, 'statm' if (defined($self->{option_results}->{add_memory}));
+    push @$files, 'io' if (defined($self->{option_results}->{add_disk_io}));
+
+    my ($num_files, $files_arg) = (scalar(@$files), '');
+    return if ($num_files <= 0);
+    $files_arg = $files->[0] if ($num_files == 1);
+    $files_arg = '{' . join(',', @$files) . '}' if ($num_files > 1);
     
-    my $exit = $self->{perfdata}->threshold_check(value => $num_processes_match, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(
-        severity => $exit,
-        short_msg => "Number of current processes: $num_processes_match"
-    );
-    $self->{output}->perfdata_add(
-        label => 'nbproc',
-        value => $num_processes_match,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-        min => 0
+    my ($num_proc, $proc_arg) = (scalar(keys %{$self->{processes}}), '');
+    return if ($num_proc <= 0);
+    $proc_arg = join(',', keys %{$self->{processes}}) if ($num_proc == 1);
+    $proc_arg = '{' . join(',', keys %{$self->{processes}}) . '}' if ($num_proc > 1);
+
+    $self->set_timestamp(timestamp => Time::HiRes::time());
+    my ($content) = $options{custom}->execute_command(
+        command => 'bash',
+        command_options => "-c 'tail -n +1 /proc/$proc_arg/$files_arg'",
+        no_quit => 1
     );
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->add_cpu(content => $content);
+    $self->add_memory(content => $content);
+    $self->add_disk_io(content => $content);
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $self->{cache_name} = 'linux_local_' . $options{custom}->get_identifier()  . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_command}) ? md5_hex($self->{option_results}->{filter_command}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_arg}) ? md5_hex($self->{option_results}->{filter_arg}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_state}) ? md5_hex($self->{option_results}->{filter_state}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_ppid}) ? md5_hex($self->{option_results}->{filter_ppid}) : md5_hex('all'));
+    $self->parse_output(custom => $options{custom});
+    $self->add_extra_metrics(custom => $options{custom});
 }
 
 1;
@@ -180,29 +368,25 @@ __END__
 =head1 MODE
 
 Check linux processes.
-Can filter on commands, arguments and states.
 
-Command used: ps -e -o state -o ===%t===%p===%P=== -o comm:50 -o ===%a  -w 2>&1
+Command used:
+
+ps -e -o state -o ===%t===%p===%P=== -o comm:50 -o ===%a  -w 2>&1
+bash -c 'tail -n +1 /proc/{pid1,pid2,...}/{statm,stat,io}'
 
 =over 8
 
-=item B<--warning>
+=item B<--add-cpu>
 
-Threshold warning (in absolute of processes count. After filters).
+Monitor cpu usage.
 
-=item B<--critical>
+=item B<--add-memory>
 
-Threshold critical (in absolute of processes count. After filters).
+Monitor memory usage. It's inaccurate but it provides a trend.
 
-=item B<--warning-time>
+=item B<--add-disk-io>
 
-Threshold warning (in seconds).
-On each processes filtered.
-
-=item B<--critical-time>
-
-Threshold critical (in seconds).
-On each processes filtered.
+Monitor disk I/O.
 
 =item B<--filter-command>
 
@@ -221,6 +405,12 @@ Filter process ppid (regexp can be used).
 Filter process states (regexp can be used).
 You can use: 'zombie', 'dead', 'paging', 'stopped',
 'InterrupibleSleep', 'running', 'UninterrupibleSleep'.
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'total', 'total-memory-usage', 'total-cpu-utilization', 'total-disks-read',
+'total-disks-write', 'time', 'memory-usage', 'cpu-utilization', 'disks-read', 'disks-write'. 
 
 =back
 
