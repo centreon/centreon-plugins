@@ -134,7 +134,7 @@ sub search_metric {
         my $all_filters_ok = 1;
         foreach my $dimension (@{$options{dimensions}}) {
             my $filter = "filter_" . $dimension;
-            next if (defined($self->{option_results}->{$filter}));
+            next if (!defined($self->{option_results}->{$filter}));
             $all_filters_ok = 0;
             last if (!defined($data->{dimensions}->{$dimension}));
             my $dimension_value = $data->{dimensions}->{$dimension};
