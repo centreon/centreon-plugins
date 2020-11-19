@@ -59,7 +59,7 @@ sub set_counters {
     $self->{maps_counters}->{orderers} = [
         { label => 'orderer-validation-duration-avg', nlabel => 'broadcast.validate.duration.avg', set => {
                 key_values => [ { name => 'broadcast_validate_duration_avg' } ],
-                output_template => 'Average endorsing duration (ms) : %s',
+                output_template => 'Average validate duration (ms) : %s',
                 perfdatas => [
                     { value => 'broadcast_validate_duration_avg', template => '%s', min => 0,
                       label_extra_instance => 1 },
