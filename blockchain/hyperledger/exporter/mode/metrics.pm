@@ -36,7 +36,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{peers} = [
-        { label => 'peers-known', nlabel => 'peers.known.count', set => {
+        { label => 'peer-known', nlabel => 'peers.known.count', set => {
                 key_values => [ { name => 'gossip_membership_total_peers_known' } ],
                 output_template => 'Number of known peers: %s',
                 perfdatas => [
@@ -75,7 +75,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'raft-max-orderers', nlabel => 'consensus.etcdraft.cluster.size', set => {
+        { label => 'raft-orderers-max', nlabel => 'consensus.etcdraft.cluster.size', set => {
                 key_values => [ { name => 'consensus_etcdraft_cluster_size' } ],
                 output_template => 'Max orderers: %s',
                 perfdatas => [
@@ -211,7 +211,7 @@ sub search_calc_avg_metric {
 
 sub manage_selection {
     my ($self, %options) = @_;
-
+    
     my $metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
     $self->{channel} = {};
     my @channel = ("channel");
@@ -258,17 +258,16 @@ sub manage_selection {
         store => 'orderers'
     );
     
-
+    
     $self->{cache_name} = 'hyperledger_' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
-        (defined($self->{option_results}->{port}) ? $self->{option_results}->{port} : 'default') . '_' .
+        (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname}->[0] : 'me') . '_' .
+        (defined($self->{option_results}->{port}) ? $self->{option_results}->{port}->[0] : 'default') . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_channel}) ? md5_hex($self->{option_results}->{filter_channel}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_status}) ? md5_hex($self->{option_results}->{filter_status}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_chaincode}) ? md5_hex($self->{option_results}->{filter_chaincode}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_success}) ? md5_hex($self->{option_results}->{filter_success}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_type}) ? md5_hex($self->{option_results}->{filter_type}) : md5_hex('all')) ;
-
 }
 
 1;

@@ -69,13 +69,13 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
-    $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : 80;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/metrics';
-    $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : '';
-    $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : '';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname}->[0] : undef;
+    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port}->[0] : 80;
+    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto}->[0] : 'http';
+    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path}->[0] : '/metrics';
+    $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username}->[0] : '';
+    $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password}->[0] : '';
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout}->[0] : 10;
 
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
@@ -86,7 +86,7 @@ sub check_options {
         scalar(@{$self->{option_results}->{hostname}}) == 0) {
         return 0;
     }
-    return 1;
+    return 0;
 }
 
 sub build_options_for_httplib {
