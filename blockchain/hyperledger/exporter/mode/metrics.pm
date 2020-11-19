@@ -254,7 +254,7 @@ sub manage_selection {
         dimensions =>  \@channel_status_type ,
         numerator => 'broadcast_validate_duration_sum',
         denominator => 'broadcast_validate_duration_count',
-        key => 'endorser_propsal_duration_avg',
+        key => 'broadcast_validate_duration_avg',
         store => 'orderers'
     );
     
