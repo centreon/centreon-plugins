@@ -159,20 +159,18 @@ sub get_access_token {
     my $access_token = $options{statefile}->get(name => 'access_token');
 
     if ($has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10)) {
-        my $uri = URI::Encode->new({encode_reserved => 1});
-        my $encoded_management_endpoint = $uri->encode($self->{management_endpoint});
-        my $post_data = 'grant_type=client_credentials' . 
-            '&client_id=' . $self->{client_id} .
-            '&client_secret=' . $self->{client_secret} .
-            '&resource=' . $encoded_management_endpoint;
-        
         $self->settings();
 
         my $content = $self->{http}->request(
-            method => 'POST', query_form_post => $post_data,
+            method => 'POST',
             full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/token',
             hostname => '',
-            header => [ 'Content-Type: application/x-www-form-urlencoded' ]
+            post_param => [
+                'grant_type=client_credentials',
+                'client_id=' . $self->{client_id},
+                'client_secret=' . $self->{client_secret},
+                'resource=' . $self->{management_endpoint}
+            ]
         );
 
         if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
