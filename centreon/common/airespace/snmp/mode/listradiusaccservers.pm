@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::airespace::snmp::mode::listgroups;
+package centreon::common::airespace::snmp::mode::listradiusaccservers;
 
 use base qw(centreon::plugins::mode);
 
@@ -41,27 +41,32 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
+my $map_server_status = {
+    0 => 'disable', 1 => 'enable'
+};
+my $mapping = {
+    address => { oid => '.1.3.6.1.4.1.14179.2.5.2.1.2' }, # bsnRadiusAccServerAddress
+    port    => { oid => '.1.3.6.1.4.1.14179.2.5.2.1.3' }, # bsnRadiusAccClientServerPortNumber
+    status  => { oid => '.1.3.6.1.4.1.14179.2.5.2.1.5', map => $map_server_status } # bsnRadiusAccServerStatus
+};
+my $oid_bsnRadiusAccServerEntry = '.1.3.6.1.4.1.14179.2.5.2.1';
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $mapping = {
-        description => { oid => '.1.3.6.1.4.1.14179.2.10.2.1.2' } # bsnAPGroupsVlanDescription
-    };
-
     my $snmp_result = $options{snmp}->get_table(
-        oid => $mapping->{description}->{oid}
+        oid => $oid_bsnRadiusAccServerEntry,
+        start => $mapping->{address}->{oid},
+        end => $mapping->{status}->{oid}
     );
+
     my $results = {};
     foreach my $oid (keys %$snmp_result) {
-        $oid =~ /^$mapping->{description}->{oid}\.(.*?)\.(.*)$/;
-        my ($num, $index) = ($1, $2);
+        next if ($oid !~ /^$mapping->{address}->{oid}\.(.*)$/);
 
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $num . '.' . $index);
-        my $name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $index))));
-
-        $results->{$name} = {
-            description => $result->{description}
-        };
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
+        my $name = $result->{address} . ':' . $result->{port};
+        $results->{$name} = $result;
     }
 
     return $results;
@@ -74,16 +79,16 @@ sub run {
     foreach my $name (sort keys %$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[name: %s] [description: %s]',
+                '[name: %s] [status: %s]',
                 $name,
-                $results->{$name}->{description}
+                $results->{$name}->{status}
             )
         );
     }
     
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List groups:'
+        short_msg => 'List radius accounting servers:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -92,7 +97,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'description']);
+    $self->{output}->add_disco_format(elements => ['name', 'status']);
 }
 
 sub disco_show {
@@ -102,7 +107,7 @@ sub disco_show {
     foreach my $name (sort keys %$results) {
         $self->{output}->add_disco_entry(
             name => $name,
-            description => $results->{$name}->{description}
+            status => $results->{$name}->{status}
         );
     }
 }
@@ -113,7 +118,7 @@ __END__
 
 =head1 MODE
 
-List wireless groups.
+List radius accounting servers.
 
 =over 8
 
