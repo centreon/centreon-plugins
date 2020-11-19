@@ -31,16 +31,20 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'ap-channel-interference' => 'centreon::common::airespace::snmp::mode::apchannelinterference',
-        'ap-channel-noise'        => 'centreon::common::airespace::snmp::mode::apchannelnoise',
-        'ap-status'               => 'centreon::common::airespace::snmp::mode::apstatus',
-        'ap-users'                => 'centreon::common::airespace::snmp::mode::apusers',
-        'cpu'                     => 'centreon::common::airespace::snmp::mode::cpu',
-        'hardware'                => 'centreon::common::airespace::snmp::mode::hardware',
-        'interfaces'              => 'snmp_standard::mode::interfaces', 
-        'list-groups'             => 'centreon::common::airespace::snmp::mode::listgroups',
-        'list-interfaces'         => 'snmp_standard::mode::listinterfaces',
-        'memory'                  => 'centreon::common::airespace::snmp::mode::memory'
+        'ap-channel-interference'  => 'centreon::common::airespace::snmp::mode::apchannelinterference',
+        'ap-channel-noise'         => 'centreon::common::airespace::snmp::mode::apchannelnoise',
+        'ap-status'                => 'centreon::common::airespace::snmp::mode::apstatus',
+        'ap-users'                 => 'centreon::common::airespace::snmp::mode::apusers',
+        'cpu'                      => 'centreon::common::airespace::snmp::mode::cpu',
+        'hardware'                 => 'centreon::common::airespace::snmp::mode::hardware',
+        'interfaces'               => 'snmp_standard::mode::interfaces', 
+        'list-groups'              => 'centreon::common::airespace::snmp::mode::listgroups',
+        'list-interfaces'          => 'snmp_standard::mode::listinterfaces',
+        'list-radius-acc-servers'  => 'centreon::common::airespace::snmp::mode::listradiusaccservers',
+        'list-radius-auth-servers' => 'centreon::common::airespace::snmp::mode::listradiusauthservers',
+        'memory'                   => 'centreon::common::airespace::snmp::mode::memory',
+        'radius-acc-servers'       => 'centreon::common::airespace::snmp::mode::radiusaccservers',
+        'radius-auth-servers'      => 'centreon::common::airespace::snmp::mode::radiusauthservers'
     };
 
     return $self;
