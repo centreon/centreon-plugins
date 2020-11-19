@@ -66,9 +66,9 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'raft-orderers-connected', nlabel => 'consensus.etcdraft.active.nodes', set => {
+        { label => 'raft-orderers-active', nlabel => 'consensus.etcdraft.active.nodes', set => {
                 key_values => [ { name => 'consensus_etcdraft_active_nodes' } ],
-                output_template => 'Connected orderers: %s',
+                output_template => 'Active orderers: %s',
                 perfdatas => [
                     { value => 'consensus_etcdraft_active_nodes', template => '%s', min => 0,
                       label_extra_instance => 1 },
