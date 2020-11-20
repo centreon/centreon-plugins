@@ -36,22 +36,23 @@ sub check_fan {
 
     $self->{output}->output_add(
         long_msg => sprintf(
-            "fan '%s' speed is '%s' RPM",
-            $options{instance},
+            "fan '%s' is %s RPM",
+            $options{name},
             $options{value}
         )
     );
-    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $options{instance}, value => $options{value});
+
+    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $options{name}, value => $options{value});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(
             severity => $exit,
-            short_msg => sprintf("Fan '%s' speed is '%s' RPM", $options{instance}, $options{value})
+            short_msg => sprintf("Fan '%s' is %s RPM", $options{name}, $options{value})
         );
     }
     $self->{output}->perfdata_add(
         nlabel => 'hardware.fan.speed.rpm',
         unit => 'rpm',
-        instances => $options{instance},
+        instances => $options{name},
         value => $options{value},
         warning => $warn,
         critical => $crit
@@ -62,27 +63,36 @@ sub check_fan {
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking fans");
+    $self->{output}->output_add(long_msg => "Checking fan");
     $self->{components}->{fan} = { name => 'fans', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
 
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
-
-    my $gauge_ok = 0;
     foreach (keys %{$self->{results}}) {
         next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
         next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'rpm');
-
-        $result = $self->{snmp}->map_instance(mapping => $mapping_gauge, results => $self->{results}, instance => $1);
-        check_fan($self, value => $result->{value}, instance => $result->{name});
-        $gauge_ok = 1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_gauge, results => $self->{results}, instance => $1);
+        next if ($self->check_filter(section => 'fan', instance => $result->{name}));
+        check_fan(
+            $self,
+            value => $result->{value},
+            name => $result->{name}
+        );
     }
 
-    if ($gauge_ok == 0 && defined($result->{mtxrHlFanSpeed1}) && $result->{mtxrHlFanSpeed1} =~ /[0-9]+/) {
-        check_fan($self, value => $result->{mtxrHlFanSpeed1}, instance => 1);
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
+    if (defined($result->{mtxrHlFanSpeed1}) && ! $self->check_filter(section => 'fan', instance => 'fan1')) {
+        check_fan(
+            $self,
+            value => $result->{mtxrHlFanSpeed1},
+            name => 'fan1'
+        );
     }
-    if ($gauge_ok == 0 && defined($result->{mtxrHlFanSpeed2}) && $result->{mtxrHlFanSpeed2} =~ /[0-9]+/) {
-        check_fan($self, value => $result->{mtxrHlFanSpeed2}, instance => 2);
+    if (defined($result->{mtxrHlFanSpeed2}) && ! $self->check_filter(section => 'fan', instance => 'fan2')) {
+        check_fan(
+            $self,
+            value => $result->{mtxrHlFanSpeed2},
+            name => 'fan2'
+        );
     }
 }
 
