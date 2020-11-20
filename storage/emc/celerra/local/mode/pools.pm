@@ -154,7 +154,7 @@ Filter pools by pool name (can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
+Can be: 'space-usage' (B), 'space-usage-free' (B), 'space-usage-prct' (%).
 
 =back
 
