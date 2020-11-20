@@ -18,72 +18,72 @@
 # limitations under the License.
 #
 
-package network::mikrotik::snmp::mode::components::voltage;
+package network::mikrotik::snmp::mode::components::status;
 
 use strict;
 use warnings;
 use network::mikrotik::snmp::mode::components::resources qw($map_gauge_unit $mapping_gauge);
 
 my $mapping = {
-    mtxrHlVoltage => { oid => '.1.3.6.1.4.1.14988.1.1.3.8' }
+    mtxrHlPowerSupplyState       => { oid => '.1.3.6.1.4.1.14988.1.1.3.15' },
+    mtxrHlBackupPowerSupplyState => { oid => '.1.3.6.1.4.1.14988.1.1.3.16' }
 };
 
 sub load {}
 
-sub check_voltage {
+sub check_status {
     my ($self, %options) = @_;
 
     $self->{output}->output_add(
         long_msg => sprintf(
-            "voltage '%s' is %s V",
+            "status '%s' is %s",
             $options{name},
             $options{value}
         )
     );
 
-    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $options{name}, value => $options{value});
+    my $exit = $self->get_severity(section => 'status', value => $options{value});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(
             severity => $exit,
-            short_msg => sprintf("Voltage '%s' is %s V", $options{name}, $options{value})
+            short_msg => sprintf("Status '%s' is %s", $options{name}, $options{value})
         );
     }
-    $self->{output}->perfdata_add(
-        nlabel => 'hardware.voltage.volt',
-        unit => 'V',
-        instances => $options{name},
-        value => $options{value},
-        warning => $warn,
-        critical => $crit
-    );
-    $self->{components}->{voltage}->{total}++;
+    $self->{components}->{status}->{total}++;
 }
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking voltage");
-    $self->{components}->{voltage} = {name => 'voltage', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'voltage'));
+    $self->{output}->output_add(long_msg => "Checking status");
+    $self->{components}->{status} = {name => 'status', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'status'));
 
     foreach (keys %{$self->{results}}) {
         next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
-        next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'dV');
+        next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'status');
         my $result = $self->{snmp}->map_instance(mapping => $mapping_gauge, results => $self->{results}, instance => $1);
-        next if ($self->check_filter(section => 'voltage', instance => $result->{name}));
-        check_voltage(
+        next if ($self->check_filter(section => 'status', instance => $result->{name}));
+        check_status(
             $self,
-            value => $result->{value} / 10,
+            value => $result->{value} == 0 ? 'ok' : 'not ok',
             name => $result->{name}
         );
     }
 
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
-    if (defined($result->{mtxrHlVoltage}) && ! $self->check_filter(section => 'voltage', instance => 'system')) {
-        check_voltage(
+    if (defined($result->{mtxrHlPowerSupplyState}) && ! $self->check_filter(section => 'status', instance => 'psu-primary')) {
+        check_status(
             $self,
-            value => $result->{mtxrHlVoltage} / 10,
-            name => 'system'
+            value => $result->{mtxrHlPowerSupplyState} == 1 ? 'ok' : 'not ok',
+            name => 'psu-primary'
+        );
+    }
+    if (defined($result->{mtxrHlBackupPowerSupplyState}) && ! $self->check_filter(section => 'status', instance => 'psu-backup')) {
+        check_status(
+            $self,
+            value => $result->{mtxrHlBackupPowerSupplyState} == 1 ? 'ok' : 'not ok',
+            name => 'psu-backup'
         );
     }
 }

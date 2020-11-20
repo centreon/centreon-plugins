@@ -41,7 +41,7 @@ sub check_current {
         )
     );
 
-    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'current', instance => $options{instance}, value => $options{value});
+    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'current', instance => $options{name}, value => $options{value});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(
             severity => $exit,
@@ -66,28 +66,23 @@ sub check {
     $self->{components}->{current} = { name => 'current', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'current'));
 
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
-
-    my $gauge_ok = 0;
     foreach (keys %{$self->{results}}) {
         next if (! /^$mapping_gauge->{unit}->{oid}\.(\d+)/);
         next if ($map_gauge_unit->{ $self->{results}->{$_} } ne 'dA');
-
-        $result = $self->{snmp}->map_instance(mapping => $mapping_gauge, results => $self->{results}, instance => $1);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_gauge, results => $self->{results}, instance => $1);
+        next if ($self->check_filter(section => 'current', instance => $result->{name}));
         check_current(
             $self,
             value => $result->{value} / 10,
-            instance => $1,
             name => $result->{name}
         );
-        $gauge_ok = 1;
     }
 
-    if ($gauge_ok == 0 && defined($result->{mtxrHlCurrent}) && $result->{mtxrHlCurrent} =~ /[0-9]+/) {
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
+    if (defined($result->{mtxrHlCurrent}) && ! $self->check_filter(section => 'current', instance => 'system')) {
         check_current(
             $self,
             value => $result->{mtxrHlCurrent} / 1000,
-            instance => 1,
             name => 'system'
         );
     }
