@@ -50,8 +50,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { value => 'used', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
@@ -59,8 +58,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { value => 'free', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
@@ -68,8 +66,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'used: %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used', template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1 },
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
         }
@@ -94,7 +91,7 @@ sub new {
 }
 
 my $mapping = {
-    s5ChasUtilMemoryAvailable   => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.9' }
+    s5ChasUtilMemoryAvailable => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.9' }
 };
 my $mapping_khi = {
     rcKhiSlotMemUsed => { oid => '.1.3.6.1.4.1.2272.1.85.10.1.1.6' }, # KB
@@ -133,15 +130,15 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $snmp_result = $options{snmp}->get_table(
-        oid => $mapping->{s5ChasUtilMemoryAvailable}->{oid},
+        oid => $mapping->{s5ChasUtilMemoryAvailable}->{oid}
     );
 
     $self->{memory} = {};
-    foreach my $oid (keys %{$self->{results}}) {
+    foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{s5ChasUtilMemoryAvailable}->{oid}\.(.*)/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        
+
         $self->{memory}->{$instance} = {
             display => $instance, 
             prct_used => 100 - $result->{s5ChasUtilMemoryAvailable}
