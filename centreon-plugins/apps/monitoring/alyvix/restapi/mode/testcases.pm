@@ -24,14 +24,26 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use POSIX qw(strftime);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
         'state: %s',
-        $self->{result_values}->{state},
+        $self->{result_values}->{state}
+    );
+}
+
+sub custom_date_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'last execution: %s (%s ago)',
+        $self->{result_values}->{lastexec},
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{freshness})
     );
 }
 
@@ -67,18 +79,26 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'testcase-duration', nlabel => 'testcase.duration.milliseconds', set => {
-                key_values => [ { name => 'duration' }, { name => 'display' } ],
+                key_values => [ { name => 'duration' } ],
                 output_template => 'duration: %s ms',
                 perfdatas => [
-                    { template => '%d', unit => 'ms', min => 0, label_extra_instance => 1},
+                    { template => '%d', unit => 'ms', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'testcase-state', type => 2, critical_default => '%{state} eq "FAILED"', set => {
-                key_values => [ { name => 'state' }, { name => 'display' } ],
+                key_values => [ { name => 'state' }],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'testcase-freshness', nlabel => 'testcase.freshness.seconds', set => {
+                key_values => [ { name => 'freshness' }, { name => 'lastexec' } ],
+                closure_custom_output => $self->can('custom_date_output'),
+                perfdatas => [
+                    { template => '%.3f', unit => 's', min => 0, label_extra_instance => 1 }
+                ]
             }
         }
     ];
@@ -92,7 +112,7 @@ sub set_counters {
             }
         },
         { label => 'transaction-duration',  nlabel => 'transaction.duration.milliseconds', set => {
-                key_values => [ { name => 'duration' }, { name => 'display' } ],
+                key_values => [ { name => 'duration' } ],
                 output_template => 'duration: %s ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
@@ -127,12 +147,15 @@ sub manage_selection {
         );
 
         my $measures = $options{custom}->request_api(endpoint => '/testcases/' . $_->{testcase_alias} . '/');
+        my $lastexec = $measures->{measures}->[0]->{timestamp_epoch} / 1000000000;
         $self->{cases}->{ $_->{testcase_alias} } = {
             display => $_->{testcase_alias},
             global => {
-                display  => $_->{testcase_alias},
-                duration => $measures->{measures}->[0]->{test_case_duration_ms},
-                state    => $status->{ $measures->{measures}->[0]->{test_case_state} }
+                display   => $_->{testcase_alias},
+                duration  => $measures->{measures}->[0]->{test_case_duration_ms},
+                state     => $status->{ $measures->{measures}->[0]->{test_case_state} },
+                lastexec  => strftime('%Y-%m-%dT%H:%M:%S', localtime($lastexec)),
+                freshness => (time() - $lastexec)
             },
             testcases => {}
         };
@@ -148,6 +171,11 @@ sub manage_selection {
             };
             $i++;
         }
+    }
+
+    if (scalar(keys %{$self->{cases}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No test case found');
+        $self->{output}->option_exit();
     }
 }
 
