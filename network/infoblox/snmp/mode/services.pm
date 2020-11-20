@@ -77,6 +77,7 @@ Can be: 'service'.
 =item B<--filter>
 
 Exclude some parts (comma seperated list)
+Can be a regexp. Example to include one service: --filter='service,^(?!(fan*)$)'
 Can also exclude specific instance: --filter=service,fan1
 
 =item B<--no-component>
