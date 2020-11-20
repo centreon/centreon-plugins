@@ -29,7 +29,7 @@ sub set_system {
     my ($self, %options) = @_;
 
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         default => [
             ['unknown', 'OK'],
@@ -39,7 +39,7 @@ sub set_system {
             ['failed', 'CRITICAL']
         ]
     };
-    
+
     $self->{components_path} = 'network::infoblox::snmp::mode::components';
     $self->{components_module} = ['service'];
 }
@@ -76,8 +76,8 @@ Can be: 'service'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=service,fan1
+Filter component instances (syntax: component,regexp_filter). Component instances are excluded if matching regexp_filter.
+E.g: --filter=service,fan1
 
 =item B<--no-component>
 
@@ -144,16 +144,22 @@ sub check {
         next if ($oid !~ /^$mapping->{ibNodeServiceName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ibMemberNodeServiceStatusEntry}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'service', instance => $result->{ibNodeServiceName}));
-        
+
         $self->{components}->{service}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("service '%s' status is '%s' [instance = %s]",
-                                                        $result->{ibNodeServiceName}, $result->{ibNodeServiceStatus}, $result->{ibNodeServiceName}));
-        my $exit = $self->get_severity(section => 'default', instance => $result->{ibNodeServiceName}, value => $result->{ibNodeServiceStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "service '%s' status is '%s' [instance = %s]",
+                $result->{ibNodeServiceName}, $result->{ibNodeServiceStatus}, $result->{ibNodeServiceName}
+            )
+        );
+        my $exit = $self->get_severity(section => 'default', label => 'service', instance => $result->{ibNodeServiceName}, value => $result->{ibNodeServiceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Service '%s' status is '%s'", $result->{ibNodeServiceName}, $result->{ibNodeServiceStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Service '%s' status is '%s'", $result->{ibNodeServiceName}, $result->{ibNodeServiceStatus})
+            );
         }
     }
 }
