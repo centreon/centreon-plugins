@@ -154,7 +154,7 @@ sub check {
                 $result->{ibNodeServiceName}, $result->{ibNodeServiceStatus}, $result->{ibNodeServiceName}
             )
         );
-        my $exit = $self->get_severity(section => 'default', label => 'service', instance => $result->{ibNodeServiceName}, value => $result->{ibNodeServiceStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'service', instance => $result->{ibNodeServiceName}, value => $result->{ibNodeServiceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
