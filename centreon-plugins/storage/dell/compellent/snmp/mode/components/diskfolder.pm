@@ -28,7 +28,7 @@ my $mapping = {
     scDiskFolderStatus  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.25.1.3', map => \%map_sc_status },
     scDiskFolderName    => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.25.1.4' },
 };
-my $oid_scDiskFolderEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.14.1';
+my $oid_scDiskFolderEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.25.1';
 
 sub load {
     my ($self) = @_;
