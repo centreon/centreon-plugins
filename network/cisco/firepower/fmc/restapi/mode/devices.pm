@@ -35,19 +35,19 @@ sub custom_device_status_output {
 sub domain_long_output {
     my ($self, %options) = @_;
 
-    return "checking domain '" . $options{instance_value}->{display} . "'";
+    return "checking domain '" . $options{instance_value}->{name} . "'";
 }
 
 sub prefix_domain_output {
     my ($self, %options) = @_;
 
-    return "Domain '" . $options{instance_value}->{display} . "' ";
+    return "Domain '" . $options{instance_value}->{name} . "' ";
 }
 
 sub prefix_device_output {
     my ($self, %options) = @_;
 
-    return "device '" . $options{instance_value}->{display} . "' ";
+    return "device '" . $options{instance_value}->{name} . "' ";
 }
 
 sub prefix_global_output {
@@ -63,7 +63,7 @@ sub set_counters {
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
         { name => 'domains', type => 3, cb_prefix_output => 'prefix_domain_output', cb_long_output => 'domain_long_output', indent_long_output => '    ', message_multiple => 'All domains are ok',
             group => [
-                { name => 'devices', display_long => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'All devices are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'devices', display_long => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'devices are ok', type => 1, skipped_code => { -10 => 1 } },
             ]
         }
     ];
@@ -80,7 +80,7 @@ sub set_counters {
     ];
     foreach (('green', 'black', 'blue', 'red', 'yellow')) {
         push @{$self->{maps_counters}->{global}},
-            { label => 'devices-status-' . $_, nlabel => 'devices.status. ' . $_ .  '.count', display_ok => 0, set => {
+            { label => 'devices-status-' . $_, nlabel => 'devices.status.' . $_ .  '.count', display_ok => 0, set => {
                     key_values => [ { name => 'devices_' . $_ }, { name => 'devices_total' } ],
                     output_template => $_ . ': %s',
                     perfdatas => [
@@ -97,7 +97,7 @@ sub set_counters {
             warning_default => '%{status} =~ /yellow/i',
             critical_default => '%{status} =~ /red|black/i',
             set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
+                key_values => [ { name => 'status' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_device_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -123,7 +123,8 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $domains = $options{custom}->request_api(
-        endpoint => '/info/domain',
+        endpoint_domain => 'fmc_platform',
+        endpoint => '/info/domain'
     );
 
     $self->{global} = {
@@ -131,14 +132,42 @@ sub manage_selection {
         devices_red => 0, devices_yellow => 0,
         devices_green => 0, devices_blue => 0
     };
-    $self->{devices} = {};
+    $self->{domains} = {};
 
-    if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
-        $_->{name} !~ /$self->{option_results}->{filter_device_name}/) {
-        $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
-        next;
+    foreach my $domain (@{$domains->{items}}) {
+        if (defined($self->{option_results}->{filter_domain_name}) && $self->{option_results}->{filter_domain_name} ne '' &&
+            $domain->{name} !~ /$self->{option_results}->{filter_domain_name}/) {
+            $self->{output}->output_add(long_msg => "skipping domain '" . $domain->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{domains}->{ $domain->{name} } = {
+            name => $domain->{name},
+            devices => {}
+        };
+
+        my $devices = $options{custom}->request_api(
+            endpoint_domain => 'fmc_config',
+            endpoint => '/domain/' . $domain->{uuid} . '/devices/devicerecords',
+            get_param => ['expanded=true']
+        );
+
+        foreach my $device (@{$devices->{items}}) {
+            if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
+                $device->{name} !~ /$self->{option_results}->{filter_device_name}/) {
+                $self->{output}->output_add(long_msg => "skipping device '" . $device->{name} . "': no matching filter.", debug => 1);
+                next;
+            }
+
+            $self->{domains}->{ $domain->{name} }->{devices}->{ $device->{name} } = {
+                name => $device->{name},
+                status => $device->{healthStatus}
+            };
+            $self->{global}->{'devices_' . lc($device->{name})}++
+                if (defined($self->{global}->{'devices_' . lc($device->{name})}));
+            $self->{global}->{devices_total}++;
+        }
     }
-
 }
 
 1;
@@ -159,10 +188,26 @@ Filter devices by domain name (Can be a regexp).
 
 Filter devices by name (Can be a regexp).
 
+=item B<--unknown-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{status}, %{name}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '%{status} =~ /yellow/i').
+Can used special variables like: %{status}, %{name}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{status} =~ /red|black/i').
+Can used special variables like: %{status}, %{name}
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'black', 'red', 'orange'.
+Can be: 'devices-total', 'devices-status-green', 'devices-status-black', 'devices-status-blue', 
+'devices-status-red', 'devices-status-yellow'.
 
 =back
 
