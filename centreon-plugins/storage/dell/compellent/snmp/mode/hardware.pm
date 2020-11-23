@@ -42,7 +42,7 @@ sub set_system {
     
     $self->{components_path} = 'storage::dell::compellent::snmp::mode::components';
     $self->{components_module} = [
-        'ctrl', 'disk', 'ctrlfan', 'ctrlpower', 'ctrlvoltage', 'ctrltemp',
+        'ctrl', 'disk', 'diskfolder', 'ctrlfan', 'ctrlpower', 'ctrlvoltage', 'ctrltemp',
         'encl', 'enclfan', 'enclpower', 'encliomod', 'encltemp', 'volume', 'cache', 'server', 'sc'
     ];
 }
@@ -77,7 +77,7 @@ Check sensors.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'ctrl', 'disk', 'encl', 'ctrlfan', 'ctrlpower', 'ctrlvoltage',
+Can be: 'ctrl', 'disk', 'diskfolder', 'encl', 'ctrlfan', 'ctrlpower', 'ctrlvoltage',
 'ctrltemp', 'enclfan', 'enclpower', 'encliomod', 'encltemp', 'volume', 'cache', 'server', 'sc'.
 
 =item B<--filter>
