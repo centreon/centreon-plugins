@@ -201,7 +201,7 @@ sub request_api {
     }
 
     my ($content) = $self->{http}->request(
-        url_path => '/api/fmc_platform/v1' . $options{endpoint},
+        url_path => '/api/' . $options{endpoint_domain} . '/v1' . $options{endpoint},
         get_param => $options{get_param},
         unknown_status => '',
         warning_status => '',
