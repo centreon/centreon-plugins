@@ -127,8 +127,8 @@ sub settings {
     my ($self, %options) = @_;
 
     $self->build_options_for_httplib();
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
-    $self->{http}->add_header(key => 'Accept', value => 'application/json;charset=UTF-8');
+    $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
+    $self->{http}->add_header(key => 'Accept', value => 'application/json');
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -164,6 +164,7 @@ sub authenticate {
 
     if ($has_cache_file == 0 || !defined($session_token)) {
         $self->{http}->request(
+            method => 'POST',
             url_path => '/api/fmc_platform/v1/auth/generatetoken',
             credentials => 1,
             basic => 1,
@@ -173,7 +174,7 @@ sub authenticate {
             unknown_status => '',
             critical_status => ''
         );
-        if ($self->{http}->get_code() != 200) {
+        if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
             $self->{output}->add_option_msg(short_msg => "login error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
             $self->{output}->option_exit();
         }
