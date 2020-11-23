@@ -188,17 +188,17 @@ Filter devices by domain name (Can be a regexp).
 
 Filter devices by name (Can be a regexp).
 
-=item B<--unknown-status>
+=item B<--unknown-device-status>
 
 Set unknown threshold for status.
 Can used special variables like: %{status}, %{name}
 
-=item B<--warning-status>
+=item B<--warning-device-status>
 
 Set warning threshold for status (Default: '%{status} =~ /yellow/i').
 Can used special variables like: %{status}, %{name}
 
-=item B<--critical-status>
+=item B<--critical-device-status>
 
 Set critical threshold for status (Default: '%{status} =~ /red|black/i').
 Can used special variables like: %{status}, %{name}
