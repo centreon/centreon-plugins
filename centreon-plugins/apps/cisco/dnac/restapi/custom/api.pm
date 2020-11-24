@@ -237,11 +237,11 @@ __END__
 
 =head1 NAME
 
-Firepower Management Center Rest API
+Cisco DNA Center Rest API
 
 =head1 REST API OPTIONS
 
-Firepower Management Center Rest API
+Cisco DNA Center Rest API
 
 =over 8
 
