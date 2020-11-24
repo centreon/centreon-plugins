@@ -213,7 +213,7 @@ sub request_api {
         $self->clean_session_token(statefile => $self->{cache});
         $self->authenticate(statefile => $self->{cache});
         ($content) = $self->{http}->request(
-            url_path => '/api/fmc_platform/v1' . $options{endpoint},
+            url_path => '/api/' . $options{endpoint_domain} . '/v1' . $options{endpoint},
             get_param => $options{get_param},
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
