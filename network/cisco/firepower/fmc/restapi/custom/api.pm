@@ -165,6 +165,7 @@ sub authenticate {
     if ($has_cache_file == 0 || !defined($session_token)) {
         $self->{http}->request(
             method => 'POST',
+            query_form_post => '',
             url_path => '/api/fmc_platform/v1/auth/generatetoken',
             credentials => 1,
             basic => 1,
