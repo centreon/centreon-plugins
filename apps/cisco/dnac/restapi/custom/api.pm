@@ -77,7 +77,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 50;
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
@@ -165,6 +165,7 @@ sub authenticate {
     if ($has_cache_file == 0 || !defined($session_token)) {
         my ($content) = $self->{http}->request(
             method => 'POST',
+            query_form_post => '',
             url_path => '/dna/system/api/v1/auth/token',
             credentials => 1,
             basic => 1,
@@ -218,7 +219,7 @@ sub request_api {
             get_param => $options{get_param},
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
-            critical_status => $self->{critical_http_status}
+            critical_status => $self->{critical_http_status},
         );
     }
 
@@ -267,7 +268,7 @@ Set password.
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (Default: 50).
 
 =back
 

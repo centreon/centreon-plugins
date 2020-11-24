@@ -167,7 +167,7 @@ sub set_method {
 
     if ($options{content_type_forced} == 1) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => $options{request}->{query_form_post})
-            if (defined($options{request}->{query_form_post}) && $options{request}->{query_form_post} ne '');
+            if (defined($options{request}->{query_form_post}));
     } elsif (defined($options{request}->{post_params})) {
         my $uri_post = URI->new();
         $uri_post->query_form($options{request}->{post_params});
