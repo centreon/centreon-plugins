@@ -56,8 +56,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' }
+    $options{options}->add_options(arguments => {
+        'filter-sql-name:s' => { name => 'filter_sql_name' },
+        'filter-name:s'     => { name => 'filter_name' }
     });
     
     return $self;
@@ -67,7 +68,12 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    $options{sql}->query(query => 'SELECT spcname, pg_tablespace_size(spcname) FROM pg_tablespace');
+
+    my $query = 'SELECT spcname, pg_tablespace_size(spcname) FROM pg_tablespace';
+    if (defined($self->{option_results}->{filter_sql_name}) && $self->{option_results}->{filter_sql_name} ne '') {
+        $query .= ' WHERE spcname LIKE ' . $options{sql}->quote($self->{option_results}->{filter_sql_name});
+    }
+    $options{sql}->query(query => $query);
 
     $self->{tablespaces} = {};
     while (my @row = $options{sql}->fetchrow_array()) {
@@ -94,9 +100,13 @@ Check a tablespaces.
 
 =over 8
 
+=item B<--filter-sql-name>
+
+Filter tablespace name directly in sql query (LIKE sql syntax used).
+
 =item B<--filter-name>
 
-Filter tablespace name (can be a regexp).
+Filter tablespace name after getting all tablespaces (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
