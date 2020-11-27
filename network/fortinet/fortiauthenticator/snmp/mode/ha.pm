@@ -39,12 +39,13 @@ sub custom_status_output {
 sub custom_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{ha_status_last} = $options{old_datas}->{$self->{instance} . '_ha_status'};
-    $self->{result_values}->{ha_status} = $options{new_datas}->{$self->{instance} . '_ha_status'};
     if (!defined($options{old_datas}->{$self->{instance} . '_ha_status'})) {
         $self->{error_msg} = 'buffer creation';
         return -2;
     }
+    $self->{result_values}->{ha_status_last} = $options{old_datas}->{$self->{instance} . '_ha_status'};
+    $self->{result_values}->{ha_status} = $options{new_datas}->{$self->{instance} . '_ha_status'};
+
     return 0;
 }
 
