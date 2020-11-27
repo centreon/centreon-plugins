@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
+        'authenticator'   => 'network::fortinet::fortiauthenticator::snmp::mode::authenticator',
         'cpu'             => 'network::fortinet::fortiauthenticator::snmp::mode::cpu',
         'disk-log'        => 'network::fortinet::fortiauthenticator::snmp::mode::disklog',
         'ha'              => 'network::fortinet::fortiauthenticator::snmp::mode::ha',
