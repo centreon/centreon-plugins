@@ -27,13 +27,14 @@ use Exporter;
 our %map_state;
 our %map_status;
 our %map_probe_status;
+our %map_enclosure_state;
 our %map_amperage_type;
 our %map_pdisk_state;
 our %map_pdisk_smartstate;
 our %map_vdisk_state;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type %map_pdisk_state %map_pdisk_smartstate %map_vdisk_state);
+our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_enclosure_state %map_amperage_type %map_pdisk_state %map_pdisk_smartstate %map_vdisk_state);
 
 %map_pdisk_smartstate = (
     0 => 'off',
@@ -67,6 +68,14 @@ our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type 
     2 => 'enabled', 
     4 => 'notReady', 
     6 => 'enabledAndNotReady',
+);
+
+%map_enclosure_state = (
+    1 => 'unknown',
+    2 => 'ready',
+    3 => 'failed',
+    4 => 'missing',
+    5 => 'degraded',
 );
 
 %map_pdisk_state = (

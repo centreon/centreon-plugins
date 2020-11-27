@@ -59,6 +59,13 @@ sub set_system {
             ['nonRecoverableLower', 'CRITICAL'],
             ['failed', 'CRITICAL']
         ],
+        'enclosure.state' => [
+            ['unknown', 'UNKNOWN'],
+            ['ready', 'OK'],
+            ['failed', 'CRITICAL'],
+            ['missing', 'WARNING'],
+            ['degraded', 'WARNING']
+        ],
         'pdisk.state' => [
             ['unknown', 'UNKNOWN'],
             ['readySpareDedicated', 'OK'],
@@ -89,7 +96,7 @@ sub set_system {
     $self->{components_module} = [
         'psu', 'punit', 'temperature', 'voltage', 'amperage', 
         'systembattery', 'coolingunit', 'coolingdevice', 'processor', 'memory', 'pci', 'network', 
-        'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'
+        'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk', 'enclosure'
     ];
 }
 
@@ -125,7 +132,7 @@ Check hardware components.
 Which component to check (Default: '.*').
 Can be: 'psu', 'punit', 'temperature', 'voltage', 'amperage', 
 'systembattery', 'coolingunit', 'coolingdevice', 'processor', 'memory', 'pci', 'network', 
-'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'.
+'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk', 'enclosure'.
 
 =item B<--filter>
 
