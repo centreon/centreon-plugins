@@ -40,4 +40,16 @@ $health_status = {
     30 => 'non_recoverable'
 };
 
+$replication_status = {
+    0 => 'manual_syncing',
+    1 => 'auto_syncing',
+    2 => 'idle',
+    100 => 'unknown',
+    101 => 'out_of_sync',
+    102 => 'in_sync',
+    103 => 'consistent',
+    104 => 'syncing',
+    105 => 'inconsistent'
+}
+
 1;
