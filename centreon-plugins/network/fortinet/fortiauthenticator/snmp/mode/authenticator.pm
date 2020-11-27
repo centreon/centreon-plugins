@@ -30,7 +30,7 @@ sub custom_remaining_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'total: %s used: %s (%.3f%%) free: %s (%.3f%%)',
+        'total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $self->{result_values}->{total},
         $self->{result_values}->{used}, 
         $self->{result_values}->{prct_used},
@@ -102,7 +102,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'free' }, { name => 'used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_remaining_output'),
                 perfdatas => [
-                    { template => '%.3f', min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         }
@@ -121,7 +121,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'free' }, { name => 'used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_remaining_output'),
                 perfdatas => [
-                    { template => '%.3f', min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         }
@@ -140,7 +140,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'free' }, { name => 'used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_remaining_output'),
                 perfdatas => [
-                    { template => '%.3f', min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         }
@@ -202,22 +202,22 @@ sub manage_selection {
                 used => $result->{users},
                 free => $result->{users_remaining},
                 total => $result->{users} + $result->{users_remaining},
-                prct_used => $result->{users} / ($result->{users} + $result->{users_remaining}),
-                prct_free => 100 - ($result->{users} / ($result->{users} + $result->{users_remaining}))
+                prct_used => $result->{users}  * 100 / ($result->{users} + $result->{users_remaining}),
+                prct_free => 100 - ($result->{users} * 100 / ($result->{users} + $result->{users_remaining}))
             },
             groups => {
                 used => $result->{groups},
                 free => $result->{groups_remaining},
                 total => $result->{groups} + $result->{groups_remaining},
-                prct_used => $result->{groups} / ($result->{groups} + $result->{groups_remaining}),
-                prct_free => 100 - ($result->{groups} / ($result->{groups} + $result->{groups_remaining}))
+                prct_used => $result->{groups} * 100 / ($result->{groups} + $result->{groups_remaining}),
+                prct_free => 100 - ($result->{groups} * 100 / ($result->{groups} + $result->{groups_remaining}))
             },
             radius_nas => {
                 used => $result->{radius_nas},
                 free => $result->{radius_nas_remaining},
                 total => $result->{radius_nas} + $result->{radius_nas_remaining},
-                prct_used => $result->{radius_nas} / ($result->{radius_nas} + $result->{radius_nas_remaining}),
-                prct_free => 100 - ($result->{radius_nas} / ($result->{radius_nas} + $result->{radius_nas_remaining}))
+                prct_used => $result->{radius_nas} * 100 / ($result->{radius_nas} + $result->{radius_nas_remaining}),
+                prct_free => 100 - ($result->{radius_nas} * 100 / ($result->{radius_nas} + $result->{radius_nas_remaining}))
             },
             authentication => {
                 events_total => $result->{events_total},
@@ -243,8 +243,9 @@ Check authenticator statistics.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'members-total', 'memory-usage-prct', 'memory-usage', 'memory-usage-free',
-'cpu-utilization'.
+Can be: 'radius-nas-usage', 'radius-nas-usage-prct', 
+'groups-usage', 'groups-usage-prct', 'users-usage', 'users-usage-prct',
+'authentication-events', 'authentication-failures'.
 
 =back
 
