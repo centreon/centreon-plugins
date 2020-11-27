@@ -137,7 +137,7 @@ sub new {
         'filter-name:s'     => { name => 'filter_name' },
         'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
         'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /ok_but|degraded|minor/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /major|criticalnon_recoverable/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /major|critical|non_recoverable/i' },
     });
     
     return $self;
@@ -226,7 +226,7 @@ Can used special variables like: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /major|criticalnon_recoverable/i').
+Set critical threshold for status (Default: '%{status} =~ /major|critical|non_recoverable/i').
 Can used special variables like: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
