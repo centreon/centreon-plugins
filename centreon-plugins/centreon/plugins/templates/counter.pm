@@ -221,6 +221,7 @@ sub run_global {
         && $options{config}->{name} =~ /$self->{option_results}->{filter_counters_block}/);
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
     my $resume = defined($options{resume}) && $options{resume} == 1 ? 1 : 0;
+    my $display_short = (!defined($options{config}->{display_short}) || $options{config}->{display_short} != 0) ? 1 : 0;
     # Can be set when it comes from type 3 counters
     my $called_multiple = defined($options{called_multiple}) && $options{called_multiple} == 1 ? 1 : 0;
     my $multiple_parent = defined($options{multiple_parent}) && $options{multiple_parent} == 1 ? 1 : 0;
@@ -294,12 +295,13 @@ sub run_global {
     } else {
         if ($long_msg ne '' && $multiple_parent == 0) {
             if ($called_multiple == 0) {
-                $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output) ;
+                $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output)
+                    if ($display_short == 1);
             } else {
                 $self->run_multiple_prefix_output(
                     severity => 'ok',
                     short_msg => $prefix_output . $long_msg . $suffix_output
-                );
+                ) if ($display_short == 1);
             }
         }
     }
@@ -645,7 +647,13 @@ sub run_multiple {
             if ($group->{type} == 1) {
                 $self->run_multiple_instances(config => $group, multiple_parent => $multiple, instance_parent => $instance, indent_long_output => $indent_long_output);
             } elsif ($group->{type} == 0) {
-                $self->run_global(config => $group, multiple_parent => $multiple, called_multiple => 1, force_instance => $instance, indent_long_output => $indent_long_output);
+                $self->run_global(
+                    config => $group,
+                    multiple_parent => $multiple,
+                    called_multiple => 1,
+                    force_instance => $instance,
+                    indent_long_output => $indent_long_output
+                );
             }
         }
     }
