@@ -360,8 +360,11 @@ sub api_list_services {
     my ($self, %options) = @_;
 
     my $services = {};
-    foreach my $node_name (@{$self->{node_names}}) {        
+    foreach my $node_name (@{$self->{node_names}}) {
+        # 406 or 503 - node is not part of a swarm
         my $list_tasks = $self->internal_api_list_tasks(node_name => $node_name);
+        next if ($self->{http}->get_code() == 406 || $self->{http}->get_code() == 503);
+
         my $list_services = $self->internal_api_list_services(node_name => $node_name);
         foreach my $task (@$list_tasks) {
             $services->{ $task->{ServiceID} } = {} if (!defined($services->{ $task->{ServiceID} }));
