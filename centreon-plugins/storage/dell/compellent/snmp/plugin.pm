@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'global-status'    => 'storage::dell::compellent::snmp::mode::globalstatus',
         'hardware'         => 'storage::dell::compellent::snmp::mode::hardware',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
