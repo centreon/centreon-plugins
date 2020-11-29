@@ -102,7 +102,7 @@ sub new {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return "Card '" . $self->{global}->{display} . "' : ";
+    return "'" . $self->{global}->{display} . "' : ";
 }
 
 sub check_options {
@@ -129,11 +129,12 @@ sub manage_selection {
 
     my $oid_racShortName = '.1.3.6.1.4.1.674.10892.5.1.1.2.0';
     my $oid_racVersion = '.1.3.6.1.4.1.674.10892.5.1.1.5.0';
+    my $oid_systemModelName = '.1.3.6.1.4.1.674.10892.5.1.3.12.0';
     my $oid_drsGlobalSystemStatus = '.1.3.6.1.4.1.674.10892.2.2.1.0';
     my $oid_globalSystemStatus = '.1.3.6.1.4.1.674.10892.5.2.1.0';
     my $oid_globalStorageStatus = '.1.3.6.1.4.1.674.10892.5.2.3.0';
     my $result = $options{snmp}->get_leef(oids => [
-        $oid_racShortName, $oid_racVersion, $oid_drsGlobalSystemStatus, $oid_globalSystemStatus, $oid_globalStorageStatus
+        $oid_racShortName, $oid_racVersion, $oid_systemModelName, $oid_drsGlobalSystemStatus, $oid_globalSystemStatus, $oid_globalStorageStatus
     ], nothing_quit => 1);
     
     my ($global_status, $storage_status);
@@ -149,6 +150,8 @@ sub manage_selection {
         if (defined($result->{$oid_racShortName}));
     $display .= '.' . $result->{$oid_racVersion}
         if (defined($result->{$oid_racVersion}));
+    $display .= '@' . $result->{$oid_systemModelName}
+        if (defined($result->{$oid_systemModelName}));
     $self->{global} = {
         display => $display,
         status => $global_status,
