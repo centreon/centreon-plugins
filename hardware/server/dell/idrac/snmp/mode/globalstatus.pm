@@ -87,12 +87,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "unknown-status:s"          => { name => 'unknown_status', default => '%{status} =~ /^unknown/i' },
-        "warning-status:s"          => { name => 'warning_status', default => '%{status} =~ /nonRecoverable|non critical|other/i' },
-        "critical-status:s"         => { name => 'critical_status', default => '%{status} =~ /^critical/i' },
-        "unknown-storage-status:s"  => { name => 'unknown_storage_status', default => '%{status} =~ /^unknown/i' },
-        "warning-storage-status:s"  => { name => 'warning_storage_status', default => '%{status} =~ /nonRecoverable|non critical|other/i' },
-        "critical-storage-status:s" => { name => 'critical_storage_status', default => '%{status} =~ /^critical/i' },
+        "unknown-status:s"          => { name => 'unknown_status', default => '%{status} =~ /unknown/' },
+        "warning-status:s"          => { name => 'warning_status', default => '%{status} =~ /nonCritical|other/' },
+        "critical-status:s"         => { name => 'critical_status', default => '%{status} =~ /critical|nonRecoverable/' },
+        "unknown-storage-status:s"  => { name => 'unknown_storage_status', default => '%{status} =~ /unknown/' },
+        "warning-storage-status:s"  => { name => 'warning_storage_status', default => '%{status} =~ /nonCritical|other/' },
+        "critical-storage-status:s" => { name => 'critical_storage_status', default => '%{status} =~ /critical|nonRecoverable/' },
     });
 
     return $self;
@@ -119,7 +119,7 @@ my %states = (
     1 => 'other',
     2 => 'unknown',
     3 => 'ok',
-    4 => 'non critical',
+    4 => 'nonCritical',
     5 => 'critical',
     6 => 'nonRecoverable',
 );
@@ -171,32 +171,32 @@ Check the overall status of iDrac card.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /^unknown/i').
+Set warning threshold for status (Default: '%{status} =~ /unknown/').
 Can used special variables like: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /nonRecoverable|non critical|other/i').
+Set warning threshold for status (Default: '%{status} =~ /nonCritical|other/').
 Can used special variables like: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /^critical/i').
+Set critical threshold for status (Default: '%{status} =~ /critical|nonRecoverable/').
 Can used special variables like: %{status}
 
 =item B<--unknown-storage-status>
 
-Set warning threshold for status (Default: '%{status} =~ /^unknown/i').
+Set warning threshold for status (Default: '%{status} =~ /unknown/').
 Can used special variables like: %{status}
 
 =item B<--warning-storage-status>
 
-Set warning threshold for status (Default: '%{status} =~ /nonRecoverable|non critical|other/i').
+Set warning threshold for status (Default: '%{status} =~ /nonCritical|other/').
 Can used special variables like: %{status}
 
 =item B<--critical-storage-status>
 
-Set critical threshold for status (Default: '%{status} =~ /^critical/i').
+Set critical threshold for status (Default: '%{status} =~ /critical|nonRecoverable/').
 Can used special variables like: %{status}
 
 =back
