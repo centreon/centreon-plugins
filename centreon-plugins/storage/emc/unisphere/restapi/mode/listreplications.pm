@@ -46,7 +46,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    return $options{custom}->request_api(url_path => '/api/types/replicationSession/instances?fields=name,health,syncState');
+    return $options{custom}->request_api(url_path => '/api/types/replicationSession/instances?fields=name,health,syncState,srcResourceId,dstResourceId');
 }
 
 sub run {
@@ -58,10 +58,12 @@ sub run {
             && $_->{content}->{name} !~ /$self->{option_results}->{filter_name}/);
         
         $self->{output}->output_add(long_msg => sprintf(
-            '[name = %s][health_status = %s][sync_status = %s]',
+            '[name = %s][health_status = %s][sync_status = %s][source_id = %s][destination_id = %s]',
             $_->{content}->{name},
-            $health_status->{ $_->{content}->{health}->{value} },
+            $replication_status->{ $_->{content}->{health}->{value} },
             $replication_status->{ $_->{content}->{syncState} },
+            $replication_status->{ $_->{content}->{srcResourceId} },
+            $replication_status->{ $_->{content}->{dstResourceId} },
         ));
     }
 
@@ -76,7 +78,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name','health_status','sync_status']);
+    $self->{output}->add_disco_format(elements => ['name','health_status','sync_status','source_id','destination_id']);
 }
 
 sub disco_show {
@@ -87,7 +89,9 @@ sub disco_show {
         $self->{output}->add_disco_entry(
             name => $_->{content}->{name},
             health_status => $health_status->{ $_->{content}->{health}->{value} },
-            repl_status => $replication_status->{ $_->{content}->{syncState} }
+            sync_status => $replication_status->{ $_->{content}->{syncState} },
+            source_id => $replication_status->{ $_->{content}->{srcResourceId} },
+            destination_id => $replication_status->{ $_->{content}->{dstResourceId} },
         );
     }
 }
@@ -98,7 +102,7 @@ __END__
 
 =head1 MODE
 
-List pools.
+List replications.
 
 =over 8
 
