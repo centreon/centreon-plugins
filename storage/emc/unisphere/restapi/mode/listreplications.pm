@@ -60,10 +60,10 @@ sub run {
         $self->{output}->output_add(long_msg => sprintf(
             '[name = %s][health_status = %s][sync_status = %s][source_id = %s][destination_id = %s]',
             $_->{content}->{name},
-            $replication_status->{ $_->{content}->{health}->{value} },
+            $health_status->{ $_->{content}->{health}->{value} },
             $replication_status->{ $_->{content}->{syncState} },
-            $replication_status->{ $_->{content}->{srcResourceId} },
-            $replication_status->{ $_->{content}->{dstResourceId} },
+            $_->{content}->{srcResourceId},
+            $_->{content}->{dstResourceId},
         ));
     }
 
@@ -90,8 +90,8 @@ sub disco_show {
             name => $_->{content}->{name},
             health_status => $health_status->{ $_->{content}->{health}->{value} },
             sync_status => $replication_status->{ $_->{content}->{syncState} },
-            source_id => $replication_status->{ $_->{content}->{srcResourceId} },
-            destination_id => $replication_status->{ $_->{content}->{dstResourceId} },
+            source_id => $_->{content}->{srcResourceId},
+            destination_id => $_->{content}->{dstResourceId},
         );
     }
 }
