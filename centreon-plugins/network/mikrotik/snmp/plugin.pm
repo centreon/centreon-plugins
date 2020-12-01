@@ -34,6 +34,7 @@ sub new {
         'cpu'               => 'snmp_standard::mode::cpu',
         'disk'              => 'network::mikrotik::snmp::mode::disk',
         'environment'       => 'network::mikrotik::snmp::mode::environment',
+        'firmware'          => 'network::mikrotik::snmp::mode::firmware',
         'interfaces'        => 'network::mikrotik::snmp::mode::interfaces',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
         'list-frequencies'  => 'network::mikrotik::snmp::mode::listfrequencies',
