@@ -24,39 +24,38 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "'%s': software is '%s', firmware is '%s'",
+        $self->{result_values}->{model},
+        $self->{result_values}->{software_version},
+        $self->{result_values}->{firmware_version}
+    );
+}
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 1, cb_prefix_output => 'prefix_output' }
+        { name => 'global', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', set => {
+        { label => 'status', type => 2, warning_default => '%{firmware_version} ne %{software_version}', set => {
                 key_values => [
                     { name => 'model' }, { name => 'software_version' },
                     { name => 'firmware_version' }, { name => 'firmware_version_update' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
-}
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return  'software is \'' . $self->{result_values}->{software_version} . '\', firmware is \'' . $self->{result_values}->{firmware_version} . '\''
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-
-    return '\'' . $options{instance_value}->{model} . '\' : ';
 }
 
 sub new {
@@ -65,41 +64,26 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'warning-status:s'  => { name => 'warning_status', default => '%{firmware_version} ne %{software_version}' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
 my $mapping = {
-    sysDescr                   => { oid => '.1.3.6.1.2.1.1.1' },
-    mtxrLicVersion             => { oid => '.1.3.6.1.4.1.14988.1.1.4.4' },
-    mtxrFirmwareVersion        => { oid => '.1.3.6.1.4.1.14988.1.1.7.4' },
-    mtxrFirmwareUpgradeVersion => { oid => '.1.3.6.1.4.1.14988.1.1.7.7' }
+    model                   => { oid => '.1.3.6.1.2.1.1.1' }, # sysDescr
+    software_version        => { oid => '.1.3.6.1.4.1.14988.1.1.4.4' }, # mtxrLicVersion
+    firmware_version        => { oid => '.1.3.6.1.4.1.14988.1.1.7.4' }, # mtxrFirmwareVersion
+    firmware_version_update => { oid => '.1.3.6.1.4.1.14988.1.1.7.7' }  # mtxrFirmwareUpgradeVersion
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{snmp}->get_leef(
+    my $snmp_result = $options{snmp}->get_leef(
         oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
         nothing_quit => 1
     );
-    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => 0);
-
-    $self->{global}->{0}->{model} = $result->{sysDescr};
-    $self->{global}->{0}->{software_version} = $result->{mtxrLicVersion};
-    $self->{global}->{0}->{firmware_version} = $result->{mtxrFirmwareVersion};
-    $self->{global}->{0}->{firmware_version_update} = $result->{mtxrFirmwareUpgradeVersion};
-
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
 }
 
 1;
@@ -108,7 +92,7 @@ __END__
 
 =head1 MODE
 
-Check firmware status
+Check firmware status.
 
 =over 8
 
