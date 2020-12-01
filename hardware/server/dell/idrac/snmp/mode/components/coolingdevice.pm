@@ -32,7 +32,7 @@ my $mapping = {
     coolingDeviceUpperCriticalThreshold     => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.20.1.10' },
     coolingDeviceUpperNonCriticalThreshold  => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.20.1.11' },
     coolingDeviceLowerNonCriticalThreshold  => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.20.1.12' },
-    coolingDeviceLowerCriticalThreshold     => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.12.1.13' },
+    coolingDeviceLowerCriticalThreshold     => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.12.1.13' }
 };
 my $oid_coolingDeviceTableEntry = '.1.3.6.1.4.1.674.10892.5.4.700.12.1';
 
@@ -62,10 +62,14 @@ sub check {
         $self->{components}->{coolingdevice}->{total}++;
 
         $result->{coolingDeviceReading} = (defined($result->{coolingDeviceReading})) ? $result->{coolingDeviceReading} : 'unknown';
-        $self->{output}->output_add(long_msg => sprintf("cooling device '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
-                                    $result->{coolingDeviceLocationName}, $result->{coolingDeviceStatus}, $instance, 
-                                    $result->{coolingDeviceStateSettings}, $result->{coolingDeviceReading}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "cooling device '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
+                $result->{coolingDeviceLocationName}, $result->{coolingDeviceStatus}, $instance, 
+                $result->{coolingDeviceStateSettings}, $result->{coolingDeviceReading}
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default.state', section => 'coolingdevice.state', value => $result->{coolingDeviceStateSettings});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
@@ -75,8 +79,10 @@ sub check {
 
         $exit = $self->get_severity(label => 'probe.status', section => 'coolingdevice.status', value => $result->{coolingDeviceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Cooling device '%s' status is '%s'", $result->{coolingDeviceLocationName}, $result->{coolingDeviceStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Cooling device '%s' status is '%s'", $result->{coolingDeviceLocationName}, $result->{coolingDeviceStatus})
+            );
         }
      
         if (defined($result->{coolingDeviceReading}) && $result->{coolingDeviceReading} =~ /[0-9]/) {
@@ -95,15 +101,22 @@ sub check {
                 $self->{perfdata}->threshold_validate(label => 'warning-coolingdevice-instance-' . $instance, value => $warn_th);
                 $self->{perfdata}->threshold_validate(label => 'critical-coolingdevice-instance-' . $instance, value => $crit_th);
                 
-                $exit = $self->{perfdata}->threshold_check(value => $result->{coolingDeviceReading}, threshold => [ { label => 'critical-coolingdevice-instance-' . $instance, exit_litteral => 'critical' }, 
-                                                                                                                     { label => 'warning-coolingdevice-instance-' . $instance, exit_litteral => 'warning' } ]);
+                $exit = $self->{perfdata}->threshold_check(
+                    value => $result->{coolingDeviceReading},
+                    threshold => [
+                        { label => 'critical-coolingdevice-instance-' . $instance, exit_litteral => 'critical' }, 
+                        { label => 'warning-coolingdevice-instance-' . $instance, exit_litteral => 'warning' }
+                    ]
+                );
                 $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-coolingdevice-instance-' . $instance);
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-coolingdevice-instance-' . $instance);
             }
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Cooling device '%s' is %s rpm", $result->{coolingDeviceLocationName}, $result->{coolingDeviceReading}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Cooling device '%s' is %s rpm", $result->{coolingDeviceLocationName}, $result->{coolingDeviceReading})
+                );
             }
             $self->{output}->perfdata_add(
                 label => 'fan', unit => 'rpm',

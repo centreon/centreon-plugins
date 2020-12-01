@@ -26,7 +26,7 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 
 my $mapping = {
     batteryComponentStatus  => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.15.1.6', map => \%map_status },
-    batteryFQDD             => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.15.1.20' },
+    batteryFQDD             => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.15.1.20' }
 };
 
 sub load {
@@ -51,14 +51,19 @@ sub check {
         next if ($self->check_filter(section => 'storagebattery', instance => $instance));
         $self->{components}->{storagebattery}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("storage battery '%s' status is '%s' [instance = %s]",
-                                    $result->{batteryFQDD}, $result->{batteryComponentStatus}, $instance, 
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "storage battery '%s' status is '%s' [instance = %s]",
+                $result->{batteryFQDD}, $result->{batteryComponentStatus}, $instance, 
+            )
+        );
 
         my $exit = $self->get_severity(label => 'default.status', section => 'storagebattery.status', value => $result->{batteryComponentStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Storage battery '%s' status is '%s'", $result->{batteryFQDD}, $result->{batteryComponentStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Storage battery '%s' status is '%s'", $result->{batteryFQDD}, $result->{batteryComponentStatus})
+            );
         }
     }
 }
