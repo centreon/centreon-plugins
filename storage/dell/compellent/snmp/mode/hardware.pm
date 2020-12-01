@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_numeric_check_section_option} = '^(ctrltemp|ctrlvoltage|ctrlfan|encltemp)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:ctrltemp|ctrlvoltage|ctrlfan|encltemp)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -36,8 +36,8 @@ sub set_system {
         default => [
             ['up', 'OK'],
             ['down', 'CRITICAL'],
-            ['degraded', 'WARNING'],
-        ],
+            ['degraded', 'WARNING']
+        ]
     };
     
     $self->{components_path} = 'storage::dell::compellent::snmp::mode::components';
@@ -49,7 +49,7 @@ sub set_system {
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }

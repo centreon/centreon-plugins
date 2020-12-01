@@ -30,14 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'global-status'    => 'storage::dell::compellent::snmp::mode::globalstatus',
         'hardware'         => 'storage::dell::compellent::snmp::mode::hardware',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'time'             => 'snmp_standard::mode::ntp',
         'uptime'           => 'snmp_standard::mode::uptime'
-    );
+    };
 
     return $self;
 }
