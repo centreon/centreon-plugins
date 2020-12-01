@@ -25,46 +25,54 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use storage::emc::unisphere::restapi::mode::components::resources qw($replication_status $health_status);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_health_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'health status : ' . $self->{result_values}->{health_status};
-    return $msg;
+    return 'health status: ' . $self->{result_values}->{health_status};
 }
 
 sub custom_replication_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'replication status : ' . $self->{result_values}->{repl_status};
-    return $msg;
+    return 'replication status: ' . $self->{result_values}->{repl_status};
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'replication', type => 1, cb_prefix_output => 'prefix_replication_output', message_multiple => 'All replications are ok' },
+        { name => 'replication', type => 1, cb_prefix_output => 'prefix_replication_output', message_multiple => 'All replications are ok' }
     ];
     
     $self->{maps_counters}->{replication} = [
-        { label => 'health-status', threshold => 0, set => {
+        {
+            label => 'health-status',
+            type => 2,
+            unknown_default => '%{health_status} =~ /unknown/i',
+            warning_default => '%{health_status} =~ /ok_but|degraded|minor/i',
+            critical_default => '%{health_status} =~ /major|critical|non_recoverable/i',
+            set => {
                 key_values => [ { name => 'health_status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_health_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'replication-status', threshold => 0, set => {
+        {
+            label => 'replication-status',
+            type => 2,
+            unknown_default => '%{repl_status} =~ /unknown/i',
+            warning_default => '%{repl_status} =~ /syncing/i',
+            critical_default => '%{repl_status} =~ /inconsistent/i',
+            set => {
                 key_values => [ { name => 'repl_status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_replication_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -74,26 +82,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'unknown-health-status:s'  => { name => 'unknown_health_status', default => '%{health_status} =~ /unknown/i' },
-        'warning-health-status:s'  => { name => 'warning_health_status', default => '%{health_status} =~ /ok_but|degraded|minor/i' },
-        'critical-health-status:s' => { name => 'critical_health_status', default => '%{health_status} =~ /major|critical|non_recoverable/i' },
-        'unknown-replication-status:s'  => { name => 'unknown_repl_status', default => '%{repl_status} =~ /unknown/i' },
-        'warning-replication-status:s'  => { name => 'warning_repl_status', default => '%{repl_status} =~ /syncing/i' },
-        'critical-replication-status:s' => { name => 'critical_repl_status', default => '%{repl_status} =~ /inconsistent/i' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [
-        'warning_health_status', 'critical_health_status', 'unknown_health_status',
-        'warning_repl_status', 'critical_repl_status', 'unknown_repl_status',
-        ]);
 }
 
 sub prefix_replication_output {
@@ -115,13 +107,13 @@ sub manage_selection {
             next;
         }
 
-        $self->{replication}->{$_->{content}->{id}} = {
+        $self->{replication}->{ $_->{content}->{id} } = {
             display => $_->{content}->{name},
             health_status => $health_status->{ $_->{content}->{health}->{value} },
             repl_status => $replication_status->{ $_->{content}->{syncState} } },
         };
     }
-    
+
     if (scalar(keys %{$self->{replication}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No replications found");
         $self->{output}->option_exit();
@@ -149,7 +141,7 @@ Filter replication name (can be a regexp).
 
 =item B<--unknown-health-status>
 
-Set warning threshold for status (Default: '%{health_status} =~ /unknown/i').
+Set unknown threshold for status (Default: '%{health_status} =~ /unknown/i').
 Can used special variables like: %{health_status}, %{display}
 
 =item B<--warning-health-status>
@@ -164,7 +156,7 @@ Can used special variables like: %{health_status}, %{display}
 
 =item B<--unknown-repl-status>
 
-Set warning threshold for status (Default: '%{repl_status} =~ /unknown/i').
+Set unknown threshold for status (Default: '%{repl_status} =~ /unknown/i').
 Can used special variables like: %{repl_status}, %{display}
 
 =item B<--warning-repl-status>
