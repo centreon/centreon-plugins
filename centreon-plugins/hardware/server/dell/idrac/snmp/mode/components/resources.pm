@@ -27,17 +27,22 @@ use Exporter;
 our %map_state;
 our %map_status;
 our %map_probe_status;
+our %map_enclosure_state;
 our %map_amperage_type;
 our %map_pdisk_state;
 our %map_pdisk_smartstate;
 our %map_vdisk_state;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type %map_pdisk_state %map_pdisk_smartstate %map_vdisk_state);
+our @EXPORT_OK = qw(
+    %map_probe_status %map_enclosure_state %map_state
+    %map_status %map_amperage_type %map_pdisk_state
+    %map_pdisk_smartstate %map_vdisk_state
+);
 
 %map_pdisk_smartstate = (
     0 => 'off',
-    1 => 'on',
+    1 => 'on'
 );
 
 %map_probe_status = (
@@ -50,7 +55,7 @@ our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type 
     7 => 'nonCriticalLower', 
     8 => 'criticalLower', 
     9 => 'nonRecoverableLower', 
-    10 => 'failed',
+    10 => 'failed'
 );
 
 %map_status = (
@@ -59,14 +64,22 @@ our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type 
     3 => 'ok', 
     4 => 'nonCritical', 
     5 => 'critical', 
-    6 => 'nonRecoverable',
+    6 => 'nonRecoverable'
 );
 
 %map_state = (
     1 => 'unknown', 
     2 => 'enabled', 
     4 => 'notReady', 
-    6 => 'enabledAndNotReady',
+    6 => 'enabledAndNotReady'
+);
+
+%map_enclosure_state = (
+    1 => 'unknown',
+    2 => 'ready',
+    3 => 'failed',
+    4 => 'missing',
+    5 => 'degraded'
 );
 
 %map_pdisk_state = (
@@ -79,14 +92,14 @@ our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type 
     7 => 'failed',
     8 => 'non-raid',
     9 => 'removed',
-    10 => 'readonly',
+    10 => 'readonly'
 );
 
 %map_vdisk_state = (
     1 => 'unknown',
     2 => 'online',
     3 => 'failed',
-    4 => 'degraded',
+    4 => 'degraded'
 );
 
 %map_amperage_type = (
@@ -109,7 +122,7 @@ our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type 
     23 => 'amperageProbeTypeIsPowerSupplyAmps', 
     24 => 'amperageProbeTypeIsPowerSupplyWatts', 
     25 => 'amperageProbeTypeIsSystemAmps', 
-    26 => 'amperageProbeTypeIsSystemWatts',
+    26 => 'amperageProbeTypeIsSystemWatts'
 );
 
 1;

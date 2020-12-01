@@ -33,7 +33,7 @@ my $mapping = {
     amperageProbeUpperCriticalThreshold     => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.30.1.10' },
     amperageProbeUpperNonCriticalThreshold  => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.30.1.11' },
     amperageProbeLowerNonCriticalThreshold  => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.30.1.12' },
-    amperageProbeLowerCriticalThreshold     => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.30.1.13' },
+    amperageProbeLowerCriticalThreshold     => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.30.1.13' }
 };
 my $oid_amperageProbeTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.30.1';
 
@@ -70,21 +70,30 @@ sub check {
             $divisor = 1;
         }
         $result->{amperageProbeReading} = (defined($result->{amperageProbeReading})) ? $result->{amperageProbeReading} / $divisor : 'unknown';
-        $self->{output}->output_add(long_msg => sprintf("amperage '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
-                                    $result->{amperageProbeLocationName}, $result->{amperageProbeStatus}, $instance, 
-                                    $result->{amperageProbeStateSettings}, $result->{amperageProbeReading}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "amperage '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
+                $result->{amperageProbeLocationName}, $result->{amperageProbeStatus}, $instance, 
+                $result->{amperageProbeStateSettings}, $result->{amperageProbeReading}
+            )
+        );
         
         my $exit = $self->get_severity(label => 'default.state', section => 'amperage.state', value => $result->{amperageProbeStateSettings});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Amperage '%s' state is '%s'", $result->{amperageProbeLocationName}, $result->{amperageProbeStateSettings}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Amperage '%s' state is '%s'", $result->{amperageProbeLocationName}, $result->{amperageProbeStateSettings})
+            );
             next;
         }
 
         $exit = $self->get_severity(label => 'probe.status', section => 'amperage.status', value => $result->{amperageProbeStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Amperage '%s' status is '%s'", $result->{amperageProbeLocationName}, $result->{amperageProbeStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Amperage '%s' status is '%s'", $result->{amperageProbeLocationName}, $result->{amperageProbeStatus})
+                );
         }
      
         next if ($result->{amperageProbeType} =~ /amperageProbeTypeIsDiscrete/);
@@ -105,15 +114,22 @@ sub check {
                 $self->{perfdata}->threshold_validate(label => 'warning-amperage-instance-' . $instance, value => $warn_th);
                 $self->{perfdata}->threshold_validate(label => 'critical-amperage-instance-' . $instance, value => $crit_th);
                 
-                $exit = $self->{perfdata}->threshold_check(value => $result->{amperageProbeReading}, threshold => [ { label => 'critical-amperage-instance-' . $instance, exit_litteral => 'critical' }, 
-                                                                                                                     { label => 'warning-amperage-instance-' . $instance, exit_litteral => 'warning' } ]);
+                $exit = $self->{perfdata}->threshold_check(
+                    value => $result->{amperageProbeReading},
+                    threshold => [
+                        { label => 'critical-amperage-instance-' . $instance, exit_litteral => 'critical' }, 
+                        { label => 'warning-amperage-instance-' . $instance, exit_litteral => 'warning' }
+                    ]
+                );
                 $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-amperage-instance-' . $instance);
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-amperage-instance-' . $instance);
             }
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Amperage '%s' is %s %s", $result->{amperageProbeLocationName}, $result->{amperageProbeReading}, $unit));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Amperage '%s' is %s %s", $result->{amperageProbeLocationName}, $result->{amperageProbeReading}, $unit)
+                );
             }
             $self->{output}->perfdata_add(
                 label => 'amperage', unit => $unit,
@@ -121,7 +137,7 @@ sub check {
                 instances =>  $result->{amperageProbeLocationName},
                 value => $result->{amperageProbeReading},
                 warning => $warn,
-                critical => $crit,
+                critical => $crit
             );
         }
     }

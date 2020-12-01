@@ -27,7 +27,7 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 my $mapping = {
     powerUnitStateSettings  => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.10.1.4', map => \%map_state },
     powerUnitName           => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.10.1.7' },
-    powerUnitStatus         => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.10.1.8', map => \%map_status },
+    powerUnitStatus         => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.10.1.8', map => \%map_status }
 };
 my $oid_powerUnitTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.10.1';
 
@@ -56,21 +56,29 @@ sub check {
         next if ($self->check_filter(section => 'punit', instance => $instance));
         $self->{components}->{punit}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("power unit '%s' status is '%s' [instance = %s] [state = %s]",
-                                    $result->{powerUnitName}, $result->{powerUnitStatus}, $instance, 
-                                    $result->{powerUnitStateSettings}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power unit '%s' status is '%s' [instance = %s] [state = %s]",
+                $result->{powerUnitName}, $result->{powerUnitStatus}, $instance, 
+                $result->{powerUnitStateSettings}
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default.state', section => 'punit.state', value => $result->{powerUnitStateSettings});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power unit '%s' state is '%s'", $result->{powerUnitName}, $result->{powerUnitStateSettings}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Power unit '%s' state is '%s'", $result->{powerUnitName}, $result->{powerUnitStateSettings})
+            );
             next;
         }
 
         $exit = $self->get_severity(label => 'default.status', section => 'punit.status', value => $result->{powerUnitStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power unit '%s' status is '%s'", $result->{powerUnitName}, $result->{powerUnitStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Power unit '%s' status is '%s'", $result->{powerUnitName}, $result->{powerUnitStatus})
+            );
         }
     }
 }

@@ -28,7 +28,7 @@ my %map_temp_type = (
     1 => 'temperatureProbeTypeIsOther', 
     2 => 'temperatureProbeTypeIsUnknown', 
     3 => 'temperatureProbeTypeIsAmbientESM', 
-    16 => 'temperatureProbeTypeIsDiscrete',
+    16 => 'temperatureProbeTypeIsDiscrete'
 );
 
 my $mapping = {
@@ -40,7 +40,7 @@ my $mapping = {
     temperatureProbeUpperCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.20.1.10' },
     temperatureProbeUpperNonCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.20.1.11' },
     temperatureProbeLowerNonCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.20.1.12' },
-    temperatureProbeLowerCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.20.1.13' },
+    temperatureProbeLowerCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.20.1.13' }
 };
 my $oid_temperatureProbeTableEntry = '.1.3.6.1.4.1.674.10892.5.4.700.20.1';
 
@@ -70,21 +70,33 @@ sub check {
         $self->{components}->{temperature}->{total}++;
 
         $result->{temperatureProbeReading} = (defined($result->{temperatureProbeReading})) ? $result->{temperatureProbeReading} / 10 : 'unknown';
-        $self->{output}->output_add(long_msg => sprintf("temperature '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
-                                    $result->{temperatureProbeLocationName}, $result->{temperatureProbeStatus}, $instance, 
-                                    $result->{temperatureProbeStateSettings}, $result->{temperatureProbeReading}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
+                $result->{temperatureProbeLocationName}, $result->{temperatureProbeStatus}, $instance, 
+                $result->{temperatureProbeStateSettings}, $result->{temperatureProbeReading}
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default.state', section => 'temperature.state', value => $result->{temperatureProbeStateSettings});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' state is '%s'", $result->{temperatureProbeLocationName}, $result->{temperatureProbeStateSettings}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Temperature '%s' state is '%s'", $result->{temperatureProbeLocationName}, $result->{temperatureProbeStateSettings}
+                )
+            );
             next;
         }
 
         $exit = $self->get_severity(label => 'probe.status', section => 'temperature.status', value => $result->{temperatureProbeStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' status is '%s'", $result->{temperatureProbeLocationName}, $result->{temperatureProbeStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Temperature '%s' status is '%s'", $result->{temperatureProbeLocationName}, $result->{temperatureProbeStatus}
+                )
+            );
         }
      
         if (defined($result->{temperatureProbeReading}) && $result->{temperatureProbeReading} =~ /[0-9]/) {
@@ -103,15 +115,24 @@ sub check {
                 $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
                 $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
                 
-                $exit = $self->{perfdata}->threshold_check(value => $result->{temperatureProbeReading}, threshold => [ { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' }, 
-                                                                                                                     { label => 'warning-temperature-instance-' . $instance, exit_litteral => 'warning' } ]);
+                $exit = $self->{perfdata}->threshold_check(
+                    value => $result->{temperatureProbeReading},
+                    threshold => [
+                        { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' }, 
+                        { label => 'warning-temperature-instance-' . $instance, exit_litteral => 'warning' }
+                    ]
+                );
                 $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
             }
-            
+
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Temperature '%s' is %s degree centigrade", $result->{temperatureProbeLocationName}, $result->{temperatureProbeReading}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf(
+                        "Temperature '%s' is %s degree centigrade", $result->{temperatureProbeLocationName}, $result->{temperatureProbeReading}
+                    )
+                );
             }
             $self->{output}->perfdata_add(
                 label => 'temp', unit => 'C',
@@ -119,7 +140,7 @@ sub check {
                 instances => $result->{temperatureProbeLocationName},
                 value => $result->{temperatureProbeReading},
                 warning => $warn,
-                critical => $crit,
+                critical => $crit
             );
         }
     }

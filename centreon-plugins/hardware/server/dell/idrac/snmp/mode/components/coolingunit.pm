@@ -27,7 +27,7 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 my $mapping = {
     coolingUnitStateSettings  => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.10.1.4', map => \%map_state },
     coolingUnitName           => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.10.1.7' },
-    coolingUnitStatus         => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.10.1.8', map => \%map_status },
+    coolingUnitStatus         => { oid => '.1.3.6.1.4.1.674.10892.5.4.700.10.1.8', map => \%map_status }
 };
 my $oid_coolingUnitTableEntry = '.1.3.6.1.4.1.674.10892.5.4.700.10.1';
 
@@ -56,21 +56,29 @@ sub check {
         next if ($self->check_filter(section => 'coolingunit', instance => $instance));
         $self->{components}->{coolingunit}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("cooling unit '%s' status is '%s' [instance = %s] [state = %s]",
-                                    $result->{coolingUnitName}, $result->{coolingUnitStatus}, $instance, 
-                                    $result->{coolingUnitStateSettings}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "cooling unit '%s' status is '%s' [instance = %s] [state = %s]",
+                $result->{coolingUnitName}, $result->{coolingUnitStatus}, $instance, 
+                $result->{coolingUnitStateSettings}
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default.state', section => 'coolingunit.state', value => $result->{coolingUnitStateSettings});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Cooling unit '%s' state is '%s'", $result->{coolingUnitName}, $result->{coolingUnitStateSettings}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Cooling unit '%s' state is '%s'", $result->{coolingUnitName}, $result->{coolingUnitStateSettings})
+            );
             next;
         }
 
         $exit = $self->get_severity(label => 'default.status', section => 'coolingunit.status', value => $result->{coolingUnitStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Cooling unit '%s' status is '%s'", $result->{coolingUnitName}, $result->{coolingUnitStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Cooling unit '%s' status is '%s'", $result->{coolingUnitName}, $result->{coolingUnitStatus})
+            );
         }
     }
 }

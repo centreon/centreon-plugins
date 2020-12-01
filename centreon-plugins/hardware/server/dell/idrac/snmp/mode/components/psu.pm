@@ -26,7 +26,7 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 
 my $mapping = {
     powerSupplyStatus       => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.12.1.5', map => \%map_status },
-    powerSupplyLocationName => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.12.1.8' },
+    powerSupplyLocationName => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.12.1.8' }
 };
 my $oid_powerSupplyTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.12.1';
 

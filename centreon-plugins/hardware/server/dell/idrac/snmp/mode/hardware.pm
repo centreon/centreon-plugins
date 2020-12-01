@@ -28,10 +28,10 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|amperage|coolingdevice)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature|voltage|amperage|coolingdevice)$';
 
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         'default.state' => [
             ['unknown', 'UNKNOWN'],
@@ -73,6 +73,13 @@ sub set_system {
             ['removed', 'OK'],
             ['readonly', 'WARNING']
         ],
+        'enclosure.state' => [
+            ['unknown', 'UNKNOWN'],
+            ['ready', 'OK'],
+            ['failed', 'CRITICAL'],
+            ['missing', 'WARNING'],
+            ['degraded', 'WARNING']
+        ],
         'pdisk.smartalert' => [
             ['off', 'OK'],
             ['on', 'WARNING']
@@ -87,15 +94,16 @@ sub set_system {
 
     $self->{components_path} = 'hardware::server::dell::idrac::snmp::mode::components';
     $self->{components_module} = [
-        'psu', 'punit', 'temperature', 'voltage', 'amperage', 
-        'systembattery', 'coolingunit', 'coolingdevice', 'processor', 'memory', 'pci', 'network', 
-        'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'
+        'amperage', 'coolingdevice', 'coolingunit', 'enclosure',
+        'fru', 'memory', 'network', 'pci', 'pdisk',
+        'processor', 'psu', 'punit', 'slot', 'storagebattery',
+        'storagectrl', 'systembattery', 'temperature', 'voltage', 'vdisk'
     ];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -123,9 +131,10 @@ Check hardware components.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'psu', 'punit', 'temperature', 'voltage', 'amperage', 
-'systembattery', 'coolingunit', 'coolingdevice', 'processor', 'memory', 'pci', 'network', 
-'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'.
+Can be: 'amperage', 'coolingdevice', 'coolingunit', 'enclosure', 
+'fru', 'memory', 'network', 'pci', 'pdisk', 
+'processor', 'psu', 'punit', 'slot', 'storagebattery', 
+'storagectrl', 'systembattery', 'temperature', 'voltage', 'vdisk'.
 
 =item B<--filter>
 
