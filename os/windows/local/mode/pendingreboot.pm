@@ -33,8 +33,8 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Reboot Pending: %s [Windows Update: %s][Component Based Servicing: %s][SCCM Client: %s][File Rename Operations: %s][Computer Name Change: %s]',
-        $self->{result_values}->{RebootPending},
+        "'%s': reboot pending is %s [Windows Update: %s][Component Based Servicing: %s][SCCM Client: %s][File Rename Operations: %s][Computer Name Change: %s]",
+        $self->{result_values}->{WindowsVersion},
         $self->{result_values}->{WindowsUpdate},
         $self->{result_values}->{CBServicing},
         $self->{result_values}->{CCMClientSDK},
@@ -46,6 +46,7 @@ sub custom_status_output {
 sub custom_status_calc {
     my ($self, %options) = @_;
 
+    $self->{result_values}->{WindowsVersion} = $options{new_datas}->{$self->{instance} . '_WindowsVersion'};
     $self->{result_values}->{CBServicing} = $options{new_datas}->{$self->{instance} . '_CBServicing'};
     $self->{result_values}->{RebootPending} = $options{new_datas}->{$self->{instance} . '_RebootPending'};
     $self->{result_values}->{WindowsUpdate} = $options{new_datas}->{$self->{instance} . '_WindowsUpdate'};
@@ -64,7 +65,7 @@ sub set_counters {
     $self->{maps_counters}->{pendingreboot} = [
         { label => 'status', , threshold => 0, set => {
                 key_values => [
-                    { name => 'CBServicing' }, { name => 'RebootPending' }, { name => 'WindowsUpdate' }, 
+                    { name => 'WindowsVersion' }, { name => 'CBServicing' }, { name => 'RebootPending' }, { name => 'WindowsUpdate' },
                     { name => 'CCMClientSDK' }, { name => 'PendComputerRename' }, { name => 'PendFileRename' }
                 ],
                 closure_custom_calc => $self->can('custom_status_calc'),
@@ -145,11 +146,11 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    #{ CBServicing: false, WindowsUpdate: false, CCMClientSDK: null, PendComputerRename: false, PendFileRename: false, PendFileRenVal: null, RebootPending: false }
+    #{ WindowsVersion: "Microsoft Windows 2003 Server", CBServicing: false, WindowsUpdate: false, CCMClientSDK: null, PendComputerRename: false, PendFileRename: false, PendFileRenVal: null, RebootPending: false }
     foreach (keys %$decoded) {
         $decoded->{$_} = '-' if (!defined($decoded->{$_}));
-        $decoded->{$_} = 'true' if ($decoded->{$_} =~ /true|1/i);
-        $decoded->{$_} = 'false' if ($decoded->{$_} =~ /false|0/i);
+        $decoded->{$_} = 'true' if ($decoded->{$_} =~ /^(?:true|1)$/i);
+        $decoded->{$_} = 'false' if ($decoded->{$_} =~ /^(?:false|0)$/i);
     }
 
     $self->{pendingreboot} = $decoded;
