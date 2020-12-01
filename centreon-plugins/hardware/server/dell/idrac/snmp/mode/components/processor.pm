@@ -27,7 +27,7 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 my $mapping = {
     processorDeviceStateSettings  => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.30.1.4', map => \%map_state },
     processorDeviceStatus         => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.30.1.5', map => \%map_status },
-    processorDeviceFQDD           => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.30.1.26' },
+    processorDeviceFQDD           => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.30.1.26' }
 };
 my $oid_processorDeviceTableEntry = '.1.3.6.1.4.1.674.10892.5.4.1100.30.1';
 
@@ -56,21 +56,29 @@ sub check {
         next if ($self->check_filter(section => 'processor', instance => $instance));
         $self->{components}->{processor}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("processor '%s' status is '%s' [instance = %s] [state = %s]",
-                                    $result->{processorDeviceFQDD}, $result->{processorDeviceStatus}, $instance, 
-                                    $result->{processorDeviceStateSettings}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "processor '%s' status is '%s' [instance = %s] [state = %s]",
+                $result->{processorDeviceFQDD}, $result->{processorDeviceStatus}, $instance, 
+                $result->{processorDeviceStateSettings}
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default.state', section => 'processor.state', value => $result->{processorDeviceStateSettings});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Processor '%s' state is '%s'", $result->{processorDeviceFQDD}, $result->{processorDeviceStateSettings}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Processor '%s' state is '%s'", $result->{processorDeviceFQDD}, $result->{processorDeviceStateSettings})
+            );
             next;
         }
 
         $exit = $self->get_severity(label => 'default.status', section => 'processor.status', value => $result->{processorDeviceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Processor '%s' status is '%s'", $result->{processorDeviceFQDD}, $result->{processorDeviceStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Processor '%s' status is '%s'", $result->{processorDeviceFQDD}, $result->{processorDeviceStatus})
+            );
         }
     }
 }

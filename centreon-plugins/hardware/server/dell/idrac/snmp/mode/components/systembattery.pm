@@ -27,7 +27,7 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 my $mapping = {
     systemBatteryStateSettings  => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.50.1.4', map => \%map_state },
     systemBatteryStatus         => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.50.1.5', map => \%map_status },
-    systemBatteryLocationName   => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.50.1.7' },
+    systemBatteryLocationName   => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.50.1.7' }
 };
 my $oid_systemBatteryTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.50.1';
 

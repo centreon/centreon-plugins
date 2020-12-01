@@ -26,7 +26,7 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 
 my $mapping = {
     controllerComponentStatus   => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.1.1.38', map => \%map_status },
-    controllerFQDD              => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.1.1.78' },
+    controllerFQDD              => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.1.1.78' }
 };
 
 sub load {
@@ -51,14 +51,19 @@ sub check {
         next if ($self->check_filter(section => 'storagectrl', instance => $instance));
         $self->{components}->{storagectrl}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("storage controller '%s' status is '%s' [instance = %s]",
-                                    $result->{controllerFQDD}, $result->{controllerComponentStatus}, $instance, 
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "storage controller '%s' status is '%s' [instance = %s]",
+                $result->{controllerFQDD}, $result->{controllerComponentStatus}, $instance, 
+            )
+        );
 
         my $exit = $self->get_severity(label => 'default.status', section => 'storagectrl.status', value => $result->{controllerComponentStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Storage controllers '%s' status is '%s'", $result->{controllerFQDD}, $result->{controllerComponentStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Storage controllers '%s' status is '%s'", $result->{controllerFQDD}, $result->{controllerComponentStatus})
+            );
         }
     }
 }

@@ -26,7 +26,7 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 
 my $mapping = {
     networkDeviceStatus         => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.90.1.3', map => \%map_status },
-    networkDeviceProductName    => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.90.1.6' },
+    networkDeviceProductName    => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.90.1.6' }
 };
 my $oid_networkDeviceTableEntry = '.1.3.6.1.4.1.674.10892.5.4.1100.90.1';
 
@@ -55,14 +55,19 @@ sub check {
         next if ($self->check_filter(section => 'network', instance => $instance));
         $self->{components}->{network}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("network '%s' status is '%s' [instance = %s]",
-                                    $result->{networkDeviceProductName}, $result->{networkDeviceStatus}, $instance, 
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "network '%s' status is '%s' [instance = %s]",
+                $result->{networkDeviceProductName}, $result->{networkDeviceStatus}, $instance
+            )
+        );
 
         my $exit = $self->get_severity(label => 'default.status', section => 'network.status', value => $result->{networkDeviceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Network '%s' status is '%s'", $result->{networkDeviceProductName}, $result->{networkDeviceStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Network '%s' status is '%s'", $result->{networkDeviceProductName}, $result->{networkDeviceStatus})
+            );
         }
     }
 }

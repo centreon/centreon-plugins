@@ -26,7 +26,7 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 
 my $mapping = {
     systemSlotStatus                => { oid => '.1.3.6.1.4.1.674.10892.5.4.1200.10.1.5', map => \%map_status },
-    systemSlotSlotExternalSlotName  => { oid => '.1.3.6.1.4.1.674.10892.5.4.1200.10.1.8' },
+    systemSlotSlotExternalSlotName  => { oid => '.1.3.6.1.4.1.674.10892.5.4.1200.10.1.8' }
 };
 my $oid_systemSlotTableEntry = '.1.3.6.1.4.1.674.10892.5.4.1200.10.1';
 
@@ -55,14 +55,19 @@ sub check {
         next if ($self->check_filter(section => 'slot', instance => $instance));
         $self->{components}->{slot}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("slot '%s' status is '%s' [instance = %s]",
-                                    $result->{systemSlotSlotExternalSlotName}, $result->{systemSlotStatus}, $instance, 
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "slot '%s' status is '%s' [instance = %s]",
+                $result->{systemSlotSlotExternalSlotName}, $result->{systemSlotStatus}, $instance, 
+            )
+        );
 
         my $exit = $self->get_severity(label => 'default.status', section => 'slot.status', value => $result->{systemSlotStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Slot '%s' status is '%s'", $result->{systemSlotSlotExternalSlotName}, $result->{systemSlotStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Slot '%s' status is '%s'", $result->{systemSlotSlotExternalSlotName}, $result->{systemSlotStatus})
+            );
         }
     }
 }
