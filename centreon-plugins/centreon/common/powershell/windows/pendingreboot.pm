@@ -110,7 +110,10 @@ Try {
         $SCCM = $null 
     }
 
+    $WindowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption;
+
     $item = @{
+        WindowsVersion = $WindowsVersion;
         CBServicing = $CBSRebootPend;
         WindowsUpdate = $WUAURebootReq;
         CCMClientSDK = $SCCM;
