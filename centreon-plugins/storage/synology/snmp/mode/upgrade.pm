@@ -51,7 +51,7 @@ sub custom_status_output {
 
     return sprintf(
         "'%s': version is '%s', upgrade is '%s'",
-        $options{instance_value}->{model},
+        $self->{result_values}->{model},
         $self->{result_values}->{version},
         $self->{result_values}->{upgrade}
     );
