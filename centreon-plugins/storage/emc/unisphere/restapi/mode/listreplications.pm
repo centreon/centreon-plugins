@@ -32,7 +32,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -45,7 +45,7 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     return $options{custom}->request_api(url_path => '/api/types/replicationSession/instances?fields=name,health,syncState,srcResourceId,dstResourceId');
 }
 
@@ -57,14 +57,16 @@ sub run {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $_->{content}->{name} !~ /$self->{option_results}->{filter_name}/);
         
-        $self->{output}->output_add(long_msg => sprintf(
-            '[name = %s][health_status = %s][sync_status = %s][source_id = %s][destination_id = %s]',
-            $_->{content}->{name},
-            $health_status->{ $_->{content}->{health}->{value} },
-            $replication_status->{ $_->{content}->{syncState} },
-            $_->{content}->{srcResourceId},
-            $_->{content}->{dstResourceId},
-        ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '[name = %s][health_status = %s][sync_status = %s][source_id = %s][destination_id = %s]',
+                $_->{content}->{name},
+                $health_status->{ $_->{content}->{health}->{value} },
+                $replication_status->{ $_->{content}->{syncState} },
+                $_->{content}->{srcResourceId},
+                $_->{content}->{dstResourceId}
+            )
+        );
     }
 
     $self->{output}->output_add(
@@ -77,8 +79,8 @@ sub run {
 
 sub disco_format {
     my ($self, %options) = @_;
-    
-    $self->{output}->add_disco_format(elements => ['name','health_status','sync_status','source_id','destination_id']);
+
+    $self->{output}->add_disco_format(elements => ['name', 'health_status', 'sync_status', 'source_id', 'destination_id']);
 }
 
 sub disco_show {
@@ -91,7 +93,7 @@ sub disco_show {
             health_status => $health_status->{ $_->{content}->{health}->{value} },
             sync_status => $replication_status->{ $_->{content}->{syncState} },
             source_id => $_->{content}->{srcResourceId},
-            destination_id => $_->{content}->{dstResourceId},
+            destination_id => $_->{content}->{dstResourceId}
         );
     }
 }
