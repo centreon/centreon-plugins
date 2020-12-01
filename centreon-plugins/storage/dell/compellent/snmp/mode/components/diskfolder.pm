@@ -26,21 +26,25 @@ use storage::dell::compellent::snmp::mode::components::resources qw(%map_sc_stat
 
 my $mapping = {
     scDiskFolderStatus  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.25.1.3', map => \%map_sc_status },
-    scDiskFolderName    => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.25.1.4' },
+    scDiskFolderName    => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.25.1.4' }
 };
 my $oid_scDiskFolderEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.25.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_scDiskFolderEntry, begin => $mapping->{scDiskFolderStatus}->{oid}, end => $mapping->{scDiskFolderName}->{oid} };
+    push @{$self->{request}}, {
+        oid => $oid_scDiskFolderEntry,
+        start => $mapping->{scDiskFolderStatus}->{oid},
+        end => $mapping->{scDiskFolderName}->{oid}
+    };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking disk folders");
-    $self->{components}->{diskfolder} = {name => 'disk folders', total => 0, skip => 0};
+    $self->{components}->{diskfolder} = { name => 'disk folders', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'diskfolder'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_scDiskFolderEntry}})) {
@@ -51,14 +55,21 @@ sub check {
         next if ($self->check_filter(section => 'diskfolder', instance => $instance));
         $self->{components}->{diskfolder}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("disk folder '%s' status is '%s' [instance = %s]",
-                                    $result->{scDiskFolderName}, $result->{scDiskFolderStatus}, $instance, 
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "disk folder '%s' status is '%s' [instance = %s]",
+                $result->{scDiskFolderName}, $result->{scDiskFolderStatus}, $instance, 
+            )
+        );
         
         my $exit = $self->get_severity(label => 'default', section => 'diskfolder', value => $result->{scDiskFolderStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Disk folder '%s' status is '%s'", $result->{scDiskFolderName}, $result->{scDiskFolderStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Disk folder '%s' status is '%s'", $result->{scDiskFolderName}, $result->{scDiskFolderStatus}
+                )
+            );
         }
     }
 }

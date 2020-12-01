@@ -24,87 +24,60 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("global status is '%s'", $self->{result_values}->{status});
-    return $msg;
+    return sprintf("global status is '%s'", $self->{result_values}->{status});
 }
 
-sub custom_status_calc {
+sub prefix_global_output {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    return 0;
+    return "'" . $self->{global}->{display} . "': ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ', ', cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } }
     ];
 
      $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2,
+            unknown_default => '%{status} =~ /unknown/',
+            warning_default => '%{status} =~ /nonCritical|other/',
+            critical_default => '%{status} =~ /critical|nonRecoverable/',
+            set => {
                 key_values => [ { name => 'status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
-        { label => 'storage-status', threshold => 0, set => {
-                key_values => [ { name => 'storage_status' } ],
-                closure_custom_calc => $self->can('custom_storage_status_calc'),
-                closure_custom_output => $self->can('custom_storage_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "unknown-status:s"          => { name => 'unknown_status', default => '%{status} =~ /unknown/' },
-        "warning-status:s"          => { name => 'warning_status', default => '%{status} =~ /nonCritical|other/' },
-        "critical-status:s"         => { name => 'critical_status', default => '%{status} =~ /critical|nonRecoverable/' }
     });
 
     return $self;
 }
 
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return "'" . $self->{global}->{display} . "' : ";
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [
-         'unknown_status', 'warning_status', 'critical_status'
-    ]);
-}
-
-my %states = (
-    1 => 'other',
-    2 => 'unknown',
-    3 => 'ok',
-    4 => 'nonCritical',
-    5 => 'critical',
-    6 => 'nonRecoverable'
-);
+my $states = {
+    1 => 'other', 2 => 'unknown',
+    3 => 'ok', 4 => 'nonCritical',
+    5 => 'critical', 6 => 'nonRecoverable'
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -113,17 +86,20 @@ sub manage_selection {
     my $oid_ctlrTwoModel = '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1.7.2';
     my $oid_buildNumber = '.1.3.6.1.4.1.674.11000.2000.500.1.2.7.0';
     my $oid_globalStatus = '.1.3.6.1.4.1.674.11000.2000.500.1.2.6.0';
-    my $result = $options{snmp}->get_leef(oids => [
-        $oid_ctlrOneModel, $oid_ctlrTwoModel, $oid_buildNumber, $oid_globalStatus
-    ], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_ctlrOneModel, $oid_ctlrTwoModel, $oid_buildNumber, $oid_globalStatus
+        ],
+        nothing_quit => 1
+    );
+
+    my $global_status = $states->{ $snmp_result->{$oid_globalStatus} };
     
-    my $global_status = $states{$result->{$oid_globalStatus}};
-    
-    my $display = $result->{$oid_ctlrOneModel};
+    my $display = $snmp_result->{$oid_ctlrOneModel};
     if (!defined($display)) {
-        $display = $result->{$oid_ctlrTwoModel};
+        $display = $snmp_result->{$oid_ctlrTwoModel};
     }
-    $display .= '.' . $result->{$oid_buildNumber};
+    $display .= '.' . $snmp_result->{$oid_buildNumber};
     $self->{global} = {
         display => $display,
         status => $global_status
@@ -142,7 +118,7 @@ Check the overall status of Dell Compellent.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/').
+Set unknown threshold for status (Default: '%{status} =~ /unknown/').
 Can used special variables like: %{status}
 
 =item B<--warning-status>
