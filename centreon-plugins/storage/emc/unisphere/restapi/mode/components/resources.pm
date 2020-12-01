@@ -25,9 +25,10 @@ use warnings;
 use Exporter;
 
 our $health_status;
+our $replication_status;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw($health_status);
+our @EXPORT_OK = qw($health_status $replication_status);
 
 $health_status = {
     0 => 'unknown',
