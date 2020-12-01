@@ -33,8 +33,10 @@ sub new {
     %{ $self->{modes} } = (
         'hardware'               => 'storage::emc::unisphere::restapi::mode::hardware',
         'list-pools'             => 'storage::emc::unisphere::restapi::mode::listpools',
+        'list-replications'      => 'storage::emc::unisphere::restapi::mode::listreplications',
         'list-storage-resources' => 'storage::emc::unisphere::restapi::mode::liststorageresources',
         'pools'                  => 'storage::emc::unisphere::restapi::mode::pools',
+        'replications'           => 'storage::emc::unisphere::restapi::mode::replications',
         'storage-resources'      => 'storage::emc::unisphere::restapi::mode::storageresources',
     );
 
