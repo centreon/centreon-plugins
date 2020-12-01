@@ -24,23 +24,23 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 1, cb_prefix_output => 'prefix_output' }
+        { name => 'global', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', set => {
+        { label => 'status', type => 2, warning_default => '%{upgrade} ne "unavailable"', set => {
                 key_values => [
                     { name => 'model' }, { name => 'version' }, { name => 'upgrade' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -49,13 +49,12 @@ sub set_counters {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'version is \'' . $self->{result_values}->{version} . '\', upgrade is \'' . $self->{result_values}->{upgrade} . '\''
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-
-    return '\'' . $options{instance_value}->{model} . '\' : ';
+    return sprintf(
+        "'%s': version is '%s', upgrade is '%s'",
+        $options{instance_value}->{model},
+        $self->{result_values}->{version},
+        $self->{result_values}->{upgrade}
+    );
 }
 
 sub new {
@@ -64,46 +63,31 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'warning-status:s'  => { name => 'warning_status', default => '%{upgrade} ne "unavailable"' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-my %states = (
-    1 => 'available',
-    2 => 'unavailable',
-    3 => 'connecting',
-    4 => 'disconnected',
+my $map_states = {
+    1 => 'available', 2 => 'unavailable',
+    3 => 'connecting', 4 => 'disconnected',
     5 => 'others'
-);
+};
 
 my $mapping = {
-    modelName        => { oid => '.1.3.6.1.4.1.6574.1.5.1' },
-    version          => { oid => '.1.3.6.1.4.1.6574.1.5.3' },
-    upgradeAvailable => { oid => '.1.3.6.1.4.1.6574.1.5.4' }
+    model   => { oid => '.1.3.6.1.4.1.6574.1.5.1' }, # modelName
+    version => { oid => '.1.3.6.1.4.1.6574.1.5.3' }, # version
+    upgrade => { oid => '.1.3.6.1.4.1.6574.1.5.4', map => $map_states }  # upgradeAvailable
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{snmp}->get_leef(
+    my $snmp_result = $options{snmp}->get_leef(
         oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
         nothing_quit => 1
     );
-    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => 0);
-
-    $self->{global}->{0}->{model} = $result->{modelName};
-    $self->{global}->{0}->{version} = $result->{version};
-    $self->{global}->{0}->{upgrade} = $states{$result->{upgradeAvailable}};
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
 
 }
 
