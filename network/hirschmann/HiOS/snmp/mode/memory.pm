@@ -56,13 +56,14 @@ sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    my $oid_hmMemoryFree = '.1.3.6.1.4.1.248.14.2.15.3.2.0'; # in KBytes
-    my $oid_hmMemoryAllocated = '.1.3.6.1.4.1.248.14.2.15.3.1.0'; # in KBytes
+    my $oid_hm2DiagMemoryRamFree = '.1.3.6.1.4.1.248.11.22.1.8.11.2.0'; # in KBytes
+    my $oid_hm2DiagMemoryRamAllocated = '.1.3.6.1.4.1.248.11.22.1.8.11.1.0'; # in KBytes
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmMemoryFree, $oid_hmMemoryAllocated],
+    my $result = $self->{snmp}->get_leef(oids => [$oid_hm2DiagMemoryRamFree, $oid_hm2DiagMemoryRamAllocated],
                                          nothing_quit => 1);
-    my $mem_free = $result->{$oid_hmMemoryFree} * 1024;
-    my $mem_allocated = $result->{$oid_hmMemoryAllocated} * 1024;
+                                      
+    my $mem_free = $result->{$oid_hm2DiagMemoryRamFree} * 1024;
+    my $mem_allocated = $result->{$oid_hm2DiagMemoryRamAllocated} * 1024;
 
     my $mem_total = $mem_allocated + $mem_free;
 

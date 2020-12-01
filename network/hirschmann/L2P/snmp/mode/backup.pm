@@ -18,7 +18,6 @@
 # limitations under the License.
 # Authors : LLFT <<loic.laffont@gmail.com>>
 # Check the backup status 
-# OID hm2FMNvmState under Software HiOS : .1.3.6.1.4.1.248.11.21.1.3.1.0
 # OID hmConfigurationStatus under Software L2P : .1.3.6.1.4.1.248.14.2.4.12.0
 
 package network::hirschmann::L2P::snmp::mode::backup;

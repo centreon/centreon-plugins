@@ -19,7 +19,6 @@
 # Authors : LLFT <<loic.laffont@gmail.com>>
 # Check the backup status 
 # OID hm2FMNvmState under Software HiOS : .1.3.6.1.4.1.248.11.21.1.3.1.0
-# OID hmConfigurationStatus under Software L2P : .1.3.6.1.4.1.248.14.2.4.12.0
 
 package network::hirschmann::HiOS::snmp::mode::backup;
 
@@ -27,6 +26,12 @@ use strict;
 use warnings;
 use base qw(centreon::plugins::mode);
 
+
+my %backup_status = (
+    1 => 'Backup Ok', 
+    2 => 'Backup NOK',
+    3 => 'Backup Unknow',    
+);
 
 sub new {
     my ($class, %options) = @_;
@@ -50,12 +55,12 @@ sub run {
 my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    my $oid_hmConfigurationStatus  = '.1.3.6.1.4.1.248.14.2.4.12.0'; # integer
+    my $oid_hm2FMNvmState  = '.1.3.6.1.4.1.248.11.21.1.3.1.0'; # integer
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmConfigurationStatus],
+    my $result = $self->{snmp}->get_leef(oids => [$oid_hm2FMNvmState],
                                          nothing_quit => 1);
     
-    my $iBackupStatus = $result->{$oid_hmConfigurationStatus};
+    my $iBackupStatus = $result->{$oid_hm2FMNvmState};
     
     if ($iBackupStatus == 1 ){
       $self->{output}->output_add(severity  => 'OK',

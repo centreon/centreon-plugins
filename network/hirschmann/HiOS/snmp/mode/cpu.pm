@@ -56,11 +56,11 @@ sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    my $oid_hmCpuUtilization = '.1.3.6.1.4.1.248.14.2.15.2.1.0'; # in %
+    my $oid_oid_hm2DiagCpuUtilization = '.1.3.6.1.4.1.248.11.22.1.8.10.1.0'; # in %
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmCpuUtilization],
+    my $result = $self->{snmp}->get_leef(oids => [$oid_oid_hm2DiagCpuUtilization],
                                          nothing_quit => 1);
-    my $cpu = $result->{$oid_hmCpuUtilization};
+    my $cpu = $result->{$oid_oid_hm2DiagCpuUtilization};
 
     my $exit = $self->{perfdata}->threshold_check(value => $cpu, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 

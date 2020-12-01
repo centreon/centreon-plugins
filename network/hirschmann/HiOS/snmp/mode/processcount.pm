@@ -56,11 +56,11 @@ sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    my $oid_hmCpuRunningProcesses = '.1.3.6.1.4.1.248.14.2.15.2.3.0';
+    my $oid_hm2DiagCpuRunningProcesses = '.1.3.6.1.4.1.248.11.22.1.8.10.3.0';
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmCpuRunningProcesses],
+    my $result = $self->{snmp}->get_leef(oids => [$oid_hm2DiagCpuRunningProcesses],
                                          nothing_quit => 1);
-    my $processcount = $result->{$oid_hmCpuRunningProcesses};
+    my $processcount = $result->{$oid_hm2DiagCpuRunningProcesses};
 
     my $exit = $self->{perfdata}->threshold_check(value => $processcount, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 

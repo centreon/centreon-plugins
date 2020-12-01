@@ -35,7 +35,7 @@ sub new {
         'hardware'         => 'network::hirschmann::HiOS::snmp::mode::hardware',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::hirschmann::HiOS::snmp::::memory',
+        'memory'           => 'network::hirschmann::HiOS::snmp::mode::memory',
         'processcount'     => 'network::hirschmann::HiOS::snmp::mode::processcount',
         'backup'           => 'network::hirschmann::HiOS::snmp::mode::backup',
     );
