@@ -38,28 +38,29 @@ sub set_system {
             ['ready', 'OK'],
             ['invalid', 'CRITICAL'],
             ['rwError', 'CRITICAL'],
-            ['unknown', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN']
         ],
         smartdisk => [
             ['GOOD', 'OK'],
             ['NORMAL', 'OK'],
             ['--', 'OK'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ],
         raid => [
             ['Ready', 'OK'],
+            ['Synchronizing', 'OK'],
             ['degraded', 'WARNING'],
-            ['.*', 'CRITICAL'],
-        ],
+            ['.*', 'CRITICAL']
+        ]
     };
-    
+
     $self->{components_path} = 'storage::qnap::snmp::mode::components';
     $self->{components_module} = ['temperature', 'disk', 'fan', 'raid'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
