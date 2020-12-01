@@ -41,6 +41,7 @@ sub new {
         'swap'        => 'snmp_standard::mode::swap',
         'temperature' => 'storage::synology::snmp::mode::temperature',
         'time'        => 'snmp_standard::mode::ntp',
+        'upgrade'     => 'storage::synology::snmp::mode::upgrade',
         'ups'         => 'storage::synology::snmp::mode::ups',
         'uptime'      => 'snmp_standard::mode::uptime'
     };
