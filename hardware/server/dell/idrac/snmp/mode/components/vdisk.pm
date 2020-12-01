@@ -25,8 +25,8 @@ use warnings;
 use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_vdisk_state);
 
 my $mapping = {
-    virtualDiskState    => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.140.1.1.4', map => \%map_vdisk_state },
-    virtualDiskFQDD     => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.140.1.1.35' }
+    virtualDiskState => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.140.1.1.4', map => \%map_vdisk_state },
+    virtualDiskFQDD  => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.140.1.1.35' }
 };
 
 sub load {
