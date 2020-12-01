@@ -35,6 +35,7 @@ sub custom_status_output {
     return sprintf(
         "'%s': reboot pending is %s [Windows Update: %s][Component Based Servicing: %s][SCCM Client: %s][File Rename Operations: %s][Computer Name Change: %s]",
         $self->{result_values}->{WindowsVersion},
+        $self->{result_values}->{RebootPending},
         $self->{result_values}->{WindowsUpdate},
         $self->{result_values}->{CBServicing},
         $self->{result_values}->{CCMClientSDK},
