@@ -82,24 +82,29 @@ my $states = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_ctlrOneModel = '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1.7.1';
-    my $oid_ctlrTwoModel = '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1.7.2';
-    my $oid_buildNumber = '.1.3.6.1.4.1.674.11000.2000.500.1.2.7.0';
-    my $oid_globalStatus = '.1.3.6.1.4.1.674.11000.2000.500.1.2.6.0';
-    my $snmp_result = $options{snmp}->get_leef(
+    my $oid_ctlrModel = '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1.7';
+    my $oid_buildNumber = '.1.3.6.1.4.1.674.11000.2000.500.1.2.7';
+    my $oid_globalStatus = '.1.3.6.1.4.1.674.11000.2000.500.1.2.6';
+    my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
-            $oid_ctlrOneModel, $oid_ctlrTwoModel, $oid_buildNumber, $oid_globalStatus
+            { oid => $oid_ctlrModel },
+            { oid => $oid_buildNumber },
+            { oid => $oid_globalStatus }
         ],
         nothing_quit => 1
     );
 
-    my $global_status = $states->{ $snmp_result->{$oid_globalStatus} };
-    
-    my $display = $snmp_result->{$oid_ctlrOneModel};
-    if (!defined($display)) {
-        $display = $snmp_result->{$oid_ctlrTwoModel};
+    my $global_status = $states->{ $snmp_result->{$oid_globalStatus}->{$oid_globalStatus . '.0'} };
+
+    my $display;
+    foreach (keys %{$snmp_result->{$oid_ctlrModel}}) {
+        $display = $snmp_result->{$oid_ctlrModel}->{$_};
+        if (length($display)) {
+            last;
+        }
     }
-    $display .= '.' . $snmp_result->{$oid_buildNumber};
+
+    $display .= '.' . $snmp_result->{$oid_buildNumber}->{$oid_buildNumber . '.0'};
     $self->{global} = {
         display => $display,
         status => $global_status
