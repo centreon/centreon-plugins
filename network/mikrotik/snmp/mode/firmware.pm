@@ -83,6 +83,12 @@ sub manage_selection {
         oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
         nothing_quit => 1
     );
+
+    # RouterOS CHR does not have firmware
+    if (!defined($snmp_result->{$mapping->{firmware_version}->{oid} . '.0'}) && $snmp_result->{$mapping->{model}->{oid} . '.0'} eq 'RouterOS CHR') {
+        $snmp_result->{$mapping->{firmware_version}->{oid} . '.0'} = 'n/a';
+        $snmp_result->{$mapping->{firmware_version_update}->{oid} . '.0'} = 'n/a';
+    }
     $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
 }
 
