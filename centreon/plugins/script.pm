@@ -280,10 +280,14 @@ sub display_list_plugin {
         error_msg => "Cannot load module 'FindBin'."
     );
     # Search file 'plugin.pm'
-    $self->check_directory($FindBin::Bin);
+    if ($^O eq 'MSWin32') {
+        $self->check_directory(__FILE__ . '/../../../');
+    } else {
+        $self->check_directory($FindBin::Bin);
+    }
     foreach my $key (sort keys %{$self->{plugins_result}}) {
         my $name = $key;
-        $name =~ s/^$FindBin::Bin\/(.*)\.pm/$1/;
+        $name =~ s/^($FindBin::Bin|.*\.\.\/)\/(.*)\.pm/$2/;
         $name =~ s/\//::/g;
         $self->{plugins_result}->{$key} =~ s/^Plugin Description/DESCRIPTION/i;
 
