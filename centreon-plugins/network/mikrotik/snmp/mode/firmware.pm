@@ -84,6 +84,8 @@ sub manage_selection {
         nothing_quit => 1
     );
     $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
+    $self->{global}->{firmware_version} = 'n/a' if (!defined($self->{global}->{firmware_version}));
+    $self->{global}->{firmware_version_update} = 'n/a' if (!defined($self->{global}->{firmware_version_update}));
 }
 
 1;
