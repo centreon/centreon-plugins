@@ -73,36 +73,48 @@ sub new {
     return $self;
 }
 
-my $states = {
+my $map_status = {
     1 => 'other', 2 => 'unknown',
     3 => 'ok', 4 => 'nonCritical',
     5 => 'critical', 6 => 'nonRecoverable'
 };
 
+my $mapping = {
+    global_status => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.6', map => $map_status }, # productIDGlobalStatus
+    build_number  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.7' } # productIDBuildNumber
+};
+my $mapping_ctrl = {
+    ctrl_model  => { oid => '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1.7' } # scCtlrModel
+};
+
+my $oid_scCtlrEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1';
+my $oid_storageCenterObjects = '.1.3.6.1.4.1.674.11000.2000.500.1.2';
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_ctlrOneModel = '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1.7.1';
-    my $oid_ctlrTwoModel = '.1.3.6.1.4.1.674.11000.2000.500.1.2.13.1.7.2';
-    my $oid_buildNumber = '.1.3.6.1.4.1.674.11000.2000.500.1.2.7.0';
-    my $oid_globalStatus = '.1.3.6.1.4.1.674.11000.2000.500.1.2.6.0';
-    my $snmp_result = $options{snmp}->get_leef(
+    my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
-            $oid_ctlrOneModel, $oid_ctlrTwoModel, $oid_buildNumber, $oid_globalStatus
+            { oid => $oid_storageCenterObjects, start => $mapping->{global_status}->{oid}, end => $mapping->{build_number}->{oid} },
+            { oid => $oid_scCtlrEntry, start => $mapping_ctrl->{ctrl_model}->{oid}, end => $mapping_ctrl->{ctrl_model}->{oid} }
         ],
         nothing_quit => 1
     );
 
-    my $global_status = $states->{ $snmp_result->{$oid_globalStatus} };
-    
-    my $display = $snmp_result->{$oid_ctlrOneModel};
-    if (!defined($display)) {
-        $display = $snmp_result->{$oid_ctlrTwoModel};
+    my $display = '';
+    foreach (keys %{$snmp_result->{$oid_scCtlrEntry}}) {
+        next if (! /^$mapping_ctrl->{ctrl_model}->{oid}\.(.*)$/);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_ctrl, results => $snmp_result->{$oid_scCtlrEntry}, instance => $1);
+        $display = $result->{ctrl_model};
+        last if (length($display));
     }
-    $display .= '.' . $snmp_result->{$oid_buildNumber};
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_storageCenterObjects}, instance => 0);
+    $display .= '.' . $result->{build_number};
+
     $self->{global} = {
         display => $display,
-        status => $global_status
+        status => $result->{global_status}
     };
 }
 
