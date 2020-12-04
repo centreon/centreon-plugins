@@ -104,12 +104,12 @@ sub manage_selection {
     my $display = '';
     foreach (keys %{$snmp_result->{$oid_scCtlrEntry}}) {
         next if (! /^$mapping_ctrl->{ctrl_model}->{oid}\.(.*)$/);
-        my $result = $self->{snmp}->map_instance(mapping => $mapping_ctrl, results => $snmp_result->{$oid_scCtlrEntry}, instance => $1);
+        my $result = $options{snmp}->map_instance(mapping => $mapping_ctrl, results => $snmp_result->{$oid_scCtlrEntry}, instance => $1);
         $display = $result->{ctrl_model};
         last if (length($display));
     }
 
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_storageCenterObjects}, instance => 0);
+    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_storageCenterObjects}, instance => 0);
     $display .= '.' . $result->{build_number};
 
     $self->{global} = {
