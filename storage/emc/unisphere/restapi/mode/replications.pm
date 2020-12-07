@@ -110,7 +110,7 @@ sub manage_selection {
         $self->{replication}->{ $_->{content}->{id} } = {
             display => $_->{content}->{name},
             health_status => $health_status->{ $_->{content}->{health}->{value} },
-            repl_status => $replication_status->{ $_->{content}->{syncState} } },
+            repl_status => $replication_status->{ $_->{content}->{syncState} },
         };
     }
 
