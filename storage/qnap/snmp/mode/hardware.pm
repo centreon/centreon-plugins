@@ -28,7 +28,8 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|disk|smartdisk|fan)$';
+    $self->{regexp_threshold_numeric_check_section_option} =
+        '^(?:temperature|disk|smartdisk|fan|psu\.fanspeed|psu\.temperature)$';
 
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -51,11 +52,15 @@ sub set_system {
             ['Synchronizing', 'OK'],
             ['degraded', 'WARNING'],
             ['.*', 'CRITICAL']
+        ],
+        psu => [
+            ['ok', 'OK'],
+            ['fail', 'CRITICAL']
         ]
     };
 
     $self->{components_path} = 'storage::qnap::snmp::mode::components';
-    $self->{components_module} = ['temperature', 'disk', 'fan', 'raid'];
+    $self->{components_module} = ['disk', 'fan', 'psu', 'raid', 'temperature'];
 }
 
 sub snmp_execute {
@@ -67,7 +72,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -88,7 +93,7 @@ Check hardware (NAS.mib) (Fans, Temperatures, Disks, Raid).
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'disk', 'temperature', 'raid'.
+Can be: 'disk', 'fan', 'psu', 'raid', 'temperature'.
 
 =item B<--filter>
 
