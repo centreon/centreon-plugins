@@ -33,9 +33,9 @@ my $map_status_disk = {
 
 # In MIB 'NAS.mib'
 my $mapping = {
-    HdDescr => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.2' },
+    HdDescr       => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.2' },
     HdTemperature => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.3' },
-    HdStatus => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.4', map => $map_status_disk }
+    HdStatus      => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.4', map => $map_status_disk }
 };
 my $mapping2 = {
     HdSmartInfo => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.7' }
