@@ -279,11 +279,15 @@ sub display_list_plugin {
         output => $self->{output}, module => 'FindBin', 
         error_msg => "Cannot load module 'FindBin'."
     );
+    my $directory = $FindBin::Bin;
+    if (defined($ENV{PAR_TEMP})) {
+        $directory = $ENV{PAR_TEMP} . '/inc/lib';
+    }
     # Search file 'plugin.pm'
-    $self->check_directory($FindBin::Bin);
+    $self->check_directory($directory);
     foreach my $key (sort keys %{$self->{plugins_result}}) {
         my $name = $key;
-        $name =~ s/^$FindBin::Bin\/(.*)\.pm/$1/;
+        $name =~ s/^\Q$directory\E\/(.*)\.pm/$1/;
         $name =~ s/\//::/g;
         $self->{plugins_result}->{$key} =~ s/^Plugin Description/DESCRIPTION/i;
 
