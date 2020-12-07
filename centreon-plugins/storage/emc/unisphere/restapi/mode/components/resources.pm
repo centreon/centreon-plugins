@@ -51,6 +51,6 @@ $replication_status = {
     103 => 'consistent',
     104 => 'syncing',
     105 => 'inconsistent'
-}
+};
 
 1;
