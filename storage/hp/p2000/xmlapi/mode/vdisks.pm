@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -55,12 +55,17 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{vdisk} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2,
+            unknown_default => '%{status} =~ /unknown/i',
+            warning_default => '%{status} =~ /degraded/i',
+            critical_default => '%{status} =~ /failed/i',
+            set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'usage', nlabel => 'vdisk.space.usage.bytes', set => {
@@ -68,8 +73,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { value => 'used_space', template => '%d', min => 0, max => 'total_space',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'usage-free', nlabel => 'vdisk.space.free.bytes', display_ok => 0, set => {
@@ -77,8 +82,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { value => 'free_space', template => '%d', min => 0, max => 'total_space',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'usage-prct', nlabel => 'vdisk.space.usage.percentage', display_ok => 0, set => {
@@ -86,10 +91,10 @@ sub set_counters {
                 output_template => 'used : %.2f %%',
                 perfdatas => [
                     { value => 'prct_used_space', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ],
             }
-        },
+        }
     ];
 }
 
@@ -99,20 +104,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /degraded/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /failed/i' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 sub prefix_vdisk_output {
@@ -198,7 +193,7 @@ Filter virtual disk name (can be a regexp).
 
 =item B<--unknown-status>
 
-Set unknon threshold for status (Default: '%{status} =~ /unknown/i').
+Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
 Can used special variables like: %{status}, %{display}
 
 =item B<--warning-status>
