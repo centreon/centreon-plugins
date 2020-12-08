@@ -32,6 +32,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'controllers'    => 'storage::hp::p2000::xmlapi::mode::controllers',
         'health'         => 'storage::hp::p2000::xmlapi::mode::health',
         'list-volumes'   => 'storage::hp::p2000::xmlapi::mode::listvolumes',
         'vdisks'         => 'storage::hp::p2000::xmlapi::mode::vdisks',
