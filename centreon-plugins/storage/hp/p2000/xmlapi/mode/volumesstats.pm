@@ -60,7 +60,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'volume', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes statistics are ok', skipped_code => { -2 => 1, -10 => 1 } },
+        { name => 'volume', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes statistics are ok', skipped_code => { -2 => 1, -10 => 1 } }
     ];
     
     $self->{maps_counters}->{volume} = [
@@ -69,8 +69,8 @@ sub set_counters {
                 output_template => 'Read I/O : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'write', nlabel => 'volume.io.write.usage.bytespersecond', set => {
@@ -78,8 +78,8 @@ sub set_counters {
                 output_template => 'Write I/O : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'read-cache-hits', nlabel => 'volume.cache.read.hits.percentage', set => {
@@ -89,8 +89,8 @@ sub set_counters {
                 output_use => 'read-cache-hits_prct',  threshold_use => 'read-cache-hits_prct',
                 perfdatas => [
                     { value => 'read-cache-hits_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'write-cache-hits', nlabel => 'volume.cache.write.hits.percentage', set => {
@@ -100,8 +100,8 @@ sub set_counters {
                 output_use => 'write-cache-hits_prct', threshold_use => 'write-cache-hits_prct',
                 perfdatas => [
                     { value => 'write-cache-hits_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'iops', nlabel => 'volume.io.usage.iops', set => {
