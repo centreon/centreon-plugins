@@ -685,6 +685,26 @@ sub sns_list_topics {
     return $topics_results;
 }
 
+sub vpc_list_gateways {
+    my ($self, %options) = @_;
+    my $gateway_results = [];
+    eval {
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $topics = Paws->service('EC2', caller => $lwp_caller, region => $self->{option_results}->{region});
+        my $raw_results = $topics->DescribeTransitGateways();
+        foreach my $gateway (@{$raw_results->{TransitGateways}}) {
+            push @{$gateway_results}, { id => $gateway->{TransitGatewayId}, name => $gateway->{Description} };
+        };
+    };
+
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $gateway_results;
+}
+
 1;
 
 __END__
