@@ -39,19 +39,19 @@ sub set_system {
             ['ok', 'OK'],
             ['degraded', 'WARNING'],
             ['failed|fault', 'CRITICAL'],
-            ['unknown|not available', 'UNKNOWN'],
+            ['unknown|not available', 'UNKNOWN']
         ],
         fru => [
             ['ok', 'OK'],
             ['absent', 'WARNING'],
             ['fault', 'CRITICAL'],
-            ['not available', 'UNKNOWN'],
+            ['not available', 'UNKNOWN']
         ],
         sensor => [
             ['ok', 'OK'],
             ['warning|not installed|unavailable', 'WARNING'],
             ['error|unrecoverable', 'CRITICAL'],
-            ['unknown|unsupported', 'UNKNOWN'],
+            ['unknown|unsupported', 'UNKNOWN']
         ],
     };
 
@@ -70,7 +70,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
     });
 

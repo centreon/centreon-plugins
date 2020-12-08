@@ -48,7 +48,7 @@ sub check {
         cmd => 'show sensor-status', 
         base_type => 'sensors',
         key => 'sensor-name', 
-        properties_name => '^(value|sensor-type|status)$'
+        properties_name => '^(?:value|sensor-type|status)$'
     );
 
     #<OBJECT basetype="sensors" name="sensor" oid="22" format="rows">

@@ -30,20 +30,32 @@ sub check {
     $self->{components}->{fru} = {name => 'frus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fru'));
     
-    my ($results) = $self->{custom}->get_infos(
+    my ($entries) = $self->{custom}->get_infos(
         cmd => 'show frus', 
         base_type => 'enclosure-fru',
-        key => 'fru-location', 
-        properties_name => '^(fru-status|fru-location)$',
+        properties_name => '^fru-status|fru-location|oid$',
         no_quit => 1,
     );
-    foreach my $part_number (keys %$results) {
-        my $instance = $results->{$part_number}->{'fru-location'};
-    
+
+    my ($results, $duplicated) = ({}, {});
+    foreach (@$entries) {
+        my $name = $_->{'fru-location'};
+        $name = $_->{'fru-location'} . ':' . $_->{oid} if (defined($duplicated->{$name}));
+        if (defined($results->{$name})) {
+            $duplicated->{$name} = 1;
+            my $instance = $results->{$name}->{'fru-location'} . ':' . $results->{$name}->{oid};
+            $results->{$instance} = $results->{$name};
+            delete $results->{$name};
+            $name = $_->{'fru-location'} . ':' . $_->{oid};
+        }
+        $results->{$name} = $_;
+    }
+
+    foreach my $instance (keys %$results) {    
         next if ($self->check_filter(section => 'fru', instance => $instance));
         $self->{components}->{fru}->{total}++;
         
-        my $state = $results->{$part_number}->{'fru-status'};
+        my $state = $results->{$instance}->{'fru-status'};
         
         $self->{output}->output_add(
             long_msg => sprintf(

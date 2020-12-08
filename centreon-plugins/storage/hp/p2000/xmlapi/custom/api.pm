@@ -18,13 +18,13 @@
 # limitations under the License.
 #
 
-package storage::hp::p2000::xmlapi::custom;
+package storage::hp::p2000::xmlapi::custom::api;
 
 use strict;
 use warnings;
 use centreon::plugins::http;
-use XML::XPath;
 use Digest::MD5 qw(md5_hex);
+use XML::LibXML::Simple;
 
 sub new {
     my ($class, %options) = @_;
@@ -116,38 +116,34 @@ sub build_options_for_httplib {
 
 sub check_login {
     my ($self, %options) = @_;
-    my ($xpath, $nodeset);
-    
+
+    my $xml;
     eval {
-        $xpath = XML::XPath->new(xml => $options{content});
-        $nodeset = $xpath->find("//OBJECT[\@basetype='status']//PROPERTY[\@name='return-code']");
+        $SIG{__WARN__} = sub {};
+        $xml = XMLin($options{content}, ForceArray => [], KeyAttr => []);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot parse login response: $@");
         $self->{output}->option_exit();
     }
-    
-    if (scalar($nodeset->get_nodelist) == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot find login response.');
-        $self->{output}->display();
-        $self->{output}->exit();
+
+    if (!defined($xml->{OBJECT}) || !defined($xml->{OBJECT}->{PROPERTY})) {
+        $self->{output}->add_option_msg(short_msg => 'Cannot find login response');
+        $self->{output}->option_exit();
     }
-    
-    foreach my $node ($nodeset->get_nodelist()) {
-        if ($node->string_value != 1) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Login authentification failed (return-code: ' . $node->string_value . ').');     
-            $self->{output}->display();
-            $self->{output}->exit();
-        }
+
+    my ($session_id, $return_code);
+    foreach (@{$xml->{OBJECT}->{PROPERTY}}) {
+        $return_code = $_->{content} if ($_->{name} eq 'return-code');
+        $session_id = $_->{content} if ($_->{name} eq 'response');
     }
-    
-    $nodeset = $xpath->find("//OBJECT[\@basetype='status']//PROPERTY[\@name='response']");
-    my @nodes = $nodeset->get_nodelist();
-    my $node = shift(@nodes);
-    
-    $self->{session_id} = $node->string_value;
+
+    if ($return_code != 1) {
+        $self->{output}->add_option_msg(short_msg => 'Login authentification failed (return-code: ' . $return_code . ').');
+        $self->{output}->option_exit();
+    }
+
+    $self->{session_id} = $session_id;
     $self->{logon} = 1;
 }
 
@@ -175,12 +171,12 @@ sub get_infos {
     $self->login();
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
-    
+
     my ($unknown_status, $warning_status, $critical_status) = ($self->{unknown_http_status}, $self->{warning_http_status}, $self->{critical_http_status});
     if (defined($options{no_quit}) && $options{no_quit} == 1) {
         ($unknown_status, $warning_status, $critical_status) = ('', '', '');
     }
-    my $response = $self->{http}->request(
+    my ($response) = $self->{http}->request(
         url_path => $self->{url_path} . $cmd, 
         header => [
             'Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
@@ -188,19 +184,20 @@ sub get_infos {
         ],
         unknown_status => $unknown_status,
         warning_status => $warning_status,
-        critical_status => $critical_status,
+        critical_status => $critical_status
     );
 
+    my $xml;
     eval {
-        $xpath = XML::XPath->new(xml => $response);
-        $nodeset = $xpath->find("//OBJECT[\@basetype='" . $options{base_type} . "']");
+        $SIG{__WARN__} = sub {};
+        $xml = XMLin($response, ForceArray => ['OBJECT'], KeyAttr => []);
     };
     if ($@) {
         return ({}, 0) if (defined($options{no_quit}) && $options{no_quit} == 1);
         $self->{output}->add_option_msg(short_msg => "Cannot parse 'cmd' response: $@");
         $self->{output}->option_exit();
     }
-    
+
     # Check if there is an error
     #<OBJECT basetype="status" name="status" oid="1">
         #<PROPERTY name="response-type" type="enumeration" size="12" draw="false" sort="nosort" display-name="Response Type">Error</PROPERTY>
@@ -209,38 +206,44 @@ sub get_infos {
         #<PROPERTY name="return-code" type="int32" size="5" draw="false" sort="nosort" display-name="Return Code">-10028</PROPERTY>
         #<PROPERTY name="component-id" type="string" size="80" draw="false" sort="nosort" display-name="Component ID"></PROPERTY>
     #</OBJECT>
-    if (my $nodestatus = $xpath->find("//OBJECT[\@basetype='status']//PROPERTY[\@name='return-code']")) {
-        my @nodes = $nodestatus->get_nodelist();
-        my $node = shift @nodes;
-        my $return_code = $node->string_value;
-        if ($return_code != 0) {
-            $nodestatus = $xpath->find("//OBJECT[\@basetype='status']//PROPERTY[\@name='response']");
-            @nodes = $nodestatus->get_nodelist();
-            $node = shift @nodes;
-            return ({}, 0, $node->string_value) if (defined($options{no_quit}) && $options{no_quit} == 1);
-            $self->{output}->add_option_msg(short_msg => $node->string_value);
-            $self->{output}->option_exit();
-        }
-    }
-    
     my $results = {};
-    foreach my $node ($nodeset->get_nodelist()) {
-        my $properties = {};
+    $results = [] if (!defined($options{key}));
+    foreach my $obj (@{$xml->{OBJECT}}) {
+        if ($obj->{basetype} eq 'status') {
+            my ($return_code, $response) = (-1, 'n/a');
+            foreach my $prop (@{$obj->{PROPERTY}}) {
+                $return_code = $prop->{content} if ($prop->{name} eq 'return-code');
+                $response = $prop->{content} if ($prop->{name} eq 'response');
+            }
 
-        foreach my $prop_node ($node->getChildNodes()) {
-            my $prop_name = $prop_node->getAttribute('name');
-        
-            if (defined($prop_name) && ($prop_name eq $options{key} || 
-                $prop_name =~ /$options{properties_name}/)) {
-                $properties->{$prop_name} = $prop_node->string_value;
+            if ($return_code != 0) {
+                return ({}, 0) if (defined($options{no_quit}) && $options{no_quit} == 1);
+                $self->{output}->add_option_msg(short_msg => $response);
+                $self->{output}->option_exit();
             }
         }
-        
-        if (defined($properties->{$options{key}})) {
-            $results->{$properties->{$options{key}}} = $properties;
+
+        if ($obj->{basetype} eq $options{base_type}) {
+            my $properties = {};
+            foreach (keys %$obj) {
+                $properties->{$_} = $obj->{$_} if (/$options{properties_name}/);
+            }
+            foreach my $prop (@{$obj->{PROPERTY}}) {
+                if (defined($prop->{name}) &&
+                    ((defined($options{key}) && $prop->{name} eq $options{key}) || $prop->{name} =~ /$options{properties_name}/)) {
+                    $properties->{ $prop->{name} } = $prop->{content};
+                }
+            }
+
+            if (defined($options{key})) {
+                $results->{ $properties->{ $options{key} } } = $properties
+                    if (defined($properties->{ $options{key} }));
+            } else {
+                push @$results, $properties;
+            }
         }
     }
-    
+
     return ($results, 1);
 }
 
@@ -254,7 +257,7 @@ sub login {
 
     $self->build_options_for_httplib();
     $self->{http}->set_options(%{$self->{option_results}});
-    
+
     # Login First
     my $md5_hash = md5_hex($self->{username} . '_' . $self->{password});
     my $response = $self->{http}->request(
@@ -263,6 +266,7 @@ sub login {
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status},
     );
+
     $self->check_login(content => $response);
 }
 
