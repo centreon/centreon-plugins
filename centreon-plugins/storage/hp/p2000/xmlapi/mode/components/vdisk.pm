@@ -40,13 +40,18 @@ sub check_vdisk {
         
         my $state = $health{$options{results}->{$vdisk_id}->{'health-numeric'}};
         
-        $self->{output}->output_add(long_msg => sprintf("vdisk '%s' status is %s [instance: %s]",
-                                                        $vdisk_id, $state, $vdisk_id)
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "vdisk '%s' status is %s [instance: %s]",
+                $vdisk_id, $state, $vdisk_id
+            )
+        );
         my $exit = $self->get_severity(label => 'default', section => 'vdisk', value => $state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Vdisk '%s' status is '%s'", $vdisk_id, $state));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Vdisk '%s' status is '%s'", $vdisk_id, $state)
+            );
         }
     }
 }
@@ -63,7 +68,7 @@ sub check {
         base_type => 'virtual-disks',
         key => 'name', 
         properties_name => '^health-numeric$',
-        no_quit => 1,
+        no_quit => 1
     );
     if ($code == 0) {
         ($results) = $self->{custom}->get_infos(
@@ -71,7 +76,7 @@ sub check {
             base_type => 'disk-groups',
             key => 'name', 
             properties_name => '^health-numeric$',
-            no_quit => 1,
+            no_quit => 1
         );
     }
 
