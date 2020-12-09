@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::vpc::transitgateway::mode::traffic;
+package cloud::aws::transitgateway::mode::traffic;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -231,7 +231,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{gateways} = $options{custom}->vpc_list_gateways();
+    $self->{gateways} = $options{custom}->tgw_list_gateways();
 
     my %metric_results;
     foreach my $instance (@{$self->{gateways}}) {
@@ -273,10 +273,10 @@ __END__
 
 =head1 MODE
 
-Check Amazon VPC TransitGateways statistics.
+Check AWS TransitGateways statistics.
 
 Example:
-perl centreon_plugins.pl --plugin=cloud::aws::vpc::transitgateway::plugin --custommode=awscli --mode=traffic --region='eu-west-1'
+perl centreon_plugins.pl --plugin=cloud::aws::transitgateway::plugin --custommode=awscli --mode=traffic --region='eu-west-1'
 --filter-gateway='MyTGW_1' --warning-packets-drop-blackole='500' --critical-packets-drop-blackole='1000' --verbose
 
 See 'https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-cloudwatch-metrics.html' for more information.

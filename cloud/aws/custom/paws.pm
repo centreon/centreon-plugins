@@ -685,7 +685,7 @@ sub sns_list_topics {
     return $topics_results;
 }
 
-sub vpc_list_gateways {
+sub tgw_list_gateways {
     my ($self, %options) = @_;
     my $gateway_results = [];
     eval {

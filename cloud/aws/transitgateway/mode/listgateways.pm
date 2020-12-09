@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::vpc::transitgateway::mode::listgateways;
+package cloud::aws::transitgateway::mode::listgateways;
 
 use base qw(centreon::plugins::mode);
 
@@ -43,7 +43,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{volume} = $options{custom}->vpc_list_gateways();
+    $self->{volume} = $options{custom}->tgw_list_gateways();
 }
 
 sub run {
@@ -86,7 +86,7 @@ __END__
 
 =head1 MODE
 
-List Amazon VPC TransitGateways.
+List AWS TransitGateways.
 
 =over 8
 

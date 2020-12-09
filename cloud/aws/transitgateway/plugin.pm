@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::vpc::transitgateway::plugin;
+package cloud::aws::transitgateway::plugin;
 
 use strict;
 use warnings;
@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'list-gateways' => 'cloud::aws::vpc::transitgateway::mode::listgateways',
-        'traffic'       => 'cloud::aws::vpc::transitgateway::mode::traffic'
+        'list-gateways' => 'cloud::aws::transitgateway::mode::listgateways',
+        'traffic'       => 'cloud::aws::transitgateway::mode::traffic'
     };
 
     $self->{customdefault} = {
@@ -51,6 +51,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Amazon VPC Transit Gateways.
+Check AWS Transit Gateways.
 
 =cut

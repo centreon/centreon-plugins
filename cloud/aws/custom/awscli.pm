@@ -771,7 +771,7 @@ sub sns_list_topics {
     return $topics_results;
 }
 
-sub vpc_list_gateways_set_cmd {
+sub tgw_list_gateways_set_cmd {
     my ($self, %options) = @_;
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
@@ -782,10 +782,10 @@ sub vpc_list_gateways_set_cmd {
     return $cmd_options;
 }
 
-sub vpc_list_gateways {
+sub tgw_list_gateways {
     my ($self, %options) = @_;
 
-    my $cmd_options = $self->vpc_list_gateways_set_cmd(%options);
+    my $cmd_options = $self->tgw_list_gateways_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
     my $gateway_results = [];
     foreach my $gateway (@{$raw_results->{TransitGateways}}) {
