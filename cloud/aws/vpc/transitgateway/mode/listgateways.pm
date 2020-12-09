@@ -51,12 +51,12 @@ sub run {
 
     $self->manage_selection(%options);
     foreach (@{$self->{volume}}) {
-        $self->{output}->output_add(long_msg => sprintf("[Name = %s][Id = %s]", $_->{name}, $_->{id}));
+        $self->{output}->output_add(long_msg => sprintf("[Id = %s][Name = %s]", $_->{id}, $_->{name}));
     }
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List TransitGateways:'
+        short_msg => 'TransitGateways list:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -65,7 +65,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['Name', 'Id']);
+    $self->{output}->add_disco_format(elements => ['Id', 'Name']);
 }
 
 sub disco_show {
@@ -86,7 +86,7 @@ __END__
 
 =head1 MODE
 
-List Amazon Elastic Block Store volumes.
+List Amazon VPC TransitGateways.
 
 =over 8
 

@@ -45,20 +45,38 @@ my %metrics_mapping = (
         'unit'      => 'B'
     },
     'PacketsIn' => {
-        'output'    => 'Packets Received',
-        'label'     => 'packets-received',
+        'output'    => 'Packets Received (In)',
+        'label'     => 'packets-in',
         'nlabel'    => {
-            'absolute'   => 'gateway.packets.received.count',
-            'per_second' => 'gateway.packets.received.countpersecond',
+            'absolute'   => 'gateway.packets.in.count',
+            'per_second' => 'gateway.packets.in.countpersecond'
         },
         'unit'      => ''
     },
     'PacketsOut' => {
-        'output'    => 'Packets Sent',
-        'label'     => 'packets-sent',
+        'output'    => 'Packets Sent (Out)',
+        'label'     => 'packets-out',
         'nlabel'    => {
-            'absolute'   => 'gateway.packets.sent.count',
-            'per_second' => 'gateway.packets.sent.countpersecond',
+            'absolute'   => 'gateway.packets.out.count',
+            'per_second' => 'gateway.packets.out.countpersecond'
+        },
+        'unit'      => ''
+    },
+    'PacketDropCountBlackhole' => {
+        'output'    => 'Packets Drop Blackhole',
+        'label'     => 'packets-drop-blackhole',
+        'nlabel'    => {
+            'absolute'   => 'gateway.packets.blackholedropped.count',
+            'per_second' => 'gateway.packets.blackholedropped.countpersecond'
+        },
+        'unit'      => ''
+    },
+    'PacketDropCountNoRoute' => {
+        'output'    => 'Packets Drop No Route',
+        'label'     => 'packets-drop-noroute',
+        'nlabel'    => {
+            'absolute'   => 'gateway.packets.noroutedropped.count',
+            'per_second' => 'gateway.packets.noroutedropped.countpersecond'
         },
         'unit'      => ''
     }
@@ -179,9 +197,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-gateway:s@' => { name => 'filter_gateway' },
-        'filter-metric:s'   => { name => 'filter_metric' },
-        'per-sec'           => { name => 'per_sec' }
+        'filter-gateway:s' => { name => 'filter_gateway' },
+        'filter-metric:s'  => { name => 'filter_metric' },
+        'per-sec'          => { name => 'per_sec' }
     });
 
     return $self;
@@ -190,11 +208,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    # if (!defined($self->{option_results}->{vpn_id}) || $self->{option_results}->{vpn_id} eq '') {
-    #     $self->{output}->add_option_msg(short_msg => "Need to specify --vpnid option.");
-    #     $self->{output}->option_exit();
-    # };
 
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
@@ -222,6 +235,9 @@ sub manage_selection {
 
     my %metric_results;
     foreach my $instance (@{$self->{gateways}}) {
+        next if (defined($self->{option_results}->{filter_gateway}) && $self->{option_results}->{filter_gateway} ne ''
+            && $instance->{name} !~ /$self->{option_results}->{filter_gateway}/);
+
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
             namespace   => 'AWS/TransitGateway',
             dimensions  => [ { Name => 'TransitGateway', Value => $instance->{id} } ],
@@ -244,8 +260,6 @@ sub manage_selection {
             }
         }
     }
-    #use Data::Dumper; print Dumper($self);
-
 
     if (scalar(keys %{$self->{metrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
@@ -259,33 +273,35 @@ __END__
 
 =head1 MODE
 
-Check AWS VPN Connection.
+Check Amazon VPC TransitGateways statistics.
 
 Example:
-perl centreon_plugins.pl --plugin=cloud::aws::vpn::plugin --custommode=awscli --mode=traffic --region='eu-west-1'
---vpnid='vpn-1234567890abcdefg' --warning-tunnel-state='1:' --critical-tunnel-state='0.5:' --warning --verbose
+perl centreon_plugins.pl --plugin=cloud::aws::vpc::transitgateway::plugin --custommode=awscli --mode=traffic --region='eu-west-1'
+--filter-gateway='MyTGW_1' --warning-packets-drop-blackole='500' --critical-packets-drop-blackole='1000' --verbose
 
-See 'https://docs.aws.amazon.com/vpn/latest/s2svpn/monitoring-cloudwatch-vpn.html' for more information.
+See 'https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-cloudwatch-metrics.html' for more information.
 
 
 =over 8
 
-=item B<--vpnid>
+=item B<--filter-gateway>
 
-Set the VpnId (Required).
+Filter on a specific TransitGateway. This filter is based on the "description" attribute of the gateway.
 
 =item B<--filter-metric>
 
 Filter on a specific metric.
-Can be: TunnelState, TunnelDataIn, TunnelDataOut
+Can be: BytesIn, BytesOut, PacketsIn, PacketsOut, PacketDropCountBlackhole, PacketDropCountNoRoute
 
 =item B<--warning-$metric$>
 
-Warning thresholds ($metric$ can be: 'tunnel-state', 'tunnel-datain', 'tunnel-dataout').
+Warning thresholds ($metric$ can be: 'bytes-in', 'bytes-out', 'packets-in', 'packets-out',
+'packets-drop-blackhole', 'packets-drop-noroute').
 
 =item B<--critical-$metric$>
 
-Critical thresholds ($metric$ can be: 'tunnel-state', 'tunnel-datain', 'tunnel-dataout').
+Critical thresholds ($metric$ can be: 'bytes-in', 'bytes-out', 'packets-in', 'packets-out',
+'packets-drop-blackhole', 'packets-drop-noroute').
 
 =back
 

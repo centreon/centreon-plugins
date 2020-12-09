@@ -690,8 +690,8 @@ sub vpc_list_gateways {
     my $gateway_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $topics = Paws->service('EC2', caller => $lwp_caller, region => $self->{option_results}->{region});
-        my $raw_results = $topics->DescribeTransitGateways();
+        my $gateways = Paws->service('EC2', caller => $lwp_caller, region => $self->{option_results}->{region});
+        my $raw_results = $gateways->DescribeTransitGateways();
         foreach my $gateway (@{$raw_results->{TransitGateways}}) {
             push @{$gateway_results}, { id => $gateway->{TransitGatewayId}, name => $gateway->{Description} };
         };
