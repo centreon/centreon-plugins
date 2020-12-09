@@ -170,7 +170,7 @@ sub set_counters {
           message_multiple => 'All TransitGateways metrics are ok', indent_long_output => '    ',
             group => [
                 { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
-                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -184,7 +184,7 @@ sub set_counters {
                 closure_custom_calc_extra_options   => { metric => $metric },
                 closure_custom_output               => $self->can('custom_metric_output'),
                 closure_custom_perfdata             => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check      => $self->can('custom_metric_threshold'),
+                closure_custom_threshold_check      => $self->can('custom_metric_threshold')
             }
         };
         push @{$self->{maps_counters}->{statistics}}, $entry;
