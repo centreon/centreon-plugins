@@ -33,10 +33,12 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'alerts'        => 'apps::backup::commvault::commserve::restapi::mode::alerts',
-        'jobs'          => 'apps::backup::commvault::commserve::restapi::mode::jobs',
-        #'media-agents'  => 'apps::backup::commvault::commserve::restapi::mode::mediaagents',
-        'storage-pools' => 'apps::backup::commvault::commserve::restapi::mode::storagepools'
+        'alerts'                => 'apps::backup::commvault::commserve::restapi::mode::alerts',
+        'jobs'                  => 'apps::backup::commvault::commserve::restapi::mode::jobs',
+        'list-media-agents'     => 'apps::backup::commvault::commserve::restapi::mode::listmediaagents',
+        'list-storage-policies' => 'apps::backup::commvault::commserve::restapi::mode::liststoragepolicies',
+        'media-agents'          => 'apps::backup::commvault::commserve::restapi::mode::mediaagents',
+        'storage-pools'         => 'apps::backup::commvault::commserve::restapi::mode::storagepools'
     };
 
     $self->{custom_modes}->{api} = 'apps::backup::commvault::commserve::restapi::custom::api';

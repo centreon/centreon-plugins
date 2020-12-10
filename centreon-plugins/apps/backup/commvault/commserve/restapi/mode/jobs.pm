@@ -130,9 +130,11 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-policy-name:s'  => { name => 'filter_policy_name' },
+        'filter-policy-id:s'    => { name => 'filter_policy_id' },
         'filter-type:s'         => { name => 'filter_type' },
         'filter-client-group:s' => { name => 'filter_client_group' },
-        'filter-client-name:s'  => { name => 'filter_client_name' }
+        'filter-client-name:s'  => { name => 'filter_client_name' },
+        'timeframe:s'           => { name => 'timeframe' }
     });
     
     return $self;
@@ -144,15 +146,21 @@ sub manage_selection {
     $self->{cache_name} = 'commvault_commserve_' . $options{custom}->get_connection_infos() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_policy_name}) ? md5_hex($self->{option_results}->{filter_policy_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_policy_id}) ? md5_hex($self->{option_results}->{filter_policy_id}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_type}) ? md5_hex($self->{option_results}->{filter_type}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_client_group}) ? md5_hex($self->{option_results}->{filter_client_group}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_client_name}) ? md5_hex($self->{option_results}->{filter_client_name}) : md5_hex('all'));
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     $last_timestamp = time() - 300 if (!defined($last_timestamp));
 
+    my $lookup_time = time() - $last_timestamp;
+    if (defined($self->{option_results}->{timeframe}) && $self->{option_results}->{timeframe} =~ /(\d+)/) {
+        $lookup_time = $1;
+    }
+
     # Also we get Pending/Waiting/Running jobs with that
     my $results = $options{custom}->request(
-        endpoint => '/Job?completedJobLookupTime=' . (time() - $last_timestamp)
+        endpoint => '/Job?completedJobLookupTime=' . $lookup_time
     );
 
     $self->{global} = { total => 0 };
@@ -166,10 +174,16 @@ sub manage_selection {
         $jobs_checked->{ $job->{jobId} } = 1;
 
         my $policy_name = defined($job->{storagePolicy}->{storagePolicyName}) && $job->{storagePolicy}->{storagePolicyName} ne '' ? $job->{storagePolicy}->{storagePolicyName} : 'unknown'; 
+        my $policy_id = defined($job->{storagePolicy}->{storagePolicyId}) && $job->{storagePolicy}->{storagePolicyId} ne '' ? $job->{storagePolicy}->{storagePolicyId} : 'unknown'; 
         # when the job is running, end_time = 0
 
         if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
             $policy_name !~ /$self->{option_results}->{filter_policy_name}/) {
+            $self->{output}->output_add(long_msg => "skipping job '" . $policy_name . "/" . $job->{jobId} . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_policy_id}) && $self->{option_results}->{filter_policy_id} ne '' &&
+            $policy_id !~ /$self->{option_results}->{filter_policy_id}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $policy_name . "/" . $job->{jobId} . "': no matching filter.", debug => 1);
             next;
         }
@@ -224,6 +238,10 @@ Check jobs.
 
 Filter jobs by policy name (can be a regexp).
 
+=item B<--filter-policy-id>
+
+Filter jobs by policy id (can be a regexp).
+
 =item B<--filter-type>
 
 Filter jobs by type (can be a regexp).
@@ -235,6 +253,10 @@ Filter jobs by client name (can be a regexp).
 =item B<--filter-client-group>
 
 Filter jobs by client groups (can be a regexp).
+
+=item B<--timeframe>
+
+Set timeframe in seconds (E.g '3600' to check last 60 minutes).
 
 =item B<--warning-status>
 
