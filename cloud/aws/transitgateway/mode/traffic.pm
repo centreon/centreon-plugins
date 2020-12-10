@@ -236,7 +236,7 @@ sub manage_selection {
     my %metric_results;
     foreach my $instance (@{$self->{gateways}}) {
         next if (defined($self->{option_results}->{filter_gateway}) && $self->{option_results}->{filter_gateway} ne ''
-            && $instance->{name} !~ /$self->{option_results}->{filter_gateway}/);
+            && $instance->{id} !~ /$self->{option_results}->{filter_gateway}/);
 
         $instance->{name} =~ s/ /_/g;
 
@@ -253,16 +253,16 @@ sub manage_selection {
             foreach my $statistic (@{$self->{aws_statistics}}) {
                 next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) &&
                     !defined($self->{option_results}->{zeroed}));
-                $self->{metrics}->{$instance}->{display} = $instance->{name};
-                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
-                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
-                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} =
+                $self->{metrics}->{ $instance->{id} }->{display} = $instance->{id};
+                $self->{metrics}->{ $instance->{id} }->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{ $instance->{id} }->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
+                $self->{metrics}->{ $instance->{id} }->{statistics}->{lc($statistic)}->{$metric} =
                     defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ?
                     $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
         }
     }
-
+    use Data::Dumper; print Dumper($self->{metrics});
     if (scalar(keys %{$self->{metrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
         $self->{output}->option_exit();
@@ -288,7 +288,7 @@ See 'https://docs.aws.amazon.com/vpc/latest/tgw/transit-gateway-cloudwatch-metri
 
 =item B<--filter-gateway>
 
-Filter on a specific TransitGateway. This filter is based on the "description" attribute of the gateway.
+Filter on a specific TransitGateway ID. This filter is based on the "TransitGatewayId" attribute of the gateway.
 
 =item B<--filter-metric>
 
