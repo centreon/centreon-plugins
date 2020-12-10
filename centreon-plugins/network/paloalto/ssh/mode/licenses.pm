@@ -31,7 +31,7 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     my $msg = sprintf("expired status is '%s'", $self->{result_values}->{expired});
-    if ($self->{result_values}->{expiry_date} eq '') {
+    if ($self->{result_values}->{expiry_date} eq 'never') {
         $msg .= ', never expires';
     } else {
         $msg .= sprintf(
@@ -51,7 +51,7 @@ sub custom_status_calc {
     $self->{result_values}->{expired} = $options{new_datas}->{$self->{instance} . '_expired'};
     $self->{result_values}->{expiry_date} = $options{new_datas}->{$self->{instance} . '_expiry_date'};
     $self->{result_values}->{expiry_seconds} = $options{new_datas}->{$self->{instance} . '_expiry_seconds'};
-    $self->{result_values}->{expiry_days} = ($self->{result_values}->{expiry_seconds} ne '') ? $self->{result_values}->{expiry_seconds} / 86400 : 0;
+    $self->{result_values}->{expiry_days} = ($self->{result_values}->{expiry_seconds} ne '') ? $self->{result_values}->{expiry_seconds} / 86400 : -1;
     return 0;
 }
 
@@ -114,7 +114,7 @@ sub manage_selection {
         $self->{features}->{$feature->{feature}} = {
             feature => $feature->{feature},
             expired => $feature->{expired},
-            expiry_date => $feature->{expires} ne 'never' ? $feature->{expires} : '',
+            expiry_date => $feature->{expires},
             expiry_seconds => $feature->{expires} ne 'never' ?  $dt->epoch - time() : ''
         };
     }
