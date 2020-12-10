@@ -32,9 +32,39 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'peers', cb_prefix_output => 'prefix_output_peer', type => 0 },
-        { name => 'orderers', cb_prefix_output => 'prefix_output_orderer', type => 0 }
+        { name => 'orderers', cb_prefix_output => 'prefix_output_orderer', type => 0 },
+        { name => 'ledger', cb_prefix_output => 'prefix_output_ledger', type => 0 }
     ];
 
+    $self->{maps_counters}->{ledger} = [
+        { label => 'ledger-block-processing-time-avg', nlabel => 'ledger.block.processing.time.avg', set => {
+                key_values => [ { name => 'ledger_block_processing_time_avg' } ],
+                output_template => 'Average block processing duration (sec) : %s',
+                perfdatas => [
+                    { value => 'ledger_block_processing_time_avg', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'ledger-blockchain-height', nlabel => 'ledger.blockchain.height', set => {
+                key_values => [ { name => 'ledger_blockchain_height' } ],
+                output_template => 'Block count: %s',
+                perfdatas => [
+                    { value => 'ledger_blockchain_height', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'ledger-transaction-count', nlabel => 'ledger.transaction.count', set => {
+                key_values => [ { name => 'ledger_transaction_count' } ],
+                output_template => 'Transaction count: %s',
+                perfdatas => [
+                    { value => 'ledger_transaction_count', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
     $self->{maps_counters}->{peers} = [
         { label => 'peer-known', nlabel => 'peers.known.count', set => {
                 key_values => [ { name => 'gossip_membership_total_peers_known' } ],
@@ -45,11 +75,38 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'peer-endorser-successful-proposals', nlabel => 'endorser.successful.proposals', set => {
+                key_values => [ { name => 'endorser_successful_proposals' } ],
+                output_template => 'Endorsement success: %s',
+                perfdatas => [
+                    { value => 'endorser_successful_proposals', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'peer-endorser-endorsement-failures', nlabel => 'endorser.endorsement.failures', set => {
+                key_values => [ { name => 'endorser_endorsement_failures' } ],
+                output_template => 'Endorsement failure : %s',
+                perfdatas => [
+                    { value => 'endorser_endorsement_failures', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
         { label => 'peer-endorsing-duration-avg', nlabel => 'endorser.propsal.duration.avg', set => {
                 key_values => [ { name => 'endorser_propsal_duration_avg' } ],
-                output_template => 'Average endorsing duration (ms) : %s',
+                output_template => 'Average endorsing duration (sec) : %s',
                 perfdatas => [
                     { value => 'endorser_propsal_duration_avg', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'peer-gossip-state-commit-duration-avg', nlabel => 'gossip.state.commit.duration.avg', set => {
+                key_values => [ { name => 'gossip_state_commit_duration_avg' } ],
+                output_template => 'Average state commit duration (sec) : %s',
+                perfdatas => [
+                    { value => 'gossip_state_commit_duration_avg', template => '%s', min => 0,
                       label_extra_instance => 1 },
                 ],
             }
@@ -59,9 +116,18 @@ sub set_counters {
     $self->{maps_counters}->{orderers} = [
         { label => 'orderer-validation-duration-avg', nlabel => 'broadcast.validate.duration.avg', set => {
                 key_values => [ { name => 'broadcast_validate_duration_avg' } ],
-                output_template => 'Average validate duration (ms) : %s',
+                output_template => 'Average validate duration (sec) : %s',
                 perfdatas => [
                     { value => 'broadcast_validate_duration_avg', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'orderer-broadcast-enqueue-duration-avg', nlabel => 'broadcast.enqueue.duration.avg', set => {
+                key_values => [ { name => 'broadcast_enqueue_duration_avg' } ],
+                output_template => 'Average enqueue duration (sec) : %s',
+                perfdatas => [
+                    { value => 'broadcast_enqueue_duration_avg', template => '%s', min => 0,
                       label_extra_instance => 1 },
                 ],
             }
@@ -84,6 +150,33 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'orderer-consensus-etcdraft-is-leader', nlabel => 'consensus.etcdraft.is.leader', set => {
+                key_values => [ { name => 'consensus_etcdraft_is_leader' } ],
+                output_template => 'Is leader: %s',
+                perfdatas => [
+                    { value => 'consensus_etcdraft_is_leader', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'orderer-consensus-etcdraft-leader-changes', nlabel => 'consensus.etcdraft.leader.changes', set => {
+                key_values => [ { name => 'consensus_etcdraft_leader_changes' } ],
+                output_template => 'Leader changes: %s',
+                perfdatas => [
+                    { value => 'consensus_etcdraft_leader_changes', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'orderer-broadcast-processed-count', nlabel => 'broadcast.processed.count', set => {
+                key_values => [ { name => 'broadcast_processed_count' } ],
+                output_template => 'Blocks processed: %s',
+                perfdatas => [
+                    { value => 'broadcast_processed_count', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },        
     ];
 }
 
@@ -215,8 +308,11 @@ sub manage_selection {
     my $metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
     $self->{channel} = {};
     my @channel = ("channel");
-    my @chaincode_channel_succes =  ('chaincode', 'channel', 'success');
-    my @channel_status_type =  ('channel', 'status', 'type');
+    my @chaincode_channel_succes = ('chaincode', 'channel', 'success');
+    my @chaincode_channel_transaction_type_validation_code = ('chaincode','channel','transaction_type','validation_code');
+    my @channel_status_type = ('channel', 'status', 'type');
+    my @no_dimension = ();
+
     $self->search_metric(
         metrics => $metrics,
         label => 'gossip_membership_total_peers_known',
@@ -224,6 +320,23 @@ sub manage_selection {
         key => 'gossip_membership_total_peers_known',
         store => 'peers'
     );
+
+    $self->search_metric(
+        metrics => $metrics,
+        label => 'endorser_successful_proposals',
+        dimensions =>  \@no_dimension,
+        key => 'endorser_successful_proposals',
+        store => 'peers'
+    );
+
+    $self->search_metric(
+        metrics => $metrics,
+        label => 'endorser_endorsement_failures',
+        dimensions =>  \@no_dimension,
+        key => 'endorser_endorsement_failures',
+        store => 'peers'
+    );
+
     $self->search_metric(
         metrics => $metrics,
         label => 'consensus_etcdraft_active_nodes',
@@ -239,6 +352,46 @@ sub manage_selection {
         key => 'consensus_etcdraft_cluster_size',
         store => 'orderers'
     );
+    
+    $self->search_metric(
+        metrics => $metrics,
+        label => 'consensus_etcdraft_is_leader',
+        dimensions =>  \@channel,
+        key => 'consensus_etcdraft_is_leader',
+        store => 'orderers'
+    );
+    
+    $self->search_metric(
+        metrics => $metrics,
+        label => 'consensus_etcdraft_leader_changes',
+        dimensions =>  \@channel,
+        key => 'consensus_etcdraft_leader_changes',
+        store => 'orderers'
+    );
+    
+    $self->search_metric(
+        metrics => $metrics,
+        label => 'broadcast_processed_count',
+        dimensions =>  \@channel_status_type,
+        key => 'broadcast_processed_count',
+        store => 'orderers'
+    );  
+
+    $self->search_metric(
+        metrics => $metrics,
+        label => 'ledger_transaction_count',
+        dimensions =>  \@chaincode_channel_transaction_type_validation_code,
+        key => 'ledger_transaction_count',
+        store => 'ledger'
+    );
+
+    $self->search_metric(
+        metrics => $metrics,
+        label => 'ledger_blockchain_height',
+        dimensions =>  \@channel,
+        key => 'ledger_blockchain_height',
+        store => 'ledger'
+    );
 
     $self->search_calc_avg_metric(
         metrics => $metrics,
@@ -247,6 +400,24 @@ sub manage_selection {
         denominator => 'endorser_proposal_duration_count',
         key => 'endorser_propsal_duration_avg',
         store => 'peers'
+    );
+    
+    $self->search_calc_avg_metric(
+        metrics => $metrics,
+        dimensions =>  \@channel,
+        numerator => 'gossip_state_commit_duration_sum',
+        denominator => 'gossip_state_commit_duration_count',
+        key => 'gossip_state_commit_duration_avg',
+        store => 'peers'
+    );
+
+    $self->search_calc_avg_metric(
+        metrics => $metrics,
+        dimensions =>  \@channel,
+        numerator => 'ledger_block_processing_time_sum',
+        denominator => 'ledger_block_processing_time_count',
+        key => 'ledger_block_processing_time_avg',
+        store => 'ledger'
     );
 
     $self->search_calc_avg_metric(
@@ -257,8 +428,16 @@ sub manage_selection {
         key => 'broadcast_validate_duration_avg',
         store => 'orderers'
     );
-    
-    
+
+    $self->search_calc_avg_metric(
+        metrics => $metrics,
+        dimensions =>  \@channel_status_type ,
+        numerator => 'broadcast_enqueue_duration_sum',
+        denominator => 'broadcast_enqueue_duration_count',
+        key => 'broadcast_enqueue_duration_avg',
+        store => 'orderers'
+    );
+
     $self->{cache_name} = 'hyperledger_' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname}->[0] : 'me') . '_' .
         (defined($self->{option_results}->{port}) ? $self->{option_results}->{port}->[0] : 'default') . '_' .
