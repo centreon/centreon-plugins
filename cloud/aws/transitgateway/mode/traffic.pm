@@ -238,6 +238,8 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_gateway}) && $self->{option_results}->{filter_gateway} ne ''
             && $instance->{name} !~ /$self->{option_results}->{filter_gateway}/);
 
+        $instance->{name} =~ s/ /_/g;
+
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
             namespace   => 'AWS/TransitGateway',
             dimensions  => [ { Name => 'TransitGateway', Value => $instance->{id} } ],
@@ -251,7 +253,7 @@ sub manage_selection {
             foreach my $statistic (@{$self->{aws_statistics}}) {
                 next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) &&
                     !defined($self->{option_results}->{zeroed}));
-                $self->{metrics}->{$instance}->{display} = $instance;
+                $self->{metrics}->{$instance}->{display} = $instance->{name};
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} =

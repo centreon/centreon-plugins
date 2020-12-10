@@ -51,12 +51,12 @@ sub run {
 
     $self->manage_selection(%options);
     foreach (@{$self->{volume}}) {
-        $self->{output}->output_add(long_msg => sprintf("[Id = %s][Name = %s]", $_->{id}, $_->{name}));
+        $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s]", $_->{id}, $_->{name}));
     }
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'TransitGateways list:'
+        short_msg => 'Transit Gateways list:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -65,7 +65,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['Id', 'Name']);
+    $self->{output}->add_disco_format(elements => ['id', 'name']);
 }
 
 sub disco_show {
@@ -74,8 +74,8 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach (@{$self->{volume}}) {
         $self->{output}->add_disco_entry(
-            Id   => $_->{id},
-            Name => $_->{name}
+            id   => $_->{id},
+            name => $_->{name}
         );
     };
 }
