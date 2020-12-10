@@ -31,6 +31,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'filter-media-agent-name:s' => { name => 'filter_media_agent_name' }
     });
 
     return $self;
@@ -44,16 +45,24 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->request(
+    my $agents = $options{custom}->request(
         endpoint => '/v2/MediaAgents'
     );
+
+    my $results = [];
+    foreach (@{$agents->{mediaAgentList}}) {
+        next if (defined($self->{option_results}->{filter_media_agent_name}) && $self->{option_results}->{filter_media_agent_name} ne '' &&
+            $_->{mediaAgent}->{mediaAgentName} !~ /$self->{option_results}->{filter_media_agent_name}/);
+        push @$results, $_;
+    }
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
   
     my $results = $self->manage_selection(%options);
-    foreach (@{$results->{mediaAgentList}}) {
+    foreach (@$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
                 '[id = %s][name = %s]',
@@ -81,7 +90,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(%options);
-    foreach (@{$results->{mediaAgentList}}) {
+    foreach (@$results) {
         $self->{output}->add_disco_entry(
             id => $_->{mediaAgent}->{mediaAgentId},
             name => $_->{mediaAgent}->{mediaAgentName}
@@ -98,6 +107,10 @@ __END__
 List media agents.
 
 =over 8
+
+=item B<--filter-media-agent-name>
+
+Filter media agents by name (Can be a regexp).
 
 =back
 

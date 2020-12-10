@@ -31,6 +31,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'filter-policy-name:s'  => { name => 'filter_policy_name' }
     });
 
     return $self;
@@ -44,16 +45,24 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->request(
+    my $policies = $options{custom}->request(
         endpoint => '/V2/StoragePolicy'
     );
+
+    my $results = [];
+    foreach (@{$policies->{policies}}) {
+        next if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
+            $_->{storagePolicy}->{storagePolicyName} !~ /$self->{option_results}->{filter_policy_name}/);
+        push @$results, $_;
+    }
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
   
     my $results = $self->manage_selection(%options);
-    foreach (@{$results->{policies}}) {
+    foreach (@$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
                 '[id = %s][name = %s]',
@@ -81,7 +90,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(%options);
-    foreach (@{$results->{policies}}) {
+    foreach (@$results) {
         $self->{output}->add_disco_entry(
             id => $_->{storagePolicy}->{storagePolicyId},
             name => $_->{storagePolicy}->{storagePolicyName}
@@ -98,6 +107,10 @@ __END__
 List storage policies.
 
 =over 8
+
+=item B<--filter-policy-name>
+
+Filter policies by name (can be a regexp).
 
 =back
 
