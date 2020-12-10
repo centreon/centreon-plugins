@@ -262,7 +262,7 @@ sub manage_selection {
             }
         }
     }
-    use Data::Dumper; print Dumper($self->{metrics});
+
     if (scalar(keys %{$self->{metrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
         $self->{output}->option_exit();
