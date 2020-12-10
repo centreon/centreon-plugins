@@ -249,6 +249,7 @@ sub request_internal {
         $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
         $self->{output}->option_exit();
     }
+
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->{output}->add_option_msg(short_msg => 'api request error');
         $self->{output}->option_exit();
