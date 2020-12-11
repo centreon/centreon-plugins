@@ -27,58 +27,58 @@ use warnings;
 
 my %metrics_mapping = (
     'BytesIn' => {
-        'output'    => 'Bytes In',
-        'label'     => 'bytes-in',
-        'nlabel'    => {
+        'output' => 'Bytes In',
+        'label'  => 'bytes-in',
+        'nlabel' => {
             'absolute'   => 'gateway.traffic.in.bytes',
             'per_second' => 'gateway.traffic.in.bytespersecond'
         },
-        'unit'      => 'B'
+        'unit'   => 'B'
     },
     'BytesOut' => {
-        'output'    => 'Bytes Out',
-        'label'     => 'bytes-out',
-        'nlabel'    => {
+        'output' => 'Bytes Out',
+        'label'  => 'bytes-out',
+        'nlabel' => {
             'absolute'   => 'gateway.traffic.out.bytes',
             'per_second' => 'gateway.traffic.out.bytespersecond'
         },
-        'unit'      => 'B'
+        'unit'   => 'B'
     },
     'PacketsIn' => {
-        'output'    => 'Packets Received (In)',
-        'label'     => 'packets-in',
-        'nlabel'    => {
+        'output' => 'Packets Received (In)',
+        'label'  => 'packets-in',
+        'nlabel' => {
             'absolute'   => 'gateway.packets.in.count',
             'per_second' => 'gateway.packets.in.countpersecond'
         },
-        'unit'      => ''
+        'unit'   => ''
     },
     'PacketsOut' => {
-        'output'    => 'Packets Sent (Out)',
-        'label'     => 'packets-out',
-        'nlabel'    => {
+        'output' => 'Packets Sent (Out)',
+        'label'  => 'packets-out',
+        'nlabel' => {
             'absolute'   => 'gateway.packets.out.count',
             'per_second' => 'gateway.packets.out.countpersecond'
         },
-        'unit'      => ''
+        'unit'   => ''
     },
     'PacketDropCountBlackhole' => {
-        'output'    => 'Packets Drop Blackhole',
-        'label'     => 'packets-drop-blackhole',
-        'nlabel'    => {
+        'output' => 'Packets Drop Blackhole',
+        'label'  => 'packets-drop-blackhole',
+        'nlabel' => {
             'absolute'   => 'gateway.packets.blackholedropped.count',
             'per_second' => 'gateway.packets.blackholedropped.countpersecond'
         },
-        'unit'      => ''
+        'unit'   => ''
     },
     'PacketDropCountNoRoute' => {
-        'output'    => 'Packets Drop No Route',
-        'label'     => 'packets-drop-noroute',
-        'nlabel'    => {
+        'output' => 'Packets Drop No Route',
+        'label'  => 'packets-drop-noroute',
+        'nlabel' => {
             'absolute'   => 'gateway.packets.noroutedropped.count',
             'per_second' => 'gateway.packets.noroutedropped.countpersecond'
         },
-        'unit'      => ''
+        'unit'   => ''
     }
 );
 
@@ -97,8 +97,8 @@ sub custom_metric_threshold {
     my ($self, %options) = @_;
 
     my $exit = $self->{perfdata}->threshold_check(
-        value       => defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
-        threshold   => [
+        value     => defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
+        threshold => [
             { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label} , exit_litteral => 'critical' },
             { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' }
         ]
@@ -111,18 +111,17 @@ sub custom_metric_perfdata {
 
     $self->{output}->perfdata_add(
         instances => $self->{instance},
-        label       => $metrics_mapping{$self->{result_values}->{metric}}->{label},
-        nlabel      => defined($self->{instance_mode}->{option_results}->{per_sec}) ?
+        nlabel    => defined($self->{instance_mode}->{option_results}->{per_sec}) ?
             $metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{per_second} :
             $metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{absolute},
-        unit        => defined($self->{instance_mode}->{option_results}->{per_sec}) ?
+        unit      => defined($self->{instance_mode}->{option_results}->{per_sec}) ?
             $metrics_mapping{$self->{result_values}->{metric}}->{unit} . '/s' :
             $metrics_mapping{$self->{result_values}->{metric}}->{unit},
-        value       => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ?
+        value     => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ?
             $self->{result_values}->{value_per_sec} :
             $self->{result_values}->{value}),
-        warning     => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
-        critical    => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
     );
 }
 
@@ -179,12 +178,12 @@ sub set_counters {
         my $entry = {
             label => $metrics_mapping{$metric}->{label},
             set => {
-                key_values                          => [ { name => $metric }, { name => 'timeframe' }, { name => 'display' } ],
-                closure_custom_calc                 => $self->can('custom_metric_calc'),
-                closure_custom_calc_extra_options   => { metric => $metric },
-                closure_custom_output               => $self->can('custom_metric_output'),
-                closure_custom_perfdata             => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check      => $self->can('custom_metric_threshold')
+                key_values                        => [ { name => $metric }, { name => 'timeframe' }, { name => 'display' } ],
+                closure_custom_calc               => $self->can('custom_metric_calc'),
+                closure_custom_calc_extra_options => { metric => $metric },
+                closure_custom_output             => $self->can('custom_metric_output'),
+                closure_custom_perfdata           => $self->can('custom_metric_perfdata'),
+                closure_custom_threshold_check    => $self->can('custom_metric_threshold')
             }
         };
         push @{$self->{maps_counters}->{statistics}}, $entry;
@@ -241,12 +240,12 @@ sub manage_selection {
         $instance->{name} =~ s/ /_/g;
 
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            namespace   => 'AWS/TransitGateway',
-            dimensions  => [ { Name => 'TransitGateway', Value => $instance->{id} } ],
-            metrics     => $self->{aws_metrics},
-            statistics  => $self->{aws_statistics},
-            timeframe   => $self->{aws_timeframe},
-            period      => $self->{aws_period}
+            namespace  => 'AWS/TransitGateway',
+            dimensions => [ { Name => 'TransitGateway', Value => $instance->{id} } ],
+            metrics    => $self->{aws_metrics},
+            statistics => $self->{aws_statistics},
+            timeframe  => $self->{aws_timeframe},
+            period     => $self->{aws_period}
         );
 
         foreach my $metric (@{$self->{aws_metrics}}) {
