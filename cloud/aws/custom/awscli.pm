@@ -771,6 +771,30 @@ sub sns_list_topics {
     return $topics_results;
 }
 
+sub tgw_list_gateways_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "ec2 describe-transit-gateways --region $self->{option_results}->{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
+    return $cmd_options;
+}
+
+sub tgw_list_gateways {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->tgw_list_gateways_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+    my $gateway_results = [];
+    foreach my $gateway (@{$raw_results->{TransitGateways}}) {
+        push @{$gateway_results}, { id => $gateway->{TransitGatewayId}, name => $gateway->{Description} };
+    };
+
+    return $gateway_results;
+}
+
 1;
 
 __END__
