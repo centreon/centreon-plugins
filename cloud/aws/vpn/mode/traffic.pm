@@ -36,7 +36,7 @@ my %metrics_mapping = (
         'output'    => 'Tunnel Data In',
         'label'     => 'tunnel-datain',
         'nlabel'    => {
-            'absolute' => 'vpn.tunnel.datain.bytes',
+            'absolute'   => 'vpn.tunnel.datain.bytes',
             'per_second' => 'vpn.tunnel.datain.bytespersecond'
         },
         'unit'      => 'B'
@@ -45,7 +45,7 @@ my %metrics_mapping = (
         'output'    => 'Tunnel Data Out',
         'label'     => 'tunnel-dataout',
         'nlabel'    => {
-            'absolute' => 'vpn.tunnel.dataout.bytes',
+            'absolute'   => 'vpn.tunnel.dataout.bytes',
             'per_second' => 'vpn.tunnel.dataout.bytespersecond'
         },
         'unit'      => 'B'
@@ -67,8 +67,8 @@ sub custom_metric_threshold {
     my ($self, %options) = @_;
 
     my $exit = $self->{perfdata}->threshold_check(
-        value       => defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
-        threshold   => [
+        value     => defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
+        threshold => [
             { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label} , exit_litteral => 'critical' },
             { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' }
         ]
@@ -81,7 +81,6 @@ sub custom_metric_perfdata {
 
     $self->{output}->perfdata_add(
         instances => $self->{instance},
-        label     => $metrics_mapping{$self->{result_values}->{metric}}->{label},
         nlabel    => defined($self->{instance_mode}->{option_results}->{per_sec}) ?
             $metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{per_second} :
             $metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{absolute},
@@ -149,12 +148,12 @@ sub set_counters {
         my $entry = {
             label => $metrics_mapping{$metric}->{label},
             set => {
-                key_values                          => [ { name => $metric }, { name => 'timeframe' }, { name => 'display' } ],
-                closure_custom_calc                 => $self->can('custom_metric_calc'),
-                closure_custom_calc_extra_options   => { metric => $metric },
-                closure_custom_output               => $self->can('custom_metric_output'),
-                closure_custom_perfdata             => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check      => $self->can('custom_metric_threshold'),
+                key_values                        => [ { name => $metric }, { name => 'timeframe' }, { name => 'display' } ],
+                closure_custom_calc               => $self->can('custom_metric_calc'),
+                closure_custom_calc_extra_options => { metric => $metric },
+                closure_custom_output             => $self->can('custom_metric_output'),
+                closure_custom_perfdata           => $self->can('custom_metric_perfdata'),
+                closure_custom_threshold_check    => $self->can('custom_metric_threshold'),
             }
         };
         push @{$self->{maps_counters}->{statistics}}, $entry;
@@ -197,7 +196,6 @@ sub check_options {
             && $metric !~ /$self->{option_results}->{filter_metric}/);
         push @{$self->{aws_metrics}}, $metric;
     };
-
 }
 
 sub manage_selection {
@@ -214,12 +212,12 @@ sub manage_selection {
             && $display_key !~ /$self->{option_results}->{filter_vpn}/);
 
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            namespace   => 'AWS/VPN',
-            dimensions  => [ { Name => 'VpnId', Value => $instance->{id} } ],
-            metrics     => $self->{aws_metrics},
-            statistics  => $self->{aws_statistics},
-            timeframe   => $self->{aws_timeframe},
-            period      => $self->{aws_period}
+            namespace  => 'AWS/VPN',
+            dimensions => [ { Name => 'VpnId', Value => $instance->{id} } ],
+            metrics    => $self->{aws_metrics},
+            statistics => $self->{aws_statistics},
+            timeframe  => $self->{aws_timeframe},
+            period     => $self->{aws_period}
         );
 
         foreach my $metric (@{$self->{aws_metrics}}) {
@@ -252,10 +250,9 @@ Check AWS VPN Connection.
 
 Example:
 perl centreon_plugins.pl --plugin=cloud::aws::vpn::plugin --custommode=awscli --mode=traffic --region='eu-west-1'
---vpnid='vpn-1234567890abcdefg' --warning-tunnel-state='1:' --critical-tunnel-state='0.5:' --warning --verbose
+--filter-vpn='vpn-1234567890abcdefg' --warning-tunnel-state='1:' --critical-tunnel-state='0.5:' --warning --verbose
 
 See 'https://docs.aws.amazon.com/vpn/latest/s2svpn/monitoring-cloudwatch-vpn.html' for more information.
-
 
 =over 8
 
