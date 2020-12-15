@@ -109,6 +109,14 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'total-downloading', nlabel => 'accesspoints.downloading.count', display_ok => 0, set => {
+                key_values => [ { name => 'downloading' } ],
+                output_template => 'downloading: %s',
+                perfdatas => [
+                    { label => 'total_downloading', template => '%s', min => 0 }
+                ]
+            }
+        },
         { label => 'total-enabled', nlabel => 'accesspoints.enabled.count', set => {
                 key_values => [ { name => 'enable' } ],
                 output_template => 'enabled: %s',
@@ -323,8 +331,8 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total', 'total-associated', 'total-disassociating', 'total-enabled',
-'total-disabled', 'radio-interface-channels-utilization' (%).
+Can be: 'total', 'total-associated', 'total-disassociating', 'total-downloading', 
+'total-enabled', 'total-disabled', 'radio-interface-channels-utilization' (%).
 
 =back
 
