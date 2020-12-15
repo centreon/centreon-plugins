@@ -115,7 +115,7 @@ sub set_counters {
                     { template => '%d', unit => 'B/s', min => 0 }
                 ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{processes} = [
@@ -269,7 +269,7 @@ sub add_cpu {
     #   utime (14) Amount of time that this process has been scheduled in user mode, measured in clock ticks (divide by sysconf(_SC_CLK_TCK))
     #   stime (15) Amount of time that this process has been scheduled in kernel mode, measured in clock ticks
     foreach my $pid (keys %{$self->{processes}}) {
-        next if ($options{content} !~ /==>\s*\/proc\/$pid\/stat\s+.*?\n(.*?)\n/ms);
+        next if ($options{content} !~ /==>\s*\/proc\/$pid\/stat\s+.*?\n(.*?)(?:==>|\Z)/ms);
         my @values = split(/\s+/, $1);
 
         $self->{processes}->{$pid}->{cpu_utime} = $values[13];
@@ -288,7 +288,7 @@ sub add_memory {
     #   data     (6) data + stack
     # measured in page (default: 4096). can get with: getconf PAGESIZE
     foreach my $pid (keys %{$self->{processes}}) {
-        next if ($options{content} !~ /==>\s*\/proc\/$pid\/statm.*?\n(.*?)\n/ms);
+        next if ($options{content} !~ /==>\s*\/proc\/$pid\/statm.*?\n(.*?)(?:==>|\Z)/ms);
         my @values = split(/\s+/, $1);
 
         my $memory_used = ($values[1] * $self->{option_results}->{page_size}) + ($values[5] * $self->{option_results}->{page_size});
