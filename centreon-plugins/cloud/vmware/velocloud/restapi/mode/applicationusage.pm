@@ -33,7 +33,7 @@ sub set_counters {
           message_multiple => 'All edges applications usage are ok', indent_long_output => '    ',
             group => [
                 { name => 'apps', display_long => 1, cb_prefix_output => 'prefix_app_output',
-                  message_multiple => 'All applications usage are ok', type => 1 },
+                  message_multiple => 'All applications usage are ok', type => 1 }
             ]
         }
     ];
@@ -44,9 +44,8 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_in', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'traffic-out', nlabel => 'application.traffic.out.bitspersecond', set => {
@@ -54,29 +53,26 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_out', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'packets-in', nlabel => 'application.packets.in.persecond', set => {
                 key_values => [ { name => 'packets_in' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Packets In: %.2f packets/s',
                 perfdatas => [
-                    { value => 'packets_in', template => '%.2f',
-                      min => 0, unit => 'packets/s', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', min => 0, unit => 'packets/s', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'packets-out', nlabel => 'application.packets.out.persecond', set => {
                 key_values => [ { name => 'packets_out' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Packets Out: %.2f packets/s',
                 perfdatas => [
-                    { value => 'packets_out', template => '%.2f',
-                      min => 0, unit => 'packets/s', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', min => 0, unit => 'packets/s', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -105,9 +101,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-edge-name:s'        => { name => 'filter_edge_name' },
-        'filter-application-name:s' => { name => 'filter_application_name' },
-        'warning-status:s'          => { name => 'warning_status', default => '' },
-        'critical-status:s'         => { name => 'critical_status', default => '' },
+        'filter-application-name:s' => { name => 'filter_application_name' }
     });
 
     return $self;
@@ -118,14 +112,13 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->list_edges;
+    my $results = $options{custom}->list_edges();
+    my $config_applications = $options{custom}->get_identifiable_applications();
 
     $self->{edges} = {};
     foreach my $edge (@{$results}) {
@@ -135,8 +128,8 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{$edge->{name}}->{id} = $edge->{id};
-        $self->{edges}->{$edge->{name}}->{display} = $edge->{name};
+        $self->{edges}->{ $edge->{name} }->{id} = $edge->{id};
+        $self->{edges}->{ $edge->{name} }->{display} = $edge->{name};
 
         my $apps = $options{custom}->get_apps_metrics(
             edge_id => $edge->{id},
@@ -144,20 +137,28 @@ sub manage_selection {
         );
 
         foreach my $app (@{$apps}) {
+            my $app_name = $app->{application};
+            foreach (@{$config_applications->{applications}}) {
+                if ($_->{id} eq $app_name) {
+                    $app_name = $_->{name};
+                    last;
+                }
+            }
+
             if (defined($self->{option_results}->{filter_application_name}) &&
                 $self->{option_results}->{filter_application_name} ne '' &&
-                $app->{name} !~ /$self->{option_results}->{filter_application_name}/) {
-                $self->{output}->output_add(long_msg => "skipping '" . $edge->{id} . "'.", debug => 1);
+                $app_name !~ /$self->{option_results}->{filter_application_name}/) {
+                $self->{output}->output_add(long_msg => "skipping '" . $app_names . "'.", debug => 1);
                 next;
             }
 
-            $self->{edges}->{$edge->{name}}->{apps}->{$app->{name}} = {
+            $self->{edges}->{$edge->{name}}->{apps}->{ $app_name } = {
                 id => $app->{application},
-                display => $app->{name},
+                display => $app_name,
                 traffic_out => int($app->{bytesTx} * 8 / $self->{timeframe}),
                 traffic_in => int($app->{bytesRx} * 8 / $self->{timeframe}),
                 packets_out => $app->{packetsTx} / $self->{timeframe},
-                packets_in => $app->{packetsRx} / $self->{timeframe},
+                packets_in => $app->{packetsRx} / $self->{timeframe}
             };
         }
     }

@@ -209,14 +209,13 @@ sub request_api {
         $self->{output}->option_exit();
     }
 
-    $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':' .
-        $self->{port} . $self->{api_path} . $options{path} . "'", debug => 1);
-
     my $content = $self->{http}->request(
         method => $options{method},
         url_path => $self->{api_path} . $options{path},
         query_form_post => $encoded_form_post,
-        critical_status => '', warning_status => '', unknown_status => ''
+        critical_status => '',
+        warning_status => '',
+        unknown_status => ''
     );
 
     my $decoded;
@@ -270,7 +269,7 @@ sub list_links {
             metrics => [ 'bytesRx' ],
             interval => {
                 start => $start_time
-            },
+            }
         }
     );
 
@@ -296,7 +295,25 @@ sub get_links_metrics {
                 'bestLatencyMsRx', 'bestLatencyMsTx', 'bestLossPctRx', 'bestLossPctTx' ],
             interval => {
                 start => $start_time
-            },
+            }
+        }
+    );
+
+    return $results;
+}
+
+sub get_identifiable_applications {
+    my ($self, %options) = @_;
+
+    if (!defined($self->{entreprise_id})) {
+        $self->get_entreprise_id();
+    }
+
+    my $results = $self->request_api(
+        method => 'POST',
+        path => '/configuration/getIdentifiableApplications',
+        query_form_post => {
+            enterpriseId => $self->{entreprise_id}
         }
     );
 
@@ -317,7 +334,7 @@ sub get_apps_metrics {
             metrics => [ 'bytesRx', 'bytesTx', 'packetsRx', 'packetsTx' ],
             interval => {
                 start => $start_time
-            },
+            }
         }
     );
 
@@ -360,7 +377,7 @@ sub get_categories_metrics {
             metrics => [ 'bytesRx', 'bytesTx', 'packetsRx', 'packetsTx' ],
             interval => {
                 start => $start_time
-            },
+            }
         }
     );
 
