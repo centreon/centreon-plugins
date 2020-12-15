@@ -36,7 +36,7 @@ my %metrics_mapping = (
         'output'    => 'Tunnel Data In',
         'label'     => 'tunnel-datain',
         'nlabel'    => {
-            'absolute' => 'vpn.tunnel.datain.bytes',
+            'absolute'   => 'vpn.tunnel.datain.bytes',
             'per_second' => 'vpn.tunnel.datain.bytespersecond'
         },
         'unit'      => 'B'
@@ -45,7 +45,7 @@ my %metrics_mapping = (
         'output'    => 'Tunnel Data Out',
         'label'     => 'tunnel-dataout',
         'nlabel'    => {
-            'absolute' => 'vpn.tunnel.dataout.bytes',
+            'absolute'   => 'vpn.tunnel.dataout.bytes',
             'per_second' => 'vpn.tunnel.dataout.bytespersecond'
         },
         'unit'      => 'B'
@@ -63,22 +63,12 @@ sub custom_metric_calc {
     return 0;
 }
 
-sub custom_metric_calc_state {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{timeframe} = $options{new_datas}->{$self->{instance} . '_timeframe'};
-    $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric}};
-    $self->{result_values}->{value_per_sec} = $self->{result_values}->{value};
-    $self->{result_values}->{metric} = $options{extra_options}->{metric};
-    return 0;
-}
-
 sub custom_metric_threshold {
     my ($self, %options) = @_;
 
     my $exit = $self->{perfdata}->threshold_check(
-        value       => defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
-        threshold   => [
+        value     => defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
+        threshold => [
             { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label} , exit_litteral => 'critical' },
             { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' }
         ]
@@ -91,32 +81,17 @@ sub custom_metric_perfdata {
 
     $self->{output}->perfdata_add(
         instances => $self->{instance},
-        label       => $metrics_mapping{$self->{result_values}->{metric}}->{label},
-        nlabel      => defined($self->{instance_mode}->{option_results}->{per_sec}) ?
+        nlabel    => defined($self->{instance_mode}->{option_results}->{per_sec}) ?
             $metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{per_second} :
             $metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{absolute},
-        unit        => defined($self->{instance_mode}->{option_results}->{per_sec}) ?
+        unit      => defined($self->{instance_mode}->{option_results}->{per_sec}) && defined($metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{per_second}) ?
             $metrics_mapping{$self->{result_values}->{metric}}->{unit} . '/s' :
             $metrics_mapping{$self->{result_values}->{metric}}->{unit},
-        value       => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ?
+        value     => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ?
             $self->{result_values}->{value_per_sec} :
             $self->{result_values}->{value}),
-        warning     => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
-        critical    => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
-    );
-}
-
-sub custom_metric_perfdata_state {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        instances   => $self->{instance},
-        label       => $metrics_mapping{$self->{result_values}->{metric}}->{label},
-        nlabel      => $metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{absolute},
-        unit        => $metrics_mapping{$self->{result_values}->{metric}}->{unit},
-        value       => sprintf("%.2f", $self->{result_values}->{value}),
-        warning     => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
-        critical    => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
     );
 }
 
@@ -124,7 +99,7 @@ sub custom_metric_output {
     my ($self, %options) = @_;
     my $msg = "";
 
-    if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
+    if (defined($self->{instance_mode}->{option_results}->{per_sec}) && defined($metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{per_second})) {
         my ($value, $unit) = ($metrics_mapping{$self->{result_values}->{metric}}->{unit} eq 'B') ?
             $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec}) :
             ($self->{result_values}->{value_per_sec}, $metrics_mapping{$self->{result_values}->{metric}}->{unit});
@@ -136,13 +111,6 @@ sub custom_metric_output {
         $msg = sprintf("%s: %.2f %s", $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value, $unit);
     }
     return $msg;
-}
-
-sub custom_metric_output_state {
-    my ($self, %options) = @_;
-
-    my $value = $self->{result_values}->{value};
-    return sprintf("%s: %.2f", $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value);
 }
 
 sub prefix_metric_output {
@@ -160,7 +128,7 @@ sub prefix_statistics_output {
 sub long_output {
     my ($self, %options) = @_;
 
-    return "AWS VPN Tunnel'" . $options{instance_value}->{display} . "' ";
+    return "AWS VPN Tunnel '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -180,12 +148,12 @@ sub set_counters {
         my $entry = {
             label => $metrics_mapping{$metric}->{label},
             set => {
-                key_values                          => [ { name => $metric }, { name => 'timeframe' }, { name => 'display' } ],
-                closure_custom_calc                 => ($metric =~ /State/) ? $self->can('custom_metric_calc_state') :  $self->can('custom_metric_calc'),
-                closure_custom_calc_extra_options   => { metric => $metric },
-                closure_custom_output               => ($metric =~ /State/) ? $self->can('custom_metric_output_state') : $self->can('custom_metric_output'),
-                closure_custom_perfdata             => ($metric =~ /State/) ? $self->can('custom_metric_perfdata_state') : $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check      => $self->can('custom_metric_threshold'),
+                key_values                        => [ { name => $metric }, { name => 'timeframe' }, { name => 'display' } ],
+                closure_custom_calc               => $self->can('custom_metric_calc'),
+                closure_custom_calc_extra_options => { metric => $metric },
+                closure_custom_output             => $self->can('custom_metric_output'),
+                closure_custom_perfdata           => $self->can('custom_metric_perfdata'),
+                closure_custom_threshold_check    => $self->can('custom_metric_threshold'),
             }
         };
         push @{$self->{maps_counters}->{statistics}}, $entry;
@@ -198,7 +166,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'vpnid:s@'        => { name => 'vpn_id' },
+        'name'            => { name => 'name' },
+        'filter-vpn:s'    => { name => 'filter_vpn' },
         'per-sec'         => { name => 'per_sec' },
         'filter-metric:s' => { name => 'filter_metric' }
     });
@@ -209,17 +178,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{vpn_id}) || $self->{option_results}->{vpn_id} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --vpnid option.");
-        $self->{output}->option_exit();
-    };
-
-    foreach my $instance (@{$self->{option_results}->{vpn_id}}) {
-        if ($instance ne '') {
-            push @{$self->{aws_instance}}, $instance;
-        };
-    }
 
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
@@ -244,24 +202,32 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %metric_results;
-    foreach my $instance (@{$self->{aws_instance}}) {
+
+    $self->{connections} = $options{custom}->vpn_list_connections();
+
+    foreach my $instance (@{$self->{connections}}) {
+        my $display_key = defined($self->{option_results}->{name}) ? $instance->{name} : $instance->{id};
+
+        next if (defined($self->{option_results}->{filter_vpn}) && $self->{option_results}->{filter_vpn} ne ''
+            && $display_key !~ /$self->{option_results}->{filter_vpn}/);
+
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            namespace   => 'AWS/VPN',
-            dimensions  => [ { Name => 'VpnId', Value => $instance } ],
-            metrics     => $self->{aws_metrics},
-            statistics  => $self->{aws_statistics},
-            timeframe   => $self->{aws_timeframe},
-            period      => $self->{aws_period}
+            namespace  => 'AWS/VPN',
+            dimensions => [ { Name => 'VpnId', Value => $instance->{id} } ],
+            metrics    => $self->{aws_metrics},
+            statistics => $self->{aws_statistics},
+            timeframe  => $self->{aws_timeframe},
+            period     => $self->{aws_period}
         );
 
         foreach my $metric (@{$self->{aws_metrics}}) {
             foreach my $statistic (@{$self->{aws_statistics}}) {
                 next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) &&
                     !defined($self->{option_results}->{zeroed}));
-                $self->{metrics}->{$instance}->{display} = $instance;
-                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
-                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
-                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} =
+                $self->{metrics}->{ $display_key }->{display} = $display_key;
+                $self->{metrics}->{ $display_key }->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{ $display_key }->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
+                $self->{metrics}->{ $display_key }->{statistics}->{lc($statistic)}->{$metric} =
                     defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ?
                     $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
@@ -284,16 +250,20 @@ Check AWS VPN Connection.
 
 Example:
 perl centreon_plugins.pl --plugin=cloud::aws::vpn::plugin --custommode=awscli --mode=traffic --region='eu-west-1'
---vpnid='vpn-1234567890abcdefg' --warning-tunnel-state='1:' --critical-tunnel-state='0.5:' --warning --verbose
+--filter-vpn='vpn-1234567890abcdefg' --warning-tunnel-state='1:' --critical-tunnel-state='0.5:' --warning --verbose
 
 See 'https://docs.aws.amazon.com/vpn/latest/s2svpn/monitoring-cloudwatch-vpn.html' for more information.
 
-
 =over 8
 
-=item B<--vpnid>
+=item B<--filter-vpn>
 
-Set the VpnId (Required).
+Filter on a specific VPN connection. This can be done on the VPN ID (default)
+or on the VPN name if the option '--name' is specified.
+
+=item B<--name>
+
+Rather use VPN names in display than IDs.
 
 =item B<--filter-metric>
 
