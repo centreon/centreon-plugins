@@ -52,7 +52,7 @@ sub run {
     $self->manage_selection(%options);
     foreach (@{$self->{connection}}) {
         $self->{output}->output_add(
-            long_msg => sprintf("[Id = %s][Name = %s][State = %s]",
+            long_msg => sprintf("[id = %s][name = %s][state = %s]",
             $_->{id}, $_->{name}, $_->{state} ));
     }
 
