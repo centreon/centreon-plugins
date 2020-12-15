@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -45,21 +45,26 @@ sub set_counters {
           message_multiple => 'All edges links status are ok', indent_long_output => '    ',
             group => [
                 { name => 'links', display_long => 1, cb_prefix_output => 'prefix_link_output',
-                  message_multiple => 'All links status are ok', type => 1 },
+                  message_multiple => 'All links status are ok', type => 1 }
             ]
         }
     ];
 
     $self->{maps_counters}->{links} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'vpn_state' }, { name => 'backup_state' },
-                    { name => 'display' }, { name => 'id' } ],
-                closure_custom_calc => \&catalog_status_calc,
+        {
+            label => 'status',
+            type => 2,
+            critical_default => '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/',
+            set => {
+                key_values => [
+                    { name => 'state' }, { name => 'vpn_state' }, { name => 'backup_state' },
+                    { name => 'display' }, { name => 'id' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -88,10 +93,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'filter-edge-name:s' => { name => 'filter_edge_name' },
-        'filter-link-name:s' => { name => 'filter_link_name' },
-        'unknown-status:s'   => { name => 'unknown_status', default => '' },
-        'warning-status:s'   => { name => 'warning_status', default => '' },
-        'critical-status:s'  => { name => 'critical_status', default => '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/' },
+        'filter-link-name:s' => { name => 'filter_link_name' }
     });
    
     return $self;
@@ -102,14 +104,12 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->list_edges;
+    my $results = $options{custom}->list_edges();
 
     $self->{edges} = {};
     foreach my $edge (@{$results}) {

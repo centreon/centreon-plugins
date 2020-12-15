@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -38,17 +38,6 @@ sub custom_status_output {
     );
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{edge_state} = $options{new_datas}->{$self->{instance} . '_edge_state'};
-    $self->{result_values}->{service_state} = $options{new_datas}->{$self->{instance} . '_service_state'};
-    $self->{result_values}->{ha_state} = $options{new_datas}->{$self->{instance} . '_ha_state'};
-    $self->{result_values}->{activation_state} = $options{new_datas}->{$self->{instance} . '_activation_state'};
-
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -58,15 +47,21 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{edges} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'edge_state' }, { name => 'service_state' }, { name => 'ha_state' },
-                    { name => 'activation_state' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+        {
+            label => 'status',
+            type => 2,
+            unknown_default => '%{edge_state} =~ /NEVER_ACTIVATED/',
+            critical_default => '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/',
+            set => {
+                key_values => [
+                    { name => 'edge_state' }, { name => 'service_state' }, { name => 'ha_state' },
+                    { name => 'activation_state' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -82,26 +77,16 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'         => { name => 'filter_name' },
-        'unknown-status:s'      => { name => 'unknown_status', default => '%{edge_state} =~ /NEVER_ACTIVATED/' },
-        'warning-status:s'      => { name => 'warning_status', default => '' },
-        'critical-status:s'     => { name => 'critical_status', default => '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->list_edges;
+    my $results = $options{custom}->list_edges();
 
     $self->{edges} = {};
     foreach my $edge (@{$results}) {
