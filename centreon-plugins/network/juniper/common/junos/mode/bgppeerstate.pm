@@ -81,8 +81,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-peer:s' => { name => 'filter_peer' },
-        'filter-as:s'   => { name => 'filter_as' }
+        'filter-peer:s'      => { name => 'filter_peer' },
+        'filter-remote-ip:s' => { name => 'filter_remote_ip' },
+        'filter-local-as:s'  => { name => 'filter_local_as' }
     });
 
     return $self;
@@ -145,10 +146,21 @@ sub manage_selection {
         $result->{remote_type} = defined($result->{remote_type}) ? $result->{remote_type} : '-';
         $result->{local_as} = defined($result->{local_as}) ? $result->{local_as} : '-';
 
-        if (defined($self->{option_results}->{filter_peer}) && $self->{option_results}->{filter_peer} ne '' &&
-            $result->{peer_identifier} !~ /$self->{option_results}->{filter_peer}/) {
+        my $filtered = 0;
+        foreach ((
+                ['filter_peer', 'peer_identifier'],
+                ['filter_remote_ip', 'remote_ip'],
+                ['filter_local_as', 'local_as']
+            )) {
+            if (defined($self->{option_results}->{ $_->[0] }) && $self->{option_results}->{ $_->[0] } ne '' &&
+                $result->{ $_->[1] } !~ /$self->{option_results}->{ $_->[0] }/) {
+                $filtered = 1;
+                last;
+            }
+        }
+        if ($filtered == 1) {
             $self->{output}->output_add(
-                long_msg => "skipping peer '" . $result->{jnxBgpM2PeerIdentifier} . "': no matching filter.",
+                long_msg => "skipping peer '" . $result->{peer_identifier} . "': no matching filter.",
                 debug => 1
             );
             next;
@@ -177,21 +189,27 @@ Check BGP peer state (BGP4-V2-MIB-JUNIPER)
 
 Filter by peer identifier (Can be regexp)
 
+=item B<--filter-remote-ip>
+
+Filter by remote ip address (Can be regexp)
+
+=item B<--filter-local-as>
+
+Filter by local AS (Can be regexp)
+
 =item B<--warning-status>
 
 Specify warning threshold.
 Can use special variables like %{peer_identifier}, %{peer_state}, %{peer_status},
 %{local_type}, %{local_ip}, %{local_port}, %{local_as},
 %{remote_type}, %{remote_ip}, %{remote_port}, %{remote_as}
-(Default: '')
 
 =item B<--critical-status>
 
-Specify critical threshold.
+Specify critical threshold (Default: '%{peer_status} =~ /running/ && %{peer_state} !~ /established/').
 Can use special variables like %{peer_identifier}, %{peer_state}, %{peer_status},
 %{local_type}, %{local_ip}, %{local_port}, %{local_as},
 %{remote_type}, %{remote_ip}, %{remote_port}, %{remote_as}
-(Default: '%{peer_status} =~ /running/ && %{peer_state} !~ /established/')
 
 =back
 
