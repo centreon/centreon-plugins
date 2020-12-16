@@ -118,7 +118,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->list_edges();
-    my $config_applications = $options{custom}->get_identifiable_applications();
 
     $self->{edges} = {};
     foreach my $edge (@{$results}) {
@@ -137,18 +136,15 @@ sub manage_selection {
         );
 
         foreach my $app (@{$apps}) {
-            my $app_name = $app->{application};
-            foreach (@{$config_applications->{applications}}) {
-                if ($_->{id} eq $app_name) {
-                    $app_name = $_->{name};
-                    last;
-                }
-            }
+            my $app_name = $options{custom}->get_application_name(
+                app_id => $app->{application}
+            );
+            $app_name = $app->{application} if (!defined($app_name));
 
             if (defined($self->{option_results}->{filter_application_name}) &&
                 $self->{option_results}->{filter_application_name} ne '' &&
                 $app_name !~ /$self->{option_results}->{filter_application_name}/) {
-                $self->{output}->output_add(long_msg => "skipping '" . $app_names . "'.", debug => 1);
+                $self->{output}->output_add(long_msg => "skipping '" . $app_name . "'.", debug => 1);
                 next;
             }
 

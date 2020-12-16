@@ -24,6 +24,8 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
+use Digest::MD5 qw(md5_hex);
+use centreon::plugins::statefile;
 use DateTime;
 
 sub new {
@@ -42,21 +44,27 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
-            'hostname:s'    => { name => 'hostname' },
-            'port:s'        => { name => 'port' },
-            'proto:s'       => { name => 'proto' },
-            'username:s'    => { name => 'username' },
-            'password:s'    => { name => 'password' },
-            'operator-user' => { name => 'operator_user' },
-            'api-path:s'    => { name => 'api_path' },
-            'timeframe:s'   => { name => 'timeframe' },
-            'timeout:s'     => { name => 'timeout' }
+            'hostname:s'             => { name => 'hostname' },
+            'port:s'                 => { name => 'port' },
+            'proto:s'                => { name => 'proto' },
+            'username:s'             => { name => 'username' },
+            'password:s'             => { name => 'password' },
+            'operator-user'          => { name => 'operator_user' },
+            'api-path:s'             => { name => 'api_path' },
+            'timeframe:s'            => { name => 'timeframe' },
+            'timeout:s'              => { name => 'timeout' },
+            'cache-expires-in:s'     => { name => 'cache_expires_in' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
+    $self->{cache_cookie} = centreon::plugins::statefile->new(%options);
+    $self->{cache_app} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -72,28 +80,51 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
-    $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
+    $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
+    $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
     $self->{api_path} = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/portal/rest';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
+    $self->{cache_expires_in} = (defined($self->{option_results}->{cache_expires_in})) && $self->{option_results}->{cache_expires_in} =~ /(\d+)/ ?
+        $1 : 7200;
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{username}) || $self->{username} eq '') {
+    if ($self->{username} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --username option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{password}) || $self->{password} eq '') {
+    if ($self->{password} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --password option.");
         $self->{output}->option_exit();
     }
 
+    $self->{cache_cookie}->check_options(option_results => $self->{option_results});
+    $self->{cache_app}->check_options(option_results => $self->{option_results});
+
     return 0;
+}
+
+sub json_decode {
+    my ($self, %options) = @_;
+
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($options{content});
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $decoded;
 }
 
 sub get_connection_infos {
@@ -109,9 +140,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{unknown_status} = '';
-    $self->{option_results}->{warning_status} = '';
-    $self->{option_results}->{critical_status} = '';
 }
 
 sub settings {
@@ -120,131 +148,150 @@ sub settings {
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-    if (defined($self->{session_cookie})) {
-        $self->{http}->add_header(key => 'Cookie', value => 'velocloud.session=' . $self->{session_cookie});
-    }
     $self->{http}->set_options(%{$self->{option_results}});
+}
+
+sub clean_session {
+    my ($self, %options) = @_;
+
+    my $datas = {};
+    $options{statefile}->write(data => $datas);
+    $self->{session_cookie} = undef;
+    $self->{http}->add_header(key => 'Cookie', value => undef);
 }
 
 sub get_session_cookie {
     my ($self, %options) = @_;
 
-    my $form_post = { username => $self->{username}, password => $self->{password} };
-    my $encoded;
-    eval {
-        $encoded = JSON::XS->new->utf8->encode($form_post);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => 'Cannot encode json request');
-        $self->{output}->option_exit();
+    my $has_cache_file = $options{statefile}->read(statefile => 'vmware_velocloud_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{username}));
+    my $session_cookie = $options{statefile}->get(name => 'session_cookie');
+
+    if ($has_cache_file == 0 || !defined($session_cookie)) {
+        my $form_post = { username => $self->{username}, password => $self->{password} };
+        my $encoded;
+        eval {
+            $encoded = JSON::XS->new->utf8->encode($form_post);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => 'Cannot encode json request');
+            $self->{output}->option_exit();
+        }
+
+        my $login_url = (defined($self->{option_results}->{operator_user})) ? '/login/operatorLogin' : '/login/enterpriseLogin';
+        $self->{http}->request(
+            method => 'POST',
+            url_path => $self->{api_path} . $login_url,
+            query_form_post => $encoded,
+            warning_status => '',
+            unknown_status => '',
+            critical_status => ''
+        );
+
+        if ($self->{http}->get_code() != 200) {
+            $self->{output}->add_option_msg(short_msg => "Authentication error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+            $self->{output}->option_exit();
+        }
+
+        my (@cookies) = $self->{http}->get_header(name => 'Set-Cookie');
+        my $message = '';
+        foreach my $cookie (@cookies) {
+            $message = $1 if ($cookie =~ /^velocloud\.message=(.+?);/);
+            $session_cookie = $1 if ($cookie =~ /^velocloud\.session=(.+?);/);
+        }
+
+        if (!defined($session_cookie) || $session_cookie eq '') {
+            $self->{output}->add_option_msg(short_msg => "Cannot get session cookie: " . $message);
+            $self->{output}->option_exit();
+        }
+
+        $options{statefile}->write(data => { session_cookie => $session_cookie });
     }
 
-    $self->settings();
-
-    my $login_url = (defined($self->{option_results}->{operator_user})) ? '/login/operatorLogin' : '/login/enterpriseLogin';
-    my $content = $self->{http}->request(
-        method => 'POST',
-        url_path => $self->{api_path} . $login_url,
-        query_form_post => $encoded
-    );
-    my (@cookies) = $self->{http}->get_header(name => 'Set-Cookie');
-
-    my $message = '';
-    my $session = '';
-
-    foreach my $cookie (@cookies) {
-        $message = $1 if ($cookie =~ /^velocloud\.message=(.+?);/);
-        $session = $1 if ($cookie =~ /^velocloud\.session=(.+?);/);
-    }
-
-    if (!defined($session) || $session eq '') {
-        $self->{output}->add_option_msg(short_msg => "Cannot get session cookie: " . $message);
-        $self->{output}->option_exit();
-    }
-
-    $self->{session_cookie} = $session;
-}
-
-sub get_entreprise_id {
-    my ($self, %options) = @_;
-
-    if (!defined($self->{session_cookie})) {
-        $self->get_session_cookie();
-    }
-
-    $self->settings();
-
-    my $content = $self->{http}->request(
-        method => 'POST',
-        url_path => $self->{api_path} . '/enterprise/getEnterprise'
-    );
-
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-        $self->{output}->option_exit();
-    }
-
-    $self->{entreprise_id} = $decoded->{id};
+    $self->{session_cookie} = $session_cookie;
+    $self->{http}->add_header(key => 'Cookie', value => 'velocloud.session=' . $self->{session_cookie});
 }
 
 sub request_api {
     my ($self, %options) = @_;
 
-    if (!defined($self->{session_cookie})) {
-        $self->get_session_cookie();
-    }
-
     $self->settings();
+    if (!defined($self->{session_cookie})) {
+        $self->get_session_cookie(statefile => $self->{cache_cookie});
+    }
 
     my $encoded_form_post;
-    eval {
-        $encoded_form_post = JSON::XS->new->utf8->encode($options{query_form_post});
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
-        $self->{output}->option_exit();
+    if (defined($options{query_form_post})) {
+        eval {
+            $encoded_form_post = JSON::XS->new->utf8->encode($options{query_form_post});
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
+            $self->{output}->option_exit();
+        }
     }
 
-    my $content = $self->{http}->request(
+    my ($content) = $self->{http}->request(
         method => $options{method},
-        url_path => $self->{api_path} . $options{path},
+        url_path => $self->{api_path} . $options{endpoint},
         query_form_post => $encoded_form_post,
-        critical_status => '',
+        unknown_status => '',
         warning_status => '',
-        unknown_status => ''
+        critical_status => ''
     );
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+        $self->clean_session(statefile => $self->{cache_cookie});
+        $self->get_session_cookie(statefile => $self->{cache_cookie});
+        ($content) = $self->{http}->request(
+            method => $options{method},
+            url_path => $self->{api_path} . $options{endpoint},
+            query_form_post => $encoded_form_post,
+            unknown_status => '',
+            warning_status => '',
+            critical_status => ''
+        );
+    }
+
+    my $decoded = $self->json_decode(content => $content);
+    if (!defined($decoded)) {
+        $self->{output}->add_option_msg(short_msg => 'error while retrieving data (add --debug option for detailed message)');
         $self->{output}->option_exit();
     }
     if (ref($decoded) ne 'ARRAY' && defined($decoded->{error})) {
-        $self->{output}->add_option_msg(short_msg => "API returned error code '" . $decoded->{error}->{code} .
-            "', message '" . $decoded->{error}->{message} . "'");
+        $self->{output}->add_option_msg(
+            short_msg => sprintf(
+                "API returned error code '%s', message '%s'",
+                $decoded->{error}->{code},
+                $decoded->{error}->{message}
+            )
+        );
         $self->{output}->option_exit();
     }
 
     return $decoded;
 }
 
-sub list_edges {
+sub get_entreprise_id {
     my ($self, %options) = @_;
 
-    if (!defined($self->{entreprise_id})) {
-        $self->get_entreprise_id();
-    }
+    return if (defined($self->{entreprise_id}));
 
     my $response = $self->request_api(
         method => 'POST',
-        path => '/enterprise/getEnterpriseEdges',
+        endpoint => $self->{api_path} . '/enterprise/getEnterprise'
+    );
+
+    $self->{entreprise_id} = $response->{id};
+}
+
+sub list_edges {
+    my ($self, %options) = @_;
+
+    $self->get_entreprise_id();
+
+    my $response = $self->request_api(
+        method => 'POST',
+        endpoint => '/enterprise/getEnterpriseEdges',
         query_form_post => { enterpriseId => $self->{entreprise_id} }
     );
 
@@ -254,15 +301,13 @@ sub list_edges {
 sub list_links {
     my ($self, %options) = @_;
 
-    if (!defined($self->{entreprise_id})) {
-        $self->get_entreprise_id();
-    }
+    $self->get_entreprise_id();
 
     my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
 
-    my $results = $self->request_api(
+    my $response = $self->request_api(
         method => 'POST',
-        path => '/metrics/getEdgeLinkMetrics',
+        endpoint => '/metrics/getEdgeLinkMetrics',
         query_form_post => {
             enterpriseId => $self->{entreprise_id},
             edgeId => $options{edge_id},
@@ -273,61 +318,77 @@ sub list_links {
         }
     );
 
-    return $results;
+    return $response;
 }
 
 sub get_links_metrics {
     my ($self, %options) = @_;
 
-    if (!defined($self->{entreprise_id})) {
-        $self->get_entreprise_id();
-    }
+    $self->get_entreprise_id();
 
     my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
 
-    my $results = $self->request_api(
+    my $response = $self->request_api(
         method => 'POST',
-        path => '/metrics/getEdgeLinkMetrics',
+        endpoint => '/metrics/getEdgeLinkMetrics',
         query_form_post => {
             enterpriseId => $self->{entreprise_id},
             edgeId => $options{edge_id},
-            metrics => [ 'bytesRx', 'bytesTx', 'bestJitterMsRx', 'bestJitterMsTx',
-                'bestLatencyMsRx', 'bestLatencyMsTx', 'bestLossPctRx', 'bestLossPctTx' ],
+            metrics => [
+                'bytesRx', 'bytesTx', 'bestJitterMsRx', 'bestJitterMsTx',
+                'bestLatencyMsRx', 'bestLatencyMsTx', 'bestLossPctRx', 'bestLossPctTx'
+            ],
             interval => {
                 start => $start_time
             }
         }
     );
 
-    return $results;
+    return $response;
 }
 
 sub get_identifiable_applications {
     my ($self, %options) = @_;
 
-    if (!defined($self->{entreprise_id})) {
-        $self->get_entreprise_id();
+    $self->get_entreprise_id();
+
+    my $has_cache_file = $self->{cache_app}->read(statefile => 'vmware_velocloud_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{entreprise_id}));
+    my $updated = $self->{cache_app}->get(name => 'updated');
+    my $applications = $self->{cache_app}->get(name => 'applications');
+
+    if ($has_cache_file == 0 || !defined($updated) || (time() > ($updated + $self->{cache_expires_in}))) {
+        my $response = $self->request_api(
+            method => 'POST',
+            endpoint => '/configuration/getIdentifiableApplications',
+            query_form_post => {
+                enterpriseId => $self->{entreprise_id}
+            }
+        );
+
+        $applications = {};
+        foreach (@{$response->{applications}}) {
+            $applications->{ $_->{id} } = $_->{name};
+        }
+
+        $self->{cache_app}->write(data => {
+            applications => $applications,
+            updated => time()
+        });
     }
 
-    my $results = $self->request_api(
-        method => 'POST',
-        path => '/configuration/getIdentifiableApplications',
-        query_form_post => {
-            enterpriseId => $self->{entreprise_id}
-        }
-    );
-
-    return $results;
+    return defined($applications->{ $options{app_id} }) ? $applications->{ $options{app_id} } : undef;
 }
 
 sub get_apps_metrics {
     my ($self, %options) = @_;
 
+    $self->get_entreprise_id();
+
     my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
 
-    my $results = $self->request_api(
+    my $response = $self->request_api(
         method => 'POST',
-        path => '/metrics/getEdgeAppMetrics',
+        endpoint => '/metrics/getEdgeAppMetrics',
         query_form_post => {
             enterpriseId => $self->{entreprise_id},
             edgeId => $options{edge_id},
@@ -338,17 +399,19 @@ sub get_apps_metrics {
         }
     );
 
-    return $results;
+    return $response;
 }
 
 sub get_links_qoe {
     my ($self, %options) = @_;
 
+    $self->get_entreprise_id();
+
     my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
 
-    my $results = $self->request_api(
+    my $response = $self->request_api(
         method => 'POST',
-        path => '/linkQualityEvent/getLinkQualityEvents',
+        endpoint => '/linkQualityEvent/getLinkQualityEvents',
         query_form_post => {
             enterpriseId => $self->{entreprise_id},
             edgeId => $options{edge_id},
@@ -357,21 +420,23 @@ sub get_links_qoe {
             maxSamples => '15',
             interval => {
                 start => $start_time
-            },
+            }
         }
     );
 
-    return $results;
+    return $response;
 }
 
 sub get_categories_metrics {
     my ($self, %options) = @_;
 
+    $self->get_entreprise_id();
+
     my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
 
-    my $results = $self->request_api(
+    my $response = $self->request_api(
         method => 'POST',
-        path => '/metrics/getEdgeCategoryMetrics',
+        endpoint => '/metrics/getEdgeCategoryMetrics',
         query_form_post => { 
             id => $options{edge_id},
             metrics => [ 'bytesRx', 'bytesTx', 'packetsRx', 'packetsTx' ],
@@ -381,15 +446,7 @@ sub get_categories_metrics {
         }
     );
 
-    return $results;
-}
-
-sub DESTROY {
-    my $self = shift;
-
-    if (defined($self->{session_cookie})) {
-        $self->{http}->request(method => 'POST', url_path => $self->{api_path} . '/logout');
-    }
+    return $response;
 }
 
 1;
@@ -419,6 +476,10 @@ Port used (Default: 443)
 =item B<--proto>
 
 Specify https if needed (Default: 'https')
+
+=item B<--cache-expires-in>
+
+Cache (application) expires each X secondes (Default: 7200)
 
 =item B<--username>
 
