@@ -355,6 +355,10 @@ sub request {
     if (defined($options{request}->{cacert_file}) && $options{request}->{cacert_file} ne '') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CAINFO'), parameter => $options{request}->{cacert_file});
     }
+    if (defined($options{request}->{insecure})) {
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSL_VERIFYPEER'), parameter => 0);
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSL_VERIFYHOST'), parameter => 0);
+    }
 
     $self->set_auth(%options);
     $self->set_proxy(%options);
