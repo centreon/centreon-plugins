@@ -70,6 +70,10 @@ sub check_options {
         push @{$options{request}->{ssl_opt}}, 'SSL_ca_file => "' . $options{request}->{cacert_file} . '"'
             if (defined($options{request}->{cacert_file}));
     }
+    if ($options{request}->{insecure}) {
+        push @{$options{request}->{ssl_opt}}, 'SSL_verify_mode => SSL_VERIFY_NONE';
+    }
+
     my $append = '';
     foreach (@{$options{request}->{ssl_opt}}) {
         if ($_ ne '') {

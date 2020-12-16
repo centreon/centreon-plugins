@@ -33,6 +33,7 @@ sub new {
             'http-peer-addr:s'  => { name => 'http_peer_addr' },
             'proxyurl:s'        => { name => 'proxyurl' },
             'proxypac:s'        => { name => 'proxypac' },
+            'insecure'          => { name => 'insecure' },
             'http-backend:s'    => { name => 'http_backend', default => 'lwp' },
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'HTTP GLOBAL OPTIONS');
@@ -246,6 +247,10 @@ Proxy URL
 =item B<--proxypac>
 
 Proxy pac file (can be an url or local file)
+
+=item B<--insecure>
+
+Insecure SSL connections.
 
 =item B<--http-backend>
 
