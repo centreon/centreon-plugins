@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'list-tags'  => 'hardware::devices::hms::ewon::snmp::mode::listtags'
+        'list-tags' => 'hardware::devices::hms::ewon::snmp::mode::listtags',
+        'tags'      => 'hardware::devices::hms::ewon::snmp::mode::tags'
     );
 
     return $self;
