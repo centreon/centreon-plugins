@@ -201,6 +201,7 @@ sub new {
          'filter-status:s' => { name => 'filter_status' },
          'filter-chaincode:s' => { name => 'filter_chaincode' },
          'filter-type:s' => { name => 'filter_type' },
+         'filter-transaction-type:s' => { name => 'filter_transaction_type' },
          'filter-success:s' => { name => 'filter_success' },
     });
 
@@ -446,7 +447,8 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_status}) ? md5_hex($self->{option_results}->{filter_status}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_chaincode}) ? md5_hex($self->{option_results}->{filter_chaincode}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_success}) ? md5_hex($self->{option_results}->{filter_success}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_type}) ? md5_hex($self->{option_results}->{filter_type}) : md5_hex('all')) ;
+        (defined($self->{option_results}->{filter_type}) ? md5_hex($self->{option_results}->{filter_type}) : md5_hex('all')). '_' .
+        (defined($self->{option_results}->{filter_transaction_type}) ? md5_hex($self->{option_results}->{filter_transaction_type}) : md5_hex('all')) ;
 }
 
 1;
