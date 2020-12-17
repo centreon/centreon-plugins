@@ -352,7 +352,7 @@ sub get_identifiable_applications {
 
     $self->get_entreprise_id();
 
-    my $has_cache_file = $self->{cache_app}->read(statefile => 'vmware_velocloud_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{entreprise_id}));
+    my $has_cache_file = $self->{cache_app}->read(statefile => 'vmware_velocloud_app_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{entreprise_id}));
     my $updated = $self->{cache_app}->get(name => 'updated');
     my $applications = $self->{cache_app}->get(name => 'applications');
 
