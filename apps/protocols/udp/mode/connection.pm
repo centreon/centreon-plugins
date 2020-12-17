@@ -32,12 +32,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"   => { name => 'hostname' },
-         "port:s"       => { name => 'port', },
-         "timeout:s"    => { name => 'timeout', default => '3' },
-         });
+    $options{options}->add_options(arguments => {
+        'hostname:s' => { name => 'hostname' },
+        'port:s'     => { name => 'port' },
+        'timeout:s'  => { name => 'timeout', default => '3' }
+    });
+
     return $self;
 }
 
@@ -57,8 +57,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--hostname' option");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{port})) {
+
+    if (!defined($self->{option_results}->{port}) || $self->{option_results}->{port} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--port' option");
+        $self->{output}->option_exit();
+    }
+    $self->{option_results}->{port} = $self->{option_results}->{port} =~ /(\d+)/ ? $1 : -1;
+    if ($self->{option_results}->{port} < 0 || $self->{option_results}->{port} > 65535) {
+        $self->{output}->add_option_msg(short_msg => 'Illegal port number (allowed range: 1-65535)');
         $self->{output}->option_exit();
     }
 }
@@ -74,14 +80,15 @@ sub run {
     my $read_set = new IO::Select();
     $read_set->add($icmp_sock);
 
-    my $sock = IO::Socket::INET->new(PeerAddr => $self->{option_results}->{hostname},
-                                     PeerPort => $self->{option_results}->{port},
-                                     Proto => 'udp',
-                                    );
+    my $sock = IO::Socket::INET->new(
+        PeerAddr => $self->{option_results}->{hostname},
+        PeerPort => $self->{option_results}->{port},
+        Proto => 'udp',
+    );
 
     $sock->send("Hello");
     close($sock);
-    
+
     my ($new_readable) = IO::Select->select($read_set, undef, undef, $self->{option_results}->{timeout});
     my $icmp_arrived = 0;
     foreach $sock (@$new_readable) {
@@ -93,11 +100,15 @@ sub run {
     close($icmp_sock);
 
     if ($icmp_arrived == 1) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Connection failed on port %s", $self->{option_results}->{port}));
+        $self->{output}->output_add(
+            severity => 'CRITICAL',
+            short_msg => sprintf("Connection failed on port %s", $self->{option_results}->{port})
+        );
     } else {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("Connection success on port %s", $self->{option_results}->{port}));
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => sprintf("Connection success on port %s", $self->{option_results}->{port})
+        );
     }
     
     $self->{output}->display();
