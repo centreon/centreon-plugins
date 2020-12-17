@@ -278,7 +278,7 @@ sub get_entreprise_id {
 
     my $response = $self->request_api(
         method => 'POST',
-        endpoint => $self->{api_path} . '/enterprise/getEnterprise'
+        endpoint => '/enterprise/getEnterprise'
     );
 
     $self->{entreprise_id} = $response->{id};
