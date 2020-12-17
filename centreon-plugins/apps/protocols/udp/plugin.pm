@@ -30,9 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'connection' => 'apps::protocols::udp::mode::connection',
-    );
+    $self->{modes} = {
+        'connection' => 'apps::protocols::udp::mode::connection'
+    };
 
     return $self;
 }
