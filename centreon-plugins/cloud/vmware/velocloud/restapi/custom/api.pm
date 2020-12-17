@@ -347,7 +347,7 @@ sub get_links_metrics {
     return $response;
 }
 
-sub get_identifiable_applications {
+sub get_application_name {
     my ($self, %options) = @_;
 
     $self->get_entreprise_id();
