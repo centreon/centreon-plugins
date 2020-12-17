@@ -26,6 +26,8 @@ use strict;
 use warnings;
 use centreon::common::monitoring::openmetrics::scrape;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+
 
 sub set_counters {
     my ($self, %options) = @_;
