@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2020 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'alert'            => 'notification::microsoft::office365::teams::mode::alert',
+        'alert' => 'notification::microsoft::office365::teams::mode::alert'
     };
 
+    $self->{custom_modes}->{graphapi} = 'cloud::microsoft::office365::custom::graphapi';
     $self->{custom_modes}->{webhookapi} = 'notification::microsoft::office365::teams::custom::webhookapi';
-    $self->{custom_modes}->{graphapi} = 'notification::microsoft::office365::teams::custom::graphapi';
 
     return $self;
 }
@@ -43,6 +43,7 @@ sub new {
 1;
 
 __END__
+
 =head1 PLUGIN DESCRIPTION
 
 Send Office 365 notifications on a Teams channel.

@@ -44,7 +44,7 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'office365-webhook:s' => { name => 'office365_webhook' },
+            'teams-webhook:s' => { name => 'teams_webhook' },
             'port:s'              => { name => 'port' },
             'proto:s'             => { name => 'proto' },
             'timeout:s'           => { name => 'timeout' }
@@ -71,13 +71,13 @@ sub set_options {
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{office365_webhook} = (defined($self->{option_results}->{office365_webhook})) ? $self->{option_results}->{office365_webhook} : '';
+    $self->{teams_webhook} = (defined($self->{option_results}->{teams_webhook})) ? $self->{option_results}->{teams_webhook} : '';
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
 
-    if ($self->{office365_webhook} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify the --office365-webhook  option.');
+    if ($self->{teams_webhook} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify the --teams-webhook  option.');
         $self->{output}->option_exit();
     }
 
@@ -109,7 +109,7 @@ sub teams_post_notification {
 
     my $content = $self->{http}->request(
         method => 'POST',
-        full_url => $self->{office365_webhook},
+        full_url => $self->{teams_webhook},
         query_form_post => $encoded_data
     );
 
@@ -128,23 +128,19 @@ __END__
 
 =head1 NAME
 
-ArubaOS-CX API
+O365 Teams Webhooks API
 
 =head1 SYNOPSIS
 
-ArubaOS-CX api
+O365 Teams Webhooks API
 
 =head1 REST API OPTIONS
 
 =over 8
 
-=item B<--hostname>
+=item B<--teams-webhook>
 
-API hostname.
-
-=item B<--url-path>
-
-API url path (Default: '/rest/v1')
+Specify the Webhook full URI (Required).
 
 =item B<--port>
 
@@ -153,14 +149,6 @@ API port (Default: 443)
 =item B<--proto>
 
 Specify https if needed (Default: 'https')
-
-=item B<--api-username>
-
-Set API username
-
-=item B<--api-password>
-
-Set API password
 
 =item B<--timeout>
 

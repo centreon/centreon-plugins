@@ -32,22 +32,21 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-        {
-        "action-links"                   => { name => 'action_links'},
-        "bam"                            => { name => 'bam'},
-        "centreon-host-name:s"           => { name => 'centreon_host_name' },
-        "centreon-host-state:s"          => { name => 'centreon_host_state' },
-        "centreon-host-output:s"         => { name => 'centreon_host_output', default => '' },
-        "centreon-service-description:s" => { name => 'centreon_service_name' },
-        "centreon-service-state:s"       => { name => 'centreon_service_state' },
-        "centreon-service-output:s"      => { name => 'centreon_service_output', default => '' },
-        "centreon-graph-url:s"           => { name => 'graph_url' },
-        "centreon-link-url:s"            => { name => 'link_url' },
-        "centreon-url:s"                 => { name => 'centreon_url' },
-        "channel-id:s"                   => { name => 'channel_id'},
-        "team-id:s"                      => { name => 'team_id'}
-        });
+    $options{options}->add_options(arguments => {
+        'action-links'                   => { name => 'action_links' },
+        'bam'                            => { name => 'bam' },
+        'centreon-host-name:s'           => { name => 'centreon_host_name' },
+        'centreon-host-state:s'          => { name => 'centreon_host_state' },
+        'centreon-host-output:s'         => { name => 'centreon_host_output', default => '' },
+        'centreon-service-description:s' => { name => 'centreon_service_name' },
+        'centreon-service-state:s'       => { name => 'centreon_service_state' },
+        'centreon-service-output:s'      => { name => 'centreon_service_output', default => '' },
+        'centreon-graph-url:s'           => { name => 'graph_url' },
+        'centreon-link-url:s'            => { name => 'link_url' },
+        'centreon-url:s'                 => { name => 'centreon_url' },
+        'channel-id:s'                   => { name => 'channel_id' },
+        'team-id:s'                      => { name => 'team_id' }
+    });
 
     return $self;
 }
@@ -55,26 +54,17 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    # if (defined($self->{custom_modes}->{graphapi})) {
-    #     if (!defined($self->{option_results}->{channel_id}) || $self->{option_results}->{channel_id} eq '') {
-    #         $self->{output}->add_option_msg(short_msg => "You need to specify --channel-id option.");
-    #         $self->{output}->option_exit();
-    #     }
-    #     if (!defined($self->{option_results}->{team_id}) || $self->{option_results}->{team_id} eq '') {
-    #         $self->{output}->add_option_msg(short_msg => "You need to specify --team-id option.");
-    #         $self->{output}->option_exit();
-    #     }
-    #     $self->{teams}->{channel_id} = defined($self->{option_results}->{channel_id}) ? $self->{option_results}->{channel_id} : undef;
-    #     $self->{teams}->{team_id} = defined($self->{option_results}->{team_id}) ? $self->{option_results}->{team_id} : undef;
-    # }
+
     if (!defined($self->{option_results}->{centreon_host_name}) || $self->{option_results}->{centreon_host_name} eq '') {
-            $self->{output}->add_option_msg(short_msg => "You need to specify --centreon-host-name option.");
+            $self->{output}->add_option_msg(short_msg => 'You need to specify --centreon-host-name option.');
             $self->{output}->option_exit();
         }
     if (!defined($self->{option_results}->{centreon_host_state}) || $self->{option_results}->{centreon_host_state} eq '') {
-        $self->{output}->add_option_msg(short_msg => "You need to specify --centreon-host-state option.");
+        $self->{output}->add_option_msg(short_msg => 'You need to specify --centreon-host-state option.');
         $self->{output}->option_exit();
     }
+    $self->{teams}->{channel_id} = defined($self->{option_results}->{channel_id}) ? $self->{option_results}->{channel_id} : undef;
+    $self->{teams}->{team_id} = defined($self->{option_results}->{team_id}) ? $self->{option_results}->{team_id} : undef;
 
 }
 
@@ -92,7 +82,7 @@ sub build_payload {
     };
 
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $self->{output}->add_option_msg(short_msg => 'Cannot decode json response');
         $self->{output}->option_exit();
     }
 
@@ -120,9 +110,9 @@ sub build_message {
     my $formatted_resource = ucfirst($1) if ($resource_type =~ m/_(.*)/);
     $formatted_resource = 'BAM' if defined($self->{option_results}->{bam});
 
-    $self->{body_sections}->{activityTitle} = $formatted_resource . " : " . $self->{option_results}->{$resource_type . "_name"} . " is " . $self->{option_results}->{$resource_type . "_state"};
-    $self->{body_sections}->{activitySubtitle} = "Host: " . $self->{option_results}->{centreon_host_name} if ($resource_type eq 'centreon_service');
-    $self->{color} = $teams_colors{$resource_type}->{lc($self->{option_results}->{$resource_type . "_state"})};
+    $self->{body_sections}->{activityTitle} = $formatted_resource . ' "' . $self->{option_results}->{$resource_type . '_name'} . '" is ' . $self->{option_results}->{$resource_type . '_state'};
+    $self->{body_sections}->{activitySubtitle} = 'Host ' . $self->{option_results}->{centreon_host_name} if ($resource_type eq 'centreon_service');
+    $self->{color} = $teams_colors{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
 
     if (defined($self->{option_results}->{$resource_type . '_output'}) && $self->{option_results}->{$resource_type . '_output'} ne '') {
         push @{$self->{body_sections}->{facts}}, { name => 'Status', 'value' => $self->{option_results}->{$resource_type . '_output'} };
@@ -134,7 +124,7 @@ sub build_message {
             $self->{output}->option_exit();
         }
 
-        my $link_url_path = '/main.php?p=2020';
+        my $link_url_path = '/main.php?p=2020'; #only for the 'old' pages for now
         $link_url_path .= ($resource_type eq 'centreon_service') ?
                         '1&o=svc&host_search=' . $self->{option_results}->{centreon_host_name} . '&svc_search=' . $self->{option_results}->{centreon_service_name} :
                         '2&o=svc&host_search=' . $self->{option_results}->{centreon_host_name};
@@ -172,8 +162,11 @@ sub run {
     my ($self, %options) = @_;
 
     my $json_request = $self->build_payload();
-    my $response = $options{custom}->teams_post_notification(json_request => $self->{json_payload});
-
+    my $response = $options{custom}->teams_post_notification(
+        json_request => $self->{json_payload},
+        team_id => $self->{teams}->{team_id},
+        channel_id => $self->{teams}->{channel_id}
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -186,64 +179,44 @@ __END__
 
 Send notifications to a Microsoft Teams Channel.
 
-Example for a host:
+Example for a Host:
 centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --office365-webhook='https:/teams.microsoft.com/1/channel/...'
 --centreon-host-name='my_host_1' --centreon-host-state='DOWN' --centreon-host-output='CRITICAL - my_host_1: rta nan, lost 100%'
 --centreon-url='https://127.0.0.1/centreon/' --action-links'
 
-Example for a service:
-centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --office365-webhook='https:/teams.microsoft.com/1/channel/...'
---host-name='srvi-clus-win' --service-description='Ping' --service-state='WARNING' --service-output='CRITICAL - 10.50.1.78: rta nan, lost 100%' --priority='High' --zone='Production' --centreon-url='https://ces.merethis.net/centreon/' --link-url='%{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description}' --centreon-token='LxTQxFbLU6' --graph-url='%{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}'
-
 =over 8
 
-=item B<--o365-webhook>
+=item B<--action-links>
 
-Specify o365 webhook (Required).
+Add actions links buttons to the notification card (Resource status & graph page).
 
-=item B<--host-name>
+=item B<--centreon-host-name>
 
-Specify host server name for the alert (Required).
+Specify Host server name for the alert (Required).
 
-=item B<--host-state>
+=item B<--centreon-host-state>
 
-Specify host server state for the alert.
+Specify Host server state for the alert.
 
-=item B<--host-output>
+=item B<--centreon-host-output>
 
-Specify host server output message for the alert.
+Specify Host server output message for the alert.
 
-=item B<--service-description>
+=item B<--centreon-service-description>
 
-Specify service description name for the alert.
+Specify Service description name for the alert.
 
-=item B<--service-state>
+=item B<--centreon-service-state>
 
-Specify service state for the alert.
+Specify Service state for the alert.
 
-=item B<--service-output>
+=item B<--centreon-service-output>
 
-Specify service output message for the alert.
-
-=item B<--priority>
-
-Specify the priority message.
+Specify Service output message for the alert.
 
 =item B<--centreon-url>
 
-Specify the centreon url macro (could be used in link-url and graph-url option).
-
-=item B<--centreon-token>
-
-Specify the centreon token for autologin macro (could be used in link-url and graph-url option).
-
-=item B<--graph-url>
-
-Specify the graph url (Example: %{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}).
-
-=item B<--link-url>
-
-Specify the link url (Example: %{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description})
+Specify the Centreon interface URL (to be used with the action links).
 
 =back
 
