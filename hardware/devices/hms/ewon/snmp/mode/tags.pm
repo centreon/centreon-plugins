@@ -55,8 +55,8 @@ sub custom_value_threshold {
     foreach my $th (('critical', 'warning')) {
         my $i = 0;
         foreach (@{$self->{instance_mode}->{'tag_threshold_' . $th}}) {
-            if ($self->{result_values}->{name} =~ /$_->{match}/ ||
-                $self->{result_values}->{index} =~ /$_->{match}/) {
+            if ($self->{result_values}->{name} =~ /$_/ ||
+                $self->{result_values}->{index} =~ /$_/) {
                 $self->{instance_mode}->{$th . '_instance'} = $i; 
                 push @$thresholds, { label => $th . '-' . $i, exit_litteral => $th };
                 last;
@@ -158,14 +158,15 @@ sub check_options {
     foreach (('warning', 'critical')) {
         my $i = 0;
         $self->{'tag_threshold_' . $_} = [];
-        next if (defined($self->{option_results}->{'tag_threshold_' . $_}));
+        next if (!defined($self->{option_results}->{'tag_threshold_' . $_}));
         foreach my $option (@{$self->{option_results}->{'tag_threshold_' . $_}}) {
-            my ($tag_match, $tag_threshold) = split /,/;
+            my ($tag_match, $tag_threshold) = split(/,/, $option);
             next if (!defined($tag_threshold) || $tag_threshold eq '');
-            if ($self->{perfdata}->threshold_validate(label => $_ . '-' . $i, value => $tag_threshold)) {
+            if (($self->{perfdata}->threshold_validate(label => $_ . '-' . $i, value => $tag_threshold)) == 0) {
                 $self->{output}->add_option_msg(short_msg => "Wrong threshold '" . $tag_threshold . "'.");
                 $self->{output}->option_exit();
             }
+            push @{$self->{'tag_threshold_' . $_}}, $tag_match; 
             $i++;
         }
     }
@@ -280,6 +281,11 @@ Cache expires each X secondes (Default: 7200)
 
 Change tag output. By default it's: 'value: %s'.
 E.g: --tag-output-value='tagNameMatch,remaining: %s%%' 
+
+=item B<--tag-threshold-warning> B<--tag-threshold-critical>
+
+Set tag value threshold.
+E.g: --tag-threshold-warning='tagNameMatch,50' --tag-threshold-critical='tagNameMatch,80'
 
 =item B<--warning-status>
 
