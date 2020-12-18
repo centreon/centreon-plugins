@@ -36,16 +36,15 @@ sub new {
         'action-links'                   => { name => 'action_links' },
         'bam'                            => { name => 'bam' },
         'centreon-host-name:s'           => { name => 'centreon_host_name' },
-        'centreon-host-state:s'          => { name => 'centreon_host_state' },
         'centreon-host-output:s'         => { name => 'centreon_host_output', default => '' },
+        'centreon-host-state:s'          => { name => 'centreon_host_state' },
         'centreon-service-description:s' => { name => 'centreon_service_name' },
-        'centreon-service-state:s'       => { name => 'centreon_service_state' },
         'centreon-service-output:s'      => { name => 'centreon_service_output', default => '' },
-        'centreon-graph-url:s'           => { name => 'graph_url' },
-        'centreon-link-url:s'            => { name => 'link_url' },
+        'centreon-service-state:s'       => { name => 'centreon_service_state' },
         'centreon-url:s'                 => { name => 'centreon_url' },
         'channel-id:s'                   => { name => 'channel_id' },
-        'team-id:s'                      => { name => 'team_id' }
+        'team-id:s'                      => { name => 'team_id' },
+        'date:s'                         => { name => 'date' }
     });
 
     return $self;
@@ -56,8 +55,8 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (!defined($self->{option_results}->{centreon_host_name}) || $self->{option_results}->{centreon_host_name} eq '') {
-            $self->{output}->add_option_msg(short_msg => 'You need to specify --centreon-host-name option.');
-            $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => 'You need to specify --centreon-host-name option.');
+        $self->{output}->option_exit();
         }
     if (!defined($self->{option_results}->{centreon_host_state}) || $self->{option_results}->{centreon_host_state} eq '') {
         $self->{output}->add_option_msg(short_msg => 'You need to specify --centreon-host-state option.');
@@ -118,16 +117,20 @@ sub build_message {
         push @{$self->{body_sections}->{facts}}, { name => 'Status', 'value' => $self->{option_results}->{$resource_type . '_output'} };
     }
 
+    if (defined($self->{option_results}->{date}) && $self->{option_results}->{date} ne '') {
+        push @{$self->{body_sections}->{facts}}, { name => 'Event date', 'value' => $self->{option_results}->{date} };
+    }
+
     if (defined($self->{option_results}->{action_links})) {
         if (!defined($self->{option_results}->{centreon_url}) || $self->{option_results}->{centreon_url} eq ''){
             $self->{output}->add_option_msg(short_msg => 'Please set --centreon-url option');
             $self->{output}->option_exit();
         }
 
-        my $link_url_path = '/main.php?p=2020'; #only for the 'old' pages for now
+        my $link_url_path = '/main.php?p=2020'; # only for the 'old' pages for now
         $link_url_path .= ($resource_type eq 'centreon_service') ?
-                        '1&o=svc&host_search=' . $self->{option_results}->{centreon_host_name} . '&svc_search=' . $self->{option_results}->{centreon_service_name} :
-                        '2&o=svc&host_search=' . $self->{option_results}->{centreon_host_name};
+            '1&o=svc&host_search=' . $self->{option_results}->{centreon_host_name} . '&svc_search=' . $self->{option_results}->{centreon_service_name} :
+            '2&o=svc&host_search=' . $self->{option_results}->{centreon_host_name};
 
         my $link_uri = $self->{option_results}->{centreon_url} . $link_url_path;
 
@@ -163,9 +166,9 @@ sub run {
 
     my $json_request = $self->build_payload();
     my $response = $options{custom}->teams_post_notification(
+        channel_id => $self->{teams}->{channel_id},
         json_request => $self->{json_payload},
-        team_id => $self->{teams}->{team_id},
-        channel_id => $self->{teams}->{channel_id}
+        team_id => $self->{teams}->{team_id}
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -189,6 +192,10 @@ centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin -
 =item B<--action-links>
 
 Add actions links buttons to the notification card (Resource status & graph page).
+
+=item B<--bam>
+
+Compatibility with Centreon BAM notifications.
 
 =item B<--centreon-host-name>
 
@@ -217,6 +224,10 @@ Specify Service output message for the alert.
 =item B<--centreon-url>
 
 Specify the Centreon interface URL (to be used with the action links).
+
+=item B<--date>
+
+Specify the date & time of the event.
 
 =back
 
