@@ -281,7 +281,7 @@ sub get_entreprise_id {
         endpoint => '/enterprise/getEnterprise'
     );
 
-    $self->{entreprise_id} = int($response->{id});
+    $self->{entreprise_id} = $response->{id};
 }
 
 sub list_edges {
@@ -292,7 +292,7 @@ sub list_edges {
     my $response = $self->request_api(
         method => 'POST',
         endpoint => '/enterprise/getEnterpriseEdges',
-        query_form_post => { enterpriseId => $self->{entreprise_id} }
+        query_form_post => { enterpriseId => int($self->{entreprise_id}) }
     );
 
     return $response;
@@ -332,7 +332,7 @@ sub get_links_metrics {
         method => 'POST',
         endpoint => '/metrics/getEdgeLinkMetrics',
         query_form_post => {
-            enterpriseId => $self->{entreprise_id},
+            enterpriseId => int($self->{entreprise_id}),
             edgeId => $options{edge_id},
             metrics => [
                 'bytesRx', 'bytesTx', 'bestJitterMsRx', 'bestJitterMsTx',
@@ -390,7 +390,7 @@ sub get_apps_metrics {
         method => 'POST',
         endpoint => '/metrics/getEdgeAppMetrics',
         query_form_post => {
-            enterpriseId => $self->{entreprise_id},
+            enterpriseId => int($self->{entreprise_id}),
             edgeId => $options{edge_id},
             metrics => [ 'bytesRx', 'bytesTx', 'packetsRx', 'packetsTx' ],
             interval => {
@@ -413,7 +413,7 @@ sub get_links_qoe {
         method => 'POST',
         endpoint => '/linkQualityEvent/getLinkQualityEvents',
         query_form_post => {
-            enterpriseId => $self->{entreprise_id},
+            enterpriseId => int($self->{entreprise_id}),
             edgeId => $options{edge_id},
             debug => 'false',
             individualScores => 'false',
