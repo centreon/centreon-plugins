@@ -281,7 +281,7 @@ sub get_entreprise_id {
         endpoint => '/enterprise/getEnterprise'
     );
 
-    $self->{entreprise_id} = $response->{id};
+    $self->{entreprise_id} = int($response->{id});
 }
 
 sub list_edges {
