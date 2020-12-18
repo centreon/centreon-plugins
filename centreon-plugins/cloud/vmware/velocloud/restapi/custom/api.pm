@@ -309,7 +309,7 @@ sub list_links {
         method => 'POST',
         endpoint => '/metrics/getEdgeLinkMetrics',
         query_form_post => {
-            enterpriseId => $self->{entreprise_id},
+            enterpriseId => int($self->{entreprise_id}),
             edgeId => $options{edge_id},
             metrics => [ 'bytesRx' ],
             interval => {
@@ -361,7 +361,7 @@ sub get_application_name {
             method => 'POST',
             endpoint => '/configuration/getIdentifiableApplications',
             query_form_post => {
-                enterpriseId => $self->{entreprise_id}
+                enterpriseId => int($self->{entreprise_id})
             }
         );
 
