@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
@@ -121,11 +121,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{nodes} = [
-        { label => 'node-status', threshold => 0, set => {
+        { label => 'node-status', type => 2, critical_default => '%{state} ne "online"', set => {
                 key_values => [ { name => 'state' }, { name => 'link_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -136,20 +136,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        'unknown-node-status:s'  => { name => 'unknown_node_status', default => '' },
-        'warning-node-status:s'  => { name => 'warning_node_status', default => '' },
-        'critical-node-status:s' => { name => 'critical_node_status', default => '%{state} ne "online"' }
+    $options{options}->add_options(arguments => {
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_node_status', 'critical_node_status', 'unknown_node_status']);
 }
 
 sub manage_selection {
