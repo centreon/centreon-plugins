@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -60,11 +60,11 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{volumes} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{state} !~ /online/i', set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'usage', nlabel => 'volume.space.usage.bytes', set => {
@@ -86,8 +86,8 @@ sub set_counters {
             }
         },
         { label => 'usage-prct', nlabel => 'volume.space.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'prct_used_space' }, { name => 'display' } ],
-                output_template => 'space used: %.2f %%',
+                key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100,
                       unit => '%', label_extra_instance => 1 }
@@ -153,20 +153,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{state} !~ /online/i' }
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 sub manage_selection {
@@ -189,8 +179,8 @@ sub manage_selection {
             total_space => $_->{space}->{size},
             used_space => $_->{space}->{used},
             free_space => $_->{space}->{available},
-            prct_used_space => $_->{space}->{used} * 100 / $_->{space}->{size},
-            prct_free_space => $_->{space}->{available} * 100 / $_->{space}->{size},
+            prct_used_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{used} * 100 / $_->{space}->{size} : undef,
+            prct_free_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{available} * 100 / $_->{space}->{size} : undef,
 
             read          => $_->{metric}->{throughput}->{read},
             write         => $_->{metric}->{throughput}->{write},
@@ -200,7 +190,7 @@ sub manage_selection {
             write_latency => $_->{metric}->{latency}->{write}
         };
     }
-    
+
     if (scalar(keys %{$self->{volumes}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No volume found");
         $self->{output}->option_exit();
