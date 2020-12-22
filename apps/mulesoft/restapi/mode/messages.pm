@@ -147,9 +147,11 @@ sub manage_selection {
                 push @{$self->{raw_results}->{$queue->{queueId}}->{$message_type}}, $values->{value};
                 $total_value += $values->{value};
             }
-            my $points = scalar(@{$self->{raw_results}->{$queue->{queueId}}->{$message_type}});
+            if ($self->{raw_results}->{$queue->{queueId}}->{$message_type}) {
+                my $points = scalar(@{$self->{raw_results}->{$queue->{queueId}}->{$message_type}});
 
-            $self->{raw_results}->{$queue->{queueId}}{$message_type} =  $total_value / $points;
+                $self->{raw_results}->{$queue->{queueId}}{$message_type} =  $total_value / $points;
+            }
         }
 
         $self->{queues}->{$queue->{queueId}} = {
