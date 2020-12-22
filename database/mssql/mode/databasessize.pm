@@ -301,37 +301,37 @@ sub manage_selection {
                 };
             }
 
-            $self->{databases}->{ $row->[0] }->{$row->[3] . 'file'}->{used_space} += ($row->[5] * 8 * 1024);
+            $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{used_space} += ($row->[5] * 8 * 1024);
 
             my $size = $row->[4];
             #max_size = -1 (=unlimited)
             if ($row->[7] > 0) {
                 $size = $row->[7];
-                $self->{databases}->{ $row->[0] }->{$row->[3] . 'file'}->{limit} = 'unlimited';
+                $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{limit} = 'unlimited';
             }
-            $self->{databases}->{ $row->[0] }->{$row->[3] . 'file'}->{total_space} += ($size * 8 * 1024);
+            $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{total_space} += ($size * 8 * 1024);
         }
     }
 
     foreach my $dbname (keys %{$self->{databases}}) {
         foreach my $type (('data', 'log')) {
             my $options = [$type . 'files_maxsize'];
-            unshift @$options, $type . 'files_maxsize_unlimited' if ($self->{databases}->{$dbname}->{$type . 'file'}->{limit} eq 'unlimited');
+            unshift @$options, $type . 'files_maxsize_unlimited' if ($self->{databases}->{$dbname}->{$type . 'files'}->{limit} eq 'unlimited');
             foreach my $option (@$options) {
                 if (defined($self->{option_results}->{$option}) && $self->{option_results}->{$option} ne '' &&
                     $self->{option_results}->{$option} =~ /(\d+)/) {
-                    $self->{databases}->{$dbname}->{$type . 'file'}->{total_space} = $self->{option_results}->{$option} * 1024 * 1024;
-                    $self->{databases}->{$dbname}->{$type . 'file'}->{limit} = 'overload';
+                    $self->{databases}->{$dbname}->{$type . 'files'}->{total_space} = $self->{option_results}->{$option} * 1024 * 1024;
+                    $self->{databases}->{$dbname}->{$type . 'files'}->{limit} = 'overload';
                     last;
                 }
             }
 
-            $self->{databases}->{$dbname}->{$type . 'file'}->{free_space} = 
-                $self->{databases}->{$dbname}->{$type . 'file'}->{total_space} - $self->{databases}->{$dbname}->{$type . 'file'}->{used_space};
-            $self->{databases}->{$dbname}->{$type . 'file'}->{prct_used_space} = 
-                $self->{databases}->{$dbname}->{$type . 'file'}->{used_space} * 100 / $self->{databases}->{$dbname}->{$type . 'file'}->{total_space};
-            $self->{databases}->{$dbname}->{$type . 'file'}->{prct_free_space} = 100 - $self->{databases}->{$dbname}->{$type . 'file'}->{prct_used_space};
-            $self->{databases}->{$dbname}->{$type . 'file'}->{prct_free_space} = 0 if ($self->{databases}->{$dbname}->{$type . 'file'}->{prct_free_space} > 0);
+            $self->{databases}->{$dbname}->{$type . 'files'}->{free_space} = 
+                $self->{databases}->{$dbname}->{$type . 'files'}->{total_space} - $self->{databases}->{$dbname}->{$type . 'files'}->{used_space};
+            $self->{databases}->{$dbname}->{$type . 'files'}->{prct_used_space} = 
+                $self->{databases}->{$dbname}->{$type . 'files'}->{used_space} * 100 / $self->{databases}->{$dbname}->{$type . 'files'}->{total_space};
+            $self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} = 100 - $self->{databases}->{$dbname}->{$type . 'files'}->{prct_used_space};
+            $self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} = 0 if ($self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} > 0);
         }
     }
 }
