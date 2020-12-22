@@ -150,12 +150,12 @@ sub authenticate {
     if ($has_cache_file == 0 || !defined($session_id)) {
         my $content = $self->{http}->request(
             method => 'POST',
+            query_form_post => '',
             url_path => '/rest/com/vmware/cis/session',
             credentials => 1, basic => 1,
             username => $self->{api_username},
             password => $self->{api_password},
-            warning_status => '', unknown_status => '', critical_status => '',
-            curl_backend_options => { header => ['Content-Length: 0'] },
+            warning_status => '', unknown_status => '', critical_status => ''
         );
         if ($self->{http}->get_code() != 200) {
             $self->{output}->add_option_msg(short_msg => "Login error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
