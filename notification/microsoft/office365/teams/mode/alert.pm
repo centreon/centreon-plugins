@@ -25,7 +25,6 @@ use warnings;
 use base qw(centreon::plugins::mode);
 use URI::Encode;
 
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -58,7 +57,6 @@ sub check_options {
         $self->{option_results}->{channel_id} : undef;
     $self->{teams}->{team_id} = defined($self->{option_results}->{team_id}) && $self->{option_results}->{channel_id} ne ''
         ? $self->{option_results}->{team_id} : undef;
-
 }
 
 sub build_payload {
