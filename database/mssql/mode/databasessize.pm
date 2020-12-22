@@ -77,7 +77,7 @@ sub custom_space_usage_prct_perfdata {
         nlabel => $self->{nlabel},
         unit => '%',
         instances => $self->{result_values}->{name}, 
-        value => $self->{result_values}->{prct_used_space},
+        value => sprintf('%.2f', $self->{result_values}->{prct_used_space}),
         warning => $warning,
         critical => $critical,
         min => 0,
@@ -110,7 +110,7 @@ sub custom_space_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_space});
     return sprintf(
-        "space total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
+        'space total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_space},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_space}
@@ -331,7 +331,7 @@ sub manage_selection {
             $self->{databases}->{$dbname}->{$type . 'files'}->{prct_used_space} = 
                 $self->{databases}->{$dbname}->{$type . 'files'}->{used_space} * 100 / $self->{databases}->{$dbname}->{$type . 'files'}->{total_space};
             $self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} = 100 - $self->{databases}->{$dbname}->{$type . 'files'}->{prct_used_space};
-            $self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} = 0 if ($self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} > 0);
+            $self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} = 0 if ($self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} < 0);
         }
     }
 }
