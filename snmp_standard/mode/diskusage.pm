@@ -115,6 +115,7 @@ sub new {
         'units:s'                 => { name => 'units', default => '' },
         'free'                    => { name => 'free' },
         'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
+        'diskdevice:s'            => { name => 'diskdevice', default => '^(?!(/dev/loop[0-9]+)$)' },
         'name'                    => { name => 'use_name' },
         'diskpath:s'              => { name => 'diskpath' },
         'regexp'                  => { name => 'use_regexp' },
@@ -254,13 +255,15 @@ sub reload_cache {
     $datas->{all_ids} = [];
 
     my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
+    my $oid_dskDevice = '.1.3.6.1.4.1.2021.9.1.3';
 
-    my $result = $options{snmp}->get_table(oid => $oid_dskPath);
-    foreach my $key (keys %$result) {
+    my $result = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_dskPath }, { oid => $oid_dskDevice } ]);
+    foreach my $key (keys %{$result->{$oid_dskPath}}) {
         next if ($key !~ /\.([0-9]+)$/);        
         my $diskpath_index = $1;
         push @{$datas->{all_ids}}, $diskpath_index;
-        $datas->{"dskPath_" . $diskpath_index} = $self->{output}->to_utf8($result->{$key});
+        $datas->{"dskPath_" . $diskpath_index} = $self->{output}->to_utf8($result->{$oid_dskPath}->{$key});
+        $datas->{"dskDevice_" . $diskpath_index} = $self->{output}->to_utf8($result->{$oid_dskDevice}->{$oid_dskDevice . '.' . $diskpath_index});
     }
 
     if (scalar(@{$datas->{all_ids}}) <= 0) {
@@ -295,8 +298,13 @@ sub get_selection {
     } else {
         foreach my $i (@{$all_ids}) {
             my $filter_name = $self->{statefile_cache}->get(name => 'dskPath_' . $i);
+            my $diskdevice = $self->{statefile_cache}->get(name => 'dskDevice_' . $i);
             next if (!defined($filter_name));
             
+            if (defined($self->{option_results}->{diskdevice}) && $self->{option_results}->{diskdevice} ne '' && $diskdevice !~ /$self->{option_results}->{diskdevice}/) {
+                next;
+            }
+
             if (!defined($self->{option_results}->{diskpath})) {
                 push @{$self->{diskpath_id_selected}}, $i;
                 next;
@@ -349,6 +357,10 @@ Filter counters to be displayed (Can be: 'usage', 'count', 'inodes').
 =item B<--warning-*> B<--critical-*>
 
 Thresholds (Can be: 'usage', 'usage-free', 'usage-prct', 'inodes', 'count').
+
+=item B<--diskdevice>
+
+Choose disks according to their device name (default '^(?!(/dev/loop[0-9]+)$)').
 
 =item B<--diskpath>
 
