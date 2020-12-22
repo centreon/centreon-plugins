@@ -106,14 +106,14 @@ sub custom_space_threshold {
 sub custom_space_output {
     my ($self, %options) = @_;
 
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_space});
     return sprintf(
         "space total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
         $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_space},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_space}
     );
 }
 
