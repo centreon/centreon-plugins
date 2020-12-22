@@ -45,9 +45,9 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             'teams-webhook:s' => { name => 'teams_webhook' },
-            'port:s'              => { name => 'port' },
-            'proto:s'             => { name => 'proto' },
-            'timeout:s'           => { name => 'timeout' }
+            'port:s'          => { name => 'port' },
+            'proto:s'         => { name => 'proto' },
+            'timeout:s'       => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);

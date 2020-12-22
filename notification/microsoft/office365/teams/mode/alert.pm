@@ -23,7 +23,7 @@ package notification::microsoft::office365::teams::mode::alert;
 use strict;
 use warnings;
 use base qw(centreon::plugins::mode);
-use Data::Dumper;
+use URI::Encode;
 
 
 sub new {
@@ -33,18 +33,18 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'action-links'                   => { name => 'action_links' },
-        'bam'                            => { name => 'bam' },
-        'centreon-host-name:s'           => { name => 'centreon_host_name' },
-        'centreon-host-output:s'         => { name => 'centreon_host_output', default => '' },
-        'centreon-host-state:s'          => { name => 'centreon_host_state' },
-        'centreon-service-description:s' => { name => 'centreon_service_name' },
-        'centreon-service-output:s'      => { name => 'centreon_service_output', default => '' },
-        'centreon-service-state:s'       => { name => 'centreon_service_state' },
-        'centreon-url:s'                 => { name => 'centreon_url' },
-        'channel-id:s'                   => { name => 'channel_id' },
-        'team-id:s'                      => { name => 'team_id' },
-        'date:s'                         => { name => 'date' }
+        'action-links'           => { name => 'action_links' },
+        'bam'                    => { name => 'bam' },
+        'centreon-host-name:s'   => { name => 'centreon_host_name' },
+        'centreon-host-output:s' => { name => 'centreon_host_output', default => '' },
+        'centreon-host-state:s'  => { name => 'centreon_host_state' },
+        'centreon-svc-desc:s'    => { name => 'centreon_service_name' },
+        'centreon-svc-output:s'  => { name => 'centreon_service_output', default => '' },
+        'centreon-svc-state:s'   => { name => 'centreon_service_state' },
+        'centreon-url:s'         => { name => 'centreon_url' },
+        'channel-id:s'           => { name => 'channel_id' },
+        'team-id:s'              => { name => 'team_id' },
+        'date:s'                 => { name => 'date' }
     });
 
     return $self;
@@ -58,10 +58,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'You need to specify --centreon-host-name option.');
         $self->{output}->option_exit();
         }
-    if (!defined($self->{option_results}->{centreon_host_state}) || $self->{option_results}->{centreon_host_state} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'You need to specify --centreon-host-state option.');
-        $self->{output}->option_exit();
-    }
+
     $self->{teams}->{channel_id} = defined($self->{option_results}->{channel_id}) ? $self->{option_results}->{channel_id} : undef;
     $self->{teams}->{team_id} = defined($self->{option_results}->{team_id}) ? $self->{option_results}->{team_id} : undef;
 
@@ -74,10 +71,10 @@ sub build_payload {
     $self->{json_payload} = {
         '@type'         => 'MessageCard',
 	    '@context'      => 'https://schema.org/extensions',
-        potentialAction => $message->{links},
-        sections        => $message->{body_sections},
+        potentialAction => $message->{potentialAction},
+        sections        => $message->{sections},
         summary         => 'Centreon Alert',
-        themecolor      => $message->{color}
+        themecolor      => $message->{themecolor}
     };
 
     if ($@) {
@@ -105,20 +102,24 @@ sub build_message {
         }
     );
 
+    $self->{sections} = [];
     my $resource_type = defined($self->{option_results}->{centreon_host_state}) ? 'centreon_host' : 'centreon_service';
     my $formatted_resource = ucfirst($1) if ($resource_type =~ m/_(.*)/);
     $formatted_resource = 'BAM' if defined($self->{option_results}->{bam});
 
-    $self->{body_sections}->{activityTitle} = $formatted_resource . ' "' . $self->{option_results}->{$resource_type . '_name'} . '" is ' . $self->{option_results}->{$resource_type . '_state'};
-    $self->{body_sections}->{activitySubtitle} = 'Host ' . $self->{option_results}->{centreon_host_name} if ($resource_type eq 'centreon_service');
-    $self->{color} = $teams_colors{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
+    push @{$self->{sections}}, {
+        activityTitle => $formatted_resource . ' "' . $self->{option_results}->{$resource_type . '_name'} . '" is ' . $self->{option_results}->{$resource_type . '_state'},
+        activitySubtitle => $resource_type eq 'centreon_service' ? 'Host ' . $self->{option_results}->{centreon_host_name} : ''
+    };
+
+    $self->{themecolor} = $teams_colors{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
 
     if (defined($self->{option_results}->{$resource_type . '_output'}) && $self->{option_results}->{$resource_type . '_output'} ne '') {
-        push @{$self->{body_sections}->{facts}}, { name => 'Status', 'value' => $self->{option_results}->{$resource_type . '_output'} };
+        push @{$self->{sections}[0]->{facts}}, { name => 'Status', 'value' => $self->{option_results}->{$resource_type . '_output'} };
     }
 
     if (defined($self->{option_results}->{date}) && $self->{option_results}->{date} ne '') {
-        push @{$self->{body_sections}->{facts}}, { name => 'Event date', 'value' => $self->{option_results}->{date} };
+        push @{$self->{sections}[0]->{facts}}, { name => 'Event date', 'value' => $self->{option_results}->{date} };
     }
 
     if (defined($self->{option_results}->{action_links})) {
@@ -126,34 +127,34 @@ sub build_message {
             $self->{output}->add_option_msg(short_msg => 'Please set --centreon-url option');
             $self->{output}->option_exit();
         }
-
+        my $uri = URI::Encode->new({encode_reserved => 0});
         my $link_url_path = '/main.php?p=2020'; # only for the 'old' pages for now
         $link_url_path .= ($resource_type eq 'centreon_service') ?
             '1&o=svc&host_search=' . $self->{option_results}->{centreon_host_name} . '&svc_search=' . $self->{option_results}->{centreon_service_name} :
             '2&o=svc&host_search=' . $self->{option_results}->{centreon_host_name};
 
-        my $link_uri = $self->{option_results}->{centreon_url} . $link_url_path;
+        my $link_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $link_url_path);
 
-        push @{$self->{links}}, {
+        push @{$self->{potentialAction}}, {
             '@type' => 'OpenUri',
-            name => 'Details',
+            name    => 'Details',
             targets => [{
-                'os' => 'default',
-                'uri' => $link_uri
+                'os'  => 'default',
+                'uri' => $link_uri_encoded
             }]
         };
 
         if ($resource_type eq 'centreon_service') {
             my $graph_url_path = '/main.php?p=204&mode=0&svc_id=';
-            $graph_url_path .= $self->{option_results}->{centreon_host_name} . ';' . $self->{option_results}->{centreon_service_name};
 
-            my $graph_uri = $self->{option_results}->{centreon_url} . $graph_url_path;
-            push @{$self->{links}}, {
+            $graph_url_path .= $self->{option_results}->{centreon_host_name} . ';' . $self->{option_results}->{centreon_service_name};
+            my $graph_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $graph_url_path);
+            push @{$self->{potentialAction}}, {
                 '@type' => 'OpenUri',
-                name => 'Graph',
+                name    => 'Graph',
                 targets => [{
-                    'os' => 'default',
-                    'uri' => $graph_uri
+                    'os'  => 'default',
+                    'uri' => $graph_uri_encoded
                 }]
             };
         }
@@ -209,15 +210,15 @@ Specify Host server state for the alert.
 
 Specify Host server output message for the alert.
 
-=item B<--centreon-service-description>
+=item B<--centreon-svc-desc>
 
 Specify Service description name for the alert.
 
-=item B<--centreon-service-state>
+=item B<--centreon-svc-state>
 
 Specify Service state for the alert.
 
-=item B<--centreon-service-output>
+=item B<--centreon-svc-output>
 
 Specify Service output message for the alert.
 
