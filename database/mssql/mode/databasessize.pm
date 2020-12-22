@@ -188,6 +188,42 @@ sub set_counters {
             }
         }
     ];
+
+    $self->{maps_counters}->{logfiles} = [
+        { label => 'logfiles-space-usage', nlabel => 'logfiles.space.usage.bytes', set => {
+                key_values => [
+                    { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' },
+                    { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'name' },
+                    { name => 'limit' }
+                ],
+                closure_custom_output => $self->can('custom_space_output'),
+                closure_custom_threshold_check => $self->can('custom_space_threshold'),
+                closure_custom_perfdata => $self->can('custom_space_usage_perfdata')
+            }
+        },
+        { label => 'logfiles-space-usage-free', nlabel => 'logfiles.space.free.bytes', display_ok => 0, set => {
+                key_values => [
+                    { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' },
+                    { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'name' },
+                    { name => 'limit' }
+                ],
+                closure_custom_output => $self->can('custom_space_output'),
+                closure_custom_threshold_check => $self->can('custom_space_threshold'),
+                closure_custom_perfdata => $self->can('custom_space_free_perfdata')
+            }
+        },
+        { label => 'logfiles-space-usage-prct', nlabel => 'logfiles.space.usage.percentage', display_ok => 0, set => {
+                key_values => [
+                    { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' },
+                    { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'name' },
+                    { name => 'limit' }
+                ],
+                closure_custom_output => $self->can('custom_space_output'),
+                closure_custom_threshold_check => $self->can('custom_space_threshold'),
+                closure_custom_perfdata => $self->can('custom_space_usage_prct_perfdata')
+            }
+        }
+    ];
 }
 
 sub new {
