@@ -67,7 +67,7 @@ sub build_payload {
     my $message = $self->build_message();
     $self->{json_payload} = {
         '@type'         => 'MessageCard',
-	    '@context'      => 'https://schema.org/extensions',
+        '@context'      => 'https://schema.org/extensions',
         potentialAction => $message->{potentialAction},
         sections        => $message->{sections},
         summary         => 'Centreon Alert',
@@ -127,7 +127,7 @@ sub build_message {
         my $uri = URI::Encode->new({encode_reserved => 0});
         my $link_url_path = '/main.php?p=2020'; # only for the 'old' pages for now
         $link_url_path .= ($resource_type eq 'service') ?
-            '1&o=svc&host_search=' . $self->{option_results}->{host_name} . '&svc_search=' . $self->{option_results}->{service_name} :
+            '1&o=svc&host_search=' . $self->{option_results}->{host_name} . '&search=' . $self->{option_results}->{service_name} :
             '2&o=svc&host_search=' . $self->{option_results}->{host_name};
 
         my $link_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $link_url_path);
@@ -181,7 +181,7 @@ __END__
 Send notifications to a Microsoft Teams Channel.
 
 Example for a Host:
-centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --office365-webhook='https:/teams.microsoft.com/1/channel/...'
+centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --teams-webhook='https:/teams.microsoft.com/1/channel/...'
 --host-name='my_host_1' --host-state='DOWN' --host-output='CRITICAL - my_host_1: rta nan, lost 100%'
 --centreon-url='https://127.0.0.1/centreon/' --action-links'
 
