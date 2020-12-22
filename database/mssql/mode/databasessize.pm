@@ -77,7 +77,7 @@ sub custom_space_usage_prct_perfdata {
         nlabel => $self->{nlabel},
         unit => '%',
         instances => $self->{result_values}->{name}, 
-        value => $self->{result_values}->{free_space},
+        value => $self->{result_values}->{prct_used_space},
         warning => $warning,
         critical => $critical,
         min => 0,
