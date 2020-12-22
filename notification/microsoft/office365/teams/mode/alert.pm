@@ -33,18 +33,18 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'action-links'           => { name => 'action_links' },
-        'bam'                    => { name => 'bam' },
-        'centreon-host-name:s'   => { name => 'centreon_host_name' },
-        'centreon-host-output:s' => { name => 'centreon_host_output', default => '' },
-        'centreon-host-state:s'  => { name => 'centreon_host_state' },
-        'centreon-svc-desc:s'    => { name => 'centreon_service_name' },
-        'centreon-svc-output:s'  => { name => 'centreon_service_output', default => '' },
-        'centreon-svc-state:s'   => { name => 'centreon_service_state' },
-        'centreon-url:s'         => { name => 'centreon_url' },
-        'channel-id:s'           => { name => 'channel_id' },
-        'team-id:s'              => { name => 'team_id' },
-        'date:s'                 => { name => 'date' }
+        'action-links'          => { name => 'action_links' },
+        'bam'                   => { name => 'bam' },
+        'host-name:s'           => { name => 'host_name' },
+        'host-output:s'         => { name => 'host_output', default => '' },
+        'host-state:s'          => { name => 'host_state' },
+        'service-description:s' => { name => 'service_name' },
+        'service-output:s'      => { name => 'service_output', default => '' },
+        'service-state:s'       => { name => 'service_state' },
+        'centreon-url:s'        => { name => 'centreon_url' },
+        'channel-id:s'          => { name => 'channel_id' },
+        'team-id:s'             => { name => 'team_id' },
+        'date:s'                => { name => 'date' }
     });
 
     return $self;
@@ -54,13 +54,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{centreon_host_name}) || $self->{option_results}->{centreon_host_name} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'You need to specify --centreon-host-name option.');
-        $self->{output}->option_exit();
-        }
-
-    $self->{teams}->{channel_id} = defined($self->{option_results}->{channel_id}) ? $self->{option_results}->{channel_id} : undef;
-    $self->{teams}->{team_id} = defined($self->{option_results}->{team_id}) ? $self->{option_results}->{team_id} : undef;
+    $self->{teams}->{channel_id} = defined($self->{option_results}->{channel_id}) && $self->{option_results}->{channel_id} ne '' ?
+        $self->{option_results}->{channel_id} : undef;
+    $self->{teams}->{team_id} = defined($self->{option_results}->{team_id}) && $self->{option_results}->{channel_id} ne ''
+        ? $self->{option_results}->{team_id} : undef;
 
 }
 
@@ -89,12 +86,12 @@ sub build_message {
     my ($self, %options) = @_;
 
     my %teams_colors = (
-        centreon_host => {
+        host => {
             up => '42f56f',
             down => 'f21616',
             unreachable => 'f21616'
         },
-        centreon_service => {
+        service => {
             ok => '42f56f',
             warning => 'f59042',
             critical => 'f21616',
@@ -103,13 +100,13 @@ sub build_message {
     );
 
     $self->{sections} = [];
-    my $resource_type = defined($self->{option_results}->{centreon_host_state}) ? 'centreon_host' : 'centreon_service';
-    my $formatted_resource = ucfirst($1) if ($resource_type =~ m/_(.*)/);
+    my $resource_type = defined($self->{option_results}->{host_state}) ? 'host' : 'service';
+    my $formatted_resource = ucfirst($resource_type);
     $formatted_resource = 'BAM' if defined($self->{option_results}->{bam});
 
     push @{$self->{sections}}, {
         activityTitle => $formatted_resource . ' "' . $self->{option_results}->{$resource_type . '_name'} . '" is ' . $self->{option_results}->{$resource_type . '_state'},
-        activitySubtitle => $resource_type eq 'centreon_service' ? 'Host ' . $self->{option_results}->{centreon_host_name} : ''
+        activitySubtitle => $resource_type eq 'service' ? 'Host ' . $self->{option_results}->{host_name} : ''
     };
 
     $self->{themecolor} = $teams_colors{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
@@ -129,9 +126,9 @@ sub build_message {
         }
         my $uri = URI::Encode->new({encode_reserved => 0});
         my $link_url_path = '/main.php?p=2020'; # only for the 'old' pages for now
-        $link_url_path .= ($resource_type eq 'centreon_service') ?
-            '1&o=svc&host_search=' . $self->{option_results}->{centreon_host_name} . '&svc_search=' . $self->{option_results}->{centreon_service_name} :
-            '2&o=svc&host_search=' . $self->{option_results}->{centreon_host_name};
+        $link_url_path .= ($resource_type eq 'service') ?
+            '1&o=svc&host_search=' . $self->{option_results}->{host_name} . '&svc_search=' . $self->{option_results}->{service_name} :
+            '2&o=svc&host_search=' . $self->{option_results}->{host_name};
 
         my $link_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $link_url_path);
 
@@ -144,10 +141,10 @@ sub build_message {
             }]
         };
 
-        if ($resource_type eq 'centreon_service') {
+        if ($resource_type eq 'service') {
             my $graph_url_path = '/main.php?p=204&mode=0&svc_id=';
 
-            $graph_url_path .= $self->{option_results}->{centreon_host_name} . ';' . $self->{option_results}->{centreon_service_name};
+            $graph_url_path .= $self->{option_results}->{host_name} . ';' . $self->{option_results}->{service_name};
             my $graph_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $graph_url_path);
             push @{$self->{potentialAction}}, {
                 '@type' => 'OpenUri',
@@ -167,9 +164,9 @@ sub run {
 
     my $json_request = $self->build_payload();
     my $response = $options{custom}->teams_post_notification(
-        channel_id => $self->{teams}->{channel_id},
+        channel_id   => $self->{teams}->{channel_id},
         json_request => $self->{json_payload},
-        team_id => $self->{teams}->{team_id}
+        team_id      => $self->{teams}->{team_id}
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -185,46 +182,47 @@ Send notifications to a Microsoft Teams Channel.
 
 Example for a Host:
 centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --office365-webhook='https:/teams.microsoft.com/1/channel/...'
---centreon-host-name='my_host_1' --centreon-host-state='DOWN' --centreon-host-output='CRITICAL - my_host_1: rta nan, lost 100%'
+--host-name='my_host_1' --host-state='DOWN' --host-output='CRITICAL - my_host_1: rta nan, lost 100%'
 --centreon-url='https://127.0.0.1/centreon/' --action-links'
 
 =over 8
 
-=item B<--action-links>
-
-Add actions links buttons to the notification card (Resource status & graph page).
-
-=item B<--bam>
-
-Compatibility with Centreon BAM notifications.
-
-=item B<--centreon-host-name>
+=item B<--host-name>
 
 Specify Host server name for the alert (Required).
 
-=item B<--centreon-host-state>
+=item B<--host-state>
 
 Specify Host server state for the alert.
 
-=item B<--centreon-host-output>
+=item B<--host-output>
 
 Specify Host server output message for the alert.
 
-=item B<--centreon-svc-desc>
+=item B<--service-desc>
 
 Specify Service description name for the alert.
 
-=item B<--centreon-svc-state>
+=item B<--service-state>
 
 Specify Service state for the alert.
 
-=item B<--centreon-svc-output>
+=item B<--service-output>
 
 Specify Service output message for the alert.
+
+=item B<--action-links>
+
+Only to be used with Centreon.
+Add actions links buttons to the notification card (resource status & graph page).
 
 =item B<--centreon-url>
 
 Specify the Centreon interface URL (to be used with the action links).
+
+=item B<--bam>
+
+Compatibility with Centreon BAM notifications.
 
 =item B<--date>
 
