@@ -39,7 +39,12 @@ sub set_system {
             ['ready', 'OK'],
             ['invalid', 'CRITICAL'],
             ['rwError', 'CRITICAL'],
-            ['unknown', 'UNKNOWN']
+            ['unknown', 'UNKNOWN'],
+
+            ['abnormal', 'WARNING'],
+            ['good', 'OK'],
+            ['warning', 'WARNING'],
+            ['error', 'CRITICAL']
         ],
         smartdisk => [
             ['GOOD', 'OK'],
