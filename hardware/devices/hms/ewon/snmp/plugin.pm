@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Ewon in SNMP.
+Check HMS Ewon in SNMP.
 
 =cut
