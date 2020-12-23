@@ -30,89 +30,127 @@ my $map_status_disk = {
     '-9' => 'rwError',
     '-4' => 'unknown'
 };
+my $map_smartinfo = {
+    2 => 'abnormal',
+    1 => 'warning',
+    0 => 'good',
+    -1 => 'error'
+};
 
 # In MIB 'NAS.mib'
 my $mapping = {
-    HdDescr       => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.2' },
-    HdTemperature => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.3' },
-    HdStatus      => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.4', map => $map_status_disk }
+    description => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.2' }, # hdDescr
+    temperature => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.3' }, # hdTemperature
+    status      => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.4', map => $map_status_disk }, # HdStatus
+    smartinfo   => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.7' }  # HdSmartInfo
 };
 my $mapping2 = {
-    HdSmartInfo => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.7' }
+    description => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.2' }, # diskID
+    status      => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.5', map => $map_smartinfo }, # diskSmartInfo
+    temperature => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.6' } # diskTemperture
 };
 my $oid_HdEntry = '.1.3.6.1.4.1.24681.1.2.11.1';
+my $oid_diskTableEntry = '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_HdEntry, start => $mapping->{HdDescr}->{oid}, end => $mapping->{HdStatus}->{oid} };
-    push @{$self->{request}}, { oid => $mapping2->{HdSmartInfo}->{oid} };
+    push @{$self->{request}}, { oid => $oid_HdEntry, start => $mapping->{description}->{oid} };
+    push @{$self->{request}}, {
+        oid => $oid_diskTableEntry,
+        start => $mapping2->{description}->{oid},
+        end => $mapping2->{temperature}->{oid}
+    };
 }
 
-sub check {
-    my ($self) = @_;
+sub check_disk {
+    my ($self, %options) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking disks");
-    $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'disk'));
+    return if (defined($self->{disk_checked}));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_HdEntry}})) {
-        next if ($oid !~ /^$mapping->{HdDescr}->{oid}\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $options{entry} }})) {
+        next if ($oid !~ /^$options{mapping}->{description}->{oid}\.(\d+)$/);
         my $instance = $1;
-        
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_HdEntry}, instance => $instance);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping2->{HdSmartInfo}->{oid} }, instance => $instance);
+        $self->{disk_checked} = 1;
+
+        my $result = $self->{snmp}->map_instance(mapping => $options{mapping}, results => $self->{results}->{ $options{entry} }, instance => $instance);
 
         next if ($self->check_filter(section => 'disk', instance => $instance));
-        next if ($result->{HdStatus} eq 'noDisk' && 
+        next if ($result->{status} eq 'noDisk' && 
                  $self->absent_problem(section => 'disk', instance => $instance));
         
         $self->{components}->{disk}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
                 "Disk '%s' [instance: %s, temperature: %s, smart status: %s] status is %s.",
-                $result->{HdDescr}, $instance, $result->{HdTemperature}, $result2->{HdSmartInfo}, $result->{HdStatus}
+                $result->{description},
+                $instance,
+                $result->{temperature}, 
+                defined($result->{smartinfo}) ? $result->{smartinfo} : '-',
+                $result->{status}
             )
         );
-        my $exit = $self->get_severity(section => 'disk', value => $result->{HdStatus});
+        my $exit = $self->get_severity(section => 'disk', instance => $instance, value => $result->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
                 short_msg => sprintf(
-                    "Disk '%s' status is %s.", $result->{HdDescr}, $result->{HdStatus}
-                )
-            );
-        }
-        
-        $exit = $self->get_severity(section => 'smartdisk', value => $result2->{HdSmartInfo});
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(
-                severity => $exit,
-                short_msg => sprintf(
-                    "Disk '%s' smart status is %s.", $result->{HdDescr}, $result2->{HdSmartInfo}
+                    "Disk '%s' status is %s.", $result->{description}, $result->{status}
                 )
             );
         }
 
-        if ($result->{HdTemperature} =~ /([0-9]+)\s*C/) {
-            my $disk_temp = $1;
-            my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'disk', instance => $instance, value => $disk_temp);
-            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+        if (defined($result->{smartinfo})) {
+            $exit = $self->get_severity(section => 'smartdisk', value => $result->{smartinfo});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
-                    severity => $exit2,
+                    severity => $exit,
                     short_msg => sprintf(
-                        "Disk '%s' temperature is %s degree centigrade", $result->{HdDescr}, $disk_temp
+                        "Disk '%s' smart status is %s.", $result->{description}, $result->{smartinfo}
                     )
                 );
             }
-            $self->{output}->perfdata_add(
-                label => 'temp_disk', unit => 'C',
-                nlabel => 'hardware.disk.temperature.celsius',
-                instances => $instance,
-                value => $disk_temp
+        }
+
+        next if ($result->{temperature} !~ /([0-9]+)/);
+
+        my $disk_temp = $1;
+        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'disk', instance => $instance, value => $disk_temp);
+        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf(
+                    "Disk '%s' temperature is %s degree centigrade", $result->{description}, $disk_temp
+                )
             );
         }
+        $self->{output}->perfdata_add(
+            label => 'temp_disk',
+            nlabel => 'hardware.disk.temperature.celsius',
+            unit => 'C',
+            instances => $instance,
+            value => $disk_temp
+        );
     }
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => 'Checking disks');
+    $self->{components}->{disk} = { name => 'disks', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'disk'));
+
+    check_disk(
+        $self,
+        mapping => $mapping2,
+        entry => $oid_diskTableEntry
+    );
+    check_disk(
+        $self,
+        mapping => $mapping,
+        entry => $oid_HdEntry
+    );
 }
 
 1;
