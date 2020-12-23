@@ -305,9 +305,10 @@ sub manage_selection {
 
             my $size = $row->[4];
             #max_size = -1 (=unlimited)
-            if ($row->[7] > 0) {
-                $size = $row->[7];
+            if ($row->[7] == -1) {
                 $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{limit} = 'unlimited';
+            } elsif ($row->[7] > 0) {
+                $size = $row->[7];
             }
             $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{total_space} += ($size * 8 * 1024);
         }
