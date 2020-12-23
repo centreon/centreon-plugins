@@ -266,7 +266,7 @@ __END__
 
 =head1 MODE
 
-Check disk usages.
+Check ewon tags.
 
 =over 8
 
