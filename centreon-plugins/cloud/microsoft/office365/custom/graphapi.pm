@@ -439,6 +439,24 @@ sub office_get_skype_device_usage {
     return $response;
 }
 
+sub teams_post_notification_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/teams/" . $options{team_id} . "/channels/" . $options{channel_id} . "/messages";
+
+    return $url;
+}
+
+sub teams_post_notification {
+    my ($self, %options) = @_;
+
+    my $encoded_data = JSON::XS->new->utf8->encode($options{json_request});
+    my $full_url = $self->teams_post_notification_set_url(%options);
+    my $response = $self->request_api_json(method => 'POST', full_url => $full_url, hostname => '', query_form_post => $encoded_data);
+
+    return $response;
+}
+
 1;
 
 __END__
