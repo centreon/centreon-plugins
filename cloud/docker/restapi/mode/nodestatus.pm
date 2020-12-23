@@ -50,7 +50,7 @@ sub set_counters {
         }
     ];
     $self->{maps_counters}->{node} = [
-         { label => 'containers-running', set => {
+         { label => 'containers-running', nlabel => 'container.running.count', set => {
                 key_values => [ { name => 'containers_running' }, { name => 'display' } ],
                 output_template => 'Containers Running : %s',
                 perfdatas => [
@@ -59,7 +59,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'containers-stopped', set => {
+        { label => 'containers-stopped', nlabel => 'container.stopped.count', set => {
                 key_values => [ { name => 'containers_stopped' }, { name => 'display' } ],
                 output_template => 'Containers Stopped : %s',
                 perfdatas => [
@@ -68,7 +68,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'containers-paused', set => {
+        { label => 'containers-paused', nlabel => 'container.paused.count', set => {
                 key_values => [ { name => 'containers_paused' }, { name => 'display' } ],
                 output_template => 'Containers Paused : %s',
                 perfdatas => [

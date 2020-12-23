@@ -45,7 +45,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{containers} = [
-        { label => 'cpu-number', set => {
+        { label => 'cpu-number', nlabel => 'container.cpu.count', set => {
                 key_values => [ { name => 'cpu_number'}, { name => 'display' } ],
                 output_template => 'CPU: %d core(s)',
                 output_use => 'cpu_number',
@@ -55,7 +55,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-total', set => {
+        { label => 'cpu-total', nlabel => 'container.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_total'}, { name => 'display' } ],
                 output_template => 'CPU Usage: %.2f %%',
                 output_use => 'cpu_total',
@@ -65,7 +65,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-user', set => {
+        { label => 'cpu-user', nlabel => 'user.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_user'}, { name => 'display' } ],
                 output_template => 'CPU User: %.2f %%',
                 output_use => 'cpu_user',
@@ -75,7 +75,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-system', set => {
+        { label => 'cpu-system', nlabel => 'system.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_system' }, { name => 'display' } ],
                 output_template => 'CPU System: %.2f %%',
                 output_use => 'cpu_system',
@@ -85,7 +85,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'memory_used' }, { name => 'memory_total' }, { name => 'display' } ],
                 output_change_bytes => 1,
                 closure_custom_output => $self->can('custom_memory_output'),
@@ -95,7 +95,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory-cache', set => {
+        { label => 'memory-cache', nlabel => 'cache.memory.usage.bytes', set => {
                 key_values => [ { name => 'memory_cache' }, { name => 'display' } ],
                 output_change_bytes => 1,
                 output_template => 'Memory Cache: %s %s',
@@ -105,7 +105,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory-rss', set => {
+        { label => 'memory-rss', nlabel => 'rss.memory.usage.bytes', set => {
                 key_values => [ { name => 'memory_rss' }, { name => 'display' } ],
                 output_change_bytes => 1,
                 output_template => 'Memory RSS: %s %s',
@@ -115,7 +115,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'swap', set => {
+        { label => 'swap', nlabel => 'swap.usage.bytes', set => {
                 key_values => [ { name => 'swap' }, { name => 'display' } ],
                 output_change_bytes => 1,
                 output_template => 'Swap: %s %s',

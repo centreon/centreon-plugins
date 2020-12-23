@@ -43,7 +43,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{node} = [
-         { label => 'containers-running', set => {
+         { label => 'containers-running', nlabel => 'container.running.count', set => {
                 key_values => [ { name => 'containers_running' }, { name => 'display' } ],
                 output_template => 'Containers Running : %s',
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'num-cores', set => {
+        { label => 'num-cores', nlabel => 'container.core.count', set => {
                 key_values => [ { name => 'num_cores' }, { name => 'display' } ],
                 output_template => 'CPU cores: %s',
                 perfdatas => [
@@ -61,7 +61,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory-capacity', set => {
+        { label => 'memory-capacity', nlabel => 'containers.memory.bytes', set => {
                 key_values => [ { name => 'memory_capacity' }, { name => 'display' } ],
                 output_template => 'Mem capacity %s %s',
                 perfdatas => [
@@ -70,7 +70,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-frequency', set => {
+        { label => 'cpu-frequency', nlabel => 'containers.cpu.frequency.hertz', set => {
                 key_values => [ { name => 'cpu_frequency' }, { name => 'display' } ],
                 output_template => 'CPU frequency %s %s',
                 perfdatas => [

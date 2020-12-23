@@ -35,7 +35,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{containers_traffic} = [
-        { label => 'traffic-in', set => {
+        { label => 'traffic-in', nlabel => 'containers.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in' }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
@@ -45,7 +45,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'traffic-out', set => {
+        { label => 'traffic-out', nlabel => 'containers.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out' }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',

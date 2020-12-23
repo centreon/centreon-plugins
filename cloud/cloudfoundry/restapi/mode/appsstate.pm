@@ -57,7 +57,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'started', set => {
+        { label => 'started', nlabel => 'application.started.count', set => {
                 key_values => [ { name => 'started' } ],
                 output_template => 'Started : %d',
                 perfdatas => [
@@ -66,7 +66,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'stopped', set => {
+        { label => 'stopped', nlabel => 'application.stopped.count', set => {
                 key_values => [ { name => 'stopped' } ],
                 output_template => 'Stopped : %d',
                 perfdatas => [

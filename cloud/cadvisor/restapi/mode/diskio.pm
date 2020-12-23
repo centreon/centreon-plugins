@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{containers_diskio} = [
-        { label => 'diskio-read', set => {
+        { label => 'diskio-read', nlabel => 'disk.io.read.bytespersecond', set => {
                 key_values => [ { name => 'diskio_read' }, { name => 'display' } ],
                 output_change_bytes => 1,
                 output_template => 'Disk IO Read: %s %s/s',
@@ -44,7 +44,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'diskio-write', set => {
+        { label => 'diskio-write', nlabel => 'disk.io.write.bytespersecond', set => {
                 key_values => [ { name => 'diskio_write' }, { name => 'display' } ],
                 output_change_bytes => 1,
                 output_template => 'Disk IO Write: %s %s/s',
