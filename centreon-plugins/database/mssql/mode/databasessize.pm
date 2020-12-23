@@ -25,155 +25,315 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub set_counters {
+sub custom_space_usage_perfdata {
     my ($self, %options) = @_;
 
-    $self->{maps_counters_type} = [
-        { name => 'databases', type => 1, cb_prefix_output => 'prefix_database_output', message_multiple => 'All databases are ok' },
-    ];
-
-    $self->{maps_counters}->{databases} = [
-        { label => 'database', set => {
-                key_values => [ { name => 'free' }, { name => 'total' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-            }
-        },
-    ];
-}
-
-sub custom_usage_perfdata {
-    my ($self, %options) = @_;
-
-    my $label = 'used';
-    my $value_perf = $self->{result_values}->{used};
-    if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free';
-        $value_perf = $self->{result_values}->{free};
+    my ($warning, $critical);
+    if (!(defined($self->{instance_mode}->{option_results}->{ignore_unlimited}) && $self->{result_values}->{limit} eq 'unlimited')) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical =  $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
-
-    my %total_options = ();
-    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
-        $total_options{total} = $self->{result_values}->{total};
-        $total_options{cast_int} = 1;
-    }
-
     $self->{output}->perfdata_add(
-        label => $label, unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-        value => $value_perf,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
-        min => 0, max => $self->{result_values}->{total}
+        nlabel => $self->{nlabel},
+        unit => 'B',
+        instances => $self->{result_values}->{name}, 
+        value => $self->{result_values}->{used_space},
+        warning => $warning,
+        critical => $critical,
+        min => 0,
+        max => $self->{result_values}->{total_space}
     );
 }
 
-sub custom_usage_threshold {
+sub custom_space_free_perfdata {
     my ($self, %options) = @_;
 
-    my ($exit, $threshold_value);
-    $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
-    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
-        $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    my ($warning, $critical);
+    if (!(defined($self->{instance_mode}->{option_results}->{ignore_unlimited}) && $self->{result_values}->{limit} eq 'unlimited')) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical =  $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-                                                              { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
-    return $exit;
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => 'B',
+        instances => $self->{result_values}->{name}, 
+        value => $self->{result_values}->{free_space},
+        warning => $warning,
+        critical => $critical,
+        min => 0,
+        max => $self->{result_values}->{total_space}
+    );
 }
 
-sub custom_usage_output {
+sub custom_space_usage_prct_perfdata {
     my ($self, %options) = @_;
 
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    my ($warning, $critical);
+    if (!(defined($self->{instance_mode}->{option_results}->{ignore_unlimited}) && $self->{result_values}->{limit} eq 'unlimited')) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical =  $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
+    }
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => '%',
+        instances => $self->{result_values}->{name}, 
+        value => sprintf('%.2f', $self->{result_values}->{prct_used_space}),
+        warning => $warning,
+        critical => $critical,
+        min => 0,
+        max => 100
+    );
 }
 
-sub custom_usage_calc {
+sub custom_space_threshold {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
-    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
-    $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
-    $self->{result_values}->{prct_used} = $self->{result_values}->{used} / $self->{result_values}->{total} * 100;
-    $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
+    return 'ok' if (
+        defined($self->{instance_mode}->{option_results}->{ignore_unlimited}) &&
+        $self->{result_values}->{limit} eq 'unlimited'
+    );
 
-    return 0;
+    return $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
 }
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
+sub custom_space_output {
+    my ($self, %options) = @_;
 
-    $options{options}->add_options(arguments => {
-        "filter-database:s"   => { name => 'filter_database' },
-        "units:s"             => { name => 'units', default => '%' },
-        "free"                => { name => 'free' },
-    });
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_space});
+    return sprintf(
+        'space total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_space},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_space}
+    );
+}
 
-    return $self;
+sub database_long_output {
+    my ($self, %options) = @_;
+
+    return "checking database '" . $options{instance_value}->{name} . "'";
 }
 
 sub prefix_database_output {
     my ($self, %options) = @_;
 
-    return "Database '" . $options{instance_value}->{display} . "' ";
+    return "database '" . $options{instance_value}->{name} . "' ";
+}
+
+sub prefix_logfiles_output {
+    my ($self, %options) = @_;
+
+    return 'log files ';
+}
+
+sub prefix_datafiles_output {
+    my ($self, %options) = @_;
+
+    return 'data files ';
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'databases', type => 3, cb_prefix_output => 'prefix_database_output', cb_long_output => 'database_long_output', indent_long_output => '    ', message_multiple => 'All databases are ok',
+            group => [
+                { name => 'datafiles', type => 0, cb_prefix_output => 'prefix_datafiles_output', skipped_code => { -10 => 1 } },
+                { name => 'logfiles', type => 0, cb_prefix_output => 'prefix_logfiles_output', skipped_code => { -10 => 1 } }
+            ]
+        }
+    ];
+
+    $self->{maps_counters}->{datafiles} = [
+        { label => 'datafiles-space-usage', nlabel => 'datafiles.space.usage.bytes', set => {
+                key_values => [
+                    { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' },
+                    { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'name' },
+                    { name => 'limit' }
+                ],
+                closure_custom_output => $self->can('custom_space_output'),
+                closure_custom_threshold_check => $self->can('custom_space_threshold'),
+                closure_custom_perfdata => $self->can('custom_space_usage_perfdata')
+            }
+        },
+        { label => 'datafiles-space-usage-free', nlabel => 'datafiles.space.free.bytes', display_ok => 0, set => {
+                key_values => [
+                    { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' },
+                    { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'name' },
+                    { name => 'limit' }
+                ],
+                closure_custom_output => $self->can('custom_space_output'),
+                closure_custom_threshold_check => $self->can('custom_space_threshold'),
+                closure_custom_perfdata => $self->can('custom_space_free_perfdata')
+            }
+        },
+        { label => 'datafiles-space-usage-prct', nlabel => 'datafiles.space.usage.percentage', display_ok => 0, set => {
+                key_values => [
+                    { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' },
+                    { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'name' },
+                    { name => 'limit' }
+                ],
+                closure_custom_output => $self->can('custom_space_output'),
+                closure_custom_threshold_check => $self->can('custom_space_threshold'),
+                closure_custom_perfdata => $self->can('custom_space_usage_prct_perfdata')
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{logfiles} = [
+        { label => 'logfiles-space-usage', nlabel => 'logfiles.space.usage.bytes', set => {
+                key_values => [
+                    { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' },
+                    { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'name' },
+                    { name => 'limit' }
+                ],
+                closure_custom_output => $self->can('custom_space_output'),
+                closure_custom_threshold_check => $self->can('custom_space_threshold'),
+                closure_custom_perfdata => $self->can('custom_space_usage_perfdata')
+            }
+        },
+        { label => 'logfiles-space-usage-free', nlabel => 'logfiles.space.free.bytes', display_ok => 0, set => {
+                key_values => [
+                    { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' },
+                    { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'name' },
+                    { name => 'limit' }
+                ],
+                closure_custom_output => $self->can('custom_space_output'),
+                closure_custom_threshold_check => $self->can('custom_space_threshold'),
+                closure_custom_perfdata => $self->can('custom_space_free_perfdata')
+            }
+        },
+        { label => 'logfiles-space-usage-prct', nlabel => 'logfiles.space.usage.percentage', display_ok => 0, set => {
+                key_values => [
+                    { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' },
+                    { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'name' },
+                    { name => 'limit' }
+                ],
+                closure_custom_output => $self->can('custom_space_output'),
+                closure_custom_threshold_check => $self->can('custom_space_threshold'),
+                closure_custom_perfdata => $self->can('custom_space_usage_prct_perfdata')
+            }
+        }
+    ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+
+    $options{options}->add_options(arguments => {
+        'filter-database:s'             => { name => 'filter_database' },
+        'datafiles-maxsize:s'           => { name => 'datafiles_maxsize' },
+        'logfiles-maxsize:s'            => { name => 'logfiles_maxsize' },
+        'datafiles-maxsize-unlimited:s' => { name => 'datafiles_maxsize_unlimited' },
+        'logfiles-maxsize-unlimited:s'  => { name => 'logfiles_maxsize_unlimited' },
+        'ignore-unlimited'              => { name => 'ignore_unlimited' }
+    });
+
+    return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{sql} = $options{sql};
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{DBCC SQLPERF(LOGSPACE)});
+    $options{sql}->connect();
+    $options{sql}->query(query => q{
+        EXEC sp_MSforeachdb 'USE ?
+        SELECT
+            DB_NAME(), 
+            [name],    
+            physical_name,
+            [File_Type] = CASE type   
+                WHEN 0 THEN ''data''
+                WHEN 1 THEN ''log''
+            END,
+            [Total_Size] = [size],
+            [Used_Space] = (CAST(FILEPROPERTY([name], ''SpaceUsed'') as int)),
+            [Growth_Units] = CASE [is_percent_growth]    
+                WHEN 1 THEN CAST(growth AS varchar(20)) + ''%''
+                ELSE CAST(growth*8/1024 AS varchar(20)) + ''Mb''
+            END,
+            [max_size]
+        FROM sys.database_files   
+        ORDER BY [File_Type], [file_id]'
+    });
 
-    my $result = $self->{sql}->fetchall_arrayref();
+    # limit can be: 'unlimited', 'overload', 'other'.
+    $self->{databases} = {};
+    my $result;
+    while ($result = $options{sql}->fetchall_arrayref()) {
+        last if (scalar(@$result) <= 0);
 
-    foreach my $database (@$result) {
-        if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' &&
-            $$database[0] !~ /$self->{option_results}->{filter_database}/i) {
-            $self->{output}->output_add(debug => 1, long_msg => "Skipping database " . $$database[0] . ": no matching filter.");
-            next;
-        }
-        
-        $self->{sql}->query(query => "use [" . $$database[0] . "]; exec sp_spaceused;");
-        my $result2 = $self->{sql}->fetchall_arrayref();
-        
-        foreach my $row (@$result2) {
-            $self->{databases}->{$$row[0]} = {
-                display => $$row[0],
-                total => convert_bytes($$row[1]),
-                free => convert_bytes($$row[2]),
-            };
+        foreach my $row (@$result) {
+            next if (!defined($row->[7]));    
+    
+            if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' &&
+                $row->[0] !~ /$self->{option_results}->{filter_database}/i) {
+                $self->{output}->output_add(debug => 1, long_msg => "skipping database " . $row->[0] . ": no matching filter.");
+                next;
+            }
+
+            if (!defined($self->{databases}->{ $row->[0] })) {
+                $self->{databases}->{ $row->[0] } = {
+                    name => $row->[0],
+                    datafiles => {
+                        name => $row->[0],
+                        used_space => 0,
+                        total_space => 0,
+                        limit => 'other'
+                    },
+                    logfiles => {
+                        name => $row->[0],
+                        used_space => 0,
+                        total_space => 0,
+                        limit => 'other'
+                    }
+                };
+            }
+
+            $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{used_space} += ($row->[5] * 8 * 1024);
+
+            my $size = $row->[4];
+            #max_size = -1 (=unlimited)
+            if ($row->[7] > 0) {
+                $size = $row->[7];
+                $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{limit} = 'unlimited';
+            }
+            $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{total_space} += ($size * 8 * 1024);
         }
     }
-}
 
-sub convert_bytes {
-    my ($brut) = @_;
-    my ($value,$unit) = split(/\s+/,$brut);
-    if ($unit =~ /kb*/i) {
-        $value = $value * 1024;
-    } elsif ($unit =~ /mb*/i) {
-        $value = $value * 1024 * 1024;
-    } elsif ($unit =~ /gb*/i) {
-        $value = $value * 1024 * 1024 * 1024;
-    } elsif ($unit =~ /tb*/i) {
-        $value = $value * 1024 * 1024 * 1024 * 1024;
+    foreach my $dbname (keys %{$self->{databases}}) {
+        foreach my $type (('data', 'log')) {
+            my $options = [$type . 'files_maxsize'];
+            unshift @$options, $type . 'files_maxsize_unlimited' if ($self->{databases}->{$dbname}->{$type . 'files'}->{limit} eq 'unlimited');
+            foreach my $option (@$options) {
+                if (defined($self->{option_results}->{$option}) && $self->{option_results}->{$option} ne '' &&
+                    $self->{option_results}->{$option} =~ /(\d+)/) {
+                    $self->{databases}->{$dbname}->{$type . 'files'}->{total_space} = $self->{option_results}->{$option} * 1024 * 1024;
+                    $self->{databases}->{$dbname}->{$type . 'files'}->{limit} = 'overload';
+                    last;
+                }
+            }
+
+            $self->{databases}->{$dbname}->{$type . 'files'}->{free_space} = 
+                $self->{databases}->{$dbname}->{$type . 'files'}->{total_space} - $self->{databases}->{$dbname}->{$type . 'files'}->{used_space};
+            $self->{databases}->{$dbname}->{$type . 'files'}->{prct_used_space} = 
+                $self->{databases}->{$dbname}->{$type . 'files'}->{used_space} * 100 / $self->{databases}->{$dbname}->{$type . 'files'}->{total_space};
+            $self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} = 100 - $self->{databases}->{$dbname}->{$type . 'files'}->{prct_used_space};
+            $self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} = 0 if ($self->{databases}->{$dbname}->{$type . 'files'}->{prct_free_space} < 0);
+        }
     }
-    return $value;
 }
 
 1;
@@ -182,7 +342,7 @@ __END__
 
 =head1 MODE
 
-Check MSSQL Database usage
+Check database data and log files.
 
 =over 8
 
@@ -190,21 +350,31 @@ Check MSSQL Database usage
 
 Filter database by name (Can be a regex).
 
-=item B<--warning-database>
+=item B<--datafiles-maxsize>
 
-Threshold warning.
+Overload all data files max size (in MB).
 
-=item B<--critical-database>
+=item B<--logfiles-maxsize>
 
-Threshold critical.
+Overload all log files max size (in MB).
 
-=item B<--units>
+=item B<--datafiles-maxsize-unlimited>
 
-Default is '%', can be 'B'
+Overload only unlimited autogrowth data files max size (in MB).
 
-=item B<--free>
+=item B<--logfiles-maxsize-unlimited>
 
-Perfdata show free space
+Overload only unlimited autogrowth log files max size (in MB).
+
+=item B<--ignore-unlimited>
+
+Thresholds not applied on unlimited autogrowth data and log files.
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'datafiles-space-usage', 'datafiles-space-usage-free', 'datafiles-space-usage-prct'
+'logfiles-space-usage', 'logfiles-space-usage-free', 'logfiles-space-usage-prct'.
 
 =back
 
