@@ -149,7 +149,12 @@ sub check_options {
     $self->{tag_output_values} = [];
     if (defined($self->{option_results}->{tag_output_value})) {
         foreach (@{$self->{option_results}->{tag_output_value}}) {
-            my ($tag_match, $tag_output) = split /,/;
+            my @fields = split /,/;
+            my ($tag_output, $tag_match) = ($fields[0], '.*');
+            if (defined($fields[1]) && $fields[1] ne '') {
+                $tag_output = $fields[1];
+                $tag_match = $fields[0];
+            }
             next if (!defined($tag_output) || $tag_output eq '');
             push @{$self->{tag_output_values}}, { match => $tag_match, output => $tag_output}; 
         }
@@ -160,7 +165,12 @@ sub check_options {
         $self->{'tag_threshold_' . $_} = [];
         next if (!defined($self->{option_results}->{'tag_threshold_' . $_}));
         foreach my $option (@{$self->{option_results}->{'tag_threshold_' . $_}}) {
-            my ($tag_match, $tag_threshold) = split(/,/, $option);
+            my @fields = split(/,/, $option);
+            my ($tag_threshold, $tag_match) = ($fields[0], '.*');
+            if (defined($fields[1]) && $fields[1] ne '') {
+                $tag_threshold = $fields[1];
+                $tag_match = $fields[0];
+            }
             next if (!defined($tag_threshold) || $tag_threshold eq '');
             if (($self->{perfdata}->threshold_validate(label => $_ . '-' . $i, value => $tag_threshold)) == 0) {
                 $self->{output}->add_option_msg(short_msg => "Wrong threshold '" . $tag_threshold . "'.");
@@ -279,12 +289,12 @@ Cache expires each X secondes (Default: 7200)
 
 =item B<--tag-output-value>
 
-Change tag output. By default it's: 'value: %s'.
+Change tag output (syntax: [regexp,]output) (Default: 'value: %s').
 E.g: --tag-output-value='tagNameMatch,remaining: %s%%' 
 
 =item B<--tag-threshold-warning> B<--tag-threshold-critical>
 
-Set tag value threshold.
+Set tag value threshold (syntax: [regexp,]threshold).
 E.g: --tag-threshold-warning='tagNameMatch,50' --tag-threshold-critical='tagNameMatch,80'
 
 =item B<--warning-status>
