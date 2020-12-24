@@ -61,7 +61,7 @@ sub custom_memory_perfdata {
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
-    $self->{output}->perfdata_add(label => 'memory_used' . $extra_label, nlabel => $extra_label . "#container.memory.usage.bytes", unit => 'B',
+    $self->{output}->perfdata_add(label => 'memory_used' . $extra_label, nlabel => $extra_instance . "#container.memory.usage.bytes", unit => 'B',
                                   value => $self->{result_values}->{used},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -129,7 +129,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'containers.memory.usage.bytes', set => {
                 key_values => [ { name => 'memory_usage' }, { name => 'memory_total' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_memory_calc'),
                 closure_custom_output => $self->can('custom_memory_output'),
@@ -137,7 +137,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_memory_threshold'),
             }
         },
-        { label => 'read-iops', nlabel => 'container.disk.io.read.usage.iops', set => {
+        { label => 'read-iops', nlabel => 'containers.disk.io.read.usage.iops', set => {
                 key_values => [ { name => 'read_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
@@ -146,7 +146,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'write-iops', nlabel => 'container.disk.io.write.usage.iops', set => {
+        { label => 'write-iops', nlabel => 'containers.disk.io.write.usage.iops', set => {
                 key_values => [ { name => 'write_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [

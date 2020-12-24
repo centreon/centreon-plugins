@@ -65,7 +65,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-user', nlabel => 'user.cpu.utilization.percentage', set => {
+        { label => 'cpu-user', nlabel => 'cpu.user.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_user'}, { name => 'display' } ],
                 output_template => 'CPU User: %.2f %%',
                 output_use => 'cpu_user',
@@ -95,7 +95,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory-cache', nlabel => 'cache.memory.usage.bytes', set => {
+        { label => 'memory-cache', nlabel => 'memory.cache.usage.bytes', set => {
                 key_values => [ { name => 'memory_cache' }, { name => 'display' } ],
                 output_change_bytes => 1,
                 output_template => 'Memory Cache: %s %s',
@@ -105,7 +105,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory-rss', nlabel => 'rss.memory.usage.bytes', set => {
+        { label => 'memory-rss', nlabel => 'memory.rss.usage.bytes', set => {
                 key_values => [ { name => 'memory_rss' }, { name => 'display' } ],
                 output_change_bytes => 1,
                 output_template => 'Memory RSS: %s %s',

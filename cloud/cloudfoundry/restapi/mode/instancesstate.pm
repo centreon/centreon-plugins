@@ -133,7 +133,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'running', nlabel => 'instance.running.count', set => {
+        { label => 'running', nlabel => 'instances.running.count', set => {
                 key_values => [ { name => 'running' } ],
                 output_template => 'Running : %d',
                 perfdatas => [
@@ -142,7 +142,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'stopped', nlabel => 'instance.stopped.count', set => {
+        { label => 'stopped', nlabel => 'instances.stopped.count', set => {
                 key_values => [ { name => 'stopped' } ],
                 output_template => 'Stopped : %d',
                 perfdatas => [
@@ -151,7 +151,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'crashed', nlabel => 'instance.crashed.count', set => {
+        { label => 'crashed', nlabel => 'instances.crashed.count', set => {
                 key_values => [ { name => 'crashed' } ],
                 output_template => 'Crashed : %d',
                 perfdatas => [

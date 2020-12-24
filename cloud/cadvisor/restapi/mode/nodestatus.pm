@@ -43,7 +43,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{node} = [
-         { label => 'containers-running', nlabel => 'container.running.count', set => {
+         { label => 'containers-running', nlabel => 'containers.running.count', set => {
                 key_values => [ { name => 'containers_running' }, { name => 'display' } ],
                 output_template => 'Containers Running : %s',
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'num-cores', nlabel => 'container.core.count', set => {
+        { label => 'num-cores', nlabel => 'containers.core.count', set => {
                 key_values => [ { name => 'num_cores' }, { name => 'display' } ],
                 output_template => 'CPU cores: %s',
                 perfdatas => [

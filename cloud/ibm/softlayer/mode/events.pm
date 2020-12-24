@@ -73,7 +73,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'active', nlabel => 'event.active.count', set => {
+        { label => 'active', nlabel => 'events.active.count', set => {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active : %d',
                 perfdatas => [
@@ -82,7 +82,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'completed', nlabel => 'event.completed.count', set => {
+        { label => 'completed', nlabel => 'events.completed.count', set => {
                 key_values => [ { name => 'completed' } ],
                 output_template => 'Completed : %d',
                 perfdatas => [
@@ -91,7 +91,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'published',nlabel => 'event.published.count', set => {
+        { label => 'published',nlabel => 'events.published.count', set => {
                 key_values => [ { name => 'published' } ],
                 output_template => 'Published : %d',
                 perfdatas => [
