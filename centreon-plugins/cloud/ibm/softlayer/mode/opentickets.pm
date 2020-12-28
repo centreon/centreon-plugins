@@ -25,35 +25,24 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use DateTime;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_ticket_output {
     my ($self, %options) = @_;
-    
-    my $msg = sprintf("Title: '%s', Group: '%s', Priority: %s, Create Date: %s (%s ago)",
+
+    return sprintf(
+        "Title: '%s', Group: '%s', Priority: %s, Create Date: %s (%s ago)",
         $self->{result_values}->{title}, 
         $self->{result_values}->{group},
         $self->{result_values}->{priority},
         $self->{result_values}->{create_date},
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since}));
-    return $msg;
-}
-
-sub custom_ticket_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
-    $self->{result_values}->{title} = $options{new_datas}->{$self->{instance} . '_title'};
-    $self->{result_values}->{priority} = $options{new_datas}->{$self->{instance} . '_priority'};
-    $self->{result_values}->{create_date} = $options{new_datas}->{$self->{instance} . '_create_date'};
-    $self->{result_values}->{group} = $options{new_datas}->{$self->{instance} . '_group'};
-    $self->{result_values}->{since} = $options{new_datas}->{$self->{instance} . '_since'};
-    return 0;
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since})
+    );
 }
 
 sub prefix_tickets_output {
     my ($self, %options) = @_;
-    
+
     return "Ticket '" . $options{instance_value}->{id} . "' is open with ";
 }
 
@@ -62,30 +51,29 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'tickets', type => 1, cb_prefix_output => 'prefix_tickets_output' },
+        { name => 'tickets', type => 1, cb_prefix_output => 'prefix_tickets_output' }
     ];
-    
+
     $self->{maps_counters}->{global} = [
-        { label => 'open', set => {
+        { label => 'open', nlabel => 'tickets.open.count', set => {
                 key_values => [ { name => 'open' } ],
                 output_template => 'Number of open tickets : %d',
                 perfdatas => [
-                    { label => 'open_tickets', value => 'open', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'open_tickets', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{tickets} = [
-        { label => 'ticket', threshold => 0, set => {
+        { label => 'ticket', type => 2, set => {
                 key_values => [ { name => 'id' }, { name => 'title' }, { name => 'priority' }, { name => 'create_date' },
                 { name => 'group' }, { name => 'since' } ],
-                closure_custom_calc => $self->can('custom_ticket_calc'),
                 closure_custom_output => $self->can('custom_ticket_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -94,21 +82,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "ticket-group:s"    => { name => 'ticket_group' },
-                                    "warning-status:s"  => { name => 'warning_status', default => '' },
-                                    "critical-status:s" => { name => 'critical_status', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+        'ticket-group:s' => { name => 'ticket_group' }
+    });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {

@@ -30,12 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'events'        => 'cloud::ibm::softlayer::mode::events',
-        'open-tickets'  => 'cloud::ibm::softlayer::mode::opentickets',
-    );
+        'open-tickets'  => 'cloud::ibm::softlayer::mode::opentickets'
+    };
 
-    $self->{custom_modes}{xmlapi} = 'cloud::ibm::softlayer::custom::xmlapi';
+    $self->{custom_modes}->{xmlapi} = 'cloud::ibm::softlayer::custom::xmlapi';
 
     return $self;
 }

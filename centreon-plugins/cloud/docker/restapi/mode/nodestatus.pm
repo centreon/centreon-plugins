@@ -37,7 +37,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'node', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All node informations are ok', skipped_code => { -11 => 1 } },
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All node status are ok', skipped_code => { -11 => 1 } },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All node status are ok', skipped_code => { -11 => 1 } }
     ];
     
     $self->{maps_counters}->{nodes} = [
@@ -50,7 +50,7 @@ sub set_counters {
         }
     ];
     $self->{maps_counters}->{node} = [
-         { label => 'containers-running', set => {
+         { label => 'containers-running', nlabel => 'node.containers.running.count', set => {
                 key_values => [ { name => 'containers_running' }, { name => 'display' } ],
                 output_template => 'Containers Running : %s',
                 perfdatas => [
@@ -59,7 +59,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'containers-stopped', set => {
+        { label => 'containers-stopped', nlabel => 'node.containers.stopped.count', set => {
                 key_values => [ { name => 'containers_stopped' }, { name => 'display' } ],
                 output_template => 'Containers Stopped : %s',
                 perfdatas => [
@@ -68,7 +68,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'containers-paused', set => {
+        { label => 'containers-paused', nlabel => 'node.containers.paused.count', set => {
                 key_values => [ { name => 'containers_paused' }, { name => 'display' } ],
                 output_template => 'Containers Paused : %s',
                 perfdatas => [
