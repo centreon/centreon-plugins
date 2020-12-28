@@ -237,6 +237,7 @@ sub new {
         'logfiles-maxsize:s'            => { name => 'logfiles_maxsize' },
         'datafiles-maxsize-unlimited:s' => { name => 'datafiles_maxsize_unlimited' },
         'logfiles-maxsize-unlimited:s'  => { name => 'logfiles_maxsize_unlimited' },
+        'add-unlimited-disk'            => { name => 'add_unlimited_disk' },   
         'ignore-unlimited'              => { name => 'ignore_unlimited' }
     });
 
@@ -247,10 +248,17 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $options{sql}->connect();
-    $options{sql}->query(query => q{
+
+    my ($extra_fields, $join) = ('', '');
+    if (defined($self->{option_results}->{add_unlimited_disk})) {
+        $extra_fields = ', volume_mount_point, total_bytes, available_bytes';
+        $join = 'CROSS APPLY sys.dm_os_volume_stats(DB_ID(sys.database_files.name), sys.database_files.file_id)';
+    }
+
+    $options{sql}->query(query => qq{
         EXEC sp_MSforeachdb 'USE ?
         SELECT
-            DB_NAME(), 
+            DB_NAME(),
             [name],    
             physical_name,
             [File_Type] = CASE type   
@@ -264,9 +272,13 @@ sub manage_selection {
                 ELSE CAST(growth*8/1024 AS varchar(20)) + ''Mb''
             END,
             [max_size]
-        FROM sys.database_files   
+            $extra_fields
+        FROM sys.database_files
+        $join
         ORDER BY [File_Type], [file_id]'
     });
+
+    my $unlimited_disk = {}; 
 
     # limit can be: 'unlimited', 'overload', 'other'.
     $self->{databases} = {};
@@ -303,14 +315,19 @@ sub manage_selection {
 
             $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{used_space} += ($row->[5] * 8 * 1024);
 
-            my $size = $row->[4];
+            my $size = $row->[4] * 8 * 1024;
             #max_size = -1 (=unlimited)
             if ($row->[7] == -1) {
                 $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{limit} = 'unlimited';
+                if (defined($self->{option_results}->{add_unlimited_disk}) && 
+                    !defined($unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $row->[8] })) {
+                    $size += $row->[9];
+                    $unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $row->[8] } = 1;
+                }
             } elsif ($row->[7] > 0) {
-                $size = $row->[7];
+                $size = $row->[7] * 8 * 1024;
             }
-            $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{total_space} += ($size * 8 * 1024);
+            $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{total_space} += $size;
         }
     }
 
@@ -366,6 +383,10 @@ Overload only unlimited autogrowth data files max size (in MB).
 =item B<--logfiles-maxsize-unlimited>
 
 Overload only unlimited autogrowth log files max size (in MB).
+
+=item B<--add-unlimited-disk>
+
+Add available space on disks for unlimited autogrowth data and log files.
 
 =item B<--ignore-unlimited>
 
