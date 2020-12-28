@@ -188,7 +188,9 @@ sub get_auth_token {
             method => 'POST',
             url_path => $self->{url_path} . '/Login',
             query_form_post => $encoded,
-            warning_status => '', unknown_status => '', critical_status => ''
+            warning_status => '',
+            unknown_status => '',
+            critical_status => ''
         );
 
         if ($self->{http}->get_code() != 200) {
@@ -222,7 +224,6 @@ sub request_internal {
     }
 
     my $content = $self->{http}->request(
-        method => 'GET',
         url_path => $self->{url_path} . $options{endpoint},
         get_param => $options{get_param},
         warning_status => '',

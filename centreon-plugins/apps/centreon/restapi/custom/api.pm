@@ -123,7 +123,6 @@ sub settings {
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     if (defined($self->{auth_token})) {
         $self->{http}->add_header(key => 'Centreon-Auth-Token', value => $self->{auth_token});
-        $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     }
     $self->{http}->set_options(%{$self->{option_results}});
 }
@@ -190,7 +189,10 @@ sub request_api {
         method => $options{method},
         url_path => $options{url_path},
         query_form_post => $encoded_form_post,
-        critical_status => '', warning_status => '', unknown_status => ''
+        header => $options{header},
+        critical_status => '',
+        warning_status => '',
+        unknown_status => ''
     );
 
     my $decoded;
@@ -211,7 +213,8 @@ sub submit_result {
     my ($response, $raw) = $self->request_api(
         method => 'POST',
         url_path => $self->{api_path} . '?action=submit&object=centreon_submit_results',
-        query_form_post => $options{post_data}
+        query_form_post => $options{post_data},
+        header => ['Content-Type: application/json']
     );
     
     return ($response, $raw);

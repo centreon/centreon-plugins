@@ -161,10 +161,6 @@ sub set_method {
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => undef);
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPGET'), parameter => 1);
 
-    if ($options{request}->{method} eq 'GET') {
-        return ;
-    }
-
     if ($options{content_type_forced} == 1) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => $options{request}->{query_form_post})
             if (defined($options{request}->{query_form_post}));
@@ -173,6 +169,10 @@ sub set_method {
         $uri_post->query_form($options{request}->{post_params});
         push @{$options{headers}}, 'Content-Type: application/x-www-form-urlencoded';
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => $uri_post->query);
+    }
+
+    if ($options{request}->{method} eq 'GET') {
+        return ;
     }
 
     if ($options{request}->{method} eq 'POST') {
