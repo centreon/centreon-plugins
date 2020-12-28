@@ -191,27 +191,21 @@ sub request {
     }
     $req = HTTP::Request->new($request_options->{method}, $uri);
 
-    my $content_type_forced;
+    my $content_type_forced = 0;
     foreach my $key (keys %{$request_options->{headers}}) {
-        if ($key !~ /content-type/i) {
-            $req->header($key => $request_options->{headers}->{$key});
-        } else {
-            $content_type_forced = $request_options->{headers}->{$key};
+        $req->header($key => $request_options->{headers}->{$key});
+        if ($key =~ /content-type/i) {
+            $content_type_forced = 1;
         }
     }
 
-    if ($request_options->{method} ne 'GET') {
-        if (defined($content_type_forced)) {
-            $req->content_type($content_type_forced);
-            $req->content($request_options->{query_form_post});
-        } else {
-            my $uri_post = URI->new();
-            if (defined($request_options->{post_params})) {
-                $uri_post->query_form($request_options->{post_params});
-            }
-            $req->content_type('application/x-www-form-urlencoded');
-            $req->content($uri_post->query);
-        }
+    if ($content_type_forced == 1) {
+        $req->content($request_options->{query_form_post});
+    } elsif (defined($options{request}->{post_params})) {
+        my $uri_post = URI->new();
+        $uri_post->query_form($request_options->{post_params});
+        $req->content_type('application/x-www-form-urlencoded');
+        $req->content($uri_post->query);
     }
 
     if (defined($request_options->{credentials}) && defined($request_options->{ntlmv2})) {

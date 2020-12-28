@@ -115,7 +115,6 @@ sub settings {
     return if (defined($self->{settings_done}));
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{settings_done} = 1;
 }
