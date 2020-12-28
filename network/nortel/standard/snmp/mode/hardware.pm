@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan.temperature)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature|fan.temperature)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -65,10 +65,19 @@ sub set_system {
             ['notConfig', 'OK'],
             ['obsoleted', 'WARNING'],
         ],
+        led => [
+            ['unknown', 'UNKNOWN'],
+            ['greenSteady', 'OK'],
+            ['greenBlinking', 'OK'],
+            ['amberSteady', 'WARNING'],
+            ['amberBlinking', 'WARNING'],
+            ['greenamberBlinking', 'WARNING'],
+            ['off', 'OK']
+        ]
     };
     
     $self->{components_path} = 'network::nortel::standard::snmp::mode::components';
-    $self->{components_module} = ['fan', 'psu', 'card', 'entity'];
+    $self->{components_module} = ['card', 'entity', 'fan', 'led', 'psu'];
 }
 
 sub snmp_execute {
@@ -101,7 +110,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'psu', 'card', 'entity'.
+Can be: 'fan', 'psu', 'card', 'entity', 'led'.
 
 =item B<--filter>
 
