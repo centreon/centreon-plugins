@@ -24,22 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_state_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("state is '%s'", $self->{result_values}->{state});
-    return $msg;
-}
-
-sub custom_state_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-
-    return 0;
+    return sprintf("state is '%s'", $self->{result_values}->{state});
 }
 
 sub prefix_output {
@@ -53,39 +43,36 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'apps', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All apps state are ok' },
+        { name => 'apps', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All apps state are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'started', set => {
+        { label => 'started', nlabel => 'applications.started.count', set => {
                 key_values => [ { name => 'started' } ],
                 output_template => 'Started : %d',
                 perfdatas => [
-                    { label => 'started', value => 'started', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'started', template => '%d', min => 0 }
+                ]
             }
         },
-        { label => 'stopped', set => {
+        { label => 'stopped', nlabel => 'applications.stopped.count', set => {
                 key_values => [ { name => 'stopped' } ],
                 output_template => 'Stopped : %d',
                 perfdatas => [
-                    { label => 'stopped', value => 'stopped', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'stopped', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{apps} = [
-        { label => 'state', set => {
+        { label => 'state', type => 2, critical_default => '%{state} !~ /STARTED/i', set => {
                 key_values => [ { name => 'state' }, { name => 'name' } ],
-                closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -94,23 +81,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "organization-guid:s"           => { name => 'organization_guid' },
-                                    "space-guid:s"                  => { name => 'space_guid' },
-                                    "filter-name:s"                 => { name => 'filter_name' },
-                                    "warning-state:s"               => { name => 'warning_state' },
-                                    "critical-state:s"              => { name => 'critical_state', default => '%{state} !~ /STARTED/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        'organization-guid:s' => { name => 'organization_guid' },
+        'space-guid:s'        => { name => 'space_guid' },
+        'filter-name:s'       => { name => 'filter_name' }
+    });
    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_state', 'critical_state']);
 }
 
 sub manage_selection {

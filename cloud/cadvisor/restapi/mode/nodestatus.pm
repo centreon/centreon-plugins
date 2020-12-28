@@ -25,60 +25,56 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_node_output {
+    my ($self, %options) = @_;
+    
+    return "Node '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'node', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All node informations are ok', skipped_code => { -11 => 1 } },
+        { name => 'node', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All node informations are ok', skipped_code => { -11 => 1 } }
     ];
-    
-    $self->{maps_counters}->{nodes} = [
-         { label => 'node-status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'manager_status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
-            }
-        },
-    ];
+
     $self->{maps_counters}->{node} = [
-         { label => 'containers-running', set => {
+         { label => 'containers-running', nlabel => 'node.containers.running.count', set => {
                 key_values => [ { name => 'containers_running' }, { name => 'display' } ],
-                output_template => 'Containers Running : %s',
+                output_template => 'Containers running: %s',
                 perfdatas => [
-                    { label => 'containers_running', value => 'containers_running', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'containers_running', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'num-cores', set => {
+        { label => 'num-cores', nlabel => 'node.core.count', set => {
                 key_values => [ { name => 'num_cores' }, { name => 'display' } ],
                 output_template => 'CPU cores: %s',
                 perfdatas => [
-                    { label => 'num_cores', value => 'num_cores', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'num_cores', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'memory-capacity', set => {
+        { label => 'memory-capacity', nlabel => 'node.memory.bytes', set => {
                 key_values => [ { name => 'memory_capacity' }, { name => 'display' } ],
                 output_template => 'Mem capacity %s %s',
                 perfdatas => [
-                    { label => 'memory_capacity', value => 'memory_capacity', unit => 'B', output_change_bytes => 1, template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'memory_capacity', unit => 'B', output_change_bytes => 1, template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'cpu-frequency', set => {
+        { label => 'cpu-frequency', nlabel => 'node.cpu.frequency.hertz', set => {
                 key_values => [ { name => 'cpu_frequency' }, { name => 'display' } ],
                 output_template => 'CPU frequency %s %s',
                 perfdatas => [
-                    { label => 'cpu_frequency', value => 'cpu_frequency', unit => 'Hz', output_change_bytes => 1, template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu_frequency', unit => 'Hz', output_change_bytes => 1, template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -86,18 +82,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-   
-    return $self;
-}
 
-sub prefix_node_output {
-    my ($self, %options) = @_;
-    
-    return "Node '" . $options{instance_value}->{display} . "' ";
+    $options{options}->add_options(arguments => {
+    });
+
+    return $self;
 }
 
 sub manage_selection {
@@ -114,7 +103,7 @@ sub manage_selection {
             containers_running  => scalar(@{$result->{$node_name}->{nodes}}),
         };
     }
-    
+
     if (scalar(keys %{$self->{node}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No node found.");
         $self->{output}->option_exit();
@@ -131,14 +120,9 @@ Check node status.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'containers-running', 'num-cores', 'memory-capacity', 'cpu-frequency'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'containers-running', 'num-cores', 'memory-capacity', 'cpu-frequency'.
 
 =back
