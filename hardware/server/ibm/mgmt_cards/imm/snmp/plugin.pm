@@ -32,7 +32,8 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'environment' => 'hardware::server::ibm::mgmt_cards::imm::snmp::mode::environment',
-        'eventlog' => 'hardware::server::ibm::mgmt_cards::imm::snmp::mode::eventlog',
+        'eventlog'    => 'hardware::server::ibm::mgmt_cards::imm::snmp::mode::eventlog',
+        'time'        => 'snmp_standard::mode::ntp'
     );
 
     return $self;
