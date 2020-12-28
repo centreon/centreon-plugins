@@ -118,8 +118,10 @@ sub load_response {
     my ($self, %options) = @_;
     
     if ($self->{response_type} eq 'xml') {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'XML::XPath',
-                                               error_msg => "Cannot load module 'XML::XPath'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'XML::XPath',
+            error_msg => "Cannot load module 'XML::XPath'."
+        );
         eval {
             $self->{xpath_response} = XML::XPath->new(xml => $options{response});
         };
