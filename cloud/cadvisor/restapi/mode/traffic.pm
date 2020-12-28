@@ -27,34 +27,40 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use DateTime;
 
+sub prefix_containers_traffic_output {
+    my ($self, %options) = @_;
+    
+    return "Container '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'containers_traffic', type => 1, cb_prefix_output => 'prefix_containers_traffic_output', message_multiple => 'All container traffics are ok', skipped_code => { -11 => 1 } },
+        { name => 'containers_traffic', type => 1, cb_prefix_output => 'prefix_containers_traffic_output', message_multiple => 'All container traffics are ok', skipped_code => { -11 => 1 } }
     ];
     
     $self->{maps_counters}->{containers_traffic} = [
-        { label => 'traffic-in', nlabel => 'containers.traffic.in.bitspersecond', set => {
+        { label => 'traffic-in', nlabel => 'container.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in' }, { name => 'display' } ],
-                output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
-                perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'traffic-out', nlabel => 'containers.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out' }, { name => 'display' } ],
                 output_change_bytes => 2,
-                output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out', value => 'traffic_out', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
+        { label => 'traffic-out', nlabel => 'container.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'traffic_out' }, { name => 'display' } ],
+                output_template => 'Traffic Out: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'traffic_out', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
     ];
 }
 
@@ -64,19 +70,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "container-id:s"              => { name => 'container_id' },
-        "container-name:s"            => { name => 'container_name' },
-        "filter-name:s"               => { name => 'filter_name' },
-        "use-name"                    => { name => 'use_name' },
+        'container-id:s'   => { name => 'container_id' },
+        'container-name:s' => { name => 'container_name' },
+        'filter-name:s'    => { name => 'filter_name' },
+        'use-name'         => { name => 'use_name' }
     });
-   
-    return $self;
-}
-
-sub prefix_containers_traffic_output {
-    my ($self, %options) = @_;
     
-    return "Container '" . $options{instance_value}->{display} . "' ";
+    return $self;
 }
 
 sub manage_selection {

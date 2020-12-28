@@ -30,37 +30,24 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_event_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Status is '%s', Impacted items: %d, Start date: %s, End date: %s",
+    return sprintf(
+        "Status is '%s', Impacted items: %d, Start date: %s, End date: %s",
         $self->{result_values}->{status},
         $self->{result_values}->{items},
         ($self->{result_values}->{start_date} ne "-") ? $self->{result_values}->{start_date} . ' (' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since_start}) . ' ago)' : '-',
-        ($self->{result_values}->{end_date} ne "-") ? $self->{result_values}->{end_date} . ' (' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since_end}) . ' ago)' : '-');
-    return $msg;
-}
-
-sub custom_event_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
-    $self->{result_values}->{subject} = $options{new_datas}->{$self->{instance} . '_subject'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{items} = $options{new_datas}->{$self->{instance} . '_items'};
-    $self->{result_values}->{start_date} = $options{new_datas}->{$self->{instance} . '_start_date'};
-    $self->{result_values}->{since_start} = $options{new_datas}->{$self->{instance} . '_since_start'};
-    $self->{result_values}->{end_date} = $options{new_datas}->{$self->{instance} . '_end_date'};
-    $self->{result_values}->{since_end} = $options{new_datas}->{$self->{instance} . '_since_end'};
-    return 0;
+        ($self->{result_values}->{end_date} ne "-") ? $self->{result_values}->{end_date} . ' (' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since_end}) . ' ago)' : '-'
+    );
 }
 
 sub prefix_global_output {
     my ($self, %options) = @_;
-    
+
     return "Number of events ";
 }
 
 sub prefix_events_output {
     my ($self, %options) = @_;
-    
+
     return "Event '" . $options{instance_value}->{id} . "' with subject '" . $options{instance_value}->{subject} . "' ";
 }
 
@@ -71,46 +58,43 @@ sub set_counters {
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
         { name => 'events', type => 1, cb_prefix_output => 'prefix_events_output' },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'active', nlabel => 'events.active.count', set => {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active : %d',
                 perfdatas => [
-                    { label => 'active_events', value => 'active', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'active_events', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'completed', nlabel => 'events.completed.count', set => {
                 key_values => [ { name => 'completed' } ],
                 output_template => 'Completed : %d',
                 perfdatas => [
-                    { label => 'completed_events', value => 'completed', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'completed_events', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'published',nlabel => 'events.published.count', set => {
                 key_values => [ { name => 'published' } ],
                 output_template => 'Published : %d',
                 perfdatas => [
-                    { label => 'published_events', value => 'published', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'published_events', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{events} = [
-        { label => 'event', threshold => 0, set => {
+        { label => 'event', type => 2, critical_default => '%{status} =~ /Active/ && %{items} > 0', set => {
                 key_values => [ { name => 'id' }, { name => 'subject' }, { name => 'status' }, { name => 'items' },
                     { name => 'start_date' }, { name => 'since_start' }, { name => 'end_date' }, { name => 'since_end' } ],
-                closure_custom_calc => $self->can('custom_event_calc'),
                 closure_custom_output => $self->can('custom_event_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -119,21 +103,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-status:s"   => { name => 'filter_status', default => 'Active' },
-                                  "warning-status:s"  => { name => 'warning_status', default => '' },
-                                  "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /Active/ && %{items} > 0' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-status:s' => { name => 'filter_status', default => 'Active' }
+    });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {

@@ -24,86 +24,21 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-sub custom_app_state_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($self->{instance_mode}->{option_results}->{critical_app_state}) && $self->{instance_mode}->{option_results}->{critical_app_state} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_app_state}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_app_state}) && $self->{instance_mode}->{option_results}->{warning_app_state} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_app_state}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_app_state_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("App '%s' state is '%s'",
-        $self->{result_values}->{name}, $self->{result_values}->{state});
-    return $msg;
-}
-
-sub custom_app_state_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-
-    return 0;
-}
-
-sub custom_inst_state_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($self->{instance_mode}->{option_results}->{critical_instance_state}) && $self->{instance_mode}->{option_results}->{critical_instance_state} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_instance_state}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_instance_state}) && $self->{instance_mode}->{option_results}->{warning_instance_state} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_instance_state}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
+    return sprintf(
+        "App '%s' state is '%s'",
+        $self->{result_values}->{name}, $self->{result_values}->{state}
+    );
 }
 
 sub custom_inst_state_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("state is '%s'", $self->{result_values}->{state});
-    return $msg;
-}
-
-sub custom_inst_state_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-
-    return 0;
+    return sprintf("state is '%s'", $self->{result_values}->{state});
 }
 
 sub prefix_output {
@@ -122,14 +57,13 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{app} = [
-        { label => 'state', set => {
+        { label => 'app-state', type => 2, critical_default => '%{state} !~ /STARTED/i', set => {
                 key_values => [ { name => 'state' }, { name => 'name' } ],
-                closure_custom_calc => $self->can('custom_app_state_calc'),
                 closure_custom_output => $self->can('custom_app_state_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_app_state_threshold'),
+                closure_custom_threshold_check =>  \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -137,40 +71,36 @@ sub set_counters {
                 key_values => [ { name => 'running' } ],
                 output_template => 'Running : %d',
                 perfdatas => [
-                    { label => 'running', value => 'running', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'running', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'stopped', nlabel => 'instances.stopped.count', set => {
                 key_values => [ { name => 'stopped' } ],
                 output_template => 'Stopped : %d',
                 perfdatas => [
-                    { label => 'stopped', value => 'stopped', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'stopped', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'crashed', nlabel => 'instances.crashed.count', set => {
                 key_values => [ { name => 'crashed' } ],
                 output_template => 'Crashed : %d',
                 perfdatas => [
-                    { label => 'crashed', value => 'crashed', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'crashed', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{instances} = [
-        { label => 'state', set => {
+        { label => 'instance-state', type => 2, critical_default => '%{state} !~ /RUNNING/i', set => {
                 key_values => [ { name => 'state' }, { name => 'id' } ],
-                closure_custom_calc => $self->can('custom_inst_state_calc'),
                 closure_custom_output => $self->can('custom_inst_state_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_inst_state_threshold'),
             }
-        },
+        }
     ];
 }
 
@@ -180,11 +110,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "app-guid:s"                    => { name => 'app_guid' },
-        "warning-app-state:s"           => { name => 'warning_app_state' },
-        "critical-app-state:s"          => { name => 'critical_app_state', default => '%{state} !~ /STARTED/i' },
-        "warning-instance-state:s"      => { name => 'warning_instance_state' },
-        "critical-instance-state:s"     => { name => 'critical_instance_state', default => '%{state} !~ /RUNNING/i' },
+        'app-guid:s' => { name => 'app_guid' }
     });
 
     return $self;
@@ -198,8 +124,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify app-guid option.");
         $self->{output}->option_exit();
     }
-    
-    $self->change_macros(macros => ['warning_app_state', 'critical_app_state', 'warning_instance_state', 'critical_instance_state']);
 }
 
 sub manage_selection {

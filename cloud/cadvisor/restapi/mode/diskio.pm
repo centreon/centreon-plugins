@@ -39,9 +39,9 @@ sub set_counters {
                 output_change_bytes => 1,
                 output_template => 'Disk IO Read: %s %s/s',
                 perfdatas => [
-                    { label => 'diskio_read', value => 'diskio_read', template => '%.2f',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'diskio_read', template => '%.2f',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'diskio-write', nlabel => 'disk.io.write.bytespersecond', set => {
@@ -49,11 +49,11 @@ sub set_counters {
                 output_change_bytes => 1,
                 output_template => 'Disk IO Write: %s %s/s',
                 perfdatas => [
-                    { label => 'diskio_write', value => 'diskio_write', template => '%.2f',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'diskio_write', template => '%.2f',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -62,19 +62,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "container-id:s"              => { name => 'container_id' },
-                                  "container-name:s"            => { name => 'container_name' },
-                                  "filter-name:s"               => { name => 'filter_name' },
-                                  "use-name"                    => { name => 'use_name' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        'container-id:s'   => { name => 'container_id' },
+        'container-name:s' => { name => 'container_name' },
+        'filter-name:s'    => { name => 'filter_name' },
+        'use-name'         => { name => 'use_name' }
+    });
+
     return $self;
 }
 
 sub prefix_containers_diskio_output {
     my ($self, %options) = @_;
+
     return "Container '" . $options{instance_value}->{display} . "' ";
 }
 

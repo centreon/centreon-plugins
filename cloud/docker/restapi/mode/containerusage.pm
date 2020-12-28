@@ -25,22 +25,13 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
+
     my $msg = 'state : ' . $self->{result_values}->{state};
-
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    
-    return 0;
 }
 
 sub custom_cpu_calc {
@@ -57,15 +48,17 @@ sub custom_cpu_calc {
 sub custom_memory_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    $self->{output}->perfdata_add(label => 'memory_used' . $extra_label, nlabel => $extra_instance . "#container.memory.usage.bytes", unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'memory_used',
+        nlabel => 'container.memory.usage.bytes',
+        unit => 'B',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0,
+        max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_memory_threshold {
@@ -82,11 +75,12 @@ sub custom_memory_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
-    my $msg = sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_memory_calc {
@@ -110,51 +104,50 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{containers} = [
-         { label => 'container-status', threshold => 0, set => {
+         { label => 'container-status', type => 2, set => {
                 key_values => [ { name => 'state' }, { name => 'name' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'cpu', nlabel => 'cpu.utilization.percentage', set => {
+        { label => 'cpu', nlabel => 'container.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_total_usage', diff => 1 }, { name => 'cpu_system_usage', diff => 1 }, { name => 'cpu_number' }, { name => 'display' } ],
                 output_template => 'CPU Usage : %.2f %%',
                 closure_custom_calc => $self->can('custom_cpu_calc'),
                 output_use => 'prct_cpu', threshold_use => 'prct_cpu',
                 perfdatas => [
                     { label => 'cpu', value => 'prct_cpu', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'memory', nlabel => 'containers.memory.usage.bytes', set => {
+        { label => 'memory', nlabel => 'container.memory.usage.bytes', set => {
                 key_values => [ { name => 'memory_usage' }, { name => 'memory_total' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_memory_calc'),
                 closure_custom_output => $self->can('custom_memory_output'),
                 closure_custom_perfdata => $self->can('custom_memory_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_memory_threshold'),
+                closure_custom_threshold_check => $self->can('custom_memory_threshold')
             }
         },
-        { label => 'read-iops', nlabel => 'containers.disk.io.read.usage.iops', set => {
+        { label => 'read-iops', nlabel => 'container.disk.io.read.usage.iops', set => {
                 key_values => [ { name => 'read_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
                     { label => 'read_iops', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'write-iops', nlabel => 'containers.disk.io.write.usage.iops', set => {
+        { label => 'write-iops', nlabel => 'container.disk.io.write.usage.iops', set => {
                 key_values => [ { name => 'write_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
                     { label => 'write_iops', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{containers_traffic} = [
@@ -174,10 +167,10 @@ sub set_counters {
                 output_template => 'Traffic Out : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -187,12 +180,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'container-id:s'              => { name => 'container_id' },
-        'container-name:s'            => { name => 'container_name' },
-        'filter-name:s'               => { name => 'filter_name' },
-        'use-name'                    => { name => 'use_name' },
-        'warning-container-status:s'  => { name => 'warning_container_status', default => '' },
-        'critical-container-status:s' => { name => 'critical_container_status', default => '' },
+        'container-id:s'   => { name => 'container_id' },
+        'container-name:s' => { name => 'container_name' },
+        'filter-name:s'    => { name => 'filter_name' },
+        'use-name'         => { name => 'use_name' }
     });
    
     $self->{statefile_cache_containers} = centreon::plugins::statefile->new(%options);
@@ -203,7 +194,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_container_status', 'critical_container_status']);
     $self->{statefile_cache_containers}->check_options(%options);
 }
 

@@ -30,15 +30,15 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'apps-state'            => 'cloud::cloudfoundry::restapi::mode::appsstate',
         'instances-state'       => 'cloud::cloudfoundry::restapi::mode::instancesstate',
         'list-apps'             => 'cloud::cloudfoundry::restapi::mode::listapps',
         'list-organizations'    => 'cloud::cloudfoundry::restapi::mode::listorganizations',
-        'list-spaces'           => 'cloud::cloudfoundry::restapi::mode::listspaces',
-    );
+        'list-spaces'           => 'cloud::cloudfoundry::restapi::mode::listspaces'
+    };
 
-    $self->{custom_modes}{restapi} = 'cloud::cloudfoundry::restapi::custom::api';
+    $self->{custom_modes}->{restapi} = 'cloud::cloudfoundry::restapi::custom::api';
     return $self;
 }
 

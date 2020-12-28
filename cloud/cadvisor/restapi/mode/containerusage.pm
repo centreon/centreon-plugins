@@ -31,10 +31,17 @@ sub custom_memory_output {
     my ($self, %options) = @_;
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_used});
-    my $msg = sprintf("Memory Used: %s (%.2f%%) Total: %s" ,
-                      $total_used_value . " " . $total_used_unit, 100 * $self->{result_values}->{memory_used} / $self->{result_values}->{memory_total},
-                      $total_size_value . " " . $total_size_unit);
-    return $msg;
+    return sprintf(
+        "Memory Used: %s (%.2f%%) Total: %s" ,
+        $total_used_value . " " . $total_used_unit, 100 * $self->{result_values}->{memory_used} / $self->{result_values}->{memory_total},
+        $total_size_value . " " . $total_size_unit
+    );
+}
+
+sub prefix_containers_output {
+    my ($self, %options) = @_;
+
+    return "Container '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -48,83 +55,79 @@ sub set_counters {
         { label => 'cpu-number', nlabel => 'container.cpu.count', set => {
                 key_values => [ { name => 'cpu_number'}, { name => 'display' } ],
                 output_template => 'CPU: %d core(s)',
-                output_use => 'cpu_number',
                 perfdatas => [
-                    { label => 'cpu_number', value => 'cpu_number', template => '%d',
-                       min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu_number', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'cpu-total', nlabel => 'container.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_total'}, { name => 'display' } ],
                 output_template => 'CPU Usage: %.2f %%',
-                output_use => 'cpu_total',
                 perfdatas => [
-                    { label => 'cpu_total', value => 'cpu_total', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu_total', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'cpu-user', nlabel => 'cpu.user.utilization.percentage', set => {
+        { label => 'cpu-user', nlabel => 'container.cpu.user.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_user'}, { name => 'display' } ],
                 output_template => 'CPU User: %.2f %%',
-                output_use => 'cpu_user',
                 perfdatas => [
-                    { label => 'cpu_user', value => 'cpu_user', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu_user', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'cpu-system', nlabel => 'system.cpu.utilization.percentage', set => {
+        { label => 'cpu-system', nlabel => 'container.cpu.system.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_system' }, { name => 'display' } ],
                 output_template => 'CPU System: %.2f %%',
-                output_use => 'cpu_system',
                 perfdatas => [
-                    { label => 'cpu_system', value => 'cpu_system', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu_system', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'memory', nlabel => 'memory.usage.bytes', set => {
+        { label => 'memory', nlabel => 'container.memory.usage.bytes', set => {
                 key_values => [ { name => 'memory_used' }, { name => 'memory_total' }, { name => 'display' } ],
-                output_change_bytes => 1,
                 closure_custom_output => $self->can('custom_memory_output'),
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'memory_used', value => 'memory_used', template => '%s',
-                    min => 0, max => 'memory_total',unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'memory_used', template => '%s',
+                      min => 0, max => 'memory_total',unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'memory-cache', nlabel => 'memory.cache.usage.bytes', set => {
+        { label => 'memory-cache', nlabel => 'container.memory.cache.usage.bytes', set => {
                 key_values => [ { name => 'memory_cache' }, { name => 'display' } ],
-                output_change_bytes => 1,
                 output_template => 'Memory Cache: %s %s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'memory_cache', value => 'memory_cache', template => '%s',
-                    min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'memory_cache', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'memory-rss', nlabel => 'memory.rss.usage.bytes', set => {
+        { label => 'memory-rss', nlabel => 'container.memory.rss.usage.bytes', set => {
                 key_values => [ { name => 'memory_rss' }, { name => 'display' } ],
-                output_change_bytes => 1,
                 output_template => 'Memory RSS: %s %s',
-                perfdatas => [
-                    { label => 'memory_rss', value => 'memory_rss', template => '%s',
-                    min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'swap', nlabel => 'swap.usage.bytes', set => {
-                key_values => [ { name => 'swap' }, { name => 'display' } ],
                 output_change_bytes => 1,
-                output_template => 'Swap: %s %s',
                 perfdatas => [
-                    { label => 'swap', value => 'swap', template => '%s',
-                    min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'memory_rss', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
+        { label => 'swap', nlabel => 'container.swap.usage.bytes', set => {
+                key_values => [ { name => 'swap' }, { name => 'display' } ],
+                output_template => 'Swap: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'swap', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
     ];
 }
 
@@ -134,27 +137,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "container-id:s"              => { name => 'container_id' },
-        "container-name:s"            => { name => 'container_name' },
-        "filter-name:s"               => { name => 'filter_name' },
-        "use-name"                    => { name => 'use_name' },
-        "warning-container-status:s"  => { name => 'warning_container_status', default => '' },
-        "critical-container-status:s" => { name => 'critical_container_status', default => '' },
+        'container-id:s'   => { name => 'container_id' },
+        'container-name:s' => { name => 'container_name' },
+        'filter-name:s'    => { name => 'filter_name' },
+        'use-name'         => { name => 'use_name' }
     });
    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_container_status', 'critical_container_status']);
-}
-
-sub prefix_containers_output {
-    my ($self, %options) = @_;
-    return "Container '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
@@ -265,7 +254,7 @@ Filter by container name (can be a regexp).
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^container-status$'
+Example: --filter-counters='cpu'
 
 =item B<--warning-*>
 
@@ -278,16 +267,6 @@ Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
 Threshold critical.
 Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
 'cpu' (%), 'memory' (%).
-
-=item B<--warning-container-status>
-
-Set warning threshold for status (Default: -)
-Can used special variables like: %{name}, %{state}.
-
-=item B<--critical-container-status>
-
-Set critical threshold for status (Default: -).
-Can used special variables like: %{name}, %{state}.
 
 =back
 
