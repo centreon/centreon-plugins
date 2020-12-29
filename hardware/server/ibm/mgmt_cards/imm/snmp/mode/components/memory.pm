@@ -44,7 +44,7 @@ sub check {
     return if ($self->check_filter(section => 'memory'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_memoryEntry}})) {
-        next if ($oid !~ /^$mapping->{memorySpeed}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{memoryDescr}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_memoryEntry}, instance => $instance);
 

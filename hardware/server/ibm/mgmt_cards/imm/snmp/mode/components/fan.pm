@@ -45,7 +45,7 @@ sub check {
     return if ($self->check_filter(section => 'fan'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanEntry}})) {
-        next if ($oid !~ /^$mapping->{fanSpeed}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{fanDescr}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanEntry}, instance => $instance);
         $result->{fanDescr} = centreon::plugins::misc::trim($result->{fanDescr});
@@ -65,9 +65,9 @@ sub check {
         next if ($result->{fanSpeed} !~ /(\d+)/);
         
         my $fan_speed = $1;
-        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $fan_speed);            
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $fan_speed);            
+        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Fan '%s' is '%s' %%", $result->{fanDescr}, $fan_speed));
         }
         $self->{output}->perfdata_add(

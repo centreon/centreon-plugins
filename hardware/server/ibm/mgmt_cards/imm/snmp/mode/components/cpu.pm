@@ -44,7 +44,7 @@ sub check {
     return if ($self->check_filter(section => 'cpu'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpuEntry}})) {
-        next if ($oid !~ /^$mapping->{cpuSpeed}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{cpuDescr}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpuEntry}, instance => $instance);
 

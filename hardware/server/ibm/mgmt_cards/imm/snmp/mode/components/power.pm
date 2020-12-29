@@ -44,7 +44,7 @@ sub check {
     return if ($self->check_filter(section => 'power'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_powerEntry}})) {
-        next if ($oid !~ /^$mapping->{powerSpeed}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{powerDescr}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_powerEntry}, instance => $instance);
 
