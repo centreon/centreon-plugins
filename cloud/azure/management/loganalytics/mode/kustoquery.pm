@@ -18,12 +18,35 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::monitor::mode::logs;
+package cloud::azure::management::loganalytics::mode::kustoquery;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_match_output {
+    my ($self, %options) = @_;
+
+    my $msg;
+    my $message;
+
+    if (defined($self->{instance_mode}->{option_results}->{custom_output}) && $self->{instance_mode}->{option_results}->{custom_output} ne '') {
+        eval {
+            local $SIG{__WARN__} = sub { $message = $_[0]; };
+            local $SIG{__DIE__} = sub { $message = $_[0]; };
+            $msg = sprintf("$self->{instance_mode}->{option_results}->{custom_output}", eval $self->{result_values}->{match});
+        };
+    } else {
+        $msg = sprintf("Total logs match '%d'", $self->{result_values}->{match});
+    }
+
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'printf substitution issue: ' . $message);
+    }
+    return $msg;
+}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -33,11 +56,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'logs.total.count', set => {
-                key_values => [ { name => 'total' } ],
-                output_template => 'total logs: %s',
+        { label => 'match', nlabel => 'match.count', set => {
+                key_values => [ { name => 'match' } ],
+                closure_custom_output => $self->can('custom_match_output'),
                 perfdatas => [
-                    { value => 'total', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         }
@@ -50,8 +73,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'workspace-id:s' => { name => 'workspace_id' },
-        'query:s'        => { name => 'query'}
+        'workspace-id:s'    => { name => 'workspace_id' },
+        'query:s'           => { name => 'query'},
+        'custom-output:s'   => { name => 'custom_output'}
     });
 
     return $self;
@@ -69,7 +93,7 @@ sub check_options {
     if (!defined($self->{option_results}->{query}) || $self->{option_results}->{query} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify a query.");
         $self->{output}->option_exit();
-    }    
+    }
 
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
 }
@@ -83,10 +107,10 @@ sub manage_selection {
         interval => $self->{az_interval}
     );
 
-    $self->{global} = { total => 0 };
+    $self->{global} = { match => 0 };
     foreach my $table (@{$log_results->{tables}}) {
         foreach (@{$table->{rows}}) {
-            $self->{global}->{total} += $_->[0];
+            $self->{global}->{match}++;
         }
     }
 }
@@ -97,8 +121,7 @@ __END__
 
 =head1 MODE
 
-Check logs queries.
-You should set option: --management-endpoint='https://api.loganalytics.io'
+Perform a Kusto query and count results
 
 =over 8
 
@@ -111,10 +134,14 @@ Set workspace id (Required).
 Set query (Required).
 Syntax: https://docs.microsoft.com/en-us/azure/kusto/query/
 
-=item B<--warning-*> B<--critical-*>
+=item B<--custom-output>
+
+Set a custom message to output in printf format.
+Exemple: 'Number of Syslog message collected %d'
+
+=item B<--warning-match> B<--critical-match>
 
 Thresholds.
-Can be: count.
 
 =back
 
