@@ -25,15 +25,16 @@ use warnings;
 use centreon::plugins::misc;
 
 my $mapping = {
-    fanDescr => { oid => '.1.3.6.1.4.1.2.3.51.3.1.3.2.1.2' },
-    fanSpeed => { oid => '.1.3.6.1.4.1.2.3.51.3.1.3.2.1.3' },
+    fanDescr        => { oid => '.1.3.6.1.4.1.2.3.51.3.1.3.2.1.2' },
+    fanSpeed        => { oid => '.1.3.6.1.4.1.2.3.51.3.1.3.2.1.3' },
+    fanHealthStatus => { oid => '.1.3.6.1.4.1.2.3.51.3.1.3.2.1.10' }
 };
 my $oid_fanEntry = '.1.3.6.1.4.1.2.3.51.3.1.3.2.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_fanEntry, start => $mapping->{fanDescr}->{oid}, end => $mapping->{fanSpeed}->{oid} };
+    push @{$self->{request}}, { oid => $oid_fanEntry, start => $mapping->{fanDescr}->{oid}, end => $mapping->{fanHealthStatus}->{oid} };
 }
 
 sub check {
@@ -55,12 +56,10 @@ sub check {
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Fan '%s' speed is '%s' [instance = %s]",
                                                         $result->{fanDescr}, $result->{fanSpeed}, $instance));
-        if ($result->{fanSpeed} =~ /offline/i) {
-            my $exit = $self->get_severity(section => 'fan', value => $result->{fanSpeed});
-            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' is offline", $result->{fanDescr}));
-            }
+        my $exit = $self->get_severity(section => 'health', value => $result->{fanHealthStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Fan '%s' is '%s'", $result->{fanDescr}, $result->{fanHealthStatus}));
         }
         
         next if ($result->{fanSpeed} !~ /(\d+)/);

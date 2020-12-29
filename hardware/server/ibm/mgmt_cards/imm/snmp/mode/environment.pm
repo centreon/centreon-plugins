@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(fan|temperature|voltage)$';
 
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -39,14 +39,14 @@ sub set_system {
             ['critical', 'CRITICAL'],
             ['nominal', 'OK']
         ],
-        fan => [
-            ['offline', 'WARNING'],
-            ['.*', 'OK']
+        health => [
+            ['Normal', 'OK'],
+            ['.*', 'CRITICAL']
         ]
     };
     
     $self->{components_path} = 'hardware::server::ibm::mgmt_cards::imm::snmp::mode::components';
-    $self->{components_module} = ['global', 'temperature', 'voltage', 'fan'];
+    $self->{components_module} = ['cpu', 'disk', 'fan', 'global', 'memory', 'power', 'temperature', 'voltage'];
 }
 
 sub snmp_execute {
