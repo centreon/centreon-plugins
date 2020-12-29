@@ -123,6 +123,15 @@ __END__
 
 Perform a Kusto query and count results
 
+Sample command: 
+perl centreon_plugins.pl --plugin=cloud::azure::management::loganalytics::plugin \
+--custommode api --management-endpoint='https://api.loganalytics.io' --mode kusto-query \
+--subscription=***********************  --tenant=*********************** \
+--client-id=*********************** --client-secret=*********************** --workspace-id=*********************** \
+--query 'Heartbeat | summarize LastCall = max(TimeGenerated) by Computer | where LastCall > ago(3d)' \
+--custom-output='Number of syslog %d'
+OK: Number of Syslog '2' | 'match.count'=2;;;0;
+
 =over 8
 
 =item B<--workspace-id>
