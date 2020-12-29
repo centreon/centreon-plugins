@@ -41,6 +41,7 @@ sub set_system {
         ],
         health => [
             ['Normal', 'OK'],
+            ['Warning', 'WARNING'],
             ['.*', 'CRITICAL']
         ]
     };
