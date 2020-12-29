@@ -53,7 +53,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{subnets} = [
-        { label => 'addresses-usage', nlabel => 'subnet.addresses.usage.bytes', set => {
+        { label => 'addresses-usage', nlabel => 'subnet.addresses.usage.count', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -61,7 +61,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'addresses-usage-free', nlabel => 'subnet.addresses.free.bytes', display_ok => 0, set => {
+        { label => 'addresses-usage-free', nlabel => 'subnet.addresses.free.count', display_ok => 0, set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -94,7 +94,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-subnet-address:s'    => { name => 'filter_subnet_address' }
+        'filter-subnet-address:s' => { name => 'filter_subnet_address' }
     });
 
     return $self;
