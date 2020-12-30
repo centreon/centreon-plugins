@@ -41,7 +41,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking fans");
-    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    $self->{components}->{fan} = { name => 'fans', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanEntry}})) {
@@ -54,12 +54,18 @@ sub check {
         next if ($self->check_filter(section => 'fan', instance => $instance));
 
         $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' speed is '%s' [instance = %s]",
-                                                        $result->{fanDescr}, $result->{fanSpeed}, $instance));
-        my $exit = $self->get_severity(section => 'health', value => $result->{fanHealthStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s' speed is '%s' [instance = %s]",
+                $result->{fanDescr}, $result->{fanSpeed}, $instance
+            )
+        );
+        my $exit = $self->get_severity(label => 'health', section => 'fan', value => $result->{fanHealthStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Fan '%s' is '%s'", $result->{fanDescr}, $result->{fanHealthStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '%s' is '%s'", $result->{fanDescr}, $result->{fanHealthStatus})
+            );
         }
         
         next if ($result->{fanSpeed} !~ /(\d+)/);
@@ -67,16 +73,19 @@ sub check {
         my $fan_speed = $1;
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $fan_speed);            
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Fan '%s' is '%s' %%", $result->{fanDescr}, $fan_speed));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Fan '%s' is '%s' %%", $result->{fanDescr}, $fan_speed)
+            );
         }
         $self->{output}->perfdata_add(
-            label => 'fan', unit => '%',
             nlabel => 'hardware.fan.speed.percentage',
             instances => $result->{fanDescr},
             value => $fan_speed,
             warning => $warn,
-            critical => $crit, min => 0, max => 100
+            critical => $crit,
+            unit => '%',
+            min => 0, max => 100
         );
     }
 }

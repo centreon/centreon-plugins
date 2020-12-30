@@ -40,7 +40,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking memorys");
-    $self->{components}->{memory} = {name => 'memorys', total => 0, skip => 0};
+    $self->{components}->{memory} = { name => 'memorys', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'memory'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_memoryEntry}})) {
@@ -51,12 +51,18 @@ sub check {
         next if ($self->check_filter(section => 'memory', instance => $instance));
 
         $self->{components}->{memory}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Memory '%s' is '%s' [instance = %s]",
-                                                        $result->{memoryDescr}, $result->{memoryHealthStatus}, $instance));
-        my $exit = $self->get_severity(section => 'health', value => $result->{memoryHealthStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "memory '%s' is '%s' [instance = %s]",
+                $result->{memoryDescr}, $result->{memoryHealthStatus}, $instance
+            )
+        );
+        my $exit = $self->get_severity(label => 'health', section => 'memory', value => $result->{memoryHealthStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Memory '%s' is '%s'", $result->{memoryDescr}, $result->{memoryHealthStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Memory '%s' is '%s'", $result->{memoryDescr}, $result->{memoryHealthStatus})
+            );
         }
     }
 }

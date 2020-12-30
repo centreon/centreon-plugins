@@ -40,7 +40,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking disks");
-    $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
+    $self->{components}->{disk} = { name => 'disks', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'disk'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_diskEntry}})) {
@@ -51,12 +51,20 @@ sub check {
         next if ($self->check_filter(section => 'disk', instance => $instance));
 
         $self->{components}->{disk}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Disk '%s' is '%s' [instance = %s]",
-                                                        $result->{diskDescr}, $result->{diskHealthStatus}, $instance));
-        my $exit = $self->get_severity(section => 'health', value => $result->{diskHealthStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "disk '%s' is '%s' [instance = %s]",
+                $result->{diskDescr},
+                $result->{diskHealthStatus},
+                $instance
+            )
+        );
+        my $exit = $self->get_severity(label => 'health', section => 'disk', value => $result->{diskHealthStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Disk '%s' is '%s'", $result->{diskDescr}, $result->{diskHealthStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Disk '%s' is '%s'", $result->{diskDescr}, $result->{diskHealthStatus})
+            );
         }
     }
 }
