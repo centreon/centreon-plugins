@@ -40,7 +40,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking powers");
-    $self->{components}->{power} = {name => 'powers', total => 0, skip => 0};
+    $self->{components}->{power} = { name => 'powers', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'power'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_powerEntry}})) {
@@ -51,12 +51,18 @@ sub check {
         next if ($self->check_filter(section => 'power', instance => $instance));
 
         $self->{components}->{power}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Power '%s' is '%s' [instance = %s]",
-                                                        $result->{powerDescr}, $result->{powerHealthStatus}, $instance));
-        my $exit = $self->get_severity(section => 'health', value => $result->{powerHealthStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power '%s' is '%s' [instance = %s]",
+                $result->{powerDescr}, $result->{powerHealthStatus}, $instance
+            )
+        );
+        my $exit = $self->get_severity(label => 'health', section => 'power', value => $result->{powerHealthStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Power '%s' is '%s'", $result->{powerDescr}, $result->{powerHealthStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Power '%s' is '%s'", $result->{powerDescr}, $result->{powerHealthStatus})
+            );
         }
     }
 }

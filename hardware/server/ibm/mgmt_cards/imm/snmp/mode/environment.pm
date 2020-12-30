@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_numeric_check_section_option} = '^(fan|temperature|voltage)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:fan|temperature|voltage)$';
 
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -59,7 +59,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});

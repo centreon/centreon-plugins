@@ -40,7 +40,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking cpus");
-    $self->{components}->{cpu} = {name => 'cpus', total => 0, skip => 0};
+    $self->{components}->{cpu} = { name => 'cpus', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'cpu'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpuEntry}})) {
@@ -51,12 +51,20 @@ sub check {
         next if ($self->check_filter(section => 'cpu', instance => $instance));
 
         $self->{components}->{cpu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("CPU '%s' is '%s' [instance = %s]",
-                                                        $result->{cpuDescr}, $result->{cpuHealthStatus}, $instance));
-        my $exit = $self->get_severity(section => 'health', value => $result->{cpuHealthStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "cpu '%s' is '%s' [instance = %s]",
+                $result->{cpuDescr},
+                $result->{cpuHealthStatus},
+                $instance
+            )
+        );
+        my $exit = $self->get_severity(label => 'health', section => 'cpu', value => $result->{cpuHealthStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("CPU '%s' is '%s'", $result->{cpuDescr}, $result->{cpuHealthStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("CPU '%s' is '%s'", $result->{cpuDescr}, $result->{cpuHealthStatus})
+            );
         }
     }
 }
