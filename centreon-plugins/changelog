@@ -1,3 +1,37 @@
+2021-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Hitachi HCP SNMP
+ * Plugin added: Aruba AOS-CX Rest API
+ * Plugin added: Aruba AOS-CX SNMP
+ * Plugin added: Fortinet Fortiauthenticator SNMP
+ * Plugin added: Cisco DNAC Rest API
+ * Plugin added: Oracle OVM Rest API
+ * Plugin added: Cisco Firepower FMC API
+ * Plugin added: Cisco Firepower Fxos SNMP
+ * Plugin added: Rubrik Rest API
+ * Plugin added: AWS SES
+ * Plugin added: AWS TransitGateway
+ * Plugin added: Commvault Commserve Rest API
+ * Plugin added: Alyvix Rest API
+ * Plugin added: SmarterMail Rest API
+ * Plugin added: Cyberpower UPS SNMP
+ * Plugin added: Cyberpower PDU SNMP
+ * Plugin added: Cisco CTS SNMP
+ * Plugin added: Microsoft DHCP SNMP
+ * Plugin added: FiberStore SNMP
+ * Plugin added: Socomec NetVision SNMP
+ * Plugin added: HMS Ewon SNMP
+ * Plugin added: GSuite
+ * Plugin added: RRDtool
+ * Plugin added: Notification Microsoft Teams 
+ * Core: add option --insecure for backend http
+ * Core: option --list-plugin working with Par::Packer
+ * Mode added: [cisco/standard/snmp] 'vpc'
+ * Mode added: [emc/celerra/local] 'filesystems'
+ * Mode added: [emc/celerra/local] 'pools'
+ * Mode added: [synology/snmp] 'upgrade'
+ * Mode added: [mikrotik/snmp] 'firmware'
+ * Break: move microsoft applications
+
 2020-10-08 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Cisco CUCM SXML
  * Plugin added: DRBD
