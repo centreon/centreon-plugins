@@ -274,8 +274,7 @@ sub manage_selection {
             [max_size]
             $extra_fields
         FROM sys.database_files
-        $join
-        ORDER BY [File_Type], [file_id]'
+        $join'
     });
 
     my $unlimited_disk = {}; 
