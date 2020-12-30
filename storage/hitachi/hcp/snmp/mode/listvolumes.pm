@@ -59,8 +59,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_volume_entry,
         start => $mapping->{node_id}->{oid},
-        end => $mapping->{status}->{oid},
-        nothing_quit => 1
+        end => $mapping->{status}->{oid}
     );
 
     my $volumes = {};

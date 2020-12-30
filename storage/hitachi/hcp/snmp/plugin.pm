@@ -32,8 +32,10 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         'list-nodes'   => 'storage::hitachi::hcp::snmp::mode::listnodes',
+        'list-tenants' => 'storage::hitachi::hcp::snmp::mode::listtenants',
         'list-volumes' => 'storage::hitachi::hcp::snmp::mode::listvolumes',
         'nodes'        => 'storage::hitachi::hcp::snmp::mode::nodes',
+        'tenants'      => 'storage::hitachi::hcp::snmp::mode::tenants',
         'volumes'      => 'storage::hitachi::hcp::snmp::mode::volumes'
     };
 

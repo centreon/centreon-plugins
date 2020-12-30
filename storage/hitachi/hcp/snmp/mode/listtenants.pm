@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::hitachi::hcp::snmp::mode::listnodes;
+package storage::hitachi::hcp::snmp::mode::listtenants;
 
 use base qw(centreon::plugins::mode);
 
@@ -41,52 +41,48 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-my $map_node_status = {
-    0 => 'unavailable', 4 => 'available'
-};
 my $mapping = {
-    ip_address => { oid => '.1.3.6.1.4.1.116.5.46.1.1.1.2' }, # nodeIP
-    status     => { oid => '.1.3.6.1.4.1.116.5.46.1.1.1.7', map => $map_node_status }  # nodeStatus 
+    name        => { oid => '.1.3.6.1.4.1.116.5.46.4.1.1.2' }, # tenantName
+    description => { oid => '.1.3.6.1.4.1.116.5.46.4.1.1.3' }  # tenantDescription 
 };
-my $oid_node_entry = '.1.3.6.1.4.1.116.5.46.1.1.1'; # hcpNodeTableEntry
+my $oid_tenant_entry = '.1.3.6.1.4.1.116.5.46.4.1.1'; # hcpTenantTableEntry
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_node_entry,
-        start => $mapping->{ip_address}->{oid},
-        end => $mapping->{status}->{oid}
+        oid => $oid_tenant_entry,
+        start => $mapping->{name}->{oid},
+        end => $mapping->{description}->{oid}
     );
 
-    my $nodes = {};
+    my $tenants = {};
     foreach my $oid (keys %$snmp_result) {
-        next if ($oid !~ /^$mapping->{ip_address}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{name}->{oid}\.(.*)$/);
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
-        $nodes->{$1} = $result;
+        $tenants->{$1} = $result;
     }
 
-    return $nodes;
+    return $tenants;
 }
 
 sub run {
     my ($self, %options) = @_;
   
-    my $nodes = $self->manage_selection(%options);
-    foreach (sort keys %$nodes) {
+    my $tenants = $self->manage_selection(%options);
+    foreach (sort keys %$tenants) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[id: %s] [ip address: %s] [status: %s]',
-                $_,
-                $nodes->{$_}->{ip_address},
-                $nodes->{$_}->{status}
+                '[name: %s] [description: %s]',
+                $tenants->{$_}->{name},
+                $tenants->{$_}->{description}
             )
         );
     }
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List nodes:'
+        short_msg => 'List tenants:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -95,17 +91,16 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['id', keys %$mapping]);
+    $self->{output}->add_disco_format(elements => [keys %$mapping]);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $nodes = $self->manage_selection(%options);
-    foreach (sort keys %$nodes) { 
+    my $tenants = $self->manage_selection(%options);
+    foreach (sort keys %$tenants) { 
         $self->{output}->add_disco_entry(
-            id => $_,
-            %{$nodes->{$_}}
+            %{$tenants->{$_}}
         );
     }
 }
@@ -116,7 +111,7 @@ __END__
 
 =head1 MODE
 
-List nodes.
+List tenants.
 
 =over 8
 
