@@ -18,25 +18,22 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::monitor::plugin;
+package cloud::azure::management::loganalytics::plugin;
 
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'alert'         => 'cloud::azure::management::monitor::mode::alert',
-        'discovery'     => 'cloud::azure::management::monitor::mode::discovery',
-        'get-metrics'   => 'cloud::azure::management::monitor::mode::getmetrics',
-        'health'        => 'cloud::azure::management::monitor::mode::health',
+    $self->{version} = '0.1';
+    %{ $self->{modes} } = (
+        'kusto-query'    => 'cloud::azure::management::loganalytics::mode::kustoquery',
     );
-                        
+
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
     $self->{custom_modes}{api} = 'cloud::azure::custom::api';
     return $self;
@@ -51,13 +48,12 @@ sub init {
 
     $self->SUPER::init(%options);
 }
-
 1;
 
 __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure monitor service using API.
+Check Microsoft Azure Log Analytics
 
 =cut
