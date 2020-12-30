@@ -121,6 +121,7 @@ sub new {
     if ($self->{count} == 1) {
         foreach my $component (@{$self->{components_module}}) {
             $options{options}->add_options(arguments => {
+                'unknown-count-' . $component . ':s'  => { name => 'unknown_count_' . $component },
                 'warning-count-' . $component . ':s'  => { name => 'warning_count_' . $component },
                 'critical-count-' . $component . ':s' => { name => 'critical_count_' . $component }
             });
@@ -223,7 +224,7 @@ sub check_options {
 
     if ($self->{count} == 1) {
         foreach my $comp (@{$self->{components_module}}) {
-            foreach my $threshold (('warning', 'critical')) {
+            foreach my $threshold (('warning', 'critical', 'unknown')) {
                 if (($self->{perfdata}->threshold_validate(label => $threshold . '-count-' . $comp, value => $self->{option_results}->{$threshold . '_count_' . $comp})) == 0) {
                     $self->{output}->add_option_msg(short_msg => "Wrong " . $threshold . " threshold '" . $self->{option_results}->{$threshold . '_count_' . $comp} . "'.");
                     $self->{output}->option_exit();
@@ -415,8 +416,9 @@ sub get_severity_count {
     $status = $self->{perfdata}->threshold_check(
         value => $options{value},
         threshold => [
-            { label => 'critical-count-' . $options{label}, 'exit_litteral' => 'critical' }, 
-            { label => 'warning-count-' . $options{label}, 'exit_litteral' => 'warning' }
+            { label => 'critical-count-' . $options{label}, exit_litteral => 'critical' }, 
+            { label => 'warning-count-' . $options{label}, exit_litteral => 'warning' },
+            { label => 'unknown-count-' . $options{label}, exit_litteral => 'unknown' },
         ]
     );
     $thresholds->{critical} = $self->{perfdata}->get_perfdata_for_output(label => 'critical-count-' . $options{label});
