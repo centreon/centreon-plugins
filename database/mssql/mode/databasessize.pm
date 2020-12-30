@@ -320,7 +320,7 @@ sub manage_selection {
                 $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{limit} = 'unlimited';
                 if (defined($self->{option_results}->{add_unlimited_disk}) && 
                     !defined($unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $row->[8] })) {
-                    $size += $row->[9];
+                    $size += $row->[10];
                     $unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $row->[8] } = 1;
                 }
             } elsif ($row->[7] > 0) {
