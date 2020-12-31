@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
@@ -66,12 +66,17 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{controllers} = [
-        { label => 'controller-status', threshold => 0, set => {
+        {
+            label => 'controller-status',
+            type => 2,
+            unknown_default => '%{status} =~ /unknown/i',
+            warning_default => '%{status} =~ /rpaParErr|degraded/i',
+            critical_default => '%{status} =~ /failed/i',
+            set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'cpu-utilization', nlabel => 'volume.cpu.utilization.percentage', set => {
@@ -125,21 +130,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-storage-name:s'        => { name => 'filter_storage_name' },
-        'filter-controller-name:s'     => { name => 'filter_controller_name' },
-        'unknown-controller-status:s'  => { name => 'unknown_controller_status', default => '%{status} =~ /unknown/i' },
-        'warning-controller-status:s'  => { name => 'warning_controller_status', default => '%{status} =~ /rpaParErr|degraded/i' },
-        'critical-controller-status:s' => { name => 'critical_controller_status', default => '%{status} =~ /failed/i' }
+        'filter-storage-name:s'    => { name => 'filter_storage_name' },
+        'filter-controller-name:s' => { name => 'filter_controller_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_controller_status', 'critical_controller_status', 'unknown_controller_status']);
 }
 
 sub manage_selection {

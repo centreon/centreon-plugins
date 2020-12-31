@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -33,6 +33,20 @@ sub custom_status_output {
         'state: %s [raid status: %s]',
         $self->{result_values}->{state},
         $self->{result_values}->{raid_status}
+    );
+}
+
+sub custom_space_usage_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+    return sprintf(
+        "space usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
     );
 }
 
@@ -66,12 +80,40 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{pools} = [
-        { label => 'pool-status', threshold => 0, set => {
+        {
+            label => 'pool-status',
+            type => 2,
+            warning_default => '%{raid_status} =~ /degraded/i',
+            critical_default => '%{raid_status} =~ /failed/i',
+            set => {
                 key_values => [ { name => 'raid_status' }, { name => 'state'}, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+         { label => 'space-usage', nlabel => 'pool.space.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_space_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'space-usage-free', display_ok => 0, nlabel => 'pool.space.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_space_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'space-usage-prct', display_ok => 0, nlabel => 'pool.space.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_space_usage_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         }
     ];
@@ -83,21 +125,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-storage-name:s'  => { name => 'filter_storage_name' },
-        'filter-pool-name:s'     => { name => 'filter_pool_name' },
-        'unknown-pool-status:s'  => { name => 'unknown_pool_status', default => '' },
-        'warning-pool-status:s'  => { name => 'warning_pool_status', default => '%{raid_status} =~ /degraded/i' },
-        'critical-pool-status:s' => { name => 'critical_pool_status', default => '%{raid_status} =~ /failed/i' }
+        'filter-storage-name:s' => { name => 'filter_storage_name' },
+        'filter-pool-name:s'    => { name => 'filter_pool_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_pool_status', 'critical_pool_status', 'unknown_pool_status']);
 }
 
 sub manage_selection {
@@ -129,6 +161,15 @@ sub manage_selection {
                 state => $entry->{state},
                 raid_status => $entry->{raidStatus}
             };
+            if (defined($entry->{totalRaidedSpace}) && $entry->{totalRaidedSpace} > 0) {
+                $self->{ss}->{$storage_name}->{pools}->{ $entry->{name} }->{total} = $entry->{totalRaidedSpace};
+                $self->{ss}->{$storage_name}->{pools}->{ $entry->{name} }->{free} = $entry->{freeSpace};
+                $self->{ss}->{$storage_name}->{pools}->{ $entry->{name} }->{used} = $entry->{totalRaidedSpace} - $entry->{freeSpace};
+                $self->{ss}->{$storage_name}->{pools}->{ $entry->{name} }->{prct_free} = 
+                    $entry->{freeSpace} * 100 / $entry->{totalRaidedSpace};
+                $self->{ss}->{$storage_name}->{pools}->{ $entry->{name} }->{prct_used} =
+                    100 - $self->{ss}->{$storage_name}->{pools}->{ $entry->{name} }->{prct_free};
+            }
         }
     }
 }
@@ -170,6 +211,11 @@ Can used special variables like: %{raid_status}, %{state}, %{display}
 
 Set critical threshold for status (Default: '%{raid_status} =~ /failed/i').
 Can used special variables like: %{raid_status}, %{state}, %{display}
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'space-usage-prct', 'space-usage', 'space-usage-free'.
 
 =back
 
