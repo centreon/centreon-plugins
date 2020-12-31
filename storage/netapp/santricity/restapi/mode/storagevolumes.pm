@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
@@ -66,12 +66,16 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{volumes} = [
-        { label => 'volume-status', threshold => 0, set => {
+        {
+            label => 'volume-status',
+            type => 2,
+            warning_default => '%{status} =~ /degraded/i',
+            critical_default => '%{status} =~ /failed/i',
+            set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'read', nlabel => 'volume.io.read.usage.bytespersecond', set => {
@@ -117,21 +121,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-storage-name:s'    => { name => 'filter_storage_name' },
-        'filter-volume-name:s'     => { name => 'filter_volume_name' },
-        'unknown-volume-status:s'  => { name => 'unknown_volume_status', default => '' },
-        'warning-volume-status:s'  => { name => 'warning_volume_status', default => '%{status} =~ /degraded/i' },
-        'critical-volume-status:s' => { name => 'critical_volume_status', default => '%{status} =~ /failed/i' }
+        'filter-storage-name:s' => { name => 'filter_storage_name' },
+        'filter-volume-name:s'  => { name => 'filter_volume_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_volume_status', 'critical_volume_status', 'unknown_volume_status']);
 }
 
 sub manage_selection {
