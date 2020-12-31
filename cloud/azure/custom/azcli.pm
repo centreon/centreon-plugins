@@ -526,7 +526,8 @@ sub azure_get_log_analytics_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "monitor log-analytics query --workspace '$options{workspace_id}' --analytics-query \"$options{query}\" --timespan '$options{interval}' --only-show-errors";
+    my $cmd_options = "monitor log-analytics query --workspace '$options{workspace_id}' --analytics-query \"$options{query}\" --only-show-errors";
+    $cmd_options .= " --timespan '$options{timespan}'" if (defined($options{timespan}));
     return $cmd_options; 
 }
 
