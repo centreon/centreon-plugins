@@ -73,9 +73,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'workspace-id:s'    => { name => 'workspace_id' },
+        'custom-output:s'   => { name => 'custom_output'},
         'query:s'           => { name => 'query'},
-        'custom-output:s'   => { name => 'custom_output'}
+        'timespan:s'        => { name => 'timespan' },
+        'workspace-id:s'    => { name => 'workspace_id' }
     });
 
     return $self;
@@ -95,7 +96,6 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
 }
 
 sub manage_selection {
@@ -104,7 +104,7 @@ sub manage_selection {
     my ($log_results) = $options{custom}->azure_get_log_analytics(
         workspace_id => $self->{option_results}->{workspace_id},
         query => $self->{option_results}->{query},
-        interval => $self->{az_interval}
+        timespan => $self->{option_results}->{timespan}
     );
 
     $self->{global} = { match => 0 };
@@ -134,19 +134,24 @@ OK: Number of Syslog '2' | 'match.count'=2;;;0;
 
 =over 8
 
-=item B<--workspace-id>
+=item B<--custom-output>
 
-Set workspace id (Required).
+Set a custom message to output in printf format.
+Exemple: 'Number of Syslog message collected %d'
 
 =item B<--query>
 
 Set query (Required).
 Syntax: https://docs.microsoft.com/en-us/azure/kusto/query/
 
-=item B<--custom-output>
+=item B<--workspace-id>
 
-Set a custom message to output in printf format.
-Exemple: 'Number of Syslog message collected %d'
+Set workspace id (Required).
+
+=item B<--timespan>
+
+Set Timespan of the query (Do not use it if time filters is included in the 
+query)
 
 =item B<--warning-match> B<--critical-match>
 
