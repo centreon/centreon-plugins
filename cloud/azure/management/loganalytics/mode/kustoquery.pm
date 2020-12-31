@@ -152,6 +152,7 @@ Set workspace id (Required).
 
 Set Timespan of the query (Do not use it if time filters is included in the 
 query)
+(Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
 
 =item B<--warning-match> B<--critical-match>
 
