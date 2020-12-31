@@ -72,7 +72,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname}->[0] : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port}->[0] : 80;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto}->[0] : 'http';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path}->[0] : '/metrics';
+    $self->{url_path} = (length($self->{option_results}->{url_path}->[0]) ne 0) ? $self->{option_results}->{url_path}->[0] : '/metrics';
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username}->[0] : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password}->[0] : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout}->[0] : 10;
