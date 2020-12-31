@@ -625,8 +625,9 @@ sub azure_get_log_analytics_set_url {
 
     my $uri = URI::Encode->new({encode_reserved => 1});
     my $encoded_query = $uri->encode($options{query});
-    my $encoded_interval = $uri->encode($options{interval});
-    my $url = $self->{management_endpoint} . '/v1/workspaces/' . $options{workspace_id} . '/query?query=' . $encoded_query . '&timespan=' . $encoded_interval;
+    my $encoded_timespan = $uri->encode($options{timespan});
+    my $url = $self->{management_endpoint} . '/v1/workspaces/' . $options{workspace_id} . '/query?query=' . $encoded_query;
+    $url .= '&timespan=' . $encoded_timespan if (defined($encoded_timespan));
 
     return $url;
 }
