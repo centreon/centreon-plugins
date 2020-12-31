@@ -178,8 +178,8 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping volume '$fullname'.", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_node_id}) && $self->{option_results}->{filter_node_id} ne '' &&
-            $node_id !~ /$self->{option_results}->{filter_node_id}/) {
+        if (defined($self->{option_results}->{filter_label}) && $self->{option_results}->{filter_label} ne '' &&
+            $label !~ /$self->{option_results}->{filter_label}/) {
             $self->{output}->output_add(long_msg => "skipping volume '$fullname'.", debug => 1);
             next;
         }
