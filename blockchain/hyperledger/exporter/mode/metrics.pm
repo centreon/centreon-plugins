@@ -152,13 +152,21 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'orderer-consensus-etcdraft-is-leader', nlabel => 'consensus.etcdraft.is.leader', set => {
+        # { label => 'orderer-consensus-etcdraft-is-leader', nlabel => 'consensus.etcdraft.is.leader', set => {
+        #         key_values => [ { name => 'consensus_etcdraft_is_leader' } ],
+        #         output_template => 'Is leader: %s',
+        #         perfdatas => [
+        #             { value => 'consensus_etcdraft_is_leader', template => '%s', min => 0,
+        #               label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        { label => 'orderer-consensus-etcdraft-is-leader', nlabel => 'consensus.etcdraft.is.leader', threshold => 0, set => {
                 key_values => [ { name => 'consensus_etcdraft_is_leader' } ],
-                output_template => 'Is leader: %s',
-                perfdatas => [
-                    { value => 'consensus_etcdraft_is_leader', template => '%s', min => 0,
-                      label_extra_instance => 1 },
-                ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'orderer-consensus-etcdraft-leader-changes', nlabel => 'consensus.etcdraft.leader.changes', set => {
