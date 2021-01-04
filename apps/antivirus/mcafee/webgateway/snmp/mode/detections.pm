@@ -32,11 +32,11 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'categories', type => 1, cb_prefix_output => 'prefix_categories_output',
-          message_multiple => 'All categories are ok' },
+          message_multiple => 'All categories are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'malware-detected', set => {
+        { label => 'malware-detected', nlabel => 'malware.detected.persecond', set => {
                 key_values => [ { name => 'stMalwareDetected', per_second => 1 } ],
                 output_template => 'Malware detected (per sec): %d',
                 perfdatas => [
@@ -46,7 +46,7 @@ sub set_counters {
         }
     ];
     $self->{maps_counters}->{categories} = [
-        { label => 'category', set => {
+        { label => 'category', nlabel => 'malware.category.detected.persecond', set => {
                 key_values => [ { name => 'stCategoryCount', per_second => 1 }, { name => 'stCategoryName' } ],
                 output_template => 'detections (per sec): %d',
                 perfdatas => [

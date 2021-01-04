@@ -31,56 +31,56 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'traffics', type => 0, cb_prefix_output => 'prefix_traffic_output' },
+        { name => 'traffics', type => 0, cb_prefix_output => 'prefix_traffic_output' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'requests', set => {
+        { label => 'requests', nlabel => 'requests.httpss.persecond', set => {
                 key_values => [ { name => 'stHttpsRequests', per_second => 1 } ],
                 output_template => 'HTTPS Requests (per sec): %d',
                 perfdatas => [
-                    { label => 'https_requests', template => '%d', min => 0, unit => 'requests/s' },
-                ],
+                    { label => 'https_requests', template => '%d', min => 0, unit => 'requests/s' }
+                ]
             }
-        },
+        }
     ];
     $self->{maps_counters}->{traffics} = [
-        { label => 'client-to-proxy', set => {
+        { label => 'client-to-proxy', nlabel => 'traffic.client.to.proxy.bitspersecond', set => {
                 key_values => [ { name => 'stHttpsBytesFromClient', per_second => 1 } ],
                 output_template => 'from client to proxy: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'https_traffic_client_to_proxy', template => '%d', min => 0, unit => 'b/s' },
-                ],
+                    { label => 'https_traffic_client_to_proxy', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
         },
-        { label => 'server-to-proxy', set => {
+        { label => 'server-to-proxy', nlabel => 'traffic.server.to.proxy.bitspersecond', set => {
                 key_values => [ { name => 'stHttpsBytesFromServer', per_second => 1 } ],
                 output_template => 'from server to proxy: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'https_traffic_server_to_proxy', template => '%d', min => 0, unit => 'b/s' },
-                ],
+                    { label => 'https_traffic_server_to_proxy', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
         },
-        { label => 'proxy-to-client', set => {
+        { label => 'proxy-to-client', nlabel => 'traffic.proxy.to.client.bitspersecond', set => {
                 key_values => [ { name => 'stHttpsBytesToClient', per_second => 1 } ],
                 output_template => 'from proxy to client: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'https_traffic_proxy_to_client', template => '%d', min => 0, unit => 'b/s' },
-                ],
+                    { label => 'https_traffic_proxy_to_client', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
         },
-        { label => 'proxy-to-server', set => {
+        { label => 'proxy-to-server', nlabel => 'traffic.proxy.to.server.bitspersecond', set => {
                 key_values => [ { name => 'stHttpsBytesToServer', per_second => 1 } ],
                 output_template => 'from proxy to server: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'https_traffic_proxy_to_server', template => '%d', min => 0, unit => 'b/s' },
-                ],
+                    { label => 'https_traffic_proxy_to_server', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
-        },
+        }
     ];
 }
 

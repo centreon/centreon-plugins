@@ -30,50 +30,50 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_connection_output' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_connection_output' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'legitimate', set => {
+        { label => 'legitimate', nlabel => 'connections.legitimate.persecond', set => {
                 key_values => [ { name => 'stConnectionsLegitimate', per_second => 1 } ],
                 output_template => 'Legitimate: %d',
                 perfdatas => [
-                    { label => 'legitimate_connections', template => '%d', min => 0, unit => 'connections/s' },
-                ],
+                    { label => 'legitimate_connections', template => '%d', min => 0, unit => 'connections/s' }
+                ]
             }
         },
-        { label => 'blocked', set => {
+        { label => 'blocked', nlabel => 'connections.blocked.persecond', set => {
                 key_values => [ { name => 'stConnectionsBlocked', per_second => 1 } ],
                 output_template => 'Blocked: %d',
                 perfdatas => [
-                    { label => 'blocked_connections', template => '%d', min => 0, unit => 'connections/s' },
-                ],
+                    { label => 'blocked_connections', template => '%d', min => 0, unit => 'connections/s' }
+                ]
             }
         },
-        { label => 'blocked-by-am', set => {
+        { label => 'blocked-by-am', nlabel => 'connections.am.blocked.persecond', set => {
                 key_values => [ { name => 'stBlockedByAntiMalware', per_second => 1 } ],
                 output_template => 'Blocked by Anti Malware: %d',
                 perfdatas => [
-                    { label => 'blocked_by_am', template => '%d', min => 0, unit => 'connections/s' },
-                ],
+                    { label => 'blocked_by_am', template => '%d', min => 0, unit => 'connections/s' }
+                ]
             }
         },
-        { label => 'blocked-by-mf', set => {
+        { label => 'blocked-by-mf',  nlabel => 'connections.mf.blocked.persecond', set => {
                 key_values => [ { name => 'stBlockedByMediaFilter', per_second => 1 } ],
                 output_template => 'Blocked by Media Filter: %d',
                 perfdatas => [
-                    { label => 'blocked_by_mf', template => '%d', min => 0, unit => 'connections/s' },
-                ],
+                    { label => 'blocked_by_mf', template => '%d', min => 0, unit => 'connections/s' }
+                ]
             }
         },
-        { label => 'blocked-by-uf', set => {
+        { label => 'blocked-by-uf',  nlabel => 'connections.uf.blocked.persecond', set => {
                 key_values => [ { name => 'stBlockedByURLFilter', per_second => 1 } ],
                 output_template => 'Blocked by URL Filter: %d',
                 perfdatas => [
-                    { label => 'blocked_by_uf', template => '%d', min => 0, unit => 'connections/s' },
-                ],
+                    { label => 'blocked_by_uf', template => '%d', min => 0, unit => 'connections/s' }
+                ]
             }
-        },
+        }
     ];
 }
 
