@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use DateTime;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -109,10 +109,10 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'last-server-update', set => {
+        { label => 'last-server-update', nlabel => 'server.freshness.seconds', set => {
                 key_values => [ { name => 'lastServerUpdateTime' } ],
                 closure_custom_calc => $self->can('custom_last_calc'),
                 closure_custom_output => $self->can('custom_last_output'),
@@ -120,11 +120,11 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_last_perfdata')
             }
         },
-        { label => 'not-updated', set => {
+        { label => 'not-updated', nlabel => 'hosts.obsolete.count', set => {
                 key_values => [ { name => 'hostsNotUpdated' } ],
                 output_template => '%d host(s) not up to date',
                 perfdatas => [
-                    { label => 'not_updated', value => 'hostsNotUpdated', template => '%d', min => 0 }
+                    { label => 'not_updated', template => '%d', min => 0 }
                 ]
             }
         }
@@ -137,20 +137,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /Warning/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /Critical/i' },
-        'timezone:s'        => { name => 'timezone', default => 'GMT' }
+        'timezone:s' => { name => 'timezone', default => 'GMT' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->{tz} = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 my $map_status = {
@@ -192,25 +182,15 @@ Check updates status.
 
 =over 8
 
-=item B<--warning-status>
-
-Set warning threshold for status. (Default: '%{status} =~ /Warning/i').
-Can use special variables like: %{status}
-
-=item B<--critical-status>
-
-Set critical threshold for status. (Default: '%{status} =~ /Critical/i').
-Can use special variables like: %{status}
-
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'last-server-update', 'not-updated'.
+Can be: 'status', 'last-server-update', 'not-updated'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'last-server-update', 'not-updated'.
+Can be: 'status', 'last-server-update', 'not-updated'.
 
 =item B<--timezone>
 

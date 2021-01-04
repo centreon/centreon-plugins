@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -163,10 +163,10 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'progress', set => {
+        { label => 'progress', nlabel => 'hosts.progress.installation.count', set => {
                 key_values => [ { name => 'hostsInGroups' }, { name => 'hostsWithAntivirus' } ],
                 closure_custom_calc => $self->can('custom_progress_calc'),
                 closure_custom_output => $self->can('custom_progress_output'),
@@ -174,15 +174,15 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_progress_perfdata'),
             }
         },
-        { label => 'failed', set => {
+        { label => 'failed', nlabel => 'hosts.failed.installation.count', set => {
                 key_values => [ { name => 'hostsRemoteInstallFailed' } ],
                 output_template => '%d failed remote installation(s)',
                 perfdatas => [
-                    { label => 'failed', value => 'hostsRemoteInstallFailed', template => '%d', min => 0 },
-                ],
+                    { label => 'failed', template => '%d', min => 0 },
+                ]
             }
         },
-        { label => 'expiring', set => {
+        { label => 'expiring', nlabel => 'hosts.expiring.licence.count', set => {
                 key_values => [ { name => 'licenceExpiringSerial' }, { name => 'licenceExpiringDays' }, { name => 'hostsLicenceExpiring' } ],
                 closure_custom_calc => $self->can('custom_expiring_calc'),
                 closure_custom_output => $self->can('custom_expiring_output'),
@@ -190,7 +190,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_expiring_perfdata'),
             }
         },
-        { label => 'expired', set => {
+        { label => 'expired', nlabel => 'hosts.expired.licence.count', set => {
                 key_values => [ { name => 'licenceExpiredSerial' }, { name => 'hostsLicenceExpired' } ],
                 closure_custom_calc => $self->can('custom_expired_calc'),
                 closure_custom_output => $self->can('custom_expired_output'),
@@ -206,20 +206,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "warning-status:s"      => { name => 'warning_status', default => '%{status} =~ /Warning/i' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} =~ /Critical/i' },
-                                    "percent"               => { name => 'percent' },
-                                });
+    $options{options}->add_options(arguments => {
+        'percent' => { name => 'percent' }
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 my %map_status = (
@@ -274,25 +265,15 @@ Check antivirus software deployment status.
 
 =over 8
 
-=item B<--warning-status>
-
-Set warning threshold for status. (Default: '%{status} =~ /Warning/i').
-Can use special variables like: %{status}
-
-=item B<--critical-status>
-
-Set critical threshold for status. (Default: '%{status} =~ /Critical/i').
-Can use special variables like: %{status}
-
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'progress' (counter or %), 'failed', 'expiring', 'expired'.
+Can be: 'status', 'progress' (counter or %), 'failed', 'expiring', 'expired'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'progress' (counter or %), 'failed', 'expiring', 'expired'.
+Can be: 'status', 'progress' (counter or %), 'failed', 'expiring', 'expired'.
 
 =item B<--percent>
 

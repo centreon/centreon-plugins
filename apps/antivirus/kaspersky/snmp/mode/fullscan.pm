@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -56,12 +56,12 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'not-scanned', set => {
+        { label => 'not-scanned', nlabel => 'hosts.unscanned.count', set => {
                 key_values => [ { name => 'hostsNotScannedLately' } ],
                 output_template => '%d hosts(s) has not been scanned lately',
                 perfdatas => [
-                    { label => 'not_scanned', value => 'hostsNotScannedLately', template => '%d', min => 0 },
-                ],
+                    { label => 'not_scanned', template => '%d', min => 0 }
+                ]
             }
         },
     ];
@@ -72,19 +72,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "warning-status:s"      => { name => 'warning_status', default => '%{status} =~ /Warning/i' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} =~ /Critical/i' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 my %map_status = (
@@ -121,25 +112,15 @@ Check full scan status.
 
 =over 8
 
-=item B<--warning-status>
-
-Set warning threshold for status. (Default: '%{status} =~ /Warning/i').
-Can use special variables like: %{status}
-
-=item B<--critical-status>
-
-Set critical threshold for status. (Default: '%{status} =~ /Critical/i').
-Can use special variables like: %{status}
-
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'not-scanned'.
+Can be: 'status', 'not-scanned'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'not-scanned'.
+Can be: 'status', 'not-scanned'.
 
 =back
 
