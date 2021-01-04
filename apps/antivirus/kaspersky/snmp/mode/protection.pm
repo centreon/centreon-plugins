@@ -48,7 +48,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', set => {
+        { label => 'status', type => 2, warning_default => '%{status} =~ /Warning/i', critical_default => '%{status} =~ /Critical/i', set => {
                 key_values => [ { name => 'protectionStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
@@ -154,16 +154,26 @@ Check protection status.
 
 =over 8
 
+=item B<--warning-status>
+
+Set warning threshold for status. (Default: '%{status} =~ /Warning/i').
+Can use special variables like: %{status}
+
+=item B<--critical-status>
+
+Set critical threshold for status. (Default: '%{status} =~ /Critical/i').
+Can use special variables like: %{status}
+
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'status', 'no-antivirus', 'no-real-time', 'not-acceptable-level',
+Can be: 'no-antivirus', 'no-real-time', 'not-acceptable-level',
 'not-cured-objects', 'too-many-threats'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'status', 'no-antivirus', 'no-real-time', 'not-acceptable-level',
+Can be: 'no-antivirus', 'no-real-time', 'not-acceptable-level',
 'not-cured-objects', 'too-many-threats'.
 
 =back

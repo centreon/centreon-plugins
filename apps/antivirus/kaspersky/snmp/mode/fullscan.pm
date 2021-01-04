@@ -29,8 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Full scan status is '%s'", $self->{result_values}->{status});
-    return $msg;
+    return sprintf("Full scan status is '%s'", $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -48,7 +47,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', set => {
+        { label => 'status',  type => 2, warning_default => '%{status} =~ /Warning/i', critical_default => '%{status} =~ /Critical/i', set => {
                 key_values => [ { name => 'fullscanStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
@@ -63,7 +62,7 @@ sub set_counters {
                     { label => 'not_scanned', template => '%d', min => 0 }
                 ]
             }
-        },
+        }
     ];
 }
 
@@ -112,15 +111,25 @@ Check full scan status.
 
 =over 8
 
+=item B<--warning-status>
+
+Set warning threshold for status. (Default: '%{status} =~ /Warning/i').
+Can use special variables like: %{status}
+
+=item B<--critical-status>
+
+Set critical threshold for status. (Default: '%{status} =~ /Critical/i').
+Can use special variables like: %{status}
+
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'status', 'not-scanned'.
+Can be: 'not-scanned'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'status', 'not-scanned'.
+Can be: 'not-scanned'.
 
 =back
 

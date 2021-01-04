@@ -29,8 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Deployment status is '%s'", $self->{result_values}->{status});
-    return $msg;
+    return sprintf("Deployment status is '%s'", $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -62,9 +61,12 @@ sub custom_progress_threshold {
 sub custom_progress_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Deployment progress: %d/%d (%.2f%%)", 
-                    $self->{result_values}->{installed}, $self->{result_values}->{total}, $self->{result_values}->{prct_installed});
-    return $msg;
+    return sprintf(
+        "Deployment progress: %d/%d (%.2f%%)", 
+        $self->{result_values}->{installed}, 
+        $self->{result_values}->{total}, 
+        $self->{result_values}->{prct_installed}
+    );
 }
 
 sub custom_progress_calc {
@@ -158,7 +160,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', set => {
+        { label => 'status', type => 2, warning_default => '%{status} =~ /Warning/i', critical_default => '%{status} =~ /Critical/i', set => {
                 key_values => [ { name => 'deploymentStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
@@ -197,7 +199,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_expired_threshold'),
                 closure_custom_perfdata => $self->can('custom_expired_perfdata'),
             }
-        },
+        }
     ];
 }
 
@@ -265,15 +267,25 @@ Check antivirus software deployment status.
 
 =over 8
 
+=item B<--warning-status>
+
+Set warning threshold for status. (Default: '%{status} =~ /Warning/i').
+Can use special variables like: %{status}
+
+=item B<--critical-status>
+
+Set critical threshold for status. (Default: '%{status} =~ /Critical/i').
+Can use special variables like: %{status}
+
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'status', 'progress' (counter or %), 'failed', 'expiring', 'expired'.
+Can be: 'progress' (counter or %), 'failed', 'expiring', 'expired'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'status', 'progress' (counter or %), 'failed', 'expiring', 'expired'.
+Can be: 'progress' (counter or %), 'failed', 'expiring', 'expired'.
 
 =item B<--percent>
 

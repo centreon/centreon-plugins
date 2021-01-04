@@ -104,7 +104,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', set => {
+        { label => 'status', type => 2, warning_default => '%{status} =~ /Warning/i', critical_default => '%{status} =~ /Critical/i', set => {
                 key_values => [ { name => 'updatesStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
@@ -182,15 +182,25 @@ Check updates status.
 
 =over 8
 
+=item B<--warning-status>
+
+Set warning threshold for status. (Default: '%{status} =~ /Warning/i').
+Can use special variables like: %{status}
+
+=item B<--critical-status>
+
+Set critical threshold for status. (Default: '%{status} =~ /Critical/i').
+Can use special variables like: %{status}
+
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'status', 'last-server-update', 'not-updated'.
+Can be: 'last-server-update', 'not-updated'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'status', 'last-server-update', 'not-updated'.
+Can be: 'last-server-update', 'not-updated'.
 
 =item B<--timezone>
 
