@@ -160,7 +160,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', type => 2, warning_default => '%{status} =~ /Warning/i', critical_default => '%{status} =~ /Critical/i', set => {
+        { 
+            label => 'status', 
+            type => 2, 
+            warning_default => '%{status} =~ /Warning/i', 
+            critical_default => '%{status} =~ /Critical/i', 
+            set => {
                 key_values => [ { name => 'deploymentStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
