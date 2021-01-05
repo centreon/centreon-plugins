@@ -27,55 +27,40 @@ use warnings;
 use centreon::plugins::misc;
 use Net::DNS;
 use DateTime;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_engine_status_output {
     my ($self, %options) = @_;
-    my $msg = "clamav engine version '" .     $self->{result_values}->{current_engine_version} . "/" . $self->{result_values}->{last_engine_version} . "'";
 
-    return $msg;
+    return sprintf(
+        "clamav engine version '%s/%s'", 
+        $self->{result_values}->{current_engine_version},
+        $self->{result_values}->{last_engine_version}
+    );
 }
 
 sub custom_maindb_status_output {
     my ($self, %options) = @_;
-    my $msg = "main.cvd version '" .     $self->{result_values}->{current_maindb_version} . "/" . $self->{result_values}->{last_maindb_version} . 
-        "', last update " . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{current_maindb_timediff});
     
-    return $msg;
+    return sprintf(
+        "main.cvd version '%s/%s', last update %s", 
+        $self->{result_values}->{current_maindb_version}, 
+        $self->{result_values}->{last_maindb_version}, 
+        centreon::plugins::misc::change_seconds(
+            value => $self->{result_values}->{current_maindb_timediff})
+    );
 }
 
 sub custom_dailydb_status_output {
     my ($self, %options) = @_;
-    my $msg = "daily.cvd version '" .     $self->{result_values}->{current_dailydb_version} . "/" . $self->{result_values}->{last_dailydb_version} . 
-        "', last update " . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{current_dailydb_timediff});
-    
-    return $msg;
-}
 
-sub custom_engine_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{current_engine_version} = $options{new_datas}->{$self->{instance} . '_current_engine_version'};
-    $self->{result_values}->{last_engine_version} = $options{new_datas}->{$self->{instance} . '_last_engine_version'};
-    return 0;
-}
-
-sub custom_maindb_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{current_maindb_version} = $options{new_datas}->{$self->{instance} . '_current_maindb_version'};
-    $self->{result_values}->{last_maindb_version} = $options{new_datas}->{$self->{instance} . '_last_maindb_version'};
-    $self->{result_values}->{current_maindb_timediff} = $options{new_datas}->{$self->{instance} . '_current_maindb_timediff'};
-    return 0;
-}
-
-sub custom_dailydb_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{current_dailydb_version} = $options{new_datas}->{$self->{instance} . '_current_dailydb_version'};
-    $self->{result_values}->{last_dailydb_version} = $options{new_datas}->{$self->{instance} . '_last_dailydb_version'};
-    $self->{result_values}->{current_dailydb_timediff} = $options{new_datas}->{$self->{instance} . '_current_dailydb_timediff'};
-    return 0;
+    return sprintf(
+        "daily.cvd version '%s/%s', last update %s",
+        $self->{result_values}->{current_dailydb_version};
+        $self->{result_values}->{last_dailydb_version},
+        centreon::plugins::misc::change_seconds(
+            value => $self->{result_values}->{current_dailydb_timediff})
+    );
 }
 
 sub set_counters {
@@ -86,30 +71,27 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{update} = [
-        { label => 'engine-status', threshold => 0, set => {
+        { label => 'engine-status', type => 2, critical_default => '%{last_engine_version} ne %{current_engine_version}', set => {
                 key_values => [ { name => 'last_engine_version' }, { name => 'current_engine_version' } ],
-                closure_custom_calc => $self->can('custom_engine_status_calc'),
                 closure_custom_output => $self->can('custom_engine_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'maindb-status', threshold => 0, set => {
+        { label => 'maindb-status', typed => 2, critical_default => '%{last_maindb_version} ne %{current_maindb_version}', set => {
                 key_values => [ { name => 'last_maindb_version' }, { name => 'current_maindb_version' }, { name => 'current_maindb_timediff' } ],
-                closure_custom_calc => $self->can('custom_maindb_status_calc'),
                 closure_custom_output => $self->can('custom_maindb_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'dailydb-status', threshold => 0, set => {
+        { label => 'dailydb-status', type => 2, critical_default => '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000', set => {
                 key_values => [ { name => 'last_dailydb_version' }, { name => 'current_dailydb_version' }, { name => 'current_dailydb_timediff' } ],
-                closure_custom_calc => $self->can('custom_dailydb_status_calc'),
                 closure_custom_output => $self->can('custom_dailydb_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
-        },
+        }
     ];
 }
 
@@ -129,12 +111,6 @@ sub new {
         'command:s'         => { name => 'command' },
         'command-path:s'    => { name => 'command_path' },
         'command-options:s' => { name => 'command_options' },
-        'warning-engine-status:s'     => { name => 'warning_engine_status', default => '' },
-        'critical-engine-status:s'    => { name => 'critical_engine_status', default => '%{last_engine_version} ne %{current_engine_version}' },
-        'warning-maindb-status:s'     => { name => 'warning_maindb_status', default => '' },
-        'critical-maindb-status:s'    => { name => 'critical_maindb_status', default => '%{last_maindb_version} ne %{current_maindb_version}' },
-        'warning-dailydb-status:s'    => { name => 'warning_dailydb_status', default => '' },
-        'critical-dailydb-status:s'   => { name => 'critical_dailydb_status', default => '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000' },
         'nameservers:s@'              => { name => 'nameservers' },
         'maindb-file:s'               => { name => 'maindb_file', default => '/var/lib/clamav/main.cvd' },
         'dailydb-file:s'              => { name => 'dailydb_file', default => '/var/lib/clamav/daily.cvd' },
@@ -146,9 +122,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_engine_status', 'critical_engine_status', 
-        'warning_maindb_status', 'critical_maindb_status', 'warning_dailydb_status', 'critical_dailydb_status']);        
+    
     $self->{clamav_command} = 'echo "==== CLAMD ===" ; clamd -V ; echo "==== DAILY ===="; sigtool --info ' . $self->{option_results}->{dailydb_file} . '; echo "==== MAIN ====" ; sigtool --info ' . $self->{option_results}->{maindb_file};
 }
 

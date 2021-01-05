@@ -30,9 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'update-status' => 'apps::antivirus::clamav::local::mode::updatestatus',
-    );
+    };
 
     return $self;
 }
