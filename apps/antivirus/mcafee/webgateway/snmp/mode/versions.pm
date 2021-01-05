@@ -27,17 +27,6 @@ use warnings;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
-sub custom_version_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{output} = $options{extra_options}->{output_ref};
-    $self->{result_values}->{version} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};
-    $self->{result_values}->{timestamp} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_timestamp'};
-    $self->{result_values}->{since} = time() - $self->{result_values}->{timestamp};
-
-    return 0;
-}
-
 sub custom_version_threshold {
     my ($self, %options) = @_;
 
@@ -50,9 +39,12 @@ sub custom_version_threshold {
 sub custom_version_output {
     my ($self, %options) = @_;
 
-    my $human_since = centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since});
-    my $msg = sprintf("%s: %s [Last update: %s]", $self->{result_values}->{output}, $self->{result_values}->{version}, $human_since);
-    return $msg;
+    return sprintf(
+        "%s: %s [Last update: %s]",
+        $self->{result_values}->{output},
+        $self->{result_values}->{version},
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since})
+    );
 }
 
 sub set_counters {
@@ -65,7 +57,6 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'dat-version', set => {
                 key_values => [ { name => 'pMFEDATVersion' }, { name => 'pMFEDATVersion_timestamp' } ],
-                closure_custom_calc => $self->can('custom_version_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'pMFEDATVersion', output_ref => 'DAT Version' },
                 closure_custom_output => $self->can('custom_version_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -74,7 +65,6 @@ sub set_counters {
         },
         { label => 'tsdb-version', set => {
                 key_values => [ { name => 'pTSDBVersion' }, { name => 'pTSDBVersion_timestamp' } ],
-                closure_custom_calc => $self->can('custom_version_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'pTSDBVersion', output_ref => 'TrustedSource Database Version' },
                 closure_custom_output => $self->can('custom_version_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -83,7 +73,6 @@ sub set_counters {
         },
         { label => 'proactive-version', set => {
                 key_values => [ { name => 'pAMProactiveVersion' }, { name => 'pAMProactiveVersion_timestamp' } ],
-                closure_custom_calc => $self->can('custom_version_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'pAMProactiveVersion', output_ref => 'ProActive Database Version' },
                 closure_custom_output => $self->can('custom_version_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -105,13 +94,6 @@ sub new {
 
     $self->{cache} = centreon::plugins::statefile->new(%options);
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->{cache}->check_options(%options);
 }
 
 my $oid_pMFEDATVersion = '.1.3.6.1.4.1.1230.2.7.1.20.4.0';
