@@ -255,7 +255,7 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::elasticpool::plugin --custommode=azcli --mode=cpu
 --resource=<sqlserver>/elasticpools/<elasticpool> --resource-group=<resourcegroup> --aggregation='average'
---critical-cpu-percent='80' --verbose
+--critical-cpu-percent='90' --verbose
 
 Using resource id :
 
@@ -277,7 +277,8 @@ Set resource group (Required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'storage_percent') (Can be a regexp).
+Filter on specific metrics. The Azure format must be used, for example: 'cpu_percent'
+(Can be a regexp).
 
 =item B<--warning-*>
 
