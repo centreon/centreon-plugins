@@ -247,12 +247,16 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
     
+    my ($unlimited_disk, $drives, $result) = ({}, {});
+
     $options{sql}->connect();
 
-    my ($extra_fields, $join) = ('', '');
     if (defined($self->{option_results}->{add_unlimited_disk})) {
-        $extra_fields = ', volume_mount_point, total_bytes, available_bytes';
-        $join = 'CROSS APPLY sys.dm_os_volume_stats(DB_ID(sys.database_files.name), sys.database_files.file_id)';
+        $options{sql}->query(query => qq{exec master.dbo.xp_fixeddrives});
+        $result = $options{sql}->fetchall_arrayref();
+        foreach my $row (@$result) {
+            $drives->{ $row->[0] } = $row->[1] * 1024 * 1024;
+        }
     }
 
     $options{sql}->query(query => qq{
@@ -272,16 +276,11 @@ sub manage_selection {
                 ELSE CAST(growth*8/1024 AS varchar(20)) + ''Mb''
             END,
             [max_size]
-            $extra_fields
-        FROM sys.database_files
-        $join'
+        FROM sys.database_files'
     });
-
-    my $unlimited_disk = {}; 
 
     # limit can be: 'unlimited', 'overload', 'other'.
     $self->{databases} = {};
-    my $result;
     while ($result = $options{sql}->fetchall_arrayref()) {
         last if (scalar(@$result) <= 0);
 
@@ -318,10 +317,17 @@ sub manage_selection {
             #max_size = -1 (=unlimited)
             if ($row->[7] == -1) {
                 $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{limit} = 'unlimited';
-                if (defined($self->{option_results}->{add_unlimited_disk}) && 
-                    !defined($unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $row->[8] })) {
-                    $size += $row->[10];
-                    $unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $row->[8] } = 1;
+                if (defined($self->{option_results}->{add_unlimited_disk})) {
+                    # look for the drives
+                    foreach my $drive_name (keys %$drives) {
+                        if ($row->[2] =~ /^$drive_name/) {
+                            if (!defined($unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $drive_name })) {
+                                $size += $drives->{$drive_name};
+                                $unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $drive_name } = 1;
+                            }
+                            last;
+                        }
+                    }
                 }
             } elsif ($row->[7] > 0) {
                 $size = $row->[7] * 8 * 1024;
