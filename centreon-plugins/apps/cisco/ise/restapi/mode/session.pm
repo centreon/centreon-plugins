@@ -29,37 +29,34 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'active-sessions', set => {
+        { label => 'active-sessions', nlabel => 'sessions.active.count', set => {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active sessions: %d',
                 perfdatas => [
-                    { label => 'active_sessions', value => 'active', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'active_sessions', template => '%d', min => 0 }
+                ]
             }
         },
-        { label => 'postured-endpoints', set => {
+        { label => 'postured-endpoints', nlabel => 'endpoints.postured.count', set => {
                 key_values => [ { name => 'postured' } ],
                 output_template => 'Postured endpoints: %d',
                 perfdatas => [
-                    { label => 'postured_endpoints', value => 'postured', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'postured_endpoints', template => '%d', min => 0 }
+                ]
             }
         },
-        { label => 'profiler-service-sessions', set => {
+        { label => 'profiler-service-sessions', nlabel => 'sessions.profiler.count', set => {
                 key_values => [ { name => 'profiler' } ],
                 output_template => 'Profiler service sessions: %d',
                 perfdatas => [
-                    { label => 'profiler_service_sessions', value => 'profiler', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'profiler_service_sessions', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -68,17 +65,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-counters:s" => { name => 'filter_counters' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 }
 
 sub manage_selection {
