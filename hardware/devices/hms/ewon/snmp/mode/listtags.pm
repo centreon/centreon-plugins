@@ -70,6 +70,7 @@ sub manage_selection {
             next;
         }
         
+        $result->{name} = $self->{output}->to_utf8($result->{name});
         $results->{$instance} = $result;
     }
 
