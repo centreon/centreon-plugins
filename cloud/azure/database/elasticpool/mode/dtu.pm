@@ -77,7 +77,7 @@ sub custom_metric_perfdata {
         unit      => $metrics_mapping{$self->{result_values}->{metric}}->{unit},
         value     => sprintf('%.2f', $self->{result_values}->{value}),
         warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
-        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label})
     );
 }
 
@@ -115,7 +115,7 @@ sub set_counters {
           message_multiple => 'All CPU metrics are ok', indent_long_output => '    ',
             group => [
                 { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
-                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -144,10 +144,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-            'resource:s@'      => { name => 'resource' },
-            'resource-group:s' => { name => 'resource_group' },
-            'filter-metric:s'  => { name => 'filter_metric' },
-        });
+        'resource:s@'      => { name => 'resource' },
+        'resource-group:s' => { name => 'resource_group' },
+        'filter-metric:s'  => { name => 'filter_metric' }
+    });
 
     return $self;
 }
@@ -216,7 +216,7 @@ sub manage_selection {
             metrics => $self->{az_metrics},
             aggregations => $self->{az_aggregations},
             timeframe => $self->{az_timeframe},
-            interval => $self->{az_interval},
+            interval => $self->{az_interval}
         );
 
         foreach my $metric (@{$self->{az_metrics}}) {
