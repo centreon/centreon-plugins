@@ -31,10 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'cpu'      => 'cloud::azure::database::elasticpool::mode::cpu',
-        'dtu'      => 'cloud::azure::database::elasticpool::mode::dtu',
-        'sessions' => 'cloud::azure::database::elasticpool::mode::sessions',
-        'storage'  => 'cloud::azure::database::elasticpool::mode::storage'
+        'cpu'       => 'cloud::azure::database::elasticpool::mode::cpu',
+        'discovery' => 'cloud::azure::database::elasticpool::mode::discovery',
+        'dtu'       => 'cloud::azure::database::elasticpool::mode::dtu',
+        'log'       => 'cloud::azure::database::elasticpool::mode::log',
+        'sessions'  => 'cloud::azure::database::elasticpool::mode::sessions',
+        'storage'   => 'cloud::azure::database::elasticpool::mode::storage'
     );
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';

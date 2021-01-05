@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::database::elasticpool::mode::sessions;
+package cloud::azure::database::elasticpool::mode::log;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,16 +26,22 @@ use strict;
 use warnings;
 
 my %metrics_mapping = (
-    'sessions_percent' => {
-        'output' => 'Sessions usage percentage',
-        'label'  => 'sessions-percent',
-        'nlabel' => 'elasticpool.sessions.usage.percentage',
+    'log_write_percent' => {
+        'output' => 'Log write IO percentage',
+        'label'  => 'log_write_percent',
+        'nlabel' => 'elasticpool.log.write.percentage',
         'unit'   => '%'
     },
-    'workers_percent' => {
-        'output' => 'Workers usage percentage',
-        'label'  => 'workers-percent',
-        'nlabel' => 'elasticpool.workers.usage.percentage',
+    'tempdb_log_size' => {
+        'output' => 'Tempdb Log file size',
+        'label'  => 'tempdb-log-size',
+        'nlabel' => 'elasticpool.log.tempdb.size.kilobytes',
+        'unit'   => 'KB'
+    },
+    'tempdb_log_used_percent' => {
+        'output' => 'Tempdb log usage percentage',
+        'label'  => 'tempdb-log-used-percent',
+        'nlabel' => 'elasticpool.log.tempdb.usage.percentage',
         'unit'   => '%'
     }
 );
@@ -78,7 +84,9 @@ sub custom_metric_perfdata {
 sub custom_metric_output {
     my ($self, %options) = @_;
 
-    my ($value, $unit) = ($self->{result_values}->{value}, $metrics_mapping{$self->{result_values}->{metric}}->{unit});
+    my ($value, $unit) = ($metrics_mapping{$self->{result_values}->{metric}}->{unit} eq 'KB') ?
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{value} * 1000) :
+        ($self->{result_values}->{value}, $metrics_mapping{$self->{result_values}->{metric}}->{unit});
 
     return sprintf('%s: %.2f %s', $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value, $unit);
 }
@@ -138,10 +146,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'resource:s@'      => { name => 'resource' },
-        'resource-group:s' => { name => 'resource_group' },
-        'filter-metric:s'  => { name => 'filter_metric' },
-    });
+            'resource:s@'      => { name => 'resource' },
+            'resource-group:s' => { name => 'resource_group' },
+            'filter-metric:s'  => { name => 'filter_metric' },
+        });
 
     return $self;
 }
@@ -161,7 +169,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.Sql';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Average'];
+    $self->{az_aggregations} = ['Average', 'Maximum'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -170,7 +178,6 @@ sub check_options {
             }
         }
     }
-    use Data::Dumper; print Dumper($self->{az_aggregations});
 
     foreach my $metric (keys %metrics_mapping) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
@@ -241,21 +248,21 @@ __END__
 
 =head1 MODE
 
-Check Azure SQL Elastic Pool Sessions metrics.
+Check Azure SQL Elastic Pool Storage metrics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::elasticpool::plugin --custommode=azcli --mode=sessions
+perl centreon_plugins.pl --plugin=cloud::azure::database::elasticpool::plugin --custommode=azcli --mode=storage
 --resource=<sqlserver>/elasticpools/<elasticpool> --resource-group=<resourcegroup> --aggregation='average'
---critical-sessions-percent='90' --verbose
+--allocated-data-storage-percent='90' --verbose
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin --custommode=azcli --mode=sessions
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Sql/servers/xxx/elasticpools/xxx'
---aggregation='average' --critical-sessions-percent='90' --verbose
+--aggregation='average' --allocated-data-storage-percent='90' --verbose
 
 Default aggregation: 'average' / 'minimum' and 'maximum' are valid.
 
@@ -271,16 +278,18 @@ Set resource group (Required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter on specific metrics. The Azure format must be used, for example: 'sessions_percent'
+Filter on specific metrics. The Azure format must be used, for example: 'allocated_data_storage_percent'
 (Can be a regexp).
 
 =item B<--warning-*>
 
-Warning threshold where * can be: 'workers-percent', sessions_percent'.
+Warning threshold where * can be: 'allocated-data-storage', allocated-data-storage-percent',
+'storage-percent', 'storage-used'.
 
 =item B<--critical-*>
 
-Critical threshold where * can be: 'workers-percent', sessions_percent'.
+Critical threshold where * can be: 'allocated-data-storage', allocated-data-storage-percent',
+'storage-percent', 'storage-used'.
 
 =back
 

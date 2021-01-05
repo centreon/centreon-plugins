@@ -75,7 +75,7 @@ sub custom_metric_perfdata {
         instances => $self->{instance},
         nlabel    => $metrics_mapping{$self->{result_values}->{metric}}->{nlabel},
         unit      => $metrics_mapping{$self->{result_values}->{metric}}->{unit},
-        value     => sprintf("%.2f", $self->{result_values}->{value}),
+        value     => sprintf('%.2f', $self->{result_values}->{value}),
         warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
         critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
     );
@@ -86,7 +86,7 @@ sub custom_metric_output {
 
     my ($value, $unit) = ($self->{result_values}->{value}, $metrics_mapping{$self->{result_values}->{metric}}->{unit});
 
-    return sprintf("%s: %.2f %s", $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value, $unit);
+    return sprintf('%s: %.2f %s', $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value, $unit);
 }
 
 sub prefix_metric_output {
@@ -144,10 +144,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-            "resource:s@"           => { name => 'resource' },
-            "resource-group:s"      => { name => 'resource_group' },
-            "filter-metric:s"       => { name => 'filter_metric' },
-        });
+        'resource:s@'      => { name => 'resource' },
+        'resource-group:s' => { name => 'resource_group' },
+        'filter-metric:s'  => { name => 'filter_metric' },
+    });
 
     return $self;
 }
@@ -157,7 +157,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify either --resource <name> with --resource-group option or --resource <id>.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
         $self->{output}->option_exit();
     }
 
@@ -166,7 +166,7 @@ sub check_options {
     $self->{az_resource_type} = 'servers';
     $self->{az_resource_namespace} = 'Microsoft.Sql';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
     $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
@@ -246,7 +246,7 @@ __END__
 
 =head1 MODE
 
-Check Azure SQL Elastic Pool  CPU metrics.
+Check Azure SQL Elastic Pool CPU metrics.
 (Only applies to vCore-based elastic pools)
 
 Example:
