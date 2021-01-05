@@ -41,7 +41,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'postured-endpoints', nlabel => 'endpoint.postured.count', set => {
+        { label => 'postured-endpoints', nlabel => 'endpoints.postured.count', set => {
                 key_values => [ { name => 'postured' } ],
                 output_template => 'Postured endpoints: %d',
                 perfdatas => [
@@ -66,7 +66,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-counters:s" => { name => 'filter_counters' }
     });
 
     return $self;
