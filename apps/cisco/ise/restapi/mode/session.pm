@@ -49,11 +49,11 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'profiler-service-sessions', nlabel => 'sessions.profiler.count'set => {
+        { label => 'profiler-service-sessions', nlabel => 'sessions.profiler.count', set => {
                 key_values => [ { name => 'profiler' } ],
                 output_template => 'Profiler service sessions: %d',
                 perfdatas => [
-                    { label => 'profiler_service_sessions', template => '%d', min => 0 }s
+                    { label => 'profiler_service_sessions', template => '%d', min => 0 }
                 ]
             }
         }
