@@ -80,7 +80,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'maindb-status', typed => 2, critical_default => '%{last_maindb_version} ne %{current_maindb_version}', set => {
+        { label => 'maindb-status', type => 2, critical_default => '%{last_maindb_version} ne %{current_maindb_version}', set => {
                 key_values => [ { name => 'last_maindb_version' }, { name => 'current_maindb_version' }, { name => 'current_maindb_timediff' } ],
                 closure_custom_output => $self->can('custom_maindb_status_output'),
                 closure_custom_perfdata => sub { return 0; },
