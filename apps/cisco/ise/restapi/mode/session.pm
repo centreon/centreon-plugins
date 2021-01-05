@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'profiler' } ],
                 output_template => 'Profiler service sessions: %d',
                 perfdatas => [
-                    { label => 'profiler_service_sessions', template => '%d', min => 0 },
+                    { label => 'profiler_service_sessions', template => '%d', min => 0 }s
                 ]
             }
         }
