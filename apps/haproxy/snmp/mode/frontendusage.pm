@@ -25,21 +25,18 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
+sub prefix_frontend_output {
+    my ($self, %options) = @_;
+
+    return "Frontend '" . $options{instance_value}->{display} . "' ";
+}
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_alFrontendStatus'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return sprintf("status : %s", $self->{result_values}->{status});
 }
 
 sub set_counters {
@@ -50,15 +47,18 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{frontend} = [
-        { label => 'status', threshold => 0, set => {
+         {
+            label => 'status', 
+            type => 2, 
+            critical_default => '%{status} !~ /OPEN/i',
+            set => {
                 key_values => [ { name => 'alFrontendStatus' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'current-sessions', set => {
+        { label => 'current-sessions', nlabel => 'sessions.current.count', set => {
                 key_values => [ { name => 'alFrontendSessionCur' }, { name => 'display' } ],
                 output_template => 'Current sessions : %s',
                 perfdatas => [
@@ -67,7 +67,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-sessions', set => {
+        { label => 'total-sessions', nlabel => 'sessions.total.count', set => {
                 key_values => [ { name => 'alFrontendSessionTotal', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total sessions : %s',
                 perfdatas => [
@@ -76,7 +76,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'traffic-in', set => {
+        { label => 'traffic-in', nlabel => 'frontend.traffic.in.bitpersecond', set => {
                 key_values => [ { name => 'alFrontendBytesIN', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In : %s %s/s',
                 output_change_bytes => 2,
@@ -86,7 +86,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'traffic-out', set => {
+        { label => 'traffic-out', nlabel => 'frontend.traffic.out.bitpersecond', set => {
                 key_values => [ { name => 'alFrontendBytesOUT', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out : %s %s/s',
                 output_change_bytes => 2,
@@ -105,25 +105,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /OPEN/i' }
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_frontend_output {
-    my ($self, %options) = @_;
-
-    return "Frontend '" . $options{instance_value}->{display} . "' ";
 }
 
 my $mapping = {
@@ -142,6 +127,7 @@ my $mapping = {
         alFrontendStatus         => { oid => '.1.3.6.1.4.1.29385.106.1.0.17' },
     },
 };
+
 my $mapping_name = {
     csv => '.1.3.6.1.4.1.29385.106.1.0.0',
     entreprise => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.3', # alFrontendName
