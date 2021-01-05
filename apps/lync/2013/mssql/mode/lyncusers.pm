@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_user_output {
+    my ($self, %options) = @_;
+
+    return "'" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -33,24 +39,24 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{users} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'users.total.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => '%d Total users',
                 perfdatas => [
-                    { label => 'total_users', value => 'total', template => '%d',
-                      unit => 'users', min => 0, label_extra_instance => 0 },
-                ],
+                    { label => 'total_users', template => '%d',
+                      unit => 'users', min => 0, label_extra_instance => 0 }
+                ]
             }
         },
-        { label => 'unique', set => {
+        { label => 'unique', nlable => 'users.unique.count', set => {
                 key_values => [ { name => 'unique' } ],
                 output_template => '%d Unique users',
                 perfdatas => [
-                    { label => 'unique_users', value => 'unique', template => '%d',
-                      unit => 'users', min => 0, label_extra_instance => 0 },
-                ],
+                    { label => 'unique_users', template => '%d',
+                      unit => 'users', min => 0, label_extra_instance => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -63,12 +69,6 @@ sub new {
                                 {
                                 });
     return $self;
-}
-
-sub prefix_user_output {
-    my ($self, %options) = @_;
-
-    return "'" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
