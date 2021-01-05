@@ -45,9 +45,8 @@ sub set_counters {
                 key_values => [ { name => 'postured' } ],
                 output_template => 'Postured endpoints: %d',
                 perfdatas => [
-                    { label => 'postured_endpoints', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'postured_endpoints', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'profiler-service-sessions', nlabel => 'sessions.profiler.count'set => {
@@ -55,9 +54,9 @@ sub set_counters {
                 output_template => 'Profiler service sessions: %d',
                 perfdatas => [
                     { label => 'profiler_service_sessions', template => '%d', min => 0 },
-                ],
+                ]
             }
-        },
+        }
     ];
 }
 
