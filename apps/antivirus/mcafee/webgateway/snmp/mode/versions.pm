@@ -27,6 +27,17 @@ use warnings;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
+sub custom_version_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{output} = $options{extra_options}->{output_ref};
+    $self->{result_values}->{version} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};
+    $self->{result_values}->{timestamp} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_timestamp'};
+    $self->{result_values}->{since} = time() - $self->{result_values}->{timestamp};
+
+    return 0;
+}
+
 sub custom_version_threshold {
     my ($self, %options) = @_;
 
@@ -80,6 +91,13 @@ sub set_counters {
             }
         },
     ];
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{cache}->check_options(%options);
 }
 
 sub new {

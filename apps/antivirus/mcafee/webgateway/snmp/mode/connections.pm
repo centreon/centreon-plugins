@@ -50,7 +50,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'blocked-by-am', nlabel => 'connections.am.blocked.persecond', set => {
+        { label => 'blocked-by-am', nlabel => 'connections.antimalware.blocked.persecond', set => {
                 key_values => [ { name => 'stBlockedByAntiMalware', per_second => 1 } ],
                 output_template => 'Blocked by Anti Malware: %d',
                 perfdatas => [
@@ -58,7 +58,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'blocked-by-mf',  nlabel => 'connections.mf.blocked.persecond', set => {
+        { label => 'blocked-by-mf',  nlabel => 'connections.mediafilter.blocked.persecond', set => {
                 key_values => [ { name => 'stBlockedByMediaFilter', per_second => 1 } ],
                 output_template => 'Blocked by Media Filter: %d',
                 perfdatas => [
@@ -66,7 +66,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'blocked-by-uf',  nlabel => 'connections.uf.blocked.persecond', set => {
+        { label => 'blocked-by-uf',  nlabel => 'connections.urlfilter.blocked.persecond', set => {
                 key_values => [ { name => 'stBlockedByURLFilter', per_second => 1 } ],
                 output_template => 'Blocked by URL Filter: %d',
                 perfdatas => [

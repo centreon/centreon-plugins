@@ -36,7 +36,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'malware-detected', nlabel => 'malware.detected.persecond', set => {
+        { label => 'malware-detected', nlabel => 'malwares.detected.persecond', set => {
                 key_values => [ { name => 'stMalwareDetected', per_second => 1 } ],
                 output_template => 'Malware detected (per sec): %d',
                 perfdatas => [
@@ -46,7 +46,7 @@ sub set_counters {
         }
     ];
     $self->{maps_counters}->{categories} = [
-        { label => 'category', nlabel => 'malware.category.detected.persecond', set => {
+        { label => 'category', nlabel => 'category.malwares.detected.persecond', set => {
                 key_values => [ { name => 'stCategoryCount', per_second => 1 }, { name => 'stCategoryName' } ],
                 output_template => 'detections (per sec): %d',
                 perfdatas => [

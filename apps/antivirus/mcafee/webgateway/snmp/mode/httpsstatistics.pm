@@ -35,7 +35,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'requests', nlabel => 'requests.httpss.persecond', set => {
+        { label => 'requests', nlabel => 'httpss.requests.persecond', set => {
                 key_values => [ { name => 'stHttpsRequests', per_second => 1 } ],
                 output_template => 'HTTPS Requests (per sec): %d',
                 perfdatas => [
@@ -45,7 +45,7 @@ sub set_counters {
         }
     ];
     $self->{maps_counters}->{traffics} = [
-        { label => 'client-to-proxy', nlabel => 'traffic.client.to.proxy.bitspersecond', set => {
+        { label => 'client-to-proxy', nlabel => 'https.traffic.client2proxy.bitspersecond', set => {
                 key_values => [ { name => 'stHttpsBytesFromClient', per_second => 1 } ],
                 output_template => 'from client to proxy: %s %s/s',
                 output_change_bytes => 2,
@@ -54,7 +54,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'server-to-proxy', nlabel => 'traffic.server.to.proxy.bitspersecond', set => {
+        { label => 'server-to-proxy', nlabel => 'https.traffic.server2proxy.bitspersecond', set => {
                 key_values => [ { name => 'stHttpsBytesFromServer', per_second => 1 } ],
                 output_template => 'from server to proxy: %s %s/s',
                 output_change_bytes => 2,
@@ -63,7 +63,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'proxy-to-client', nlabel => 'traffic.proxy.to.client.bitspersecond', set => {
+        { label => 'proxy-to-client', nlabel => 'https.traffic.proxy2client.bitspersecond', set => {
                 key_values => [ { name => 'stHttpsBytesToClient', per_second => 1 } ],
                 output_template => 'from proxy to client: %s %s/s',
                 output_change_bytes => 2,
@@ -72,7 +72,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'proxy-to-server', nlabel => 'traffic.proxy.to.server.bitspersecond', set => {
+        { label => 'proxy-to-server', nlabel => 'https.traffic.proxy2server.bitspersecond', set => {
                 key_values => [ { name => 'stHttpsBytesToServer', per_second => 1 } ],
                 output_template => 'from proxy to server: %s %s/s',
                 output_change_bytes => 2,

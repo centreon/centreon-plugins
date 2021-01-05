@@ -61,7 +61,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-counters:s" => { name => 'filter_counters', default => '' },
     });
     return $self;
 }
