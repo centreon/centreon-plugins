@@ -173,7 +173,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'progress', nlabel => 'hosts.progress.installation.count', set => {
+        { label => 'progress', nlabel => 'hosts.installations.inprogress.count', set => {
                 key_values => [ { name => 'hostsInGroups' }, { name => 'hostsWithAntivirus' } ],
                 closure_custom_calc => $self->can('custom_progress_calc'),
                 closure_custom_output => $self->can('custom_progress_output'),
@@ -181,7 +181,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_progress_perfdata'),
             }
         },
-        { label => 'failed', nlabel => 'hosts.failed.installation.count', set => {
+        { label => 'failed', nlabel => 'hosts.failed.installations.count', set => {
                 key_values => [ { name => 'hostsRemoteInstallFailed' } ],
                 output_template => '%d failed remote installation(s)',
                 perfdatas => [

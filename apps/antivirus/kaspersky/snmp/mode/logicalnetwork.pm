@@ -76,7 +76,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'not-connected-long-time', nlabel => 'hosts.not.connected.count', set => {
+        { label => 'not-connected-long-time', nlabel => 'hosts.notconnected.count', set => {
                 key_values => [ { name => 'hostsNotConnectedLongTime' } ],
                 output_template => '%d host(s) has not connected for a long time',
                 perfdatas => [

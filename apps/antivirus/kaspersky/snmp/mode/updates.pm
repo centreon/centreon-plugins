@@ -136,6 +136,13 @@ sub set_counters {
     ];
 }
 
+sub check_options {	
+    my ($self, %options) = @_;	
+    $self->SUPER::check_options(%options);	
+
+    $self->{tz} = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});	
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
