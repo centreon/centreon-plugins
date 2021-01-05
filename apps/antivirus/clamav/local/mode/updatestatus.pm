@@ -47,7 +47,7 @@ sub custom_maindb_status_output {
         $self->{result_values}->{current_maindb_version}, 
         $self->{result_values}->{last_maindb_version}, 
         centreon::plugins::misc::change_seconds(
-            value => $self->{result_values}->{current_maindb_timediff}
+            value => $self->{result_values}->{current_maindb_timediff})
     );
 }
 
@@ -59,34 +59,8 @@ sub custom_dailydb_status_output {
         $self->{result_values}->{current_dailydb_version};
         $self->{result_values}->{last_dailydb_version},
         centreon::plugins::misc::change_seconds(
-            value => $self->{result_values}->{current_dailydb_timediff}
+            value => $self->{result_values}->{current_dailydb_timediff})
     );
-}
-
-sub custom_engine_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{current_engine_version} = $options{new_datas}->{$self->{instance} . '_current_engine_version'};
-    $self->{result_values}->{last_engine_version} = $options{new_datas}->{$self->{instance} . '_last_engine_version'};
-    return 0;
-}
-
-sub custom_maindb_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{current_maindb_version} = $options{new_datas}->{$self->{instance} . '_current_maindb_version'};
-    $self->{result_values}->{last_maindb_version} = $options{new_datas}->{$self->{instance} . '_last_maindb_version'};
-    $self->{result_values}->{current_maindb_timediff} = $options{new_datas}->{$self->{instance} . '_current_maindb_timediff'};
-    return 0;
-}
-
-sub custom_dailydb_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{current_dailydb_version} = $options{new_datas}->{$self->{instance} . '_current_dailydb_version'};
-    $self->{result_values}->{last_dailydb_version} = $options{new_datas}->{$self->{instance} . '_last_dailydb_version'};
-    $self->{result_values}->{current_dailydb_timediff} = $options{new_datas}->{$self->{instance} . '_current_dailydb_timediff'};
-    return 0;
 }
 
 sub set_counters {
@@ -99,7 +73,6 @@ sub set_counters {
     $self->{maps_counters}->{update} = [
         { label => 'engine-status', type => 2, critical_default => '%{last_engine_version} ne %{current_engine_version}', set => {
                 key_values => [ { name => 'last_engine_version' }, { name => 'current_engine_version' } ],
-                closure_custom_calc => $self->can('custom_engine_status_calc'),
                 closure_custom_output => $self->can('custom_engine_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
@@ -107,7 +80,6 @@ sub set_counters {
         },
         { label => 'maindb-status', typed => 2, critical_default => '%{last_maindb_version} ne %{current_maindb_version}', set => {
                 key_values => [ { name => 'last_maindb_version' }, { name => 'current_maindb_version' }, { name => 'current_maindb_timediff' } ],
-                closure_custom_calc => $self->can('custom_maindb_status_calc'),
                 closure_custom_output => $self->can('custom_maindb_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
@@ -115,7 +87,6 @@ sub set_counters {
         },
         { label => 'dailydb-status', type => 2, critical_default => '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000', set => {
                 key_values => [ { name => 'last_dailydb_version' }, { name => 'current_dailydb_version' }, { name => 'current_dailydb_timediff' } ],
-                closure_custom_calc => $self->can('custom_dailydb_status_calc'),
                 closure_custom_output => $self->can('custom_dailydb_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
