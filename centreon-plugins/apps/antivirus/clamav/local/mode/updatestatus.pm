@@ -47,7 +47,8 @@ sub custom_maindb_status_output {
         $self->{result_values}->{current_maindb_version}, 
         $self->{result_values}->{last_maindb_version}, 
         centreon::plugins::misc::change_seconds(
-            value => $self->{result_values}->{current_maindb_timediff})
+            value => $self->{result_values}->{current_maindb_timediff}
+        )
     );
 }
 
@@ -59,7 +60,8 @@ sub custom_dailydb_status_output {
         $self->{result_values}->{current_dailydb_version};
         $self->{result_values}->{last_dailydb_version},
         centreon::plugins::misc::change_seconds(
-            value => $self->{result_values}->{current_dailydb_timediff})
+            value => $self->{result_values}->{current_dailydb_timediff}
+        )
     );
 }
 
@@ -75,21 +77,21 @@ sub set_counters {
                 key_values => [ { name => 'last_engine_version' }, { name => 'current_engine_version' } ],
                 closure_custom_output => $self->can('custom_engine_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'maindb-status', typed => 2, critical_default => '%{last_maindb_version} ne %{current_maindb_version}', set => {
                 key_values => [ { name => 'last_maindb_version' }, { name => 'current_maindb_version' }, { name => 'current_maindb_timediff' } ],
                 closure_custom_output => $self->can('custom_maindb_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'dailydb-status', type => 2, critical_default => '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000', set => {
                 key_values => [ { name => 'last_dailydb_version' }, { name => 'current_dailydb_version' }, { name => 'current_dailydb_timediff' } ],
                 closure_custom_output => $self->can('custom_dailydb_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -111,9 +113,9 @@ sub new {
         'command:s'         => { name => 'command' },
         'command-path:s'    => { name => 'command_path' },
         'command-options:s' => { name => 'command_options' },
-        'nameservers:s@'              => { name => 'nameservers' },
-        'maindb-file:s'               => { name => 'maindb_file', default => '/var/lib/clamav/main.cvd' },
-        'dailydb-file:s'              => { name => 'dailydb_file', default => '/var/lib/clamav/daily.cvd' },
+        'nameservers:s@'    => { name => 'nameservers' },
+        'maindb-file:s'     => { name => 'maindb_file', default => '/var/lib/clamav/main.cvd' },
+        'dailydb-file:s'    => { name => 'dailydb_file', default => '/var/lib/clamav/daily.cvd' }
     });
     
     return $self;
@@ -128,7 +130,7 @@ sub check_options {
 
 sub get_clamav_last_update {
     my ($self, %options) = @_;
-    
+
     #0.99.2:57:23114:1487851834:1:63:45614:290
     # field 2 = main.cvd version number
     # field 3 = daily.cvd version number
@@ -144,7 +146,7 @@ sub get_clamav_last_update {
         $self->{output}->add_option_msg(short_msg => "Unable to get TXT Record : " . $handle->errorstring . ".");
         $self->{output}->option_exit();
     }
-    
+
     my @fields = split /:/, ($txt_query->answer)[0]->txtdata;
     ($self->{last_engine_version}, $self->{last_maindb_version}, $self->{last_dailydb_version}) = 
         ($fields[0], $fields[1], $fields[2]);
@@ -152,11 +154,11 @@ sub get_clamav_last_update {
 
 sub get_clamav_current_signature_info {
     my ($self, %options) = @_;
-    
+
     if ($options{content} !~ /====\s+$options{label}.*?Build\s+time:\s+(.*?)\n.*?Version:\s+(\d+)/msi) {
         return ;
     }
-    
+
     $self->{'current_' . $options{label} . 'db_version'} = $2;
     #13 Jun 2016 09:53 -0400
     my $time = $1;
@@ -179,12 +181,14 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->get_clamav_last_update();
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    sudo => $self->{option_results}->{sudo},
-                                                    command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{clamav_command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef);    
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{clamav_command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef
+    );
     #==== CLAMD ===
     #ClamAV 0.99.2/21723/Mon Jun 13 14:53:00 2016
     #==== DAILY ====
@@ -212,13 +216,12 @@ sub manage_selection {
     #Digital signature: AIzk/LYbX8K9OEbR5GMyJ6LWTqSu9ffa5bONcA0FN3+onMlZ2BMRzuyvVURBvAZvOaGPdtMBcgDJSl7fGxDfcxRWhIrQ98f8FPdAQaFPgWu3EX46ufw+IRZnM4irKKYuh1GdCIbsGs6jejWo9iNErsbDqkFSobVBkUJYxBgvqfd
     #Verification OK.
 
-    
     $self->get_clamav_current_signature_info(label => 'daily', content => $stdout);
     $self->get_clamav_current_signature_info(label => 'main', content => $stdout);    
     if ($stdout =~ /==== CLAMD.*?ClamAV (.*?)\//msi) {
         $self->{current_engine_version} = $1;
     }
-    
+
     $self->{update} = { 
         last_engine_version => $self->{last_engine_version}, last_maindb_version => $self->{last_maindb_version}, last_dailydb_version => $self->{last_dailydb_version},
         current_engine_version => $self->{current_engine_version},
