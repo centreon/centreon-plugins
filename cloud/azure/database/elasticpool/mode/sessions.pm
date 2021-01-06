@@ -170,7 +170,6 @@ sub check_options {
             }
         }
     }
-    use Data::Dumper; print Dumper($self->{az_aggregations});
 
     foreach my $metric (keys %metrics_mapping) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
