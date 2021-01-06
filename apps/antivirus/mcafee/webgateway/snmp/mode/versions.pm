@@ -62,12 +62,13 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'dat-version', set => {
                 key_values => [ { name => 'pMFEDATVersion' }, { name => 'pMFEDATVersion_timestamp' } ],
+                closure_custom_calc => $self->can('custom_version_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'pMFEDATVersion', output_ref => 'DAT Version' },
                 closure_custom_output => $self->can('custom_version_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -76,6 +77,7 @@ sub set_counters {
         },
         { label => 'tsdb-version', set => {
                 key_values => [ { name => 'pTSDBVersion' }, { name => 'pTSDBVersion_timestamp' } ],
+                closure_custom_calc => $self->can('custom_version_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'pTSDBVersion', output_ref => 'TrustedSource Database Version' },
                 closure_custom_output => $self->can('custom_version_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -84,12 +86,13 @@ sub set_counters {
         },
         { label => 'proactive-version', set => {
                 key_values => [ { name => 'pAMProactiveVersion' }, { name => 'pAMProactiveVersion_timestamp' } ],
+                closure_custom_calc => $self->can('custom_version_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'pAMProactiveVersion', output_ref => 'ProActive Database Version' },
                 closure_custom_output => $self->can('custom_version_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_version_threshold'),
             }
-        },
+        }
     ];
 }
 
@@ -105,10 +108,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-counters:s" => { name => 'filter_counters', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     $self->{cache} = centreon::plugins::statefile->new(%options);
     return $self;

@@ -35,7 +35,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'requests', nlabel => 'httpss.requests.persecond', set => {
+        { label => 'requests', nlabel => 'https.requests.persecond', set => {
                 key_values => [ { name => 'stHttpsRequests', per_second => 1 } ],
                 output_template => 'HTTPS Requests (per sec): %d',
                 perfdatas => [
