@@ -45,6 +45,26 @@ sub custom_node_output {
     }
 }
 
+sub custom_cluster_output {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{cluster_total} ne '') {
+        return sprintf(
+            'concurrent cluster users licenses usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+            $self->{result_values}->{cluster_total},
+            $self->{result_values}->{cluster_used},
+            $self->{result_values}->{cluster_used} * 100 / $self->{result_values}->{cluster_total},
+            $self->{result_values}->{cluster_total} - $self->{result_values}->{cluster_used},
+            ($self->{result_values}->{cluster_total} - $self->{result_values}->{cluster_used}) * 100 / $self->{result_values}->{cluster_total}
+        );
+    } else {
+        return sprintf(
+            'concurrent cluster users licenses used: %s',
+            $self->{result_values}->{cluster_used}
+        );
+    }
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -54,52 +74,67 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'node-users-usage', nlabel => 'node.users.usage.count', set => {
-                key_values => [ { name => 'node_used' }, { name => 'node_total' }  ],
+                key_values => [ { name => 'node_used' }, { name => 'node_total' } ],
                 closure_custom_output => $self->can('custom_node_output'),
                 perfdatas => [
-                    { value => 'node_used', template => '%d', min => 0, max => 'node_total' },
-                ],
+                    { template => '%d', min => 0, max => 'node_total' }
+                ]
             }
         },
         { label => 'node-users-free', nlabel => 'node.users.free.count', display_ok => 0, set => {
-                key_values => [ { name => 'node_free' }, { name => 'node_used' }, { name => 'node_total' }  ],
+                key_values => [ { name => 'node_free' }, { name => 'node_used' }, { name => 'node_total' } ],
                 closure_custom_output => $self->can('custom_node_output'),
                 perfdatas => [
-                    { value => 'node_free', template => '%d', min => 0, max => 'node_total' },
-                ],
+                    { template => '%d', min => 0, max => 'node_total' }
+                ]
             }
         },
         { label => 'node-users-usage-prct', nlabel => 'node.users.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'prct_node_used' } ],
-                output_template => 'concurrent users licenses used: %.2f %%',
+                key_values => [ { name => 'node_prct_used' }, { name => 'node_free' }, { name => 'node_used' }, { name => 'node_total' } ],
+                closure_custom_output => $self->can('custom_node_output'),
                 perfdatas => [
-                    { value => 'prct_node_used', template => '%.2f', min => 0, max => 100,
-                      unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        },
+        { label => 'cluster-users-usage', nlabel => 'cluster.users.usage.count', set => {
+                key_values => [ { name => 'cluster_used' }, { name => 'cluster_total' }  ],
+                closure_custom_output => $self->can('custom_cluster_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'cluster_total' }
+                ]
+            }
+        },
+        { label => 'cluster-users-free', nlabel => 'node.users.free.count', display_ok => 0, set => {
+                key_values => [ { name => 'cluster_free' }, { name => 'cluster_used' }, { name => 'cluster_total' } ],
+                closure_custom_output => $self->can('custom_cluster_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'cluster_total' }
+                ]
+            }
+        },
+        { label => 'cluster-users-usage-prct', nlabel => 'cluster.users.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'cluster_prct_used' }, { name => 'cluster_free' }, { name => 'cluster_used' }, { name => 'cluster_total' } ],
+                closure_custom_output => $self->can('custom_cluster_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'web-users-signedin-usage', nlabel => 'web.users.signedin.usage.count', set => {
                 key_values => [ { name => 'web' } ],
                 output_template => 'current concurrent signed-in web users connections: %s',
                 perfdatas => [
-                    { value => 'web', template => '%s', min => 0 },
-                ],
+                    { value => 'web', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'meeting-users-usage', nlabel => 'meeting.users.usage.count', set => {
                 key_values => [ { name => 'meeting' } ],
                 output_template => 'current concurrent meeting users connections: %s',
                 perfdatas => [
-                    { value => 'meeting', template => '%s', min => 0 },
-                ],
-            }
-        },
-        { label => 'cluster-users-usage', nlabel => 'cluster.users.usage.count', set => {
-                key_values => [ { name => 'cluster' } ],
-                output_template => 'current concurrent cluster logged users connections: %s',
-                perfdatas => [
-                    { value => 'cluster', template => '%s', min => 0 },
-                ],
+                    { value => 'meeting', template => '%s', min => 0 }
+                ]
             }
         }
     ];
@@ -136,12 +171,18 @@ sub manage_selection {
     $self->{global} = {
         web => $result->{$oid_signedInWebUsers},
         meeting => $result->{$oid_meetingUserCount},
-        cluster => $result->{$oid_clusterConcurrentUsers},
+        cluster_used => $result->{$oid_clusterConcurrentUsers},
+        cluster_free => defined($result->{$oid_iveMaxConcurrentUsersLicenseCapacity}) && $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} > 0 ? 
+            $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} - $result->{$oid_clusterConcurrentUsers} : undef,
+        cluster_total => defined($result->{$oid_iveMaxConcurrentUsersLicenseCapacity}) && $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} > 0 ? $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} : '',
+        cluster_prct_used => 
+            defined($result->{$oid_iveMaxConcurrentUsersLicenseCapacity}) && $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} > 0 ?
+                $result->{$oid_clusterConcurrentUsers} * 100 / $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} : undef,
         node_used => $result->{$oid_iveConcurrentUsers},
         node_free => defined($result->{$oid_iveMaxConcurrentUsersLicenseCapacity}) && $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} > 0 ? 
             $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} - $result->{$oid_iveConcurrentUsers} : undef,
         node_total => defined($result->{$oid_iveMaxConcurrentUsersLicenseCapacity}) && $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} > 0 ? $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} : '',
-        prct_node_used => 
+        node_prct_used => 
             defined($result->{$oid_iveMaxConcurrentUsersLicenseCapacity}) && $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} > 0 ?
                 $result->{$oid_iveConcurrentUsers} * 100 / $result->{$oid_iveMaxConcurrentUsersLicenseCapacity} : undef
     };
@@ -166,7 +207,8 @@ Example: --filter-counters='web|meeting'
 
 Thresholds.
 Can be: 'node-users-usage', 'node-users-free', 'node-users-usage-prct',
-'web-users-signedin-usage', 'meeting-users-usage', 'cluster-users-usage'.
+'cluster-users-usage', 'cluster-users-free', 'cluster-users-usage-prct',
+'web-users-signedin-usage', 'meeting-users-usage'.
 
 =back
 
