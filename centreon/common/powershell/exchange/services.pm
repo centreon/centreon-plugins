@@ -104,6 +104,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 services running or not running.
+Method to check Exchange services running or not running.
 
 =cut

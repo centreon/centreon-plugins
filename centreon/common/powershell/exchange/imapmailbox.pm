@@ -116,6 +116,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 imap on a specific mailbox.
+Method to check Exchange 2010 on a specific mailbox.
 
 =cut

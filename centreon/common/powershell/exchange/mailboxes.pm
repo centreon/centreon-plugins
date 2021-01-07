@@ -164,6 +164,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 databases.
+Method to check Exchange mailboxes.
 
 =cut

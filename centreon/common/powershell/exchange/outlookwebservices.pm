@@ -116,6 +116,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 outlook autodiscovery webservices.
+Method to check Exchange outlook autodiscovery webservices.
 
 =cut

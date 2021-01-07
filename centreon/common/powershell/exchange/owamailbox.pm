@@ -114,6 +114,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 owa connection on a specific mailbox.
+Method to check Exchange owa connection on a specific mailbox.
 
 =cut

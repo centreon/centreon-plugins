@@ -621,12 +621,6 @@ Nous excluons le module ``IO::Socket::INET6`` (Perl 5.14 intègre la fonctionnal
   -M Net::FTPSSL ^
   -M Authen::NTLM ^
   -M JSON::XS ^
-  -M centreon::plugins::script ^
-  -M centreon::plugins::backend::http::lwp ^
-  -M centreon::plugins::backend::http::curl ^
-  -M centreon::plugins::backend::http::useragent ^
-  -M centreon::plugins::backend::http::curlconstants ^
-  -M centreon::plugins::alternative::Getopt ^
   -M apps::backup::netbackup::local::plugin ^
   -M apps::backup::netbackup::local::mode::dedupstatus ^
   -M apps::backup::netbackup::local::mode::drivecleaning ^
@@ -637,66 +631,78 @@ Nous excluons le module ``IO::Socket::INET6`` (Perl 5.14 intègre la fonctionnal
   -M apps::backup::veeam::local::plugin ^
   -M apps::backup::veeam::local::mode::jobstatus ^
   -M apps::backup::veeam::local::mode::listjobs ^
-  -M apps::activedirectory::local::plugin ^
-  -M apps::activedirectory::local::mode::dcdiag ^
-  -M apps::activedirectory::local::mode::dfsrbacklog ^
-  -M apps::activedirectory::local::mode::netdom ^
+  -M apps::backup::veeam::local::mode::tapejobs ^
+  -M apps::centreon::local::plugin ^
+  -M apps::centreon::local::mode::downtimetrap ^
+  -M apps::centreon::local::mode::centreonpluginsversion ^
   -M apps::citrix::local::plugin ^
   -M apps::citrix::local::mode::license ^
   -M apps::citrix::local::mode::session ^
   -M apps::citrix::local::mode::zone ^
   -M apps::citrix::local::mode::folder ^
-  -M apps::iis::local::plugin ^
-  -M apps::iis::local::mode::listapplicationpools ^
-  -M apps::iis::local::mode::applicationpoolstate ^
-  -M apps::iis::local::mode::listsites ^
-  -M apps::iis::local::mode::webservicestatistics ^
-  -M apps::exchange::2010::local::plugin ^
-  -M apps::exchange::2010::local::mode::activesyncmailbox ^
-  -M apps::exchange::2010::local::mode::databases ^
-  -M apps::exchange::2010::local::mode::listdatabases ^
-  -M apps::exchange::2010::local::mode::imapmailbox ^
-  -M apps::exchange::2010::local::mode::mapimailbox ^
-  -M apps::exchange::2010::local::mode::outlookwebservices ^
-  -M apps::exchange::2010::local::mode::owamailbox ^
-  -M apps::exchange::2010::local::mode::queues ^
-  -M apps::exchange::2010::local::mode::replicationhealth ^
-  -M apps::exchange::2010::local::mode::services ^
-  -M centreon::common::powershell::exchange::2010::powershell ^
-  -M apps::cluster::mscs::local::plugin ^
-  -M apps::cluster::mscs::local::mode::listnodes ^
-  -M apps::cluster::mscs::local::mode::listresources ^
-  -M apps::cluster::mscs::local::mode::networkstatus ^
-  -M apps::cluster::mscs::local::mode::nodestatus ^
-  -M apps::cluster::mscs::local::mode::resourcestatus ^
-  -M apps::cluster::mscs::local::mode::resourcegroupstatus ^
-  -M os::windows::local::plugin ^
-  -M os::windows::local::mode::cmdreturn ^
-  -M os::windows::local::mode::ntp ^
-  -M os::windows::local::mode::pendingreboot ^
-  -M os::windows::local::mode::sessions ^
-  -M os::windows::local::mode::liststorages ^
-  -M centreon::common::powershell::windows::liststorages ^
-  -M storage::dell::compellent::local::plugin ^
-  -M storage::dell::compellent::local::mode::hbausage ^
-  -M storage::dell::compellent::local::mode::volumeusage ^
-  -M hardware::devices::safenet::hsm::protecttoolkit::plugin ^
-  -M hardware::devices::safenet::hsm::protecttoolkit::mode::hardware ^
-  -M hardware::devices::safenet::hsm::protecttoolkit::mode::components::temperature ^
-  -M hardware::devices::safenet::hsm::protecttoolkit::mode::components::hwstatus ^
-  -M hardware::devices::safenet::hsm::protecttoolkit::mode::components::memory ^
-  -M apps::centreon::local::plugin ^
-  -M apps::centreon::local::mode::downtimetrap ^
-  -M apps::centreon::local::mode::centreonpluginsversion ^
-  -M apps::hyperv::2012::local::plugin ^
-  -M apps::hyperv::2012::local::mode::listnodevms ^
-  -M apps::hyperv::2012::local::mode::scvmmintegrationservice ^
-  -M apps::hyperv::2012::local::mode::scvmmsnapshot ^
-  -M apps::hyperv::2012::local::mode::scvmmvmstatus ^
-  -M apps::hyperv::2012::local::mode::nodeintegrationservice ^
-  -M apps::hyperv::2012::local::mode::nodereplication ^
-  -M apps::hyperv::2012::local::mode::nodesnapshot ^
-  -M apps::hyperv::2012::local::mode::nodevmstatus ^
+  -M apps::microsoft::activedirectory::local::plugin ^
+  -M apps::microsoft::activedirectory::local::mode::dcdiag ^
+  -M apps::microsoft::activedirectory::local::mode::dfsrbacklog ^
+  -M apps::microsoft::activedirectory::local::mode::netdom ^
+  -M apps::microsoft::exchange::local::plugin ^
+  -M apps::microsoft::exchange::local::mode::activesyncmailbox ^
+  -M apps::microsoft::exchange::local::mode::databases ^
+  -M apps::microsoft::exchange::local::mode::listdatabases ^
+  -M apps::microsoft::exchange::local::mode::imapmailbox ^
+  -M apps::microsoft::exchange::local::mode::mapimailbox ^
+  -M apps::microsoft::exchange::local::mode::outlookwebservices ^
+  -M apps::microsoft::exchange::local::mode::owamailbox ^
+  -M apps::microsoft::exchange::local::mode::queues ^
+  -M apps::microsoft::exchange::local::mode::replicationhealth ^
+  -M apps::microsoft::exchange::local::mode::services ^
+  -M apps::microsoft::hyperv::2012::local::plugin ^
+  -M apps::microsoft::hyperv::2012::local::mode::listnodevms ^
+  -M apps::microsoft::hyperv::2012::local::mode::scvmmintegrationservice ^
+  -M apps::microsoft::hyperv::2012::local::mode::scvmmsnapshot ^
+  -M apps::microsoft::hyperv::2012::local::mode::scvmmvmstatus ^
+  -M apps::microsoft::hyperv::2012::local::mode::nodeintegrationservice ^
+  -M apps::microsoft::hyperv::2012::local::mode::nodereplication ^
+  -M apps::microsoft::hyperv::2012::local::mode::nodesnapshot ^
+  -M apps::microsoft::hyperv::2012::local::mode::nodevmstatus ^
+  -M apps::microsoft::iis::local::plugin ^
+  -M apps::microsoft::iis::local::mode::listapplicationpools ^
+  -M apps::microsoft::iis::local::mode::applicationpoolstate ^
+  -M apps::microsoft::iis::local::mode::listsites ^
+  -M apps::microsoft::iis::local::mode::webservicestatistics ^
+  -M apps::microsoft::mscs::local::plugin ^
+  -M apps::microsoft::mscs::local::mode::listnodes ^
+  -M apps::microsoft::mscs::local::mode::listresources ^
+  -M apps::microsoft::mscs::local::mode::networkstatus ^
+  -M apps::microsoft::mscs::local::mode::nodestatus ^
+  -M apps::microsoft::mscs::local::mode::resourcestatus ^
+  -M apps::microsoft::mscs::local::mode::resourcegroupstatus ^
+  -M apps::microsoft::sccm::local::plugin ^
+  -M apps::microsoft::sccm::local::mode::databasereplicationstatus ^
+  -M apps::microsoft::sccm::local::mode::sitestatus ^
+  -M apps::microsoft::wsus::local::plugin ^
+  -M apps::microsoft::wsus::local::mode::computersstatus ^
+  -M apps::microsoft::wsus::local::mode::updatesstatus ^
+  -M apps::microsoft::wsus::local::mode::synchronisationstatus ^
+  -M apps::microsoft::wsus::local::mode::serverstatistics ^
+  -M apps::protocols::ldap::plugin ^
+  -M apps::protocols::ldap::mode::login ^
+  -M apps::protocols::ldap::mode::search ^
+  -M apps::protocols::ftp::plugin ^
+  -M apps::protocols::ftp::mode::commands ^
+  -M apps::protocols::ftp::mode::date ^
+  -M apps::protocols::ftp::mode::filescount ^
+  -M apps::protocols::ftp::mode::login ^
+  -M apps::protocols::http::plugin ^
+  -M apps::protocols::http::mode::expectedcontent ^
+  -M apps::protocols::http::mode::response ^
+  -M apps::protocols::tcp::plugin ^
+  -M apps::protocols::tcp::mode::responsetime ^
+  -M apps::protocols::x509::plugin ^
+  -M apps::protocols::x509::mode::certificate ^
+  -M apps::protocols::x509::mode::validity ^
+  -M centreon::common::protocols::ldap::lib::ldap ^
+  -M centreon::common::powershell::exchange::powershell ^
+  -M centreon::common::powershell::functions ^
   -M centreon::common::powershell::hyperv::2012::listnodevms ^
   -M centreon::common::powershell::hyperv::2012::nodeintegrationservice ^
   -M centreon::common::powershell::hyperv::2012::nodereplication ^
@@ -705,31 +711,35 @@ Nous excluons le module ``IO::Socket::INET6`` (Perl 5.14 intègre la fonctionnal
   -M centreon::common::powershell::hyperv::2012::scvmmintegrationservice ^
   -M centreon::common::powershell::hyperv::2012::scvmmsnapshot ^
   -M centreon::common::powershell::hyperv::2012::scvmmvmstatus ^
-  -M apps::protocols::http::plugin ^
-  -M apps::protocols::http::mode::expectedcontent ^
-  -M apps::protocols::http::mode::response ^
-  -M apps::protocols::tcp::plugin ^
-  -M apps::protocols::tcp::mode::responsetime ^
-  -M apps::protocols::ftp::plugin ^
-  -M apps::protocols::ftp::mode::commands ^
-  -M apps::protocols::ftp::mode::date ^
-  -M apps::protocols::ftp::mode::filescount ^
-  -M apps::protocols::ftp::mode::login ^
-  -M apps::backup::veeam::local::plugin ^
-  -M apps::backup::veeam::local::mode::jobstatus ^
-  -M apps::backup::veeam::local::mode::listjobs ^
+  -M centreon::common::powershell::sccm::databasereplicationstatus ^
+  -M centreon::common::powershell::sccm::sitestatus ^
   -M centreon::common::powershell::veeam::jobstatus ^
   -M centreon::common::powershell::veeam::listjobs ^
+  -M centreon::common::powershell::veeam::tapejobs ^
+  -M centreon::common::powershell::windows::liststorages ^
   -M centreon::common::powershell::wsus::computersstatus ^
   -M centreon::common::powershell::wsus::updatesstatus ^
   -M centreon::common::powershell::wsus::synchronisationstatus ^
   -M centreon::common::powershell::wsus::serverstatistics ^
-  -M apps::wsus::local::plugin ^
-  -M apps::wsus::local::mode::computersstatus ^
-  -M apps::wsus::local::mode::updatesstatus ^
-  -M apps::wsus::local::mode::synchronisationstatus ^
-  -M apps::wsus::local::mode::serverstatistics ^
-  -M centreon::common::powershell::functions ^
+  -M centreon::plugins::alternative::Getopt ^
+  -M centreon::plugins::backend::http::lwp ^
+  -M centreon::plugins::backend::http::curl ^
+  -M centreon::plugins::backend::http::curlconstants ^
+  -M centreon::plugins::script ^
+  -M hardware::devices::safenet::hsm::protecttoolkit::plugin ^
+  -M hardware::devices::safenet::hsm::protecttoolkit::mode::hardware ^
+  -M hardware::devices::safenet::hsm::protecttoolkit::mode::components::temperature ^
+  -M hardware::devices::safenet::hsm::protecttoolkit::mode::components::hwstatus ^
+  -M hardware::devices::safenet::hsm::protecttoolkit::mode::components::memory ^
+  -M os::windows::local::plugin ^
+  -M os::windows::local::mode::cmdreturn ^
+  -M os::windows::local::mode::ntp ^
+  -M os::windows::local::mode::pendingreboot ^
+  -M os::windows::local::mode::sessions ^
+  -M os::windows::local::mode::liststorages ^
+  -M storage::dell::compellent::local::plugin ^
+  -M storage::dell::compellent::local::mode::hbausage ^
+  -M storage::dell::compellent::local::mode::volumeusage ^
   --verbose
   
   pause

@@ -108,6 +108,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to list Exchange 2010 databases.
+Method to list Exchange databases.
 
 =cut
