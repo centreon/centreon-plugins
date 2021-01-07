@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'match', set => {
+        { label => 'match', nlabel => 'packets.match.persecond',set => {
                 key_values => [ { name => 'pfCounterMatch', per_second => 1 } ],
                 output_template => 'Packets Matched Filter Rule : %.2f/s',
                 perfdatas => [
@@ -42,7 +42,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'badoffset', set => {
+        { label => 'badoffset', nlabel => 'packets.bad.offset.persecond', set => {
                 key_values => [ { name => 'pfCounterBadOffset', per_second => 1 } ],
                 output_template => 'Bad Offset Packets : %.2f/s',
                 perfdatas => [
@@ -50,7 +50,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'fragment', set => {
+        { label => 'fragment', nlabel => 'packets.fragmented.persecond',set => {
                 key_values => [ { name => 'pfCounterFragment', per_second => 1 } ],
                 output_template => 'Fragmented Packets : %.2f/s',
                 perfdatas => [
@@ -58,7 +58,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'short', set => {
+        { label => 'short', nlabem => 'packets.short.persecond', set => {
                 key_values => [ { name => 'pfCounterShort', per_second => 1 } ],
                 output_template => 'Short Packets : %.2f/s',
                 perfdatas => [
@@ -66,7 +66,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'normalize', set => {
+        { label => 'normalize', nlabel => 'packets.normalized.persecond',set => {
                 key_values => [ { name => 'pfCounterNormalize', per_second => 1 } ],
                 output_template => 'Normalized Packets : %.2f/s',
                 perfdatas => [
@@ -74,7 +74,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memdrop', set => {
+        { label => 'memdrop', nlabel => 'packets.dropped.persecond',set => {
                 key_values => [ { name => 'pfCounterMemDrop', per_second => 1 } ],
                 output_template => 'Dropped Packets Due To Memory : %.2f/s',
                 perfdatas => [

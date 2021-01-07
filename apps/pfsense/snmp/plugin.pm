@@ -30,12 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes}} = {
         'list-pfinterfaces' => 'apps::pfsense::snmp::mode::listpfinterfaces',
         'packet-stats'      => 'apps::pfsense::snmp::mode::packetstats',
         'pfinterfaces'      => 'apps::pfsense::snmp::mode::pfinterfaces',
         'runtime'     	    => 'apps::pfsense::snmp::mode::runtime',
-    );
+    };
 
     return $self;
 }
