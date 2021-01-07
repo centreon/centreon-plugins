@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::databases;
+package centreon::common::powershell::exchange::databases;
 
 use strict;
 use warnings;
-use centreon::common::powershell::exchange::2010::powershell;
+use centreon::common::powershell::exchange::powershell;
 use centreon::common::powershell::functions;
 
 sub get_powershell {
@@ -32,7 +32,7 @@ sub get_powershell {
     my $no_mapi = (defined($options{no_mapi})) ? 1 : 0;
     my $no_copystatus = (defined($options{no_copystatus})) ? 1 : 0;
 
-    my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
+    my $ps = centreon::common::powershell::exchange::powershell::powershell_init(%options);
     $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
     $ps .= centreon::common::powershell::functions::convert_to_json(%options);
 
@@ -61,19 +61,29 @@ try {
 $items = New-Object System.Collections.Generic.List[Hashtable];
 Foreach ($DB in $MountedDB) {
     $item = @{}
+';
 
+    if (defined($options{filter_server}) && $options{filter_server} ne '') {
+        $ps .= '
+    if (!($DB.Server.Name -match "' . $options{filter_server} . '")) {
+        continue
+    }
+';
+    }
+
+    $ps .= '
     $item.database = $DB.Name
     $item.server = $DB.Server.Name
     $item.mounted = $DB.Mounted
     $item.size = $DB.DatabaseSize.ToBytes().ToString()
     $item.asize = $DB.AvailableNewMailboxSpace.ToBytes().ToString()
 ';
-    
+
     if (defined($options{filter_database_test}) && $options{filter_database_test} ne '') {
         $ps .= '
-        if (!($DB.Name -match "' . $options{filter_database_test} . '")) {
-            continue
-        }
+    if (!($DB.Name -match "' . $options{filter_database_test} . '")) {
+        continue
+    }
 ';
     }
     
@@ -127,6 +137,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 databases.
+Method to check Exchange databases.
 
 =cut

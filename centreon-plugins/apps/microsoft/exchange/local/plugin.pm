@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::microsoft::exchange::2010::local::plugin;
+package apps::microsoft::exchange::local::plugin;
 
 use strict;
 use warnings;
@@ -31,16 +31,17 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'activesync-mailbox'   => 'apps::microsoft::exchange::2010::local::mode::activesyncmailbox',
-        'databases'            => 'apps::microsoft::exchange::2010::local::mode::databases',
-        'list-databases'       => 'apps::microsoft::exchange::2010::local::mode::listdatabases',
-        'imap-mailbox'         => 'apps::microsoft::exchange::2010::local::mode::imapmailbox',
-        'mapi-mailbox'         => 'apps::microsoft::exchange::2010::local::mode::mapimailbox',
-        'outlook-webservices'  => 'apps::microsoft::exchange::2010::local::mode::outlookwebservices',
-        'owa-mailbox'          => 'apps::microsoft::exchange::2010::local::mode::owamailbox',
-        'queues'               => 'apps::microsoft::exchange::2010::local::mode::queues',
-        'replication-health'   => 'apps::microsoft::exchange::2010::local::mode::replicationhealth',
-        'services'             => 'apps::microsoft::exchange::2010::local::mode::services'
+        'activesync-mailbox'   => 'apps::microsoft::exchange::local::mode::activesyncmailbox',
+        'databases'            => 'apps::microsoft::exchange::local::mode::databases',
+        'list-databases'       => 'apps::microsoft::exchange::local::mode::listdatabases',
+        'imap-mailbox'         => 'apps::microsoft::exchange::local::mode::imapmailbox',
+        'mailboxes'            => 'apps::microsoft::exchange::local::mode::mailboxes',
+        'mapi-mailbox'         => 'apps::microsoft::exchange::local::mode::mapimailbox',
+        'outlook-webservices'  => 'apps::microsoft::exchange::local::mode::outlookwebservices',
+        'owa-mailbox'          => 'apps::microsoft::exchange::local::mode::owamailbox',
+        'queues'               => 'apps::microsoft::exchange::local::mode::queues',
+        'replication-health'   => 'apps::microsoft::exchange::local::mode::replicationhealth',
+        'services'             => 'apps::microsoft::exchange::local::mode::services'
     };
 
     return $self;

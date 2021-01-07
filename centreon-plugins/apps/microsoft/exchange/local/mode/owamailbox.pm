@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::microsoft::exchange::2010::local::mode::imapmailbox;
+package apps::microsoft::exchange::local::mode::owamailbox;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::imapmailbox;
+use centreon::common::powershell::exchange::owamailbox;
 
 sub new {
     my ($class, %options) = @_;
@@ -33,20 +33,22 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'remote-host:s'       => { name => 'remote_host' },
-        'remote-user:s'       => { name => 'remote_user' },
-        'remote-password:s'   => { name => 'remote_password' },
-        'no-ps'               => { name => 'no_ps' },
-        'timeout:s'           => { name => 'timeout', default => 50 },
-        'command:s'           => { name => 'command', default => 'powershell.exe' },
-        'command-path:s'      => { name => 'command_path' },
-        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        'ps-exec-only'        => { name => 'ps_exec_only' },
-        'ps-display'          => { name => 'ps_display' },
-        'warning:s'           => { name => 'warning' },
-        'critical:s'          => { name => 'critical', default => '%{result} !~ /Success/i' },
-        'mailbox:s'           => { name => 'mailbox' },
-        'password:s'          => { name => 'password' }
+        'remote-host:s'     => { name => 'remote_host' },
+        'remote-user:s'     => { name => 'remote_user' },
+        'remote-password:s' => { name => 'remote_password' },
+        'no-ps'             => { name => 'no_ps' },
+        'timeout:s'         => { name => 'timeout', default => 50 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'ps-exec-only'      => { name => 'ps_exec_only' },
+        'ps-display'        => { name => 'ps_display' },
+        'warning:s'         => { name => 'warning' },
+        'critical:s'        => { name => 'critical', default => '%{result} !~ /Success/i' },
+        'url:s'             => { name => 'url' },
+        'mailbox:s'         => { name => 'mailbox' },
+        'password:s'        => { name => 'password' },
+        'no-trust-ssl'      => { name => 'no_trust_ssl' }
     });
 
     return $self;
@@ -66,6 +68,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    if (!defined($self->{option_results}->{url}) || $self->{option_results}->{url} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify '--url' option.");
+        $self->{output}->option_exit();
+    }
     if (!defined($self->{option_results}->{mailbox}) || $self->{option_results}->{mailbox} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--mailbox' option.");
         $self->{output}->option_exit();
@@ -81,12 +87,14 @@ sub run {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::exchange::2010::imapmailbox::get_powershell(
+        my $ps = centreon::common::powershell::exchange::owamailbox::get_powershell(
             remote_host => $self->{option_results}->{remote_host},
             remote_user => $self->{option_results}->{remote_user},
             remote_password => $self->{option_results}->{remote_password},
+            url => $self->{option_results}->{url},
             mailbox => $self->{option_results}->{mailbox},
-            password => $self->{option_results}->{password}
+            password => $self->{option_results}->{password}, 
+            no_trust_ssl => $self->{option_results}->{no_trust_ssl}
         );
         if (defined($self->{option_results}->{ps_display})) {
             $self->{output}->output_add(
@@ -115,7 +123,7 @@ sub run {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    centreon::common::powershell::exchange::2010::imapmailbox::check($self, stdout => $stdout, mailbox => $self->{option_results}->{mailbox});
+    centreon::common::powershell::exchange::owamailbox::check($self, stdout => $stdout, mailbox => $self->{option_results}->{mailbox});
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -127,7 +135,7 @@ __END__
 
 =head1 MODE
 
-Check imap to a mailbox.
+Check OWA connection to a mailbox.
 
 =over 8
 
@@ -182,6 +190,10 @@ Can used special variables like: %{result}, %{scenario}
 Set critical threshold (Default: '%{result} !~ /Success/i').
 Can used special variables like: %{result}, %{scenario}
 
+=item B<--url>
+
+Set the OWA Url (Required).
+
 =item B<--mailbox>
 
 Set the mailbox to check (Required).
@@ -189,6 +201,10 @@ Set the mailbox to check (Required).
 =item B<--password>
 
 Set the password for the mailbox (Required).
+
+=item B<--no-trust-ssl>
+
+By default, SSL certificate validy is not checked.
 
 =back
 

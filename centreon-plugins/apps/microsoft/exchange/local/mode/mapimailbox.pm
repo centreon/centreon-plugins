@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::microsoft::exchange::2010::local::mode::services;
+package apps::microsoft::exchange::local::mode::mapimailbox;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::services;
+use centreon::common::powershell::exchange::mapimailbox;
 
 sub new {
     my ($class, %options) = @_;
@@ -44,7 +44,8 @@ sub new {
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
         'warning:s'         => { name => 'warning' },
-        'critical:s'        => { name => 'critical', default => '%{requiredservicesrunning} =~ /True/i and %{servicesnotrunning} ne ""' }
+        'critical:s'        => { name => 'critical', default => '%{result} !~ /Success/i' },
+        'mailbox:s'         => { name => 'mailbox' }
     });
 
     return $self;
@@ -64,6 +65,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    if (!defined($self->{option_results}->{mailbox}) || $self->{option_results}->{mailbox} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify '--mailbox' option.");
+        $self->{output}->option_exit();
+    }
     $self->change_macros();
 }
 
@@ -71,10 +76,11 @@ sub run {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::exchange::2010::services::get_powershell(
+        my $ps = centreon::common::powershell::exchange::mapimailbox::get_powershell(
             remote_host => $self->{option_results}->{remote_host},
             remote_user => $self->{option_results}->{remote_user},
-            remote_password => $self->{option_results}->{remote_password}
+            remote_password => $self->{option_results}->{remote_password},
+            mailbox => $self->{option_results}->{mailbox}
         );
         if (defined($self->{option_results}->{ps_display})) {
             $self->{output}->output_add(
@@ -103,8 +109,8 @@ sub run {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    centreon::common::powershell::exchange::2010::services::check($self, stdout => $stdout);
-    
+    centreon::common::powershell::exchange::mapimailbox::check($self, stdout => $stdout, mailbox => $self->{option_results}->{mailbox});
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -115,7 +121,7 @@ __END__
 
 =head1 MODE
 
-Check exchange services.
+Check mapi connection to a mailbox.
 
 =over 8
 
@@ -163,12 +169,16 @@ Print powershell output.
 =item B<--warning>
 
 Set warning threshold.
-Can used special variables like: %{servicesrunning}, %{servicesnotrunning}, %{role}, %{requiredservicesrunning}
+Can used special variables like: %{result}, %{scenario}
 
 =item B<--critical>
 
-Set critical threshold (Default: '%{requiredservicesrunning} =~ /True/i and %{servicesnotrunning} ne ""').
-Can used special variables like: %{servicesrunning}, %{servicesnotrunning}, %{role}, %{requiredservicesrunning}
+Set critical threshold (Default: '%{result} !~ /Success/i').
+Can used special variables like: %{result}, %{scenario}
+
+=item B<--mailbox>
+
+Set the mailbox to check (Required).
 
 =back
 

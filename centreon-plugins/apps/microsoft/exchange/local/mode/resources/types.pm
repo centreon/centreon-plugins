@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::microsoft::exchange::2010::local::mode::resources::types;
+package apps::microsoft::exchange::local::mode::resources::types;
 
 use strict;
 use warnings;

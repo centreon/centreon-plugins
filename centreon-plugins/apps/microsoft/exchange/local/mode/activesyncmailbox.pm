@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::microsoft::exchange::2010::local::mode::listdatabases;
+package apps::microsoft::exchange::local::mode::activesyncmailbox;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::listdatabases;
+use centreon::common::powershell::exchange::activesyncmailbox;
 
 sub new {
     my ($class, %options) = @_;
@@ -33,35 +33,62 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'remote-host:s'     => { name => 'remote_host' },
-        'remote-user:s'     => { name => 'remote_user' },
-        'remote-password:s' => { name => 'remote_password' },
-        'no-ps'             => { name => 'no_ps' },
-        'timeout:s'         => { name => 'timeout', default => 50 },
-        'command:s'         => { name => 'command', default => 'powershell.exe' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s'    => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        'ps-exec-only'         => { name => 'ps_exec_only' },
-        'ps-database-filter:s' => { name => 'ps_database_filter' }
+        'remote-host:s'       => { name => 'remote_host' },
+        'remote-user:s'       => { name => 'remote_user' },
+        'remote-password:s'   => { name => 'remote_password' },
+        'no-ps'               => { name => 'no_ps' },
+        'timeout:s'           => { name => 'timeout', default => 50 },
+        'command:s'           => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'      => { name => 'command_path' },
+        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'ps-exec-only'        => { name => 'ps_exec_only' },
+        'ps-display'          => { name => 'ps_display' },
+        'warning:s'           => { name => 'warning' },
+        'critical:s'          => { name => 'critical', default => '%{result} !~ /Success/i' },
+        'mailbox:s'           => { name => 'mailbox' },
+        'password:s'          => { name => 'password' },
+        'no-trust-ssl'        => { name => 'no_trust_ssl' },
     });
 
     return $self;
 }
 
+sub change_macros {
+    my ($self, %options) = @_;
+
+    foreach (('warning', 'critical')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{data}->{$1}/g;
+        }
+    }
+}
+
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    if (!defined($self->{option_results}->{mailbox}) || $self->{option_results}->{mailbox} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify '--mailbox' option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{password}) || $self->{option_results}->{password} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify '--password' option.");
+        $self->{output}->option_exit();
+    }
+    $self->change_macros();
 }
 
 sub run {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::exchange::2010::listdatabases::get_powershell(
+        my $ps = centreon::common::powershell::exchange::activesyncmailbox::get_powershell(
             remote_host => $self->{option_results}->{remote_host},
             remote_user => $self->{option_results}->{remote_user},
             remote_password => $self->{option_results}->{remote_password},
-            filter_database => $self->{option_results}->{ps_database_filter}
+            mailbox => $self->{option_results}->{mailbox},
+            password => $self->{option_results}->{password}, 
+            no_trust_ssl => $self->{option_results}->{no_trust_ssl}
         );
         if (defined($self->{option_results}->{ps_display})) {
             $self->{output}->output_add(
@@ -87,44 +114,13 @@ sub run {
             severity => 'OK',
             short_msg => $stdout
         );
-    } else {
-        $self->{output}->output_add(
-            severity => 'OK',
-            short_msg => 'List databases:'
-        );
-        centreon::common::powershell::exchange::2010::listdatabases::list($self, stdout => $stdout);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+        $self->{output}->exit();
     }
-    
-    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    centreon::common::powershell::exchange::activesyncmailbox::check($self, stdout => $stdout, mailbox => $self->{option_results}->{mailbox});
+
+    $self->{output}->display();
     $self->{output}->exit();
-}
-
-sub disco_format {
-    my ($self, %options) = @_;
-
-    $self->{output}->add_disco_format(elements => ['name', 'server', 'mounted']);
-}
-
-sub disco_show {
-    my ($self, %options) = @_;
-
-    if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::exchange::2010::listdatabases::get_powershell(
-            remote_host => $self->{option_results}->{remote_host},
-            remote_user => $self->{option_results}->{remote_user},
-            remote_password => $self->{option_results}->{remote_password},
-            filter_database => $self->{option_results}->{ps_database_filter}
-        );
-        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
-    }
-    my ($stdout) = centreon::plugins::misc::windows_execute(
-        output => $self->{output},
-        timeout => $self->{option_results}->{timeout},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
-    );
-    centreon::common::powershell::exchange::2010::listdatabases::disco_show($self, stdout => $stdout);
 }
 
 1;
@@ -133,7 +129,7 @@ __END__
 
 =head1 MODE
 
-List Exchange databases.
+Check activesync to a mailbox.
 
 =over 8
 
@@ -178,9 +174,27 @@ Display powershell script.
 
 Print powershell output.
 
-=item B<--ps-database-filter>
+=item B<--warning>
 
-Filter database (only wilcard '*' can be used. In Powershell).
+Set warning threshold.
+Can used special variables like: %{result}, %{scenario}
+
+=item B<--critical>
+
+Set critical threshold (Default: '%{result} !~ /Success/i').
+Can used special variables like: %{result}, %{scenario}
+
+=item B<--mailbox>
+
+Set the mailbox to check (Required).
+
+=item B<--password>
+
+Set the password for the mailbox (Required).
+
+=item B<--no-trust-ssl>
+
+By default, SSL certificate validy is not checked.
 
 =back
 

@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::microsoft::exchange::2010::local::mode::outlookwebservices;
+package apps::microsoft::exchange::local::mode::outlookwebservices;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::outlookwebservices;
+use centreon::common::powershell::exchange::outlookwebservices;
 
 sub new {
     my ($class, %options) = @_;
@@ -77,7 +77,7 @@ sub run {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::exchange::2010::outlookwebservices::get_powershell(
+        my $ps = centreon::common::powershell::exchange::outlookwebservices::get_powershell(
             remote_host => $self->{option_results}->{remote_host},
             remote_user => $self->{option_results}->{remote_user},
             remote_password => $self->{option_results}->{remote_password},
@@ -111,7 +111,7 @@ sub run {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    centreon::common::powershell::exchange::2010::outlookwebservices::check($self, stdout => $stdout, mailbox => $self->{option_results}->{mailbox});
+    centreon::common::powershell::exchange::outlookwebservices::check($self, stdout => $stdout, mailbox => $self->{option_results}->{mailbox});
 
     $self->{output}->display();
     $self->{output}->exit();

@@ -18,36 +18,44 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::owamailbox;
+package centreon::common::powershell::exchange::outlookwebservices;
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::powershell;
+use centreon::common::powershell::exchange::powershell;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_trust_ssl = (defined($options{no_trust_ssl})) ? '' : '-TrustAnySSLCertificate';
     
-    my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
+    my $ps = centreon::common::powershell::exchange::powershell::powershell_init(%options);
     
     $ps .= '
 try {
     $ErrorActionPreference = "Stop"
+';
+    if (defined($options{password}) && $options{password} ne '') {
+        $ps .= '
     $username = "' . $options{mailbox}  . '"
     $password = "' . $options{password}  . '"
     $secstr = New-Object -TypeName System.Security.SecureString
     $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}
-    $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username,$secstr
-    
-    $results = Test-OwaConnectivity -WarningAction:SilentlyContinue -Url:' . $options{url} . ' -MailboxCredential:$cred ' . $no_trust_ssl . '
+    $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr
+    $results = Test-OutlookWebServices -WarningAction:SilentlyContinue -MailboxCredential $cred
+';
+    } else {
+        $ps .= '
+    $results = Test-OutlookWebServices -WarningAction:SilentlyContinue -Identity "' . $options{mailbox} . '"
+';
+    }
+    $ps .= '
 } catch {
     Write-Host $Error[0].Exception
     exit 1
 }
 
 Foreach ($result in $results) {
-    Write-Host "[url=" $result.Url "][scenario=" $result.Scenario "][result=" $result.Result "][latency=" $result.Latency.TotalMilliseconds "][[error=" $Result.Error "]]"
+    Write-Host "[id=" $result.Id "][type=" $result.Type "][[message=" $result.Message "]]"
 }
 exit 0
 ';
@@ -60,19 +68,19 @@ sub check {
     # options: stdout
     
     # Following output:
-    #[url= http://xxxx/ ][scenario= Options ][result= Ignored ][latency=  ][[error=...]]
+    #[id= XXXX ][type= Success][[message=...]]
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "OWA to '" . $options{mailbox} . "' is ok.");
+                                short_msg => sprintf("Outlook webservices to '%s' are ok.", $options{mailbox}));
    
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
-    while ($options{stdout} =~ /\[url=(.*?)\]\[scenario=(.*?)\]\[result=(.*?)\]\[latency=(.*?)\]\[\[error=(.*?)\]\]/msg) {
+    while ($options{stdout} =~ /\[id=(.*?)\]\[type=(.*?)\]\[\[message=(.*?)\]\]/msg) {
         $self->{data} = {};
-        ($self->{data}->{url}, $self->{data}->{scenario}, $self->{data}->{result}, $self->{data}->{latency}, $self->{data}->{error}) = 
-            ($self->{output}->to_utf8($1), $self->{output}->to_utf8($2), centreon::plugins::misc::trim($3), 
-             centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
+        ($self->{data}->{id}, $self->{data}->{type}, $self->{data}->{message}) = 
+            (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), $self->{output}->to_utf8($3));
         
         $checked++;
+        
         my ($status, $message) = ('ok');
         eval {
             local $SIG{__WARN__} = sub { $message = $_[0]; };
@@ -91,14 +99,8 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $status,
-                                         short_msg => sprintf("OWA scenario '%s' to '%s' is '%s' [url: %s]",
-                                                              $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}, $self->{data}->{url}));
-        }
-        
-        if ($self->{data}->{latency} =~ /^(\d+)/) {
-            $self->{output}->perfdata_add(label => $self->{data}->{url} . '_' . $self->{data}->{scenario}, unit => 's',
-                                          value => sprintf("%.3f", $1 / 1000),
-                                          min => 0);
+                                        short_msg => sprintf("Check id '%s' status is '%s' [message: %s]",
+                                                             $self->{data}->{id}, $self->{data}->{type}, $self->{data}->{message}));
         }
     }
     
@@ -114,6 +116,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 owa connection on a specific mailbox.
+Method to check Exchange outlook autodiscovery webservices.
 
 =cut
