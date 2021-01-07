@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::microsoft::exchange::2010::local::mode::databases;
+package apps::microsoft::exchange::local::mode::databases;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,8 +26,8 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::common::powershell::exchange::2010::databases;
-use apps::microsoft::exchange::2010::local::mode::resources::types qw($copystatus_contentindexstate);
+use centreon::common::powershell::exchange::databases;
+use apps::microsoft::exchange::local::mode::resources::types qw($copystatus_contentindexstate);
 use JSON::XS;
 
 sub custom_mailflow_latency_perfdata {
@@ -269,6 +269,7 @@ sub new {
         'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
+        'ps-server-filter:s'        => { name => 'ps_server_filter' },
         'ps-database-filter:s'      => { name => 'ps_database_filter' },
         'ps-database-test-filter:s' => { name => 'ps_database_test_filter' }
     });
@@ -280,13 +281,14 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::exchange::2010::databases::get_powershell(
+        my $ps = centreon::common::powershell::exchange::databases::get_powershell(
             remote_host => $self->{option_results}->{remote_host},
             remote_user => $self->{option_results}->{remote_user},
             remote_password => $self->{option_results}->{remote_password},
             no_mailflow => $self->{option_results}->{no_mailflow},
             no_mapi => $self->{option_results}->{no_mapi},
             no_copystatus => $self->{option_results}->{no_copystatus},
+            filter_server => $self->{option_results}->{ps_server_filter},
             filter_database => $self->{option_results}->{ps_database_filter},
             filter_database_test => $self->{option_results}->{ps_database_test_filter}
         );
@@ -410,6 +412,10 @@ Print powershell output.
 =item B<--ps-display>
 
 Display powershell script.
+
+=item B<--ps-server-filter>
+
+Filter mailboxes by database server name (regexp can be used. In Powershell).
 
 =item B<--ps-database-filter>
 

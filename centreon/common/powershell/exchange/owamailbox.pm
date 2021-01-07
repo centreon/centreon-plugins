@@ -18,17 +18,18 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::imapmailbox;
+package centreon::common::powershell::exchange::owamailbox;
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::powershell;
+use centreon::common::powershell::exchange::powershell;
 
 sub get_powershell {
     my (%options) = @_;
+    my $no_trust_ssl = (defined($options{no_trust_ssl})) ? '' : '-TrustAnySSLCertificate';
     
-    my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
+    my $ps = centreon::common::powershell::exchange::powershell::powershell_init(%options);
     
     $ps .= '
 try {
@@ -37,16 +38,16 @@ try {
     $password = "' . $options{password}  . '"
     $secstr = New-Object -TypeName System.Security.SecureString
     $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}
-    $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr
+    $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username,$secstr
     
-    $results = Test-ImapConnectivity -MailboxCredential $cred
+    $results = Test-OwaConnectivity -WarningAction:SilentlyContinue -Url:' . $options{url} . ' -MailboxCredential:$cred ' . $no_trust_ssl . '
 } catch {
     Write-Host $Error[0].Exception
     exit 1
 }
 
 Foreach ($result in $results) {
-    Write-Host "[scenario=" $result.Scenario "][result=" $result.Result "][latency=" $result.Latency.TotalMilliseconds "][[error=" $Result.Error "]]"
+    Write-Host "[url=" $result.Url "][scenario=" $result.Scenario "][result=" $result.Result "][latency=" $result.Latency.TotalMilliseconds "][[error=" $Result.Error "]]"
 }
 exit 0
 ';
@@ -59,20 +60,19 @@ sub check {
     # options: stdout
     
     # Following output:
-    #[scenario= Options ][result= Failure ][latency= 52,00 ][[error=...]]
+    #[url= http://xxxx/ ][scenario= Options ][result= Ignored ][latency=  ][[error=...]]
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "Imap to '" . $options{mailbox} . "' is ok.");
+                                short_msg => "OWA to '" . $options{mailbox} . "' is ok.");
    
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
-    while ($options{stdout} =~ /\[scenario=(.*?)\]\[result=(.*?)\]\[latency=(.*?)\]\[\[error=(.*?)\]\]/msg) {
+    while ($options{stdout} =~ /\[url=(.*?)\]\[scenario=(.*?)\]\[result=(.*?)\]\[latency=(.*?)\]\[\[error=(.*?)\]\]/msg) {
         $self->{data} = {};
-        ($self->{data}->{scenario}, $self->{data}->{result}, $self->{data}->{latency}, $self->{data}->{error}) = 
-            ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
-             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
+        ($self->{data}->{url}, $self->{data}->{scenario}, $self->{data}->{result}, $self->{data}->{latency}, $self->{data}->{error}) = 
+            ($self->{output}->to_utf8($1), $self->{output}->to_utf8($2), centreon::plugins::misc::trim($3), 
+             centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
         
         $checked++;
-        
         my ($status, $message) = ('ok');
         eval {
             local $SIG{__WARN__} = sub { $message = $_[0]; };
@@ -91,12 +91,12 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $status,
-                                        short_msg => sprintf("Imap scenario '%s' to '%s' is '%s'",
-                                                             $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}));
+                                         short_msg => sprintf("OWA scenario '%s' to '%s' is '%s' [url: %s]",
+                                                              $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}, $self->{data}->{url}));
         }
         
         if ($self->{data}->{latency} =~ /^(\d+)/) {
-            $self->{output}->perfdata_add(label => $self->{data}->{scenario}, unit => 's',
+            $self->{output}->perfdata_add(label => $self->{data}->{url} . '_' . $self->{data}->{scenario}, unit => 's',
                                           value => sprintf("%.3f", $1 / 1000),
                                           min => 0);
         }
@@ -114,6 +114,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 imap on a specific mailbox.
+Method to check Exchange owa connection on a specific mailbox.
 
 =cut

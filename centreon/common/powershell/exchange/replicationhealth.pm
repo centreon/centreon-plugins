@@ -18,17 +18,17 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::replicationhealth;
+package centreon::common::powershell::exchange::replicationhealth;
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::powershell;
+use centreon::common::powershell::exchange::powershell;
 
 sub get_powershell {
     my (%options) = @_;
     
-    my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
+    my $ps = centreon::common::powershell::exchange::powershell::powershell_init(%options);
     
     $ps .= '
 try {
@@ -102,6 +102,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 queues.
+Method to check Exchange queues.
 
 =cut

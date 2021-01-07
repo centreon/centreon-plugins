@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::powershell;
+package centreon::common::powershell::exchange::powershell;
 
 use strict;
 use warnings;
