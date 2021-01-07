@@ -39,6 +39,14 @@ sub custom_status_output {
     return sprintf("status : %s", $self->{result_values}->{status});
 }
 
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_alBackendStatus'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -53,6 +61,7 @@ sub set_counters {
             critical_default => '%{status} !~ /OPEN/i',
             set => {
                 key_values => [ { name => 'alFrontendStatus' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
