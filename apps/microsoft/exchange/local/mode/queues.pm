@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::microsoft::exchange::2010::local::mode::queues;
+package apps::microsoft::exchange::local::mode::queues;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,8 +26,8 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::common::powershell::exchange::2010::queues;
-use apps::microsoft::exchange::2010::local::mode::resources::types qw($queue_status $queue_delivery_type);
+use centreon::common::powershell::exchange::queues;
+use apps::microsoft::exchange::local::mode::resources::types qw($queue_status $queue_delivery_type);
 use JSON::XS;
 
 sub custom_status_output {
@@ -98,7 +98,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::exchange::2010::queues::get_powershell(
+        my $ps = centreon::common::powershell::exchange::queues::get_powershell(
             remote_host => $self->{option_results}->{remote_host},
             remote_user => $self->{option_results}->{remote_user},
             remote_password => $self->{option_results}->{remote_password}

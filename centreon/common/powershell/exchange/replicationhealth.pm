@@ -18,31 +18,29 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::services;
+package centreon::common::powershell::exchange::replicationhealth;
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::powershell;
+use centreon::common::powershell::exchange::powershell;
 
 sub get_powershell {
     my (%options) = @_;
     
-    my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
+    my $ps = centreon::common::powershell::exchange::powershell::powershell_init(%options);
     
     $ps .= '
 try {
     $ErrorActionPreference = "Stop"    
-    $results = Test-ServiceHealth
+    $results = Test-ReplicationHealth
 } catch {
     Write-Host $Error[0].Exception
     exit 1
 }
 
 Foreach ($result in $results) {
-    $servicesrunning = [String]::join(",", $result.ServicesRunning)
-    $servicesnotrunning = [String]::join(",", $result.ServicesNotRunning)
-    Write-Host "[role=" $result.Role "][requiredservicesrunning=" $result.RequiredServicesRunning "][servicesrunning=" $servicesrunning "][servicesnotrunning=" $servicesnotrunning "]"
+    Write-Host "[server=" $result.Server "][check=" $result.Check "][result=" $result.Result "][isvalid=" $result.IsValid "][[error=" $result.Error "]]"
 }
 exit 0
 ';
@@ -55,17 +53,17 @@ sub check {
     # options: stdout
     
     # Following output:
-    #[role= Mailbox Server Role ][requiredservicesrunning= True ][servicesrunning= IISAdmin,MSExchangeADTopology,MSExchangeSA,... ][servicesnotrunning=  ]
+    #[Server= XXXX ][check= ReplayService][result= Passed ][isvalid= Yes][[error=...]]
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "All role services are ok.");
+                                short_msg => "All replication health tests are ok.");
    
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
-    while ($options{stdout} =~ /\[role=(.*?)\]\[requiredservicesrunning=(.*?)\]\[servicesrunning=(.*?)\]\[servicesnotrunning=(.*?)\]/msg) {
+    while ($options{stdout} =~ /\[server=(.*?)\]\[check=(.*?)\]\[result=(.*?)\]\[isvalid=(.*?)\]\[\[error=(.*?)\]\]/msg) {
         $self->{data} = {};
-        ($self->{data}->{role}, $self->{data}->{requiredservicesrunning}, $self->{data}->{servicesrunning}, $self->{data}->{servicesnotrunning}) = 
+        ($self->{data}->{server}, $self->{data}->{check}, $self->{data}->{result}, $self->{data}->{isvalid},  $self->{data}->{error}) = 
             ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
-             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
+             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
         
         $checked++;
         
@@ -87,8 +85,8 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $status,
-                                        short_msg => sprintf("Role '%s' services problem [services not running: %s]",
-                                                             $self->{data}->{role}, $self->{data}->{servicesnotrunning}));
+                                        short_msg => sprintf("Replication test '%s' status on '%s' is '%s' [error: %s]",
+                                                             $self->{data}->{check}, $self->{data}->{server}, $self->{data}->{result}, $self->{data}->{error}));
         }
     }
     
@@ -104,6 +102,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 services running or not running.
+Method to check Exchange queues.
 
 =cut

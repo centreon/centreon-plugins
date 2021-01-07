@@ -18,29 +18,44 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::replicationhealth;
+package centreon::common::powershell::exchange::outlookwebservices;
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::powershell;
+use centreon::common::powershell::exchange::powershell;
 
 sub get_powershell {
     my (%options) = @_;
     
-    my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
+    my $ps = centreon::common::powershell::exchange::powershell::powershell_init(%options);
     
     $ps .= '
 try {
-    $ErrorActionPreference = "Stop"    
-    $results = Test-ReplicationHealth
+    $ErrorActionPreference = "Stop"
+';
+    if (defined($options{password}) && $options{password} ne '') {
+        $ps .= '
+    $username = "' . $options{mailbox}  . '"
+    $password = "' . $options{password}  . '"
+    $secstr = New-Object -TypeName System.Security.SecureString
+    $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}
+    $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr
+    $results = Test-OutlookWebServices -WarningAction:SilentlyContinue -MailboxCredential $cred
+';
+    } else {
+        $ps .= '
+    $results = Test-OutlookWebServices -WarningAction:SilentlyContinue -Identity "' . $options{mailbox} . '"
+';
+    }
+    $ps .= '
 } catch {
     Write-Host $Error[0].Exception
     exit 1
 }
 
 Foreach ($result in $results) {
-    Write-Host "[server=" $result.Server "][check=" $result.Check "][result=" $result.Result "][isvalid=" $result.IsValid "][[error=" $result.Error "]]"
+    Write-Host "[id=" $result.Id "][type=" $result.Type "][[message=" $result.Message "]]"
 }
 exit 0
 ';
@@ -53,17 +68,16 @@ sub check {
     # options: stdout
     
     # Following output:
-    #[Server= XXXX ][check= ReplayService][result= Passed ][isvalid= Yes][[error=...]]
+    #[id= XXXX ][type= Success][[message=...]]
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "All replication health tests are ok.");
+                                short_msg => sprintf("Outlook webservices to '%s' are ok.", $options{mailbox}));
    
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
-    while ($options{stdout} =~ /\[server=(.*?)\]\[check=(.*?)\]\[result=(.*?)\]\[isvalid=(.*?)\]\[\[error=(.*?)\]\]/msg) {
+    while ($options{stdout} =~ /\[id=(.*?)\]\[type=(.*?)\]\[\[message=(.*?)\]\]/msg) {
         $self->{data} = {};
-        ($self->{data}->{server}, $self->{data}->{check}, $self->{data}->{result}, $self->{data}->{isvalid},  $self->{data}->{error}) = 
-            ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
-             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
+        ($self->{data}->{id}, $self->{data}->{type}, $self->{data}->{message}) = 
+            (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), $self->{output}->to_utf8($3));
         
         $checked++;
         
@@ -85,8 +99,8 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $status,
-                                        short_msg => sprintf("Replication test '%s' status on '%s' is '%s' [error: %s]",
-                                                             $self->{data}->{check}, $self->{data}->{server}, $self->{data}->{result}, $self->{data}->{error}));
+                                        short_msg => sprintf("Check id '%s' status is '%s' [message: %s]",
+                                                             $self->{data}->{id}, $self->{data}->{type}, $self->{data}->{message}));
         }
     }
     
@@ -102,6 +116,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 queues.
+Method to check Exchange 2010 outlook autodiscovery webservices.
 
 =cut

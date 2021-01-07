@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::microsoft::exchange::2010::local::mode::replicationhealth;
+package apps::microsoft::exchange::local::mode::replicationhealth;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::replicationhealth;
+use centreon::common::powershell::exchange::replicationhealth;
 
 sub new {
     my ($class, %options) = @_;
@@ -71,7 +71,7 @@ sub run {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::exchange::2010::replicationhealth::get_powershell(
+        my $ps = centreon::common::powershell::exchange::replicationhealth::get_powershell(
             remote_host => $self->{option_results}->{remote_host},
             remote_user => $self->{option_results}->{remote_user},
             remote_password => $self->{option_results}->{remote_password}
@@ -103,7 +103,7 @@ sub run {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    centreon::common::powershell::exchange::2010::replicationhealth::check($self, stdout => $stdout);
+    centreon::common::powershell::exchange::replicationhealth::check($self, stdout => $stdout);
 
     $self->{output}->display();
     $self->{output}->exit();

@@ -18,36 +18,31 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::activesyncmailbox;
+package centreon::common::powershell::exchange::services;
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::powershell;
+use centreon::common::powershell::exchange::powershell;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_trust_ssl = (defined($options{no_trust_ssl})) ? '' : '-TrustAnySSLCertificate';
-
-    my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
-
+    
+    my $ps = centreon::common::powershell::exchange::powershell::powershell_init(%options);
+    
     $ps .= '
 try {
-    $ErrorActionPreference = "Stop"
-    $username = "' . $options{mailbox}  . '"
-    $password = "' . $options{password}  . '"
-    $secstr = New-Object -TypeName System.Security.SecureString
-    $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}
-    $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr
-    
-    $results = Test-ActiveSyncConnectivity -MailboxCredential $cred ' . $no_trust_ssl . '
+    $ErrorActionPreference = "Stop"    
+    $results = Test-ServiceHealth
 } catch {
     Write-Host $Error[0].Exception
     exit 1
 }
 
 Foreach ($result in $results) {
-    Write-Host "[scenario=" $result.Scenario "][result=" $result.Result "][latency=" $result.Latency.TotalMilliseconds "][[error=" $Result.Error "]]"
+    $servicesrunning = [String]::join(",", $result.ServicesRunning)
+    $servicesnotrunning = [String]::join(",", $result.ServicesNotRunning)
+    Write-Host "[role=" $result.Role "][requiredservicesrunning=" $result.RequiredServicesRunning "][servicesrunning=" $servicesrunning "][servicesnotrunning=" $servicesnotrunning "]"
 }
 exit 0
 ';
@@ -60,21 +55,20 @@ sub check {
     # options: stdout
     
     # Following output:
-    #[scenario= Options ][result= Failure ][latency= 52,00 ][[error=...]]
-    $self->{output}->output_add(
-        severity => 'OK',
-        short_msg => "ActiveSync to '" . $options{mailbox} . "' is ok."
-    );
-
+    #[role= Mailbox Server Role ][requiredservicesrunning= True ][servicesrunning= IISAdmin,MSExchangeADTopology,MSExchangeSA,... ][servicesnotrunning=  ]
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => "All role services are ok.");
+   
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
-    while ($options{stdout} =~ /\[scenario=(.*?)\]\[result=(.*?)\]\[latency=(.*?)\]\[\[error=(.*?)\]\]/msg) {
+    while ($options{stdout} =~ /\[role=(.*?)\]\[requiredservicesrunning=(.*?)\]\[servicesrunning=(.*?)\]\[servicesnotrunning=(.*?)\]/msg) {
         $self->{data} = {};
-        ($self->{data}->{scenario}, $self->{data}->{result}, $self->{data}->{latency}, $self->{data}->{error}) = 
+        ($self->{data}->{role}, $self->{data}->{requiredservicesrunning}, $self->{data}->{servicesrunning}, $self->{data}->{servicesnotrunning}) = 
             ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
              centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
         
         $checked++;
+        
         my ($status, $message) = ('ok');
         eval {
             local $SIG{__WARN__} = sub { $message = $_[0]; };
@@ -93,14 +87,8 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $status,
-                                        short_msg => sprintf("ActiveSync scenario '%s' to '%s' is '%s'",
-                                                             $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}));
-        }
-        
-        if ($self->{data}->{latency} =~ /^(\d+)/) {
-            $self->{output}->perfdata_add(label => $self->{data}->{scenario}, unit => 's',
-                                          value => sprintf("%.3f", $1 / 1000),
-                                          min => 0);
+                                        short_msg => sprintf("Role '%s' services problem [services not running: %s]",
+                                                             $self->{data}->{role}, $self->{data}->{servicesnotrunning}));
         }
     }
     
@@ -116,6 +104,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 activesync on a specific mailbox.
+Method to check Exchange 2010 services running or not running.
 
 =cut

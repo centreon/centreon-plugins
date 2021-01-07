@@ -18,17 +18,17 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::queues;
+package centreon::common::powershell::exchange::queues;
 
 use strict;
 use warnings;
-use centreon::common::powershell::exchange::2010::powershell;
+use centreon::common::powershell::exchange::powershell;
 use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
     
-    my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
+    my $ps = centreon::common::powershell::exchange::powershell::powershell_init(%options);
     $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
     $ps .= centreon::common::powershell::functions::convert_to_json(%options);
     
@@ -69,6 +69,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 queues.
+Method to check Exchange queues.
 
 =cut
