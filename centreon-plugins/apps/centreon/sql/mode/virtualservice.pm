@@ -93,34 +93,41 @@ sub custom_metric_calc {
     $self->{result_values}->{max} = $options{new_datas}->{$self->{instance} . '_max'};
 
     my $elem = $self->{result_values}->{type} eq 'unique' ? 'selection' : 'virtualcurve';
-    my ($change_bytes_metric_selection, $change_bytes_metric_filter);
-    if (defined($config_data->{filters}->{formatting}->{change_bytes})) {
-        $change_bytes_metric_filter = $config_data->{filters}->{formatting}->{change_bytes};
-    }
-    if (defined($config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes})) { 
-        $change_bytes_metric_selection = $config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes};
+
+    my ($change_bytes, $change_bytes_network) = (0, 0);
+    if (defined($config_data->{filters}->{formatting}) && defined($config_data->{filters}->{formatting}->{change_bytes})) {
+        $change_bytes = $config_data->{filters}->{formatting}->{change_bytes};
+        $change_bytes_network = $config_data->{filters}->{formatting}->{change_bytes_network};
+    } elsif (defined($config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}) && defined($config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes})) { 
+        $change_bytes = $config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes};
+        $change_bytes_network = $config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes_network};
+    } elsif (defined($config_data->{formatting}) && defined($config_data->{formatting}->{change_bytes})) {
+        $change_bytes = $config_data->{formatting}->{change_bytes};
+        $change_bytes_network = $config_data->{formatting}->{change_bytes_network};
     }
 
-    if ((defined($change_bytes_metric_selection) && $change_bytes_metric_selection) || 
-        (defined($change_bytes_metric_filter) && $change_bytes_metric_filter) ||
-        ($config_data->{formatting}->{change_bytes} && !defined($change_bytes_metric_selection) && !defined($change_bytes_metric_filter))) {
-        ($self->{result_values}->{value}, $self->{result_values}->{unit}) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value});
+    if ($change_bytes) {
+        ($self->{result_values}->{value}, $self->{result_values}->{unit}) = $self->{perfdata}->change_bytes(
+            value => $self->{result_values}->{value},
+            network => defined($change_bytes_network) && $change_bytes_network ? 1 : undef
+        );
     }
+
     return 0;
 }
 
 sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
-    $self->{output}->perfdata_add(label => $self->{result_values}->{instance},
-                                  value => $self->{result_values}->{perfdata_value},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance}),
-                                  unit => $self->{result_values}->{perfdata_unit},
-                                  min => $self->{result_values}->{min},
-                                  max => $self->{result_values}->{max},
-                                 );
-
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{instance},
+        value => $self->{result_values}->{perfdata_value},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance}),
+        unit => $self->{result_values}->{perfdata_unit},
+        min => $self->{result_values}->{min},
+        max => $self->{result_values}->{max},
+    );
 }
 
 sub custom_metric_threshold {
@@ -176,7 +183,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'config-file:s' => { name => 'config_file' },
         'json-data:s'   => { name => 'json_data' },
-        'database:s'    => { name => 'database' },
+        'database:s'    => { name => 'database' }
     });
 
     return $self;
@@ -210,6 +217,7 @@ sub check_options {
     $config_data->{formatting}->{custom_message_metric} = "All metrics are OK" if (!exists($config_data->{formatting}->{custom_message_metric}));
     $config_data->{formatting}->{cannonical_separator} = "#" if (!exists($config_data->{formatting}->{cannonical_separator}));
     $config_data->{formatting}->{change_bytes} = 0 if (!exists($config_data->{formatting}->{change_bytes}));
+    $config_data->{formatting}->{change_bytes_network} = 0 if (!exists($config_data->{formatting}->{change_bytes_network}));
 
     $self->{option_results}->{database} = 
         (defined($self->{option_results}->{database}) && $self->{option_results}->{database} ne '') ?
