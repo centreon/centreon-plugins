@@ -95,10 +95,12 @@ try {
         }
         $result.group_by_databases[$mailbox.Database]++
         $result.users.total++
-        if ($mailbox.ProhibitSendReceiveQuota -eq "unlimited" -and $mailbox.ProhibitSendQuota -eq "unlimited") {
+        if ($mailbox.ProhibitSendReceiveQuota -eq "unlimited" -or $mailbox.ProhibitSendQuota -eq "unlimited") {
             $result.users.unlimited++
             $result.users.unlimited_details.Add($detail)
-        } else {
+        }
+
+        if ($mailbox.ProhibitSendReceiveQuota -ne "unlimited" -or $mailbox.ProhibitSendQuota -ne "unlimited") {
             $stat = get-mailboxStatistics -Identity $mailbox.Identity -ErrorAction SilentlyContinue
             if ($stat) {
                 $size_bytes = $stat.TotalItemSize.Value.ToBytes()
@@ -125,10 +127,12 @@ try {
             name = $mailbox.Name
         }
         $result.public_folders.total++
-        if ($mailbox.ProhibitSendReceiveQuota -eq "unlimited" -and $mailbox.ProhibitSendQuota -eq "unlimited") {
+        if ($mailbox.ProhibitSendReceiveQuota -eq "unlimited" -or $mailbox.ProhibitSendQuota -eq "unlimited") {
             $result.public_folders.unlimited++
             $result.public_folders.unlimited_details.Add($detail)
-        } else {
+        }
+
+        if ($mailbox.ProhibitSendReceiveQuota -ne "unlimited" -or $mailbox.ProhibitSendQuota -ne "unlimited") {
             $stat = get-mailboxStatistics -Identity $mailbox.Identity -ErrorAction SilentlyContinue
             if ($stat) {
                 $size_bytes = $stat.TotalItemSize.Value.ToBytes()
