@@ -105,7 +105,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'cluster-users-free', nlabel => 'node.users.free.count', display_ok => 0, set => {
+        { label => 'cluster-users-free', nlabel => 'cluster.users.free.count', display_ok => 0, set => {
                 key_values => [ { name => 'cluster_free' }, { name => 'cluster_used' }, { name => 'cluster_total' } ],
                 closure_custom_output => $self->can('custom_cluster_output'),
                 perfdatas => [
