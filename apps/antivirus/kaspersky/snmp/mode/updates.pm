@@ -117,7 +117,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'last-server-update', nlabel => 'server.freshness.seconds', set => {
+        { label => 'last-server-update', nlabel => 'update.server.freshness.seconds', set => {
                 key_values => [ { name => 'lastServerUpdateTime' } ],
                 closure_custom_calc => $self->can('custom_last_calc'),
                 closure_custom_output => $self->can('custom_last_output'),
@@ -125,7 +125,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_last_perfdata')
             }
         },
-        { label => 'not-updated', nlabel => 'hosts.obsolete.count', set => {
+        { label => 'not-updated', nlabel => 'update.hosts.outdated.count', set => {
                 key_values => [ { name => 'hostsNotUpdated' } ],
                 output_template => '%d host(s) not up to date',
                 perfdatas => [

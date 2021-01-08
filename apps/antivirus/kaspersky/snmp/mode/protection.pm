@@ -61,7 +61,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'no-antivirus', nlabel => 'hosts.antivirus.stopped.count', set => {
+        { label => 'no-antivirus', nlabel => 'protection.hosts.antivirus.notrunning.count', set => {
                 key_values => [ { name => 'hostsAntivirusNotRunning' } ],
                 output_template => '%d host(s) without running antivirus',
                 perfdatas => [
@@ -69,7 +69,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'no-real-time', nlabel => 'hosts.protection.realtime.stopped.count', set => {
+        { label => 'no-real-time', nlabel => 'protection.hosts.realtime.notrunning.count', set => {
                 key_values => [ { name => 'hostsRealtimeNotRunning' } ],
                 output_template => '%d hosts(s) without running real time protection',
                 perfdatas => [
@@ -77,7 +77,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'not-acceptable-level', nlabel => 'hosts.realtime.level.changed.count', set => {
+        { label => 'not-acceptable-level', nlabel => 'protection.hosts.realtime.unacceptable.level.count', set => {
                 key_values => [ { name => 'hostsRealtimeLevelChanged' } ],
                 output_template => '%d host(s) with not acceptable level of real time protection',
                 perfdatas => [
@@ -85,7 +85,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'not-cured-objects', nlabel => 'hosts.uncured.objects.count', set => {
+        { label => 'not-cured-objects', nlabel => 'protection.hosts.uncured.objects.count', set => {
                 key_values => [ { name => 'hostsNotCuredObject' } ],
                 output_template => '%d host(s) with not cured objects',
                 perfdatas => [
@@ -93,7 +93,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'too-many-threats', nlabel => 'hosts.threats.count', set => {
+        { label => 'too-many-threats', nlabel => 'protection.hosts.2manythreats.count', set => {
                 key_values => [ { name => 'hostsTooManyThreats' } ],
                 output_template => '%d host(s) with too many threats',
                 perfdatas => [

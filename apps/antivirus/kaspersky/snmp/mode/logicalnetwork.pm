@@ -68,7 +68,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'groups', nlabel => 'groups.count', set => {
+        { label => 'groups', nlabel => 'groups.total.count', set => {
                 key_values => [ { name => 'groupsCount' } ],
                 output_template => '%d group(s) on the server',
                 perfdatas => [
