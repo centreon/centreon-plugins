@@ -30,46 +30,46 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'traffics', type => 0, cb_prefix_output => 'prefix_traffic_output' },
+        { name => 'traffics', type => 0, cb_prefix_output => 'prefix_traffic_output' }
     ];
 
     $self->{maps_counters}->{traffics} = [
-        { label => 'client-to-proxy', set => {
+        { label => 'client-to-proxy', nlabel => 'ftp.traffic.client2proxy.bitspersecond', set => {
                 key_values => [ { name => 'stFtpBytesFromClient', per_second => 1 } ],
                 output_template => 'from client to proxy: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'ftp_traffic_client_to_proxy', template => '%d', min => 0, unit => 'b/s' },
-                ],
+                    { label => 'ftp_traffic_client_to_proxy', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
         },
-        { label => 'server-to-proxy', set => {
+        { label => 'server-to-proxy', nlabel => 'ftp.traffic.server2proxy.bitspersecond', set => {
                 key_values => [ { name => 'stFtpBytesFromServer', per_second => 1 } ],
                 output_template => 'from server to proxy: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'ftp_traffic_server_to_proxy', template => '%d', min => 0, unit => 'b/s' },
-                ],
+                    { label => 'ftp_traffic_server_to_proxy', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
         },
-        { label => 'proxy-to-client', set => {
+        { label => 'proxy-to-client', nlabel => 'ftp.traffic.proxy2client.bitspersecond', set => {
                 key_values => [ { name => 'stFtpBytesToClient', per_second => 1 } ],
                 output_template => 'from proxy to client: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'ftp_traffic_proxy_to_client', template => '%d', min => 0, unit => 'b/s' },
-                ],
+                    { label => 'ftp_traffic_proxy_to_client', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
         },
-        { label => 'proxy-to-server', set => {
+        { label => 'proxy-to-server', nlabel => 'ftp.traffic.proxy2server.bitspersecond', set => {
                 key_values => [ { name => 'stFtpBytesToServer', per_second => 1 } ],
                 output_template => 'from proxy to server: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'ftp_traffic_proxy_to_server', template => '%d', min => 0, unit => 'b/s' },
-                ],
+                    { label => 'ftp_traffic_proxy_to_server', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
-        },
+        }
     ];
 }
 
