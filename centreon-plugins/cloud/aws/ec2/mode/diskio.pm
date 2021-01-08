@@ -26,47 +26,83 @@ use strict;
 use warnings;
 
 my %metrics_mapping = (
-    'DiskReadBytes' => {
-        'output' => 'Disk Read Bytes',
-        'label' => 'disk-bytes-read',
-        'nlabel' => {
-            'absolute' => 'ec2.disk.bytes.read.bytes',
-            'per_second' => 'ec2.disk.bytes.read.bytespersecond',
+    DiskReadBytes => {
+        output => 'Disk Read Bytes',
+        label => 'disk-bytes-read',
+        nlabel => {
+            absolute => 'ec2.disk.bytes.read.bytes',
+            per_second => 'ec2.disk.bytes.read.bytespersecond'
         },
-        'unit' => 'B',
+        unit => 'B'
     },
-    'DiskWriteBytes' => {
-        'output' => 'Disk Write Bytes',
-        'label' => 'disk-bytes-write',
-        'nlabel' => {
-            'absolute' => 'ec2.disk.bytes.write.bytes',
-            'per_second' => 'ec2.disk.bytes.write.bytespersecond',
+    DiskWriteBytes => {
+        output => 'Disk Write Bytes',
+        label => 'disk-bytes-write',
+        nlabel => {
+            absolute => 'ec2.disk.bytes.write.bytes',
+            per_second => 'ec2.disk.bytes.write.bytespersecond'
         },
-        'unit' => 'B',
+        unit => 'B'
     },
-    'DiskReadOps' => {
-        'output' => 'Disk Read Ops',
-        'label' => 'disk-ops-read',
-        'nlabel' => {
-            'absolute' => 'ec2.disk.ops.read.count',
-            'per_second' => 'ec2.disk.ops.read.persecond',
+    DiskReadOps => {
+        output => 'Disk Read Ops',
+        label => 'disk-ops-read',
+        nlabel => {
+            absolute => 'ec2.disk.ops.read.count',
+            per_second => 'ec2.disk.ops.read.persecond'
         },
-        'unit' => 'ops',
+        unit => 'ops'
     },
-    'DiskWriteOps' => {
-        'output' => 'Disk Write Ops',
-        'label' => 'disk-ops-write',
-        'nlabel' => {
-            'absolute' => 'ec2.disk.ops.write.count',
-            'per_second' => 'ec2.disk.ops.write.persecond',
+    DiskWriteOps => {
+        output => 'Disk Write Ops',
+        label => 'disk-ops-write',
+        nlabel => {
+            absolute => 'ec2.disk.ops.write.count',
+            per_second => 'ec2.disk.ops.write.persecond'
         },
-        'unit' => 'ops',
+        unit => 'ops'
     },
+    EBSReadBytes => {
+        output => 'EBS Read Bytes',
+        label => 'ebs-bytes-read',
+        nlabel => {
+            absolute => 'ec2.disk.bytes.read.bytes',
+            per_second => 'ec2.disk.bytes.read.bytespersecond'
+        },
+        unit => 'B'
+    },
+    EBSWriteBytes => {
+        output => 'EBS Write Bytes',
+        label => 'ebs-bytes-write',
+        nlabel => {
+            absolute => 'ec2.ebs.bytes.write.bytes',
+            per_second => 'ec2.ebs.bytes.write.bytespersecond'
+        },
+        unit => 'B'
+    },
+    EBSReadOps => {
+        output => 'EBS Read Ops',
+        label => 'ebs-ops-read',
+        nlabel => {
+            absolute => 'ec2.ebs.ops.read.count',
+            per_second => 'ec2.ebs.ops.read.persecond'
+        },
+        unit => 'ops'
+    },
+    EBSWriteOps => {
+        output => 'EBC Write Ops',
+        label => 'ebs-ops-write',
+        nlabel => {
+            absolute => 'ec2.ebs.ops.write.count',
+            per_second => 'ec2.ebs.ops.write.persecond'
+        },
+        unit => 'ops'
+    }
 );
 
 my %map_type = (
-    "instance" => "InstanceId",
-    "asg"      => "AutoScalingGroupName",
+    instance => "InstanceId",
+    asg      => "AutoScalingGroupName"
 );
 
 sub prefix_metric_output {
@@ -102,8 +138,11 @@ sub custom_metric_threshold {
 
     my $exit = $self->{perfdata}->threshold_check(
         value => defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
-        threshold => [ { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'critical' },
-                       { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' } ]);
+        threshold => [
+            { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'critical' },
+            { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -153,7 +192,7 @@ sub set_counters {
           message_multiple => 'All disks metrics are ok', indent_long_output => '    ',
             group => [
                 { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
-                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -167,7 +206,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { metric => $metric },
                 closure_custom_output => $self->can('custom_metric_output'),
                 closure_custom_perfdata => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
+                closure_custom_threshold_check => $self->can('custom_metric_threshold')
             }
         };
         push @{$self->{maps_counters}->{statistics}}, $entry;
@@ -180,10 +219,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "type:s"	      => { name => 'type' },
-        "name:s@"	      => { name => 'name' },
-        "filter-metric:s" => { name => 'filter_metric' },
-        "per-sec"         => { name => 'per_sec' },
+        'type:s'	      => { name => 'type' },
+        'name:s@'	      => { name => 'name' },
+        'filter-metric:s' => { name => 'filter_metric' },
+        'per-sec'         => { name => 'per_sec' },
+        'add-ebs-metrics' => { name => 'add_ebs_metrics' }
     });
 
     return $self;
@@ -228,6 +268,7 @@ sub check_options {
     }
 
     foreach my $metric (keys %metrics_mapping) {
+        next if (!defined($self->{option_results}->{add_ebs_metrics}) && $metric =~ /EBS/);
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
 
@@ -297,6 +338,10 @@ Set the instance type (Required) (Can be: 'asg', 'instance').
 
 Set the instance name (Required) (Can be multiple).
 
+=item B<--add-ebs-metrics>
+
+Add EBS metrics ('EBSReadOps', 'EBSWriteOps', 'EBSReadBytes', 'EBSWriteBytes').
+
 =item B<--filter-metric>
 
 Filter metrics (Can be: 'DiskReadBytes', 'DiskWriteBytes',
@@ -305,8 +350,8 @@ Filter metrics (Can be: 'DiskReadBytes', 'DiskWriteBytes',
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be 'disk-bytes-read', 'disk-bytes-write',
-'disk-ops-read', 'disk-ops-write').
+Thresholds (Can be 'disk-bytes-read', 'disk-bytes-write', 'disk-ops-read', 'disk-ops-write',
+'ebs-bytes-read', 'ebs-bytes-write', 'ebs-ops-read', 'ebs-ops-write').
 
 =item B<--per-sec>
 
