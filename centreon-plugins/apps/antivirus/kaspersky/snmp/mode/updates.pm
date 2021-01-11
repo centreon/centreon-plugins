@@ -46,6 +46,7 @@ sub custom_last_perfdata {
     
     $self->{output}->perfdata_add(
         label => 'last_server_update',
+        nlabel => $self->{nlabel},
         value => $self->{result_values}->{diff},
         unit => 's',
         min => 0
@@ -58,8 +59,8 @@ sub custom_last_threshold {
     my $exit = $self->{perfdata}->threshold_check(
         value => $self->{result_values}->{diff},
         threshold => [
-            { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-            { label => 'warning-' . $self->{label}, exit_litteral => 'warning' }
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
         ]
     );
     return $exit;
