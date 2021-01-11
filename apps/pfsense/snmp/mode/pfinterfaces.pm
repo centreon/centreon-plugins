@@ -71,7 +71,7 @@ sub set_counters {
                 perfdatas => [
                     { label => 'traffic_out_block', template => '%.2f',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
-                ],
+                ]
             }
         }
     ];

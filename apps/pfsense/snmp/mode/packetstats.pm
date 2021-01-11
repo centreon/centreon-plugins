@@ -34,36 +34,36 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'match', nlabel => 'packets.match.persecond',set => {
+        { label => 'match', nlabel => 'packets.match.persecond', set => {
                 key_values => [ { name => 'pfCounterMatch', per_second => 1 } ],
                 output_template => 'Packets Matched Filter Rule : %.2f/s',
                 perfdatas => [
-                    { label => 'match', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'match', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
-        { label => 'badoffset', nlabel => 'packets.bad.offset.persecond', set => {
+        { label => 'badoffset', nlabel => 'packets.badoffset.persecond', set => {
                 key_values => [ { name => 'pfCounterBadOffset', per_second => 1 } ],
                 output_template => 'Bad Offset Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'bad_offset', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'bad_offset', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
-        { label => 'fragment', nlabel => 'packets.fragmented.persecond',set => {
+        { label => 'fragment', nlabel => 'packets.fragmented.persecond', set => {
                 key_values => [ { name => 'pfCounterFragment', per_second => 1 } ],
                 output_template => 'Fragmented Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'fragment', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'fragment', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'short', nlabem => 'packets.short.persecond', set => {
                 key_values => [ { name => 'pfCounterShort', per_second => 1 } ],
                 output_template => 'Short Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'short', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'short', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'normalize', nlabel => 'packets.normalized.persecond',set => {
@@ -78,10 +78,10 @@ sub set_counters {
                 key_values => [ { name => 'pfCounterMemDrop', per_second => 1 } ],
                 output_template => 'Dropped Packets Due To Memory : %.2f/s',
                 perfdatas => [
-                    { label => 'memdrop', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'memdrop', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
