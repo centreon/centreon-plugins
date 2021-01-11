@@ -67,7 +67,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'current-sessions', nlabel => 'sessions.current.count', set => {
+        { label => 'current-sessions', nlabel => 'frontend.sessions.current.count', set => {
                 key_values => [ { name => 'alFrontendSessionCur' }, { name => 'display' } ],
                 output_template => 'Current sessions : %s',
                 perfdatas => [
@@ -76,7 +76,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-sessions', nlabel => 'sessions.total.count', set => {
+        { label => 'total-sessions', nlabel => 'frontend.sessions.total.count', set => {
                 key_values => [ { name => 'alFrontendSessionTotal', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total sessions : %s',
                 perfdatas => [
@@ -101,7 +101,7 @@ sub set_counters {
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_out', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -126,20 +126,20 @@ my $mapping = {
         alFrontendSessionTotal  => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.7' },
         alFrontendBytesIN       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.8' },
         alFrontendBytesOUT      => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.9' },
-        alFrontendStatus        => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.13' },
+        alFrontendStatus        => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.13' }
     },
     csv => {
         alFrontendSessionCur     => { oid => '.1.3.6.1.4.1.29385.106.1.0.4' },
         alFrontendSessionTotal   => { oid => '.1.3.6.1.4.1.29385.106.1.0.7' },
         alFrontendBytesIN        => { oid => '.1.3.6.1.4.1.29385.106.1.0.8' },
         alFrontendBytesOUT       => { oid => '.1.3.6.1.4.1.29385.106.1.0.9' },
-        alFrontendStatus         => { oid => '.1.3.6.1.4.1.29385.106.1.0.17' },
+        alFrontendStatus         => { oid => '.1.3.6.1.4.1.29385.106.1.0.17' }
     },
 };
 
 my $mapping_name = {
     csv => '.1.3.6.1.4.1.29385.106.1.0.0',
-    entreprise => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.3', # alFrontendName
+    entreprise => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.3' # alFrontendName
 };
 
 sub manage_selection {
@@ -149,15 +149,14 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
-    
-    $self->{frontend} = {};
-    
+
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [ { oid => $mapping_name->{csv} }, { oid => $mapping_name->{entreprise} } ], nothing_quit => 1);
     my $branch = 'entreprise';
     if (defined($snmp_result->{ $mapping_name->{csv} }) && scalar(keys %{$snmp_result->{ $mapping_name->{csv} }}) > 0) {
         $branch = 'csv';
     }
 
+    $self->{frontend} = {};
     foreach my $oid (keys %{$snmp_result->{ $mapping_name->{$branch} }}) {
         $oid =~ /^$mapping_name->{$branch}\.(.*)$/;
         my $instance = $1;
@@ -185,7 +184,7 @@ sub manage_selection {
         instance_regexp => '^(.*)$'
     );
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    
+
     foreach (keys %{$self->{frontend}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$branch}, results => $snmp_result, instance => $_);
 
@@ -194,8 +193,8 @@ sub manage_selection {
 
         $self->{frontend}->{$_} = { %{$self->{frontend}->{$_}}, %$result };
     }
-    
-    $self->{cache_name} = "haproxy_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+
+    $self->{cache_name} = 'haproxy_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
@@ -229,15 +228,9 @@ Can used special variables like: %{status}, %{display}
 Set critical threshold for status (Default: '%{status} !~ /OPEN/i').
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'total-sessions', 'current-sessions',
-'traffic-in' (b/s), 'traffic-out' (b/s).
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'total-sessions', 'current-sessions',
 'traffic-in' (b/s), 'traffic-out' (b/s).
 
