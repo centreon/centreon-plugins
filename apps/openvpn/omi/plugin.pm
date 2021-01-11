@@ -34,7 +34,7 @@ sub new {
         'server-usage' => 'apps::openvpn::omi::mode::serverusage',
     };
 
-    $self->{custom_modes}{api} = 'apps::openvpn::omi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::openvpn::omi::custom::api';
     return $self;
 }
 
