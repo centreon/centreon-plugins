@@ -30,9 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'usage'     => 'apps::php::fpm::web::mode::usage',
-    );
+    $self->{modes} = {
+        'usage' => 'apps::php::fpm::web::mode::usage'
+    };
 
     return $self;
 }

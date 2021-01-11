@@ -27,51 +27,6 @@ use warnings;
 use centreon::plugins::http;
 use Digest::MD5 qw(md5_hex);
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'fpm', type => 0, cb_prefix_output => 'prefix_output' }
-    ];
-    
-    $self->{maps_counters}->{fpm} = [
-        { label => 'active-processes', set => {
-                key_values => [ { name => 'active' }, { name => 'total' } ],
-                closure_custom_calc => $self->can('custom_active_calc'),
-                closure_custom_output => $self->can('custom_active_output'),
-                threshold_use => 'active_prct',
-                closure_custom_perfdata =>  => $self->can('custom_active_perfdata')
-            }
-        },
-        { label => 'idle-processes', set => {
-                key_values => [ { name => 'idle' }, { name => 'total' } ],
-                closure_custom_calc => $self->can('custom_idle_calc'),
-                closure_custom_output => $self->can('custom_idle_output'),
-                threshold_use => 'idle_prct',
-                closure_custom_perfdata =>  => $self->can('custom_idle_perfdata')
-            }
-        },
-        { label => 'listen-queue', set => {
-                key_values => [ { name => 'listen_queue' }, { name => 'max_listen_queue' } ],
-                output_template => 'Listen queue : %s',
-                output_use => 'listen_queue', threshold_use => 'listen_queue',
-                perfdatas => [
-                    { label => 'listen_queue', template => '%s',
-                      min => 0, max => 'max_listen_queue' }
-                ]
-            }
-        },
-        { label => 'requests', set => {
-                key_values => [ { name => 'request', per_second => 1 } ],
-                output_template => 'Requests : %.2f/s',
-                perfdatas => [
-                    { label => 'requests', template => '%.2f', unit => '/s', min => 0 }
-                ]
-            }
-        }
-    ];
-}
-
 sub custom_active_calc {
     my ($self, %options) = @_;
     
@@ -130,6 +85,51 @@ sub prefix_output {
     my ($self, %options) = @_;
 
     return "php-fpm ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'fpm', type => 0, cb_prefix_output => 'prefix_output' }
+    ];
+    
+    $self->{maps_counters}->{fpm} = [
+        { label => 'active-processes', nlabel => 'processes.active.count', set => {
+                key_values => [ { name => 'active' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_active_calc'),
+                closure_custom_output => $self->can('custom_active_output'),
+                threshold_use => 'active_prct',
+                closure_custom_perfdata =>  => $self->can('custom_active_perfdata')
+            }
+        },
+        { label => 'idle-processes', nlabel => 'processes.idle.count', set => {
+                key_values => [ { name => 'idle' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_idle_calc'),
+                closure_custom_output => $self->can('custom_idle_output'),
+                threshold_use => 'idle_prct',
+                closure_custom_perfdata =>  => $self->can('custom_idle_perfdata')
+            }
+        },
+        { label => 'listen-queue', nlabel => 'queue.listen.count', set => {
+                key_values => [ { name => 'listen_queue' }, { name => 'max_listen_queue' } ],
+                output_template => 'Listen queue : %s',
+                output_use => 'listen_queue', threshold_use => 'listen_queue',
+                perfdatas => [
+                    { label => 'listen_queue', template => '%s',
+                      min => 0, max => 'max_listen_queue' }
+                ]
+            }
+        },
+        { label => 'requests',  nlabel => 'requests.count', set => {
+                key_values => [ { name => 'request', per_second => 1 } ],
+                output_template => 'Requests : %.2f/s',
+                perfdatas => [
+                    { label => 'requests', template => '%.2f', unit => '/s', min => 0 }
+                ]
+            }
+        }
+    ];
 }
 
 sub new {

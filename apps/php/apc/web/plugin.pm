@@ -30,10 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'file-cache'    => 'apps::php::apc::web::mode::filecache',
-        'memory'        => 'apps::php::apc::web::mode::memory',
-    );
+    $self->{modes} = {
+        'file-cache' => 'apps::php::apc::web::mode::filecache',
+        'memory'     => 'apps::php::apc::web::mode::memory'
+    };
 
     return $self;
 }
