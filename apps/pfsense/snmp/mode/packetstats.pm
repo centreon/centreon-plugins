@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' - ' },
+        { name => 'global', type => 0, message_separator => ' - ' }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -98,7 +98,7 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-                    
+
     if ($options{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
         $self->{output}->option_exit();
@@ -109,7 +109,7 @@ sub manage_selection {
         pfCounterFragment   => '.1.3.6.1.4.1.12325.1.200.1.2.3.0',
         pfCounterShort      => '.1.3.6.1.4.1.12325.1.200.1.2.4.0',
         pfCounterNormalize  => '.1.3.6.1.4.1.12325.1.200.1.2.5.0',
-        pfCounterMemDrop    => '.1.3.6.1.4.1.12325.1.200.1.2.6.0',
+        pfCounterMemDrop    => '.1.3.6.1.4.1.12325.1.200.1.2.6.0'
     );
     my $snmp_result = $options{snmp}->get_leef(oids => [values %oids], nothing_quit => 1);
     $self->{global} = {};

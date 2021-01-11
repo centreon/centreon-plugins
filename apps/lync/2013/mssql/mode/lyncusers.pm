@@ -28,32 +28,32 @@ use warnings;
 sub prefix_user_output {
     my ($self, %options) = @_;
 
-    return "'" . $options{instance_value}->{display} . "' ";
+    return "'Frontend' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'users', type => 1, cb_prefix_output => 'prefix_user_output', message_multiple => 'User counts are OK' },
+        { name => 'users', type => 0, cb_prefix_output => 'prefix_user_output' }
     ];
 
     $self->{maps_counters}->{users} = [
         { label => 'total', nlabel => 'users.total.count', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => '%d Total users',
+                output_template => '%d total users',
                 perfdatas => [
                     { label => 'total_users', template => '%d',
-                      unit => 'users', min => 0, label_extra_instance => 0 }
+                      unit => 'users', min => 0 }
                 ]
             }
         },
         { label => 'unique', nlabel => 'users.unique.count', set => {
                 key_values => [ { name => 'unique' } ],
-                output_template => '%d Unique users',
+                output_template => '%d unique users',
                 perfdatas => [
                     { label => 'unique_users', template => '%d',
-                      unit => 'users', min => 0, label_extra_instance => 0 }
+                      unit => 'users', min => 0 }
                 ]
             }
         }
@@ -67,26 +67,27 @@ sub new {
 
     $options{options}->add_options(arguments => {
     });
-    
+
     return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-    $self->{sql}->connect();
 
-    $self->{sql}->query(query => q{Select count(*) as totalonline,
-                                          count(distinct UserAtHost) as totalunique
-                                        From rtcdyn.dbo.RegistrarEndpoint RE
-                                        Inner Join
-                                        rtc.dbo.Resource R on R.ResourceId = RE.OwnerId
-                                        Inner Join
-                                        rtcdyn.dbo.Registrar Reg on Reg.RegistrarId = RE.PrimaryRegistrarClusterId});
+    $options{sql}->connect();
+    $options{sql}->query(query => q{
+        Select
+            count(*) as totalonline,
+            count(distinct UserAtHost) as totalunique
+        From rtcdyn.dbo.RegistrarEndpoint RE
+        Inner Join
+        rtc.dbo.Resource R on R.ResourceId = RE.OwnerId
+        Inner Join
+        rtcdyn.dbo.Registrar Reg on Reg.RegistrarId = RE.PrimaryRegistrarClusterId
+    });
 
-    my ($total_online, $total_unique) = $self->{sql}->fetchrow_array();
-    $self->{users}{total} = { total => $total_online, unique => $total_unique, display => 'Frontend' };
+    my ($total_online, $total_unique) = $options{sql}->fetchrow_array();
+    $self->{users} = { total => $total_online, unique => $total_unique };
 
 }
 
