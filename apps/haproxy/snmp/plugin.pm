@@ -30,10 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'backend-usage'    => 'apps::haproxy::snmp::mode::backendusage',
-        'frontend-usage'   => 'apps::haproxy::snmp::mode::frontendusage',
-    );
+    $self->{modes} = {
+        'backend-usage'  => 'apps::haproxy::snmp::mode::backendusage',
+        'frontend-usage' => 'apps::haproxy::snmp::mode::frontendusage'
+    };
 
     return $self;
 }

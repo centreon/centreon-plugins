@@ -25,13 +25,18 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
+sub prefix_backend_output {
+    my ($self, %options) = @_;
+
+    return "Backend '" . $options{instance_value}->{display} . "' ";
+}
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
+    return sprintf("status : %s", $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -50,61 +55,65 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{backend} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2,
+            critical_default => '%{status} !~ /UP/i',
+            set => {
                 key_values => [ { name => 'alBackendStatus' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'current-queue', set => {
+        { label => 'current-queue', nlabel => 'queue.current.count', set => {
                 key_values => [ { name => 'alBackendQueueCur' }, { name => 'display' } ],
                 output_template => 'Current queue : %s',
                 perfdatas => [
                     { label => 'current_queue', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'current-sessions', set => {
+        { label => 'current-sessions', nlabel => 'sessions.current.count', set => {
                 key_values => [ { name => 'alBackendSessionCur' }, { name => 'display' } ],
                 output_template => 'Current sessions : %s',
                 perfdatas => [
                     { label => 'current_sessions', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'total-sessions', set => {
+        { label => 'total-sessions', nlabel => 'sessions.total.count', set => {
                 key_values => [ { name => 'alBackendSessionTotal', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total sessions : %s',
                 perfdatas => [
                     { label => 'total_connections', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'traffic-in', set => {
+        { label => 'traffic-in', nlabel => 'backend.traffic.in.bitpersecond', set => {
                 key_values => [ { name => 'alBackendBytesIN', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_in', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'traffic-out', set => {
+        { label => 'traffic-out', nlabel => 'backend.traffic.out.bitpersecond', set => {
                 key_values => [ { name => 'alBackendBytesOUT', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_out', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -114,25 +123,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /UP/i' }
+        'filter-name:s'     => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_backend_output {
-    my ($self, %options) = @_;
-
-    return "Backend '" . $options{instance_value}->{display} . "' ";
 }
 
 my $mapping = {
