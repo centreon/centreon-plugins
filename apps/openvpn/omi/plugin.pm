@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $self->{modes}} = {
+    $self->{modes} = {
         'server-usage' => 'apps::openvpn::omi::mode::serverusage',
     };
 

@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0 }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'num_clients' } ],
                 output_template => 'Current Clients: %s',
                 perfdatas => [
-                    { label => 'num_clients', template => '%s', min => 0 },
-                ],
+                    { label => 'num_clients', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'traffic-in', nlabel => 'server.traffic.in.bitspersecond',set => {
