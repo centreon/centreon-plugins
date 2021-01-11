@@ -619,10 +619,10 @@ sub set_oids_label {
     my ($self, %options) = @_;
 
     $self->{oids_label} = {
-        'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', cache => 'reload_cache_index_value' },
-        'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', cache => 'reload_cache_index_value' },
-        'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', cache => 'reload_cache_index_value' },
-        'ipaddr'  => { oid => '.1.3.6.1.2.1.4.20.1.2',  cache => 'reload_cache_values_index' }
+        'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', get => 'reload_get_simple', cache => 'reload_cache_index_value' },
+        'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', get => 'reload_get_simple', cache => 'reload_cache_index_value' },
+        'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', get => 'reload_get_simple', cache => 'reload_cache_index_value' },
+        'ipaddr'  => { oid => '.1.3.6.1.2.1.4.20.1.2',  get => 'reload_get_simple', cache => 'reload_cache_values_index' }
     };
 }
 
@@ -935,12 +935,18 @@ sub reload_cache_values_index {
     foreach (keys %{$options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }}) {
         /^$self->{oids_label}->{$options{name}}->{oid}\.(.*)$/;
         push @{$options{datas}->{all_ids}}, $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_} if ($store_index == 1);
-        if (defined($options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}})) {
-            $options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}} .= ', ' . $1;
+        if (defined($options{datas}->{$options{name} . '_' . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}})) {
+            $options{datas}->{$options{name} . '_' . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}} .= ', ' . $1;
         } else {
-            $options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}} = $1;
+            $options{datas}->{$options{name} . '_' . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}} = $1;
         }
     }
+}
+
+sub reload_get_simple {
+    my ($self, %options) = @_;
+
+    $options{snmp_get}->{ $options{name} } = { oid => $self->{oids_label}->{ $options{name} }->{oid} };
 }
 
 sub reload_cache {
@@ -953,20 +959,21 @@ sub reload_cache {
     $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
 
-    my $snmp_get = [
-        { oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}}->{oid} },
-    ];
-    if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
-        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}}->{oid} };
+    my ($snmp_get, $func) = ({});
+    if ($func = $self->can($self->{oids_label}->{ $self->{option_results}->{oid_filter} }->{get})) {
+        $func->($self, snmp_get => $snmp_get, name => $self->{option_results}->{oid_filter});
     }
-    if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} && 
-        $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
-        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{oid} };
-    }    
+    if ($func = $self->can($self->{oids_label}->{ $self->{option_results}->{oid_display} }->{get})) {
+        $func->($self, snmp_get => $snmp_get, name => $self->{option_results}->{oid_display});
+    }
+    if (defined($self->{option_results}->{oid_extra_display}) && 
+        ($func = $self->can($self->{oids_label}->{ $self->{option_results}->{oid_extra_display} }->{get}))) {
+        $func->($self, snmp_get => $snmp_get, name => $self->{option_results}->{oid_extra_display});
+    }
 
-    my $result = $self->{snmp}->get_multiple_table(oids => $snmp_get);
+    my $result = $self->{snmp}->get_multiple_table(oids => [values %$snmp_get]);
 
-    my $func = $self->can($self->{oids_label}->{ $self->{option_results}->{oid_filter} }->{cache});
+    $func = $self->can($self->{oids_label}->{ $self->{option_results}->{oid_filter} }->{cache});
     $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_filter}, store_index => 1);
 
     if (my $custom = $self->can('reload_cache_custom')) {

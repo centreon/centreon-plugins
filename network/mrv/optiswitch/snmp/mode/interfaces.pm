@@ -96,17 +96,6 @@ sub set_key_values_status {
     return [ { name => 'linkstatus' }, { name => 'opstatus' }, { name => 'admstatus' }, { name => 'duplexstatus' }, { name => 'display' } ];
 }
 
-sub set_oids_label {
-    my ($self, %options) = @_;
-
-    $self->{oids_label} = {
-        'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', cache => 'reload_cache_index_value' },
-        'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', cache => 'reload_cache_index_value' },
-        'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', cache => 'reload_cache_index_value', },
-        'ipaddr'  => { oid => '.1.3.6.1.2.1.4.20.1.2',  cache => 'reload_cache_values_index', },
-    };
-}
-
 sub set_oids_status {
     my ($self, %options) = @_;
     

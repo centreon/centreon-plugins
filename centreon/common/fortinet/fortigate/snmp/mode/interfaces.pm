@@ -29,7 +29,7 @@ sub set_oids_label {
     my ($self, %options) = @_;
 
     $self->SUPER::set_oids_label(%options);
-    $self->{oids_label}->{vdom} = { oid => '.1.3.6.1.4.1.12356.101.7.2.1.1.1',  cache => 'reload_cache_vdom_index' };
+    $self->{oids_label}->{vdom} = { oid => '.1.3.6.1.4.1.12356.101.7.2.1.1.1', get => 'reload_get_simple', cache => 'reload_cache_vdom_index' };
 }
 
 sub reload_cache_vdom_index {
