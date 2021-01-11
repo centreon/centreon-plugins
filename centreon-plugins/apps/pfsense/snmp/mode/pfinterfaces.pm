@@ -34,46 +34,46 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{pfint} = [
-        { label => 'traffic-in-pass', set => {
+        { label => 'traffic-in-pass', nlabel => 'pass.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'pfInterfacesIf4BytesInPass', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'Traffic In Pass : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_in_pass', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'traffic-out-pass', set => {
+        { label => 'traffic-out-pass', nlabel => 'pass.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'pfInterfacesIf4BytesOutPass', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'Traffic Out Pass : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out_pass', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'traffic-in-block', set => {
+        { label => 'traffic-in-block', nlabel => 'block.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'pfInterfacesIf4BytesInBlock', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'Traffic In Block : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_in_block', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'traffic-out-block', set => {
+        { label => 'traffic-out-block', nlabel => 'block.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'pfInterfacesIf4BytesOutBlock', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'Traffic Out Block : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out_block', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
