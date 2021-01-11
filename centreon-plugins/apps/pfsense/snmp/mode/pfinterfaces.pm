@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{pfint} = [
-        { label => 'traffic-in-pass', nlabel => 'pass.traffic.in.bitspersecond', set => {
+        { label => 'traffic-in-pass', nlabel => 'pfinterface.pass.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'pfInterfacesIf4BytesInPass', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'Traffic In Pass : %s %s/s',
@@ -44,7 +44,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'traffic-out-pass', nlabel => 'pass.traffic.out.bitspersecond', set => {
+        { label => 'traffic-out-pass', nlabel => 'pfinterface.pass.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'pfInterfacesIf4BytesOutPass', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'Traffic Out Pass : %s %s/s',
@@ -54,7 +54,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'traffic-in-block', nlabel => 'block.traffic.in.bitspersecond', set => {
+        { label => 'traffic-in-block', nlabel => 'pfinterface.block.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'pfInterfacesIf4BytesInBlock', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'Traffic In Block : %s %s/s',
@@ -64,7 +64,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'traffic-out-block', nlabel => 'block.traffic.out.bitspersecond', set => {
+        { label => 'traffic-out-block', nlabel => 'pfinterface.block.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'pfInterfacesIf4BytesOutBlock', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'Traffic Out Block : %s %s/s',
@@ -100,17 +100,18 @@ my $mapping = {
     pfInterfacesIf4BytesInPass      => { oid => '.1.3.6.1.4.1.12325.1.200.1.8.2.1.7' },
     pfInterfacesIf4BytesInBlock     => { oid => '.1.3.6.1.4.1.12325.1.200.1.8.2.1.8' },
     pfInterfacesIf4BytesOutPass     => { oid => '.1.3.6.1.4.1.12325.1.200.1.8.2.1.9' },
-    pfInterfacesIf4BytesOutBlock    => { oid => '.1.3.6.1.4.1.12325.1.200.1.8.2.1.10' },
+    pfInterfacesIf4BytesOutBlock    => { oid => '.1.3.6.1.4.1.12325.1.200.1.8.2.1.10' }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
- 
+
     if ($options{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
         $self->{output}->option_exit();
     }
     my $snmp_result = $options{snmp}->get_table(oid => $oid_pfInterfacesIfDescr, nothing_quit => 1);
+
     $self->{pfint} = {};
     foreach my $oid (keys %{$snmp_result}) {
         $oid =~ /^$oid_pfInterfacesIfDescr\.(.*)$/;
@@ -122,16 +123,20 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping pfInterface '" . $name . "'.", debug => 1);
             next;
         }
-        
+
         $self->{pfint}->{$instance} = { display => $name };
     }
 
-    $options{snmp}->load(oids => [$mapping->{pfInterfacesIf4BytesInPass}->{oid}, $mapping->{pfInterfacesIf4BytesOutPass}->{oid},
-        $mapping->{pfInterfacesIf4BytesInBlock}->{oid}, $mapping->{pfInterfacesIf4BytesOutBlock}->{oid},
+    $options{snmp}->load(
+        oids => [
+            $mapping->{pfInterfacesIf4BytesInPass}->{oid}, $mapping->{pfInterfacesIf4BytesOutPass}->{oid},
+            $mapping->{pfInterfacesIf4BytesInBlock}->{oid}, $mapping->{pfInterfacesIf4BytesOutBlock}->{oid},
         ], 
-        instances => [keys %{$self->{pfint}}], instance_regexp => '^(.*)$');
+        instances => [keys %{$self->{pfint}}],
+        instance_regexp => '^(.*)$'
+    );
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    
+
     foreach my $instance (keys %{$self->{pfint}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);        
 
@@ -139,13 +144,13 @@ sub manage_selection {
             $self->{pfint}->{$instance}->{$_} = $result->{$_} * 8;
         }
     }
-    
+
     if (scalar(keys %{$self->{pfint}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No pfInterface found.");
         $self->{output}->option_exit();
     }
-    
-    $self->{cache_name} = "pfsense_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+
+    $self->{cache_name} = 'pfsense_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

@@ -34,7 +34,7 @@ sub new {
         'list-pfinterfaces' => 'apps::pfsense::snmp::mode::listpfinterfaces',
         'packet-stats'      => 'apps::pfsense::snmp::mode::packetstats',
         'pfinterfaces'      => 'apps::pfsense::snmp::mode::pfinterfaces',
-        'runtime'     	    => 'apps::pfsense::snmp::mode::runtime'
+        'runtime'           => 'apps::pfsense::snmp::mode::runtime'
     };
 
     return $self;
