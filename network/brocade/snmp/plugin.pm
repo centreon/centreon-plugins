@@ -30,13 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'              => 'network::brocade::snmp::mode::cpu',
         'hardware'         => 'network::brocade::snmp::mode::hardware',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'interfaces'       => 'network::brocade::snmp::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::brocade::snmp::mode::memory',
-    );
+        'memory'           => 'network::brocade::snmp::mode::memory'
+    };
 
     return $self;
 }

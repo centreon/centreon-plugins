@@ -945,8 +945,8 @@ sub reload_cache_values_index {
 
 sub reload_cache {
     my ($self) = @_;
-    my $datas = {};
 
+    my $datas = {};
     $datas->{oid_filter} = $self->{option_results}->{oid_filter};
     $datas->{oid_display} = $self->{option_results}->{oid_display};
     $datas->{oid_extra_display} = $self->{option_results}->{oid_extra_display};
@@ -966,8 +966,12 @@ sub reload_cache {
 
     my $result = $self->{snmp}->get_multiple_table(oids => $snmp_get);
 
-    my $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_filter}}->{cache});
+    my $func = $self->can($self->{oids_label}->{ $self->{option_results}->{oid_filter} }->{cache});
     $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_filter}, store_index => 1);
+
+    if (my $custom = $self->can('reload_cache_custom')) {
+        $custom->($self, datas => $datas);
+    }
 
     if (scalar(@{$datas->{all_ids}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
