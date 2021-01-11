@@ -42,7 +42,7 @@ sub custom_status_output {
 sub custom_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_alBackendStatus'};
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_alFrontendStatus'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
