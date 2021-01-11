@@ -24,13 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Events status is '%s'", $self->{result_values}->{status});
-    return $msg;
+    return sprintf("Events status is '%s'", $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -48,22 +47,26 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', set => {
+        { 
+            label => 'status',
+            type => 2, warning_default => '%{status} =~ /Warning/i',
+            critical_default => '%{status} =~ /Critical/i',
+            set => {
                 key_values => [ { name => 'eventsStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'events', set => {
+        { label => 'events', nlabel => 'events.critical.count', set => {
                 key_values => [ { name => 'criticalEventsCount' } ],
                 output_template => '%d critical event(s)',
                 perfdatas => [
-                    { label => 'events', value => 'criticalEventsCount', template => '%d', min => 0 },
-                ],
+                    { label => 'events', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -72,11 +75,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "warning-status:s"      => { name => 'warning_status', default => '%{status} =~ /Warning/i' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} =~ /Critical/i' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
