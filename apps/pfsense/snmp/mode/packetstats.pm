@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'match', nlabel => 'packets.match.persecond', set => {
+        { label => 'match', nlabel => 'packets.matched.persecond', set => {
                 key_values => [ { name => 'pfCounterMatch', per_second => 1 } ],
                 output_template => 'Packets Matched Filter Rule : %.2f/s',
                 perfdatas => [
@@ -74,7 +74,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memdrop', nlabel => 'packets.dropped.persecond',set => {
+        { label => 'memdrop', nlabel => 'packets.memorydropped.persecond',set => {
                 key_values => [ { name => 'pfCounterMemDrop', per_second => 1 } ],
                 output_template => 'Dropped Packets Due To Memory : %.2f/s',
                 perfdatas => [
