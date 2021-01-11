@@ -49,14 +49,15 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { 
             label => 'status',
-            type => 2, warning_default => '%{status} =~ /Warning/i',
+            type => 2,
+            warning_default => '%{status} =~ /Warning/i',
             critical_default => '%{status} =~ /Critical/i',
             set => {
                 key_values => [ { name => 'eventsStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'events', nlabel => 'events.critical.count', set => {
@@ -81,18 +82,11 @@ sub new {
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
 my %map_status = (
     0 => 'OK',
     1 => 'Info',
     2 => 'Warning',
-    3 => 'Critical',
+    3 => 'Critical'
 );
 
 my $oid_eventsStatus = '.1.3.6.1.4.1.23668.1093.1.6.1';
@@ -101,14 +95,16 @@ my $oid_criticalEventsCount = '.1.3.6.1.4.1.23668.1093.1.6.3';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_eventsStatus, $oid_criticalEventsCount ], 
-                                               nothing_quit => 1);
-    
-    $self->{global} = {};
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_eventsStatus, $oid_criticalEventsCount
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global} = { 
         eventsStatus => $map_status{$snmp_result->{$oid_eventsStatus}},
-        criticalEventsCount => $snmp_result->{$oid_criticalEventsCount},
+        criticalEventsCount => $snmp_result->{$oid_criticalEventsCount}
     };
 }
 

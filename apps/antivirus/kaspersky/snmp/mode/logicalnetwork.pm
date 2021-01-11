@@ -57,7 +57,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'new-hosts', nlabel => 'hosts.new.count', set => {
@@ -106,18 +106,11 @@ sub new {
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
 my %map_status = (
     0 => 'OK',
     1 => 'Info',
     2 => 'Warning',
-    3 => 'Critical',
+    3 => 'Critical'
 );
 
 my $oid_logicalNetworkStatus = '.1.3.6.1.4.1.23668.1093.1.5.1';
@@ -129,19 +122,21 @@ my $oid_hostsControlLost = '.1.3.6.1.4.1.23668.1093.1.5.6';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_logicalNetworkStatus, $oid_hostsFound,
-                                                         $oid_groupsCount, $oid_hostsNotConnectedLongTime,
-                                                         $oid_hostsControlLost ], 
-                                               nothing_quit => 1);
-    
-    $self->{global} = {};
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_logicalNetworkStatus, $oid_hostsFound,
+            $oid_groupsCount, $oid_hostsNotConnectedLongTime,
+            $oid_hostsControlLost
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global} = { 
         logicalNetworkStatus => $map_status{$snmp_result->{$oid_logicalNetworkStatus}},
         hostsFound => $snmp_result->{$oid_hostsFound},
         groupsCount => $snmp_result->{$oid_groupsCount},
         hostsNotConnectedLongTime => $snmp_result->{$oid_hostsNotConnectedLongTime},
-        hostsControlLost => $snmp_result->{$oid_hostsControlLost},
+        hostsControlLost => $snmp_result->{$oid_hostsControlLost}
     };
 }
 

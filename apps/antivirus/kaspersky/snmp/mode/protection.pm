@@ -29,8 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Protection status is '%s'", $self->{result_values}->{status});
-    return $msg;
+    return sprintf("Protection status is '%s'", $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -58,7 +57,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'no-antivirus', nlabel => 'protection.hosts.antivirus.notrunning.count', set => {
@@ -89,8 +88,8 @@ sub set_counters {
                 key_values => [ { name => 'hostsNotCuredObject' } ],
                 output_template => '%d host(s) with not cured objects',
                 perfdatas => [
-                    { label => 'not_cured_objects', value => 'hostsNotCuredObject', template => '%d', min => 0 },
-                ],
+                    { label => 'not_cured_objects', value => 'hostsNotCuredObject', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'too-many-threats', nlabel => 'protection.hosts.2manythreats.count', set => {
@@ -100,7 +99,7 @@ sub set_counters {
                     { label => 'too_many_threats', template => '%d', min => 0 }
                 ]
             }
-        },
+        }
     ];
 }
 
@@ -119,7 +118,7 @@ my %map_status = (
     0 => 'OK',
     1 => 'Info',
     2 => 'Warning',
-    3 => 'Critical',
+    3 => 'Critical'
 );
 
 my $oid_protectionStatus = '.1.3.6.1.4.1.23668.1093.1.3.1';
@@ -132,12 +131,14 @@ my $oid_hostsTooManyThreats = '.1.3.6.1.4.1.23668.1093.1.3.7';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_protectionStatus, $oid_hostsAntivirusNotRunning,
-                                                         $oid_hostsRealtimeNotRunning, $oid_hostsRealtimeLevelChanged,
-                                                         $oid_hostsNotCuredObject, $oid_hostsTooManyThreats ], 
-                                               nothing_quit => 1);
-    
-    $self->{global} = {};
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_protectionStatus, $oid_hostsAntivirusNotRunning,
+            $oid_hostsRealtimeNotRunning, $oid_hostsRealtimeLevelChanged,
+            $oid_hostsNotCuredObject, $oid_hostsTooManyThreats
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global} = { 
         protectionStatus => $map_status{$snmp_result->{$oid_protectionStatus}},
@@ -145,7 +146,7 @@ sub manage_selection {
         hostsRealtimeNotRunning => $snmp_result->{$oid_hostsRealtimeNotRunning},
         hostsRealtimeLevelChanged => $snmp_result->{$oid_hostsRealtimeLevelChanged},
         hostsNotCuredObject => $snmp_result->{$oid_hostsNotCuredObject},
-        hostsTooManyThreats => $snmp_result->{$oid_hostsTooManyThreats},
+        hostsTooManyThreats => $snmp_result->{$oid_hostsTooManyThreats}
     };
 }
 

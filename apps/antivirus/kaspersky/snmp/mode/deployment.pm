@@ -42,9 +42,12 @@ sub custom_status_calc {
 sub custom_progress_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => 'progress',
-                                  value => $self->{result_values}->{installed},
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'progress',
+        nlabel => $self->{nlabel},
+        value => $self->{result_values}->{installed},
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_progress_threshold {
@@ -52,9 +55,13 @@ sub custom_progress_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = defined($self->{instance_mode}->{option_results}->{percent}) ? $self->{result_values}->{prct_installed} : $self->{result_values}->{installed} ;
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -82,19 +89,26 @@ sub custom_progress_calc {
 sub custom_expiring_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => 'expiring',
-                                  value => $self->{result_values}->{expiring},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'expiring',
+        nlabel => $self->{nlabel},
+        value => $self->{result_values}->{expiring},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
 }
 
 sub custom_expiring_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{expiring},
-                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{expiring},
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -119,19 +133,26 @@ sub custom_expiring_calc {
 sub custom_expired_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => 'expired',
-                                  value => $self->{result_values}->{expired},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'expired',
+        nlabel => $self->{nlabel},
+        value => $self->{result_values}->{expired},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
 }
 
 sub custom_expired_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{expired},
-                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{expired},
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -224,7 +245,7 @@ my %map_status = (
     0 => 'OK',
     1 => 'Info',
     2 => 'Warning',
-    3 => 'Critical',
+    3 => 'Critical'
 );
 
 my $oid_deploymentStatus = '.1.3.6.1.4.1.23668.1093.1.1.1';
@@ -240,14 +261,16 @@ my $oid_hostsLicenceExpired = '.1.3.6.1.4.1.23668.1093.1.1.10';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_deploymentStatus, $oid_hostsInGroups,
-                                                         $oid_hostsWithAntivirus, $oid_hostsRemoteInstallFailed,
-                                                         $oid_licenceExpiringSerial, $oid_licenceExpiredSerial,
-                                                         $oid_licenceExpiringDays, $oid_hostsLicenceExpiring, 
-                                                         $oid_hostsLicenceExpired ], 
-                                               nothing_quit => 1);
-    
-    $self->{global} = {};
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_deploymentStatus, $oid_hostsInGroups,
+            $oid_hostsWithAntivirus, $oid_hostsRemoteInstallFailed,
+            $oid_licenceExpiringSerial, $oid_licenceExpiredSerial,
+            $oid_licenceExpiringDays, $oid_hostsLicenceExpiring, 
+            $oid_hostsLicenceExpired
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global} = { 
         deploymentStatus => $map_status{$snmp_result->{$oid_deploymentStatus}},
