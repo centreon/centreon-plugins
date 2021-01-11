@@ -32,6 +32,13 @@ sub set_oids_errors {
     $self->{oid_in_crc} = '.1.3.6.1.4.1.1588.2.1.1.1.6.2.1.22'; # swFCPortRxCrcs
 }
 
+sub set_oids_label {
+    my ($self, %options) = @_;
+
+    $self->SUPER::set_oids_label(%options);
+    $self->{oids_label}->{fcportname} =  { oid => '.1.3.6.1.4.1.1588.2.1.1.1.6.2.1.36', get => 'reload_get_fcportname', cache => 'reload_cache_fcportname' };
+}
+
 sub set_counters_errors {
     my ($self, %options) = @_;
 
@@ -54,8 +61,8 @@ sub set_counters_errors {
                 output_template => 'Laser Temperature : %.2f C', output_error_template => 'Laser Temperature : %.2f',
                 perfdatas => [
                     { label => 'laser_temp', template => '%.2f',
-                      unit => 'C', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'C', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'input-power', filter => 'add_optical', nlabel => 'interface.input.power.dbm', set => {
@@ -63,8 +70,8 @@ sub set_counters_errors {
                 output_template => 'Input Power : %s dBm', output_error_template => 'Input Power : %s',
                 perfdatas => [
                     { label => 'input_power', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'output-power', filter => 'add_optical', nlabel => 'interface.output.power.dbm', set => {
@@ -72,8 +79,8 @@ sub set_counters_errors {
                 output_template => 'Output Power : %s dBm', output_error_template => 'Output Power : %s',
                 perfdatas => [
                     { label => 'output_power', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         }
     ;
@@ -103,6 +110,35 @@ sub reload_cache_custom {
     }
 }
 
+sub reload_get_fcportname {
+    my ($self, %options) = @_;
+
+    $options{snmp_get}->{fcportname} = { oid => $self->{oids_label}->{fcportname}->{oid} };
+    $options{snmp_get}->{ifname} = { oid => $self->{oids_label}->{ifname}->{oid} };
+}
+
+sub reload_cache_fcportname {
+    my ($self, %options) = @_;
+
+    # I cheat. Yes i can ;) change swFCPortIndex to ifIndex 
+    my $store_index = defined($options{store_index}) && $options{store_index} == 1 ? 1 : 0;
+    foreach (keys %{$options{result}->{ $self->{oids_label}->{ifname}->{oid} }}) {
+        /^$self->{oids_label}->{ifname}->{oid}\.(.*)$/;
+        my $if_index = $1;
+        push @{$options{datas}->{all_ids}}, $if_index if ($store_index == 1);
+        if ($options{result}->{ $self->{oids_label}->{ifname}->{oid} }->{$_} =~ /\d+\/(\d+)$/) {
+            $options{datas}->{ $options{name} . '_' . $if_index } = $self->{output}->to_utf8(
+                $options{result}->{ $self->{oids_label}->{ $options{name} }->{oid} }->{ $self->{oids_label}->{ $options{name} }->{oid} . '.' . ($1 + 1) }
+            );
+        } else {
+            # we use ifname if there is no fcportname
+            $options{datas}->{ $options{name} . '_' . $if_index } = $self->{output}->to_utf8(
+                $options{result}->{ $self->{oids_label}->{ifname}->{oid} }->{$_}
+            );
+        }
+    }
+}
+
 sub map_brocade {
     my ($self, %options) = @_;
 
@@ -114,8 +150,9 @@ sub map_brocade {
     };
     # swFCPortIndex can be found with ifName ("0/2") or ifDesc ("FC port 0/2")
     foreach (@{$self->{array_interface_selected}}) {
-        my $value = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . '_' . $_);
-        if ($value =~ /\d+\/(\d+)$/) {
+        my $value = $self->{statefile_cache}->get(name => 'ifname_' . $_);
+        $value = $self->{statefile_cache}->get(name => 'ifdesc_' . $_) if (!defined($value));
+        if (defined($value) && $value =~ /\d+\/(\d+)$/) {
             my $port_index = $1 + 1;
             $self->{map_brocade}->{port2if}->{$port_index} = $_;
             $self->{map_brocade}->{if2port}->{$_} = $port_index;
@@ -136,10 +173,11 @@ sub load_errors {
     );
 
     $self->map_brocade();
+    my $indexes = [keys %{$self->{map_brocade}->{port2if}}];
     $self->{snmp}->load(
         oids => [ $self->{oid_in_crc} ],
-        instances => [keys %{$self->{map_brocade}->{port2if}}]
-    );
+        instances => $indexes
+    ) if (scalar(@$indexes) > 0);
 }
 
 my $oid_optical_laser_temp = '.1.3.6.1.4.1.1588.2.1.1.1.28.1.1.1'; # swSfpTemperature
@@ -317,11 +355,11 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
+Choose OID used to filter interface (default: ifName) (values: fcPortName, ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
+Choose OID used to display interface (default: ifName) (values: fcPortName, ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-extra-display>
 
