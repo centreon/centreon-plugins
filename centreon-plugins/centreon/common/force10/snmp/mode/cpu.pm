@@ -25,41 +25,47 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+    
+    return "CPU '" . $options{instance_value}->{display} . "' usage ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPU usages are ok' }
+        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPU usages are ok', skipped_code => { -10 => 1 } }
     ];
     
     $self->{maps_counters}->{cpu} = [
         { label => '5s', nlabel => 'cpu.utilization.5s.percentage', set => {
-                key_values => [ { name => 'usage_5s' }, { name => 'display' } ],
-                output_template => '%s %% (5sec)', output_error_template => "%s (5sec)",
+                key_values => [ { name => 'cpu_5s' }, { name => 'display' } ],
+                output_template => '%.2f %% (5s)',
                 perfdatas => [
-                    { label => 'cpu_5s', value => 'usage_5s', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu_5s', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => '1m', nlabel => 'cpu.utilization.1m.percentage', set => {
-                key_values => [ { name => 'usage_1m' }, { name => 'display' } ],
-                output_template => '%s %% (1m)', output_error_template => "%s (1min)",
+                key_values => [ { name => 'cpu_1m' }, { name => 'display' } ],
+                output_template => '%.2f %% (1m)',
                 perfdatas => [
-                    { label => 'cpu_1m', value => 'usage_1m', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu_1m', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => '5m', nlabel => 'cpu.utilization.5m.percentage', set => {
-                key_values => [ { name => 'usage_5m' }, { name => 'display' } ],
-                output_template => '%s %% (5min)', output_error_template => "%s (5min)",
+                key_values => [ { name => 'cpu_5m' }, { name => 'display' } ],
+                output_template => '%.2f %% (5m)',
                 perfdatas => [
-                    { label => 'cpu_5m', value => 'usage_5m', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu_5m', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -74,55 +80,91 @@ sub new {
     return $self;
 }
 
-sub prefix_cpu_output {
-    my ($self, %options) = @_;
-    
-    return "CPU '" . $options{instance_value}->{display} . "' Usage ";
-}
-
 my $mapping = {
     sseries => {
-        Util5Sec    => { oid => '.1.3.6.1.4.1.6027.3.10.1.2.9.1.2' },
-        Util1Min    => { oid => '.1.3.6.1.4.1.6027.3.10.1.2.9.1.3' },
-        Util5Min    => { oid => '.1.3.6.1.4.1.6027.3.10.1.2.9.1.4' },
+        cpu_5s => { oid => '.1.3.6.1.4.1.6027.3.10.1.2.9.1.2' }, # chStackUnitCpuUtil5Sec
+        cpu_1m => { oid => '.1.3.6.1.4.1.6027.3.10.1.2.9.1.3' }, # chStackUnitCpuUtil1Min
+        cpu_5m => { oid => '.1.3.6.1.4.1.6027.3.10.1.2.9.1.4' }  # chStackUnitCpuUtil5Min
     },
     mseries => {
-        Util5Sec    => { oid => '.1.3.6.1.4.1.6027.3.19.1.2.8.1.2' },
-        Util1Min    => { oid => '.1.3.6.1.4.1.6027.3.19.1.2.8.1.3' },
-        Util5Min    => { oid => '.1.3.6.1.4.1.6027.3.19.1.2.8.1.4' },
+        cpu_5s => { oid => '.1.3.6.1.4.1.6027.3.19.1.2.8.1.2' }, # chStackUnitCpuUtil5Sec
+        cpu_1m => { oid => '.1.3.6.1.4.1.6027.3.19.1.2.8.1.3' }, # chStackUnitCpuUtil1Min
+        cpu_5m => { oid => '.1.3.6.1.4.1.6027.3.19.1.2.8.1.4' }  # chStackUnitCpuUtil5Min
     },
     zseries => {
-        Util5Sec    => { oid => '.1.3.6.1.4.1.6027.3.25.1.2.3.1.1' },
-        Util1Min    => { oid => '.1.3.6.1.4.1.6027.3.25.1.2.3.1.2' },
-        Util5Min    => { oid => '.1.3.6.1.4.1.6027.3.25.1.2.3.1.3' },
+        cpu_5s => { oid => '.1.3.6.1.4.1.6027.3.25.1.2.3.1.1' }, # chSysCpuUtil5Sec
+        cpu_1m => { oid => '.1.3.6.1.4.1.6027.3.25.1.2.3.1.2' }, # chSysCpuUtil1Min
+        cpu_5m => { oid => '.1.3.6.1.4.1.6027.3.25.1.2.3.1.3' }  # chSysCpuUtil5Min
     },
+    os9 => {
+        cpu_5s => { oid => '.1.3.6.1.4.1.6027.3.26.1.4.4.1.1' }, # dellNetCpuUtil5Sec
+        cpu_1m => { oid => '.1.3.6.1.4.1.6027.3.26.1.4.4.1.4' }, # dellNetCpuUtil1Min
+        cpu_5m => { oid => '.1.3.6.1.4.1.6027.3.26.1.4.4.1.5' }  # dellNetCpuUtil5Min
+    }
 };
+my $map_device_type = {
+    1 => 'chassis', 2 => 'stack', 3 => 'rpm', 4 => 'supervisor', 5 => 'linecard', 6 => 'port-extender'
+};
+
+sub load_series {
+    my ($self, %options) = @_;
+
+    foreach my $oid (keys %{$options{snmp_result}}) {
+        next if ($oid !~ /^$mapping->{ $options{name} }->{cpu_5m}->{oid}\.(.*)/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{ $options{name} }, results => $options{snmp_result}, instance => $instance);
+
+        $self->{cpu}->{$instance} = { 
+            display => $instance, 
+            %$result
+        };
+    }
+}
+
+sub load_os9 {
+    my ($self, %options) = @_;
+
+    foreach my $oid (keys %{$options{snmp_result}}) {
+        next if ($oid !~ /^$mapping->{ $options{name} }->{cpu_5m}->{oid}\.(\d+)\.(\d+)\.(\d+)/);
+        my $name = $map_device_type->{$1} . ':' . $2 . ':' . $3;
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{ $options{name} }, results => $options{snmp_result}, instance => $1 . '.' . $2 . '.' . $3);
+
+        $self->{cpu}->{$name} = { 
+            display => $name, 
+            %$result
+        };
+    }
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $oids = { sseries => '.1.3.6.1.4.1.6027.3.10.1.2.9.1', mseries => '.1.3.6.1.4.1.6027.3.19.1.2.8.1', zseries => '.1.3.6.1.4.1.6027.3.25.1.2.3.1' };
+
+    my $oids = {
+        sseries => { oid => '.1.3.6.1.4.1.6027.3.10.1.2.9.1', load => $self->can('load_series') },
+        mseries => { oid => '.1.3.6.1.4.1.6027.3.19.1.2.8.1', load => $self->can('load_series') },
+        zseries => { oid => '.1.3.6.1.4.1.6027.3.25.1.2.3.1', load => $self->can('load_series') },
+        os9     => { oid => '.1.3.6.1.4.1.6027.3.26.1.4.4.1', load => $self->can('load_os9') }
+    };
     my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [ { oid => $oids->{sseries} }, { oid => $oids->{mseries} }, { oid => $oids->{zseries} } ], 
+        oids => [
+            { oid => $oids->{sseries}->{oid}, start => $mapping->{sseries}->{cpu_5s}->{oid}, end => $mapping->{sseries}->{cpu_5m}->{oid} },
+            { oid => $oids->{mseries}->{oid}, start => $mapping->{mseries}->{cpu_5s}->{oid}, end => $mapping->{mseries}->{cpu_5m}->{oid} },
+            { oid => $oids->{zseries}->{oid}, end => $mapping->{zseries}->{cpu_5m}->{oid} },
+            { oid => $oids->{os9}->{oid}, end => $mapping->{os9}->{cpu_5m}->{oid} }
+        ], 
         nothing_quit => 1
     );
 
     $self->{cpu} = {};
-    foreach my $name (keys %{$oids}) {
-        foreach my $oid (keys %{$snmp_result->{$oids->{$name}}}) {
-            next if ($oid !~ /^$mapping->{$name}->{Util5Min}->{oid}\.(.*)/);
-            my $instance = $1;
-            my $result = $options{snmp}->map_instance(mapping => $mapping->{$name}, results => $snmp_result->{$oids->{$name}}, instance => $instance);
-        
-            $self->{cpu}->{$instance} = { 
-                display => $instance, 
-                usage_5s => $result->{Util5Sec},
-                usage_1m => $result->{Util1Min},
-                usage_5m => $result->{Util5Min},
-            };
-        }
+    foreach my $name (keys %$oids) {
+        $oids->{$name}->{load}->(
+            $self,
+            name => $name,
+            snmp => $options{snmp},
+            snmp_result => $snmp_result->{ $oids->{$name}->{oid} }
+        );
     }
-    
+
     if (scalar(keys %{$self->{cpu}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
