@@ -34,7 +34,7 @@ sub prefix_database_output {
 sub database_long_output {
     my ($self, %options) = @_;
 
-    return "checking Database '" . $options{instance_value}->{display} . "'";
+    return "checking database '" . $options{instance_value}->{display} . "'";
 }
 
 sub prefix_table_output {
@@ -128,7 +128,6 @@ sub add_tables {
     my $dbname = $options{dbname};
     $options{sql}->query(query => qq{
         USE [$dbname]
-        GO
         SELECT
             s.Name AS SchemaName,
             t.Name AS TableName,
@@ -142,7 +141,6 @@ sub add_tables {
         INNER JOIN sys.allocation_units a ON p.partition_id = a.container_id
         INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
         GROUP BY t.Name, s.Name, p.Rows
-        GO
     });
     my $results = $options{sql}->fetchall_arrayref();
     foreach my $row (@$results) {
@@ -158,8 +156,8 @@ sub add_tables {
             free => $row->[4] * 1024,
             rows => $row->[2]
         };
-        $self->{database}->{$dbname}->{global_db}->{free} += $row->[4] * 1024;
-        $self->{database}->{$dbname}->{global_db}->{used} += $row->[5] * 1024;
+        $self->{databases}->{$dbname}->{global_db}->{free} += $row->[4] * 1024;
+        $self->{databases}->{$dbname}->{global_db}->{used} += $row->[5] * 1024;
     }
 }
 
@@ -190,7 +188,7 @@ sub manage_selection {
         $self->add_tables(dbname => $row->[0], sql => $options{sql});
     }
 
-    if (scalar(keys %{$self->{database}}) <= 0) {
+    if (scalar(keys %{$self->{databases}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No database found.");
         $self->{output}->option_exit();
     }
