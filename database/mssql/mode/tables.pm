@@ -47,7 +47,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'database', type => 3, cb_prefix_output => 'prefix_database_output', cb_long_output => 'database_long_output', indent_long_output => '    ',
+        { name => 'databases', type => 3, cb_prefix_output => 'prefix_database_output', cb_long_output => 'database_long_output', indent_long_output => '    ',
           message_multiple => 'All databases are ok', 
             group => [
                 { name => 'global_db', type => 0, skipped_code => { -10 => 1 } },
