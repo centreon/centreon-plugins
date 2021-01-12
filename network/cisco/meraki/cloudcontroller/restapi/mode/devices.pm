@@ -113,11 +113,27 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'total-online-prct', nlabel => 'devices.total.online.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'online_prct' } ],
+                output_template => 'online: %.2f%%',
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0, max => 100 }
+                ]
+            }
+        },
         { label => 'total-offline', nlabel => 'devices.total.offline.count', display_ok => 0, set => {
                 key_values => [ { name => 'offline' }, { name => 'total' } ],
                 output_template => 'offline: %s',
                 perfdatas => [
                     { template => '%s', min => 0, max => 'total' }
+                ]
+            }
+        },
+        { label => 'total-offline-prct', nlabel => 'devices.total.offline.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'offline_prct' } ],
+                output_template => 'offline: %.2f%%',
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0, max => 100 }
                 ]
             }
         },
@@ -404,6 +420,7 @@ sub add_switch_port_statuses {
         timespan => $options{timespan},
         serial => $options{serial}
     );
+
     foreach (@$ports) {
         $self->{devices}->{ $options{serial} }->{device_ports}->{ $_->{portId} } = {
             display => $_->{portId},
@@ -543,6 +560,9 @@ sub manage_selection {
     if (scalar(keys %{$self->{devices}}) <= 0) {
         $self->{output}->output_add(short_msg => 'no devices found');
     }
+
+    $self->{global}->{online_prct} = $self->{global}->{online} * 100 / $self->{global}->{total};
+    $self->{global}->{offline_prct} = $self->{global}->{offline} * 100 / $self->{global}->{total};
 }
 
 1;
@@ -631,7 +651,7 @@ Can used special variables like: %{port_status}, %{port_enabled}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total-online', 'total-offline', 'total-alerting',
+Can be: 'total-online', 'total-online-prct', 'total-offline', 'total-offline-prct', 'total-alerting',
 'traffic-in', 'traffic-out', 'connections-success', 'connections-auth',
 'connections-assoc', 'connections-dhcp', 'connections-dns',
 'load', 'link-latency' (ms), ''link-loss' (%),
