@@ -168,7 +168,7 @@ sub manage_selection {
 
     $options{sql}->connect();
     $options{sql}->query(query => qq{
-        SELECT [name] as database_name, 
+        SELECT [name] as database_name
         FROM sys.databases
     });
 
