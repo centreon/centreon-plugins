@@ -35,10 +35,11 @@ sub new {
         'devices'      => 'network::cisco::meraki::cloudcontroller::restapi::mode::devices',
         'discovery'    => 'network::cisco::meraki::cloudcontroller::restapi::mode::discovery',
         'list-devices' => 'network::cisco::meraki::cloudcontroller::restapi::mode::listdevices',
+        'list-tags' => 'network::cisco::meraki::cloudcontroller::restapi::mode::listtags',
         'networks'     => 'network::cisco::meraki::cloudcontroller::restapi::mode::networks'
     );
 
-    $self->{custom_modes}{api} = 'network::cisco::meraki::cloudcontroller::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'network::cisco::meraki::cloudcontroller::restapi::custom::api';
     return $self;
 }
 
