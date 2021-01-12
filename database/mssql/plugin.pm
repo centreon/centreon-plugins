@@ -45,6 +45,7 @@ sub new {
         'page-life-expectancy' => 'database::mssql::mode::pagelifeexpectancy',
         'sql'                  => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'           => 'centreon::common::protocols::sql::mode::sqlstring',
+        'tables'               => 'database::mssql::mode::tables',
         'transactions'         => 'database::mssql::mode::transactions'
     };
 
