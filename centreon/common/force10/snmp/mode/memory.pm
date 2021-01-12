@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+
+    return "Memory '" . $options{instance_value}->{display} . "' usage ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -35,20 +41,14 @@ sub set_counters {
     $self->{maps_counters}->{memory} = [
         { label => 'usage', nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'usage' }, { name => 'display' } ],
-                output_template => '%s %%', output_error_template => "%s",
+                output_template => '%.2f %%', output_error_template => "%s",
                 perfdatas => [
-                    { label => 'used', value => 'usage', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'used', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_memory_output {
-    my ($self, %options) = @_;
-    
-    return "Memory '" . $options{instance_value}->{display} . "' Usage ";
 }
 
 sub new {
@@ -64,39 +64,81 @@ sub new {
 
 my $mapping = {
     sseries => {
-        MemUsageUtil    => { oid => '.1.3.6.1.4.1.6027.3.10.1.2.9.1.5' },
+        mem_used => { oid => '.1.3.6.1.4.1.6027.3.10.1.2.9.1.5' } # chStackUnitMemUsageUtil
     },
     mseries => {
-        MemUsageUtil    => { oid => '.1.3.6.1.4.1.6027.3.19.1.2.8.1.5' },
+        mem_used => { oid => '.1.3.6.1.4.1.6027.3.19.1.2.8.1.5' } # chStackUnitMemUsageUtil
     },
     zseries => {
-        MemUsageUtil    => { oid => '.1.3.6.1.4.1.6027.3.25.1.2.3.1.4' },
+        mem_used => { oid => '.1.3.6.1.4.1.6027.3.25.1.2.3.1.4' } # chSysCpuUtilMemUsage
     },
+    os9 => {
+        mem_used => { oid => '.1.3.6.1.4.1.6027.3.26.1.4.4.1.6' } # dellNetCpuUtilMemUsage
+    }
 };
+my $map_device_type = {
+    1 => 'chassis', 2 => 'stack', 3 => 'rpm', 4 => 'supervisor', 5 => 'linecard', 6 => 'port-extender'
+};
+
+sub load_series {
+    my ($self, %options) = @_;
+
+    foreach (keys %{$options{snmp_result}}) {
+        /^$mapping->{ $options{name} }->{mem_used}->{oid}\.(.*)/;
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{ $options{name} }, results => $options{snmp_result}, instance => $instance);
+
+        $self->{memory}->{$instance} = { 
+            display => $instance, 
+            usage => $result->{mem_used}
+        };
+    }
+}
+
+sub load_os9 {
+    my ($self, %options) = @_;
+
+    foreach (keys %{$options{snmp_result}}) {
+        /^$mapping->{ $options{name} }->{mem_used}->{oid}\.(\d+)\.(\d+)\.(\d+)/;
+        my $name = $map_device_type->{$1} . ':' . $2 . ':' . $3;
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{ $options{name} }, results => $options{snmp_result}, instance => $1 . '.' . $2 . '.' . $3);
+
+        $self->{memory}->{$name} = { 
+            display => $name, 
+            usage => $result->{mem_used}
+        };
+    }
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $oids = { sseries => '.1.3.6.1.4.1.6027.3.10.1.2.9.1', mseries => '.1.3.6.1.4.1.6027.3.19.1.2.8.1', zseries => '.1.3.6.1.4.1.6027.3.25.1.2.3.1' };
+
     my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [ { oid => $oids->{sseries} }, { oid => $oids->{mseries} }, { oid => $oids->{zseries} } ], 
+        oids => [
+            { oid => $mapping->{sseries}->{mem_used}->{oid} },
+            { oid => $mapping->{mseries}->{mem_used}->{oid} },
+            { oid => $mapping->{zseries}->{mem_used}->{oid} },
+            { oid => $mapping->{os9}->{mem_used}->{oid} }
+        ], 
         nothing_quit => 1
     );
+    my $cb_load = {
+        sseries => $self->can('load_series'),
+        mseries => $self->can('load_series'),
+        zseries => $self->can('load_series'),
+        os9     => $self->can('load_os9')
+    };
 
     $self->{memory} = {};
-    foreach my $name (keys %{$oids}) {
-        foreach my $oid (keys %{$snmp_result->{$oids->{$name}}}) {
-            next if ($oid !~ /^$mapping->{$name}->{MemUsageUtil}->{oid}\.(.*)/);
-            my $instance = $1;
-            my $result = $options{snmp}->map_instance(mapping => $mapping->{$name}, results => $snmp_result->{$oids->{$name}}, instance => $instance);
-        
-            $self->{memory}->{$instance} = {
-                display => $instance, 
-                usage => $result->{MemUsageUtil},
-            };
-        }
+    foreach my $name (keys %$mapping) {
+        $cb_load->{$name}->(
+            $self,
+            name => $name,
+            snmp => $options{snmp},
+            snmp_result => $snmp_result->{ $mapping->{$name}->{mem_used}->{oid} }
+        );
     }
-    
+
     if (scalar(keys %{$self->{memory}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
