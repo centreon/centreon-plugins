@@ -36,7 +36,7 @@ sub custom_status_output {
         "[user: %s] [password updated: %s] [expired: %s] expire in: %s",
         $self->{result_values}->{user},
         scalar(localtime($self->{result_values}->{password_last_changed})),
-        $self->{result_values}->{expire} ne 'never' ? $self->{result_values}->{expire} : $self->{result_values}->{expire} . ' days',
+        $self->{result_values}->{expire} eq 'never' ? $self->{result_values}->{expire} : $self->{result_values}->{expire} . ' days',
         centreon::plugins::misc::change_seconds(value => $self->{result_values}->{expire_time})
     );
 }
@@ -103,7 +103,7 @@ sub get_expire_time {
 sub get_password_mariadb {
     my ($self, %options) = @_;
 
-    my $timezone = $self->get_database_timezone();
+    my $timezone = $self->get_database_timezone(sql => $options{sql});
     $options{sql}->query(
         query => q{show variables like 'default_password_lifetime'}
     );
@@ -145,7 +145,7 @@ sub get_password_mariadb {
 sub get_password_mysql {
     my ($self, %options) = @_;
 
-    my $timezone = $self->get_database_timezone();
+    my $timezone = $self->get_database_timezone(sql => $options{sql});
     $options{sql}->query(
         query => q{show variables like 'default_password_lifetime'}
     );
@@ -185,8 +185,6 @@ sub get_password_mysql {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{db_tz} = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
-
     $self->{users}->{global} = { user => {} };
 
     $options{sql}->connect();
@@ -198,35 +196,6 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => 'unsupported password policy.');
         $self->{output}->option_exit();
     }
-
-    $self->{users}->{global} = { user => {} };
-    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
-    my $i = 1;
-    while ((my @row = $options{sql}->fetchrow_array())) {
-        # can be: 1541985283,999999999999999999999999999996
-        $row[2] =~ s/,/./;
-        my @values = localtime($row[2]);
-        my $dt = DateTime->new(
-            year       => $values[5] + 1900,
-            month      => $values[4] + 1,
-            day        => $values[3],
-            hour       => $values[2],
-            minute     => $values[1],
-            second     => $values[0],
-            %$tz
-        );
- 
-        my $expire = abs(time() - $dt->epoch);
-        $self->{users}->{global}->{user}->{$i} = {
-            account_status => $row[1],
-            username => $row[0],
-            expire => $expire,
-            expire_time => centreon::plugins::misc::change_seconds(value => $expire) 
-        };
-        $i++;
-    }
-
-    $options{sql}->disconnect();
 }
 
 1;
