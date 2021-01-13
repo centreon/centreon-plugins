@@ -126,7 +126,7 @@ sub set_counters {
 sub prefix_daemonset_output {
     my ($self, %options) = @_;
 
-    return "Daemonset '" . $options{instance_value}->{display} . "' ";
+    return "Daemonset '" . $options{instance_value}->{display} . " [namespace: ". $options{instance_value}->{namespace} . "]' ";
 }
 
 sub new {
@@ -214,6 +214,7 @@ sub manage_selection {
     foreach my $result (@{$results}) {
         $self->{daemonsets}->{$result->{metric}->{$self->{labels}->{daemonset}}}->{display} = $result->{metric}->{$self->{labels}->{daemonset}};
         $self->{daemonsets}->{$result->{metric}->{$self->{labels}->{daemonset}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
+        $self->{daemonsets}->{$result->{metric}->{$self->{labels}->{daemonset}}}->{namespace} = $result->{metric}->{namespace};
     }
     
     if (scalar(keys %{$self->{daemonsets}}) <= 0) {
