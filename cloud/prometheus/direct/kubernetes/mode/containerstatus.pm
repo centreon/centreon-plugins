@@ -83,7 +83,7 @@ sub set_counters {
 sub prefix_container_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] ";
+    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . ", namespace: " . $options{instance_value}->{namespace} . "] ";
 }
 
 sub new {
@@ -186,6 +186,7 @@ sub manage_selection {
         $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{status} = $result->{metric}->{__name__} if ($result->{metric}->{__name__} =~ /running|terminated|waiting/ && ${$result->{value}}[1] == 1);
         $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{reason} = "";
         $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{reason} = $result->{metric}->{reason} if ($result->{metric}->{__name__} =~ /reason/ && ${$result->{value}}[1] == 1);
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{namespace} = $result->{metric}->{namespace};
     }
 
     if (scalar(keys %{$self->{containers}}) <= 0) {

@@ -109,7 +109,7 @@ sub set_counters {
 sub prefix_deployment_output {
     my ($self, %options) = @_;
 
-    return "Deployment '" . $options{instance_value}->{display} . "' ";
+    return "Deployment '" . $options{instance_value}->{display} . " [namespace: ". $options{instance_value}->{namespace} ."]' ";
 }
 
 sub new {
@@ -189,6 +189,7 @@ sub manage_selection {
     foreach my $result (@{$results}) {
         $self->{deployments}->{$result->{metric}->{$self->{labels}->{deployment}}}->{display} = $result->{metric}->{$self->{labels}->{deployment}};
         $self->{deployments}->{$result->{metric}->{$self->{labels}->{deployment}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
+        $self->{deployments}->{$result->{metric}->{$self->{labels}->{deployment}}}->{namespace} = $result->{metric}->{namespace};
     }
     
     if (scalar(keys %{$self->{deployments}}) <= 0) {
