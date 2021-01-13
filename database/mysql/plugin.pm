@@ -37,6 +37,7 @@ sub new {
         'long-queries'              => 'database::mysql::mode::longqueries',
         'myisam-keycache-hitrate'   => 'database::mysql::mode::myisamkeycachehitrate',
         'open-files'                => 'database::mysql::mode::openfiles',
+        'password-expiration'       => 'database::mysql::mode::passwordexpiration',
         'qcache-hitrate'            => 'database::mysql::mode::qcachehitrate',
         'queries'                   => 'database::mysql::mode::queries',
         'replication'               => 'database::mysql::mode::replication',
