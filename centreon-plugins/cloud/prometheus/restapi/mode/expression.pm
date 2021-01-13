@@ -34,7 +34,7 @@ sub custom_status_perfdata {
             label => $key,
             nlabel => $key,
             value => $self->{result_values}->{$key},
-            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{instance} : undef
         );
     }
 }
@@ -161,6 +161,7 @@ sub manage_selection {
         my $prom_query = sprintf('label_replace(%s,"__name__","%s","","")', $self->{query_ranges}->{$label}, $label);
         push @query_ranges, $prom_query;
     }
+
     
     my $queries_results = $options{custom}->query(queries => \@queries) if (scalar(@queries) > 0);
     my $query_ranges_results = $options{custom}->query_range(queries => \@query_ranges, timeframe => $self->{prom_timeframe}, step => $self->{prom_step}) if (scalar(@query_ranges) > 0);
