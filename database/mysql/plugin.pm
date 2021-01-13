@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
         'connection-time'           => 'centreon::common::protocols::sql::mode::connectiontime',
+        'backup'                    => 'database::mysql::mode::backup',
         'databases-size'            => 'database::mysql::mode::databasessize',
         'innodb-bufferpool-hitrate' => 'database::mysql::mode::innodbbufferpoolhitrate',
         'long-queries'              => 'database::mysql::mode::longqueries',
