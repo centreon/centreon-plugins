@@ -37,11 +37,15 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "status-sequence:s"     => { name => 'status_sequence' },
-        "host"                  => { name => 'host' },
-        "restart-sequence"      => { name => 'restart_sequence' },
-        "show-sequence"         => { name => 'show_sequence' },
-        "output:s"              => { name => 'output' },
+        "status-sequence:s"         => { name => 'status_sequence' },
+        "host"                      => { name => 'host' },
+        "output:s"                  => { name => 'output' },
+        "metrics-count:s"           => { name => 'metrics_count' },
+        "metrics-name:s"            => { name => 'metrics_name', default => 'metrics.number' },
+        "metrics-values-range:s"    => { name => 'metrics_values_range' },
+        "show-sequence"             => { name => 'show_sequence' },
+        "show-index"                => { name => 'show_index' },
+        "restart-sequence"          => { name => 'restart_sequence' },
     });
 
     $self->{cache} = centreon::plugins::statefile->new(%options);
@@ -54,7 +58,7 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (!defined($self->{option_results}->{status_sequence}) || $self->{option_results}->{status_sequence} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --status option.");
+        $self->{output}->add_option_msg(short_msg => "Need to specify --status-sequence option.");
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{output}) || $self->{option_results}->{output} eq '') {
@@ -73,6 +77,29 @@ sub check_options {
         }
         push @{$self->{status_sequence}}, $status;
     }
+
+    if (defined($self->{option_results}->{metrics_count}) && $self->{option_results}->{metrics_count} < 1) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --metrics-count value > 0.");
+        $self->{output}->option_exit();
+    }
+
+    if (defined($self->{option_results}->{metrics_values_range}) && $self->{option_results}->{metrics_values_range} =~ /(([0-9-.,]*):)?([0-9-.,]*)/) {
+        $self->{metrics_range_start} = $2;
+        $self->{metrics_range_end} = $3;
+    }
+
+    $self->{metrics_range_start} = 0 if (!defined($self->{metrics_range_start}) || $self->{metrics_range_start} eq '');
+    $self->{metrics_range_end} = 100 if (!defined($self->{metrics_range_end}) || $self->{metrics_range_end} eq '');
+    
+    if ($self->{metrics_range_start} !~ /^-?\d+$/ || $self->{metrics_range_end} !~ /^-?\d+$/) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --metrics-values-range where range start and range end are integer.");
+        $self->{output}->option_exit();
+    }
+
+    if ($self->{metrics_range_start} > $self->{metrics_range_end}) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --metrics-values-range where range start is lower than range end.");
+        $self->{output}->option_exit();
+    }
     
     $self->{cache}->check_options(option_results => $self->{option_results});
 }
@@ -86,12 +113,20 @@ sub get_next_status {
 
     if ($has_cache_file == 0 || $self->{option_results}->{restart_sequence}) {
         $index = 0;
-        my $datas = { last_timestamp => time(), status_sequence => $self->{status_sequence}, status_sequence_index => $index };
+        my $datas = {
+            last_timestamp => time(),
+            status_sequence => $self->{status_sequence},
+            status_sequence_index => $index
+        };
         $options{statefile}->write(data => $datas);
     } else {
         $index = $options{statefile}->get(name => 'status_sequence_index');
         $index = ($index < scalar(@{$self->{status_sequence}} - 1)) ? $index + 1 : 0;
-        my $datas = { last_timestamp => time(), status_sequence => $self->{status_sequence}, status_sequence_index => $index };
+        my $datas = {
+            last_timestamp => time(),
+            status_sequence => $self->{status_sequence},
+            status_sequence_index => $index
+        };
         $options{statefile}->write(data => $datas);
     }
     
@@ -136,10 +171,38 @@ sub run {
         severity => $status,
         short_msg => uc($status_label) . ': ' . $output
     );
-    $self->{output}->perfdata_add(
-        nlabel => 'sequence.index.position', value => ++$index,
-        min => 1, max => scalar(@{$self->{status_sequence}})
+
+    $self->{output}->output_add(
+        long_msg => "Current status '" . uc($status_label) . "'"
     );
+    $self->{output}->output_add(
+        long_msg => "Sequence '" . $self->get_sequence_output(index => $index) . "'"
+    );
+
+    if (defined($self->{option_results}->{metrics_count}) > 0) {
+        for (my $i = 1; $i <= $self->{option_results}->{metrics_count}; $i++) {
+            my $metric_name = $self->{option_results}->{metrics_name} . '.' . $i;
+            my $metric_value = $self->{metrics_range_start} + int(rand($self->{metrics_range_end} - $self->{metrics_range_start})) + 1;
+            $self->{output}->perfdata_add(
+                nlabel => $metric_name,
+                value => $metric_value,
+                min => $self->{metrics_range_start},
+                max => $self->{metrics_range_end}
+            );
+            $self->{output}->output_add(
+                long_msg => "Metric '" . $metric_name . "' value is '" . $metric_value . "'"
+            );
+        }
+    }
+    
+    if (defined($self->{option_results}->{show_index})) {
+        $self->{output}->perfdata_add(
+            nlabel => 'sequence.index.position',
+            value => ++$index,
+            min => 1,
+            max => scalar(@{$self->{status_sequence}})
+        );
+    }
     $self->{output}->display(nolabel => 1);
     $self->{output}->exit();
 }
@@ -152,31 +215,65 @@ __END__
 
 Do a not-so-dummy check.
 
+Sequence and sequence index are stored in cache file. Use --statefile* options
+to defined the way cache file is managed.
+
+Examples:
+
+perl centreon_plugin.pl --plugin=apps::centreon::local::plugin
+--mode=not-so-dummy --status-sequence='ok,warning,ok,critical,critical,critical'
+--output='Not so dummy service' --show-sequence --statefile-dir='/tmp'
+
+perl centreon_plugin.pl --plugin=apps::centreon::local::plugin
+--mode=not-so-dummy --status-sequence='up,down,down' --host
+--output='Not so dummy host'
+
+perl centreon_plugin.pl --plugin=apps::centreon::local::plugin
+--mode=not-so-dummy --status-sequence='ok,ok,ok' --output='Not so dummy'
+--metrics-count=5 --metrics-name='met.rics' --metrics-values-range='-15:42'
+
 =over 8
 
 =item B<--status-sequence>
 
-Comma separated sequence of statuses
-from which the mode should pick is
+Comma separated sequence of statuses from which the mode should pick is
 return code from.
 (Example: --status-sequence='ok,critical,ok,ok' or --status-sequence='up,up,down' --host)
 (Should be numeric value between 0 and 3, or string in ok, warning, critical, unknown, up, down).
 
 =item B<--host>
 
-Host statuses.
-
-=item B<--restart-sequence>
-
-Restart the sequence from the beginning (ie. reset the sequence).
-
-=item B<--show-sequence>
-
-Show the sequence is the output.
+To be set if sequence is for host statuses.
 
 =item B<--output>
 
 Output to be returned.
+
+=item B<--metrics-count>
+
+Number of metrics to generate.
+
+=item B<--metrics-name>
+
+Name of the metrics (Default: 'metrics.number').
+
+Metrics are suffixed by a number between 1 and metrics count.
+
+=item B<--metrics-values-range>
+
+Range of values from which metrics values can be picked (Default: '0:100').
+
+=item B<--show-sequence>
+
+Show the sequence is the output (in addition to the defined output).
+
+=item B<--show-index>
+
+Show the index as a metric (in addition to the defined metrics count).
+
+=item B<--restart-sequence>
+
+Restart the sequence from the beginning (ie. reset the sequence in cache file).
 
 =back
 
