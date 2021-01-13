@@ -28,20 +28,29 @@ use warnings;
 sub custom_usage_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Client Connection Threads Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+    return sprintf(
+        'Client connected threads total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $self->{result_values}->{total},
         $self->{result_values}->{used},
         $self->{result_values}->{prct_used},
         $self->{result_values}->{free},
-        $self->{result_values}->{prct_free});
-    return $msg;
+        $self->{result_values}->{prct_free}
+    );
 }
+
+sub prefix_databse_output {
+    my ($self, %options) = @_;
+
+    return "Database '" . $options{instance_value}->{name} . "' ";
+}
+
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
+        { name => 'databases', type => 1, cb_prefix_output => 'prefix_database_output', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -49,31 +58,64 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'threads_connected', value => 'used', template => '%d', min => 0, max => 'total' },
-                ],
+                    { template => '%d', min => 0, max => 'total' },
+                ]
             }
         },
-        { label => 'usage-prct', display_ok => 0, nlabel => 'threads.connected.percentage', set => {
-                key_values => [ { name => 'prct_used' } ],
-                output_template => 'Client Connection Threads Used : %.2f %%',
+        { label => 'usage-prct', nlabel => 'threads.connected.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'prct_used' }, { name => 'free' }, { name => 'used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'threads_connected_prct', value => 'prct_used', template => '%.2f', min => 0, max => 100,
-                      unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
+    ];
+
+    $self->{maps_counters}->{databases} = [
+        { label => 'database-threads-connected', nlabel => 'database.threads.connected.count', display_ok => 0, set => {
+                key_values => [ { name => 'threads_connected' } ],
+                output_template => 'threads connected: %s',
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
+        'add-databases'  => { name => 'add_databases' }
     });
 
     return $self;
+}
+
+
+sub add_databases {
+    my ($self, %options) = @_;
+
+    $options{sql}->query(query => q{
+        SELECT
+            schema_name,
+            SUM(case when DB is not null then 1 else 0 end) as numbers
+        FROM information_schema.schemata LEFT JOIN information_schema.processlist ON schemata.schema_name = DB
+        GROUP BY schemata.schema_name
+    });
+
+    $self->{databases} = {};
+    my $result = $options{sql}->fetchall_arrayref();
+    foreach my $row (@$result) {
+        $self->{databases}->{ $row->[0] } = {
+            name => $row->[0],
+            threads_connected => $row->[1]
+        };
+    }
 }
 
 sub manage_selection {
@@ -116,7 +158,7 @@ sub manage_selection {
     }
 
     if (scalar(keys %$infos) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get number of open connections.");
+        $self->{output}->add_option_msg(short_msg => 'Cannot get number of open connections.');
         $self->{output}->option_exit();
     }
 
@@ -126,8 +168,12 @@ sub manage_selection {
        used => $infos->{threads_connected},
        free => $infos->{max_connections} - $infos->{threads_connected},
        prct_used => $prct_used,
-       prct_free => 100 - $prct_used,
+       prct_free => 100 - $prct_used
     };
+
+    if (defined($self->{option_results}->{add_databases})) {
+        $self->add_databases(sql => $options{sql});
+    }
 }
 
 1;
@@ -140,10 +186,14 @@ Check number of open connections.
 
 =over 8
 
+=item B<--add-databases>
+
+Add threads by databases.
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage', 'usage-prct' (%).
+Can be: 'usage', 'usage-prct' (%), 'database-threads-connected'.
 
 =back
 
