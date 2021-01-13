@@ -237,7 +237,7 @@ sub new {
         'logfiles-maxsize:s'            => { name => 'logfiles_maxsize' },
         'datafiles-maxsize-unlimited:s' => { name => 'datafiles_maxsize_unlimited' },
         'logfiles-maxsize-unlimited:s'  => { name => 'logfiles_maxsize_unlimited' },
-        'add-unlimited-disk'            => { name => 'add_unlimited_disk' },   
+        'check-underlying-disk'         => { name => 'check_underlying_disk' },   
         'ignore-unlimited'              => { name => 'ignore_unlimited' }
     });
 
@@ -251,7 +251,7 @@ sub manage_selection {
 
     $options{sql}->connect();
 
-    if (defined($self->{option_results}->{add_unlimited_disk})) {
+    if (defined($self->{option_results}->{check_underlying_disk})) {
         $options{sql}->query(query => qq{exec master.dbo.xp_fixeddrives});
         $result = $options{sql}->fetchall_arrayref();
         foreach my $row (@$result) {
@@ -317,16 +317,18 @@ sub manage_selection {
             #max_size = -1 (=unlimited)
             if ($row->[7] == -1) {
                 $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{limit} = 'unlimited';
-                if (defined($self->{option_results}->{add_unlimited_disk})) {
-                    # look for the drives
-                    foreach my $drive_name (keys %$drives) {
-                        if ($row->[2] =~ /^$drive_name/) {
-                            if (!defined($unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $drive_name })) {
-                                $size += $drives->{$drive_name};
-                                $unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $drive_name } = 1;
-                            }
-                            last;
+            }
+            if (defined($self->{option_results}->{check_underlying_disk})) {
+                # look for the drives
+                foreach my $drive_name (keys %$drives) {
+                    if ($row->[2] =~ /^$drive_name/) {
+                        if (($row->[7] > 0) && (($row->[7] * 8 * 1024) <= ($size + $drives->{$drive_name}))) {
+                            $size = $row->[7] * 8 * 1024;
+                        } elsif (!defined($unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $drive_name })) {
+                            $size += $drives->{$drive_name};
+                            $unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $drive_name } = 1;
                         }
+                        last;
                     }
                 }
             } elsif ($row->[7] > 0) {
@@ -389,9 +391,9 @@ Overload only unlimited autogrowth data files max size (in MB).
 
 Overload only unlimited autogrowth log files max size (in MB).
 
-=item B<--add-unlimited-disk>
+=item B<--check-underlying-disk>
 
-Add available space on disks for unlimited autogrowth data and log files.
+Check and consider underlying disk space for data and log files.
 
 =item B<--ignore-unlimited>
 
