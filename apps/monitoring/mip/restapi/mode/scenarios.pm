@@ -272,7 +272,7 @@ sub manage_selection {
             next if $fmetric_label =~ /^(API_VERSION|SCRIPT_VERSION)$/;
             $self->{scenario}->{$scenario_name}->{formatted_metric}->{ $fmetric_label } = {
                 display => $fmetric_label,
-                value => $entry->{formattedMetric}->{$fmetric_label}
+                value => $entry->{formatedMetric}->{$fmetric_label}
             };
         }        
     }
