@@ -83,12 +83,12 @@ sub custom_metric_perfdata {
     );
 }
 
-sub custom_formated_metric_perfdata {
+sub custom_formatted_metric_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
         unit => $self->{result_values}->{unit},
-        nlabel => 'scenario.formated.metric.count',
+        nlabel => 'scenario.formatted.metric.count',
         instances => $self->{instance},
         value => $self->{result_values}->{value},
     );
@@ -102,7 +102,7 @@ sub set_counters {
             group => [
                 { name => 'global', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'metric', display_long => 1, cb_prefix_output => 'prefix_metric_output',  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
-                { name => 'formated_metric', display_long => 1, cb_prefix_output => 'prefix_formated_metric_output',  message_multiple => 'All formated metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'formatted_metric', display_long => 1, cb_prefix_output => 'prefix_formatted_metric_output',  message_multiple => 'All formatted metrics are ok', type => 1, skipped_code => { -10 => 1 } },
             ]
         }        
     ];
@@ -129,10 +129,10 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{metric} = [
-        { label => 'formated-metric', set => {
+        { label => 'formatted-metric', set => {
                 key_values => [ { name => 'value' }, { name => 'display' },  ],
-                closure_custom_output => $self->can('custom_formated_metric_output'),
-                closure_custom_perfdata => $self->can('custom_formated_metric_perfdata'),
+                closure_custom_output => $self->can('custom_formatted_metric_output'),
+                closure_custom_perfdata => $self->can('custom_formatted_metric_perfdata'),
                 closure_custom_threshold_check => sub { return 'ok'; }
             }
         },
@@ -157,10 +157,10 @@ sub prefix_metric_output {
     return "metric '" . $options{instance_value}->{display} . "' ";
 }
 
-sub prefix_formated_metric_output {
+sub prefix_formatted_metric_output {
     my ($self, %options) = @_;
 
-    return "formated metric '" . $options{instance_value}->{display} . "' ";
+    return "formatted metric '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -269,9 +269,9 @@ sub manage_selection {
 
         foreach my $fmetric_label (keys %{$entry->{formatedMetric}}) {
             next if $fmetric_label =~ /^(API_VERSION|SCRIPT_VERSION)$/;
-            $self->{scenario}->{$scenario_name}->{formated_metric}->{ $fmetric_label } = {
+            $self->{scenario}->{$scenario_name}->{formatted_metric}->{ $fmetric_label } = {
                 display => $fmetric_label,
-                value => $entry->{formatedMetric}->{$fmetric_label}
+                value => $entry->{formattedMetric}->{$fmetric_label}
             };
         }        
     }
