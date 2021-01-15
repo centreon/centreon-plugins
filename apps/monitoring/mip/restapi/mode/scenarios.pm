@@ -46,9 +46,8 @@ sub custom_status_output {
 sub custom_metric_output {
     my ($self, %options) = @_;
 
-    my $msg;
     if (defined($mapping_units->{ $self->{result_values}->{unit} }->{scale})) {
-        $msg = sprintf(
+        return sprintf(
             'value: %s %s%s',
             $self->{perfdata}->change_bytes(
                 value => $self->{result_values}->{value},
@@ -57,19 +56,21 @@ sub custom_metric_output {
             $mapping_units->{ $self->{result_values}->{unit} }->{extra_unit}
         );
     } else {
-        $msg = sprintf(
+        return sprintf(
             'value: %s %s',
             $self->{result_values}->{value},
             $self->{result_values}->{unit}
         );
     }
-    return $msg;
 }
 
-sub custom_metric_output {
+sub custom_formatted_metric_output {
     my ($self, %options) = @_;
 
-    return sprintf("value is '%s'", $self->{result_values}->{value});
+    return sprintf(
+        "value is '%s'",
+        $self->{result_values}->{value}
+    );
 }
 
 sub custom_metric_perfdata {
