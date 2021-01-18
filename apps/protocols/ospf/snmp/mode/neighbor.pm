@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -58,6 +58,12 @@ sub custom_change_calc {
     return 0;
 }
 
+sub prefix_nb_output {
+    my ($self, %options) = @_;
+    
+    return "Neighbor '" . $options{instance_value}->{NbrIpAddr} . "/" . $options{instance_value}->{NbrRtrId} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -67,13 +73,12 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'neighbors.total.count',set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total neighbors : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total', template => '%s', 
-                      min => 0 },
-                ],
+                    { label => 'total', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'total-change', threshold => 0, set => {
@@ -81,17 +86,17 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_change_calc'),
                 closure_custom_output => $self->can('custom_change_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
     ];
     $self->{maps_counters}->{nb} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', critical_default => '%{NbrState} =~ /down/i', threshold => 0, set => {
                 key_values => [ { name => 'NbrIpAddr' }, { name => 'NbrRtrId' }, { name => 'NbrState' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
     ];
@@ -102,28 +107,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{NbrState} =~ /down/i' },
-                                  "warning-total-change:s"  => { name => 'warning_total_change', default => '' },
-                                  "critical-total-change:s" => { name => 'critical_total_change', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'warning_total_change', 'critical_total_change']);
-}
-
-sub prefix_nb_output {
-    my ($self, %options) = @_;
-    
-    return "Neighbor '" . $options{instance_value}->{NbrIpAddr} . "/" . $options{instance_value}->{NbrRtrId} . "' ";
 }
 
 my %map_state = (
