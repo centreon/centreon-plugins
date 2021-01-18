@@ -91,7 +91,11 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{nb} = [
-        { label => 'status', critical_default => '%{NbrState} =~ /down/i', threshold => 0, set => {
+        { 
+            label => 'status', 
+            type => 2,
+            critical_default => '%{NbrState} =~ /down/i',
+            set => {
                 key_values => [ { name => 'NbrIpAddr' }, { name => 'NbrRtrId' }, { name => 'NbrState' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
