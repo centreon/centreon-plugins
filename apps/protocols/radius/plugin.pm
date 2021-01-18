@@ -30,9 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'login' => 'apps::protocols::radius::mode::login',
-    );
+    $self->{modes}} = {
+        'login' => 'apps::protocols::radius::mode::login'
+    };
 
     return $self;
 }
