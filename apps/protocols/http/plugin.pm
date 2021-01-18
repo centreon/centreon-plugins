@@ -30,12 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'expected-content'  => 'apps::protocols::http::mode::expectedcontent',
-        'json-content'      => 'apps::protocols::http::mode::jsoncontent',
-        'response'          => 'apps::protocols::http::mode::response',
-        'soap-content'      => 'apps::protocols::http::mode::soapcontent',
-    );
+    $self->{modes} = (
+        'expected-content' => 'apps::protocols::http::mode::expectedcontent',
+        'json-content'     => 'apps::protocols::http::mode::jsoncontent',
+        'response'         => 'apps::protocols::http::mode::response',
+        'soap-content'     => 'apps::protocols::http::mode::soapcontent'
+    };
 
     return $self;
 }
