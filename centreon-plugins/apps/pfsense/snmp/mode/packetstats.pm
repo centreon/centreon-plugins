@@ -58,7 +58,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'short', nlabem => 'packets.short.persecond', set => {
+        { label => 'short', nlabel => 'packets.short.persecond', set => {
                 key_values => [ { name => 'pfCounterShort', per_second => 1 } ],
                 output_template => 'Short Packets : %.2f/s',
                 perfdatas => [
