@@ -176,6 +176,7 @@ sub read_qwinsta {
     }
     my $session_data = [];
     foreach my $line (@lines) {
+        $line =~ s/^>/ /;
         my $data = {};
         for (my $pos = 0; $pos <= $#position_wrap; $pos++) {
             my $area;
