@@ -29,7 +29,7 @@ sub escape_jsonstring {
     my $ps = q{
 function Escape-JSONString($str) {
     if ($str -eq $null) {return ""}
-    $str = $str.ToString().Replace('"','\"').Replace('\','\\').Replace("`n",'\n').Replace("`r",'\r').Replace("`t",'\t')
+    $str = $str.ToString().Replace('"','\"').Replace('\\','\\\\').Replace("`n",'\n').Replace("`r",'\r').Replace("`t",'\t')
     return $str;
 }
 };
