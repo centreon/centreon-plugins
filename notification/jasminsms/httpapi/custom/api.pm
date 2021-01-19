@@ -49,8 +49,8 @@ sub new {
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
-
     $self->{output} = $options{output};
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 }
@@ -93,34 +93,49 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    $self->{http}->set_options(%{$self->{option_results}});
     return 0;
 }
 
-sub request_api {
+sub send_sms {
     my ($self, %options) = @_;
 
-    my $http = centreon::plugins::http->new(%options);
-    my $content = $http->request(
-        hostname => $self->{hostname},
-        port => $self->{port},
-        proto => $self->{proto},
-        timeout => $self->{timeout},
-        unknown_status => '',
-        warning_status => '',
-        critical_status => ''
-    );
-
-    if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-        $self->{output}->option_exit();
-    }
-    
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-        $self->{output}->option_exit();
+    my $get_param = [
+        'username=' . $self->{api_username},
+        'password=' . $self->{api_password},
+        'to=' . $options{to},
+        'coding=' . $options{coding},
+        'hex-content=' . $options{message}
+    ];
+    if (defined($options{from}) && $options{from} ne '') {
+        push @$get_param, 'from=' . $options{from}
     }
 
-    return $decoded;
+    my $rv = 'Error sending sms';
+    my $num = scalar(@{$self->{hostnames}});
+    for (my $i = 0; $i < $num; $i++) {
+        my ($response) = $self->{http}->request(
+            hostname => $self->{hostnames}->[$i],
+            port => $self->{port},
+            proto => $self->{proto},
+            url_path => '/send',
+            timeout => $self->{timeout},
+            unknown_status => '',
+            warning_status => '',
+            critical_status => '',
+            get_param => $get_param
+        );
+        if ($self->{http}->get_code() == 200) {
+            if ($response =~ /^Success/) {
+                $rv = $response;
+                last;
+            }
+        } else {
+            $rv = $response if ($response =~ /^Error/);
+        }
+    }
+
+    return $rv;
 }
 
 1;

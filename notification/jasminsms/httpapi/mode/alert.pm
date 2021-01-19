@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use Encode;
 
 sub new {
     my ($class, %options) = @_;
@@ -31,12 +32,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'from:s'            => { name => 'from'},
-        'to:s'              => { name => 'to' },
-        'message:s'         => { name => 'message' },
-        'class:s'           => { name => 'class', default => 1 },
-        'nostop:s'          => { name => 'nostop', default => 1 },
-        'smscoding:s'       => { name => 'smscoding', default => 1 }
+        'from:s'    => { name => 'from'},
+        'to:s'      => { name => 'to' },
+        'message:s' => { name => 'message' },
+        'coding:s'  => { name => 'coding', default => 8 }
     });
 
     return $self;
@@ -47,64 +46,53 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->SUPER::init(%options);
-    if (!defined($self->{option_results}->{account})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --account option");
+    if (!defined($self->{option_results}->{to}) || $self->{option_results}->{to} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Please set --to option');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{login})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --login option");
-        $self->{output}->option_exit();
+
+    if (!defined($self->{option_results}->{coding}) || $self->{option_results}->{coding} eq '') {
+        $self->{option_results}->{coding} = 8;
     }
-    if (!defined($self->{option_results}->{password})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --password option");
-        $self->{output}->option_exit();
+    $self->{option_results}->{coding} = $1 if ($self->{option_results}->{coding} =~ /(\d+)/);
+    if ($self->{option_results}->{coding} < 0 || $self->{option_results}->{coding} > 14) {
+        $self->{output}->add_option_msg(short_msg => "Please set correct --coding option [0-14]");
+        $self->{output}->option_exit(); 
     }
-    if (!defined($self->{option_results}->{from})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --from option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{to})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --to option");
-        $self->{output}->option_exit();
-    }
+
     if (!defined($self->{option_results}->{message})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --message option");
+        $self->{output}->add_option_msg(short_msg => 'Please set --message option');
         $self->{output}->option_exit();
     }
+}
+
+sub encoding_message {
+    my ($self, %options) = @_;
+
+    if ($self->{option_results}->{coding} == 8) {
+        $self->{option_results}->{message} = Encode::decode('UTF-8', $self->{option_results}->{message});
+        $self->{option_results}->{message} = Encode::encode('UCS-2BE', $self->{option_results}->{message});
+    }
+    $self->{option_results}->{message} = unpack('H*', $self->{option_results}->{message});
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $sms_param = [
-        "account=$self->{option_results}->{account}",
-        "login=$self->{option_results}->{login}",
-        "password=$self->{option_results}->{password}",
-        "to=$self->{option_results}->{to}",
-        "from=$self->{option_results}->{from}",
-        "message=$self->{option_results}->{message}",
-        "class=" . (defined($self->{option_results}->{class}) ? $self->{option_results}->{class} : ''),
-        "noStop=" . (defined($self->{option_results}->{nostop}) ? $self->{option_results}->{nostop} : ''),
-        "contentType=application/json",
-        "smsCoding=" . (defined($self->{option_results}->{smsCoding}) ? $self->{option_results}->{smsCoding} : ''),
-    ];
-    my $response = $self->{http}->request(method => 'GET', get_param => $sms_param);
+    $self->encoding_message();
+    my $response = $options{custom}->send_sms(
+        to => $self->{option_results}->{to},
+        from => $self->{option_results}->{from},
+        message => $self->{option_results}->{message},
+        coding => $self->{option_results}->{coding}
+    );
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->output_add(long_msg => $response, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-    if (defined($decoded->{status}) && ($decoded->{status} < 100 || $decoded->{status} >= 200)) {
-        $self->{output}->add_option_msg(short_msg => "API returned status '" . $decoded->{status} . "' and message '" . $decoded->{message} . "'");
+    if ($response =~ /Error/) {
+        $self->{output}->add_option_msg(short_msg => $response);
         $self->{output}->option_exit();
     }
 
-    $self->{output}->output_add(short_msg => 'smsIds : ' . join(', ', @{$decoded->{smsIds}}));
+    $self->{output}->output_add(short_msg => $response);
     $self->{output}->display(force_ignore_perfdata => 1);
     $self->{output}->exit();
 }
@@ -116,7 +104,7 @@ __END__
 
 =head1 MODE
 
-Send SMS with OVH API (https://docs.ovh.com/fr/sms/envoyer_des_sms_depuis_une_url_-_http2sms/)
+Send SMS with Jasmin SMS HTTP API (https://docs.jasminsms.com/en/latest/apis/ja-http/index.html)
 
 =over 8
 
@@ -132,17 +120,9 @@ Specify receiver phone number (format 00336xxxx for French Number).
 
 Specify the message to send.
 
-=item B<--class>
+=item B<--coding>
 
-Specify the class of message. (Default : '1').
-
-=item B<--nostop>
-
-Specify the nostop option. (Default : '1').
-
-=item B<--smsdoding>
-
-Specify the coding of message. (Default : '1').
+Sets the Data Coding Scheme bits (Default: 8 (UCS2)).
 
 =back
 
