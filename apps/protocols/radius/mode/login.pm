@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Authen::Radius;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -53,23 +53,26 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{radius} = [
-        { label => 'status', threshold => 0, set => {
+        { 
+            label => 'status', 
+            type => 2,
+            critical_default => '%{status} ne "accepted"',
+            set => {
                 key_values => [ { name => 'status' }, { name => 'error_msg' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'time', set => {
+        { label => 'time', nlabel => 'radius.response.time.seconds', set => {
                 key_values => [ { name => 'elapsed' } ],
                 output_template => 'Response time : %.3f second(s)',
                 perfdatas => [
-                    { label => 'time', value => 'elapsed', template => '%.3f',
-                      min => 0, unit => 's' },
-                ],
+                    { label => 'time' template => '%.3f', min => 0, unit => 's' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -119,7 +122,6 @@ sub check_options {
     if (defined($self->{option_results}->{port}) && $self->{option_results}->{port} =~ /^\d+$/) {
         $self->{option_results}->{hostname} .= ':' . $self->{option_results}->{port};
     }
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub radius_simple_connection {
