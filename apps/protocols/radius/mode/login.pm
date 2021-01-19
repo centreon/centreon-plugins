@@ -49,7 +49,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'radius', type => 0, message_separator => ' - ' },
+        { name => 'radius', type => 0, message_separator => ' - ' }
     ];
 
     $self->{maps_counters}->{radius} = [
@@ -62,14 +62,14 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'time', nlabel => 'radius.response.time.seconds', set => {
                 key_values => [ { name => 'elapsed' } ],
                 output_template => 'Response time : %.3f second(s)',
                 perfdatas => [
-                    { label => 'time' template => '%.3f', min => 0, unit => 's' }
+                    { label => 'time', template => '%.3f', min => 0, unit => 's' }
                 ]
             }
         }
@@ -92,9 +92,7 @@ sub new {
         'timeout:s'        => { name => 'timeout', default => 5 },
         'retry:s'          => { name => 'retry', default => 0 },
         'radius-attribute:s%'  => { name => 'radius_attribute' },
-        'radius-dictionary:s@' => { name => 'radius_dictionary' },
-        'warning-status:s'     => { name => 'warning_status', default => '' },
-        'critical-status:s'    => { name => 'critical_status', default => '%{status} ne "accepted"' }
+        'radius-dictionary:s@' => { name => 'radius_dictionary' }
     });
 
     return $self;
@@ -126,7 +124,7 @@ sub check_options {
 
 sub radius_simple_connection {
     my ($self, %options) = @_;
-    
+
     $self->{timing0} = [gettimeofday];
     my $retry = 0;
     while ($retry <= $self->{option_results}->{retry}) {
@@ -145,7 +143,7 @@ sub radius_simple_connection {
 
 sub radius_attr_connection {
     my ($self, %options) = @_;
-    
+
     my $message;
     eval {
         local $SIG{__WARN__} = sub { $message = join(' - ', @_); };
@@ -165,7 +163,7 @@ sub radius_attr_connection {
         $self->{output}->add_option_msg(short_msg => "Issue with dictionary and attributes");
         $self->{output}->option_exit();
     }
-    
+
     $self->{timing0} = [gettimeofday];
     my $retry = 0;
     while ($retry <= $self->{option_results}->{retry}) {
@@ -206,7 +204,7 @@ sub manage_selection {
     } else {
         $self->radius_simple_connection();
     }
-    
+
     $self->{radius}->{elapsed} = tv_interval($self->{timing0}, [gettimeofday]);
     $self->{radius_result_attributes} = {};
     foreach my $attr ($self->{radius_session}->get_attributes()) {
