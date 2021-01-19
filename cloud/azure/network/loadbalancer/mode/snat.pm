@@ -1,0 +1,287 @@
+#
+# Copyright 2020 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+package cloud::azure::network::loadbalancer::mode::snat;
+
+use base qw(centreon::plugins::templates::counter);
+
+use strict;
+use warnings;
+
+my %metrics_mapping = (
+    'allocatedsnatports' => {
+        'output'   => 'Allocated SNAT Ports',
+        'label'    => 'snat-ports-allocated',
+        'nlabel'   => 'loadbalancer.snat.ports.allocated.count',
+        'unit'     => '',
+        'template' => '%s'
+    },
+    'snatconnectioncount' => {
+        'output' => 'SNAT Connection Count',
+        'label'  => 'snat-connection-count',
+        'nlabel' => 'loadbalancer.snat.connection.count',
+        'unit'   => ''
+    },
+    'usedsnatports' => {
+        'output' => 'Used SNAT Ports',
+        'label'  => 'snat-ports-used',
+        'nlabel' => 'loadbalancer.snat.ports.used.count',
+        'unit'   => '',
+    }
+);
+
+sub custom_metric_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{timeframe} = $options{new_datas}->{$self->{instance} . '_timeframe'};
+    $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric}};
+    $self->{result_values}->{metric} = $options{extra_options}->{metric};
+    return 0;
+}
+
+sub custom_metric_threshold {
+    my ($self, %options) = @_;
+
+    my $exit = $self->{perfdata}->threshold_check(
+        value     => $self->{result_values}->{value},
+        threshold => [
+            { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label} , exit_litteral => 'critical' },
+            { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' }
+        ]
+    );
+    return $exit;
+}
+
+sub custom_metric_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        instances => $self->{instance},
+        nlabel    => $metrics_mapping{$self->{result_values}->{metric}}->{nlabel},
+        unit      => $metrics_mapping{$self->{result_values}->{metric}}->{unit},
+        value     => sprintf(defined($metrics_mapping{$self->{result_values}->{metric}}->{template}) ? $metrics_mapping{$self->{result_values}->{metric}}->{template} : '%.2f', $self->{result_values}->{value}),
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label})
+    );
+}
+
+sub custom_metric_output {
+    my ($self, %options) = @_;
+
+    my ($value, $unit) = ($self->{result_values}->{value}, $metrics_mapping{$self->{result_values}->{metric}}->{unit});
+
+    my $format = defined($metrics_mapping{$self->{result_values}->{metric}}->{template}) ? $metrics_mapping{$self->{result_values}->{metric}}->{template} : '%.2f';
+
+    return sprintf('%s: ' . $format . '%s', $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value, $unit);
+}
+
+sub prefix_metric_output {
+    my ($self, %options) = @_;
+
+    return "Load Balancer '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_statistics_output {
+    my ($self, %options) = @_;
+
+    return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    return "Checking Load Balancer'" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
+          message_multiple => 'All Data Path metrics are ok', indent_long_output => '    ',
+            group => [
+                { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } }
+            ]
+        }
+    ];
+
+    foreach my $metric (keys %metrics_mapping) {
+        my $entry = {
+            label => $metrics_mapping{$metric}->{label},
+            nlabel => $metrics_mapping{$metric}->{nlabel},
+            set => {
+                key_values                        => [ { name => $metric }, { name => 'timeframe' }, { name => 'display' } ],
+                closure_custom_calc               => $self->can('custom_metric_calc'),
+                closure_custom_calc_extra_options => { metric => $metric },
+                closure_custom_output             => $self->can('custom_metric_output'),
+                closure_custom_perfdata           => $self->can('custom_metric_perfdata'),
+                closure_custom_threshold_check    => $self->can('custom_metric_threshold')
+            }
+        };
+        push @{$self->{maps_counters}->{statistics}}, $entry;
+    }
+}
+
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+
+    $options{options}->add_options(arguments => {
+        'resource:s@'      => { name => 'resource' },
+        'resource-group:s' => { name => 'resource_group' },
+        'filter-metric:s'  => { name => 'filter_metric' }
+    });
+
+    return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
+        $self->{output}->option_exit();
+    }
+
+    $self->{az_resource} = $self->{option_results}->{resource};
+    $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
+    $self->{az_resource_type} = 'loadBalancers';
+    $self->{az_resource_namespace} = 'Microsoft.Network';
+    $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
+    $self->{az_aggregations} = ['Average'];
+    if (defined($self->{option_results}->{aggregation})) {
+        $self->{az_aggregations} = [];
+        foreach my $stat (@{$self->{option_results}->{aggregation}}) {
+            if ($stat ne '') {
+                push @{$self->{az_aggregations}}, ucfirst(lc($stat));
+            }
+        }
+    }
+
+    foreach my $metric (keys %metrics_mapping) {
+        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
+            && $metric !~ /$self->{option_results}->{filter_metric}/);
+
+        push @{$self->{az_metrics}}, $metric;
+    }
+
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my %metric_results;
+    my $raw_results;
+    foreach my $resource (@{$self->{az_resource}}) {
+        my ($resource_group, $resource_name) = ($self->{az_resource_group}, $resource);
+
+        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Network\/loadBalancers\/(.*)$/) {
+            $resource_group = $1;
+            $resource_name = $2;
+        }
+
+        ($metric_results{$resource_name}, $raw_results) = $options{custom}->azure_get_metrics(
+            resource => $resource_name,
+            resource_group => $resource_group,
+            resource_type => $self->{az_resource_type},
+            resource_namespace => $self->{az_resource_namespace},
+            metrics => $self->{az_metrics},
+            aggregations => $self->{az_aggregations},
+            timeframe => $self->{az_timeframe},
+            interval => $self->{az_interval}
+        );
+
+        foreach my $metric (@{$self->{az_metrics}}) {
+            foreach my $aggregation (@{$self->{az_aggregations}}) {
+                next if (!defined($metric_results{$resource_name}->{$metric}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
+
+                $self->{metrics}->{$resource_name}->{display} = $resource_name;
+                $self->{metrics}->{$resource_name}->{statistics}->{lc($aggregation)}->{display} = lc($aggregation);
+                $self->{metrics}->{$resource_name}->{statistics}->{lc($aggregation)}->{timeframe} = $self->{az_timeframe};
+                $self->{metrics}->{$resource_name}->{statistics}->{lc($aggregation)}->{$metric} =
+                    defined($metric_results{$resource_name}->{$metric}->{lc($aggregation)}) ?
+                    $metric_results{$resource_name}->{$metric}->{lc($aggregation)} : 0;
+            }
+        }
+    }
+
+    if (scalar(keys %{$self->{metrics}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
+        $self->{output}->option_exit();
+    }
+
+
+}
+
+1;
+
+__END__
+
+=head1 MODE
+
+Check Azure Network Load Balancers SNAT metrics.
+
+Example:
+
+Using resource name :
+
+perl centreon_plugins.pl --plugin=cloud::azure::network::loadbalancer::plugin --mode=snat --custommode=azcli
+--resource=<loadbalancer_id> --resource-group=<resourcegroup_id> --aggregation='average'
+--warning-snat-connection-count='800' --critical-snat-connection-count=='900'
+
+Using resource id :
+
+perl centreon_plugins.pl --plugin=cloud::azure::network::loadbalancer::plugin --mode=datapath --custommode=azcli
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/loadBalancers/<loadbalancer_id>'
+--aggregation='average' --warning-snat-connection-count='800' --critical-snat-connection-count=='900'
+
+Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
+
+=over 8
+
+=item B<--resource>
+
+Set resource name or id (Required).
+
+=item B<--resource-group>
+
+Set resource group (Required if resource's name is used).
+
+=item B<--filter-metric>
+
+Filter on specific metrics. The Azure format must be used, for example: 'sessions_percent'
+(Can be a regexp).
+
+=item B<---warning-*>
+
+Warning threshold where * can be: snat-connection-count, snat-ports-used, snat-ports-allocated.
+
+=item B<--critical-*>
+
+Critical threshold where * can be: snat-connection-count, snat-ports-used, snat-ports-allocated..
+
+=back
+
+=cut
