@@ -138,6 +138,9 @@ sub check_options {
 
     $self->load_perfdata_extend_args();
     $self->{option_results}->{use_new_perfdata} = 1 if (defined($self->{option_results}->{output_openmetrics}));
+
+    $self->{source_encoding} = (!defined($self->{option_results}->{source_encoding}) || $self->{option_results}->{source_encoding} eq '') ?
+        'UTF-8' : $self->{option_results}->{source_encoding};
 }
 
 sub add_option_msg {
@@ -804,10 +807,9 @@ sub decode {
             no_quit => 1,
             module => 'Encode',
             error_msg => "Cannot load module 'Encode'."
-        )
+        );
         return $value if ($rv);
 
-        $self->{source_encoding} = !defined($self->{source_encoding}) || $self->{source_encoding} eq '' ? 'UTF-8' : $self->{source_encoding}; 
         $self->{encode_import} = 1;
         eval '$self->{perlqq} = Encode::PERLQQ';
     }
