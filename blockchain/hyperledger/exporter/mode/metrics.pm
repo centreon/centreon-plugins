@@ -40,32 +40,33 @@ sub set_counters {
 
     $self->{maps_counters}->{ledger} = [
         { label => 'ledger-block-processing-time-avg', nlabel => 'ledger.block.processing.time.avg', set => {
-                key_values => [ { name => 'ledger_block_processing_time_avg' } ],
-                output_template => 'Average block processing duration (sec) : %s',
+                key_values => [ { name => 'ledger_block_processing_time_avg' }, 
+                                { name => 'ledger_blockchain_height' },  { name => 'ledger_transaction_count' } ],
+                closure_custom_output => $self->can('custom_ledger_output'),
                 perfdatas => [
                     { value => 'ledger_block_processing_time_avg', template => '%s', min => 0,
                       label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'ledger-blockchain-height', nlabel => 'ledger.blockchain.height', set => {
-                key_values => [ { name => 'ledger_blockchain_height' } ],
-                output_template => 'Block count: %s',
-                perfdatas => [
-                    { value => 'ledger_blockchain_height', template => '%s', min => 0,
-                      label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'ledger-transaction-count', nlabel => 'ledger.transaction.count', set => {
-                key_values => [ { name => 'ledger_transaction_count' } ],
-                output_template => 'Transaction count: %s',
-                perfdatas => [
-                    { value => 'ledger_transaction_count', template => '%s', min => 0,
-                      label_extra_instance => 1 },
-                ],
-            }
-        },
+        # { label => 'ledger-blockchain-height', nlabel => 'ledger.blockchain.height', set => {
+        #         key_values => [ { name => 'ledger_blockchain_height' } ],
+        #         output_template => 'Block count: %s',
+        #         perfdatas => [
+        #             { value => 'ledger_blockchain_height', template => '%s', min => 0,
+        #               label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        # { label => 'ledger-transaction-count', nlabel => 'ledger.transaction.count', set => {
+        #         key_values => [ { name => 'ledger_transaction_count' } ],
+        #         output_template => 'Transaction count: %s',
+        #         perfdatas => [
+        #             { value => 'ledger_transaction_count', template => '%s', min => 0,
+        #               label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
     ];
     $self->{maps_counters}->{peers} = [
         { label => 'peer-known', nlabel => 'peers.known.count', set => {
@@ -188,6 +189,17 @@ sub set_counters {
             }
         },        
     ];
+}
+
+sub custom_ledger_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+            "Average block processing duration (sec) : %s, Block count: %s, Transaction count: %s",
+            $self->{result_values}->{ledger_block_processing_time_avg},
+            $self->{result_values}->{ledger_blockchain_height},
+            $self->{result_values}->{ledger_transaction_count}
+    );
 }
 
 sub prefix_output_peer {
