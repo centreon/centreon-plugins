@@ -196,7 +196,10 @@ sub change_macros {
 sub search_metric {
     my ($self, %options) = @_;
 
-    return if (!defined($options{metrics}->{$options{label}}));
+    if (!defined($options{metrics}->{$options{label}})) {
+        $self->{$options{store}}->{$options{key}} = 'no value';
+        return;
+    }
 
     my $value = undef;
     foreach my $data (@{$options{metrics}->{$options{label}}->{data}}) {
@@ -223,8 +226,10 @@ sub search_metric {
 sub search_calc_avg_metric {
     my ($self, %options) = @_;
 
-    return if (!defined($options{metrics}->{$options{numerator}}));
-    return if (!defined($options{metrics}->{$options{denominator}}));
+    if (!defined($options{metrics}->{$options{numerator}}) || !defined($options{metrics}->{$options{denominator}})) {
+        $self->{$options{store}}->{$options{key}} = 'no value';
+        return;
+    }
 
     my $numerator_value = undef;
     my $denominator_value = undef;
