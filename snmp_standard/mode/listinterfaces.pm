@@ -289,35 +289,35 @@ sub manage_selection {
 
 sub get_extra_values_by_instance {
     my ($self, %options) = @_;
-    
+
     my $extra_values = {};
     foreach my $name (keys %{$self->{extra_oids}}) {
         my $matching = $self->{extra_oids}->{$name}->{matching};
         $matching =~ s/%\{instance\}/$options{instance}/g;
         next if (!defined($self->{results}->{ $self->{extra_oids}->{$name}->{oid} }));
-        
+
         my $append = '';
         foreach (keys %{$self->{results}->{ $self->{extra_oids}->{$name}->{oid} }}) {
             if (/^$self->{extra_oids}->{$name}->{oid}\.$matching/) {
                 $extra_values->{$name} = '' if (!defined($extra_values->{$name}));
-                $extra_values->{$name} .= $append . $self->{results}->{$self->{extra_oids}->{$name}->{oid}}->{$_};
+                $extra_values->{$name} .= $append . $self->{output}->to_utf8($self->{results}->{ $self->{extra_oids}->{$name}->{oid} }->{$_});
                 $append = ',';
             }
         }
     }
-    
+
     if (defined($self->{option_results}->{add_mac_address})) {
         my $macaddress = defined($options{result}->{$self->{oid_mac_address} . "." . $_}) ? unpack('H*', $options{result}->{$self->{oid_mac_address} . "." . $_}) : '';
         $macaddress =~ s/(..)(?=.)/$1:/g;
         $extra_values->{macaddress} = $macaddress;
     }
-    
+
     return $extra_values;
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     my $names = ['name', 'total', 'status', 'interfaceid'];
     if (scalar(keys %{$self->{extra_oids}}) > 0) {
         push @$names, keys %{$self->{extra_oids}};
@@ -326,7 +326,7 @@ sub disco_format {
         push @$names, 'macaddress';
     }
     push @$names, 'type' if (defined($self->{oid_iftype}));
-    
+
     $self->{output}->add_disco_format(elements => $names);
 }
 
