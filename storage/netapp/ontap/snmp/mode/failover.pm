@@ -170,7 +170,7 @@ sub manage_selection {
         my $instance = $1;
 
         $result = $options{snmp}->map_instance(mapping => $mapping_ha, results => $snmp_result->{$oid_haEntry}, instance => $instance);
-        my $name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $instance))));
+        my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $instance))));
         if (defined($self->{option_results}->{filter_node}) && $self->{option_results}->{filter_node} ne '' &&
             $name !~ /$self->{option_results}->{filter_node}/) {
             $self->{output}->output_add(long_msg => "skipping node '" . $name . "'.", debug => 1);

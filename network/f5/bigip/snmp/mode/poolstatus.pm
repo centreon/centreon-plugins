@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -33,7 +33,7 @@ sub custom_status_output {
         'status: %s [state: %s] [reason: %s]',
         $self->{result_values}->{status},
         $self->{result_values}->{state},
-        $self->{result_values}->{reason},
+        $self->{result_values}->{reason}
     );
     return $msg;
 }
@@ -50,7 +50,6 @@ sub set_counters {
             label => 'status', type => 2, warning_default => '%{state} eq "enabled" and %{status} eq "yellow"', critical_default => '%{state} eq "enabled" and %{status} eq "red"',  
             set => {
                 key_values => [ { name => 'state' }, { name => 'status' }, { name => 'reason' },{ name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -118,18 +117,18 @@ my $mapping = {
     new => {
         AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.2', map => $map_pool_status },
         EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.3', map => $map_pool_enabled },
-        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.5' },
+        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.5' }
     },
     old => {
         AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.18', map => $map_pool_status },
         EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.19', map => $map_pool_enabled },
-        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.21' },
+        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.21' }
     },
 };
 my $mapping2 = {
     ltmPoolStatServerCurConns => { oid => '.1.3.6.1.4.1.3375.2.2.5.2.3.1.8' },
     ltmPoolActiveMemberCnt    => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.8' },
-    ltmPoolMemberCnt          => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.23' },
+    ltmPoolMemberCnt          => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.23' }
 };
 
 sub manage_selection {
@@ -154,7 +153,7 @@ sub manage_selection {
         my ($num, $index) = ($1, $2);
         
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch_name}, instance => $num . '.' . $index);
-        my $name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $index))));
+        my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $index))));
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {

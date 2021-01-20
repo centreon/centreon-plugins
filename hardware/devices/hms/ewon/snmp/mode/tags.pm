@@ -224,7 +224,7 @@ sub manage_selection {
 
     $self->{tags} = {};
     foreach (keys %$tags) {
-        $tags->{$_} = $self->{output}->to_utf8($tags->{$_});
+        $tags->{$_} = $self->{output}->decode($tags->{$_});
         if (defined($self->{option_results}->{filter_tag_index}) && $self->{option_results}->{filter_tag_index} ne '' &&
             $_ !~ /$self->{option_results}->{filter_tag_index}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $tags->{$_} . "': no matching 'org' filter.", debug => 1);

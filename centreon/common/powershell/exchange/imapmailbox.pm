@@ -68,7 +68,7 @@ sub check {
     while ($options{stdout} =~ /\[scenario=(.*?)\]\[result=(.*?)\]\[latency=(.*?)\]\[\[error=(.*?)\]\]/msg) {
         $self->{data} = {};
         ($self->{data}->{scenario}, $self->{data}->{result}, $self->{data}->{latency}, $self->{data}->{error}) = 
-            ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
+            ($self->{output}->decode($1), centreon::plugins::misc::trim($2), 
              centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
         
         $checked++;

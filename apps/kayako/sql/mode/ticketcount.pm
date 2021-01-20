@@ -40,18 +40,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-         {
-           "reload-cache-time:s"    => { name => 'reload_cache_time', default => 180 },
-           "department-id:s"        => { name => 'department_id' },
-           "staff-id:s"             => { name => 'staff_id' },
-           "status-id:s"            => { name => 'status_id' },
-           "priority-id:s"          => { name => 'priority_id' },
-           "warning:s"              => { name => 'warning' },
-           "critical:s"             => { name => 'critical' },
-           "start-date:s"           => { name => 'start_date' },
-           "end-date:s"             => { name => 'end_date' },
-         });
+    $options{options}->add_options(arguments => {
+        "reload-cache-time:s"    => { name => 'reload_cache_time', default => 180 },
+        "department-id:s"        => { name => 'department_id' },
+        "staff-id:s"             => { name => 'staff_id' },
+        "status-id:s"            => { name => 'status_id' },
+        "priority-id:s"          => { name => 'priority_id' },
+        "warning:s"              => { name => 'warning' },
+        "critical:s"             => { name => 'critical' },
+        "start-date:s"           => { name => 'start_date' },
+        "end-date:s"             => { name => 'end_date' }
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     
     return $self;
@@ -104,22 +104,22 @@ sub reload_cache {
 
     $self->{sql}->query(query => "SELECT departmentid, title FROM swdepartments");
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        $datas->{"department_" . $row->{departmentid}} = $self->{output}->to_utf8($row->{title});
+        $datas->{"department_" . $row->{departmentid}} = $self->{output}->decode($row->{title});
     }
 
     $self->{sql}->query(query => "SELECT priorityid, title FROM swticketpriorities");
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        $datas->{"priority_" . $row->{priorityid}} = $self->{output}->to_utf8($row->{title});
+        $datas->{"priority_" . $row->{priorityid}} = $self->{output}->decode($row->{title});
     }
 
     $self->{sql}->query(query => "SELECT staffid, username FROM swstaff");
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        $datas->{"staff_" . $row->{staffid}} = $self->{output}->to_utf8($row->{username});
+        $datas->{"staff_" . $row->{staffid}} = $self->{output}->decode($row->{username});
     }
 
     $self->{sql}->query(query => "SELECT ticketstatusid, title FROM swticketstatus");
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        $datas->{"status_" . $row->{ticketstatusid}} = $self->{output}->to_utf8($row->{title});
+        $datas->{"status_" . $row->{ticketstatusid}} = $self->{output}->decode($row->{title});
     }
 
     $self->{statefile_cache}->write(data => $datas);
