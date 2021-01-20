@@ -127,12 +127,12 @@ sub reload_cache_fcportname {
         my $if_index = $1;
         push @{$options{datas}->{all_ids}}, $if_index if ($store_index == 1);
         if ($options{result}->{ $self->{oids_label}->{ifname}->{oid} }->{$_} =~ /\d+\/(\d+)$/) {
-            $options{datas}->{ $options{name} . '_' . $if_index } = $self->{output}->to_utf8(
+            $options{datas}->{ $options{name} . '_' . $if_index } = $self->{output}->decode(
                 $options{result}->{ $self->{oids_label}->{ $options{name} }->{oid} }->{ $self->{oids_label}->{ $options{name} }->{oid} . '.' . ($1 + 1) }
             );
         } else {
             # we use ifname if there is no fcportname
-            $options{datas}->{ $options{name} . '_' . $if_index } = $self->{output}->to_utf8(
+            $options{datas}->{ $options{name} . '_' . $if_index } = $self->{output}->decode(
                 $options{result}->{ $self->{oids_label}->{ifname}->{oid} }->{$_}
             );
         }

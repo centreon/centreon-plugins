@@ -62,7 +62,7 @@ sub check {
     while ($options{stdout} =~ /\[server=(.*?)\]\[check=(.*?)\]\[result=(.*?)\]\[isvalid=(.*?)\]\[\[error=(.*?)\]\]/msg) {
         $self->{data} = {};
         ($self->{data}->{server}, $self->{data}->{check}, $self->{data}->{result}, $self->{data}->{isvalid},  $self->{data}->{error}) = 
-            ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
+            ($self->{output}->decode($1), centreon::plugins::misc::trim($2), 
              centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
         
         $checked++;

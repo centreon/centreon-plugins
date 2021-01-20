@@ -244,7 +244,7 @@ sub manage_selection {
     $self->{datas}->{all_ids} = [];
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $self->{oids_label}->{$self->{option_results}->{oid_filter}} }})) {
         next if ($key !~ /^$self->{oids_label}->{$self->{option_results}->{oid_filter}}\.(.*)$/);
-        $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_filter}} }->{$key});
+        $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->decode($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_filter}} }->{$key});
         push @{$self->{datas}->{all_ids}}, $1;
     }
     
@@ -256,7 +256,7 @@ sub manage_selection {
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
         foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $self->{oids_label}->{$self->{option_results}->{oid_display}} }})) {
             next if ($key !~ /^$self->{oids_label}->{$self->{option_results}->{oid_display}}\.(.*)$/);
-            $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->to_utf8($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_display}} }->{$key});
+            $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->decode($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_display}} }->{$key});
         }
     }
     
@@ -300,7 +300,7 @@ sub get_extra_values_by_instance {
         foreach (keys %{$self->{results}->{ $self->{extra_oids}->{$name}->{oid} }}) {
             if (/^$self->{extra_oids}->{$name}->{oid}\.$matching/) {
                 $extra_values->{$name} = '' if (!defined($extra_values->{$name}));
-                $extra_values->{$name} .= $append . $self->{output}->to_utf8($self->{results}->{ $self->{extra_oids}->{$name}->{oid} }->{$_});
+                $extra_values->{$name} .= $append . $self->{output}->decode($self->{results}->{ $self->{extra_oids}->{$name}->{oid} }->{$_});
                 $append = ',';
             }
         }

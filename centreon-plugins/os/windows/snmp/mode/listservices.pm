@@ -74,7 +74,7 @@ sub manage_selection {
     foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{svSvcOperatingState}->{oid}\.(.*?)\.(.*)$/);
         my $instance = $1 . '.' . $2;
-        my $svc_name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $2))));
+        my $svc_name = $self->{output}->decode(join('', map(chr($_), split(/\./, $2))));
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&

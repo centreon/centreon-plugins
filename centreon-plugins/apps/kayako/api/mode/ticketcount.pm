@@ -148,7 +148,7 @@ sub reload_cache {
         my $trim_id = centreon::plugins::misc::trim($id->string_value);
         my ($title) = $xp->find('./title', $actionNode)->get_nodelist;
         my $trim_title = centreon::plugins::misc::trim($title->string_value);
-		$datas->{"department_".$trim_id} = $self->{output}->to_utf8($trim_title);
+		$datas->{"department_".$trim_id} = $self->{output}->decode($trim_title);
 	}
 
     $webcontent = $self->{http}->request(url_path => $url_original_path . "/Tickets/TicketPriority&apikey=" . $self->{option_results}->{kayako_api_key} . "&salt=" . $salt . "&signature=" . $digest . "=");
@@ -159,7 +159,7 @@ sub reload_cache {
         my $trim_id = centreon::plugins::misc::trim($id->string_value);
         my ($title) = $xp->find('./title', $actionNode)->get_nodelist;
         my $trim_title = centreon::plugins::misc::trim($title->string_value);
-        $datas->{"priority_".$trim_id} = $self->{output}->to_utf8($trim_title);
+        $datas->{"priority_".$trim_id} = $self->{output}->decode($trim_title);
     }
 
     $webcontent = $self->{http}->request(url_path => $url_original_path . "/Base/Staff&apikey=" . $self->{option_results}->{kayako_api_key} . "&salt=" . $salt . "&signature=" . $digest . "=");
@@ -170,7 +170,7 @@ sub reload_cache {
         my $trim_id = centreon::plugins::misc::trim($id->string_value);
         my ($title) = $xp->find('./username', $actionNode)->get_nodelist;
         my $trim_title = centreon::plugins::misc::trim($title->string_value);
-        $datas->{"staff_".$trim_id} = $self->{output}->to_utf8($trim_title);
+        $datas->{"staff_".$trim_id} = $self->{output}->decode($trim_title);
     }
 
     $webcontent = $self->{http}->request(url_path => $url_original_path . "/Tickets/TicketStatus&apikey=" . $self->{option_results}->{kayako_api_key} . "&salt=" . $salt . "&signature=" . $digest . "=");
@@ -181,7 +181,7 @@ sub reload_cache {
         my $trim_id = centreon::plugins::misc::trim($id->string_value);
         my ($title) = $xp->find('./title', $actionNode)->get_nodelist;
         my $trim_title = centreon::plugins::misc::trim($title->string_value);
-        $datas->{"status_".$trim_id} = $self->{output}->to_utf8($trim_title);
+        $datas->{"status_".$trim_id} = $self->{output}->decode($trim_title);
     }
 
     $self->{statefile_cache}->write(data => $datas);
