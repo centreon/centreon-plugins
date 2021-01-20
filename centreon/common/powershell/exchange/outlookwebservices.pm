@@ -77,7 +77,7 @@ sub check {
     while ($options{stdout} =~ /\[id=(.*?)\]\[type=(.*?)\]\[\[message=(.*?)\]\]/msg) {
         $self->{data} = {};
         ($self->{data}->{id}, $self->{data}->{type}, $self->{data}->{message}) = 
-            (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), $self->{output}->to_utf8($3));
+            (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), $self->{output}->decode($3));
         
         $checked++;
         

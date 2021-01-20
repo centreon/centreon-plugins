@@ -924,7 +924,7 @@ sub reload_cache_index_value {
     foreach (keys %{$options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }}) {
         /^$self->{oids_label}->{$options{name}}->{oid}\.(.*)$/;
         push @{$options{datas}->{all_ids}}, $1 if ($store_index == 1);
-        $options{datas}->{$options{name} . "_" . $1} = $self->{output}->to_utf8($options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_});
+        $options{datas}->{$options{name} . '_' . $1} = $self->{output}->decode($options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_});
     }
 }
 

@@ -61,7 +61,7 @@ sub manage_selection {
             next;
         }
         
-        $self->{result_names}->{$oid} = $self->{output}->to_utf8($self->{result_names}->{$oid});
+        $self->{result_names}->{$oid} = $self->{output}->decode($self->{result_names}->{$oid});
         if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
             push @{$self->{bca_id_selected}}, $instance;
             next;

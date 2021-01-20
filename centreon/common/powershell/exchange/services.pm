@@ -64,7 +64,7 @@ sub check {
     while ($options{stdout} =~ /\[role=(.*?)\]\[requiredservicesrunning=(.*?)\]\[servicesrunning=(.*?)\]\[servicesnotrunning=(.*?)\]/msg) {
         $self->{data} = {};
         ($self->{data}->{role}, $self->{data}->{requiredservicesrunning}, $self->{data}->{servicesrunning}, $self->{data}->{servicesnotrunning}) = 
-            ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
+            ($self->{output}->decode($1), centreon::plugins::misc::trim($2), 
              centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
         
         $checked++;

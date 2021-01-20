@@ -420,7 +420,7 @@ sub reload_cache {
                 push @{$datas->{all_ids}}, $storage_index;
             }
 
-            $datas->{$$_[1] . "_" . $storage_index} = $self->{output}->to_utf8($result->{ $oids_hrStorageTable{$$_[1]} }->{$key});
+            $datas->{$$_[1] . "_" . $storage_index} = $self->{output}->decode($result->{ $oids_hrStorageTable{$$_[1]} }->{$key});
         }
     }
     

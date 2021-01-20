@@ -55,10 +55,11 @@ sub new {
         'output-file:s'           => { name => 'output_file' },
         'disco-format'            => { name => 'disco_format' },
         'disco-show'              => { name => 'disco_show' },
-        'float-precision:s'       => { name => 'float_precision', default => 8 }
+        'float-precision:s'       => { name => 'float_precision', default => 8 },
+        'source-encoding:s'       => { name => 'source_encoding' , default => 'UTF-8' }
     });
 
-    %{$self->{option_results}} = ();
+    $self->{option_results} = {};
 
     $self->{option_msg} = [];
 
@@ -80,7 +81,7 @@ sub new {
     $self->{explode_perfdata_total} = 0;
     $self->{range_perfdata} = 0;
     $self->{global_status} = 0;
-    $self->{encode_utf8_import} = 0;
+    $self->{encode_import} = 0;
     $self->{perlqq} = 0;
 
     $self->{disco_elements} = [];
@@ -137,6 +138,9 @@ sub check_options {
 
     $self->load_perfdata_extend_args();
     $self->{option_results}->{use_new_perfdata} = 1 if (defined($self->{option_results}->{output_openmetrics}));
+
+    $self->{source_encoding} = (!defined($self->{option_results}->{source_encoding}) || $self->{option_results}->{source_encoding} eq '') ?
+        'UTF-8' : $self->{option_results}->{source_encoding};
 }
 
 sub add_option_msg {
@@ -794,24 +798,23 @@ sub display_disco_show {
     }
 }
 
-sub to_utf8 {
+sub decode {
     my ($self, $value) = @_;
 
-    if ($self->{encode_utf8_import} == 0) {
+    if ($self->{encode_import} == 0) {
         # Some Perl version dont have the following module (like Perl 5.6.x)
-        if (centreon::plugins::misc::mymodule_load(
-            no_quit => 1, module => 'Encode',
-            error_msg => "Cannot load module 'Encode'.")
-            ) {
-            print "Cannot load module 'Encode'\n";
-            $self->exit(exit_litteral => 'unknown');
-        }
+        my $rv = centreon::plugins::misc::mymodule_load(
+            no_quit => 1,
+            module => 'Encode',
+            error_msg => "Cannot load module 'Encode'."
+        );
+        return $value if ($rv);
 
-        $self->{encode_utf8_import} = 1;
+        $self->{encode_import} = 1;
         eval '$self->{perlqq} = Encode::PERLQQ';
     }
 
-    return centreon::plugins::misc::trim(Encode::decode('UTF-8', $value, $self->{perlqq}));
+    return centreon::plugins::misc::trim(Encode::decode($self->{source_encoding}, $value, $self->{perlqq}));
 }
 
 sub parameter {
@@ -1452,6 +1455,10 @@ Display discovery values (if the mode manages it).
 =item B<--float-precision>
 
 Set the float precision for thresholds (Default: 8).
+
+=item B<--source-encoding>
+
+Set encoding of monitoring sources (In some case. Default: 'UTF-8').
 
 =head1 DESCRIPTION
 
