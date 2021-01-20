@@ -164,28 +164,28 @@ sub manage_selection {
                 video => $qoes->{overallLinkQuality}->{score}->{1},
                 transactional => $qoes->{overallLinkQuality}->{score}->{2}
             };
-        }
 
-        foreach my $link (@{$links}) {
-            next if (!defined($qoes->{$link->{link}->{internalId}}));
+            foreach my $link (@{$links}) {
+                next if (!defined($qoes->{$link->{link}->{internalId}}));
 
-            if (defined($self->{option_results}->{filter_link_name}) && $self->{option_results}->{filter_link_name} ne '' &&
-                $link->{link}->{displayName} !~ /$self->{option_results}->{filter_link_name}/) {
-                $self->{output}->output_add(long_msg => "skipping '" . $edge->{id} . "'.", debug => 1);
-                next;
+                if (defined($self->{option_results}->{filter_link_name}) && $self->{option_results}->{filter_link_name} ne '' &&
+                    $link->{link}->{displayName} !~ /$self->{option_results}->{filter_link_name}/) {
+                    $self->{output}->output_add(long_msg => "skipping '" . $edge->{id} . "'.", debug => 1);
+                    next;
+                }
+
+                $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
+                    id => $link->{linkId},
+                    display => $link->{link}->{displayName},
+                    voice => $qoes->{$link->{link}->{internalId}}->{score}->{0},
+                    video => $qoes->{$link->{link}->{internalId}}->{score}->{1},
+                    transactional => $qoes->{$link->{link}->{internalId}}->{score}->{2}
+                };
             }
-
-            $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
-                id => $link->{linkId},
-                display => $link->{link}->{displayName},
-                voice => $qoes->{$link->{link}->{internalId}}->{score}->{0},
-                video => $qoes->{$link->{link}->{internalId}}->{score}->{1},
-                transactional => $qoes->{$link->{link}->{internalId}}->{score}->{2}
-            };
         }
         if (scalar(keys %{$self->{edges}->{$edge->{name}}->{links}}) <= 0) {
-            $self->{output}->add_option_msg(short_msg => "No link found.");
-            $self->{output}->option_exit();
+                $self->{output}->add_option_msg(short_msg => "No link found.");
+                $self->{output}->option_exit();
         }
     }
 
