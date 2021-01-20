@@ -49,24 +49,6 @@ sub set_counters {
                 ],
             }
         },
-        # { label => 'ledger-blockchain-height', nlabel => 'ledger.blockchain.height', set => {
-        #         key_values => [ { name => 'ledger_blockchain_height' } ],
-        #         output_template => 'Block count: %s',
-        #         perfdatas => [
-        #             { value => 'ledger_blockchain_height', template => '%s', min => 0,
-        #               label_extra_instance => 1 },
-        #         ],
-        #     }
-        # },
-        # { label => 'ledger-transaction-count', nlabel => 'ledger.transaction.count', set => {
-        #         key_values => [ { name => 'ledger_transaction_count' } ],
-        #         output_template => 'Transaction count: %s',
-        #         perfdatas => [
-        #             { value => 'ledger_transaction_count', template => '%s', min => 0,
-        #               label_extra_instance => 1 },
-        #         ],
-        #     }
-        # },
     ];
     $self->{maps_counters}->{peers} = [
         { label => 'peer-known', nlabel => 'peers.known.count', set => {
@@ -78,27 +60,9 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'peer-endorser-successful-proposals', nlabel => 'endorser.successful.proposals', set => {
-                key_values => [ { name => 'endorser_successful_proposals' } ],
-                output_template => 'Endorsement success: %s',
-                perfdatas => [
-                    { value => 'endorser_successful_proposals', template => '%s', min => 0,
-                      label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'peer-endorser-endorsement-failures', nlabel => 'endorser.endorsement.failures', set => {
-                key_values => [ { name => 'endorser_endorsement_failures' } ],
-                output_template => 'Endorsement failure : %s',
-                perfdatas => [
-                    { value => 'endorser_endorsement_failures', template => '%s', min => 0,
-                      label_extra_instance => 1 },
-                ],
-            }
-        },
         { label => 'peer-endorsing-duration-avg', nlabel => 'endorser.propsal.duration.avg', set => {
-                key_values => [ { name => 'endorser_propsal_duration_avg' } ],
-                output_template => 'Average endorsing duration (sec) : %s',
+                key_values => [ { name => 'endorser_propsal_duration_avg' }, { name => 'endorser_successful_proposals' }, { name => 'endorser_endorsement_failures' } ],
+                closure_custom_output => $self->can('custom_endorser_output'),
                 perfdatas => [
                     { value => 'endorser_propsal_duration_avg', template => '%s', min => 0,
                       label_extra_instance => 1 },
@@ -118,8 +82,9 @@ sub set_counters {
 
     $self->{maps_counters}->{orderers} = [
         { label => 'orderer-validation-duration-avg', nlabel => 'broadcast.validate.duration.avg', set => {
-                key_values => [ { name => 'broadcast_validate_duration_avg' } ],
-                output_template => 'Average validate duration (sec) : %s',
+                key_values => [ { name => 'broadcast_validate_duration_avg' },  { name => 'consensus_etcdraft_is_leader' }, { name => 'consensus_etcdraft_leader_changes' },
+                 { name => 'broadcast_processed_count' } ],
+                closure_custom_output => $self->can('custom_validation_output'),
                 perfdatas => [
                     { value => 'broadcast_validate_duration_avg', template => '%s', min => 0,
                       label_extra_instance => 1 },
@@ -152,43 +117,31 @@ sub set_counters {
                       label_extra_instance => 1 },
                 ],
             }
-        },
-        # { label => 'orderer-consensus-etcdraft-is-leader', nlabel => 'consensus.etcdraft.is.leader', set => {
-        #         key_values => [ { name => 'consensus_etcdraft_is_leader' } ],
-        #         output_template => 'Is leader: %s',
-        #         perfdatas => [
-        #             { value => 'consensus_etcdraft_is_leader', template => '%s', min => 0,
-        #               label_extra_instance => 1 },
-        #         ],
-        #     }
-        # },
-        { label => 'orderer-consensus-etcdraft-is-leader', nlabel => 'consensus.etcdraft.is.leader', threshold => 0, set => {
-                key_values => [ { name => 'consensus_etcdraft_is_leader' } ],
-                closure_custom_calc => \&catalog_status_calc,
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
-            }
-        },
-        { label => 'orderer-consensus-etcdraft-leader-changes', nlabel => 'consensus.etcdraft.leader.changes', set => {
-                key_values => [ { name => 'consensus_etcdraft_leader_changes' } ],
-                output_template => 'Leader changes: %s',
-                perfdatas => [
-                    { value => 'consensus_etcdraft_leader_changes', template => '%s', min => 0,
-                      label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'orderer-broadcast-processed-count', nlabel => 'broadcast.processed.count', set => {
-                key_values => [ { name => 'broadcast_processed_count' } ],
-                output_template => 'Blocks processed: %s',
-                perfdatas => [
-                    { value => 'broadcast_processed_count', template => '%s', min => 0,
-                      label_extra_instance => 1 },
-                ],
-            }
-        },        
+        }, 
     ];
+}
+
+sub custom_validation_output {
+    my ($self, %options) = @_;
+    my $isLeader = ($self->{result_values}->{consensus_etcdraft_is_leader} == 0) ? "false" : "true";
+    return sprintf(
+            "Is leader: %s, Leader changes: %s, Blocks processed: %s, Average validate duration (sec) : %s",
+            $isLeader,
+            $self->{result_values}->{consensus_etcdraft_leader_changes},
+            $self->{result_values}->{broadcast_processed_count},
+            $self->{result_values}->{broadcast_validate_duration_avg}
+    );
+}
+
+sub custom_endorser_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+            "Average endorsing duration (sec) : %s, Endorsement success: %s, Endorsement failure : %s",
+            $self->{result_values}->{endorser_propsal_duration_avg},
+            $self->{result_values}->{endorser_successful_proposals},
+            $self->{result_values}->{endorser_endorsement_failures}
+    );
 }
 
 sub custom_ledger_output {
@@ -259,14 +212,11 @@ sub search_metric {
             $all_filters_ok = 1
         }
         next if (!$all_filters_ok);
-        
-        # if (!defined($self->{channel}->{$dimension})) {
-        #     $self->{channel}->{$dimension} = { display => $dimension };
-        # }
+  
         $value = !defined($value) ? $data->{value} : $value + $data->{value};
     }
     $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
-    # my $key = $self->change_macros(template => $options{key}, dimensions => $data->{dimensions});
+
     $self->{$options{store}}->{$options{key}} = $value;
 }
 
@@ -291,10 +241,7 @@ sub search_calc_avg_metric {
             $all_filters_ok = 1
         }
         next if (!$all_filters_ok);
-        
-        # if (!defined($self->{channel}->{$dimension})) {
-        #     $self->{channel}->{$dimension} = { display => $dimension };
-        # }
+  
         $numerator_value = !defined($numerator_value) ? $data->{value} : $numerator_value + $data->{value};
     }
     return if (!defined($numerator_value));
@@ -312,16 +259,13 @@ sub search_calc_avg_metric {
             $all_filters_ok = 1
         }
         next if (!$all_filters_ok);
-        
-        # if (!defined($self->{channel}->{$dimension})) {
-        #     $self->{channel}->{$dimension} = { display => $dimension };
-        # }
+
         $denominator_value = !defined($denominator_value) ? $data->{value} : $denominator_value + $data->{value};
     }
     return if (!defined($denominator_value));
 
     $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
-    # my $key = $self->change_macros(template => $options{key}, dimensions => $data->{dimensions});
+
     $self->{$options{store}}->{$options{key}} = $numerator_value / $denominator_value;
 }
 
