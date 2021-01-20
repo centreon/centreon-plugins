@@ -219,6 +219,10 @@ sub manage_selection {
             $self->{edges}->{$edge->{name}}->{global}->{traffic_in} += (int($link->{bytesRx} * 8 / $self->{timeframe}));
             $self->{edges}->{$edge->{name}}->{global}->{traffic_out} += (int($link->{bytesTx} * 8 / $self->{timeframe}));
         }
+        if (scalar(keys %{$self->{edges}->{$edge->{name}}->{links}}) <= 0) {
+            $self->{output}->add_option_msg(short_msg => "No link found.");
+            $self->{output}->option_exit();
+        }
     }
 
     if (scalar(keys %{$self->{edges}}) <= 0) {

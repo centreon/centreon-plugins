@@ -152,6 +152,10 @@ sub manage_selection {
                 packets_in => $category->{packetsRx} / $self->{timeframe},
             };
         }
+        if (scalar(keys %{$self->{edges}->{$edge->{name}}->{categories}}) <= 0) {
+            $self->{output}->add_option_msg(short_msg => "No category found.");
+            $self->{output}->option_exit();
+        }
     }
 
     if (scalar(keys %{$self->{edges}}) <= 0) {

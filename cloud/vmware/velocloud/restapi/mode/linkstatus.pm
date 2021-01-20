@@ -142,6 +142,10 @@ sub manage_selection {
                 backup_state => defined($link->{link}->{backupState}) ? $link->{link}->{backupState} : '-'
             };
         }
+        if (scalar(keys %{$self->{edges}->{$edge->{name}}->{links}}) <= 0) {
+            $self->{output}->add_option_msg(short_msg => "No link found.");
+            $self->{output}->option_exit();
+        }
     }
 
     if (scalar(keys %{$self->{edges}}) <= 0) {

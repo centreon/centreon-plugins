@@ -157,6 +157,10 @@ sub manage_selection {
                 packets_in => $app->{packetsRx} / $self->{timeframe}
             };
         }
+        if (scalar(keys %{$self->{edges}->{$edge->{name}}->{apps}}) <= 0) {
+            $self->{output}->add_option_msg(short_msg => "No application found.");
+            $self->{output}->option_exit();
+        }
     }
 
     if (scalar(keys %{$self->{edges}}) <= 0) {

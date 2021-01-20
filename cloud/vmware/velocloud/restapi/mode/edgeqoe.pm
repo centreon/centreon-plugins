@@ -158,13 +158,13 @@ sub manage_selection {
             timeframe => $self->{timeframe}
         );
 
-        next if (ref($qoes) ne 'HASH');
-
-        $self->{edges}->{$edge->{name}}->{global} = {
-            voice => $qoes->{overallLinkQuality}->{score}->{0},
-            video => $qoes->{overallLinkQuality}->{score}->{1},
-            transactional => $qoes->{overallLinkQuality}->{score}->{2}
-        };
+        if (ref($qoes) eq 'HASH') {
+            $self->{edges}->{$edge->{name}}->{global} = {
+                voice => $qoes->{overallLinkQuality}->{score}->{0},
+                video => $qoes->{overallLinkQuality}->{score}->{1},
+                transactional => $qoes->{overallLinkQuality}->{score}->{2}
+            };
+        }
 
         foreach my $link (@{$links}) {
             next if (!defined($qoes->{$link->{link}->{internalId}}));
@@ -182,6 +182,10 @@ sub manage_selection {
                 video => $qoes->{$link->{link}->{internalId}}->{score}->{1},
                 transactional => $qoes->{$link->{link}->{internalId}}->{score}->{2}
             };
+        }
+        if (scalar(keys %{$self->{edges}->{$edge->{name}}->{links}}) <= 0) {
+            $self->{output}->add_option_msg(short_msg => "No link found.");
+            $self->{output}->option_exit();
         }
     }
 
