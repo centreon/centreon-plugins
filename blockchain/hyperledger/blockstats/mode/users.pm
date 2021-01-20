@@ -43,15 +43,6 @@ sub set_counters {
                 ],
             }
         },
-        # { label => 'patate', set => {
-        #         key_values => [ { name => 'toto' } ],
-        #         output_template => 'Patate: %d',
-        #         perfdatas => [
-        #             { label => 'patate', value => 'toto_absolute', template => '%d',
-        #               min => 0 },
-        #         ],
-        #     }
-        # },
     ];
 }
 
@@ -73,19 +64,6 @@ sub new {
     return $self;
 }
 
-# [
-#     {
-#         "mspid": "OrdererMSP",
-#         "nbTransactions": 3,
-#         "id": "-----BEGIN CERTIFICATE-----\nMIICDDCCAbOgAwIBAgIRAIdowj9Q4vB5Apc0o8yzkeYwCgYIKoZIzj0EAwIwaTEL\nMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG\ncmFuY2lzY28xFDASBgNVBAoTC2V4YW1wbGUuY29tMRcwFQYDVQQDEw5jYS5leGFt\ncGxlLmNvbTAeFw0yMDAzMDkxNTM4MDBaFw0zMDAzMDcxNTM4MDBaMFgxCzAJBgNV\nBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1TYW4gRnJhbmNp\nc2NvMRwwGgYDVQQDExNvcmRlcmVyLmV4YW1wbGUuY29tMFkwEwYHKoZIzj0CAQYI\nKoZIzj0DAQcDQgAEDfHVTSMxauOjVtbNbMexaTHDGZigzw+oobZxPtl3kbwpeivi\nsHxI5Se905Ubhe8IgTLlb5z6TEZnox+ettfkEaNNMEswDgYDVR0PAQH/BAQDAgeA\nMAwGA1UdEwEB/wQCMAAwKwYDVR0jBCQwIoAgViEjKSIbTWJMbFHuzXcYDaa3/x3X\n1MBtSzOmA2cPyQYwCgYIKoZIzj0EAwIDRwAwRAIgTrCeKfClxW6NhcRcyIyQVvnq\nnL80ERS1BczZ2iNbk9cCIFtKzdsZIeExrsws8PqJ22cNrqImWEnMQdWiGM74ErLf\n-----END CERTIFICATE-----\n"
-#     },
-#     {
-#         "mspid": "Org2MSP",
-#         "nbTransactions": 2,
-#         "id": "-----BEGIN CERTIFICATE-----\nMIICKTCCAdCgAwIBAgIQQsBHGdrocdtLPiWxFn2sVDAKBggqhkjOPQQDAjBzMQsw\nCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy\nYW5jaXNjbzEZMBcGA1UEChMQb3JnMi5leGFtcGxlLmNvbTEcMBoGA1UEAxMTY2Eu\nb3JnMi5leGFtcGxlLmNvbTAeFw0yMDAzMDkxNTM4MDBaFw0zMDAzMDcxNTM4MDBa\nMGwxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1T\nYW4gRnJhbmNpc2NvMQ8wDQYDVQQLEwZjbGllbnQxHzAdBgNVBAMMFkFkbWluQG9y\nZzIuZXhhbXBsZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAT/zvG/BLu4\ndyNup040hFkLSsxIRwTEo1vJWB2+lSVe54tzAY1E2nQt+TBL3IZpFp5eEqv/vDR2\nfJtuxwZ+xbmAo00wSzAOBgNVHQ8BAf8EBAMCB4AwDAYDVR0TAQH/BAIwADArBgNV\nHSMEJDAigCDOEne+k0DlxQsaWRfBidONZ/ttMaqja2F06hAgp0JlizAKBggqhkjO\nPQQDAgNHADBEAiAWRNUItUbQNAtPZU3W1P/mwCarQtb0h4x45ZJiZhys7gIgRp7E\n47NFi2lQUrKgJoE3HBgUq6ZQyGki/aWlZA51ybo=\n-----END CERTIFICATE-----\n"
-#     }
-# ]
-
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -102,8 +80,6 @@ sub manage_selection {
 
         $self->{users}->{$user->{mspid}}->{display} = $user->{mspid};
         $self->{users}->{$user->{mspid}}->{transactions} = $user->{nbTransactions};
-        # $self->{users}->{$user->{mspid}}->{toto} = $user->{nbpatates};
-
     }
     
     if (scalar(keys %{$self->{users}}) <= 0) {

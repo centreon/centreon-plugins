@@ -54,18 +54,13 @@ sub new {
     return $self;
 }
 
-# {
-#     "ChainHeight": "5"
-# }
-
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = {};
 
     my $result = $options{custom}->request_api(url_path => '/statistics/chainHeight');
-    # use Data::Dumper;
-    # print Dumper $result;
+
     $self->{global}->{height} = $result->{ChainHeight};
 }
 

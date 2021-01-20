@@ -99,10 +99,6 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    # use Data::Dumper;
-    # print Dumper($self->{option_results}->{cli_invocation} . ' ' . $self->{option_results}->{cli_name} . ' ' . $self->{option_results}->{api_invocation} . 
-    #                                                            ' ' . $self->{option_results}->{node_name} . ':' . $self->{option_results}->{node_port} . 
-    #                                                            '/' . $self->{option_results}->{api_operation});
 
     my ($stdout) = centreon::plugins::misc::execute(
         output => $self->{output},
@@ -114,9 +110,6 @@ sub manage_selection {
         command_path => $self->{option_results}->{command_path},
         command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef
     );
-
-    
-    # print Dumper($stdout);
 
     my $extracted_json = '';
     if ($stdout =~ /(\{"status":.+\})/msi) {
@@ -138,11 +131,6 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    # if ($stdout =~ /\{"status":"([A-Z]+)","time":"(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})\.\w*"\}/msi) {
-    #     $self->{global}->{peer_node_status} = $1;
-    #     $self->{output}->output_add(severity  => 'OK', long_msg => 'Last check: [date: ' . $2 . 
-    #                         '] [time: ' . $3 . ']');
-    # } 
 
 }
 

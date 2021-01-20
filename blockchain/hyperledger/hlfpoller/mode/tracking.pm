@@ -74,18 +74,6 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{balance} = [
-    #    { label => 'balance-fluctuation-prct', nlabel => 'hyperledger.tracking.balances.fluctuation', display_ok => 0, set => {
-    #             key_values => [],
-    #             manual_keys => 1,
-    #             closure_custom_calc => $self->can('custom_balance_prct_calc'),
-    #             closure_custom_output => $self->can('custom_balance_prct_output'),
-    #             threshold_use => 'balance_fluctuation_prct',
-    #             perfdatas => [
-    #                { value => 'balance_fluctuation_prct', template => '%.2f', unit => '%',
-    #                  min => 0, label_extra_instance => 1, instance_use => 'display'  }
-    #             ],
-    #         }
-    #     }
         { label => 'balance-changes', nlabel => 'hyperledger.tracking.balance.changes.perminute', set => {
                 key_values => [ { name => 'balance_count', per_minute => 1 }, { name => 'display' },
                                 { name => 'last_balance' } ],
@@ -136,29 +124,6 @@ sub custom_mining_prct_calc {
                                                     $self->{result_values}->{mined_block_count} / $self->{result_values}->{total_block} * 100 : 0; 
     return 0;
 }
-
-# sub custom_balance_prct_output {
-#     my ($self, %options) = @_;
-    
-#     return sprintf(
-#         "Balance: %s ether, Last fluctuation: %.2f ",
-#         $self->{result_values}->{balance},
-#         $self->{result_values}->{balance_fluctuation_prct}
-#     );
-# }
-
-# sub custom_balance_prct_calc {
-#     my ($self, %options) = @_;
-
-#     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-#     $self->{result_values}->{balance} = Math::BigFloat->new($options{new_datas}->{$self->{instance} . '_balance'});
-#     $self->{result_values}->{balance_old} = Math::BigFloat->new($options{old_datas}->{$self->{instance} . '_balance'});
-#     $self->{result_values}->{balance_fluctuation_prct} = (defined($self->{result_values}->{balance_old}) && $self->{result_values}->{balance_old} != 0) ? 
-#                                                     ($self->{result_values}->{balance} - $self->{result_values}->{balance_old}) / 
-#                                                     $self->{result_values}->{balance_old} * 100 : 0; 
-
-#     return 0;
-# }
 
 sub custom_event_output {
     my ($self, %options) = @_;

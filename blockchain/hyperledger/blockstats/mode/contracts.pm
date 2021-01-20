@@ -26,23 +26,6 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-# [{"id":"lscc","version":"1.4.2","contractPath":"","nbCalls":1,"functions":[{"name":"deploy","nbCalls":1}]},
-# {"id":"mycc","version":"1.0","contractPath":"","nbCalls":1,"functions":[{"name":"invoke","nbCalls":1}]}]
-
-# sub custom_output {
-#     my ($self, %options) = @_;
-#     my $msg = "Chaincode version is '" .     $self->{result_values}->{status} . "'";
-
-#     return $msg;
-# }
-
-# sub custom_calc {
-#     my ($self, %options) = @_;
-
-#     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_chaincode_version'};
-#     return 0;
-# }
-
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -51,14 +34,6 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{contracts} = [
-        # { label => 'version', threshold => 0, set => {
-        #         key_values => [ { name => 'chaincode_version' } ],
-        #         closure_custom_calc => $self->can('custom_calc'),
-        #         closure_custom_output => $self->can('custom_output'),
-        #         closure_custom_perfdata => sub { return 0; },
-        #         closure_custom_threshold_check => \&catalog_status_threshold,
-        #     }
-        # },
         { label => 'version', nlabel => 'chaincode.version', set => {
                 key_values => [ { name => 'version' }, { name => 'display' } ],
                 output_template => 'Version: %s',
@@ -111,9 +86,6 @@ sub manage_selection {
     $self->{contracts} = {};
 
     my $results = $options{custom}->request_api(url_path => '/statistics/contracts');
-    
-    use Data::Dumper;
-    print Dumper($results);
 
     foreach my $contract (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -125,7 +97,6 @@ sub manage_selection {
         $self->{contracts}->{$contract->{id}}->{display} = $contract->{id};
         $self->{contracts}->{$contract->{id}}->{version} = $contract->{version};
         $self->{contracts}->{$contract->{id}}->{calls} = $contract->{nbCalls};
-
     }
     
     if (scalar(keys %{$self->{contracts}}) <= 0) {

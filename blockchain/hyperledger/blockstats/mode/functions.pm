@@ -26,9 +26,6 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-# [{"id":"lscc","version":"1.4.2","contractPath":"","nbCalls":1,"functions":[{"name":"deploy","nbCalls":1}]},
-# {"id":"mycc","version":"1.0","contractPath":"","nbCalls":1,"functions":[{"name":"invoke","nbCalls":1}]}]
-
 sub custom_output {
     my ($self, %options) = @_;
     my $msg = "Chaincode alias is '" .     $self->{result_values}->{chaincode} . "'";
@@ -51,14 +48,6 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{functions} = [
-        # { label => 'chaincode', nlabel => 'chaincode.alias', threshold => 0, set => {
-        #         key_values => [ { name => 'chaincode' } ],
-        #         closure_custom_calc => $self->can('custom_calc'),
-        #         closure_custom_output => $self->can('custom_output'),
-        #         closure_custom_perfdata => sub { return 0; },
-        #         closure_custom_threshold_check => \&catalog_status_threshold,
-        #     }
-        # },
         { label => 'chaincode', nlabel => 'chaincode.name', set => {
                 key_values => [ { name => 'chaincode' } ],
                 output_template => 'Chaincode: %s',
@@ -102,9 +91,6 @@ sub manage_selection {
     $self->{functions} = {};
 
     my $results = $options{custom}->request_api(url_path => '/statistics/contracts');
-    
-    use Data::Dumper;
-    # print Dumper($results);
      
     foreach my $contract (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -119,7 +105,6 @@ sub manage_selection {
                 $self->{output}->output_add(long_msg => "skipping '" . $function->{name} . "': no matching filter name.", debug => 1);
                 next;
             }
-            print Dumper($contract->{id});
             $self->{functions}->{$function->{name}}->{display} = $function->{name};
             $self->{functions}->{$function->{name}}->{chaincode} = $contract->{id};
             $self->{functions}->{$function->{name}}->{function_calls} = $function->{nbCalls};
