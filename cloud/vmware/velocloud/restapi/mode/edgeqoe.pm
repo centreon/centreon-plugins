@@ -184,8 +184,8 @@ sub manage_selection {
             }
         }
         if (scalar(keys %{$self->{edges}->{$edge->{name}}->{links}}) <= 0) {
-                $self->{output}->add_option_msg(short_msg => "No link found.");
-                $self->{output}->option_exit();
+            $self->{output}->add_option_msg(short_msg => "No link found.");
+            $self->{output}->option_exit();
         }
     }
 
