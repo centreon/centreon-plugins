@@ -96,6 +96,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'dimension:s'     => { name => 'dimension' },
+        'operator:s'      => { name => 'operator', default => 'equals' },
         'instance:s'      => { name => 'instance' },
         'metric:s'        => { name => 'metric' },
         'api:s'           => { name => 'api' },
@@ -127,6 +128,7 @@ sub check_options {
     }
 
     $self->{gcp_dimension} = $self->{option_results}->{dimension};
+    $self->{gcp_operator} = $self->{option_results}->{operator};
     $self->{gcp_instance} = $self->{option_results}->{instance};
     $self->{gcp_metric} = $self->{option_results}->{metric};
     $self->{gcp_api} = $self->{option_results}->{api};
@@ -159,6 +161,7 @@ sub manage_selection {
 
     my ($results, $raw_results) = $options{custom}->gcp_get_metrics(
         dimension => $self->{gcp_dimension},
+        operator => $self->{gcp_operator},
         instance => $self->{gcp_instance},
         metric => $self->{gcp_metric},
         api => $self->{gcp_api},
@@ -175,7 +178,7 @@ sub manage_selection {
                 label => $label,
                 aggregation => $aggregation,
                 value => $results->{$label}->{$aggregation},
-                perf_label => $label . '_' . $aggregation,
+                perf_label => $label . '_' . $aggregation
             };
         }
     }
@@ -209,6 +212,10 @@ Set stackdriver metric (Required).
 =item B<--dimension>
 
 Set dimension primary filter (Required).
+
+=item B<--operator>
+
+Filter operator (Default: 'equals'. Can also be: 'regexp', 'starts').
 
 =item B<--instance>
 

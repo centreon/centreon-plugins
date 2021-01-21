@@ -205,29 +205,27 @@ sub manage_selection {
             metric => $metric,
             api => $self->{gcp_api},
             aggregations => $self->{gcp_aggregations},
-            timeframe => $self->{gcp_timeframe}
+            timeframe => $self->{gcp_timeframe},
+            dimension_zeroed => $self->{gcp_dimension_zeroed}
         );
 
-        foreach my $aggregation (@{$self->{gcp_aggregations}}) {
-            next if (
-                !defined($metric_results->{$metric}->{lc($aggregation)}) && 
-                defined($self->{option_results}->{zeroed})
-            );
-
-            if (!defined($self->{metrics}->{ $metric_results->{labels}->{instance_name} })) {
-                $self->{metrics}->{ $metric_results->{labels}->{instance_name} } = {
-                    display => $metric_results->{labels}->{instance_name},
-                    aggregations => {}
-                };
+        foreach my $instance_name (keys %$metric_results) {
+            foreach my $aggregation (@{$self->{gcp_aggregations}}) {
+                if (!defined($self->{metrics}->{$instance_name})) {
+                    $self->{metrics}->{$instance_name} = {
+                        display => $instance_name,
+                        aggregations => {}
+                    };
+                }
+                if (!defined($self->{metrics}->{$instance_name}->{aggregations}->{lc($aggregation)})) {
+                    $self->{metrics}->{$instance_name}->{aggregations}->{lc($aggregation)} = {
+                        display => $aggregation,
+                        timeframe => $self->{gcp_timeframe}
+                    };
+                }
+                $self->{metrics}->{$instance_name}->{aggregations}->{lc($aggregation)}->{$metric} =
+                    defined($metric_results->{$instance_name}->{$metric}->{lc($aggregation)}) ? $metric_results->{$instance_name}->{$metric}->{lc($aggregation)} : 0
             }
-            if (!defined($self->{metrics}->{ $metric_results->{labels}->{instance_name} }->{aggregations}->{lc($aggregation)})) {
-                $self->{metrics}->{ $metric_results->{labels}->{instance_name} }->{aggregations}->{lc($aggregation)} = {
-                    display => $aggregation,
-                    timeframe => $self->{gcp_timeframe}
-                };
-            }
-            $self->{metrics}->{ $metric_results->{labels}->{instance_name} }->{aggregations}->{lc($aggregation)}->{$metric} =
-                defined($metric_results->{$metric}->{lc($aggregation)}) ? $metric_results->{$metric}->{lc($aggregation)} : 0
         }
     }
 

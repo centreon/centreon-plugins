@@ -290,7 +290,6 @@ sub gcp_get_metrics_set_url {
 sub gcp_get_metrics {
     my ($self, %options) = @_;
 
-    my $results = {};
     my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601() . '.000000Z';
     my $end_time = DateTime->now->iso8601() . '.000000Z';
 
@@ -302,44 +301,59 @@ sub gcp_get_metrics {
         get_param => $get_param
     );
 
-    my %aggregations = map {$_ => 1} @{$options{aggregations}};
-
+    my %aggregations = map { $_ => 1 } @{$options{aggregations}};
+    my $results = {};
     foreach my $timeserie (@{$response->{timeSeries}}) {
+        my $instance = $timeserie->{metric}->{labels}->{instance_name};
         my $metric_name = lc($timeserie->{metric}->{type});
         $metric_name =~ s/$options{api}\///;
-        
-        $results->{$metric_name} = { points => 0 };
+
+        if (!defined($results->{$instance})) {
+            $results->{$instance} = {};
+        }
+
+        my $metric_calc = { points => 0 };
         foreach my $point (@{$timeserie->{points}}) {
             if (defined($point->{value})) {
-                my $value = $point->{value}->{lc($timeserie->{valueType}) . 'Value'};
+                my $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' };
                 if (defined($aggregations{average})) {
-                    $results->{$metric_name}->{average} = 0 if (!defined($results->{$metric_name}->{average}));
-                    $results->{$metric_name}->{average} += $value;
-                    $results->{$metric_name}->{points}++;
+                    $metric_calc->{average} = 0 if (!defined($metric_calc->{average}));
+                    $metric_calc->{average} += $value;
+                    $metric_calc->{points}++;
                 }
                 if (defined($aggregations{minimum})) {
-                    $results->{$metric_name}->{minimum} = $value
-                        if (!defined($results->{$metric_name}->{minimum}) || $value < $results->{$metric_name}->{minimum});
+                    $metric_calc->{minimum} = $value
+                        if (!defined($metric_calc->{$metric_name}->{minimum}) || $value < $$metric_calc->{minimum});
                 }
                 if (defined($aggregations{maximum})) {
-                    $results->{$metric_name}->{maximum} = $value
-                        if (!defined($results->{$metric_name}->{maximum}) || $value > $results->{$metric_name}->{maximum});
+                    $metric_calc->{maximum} = $value
+                        if (!defined($metric_calc->{maximum}) || $value > $metric_calc->{maximum});
                 }
                 if (defined($aggregations{total})) {
-                    $results->{$metric_name}->{total} = 0 if (!defined($results->{$metric_name}->{total}));
-                    $results->{$metric_name}->{total} += $value;
-                    $results->{$metric_name}->{points}++;
+                    $metric_calc->{total} = 0 if (!defined($metric_calc->{total}));
+                    $metric_calc->{total} += $value;
+                    $metric_calc->{points}++;
                 }
             }
         }
-        if (defined($results->{$metric_name}->{average})) {
-            $results->{$metric_name}->{average} /= $results->{$metric_name}->{points};
+
+        if (defined($metric_calc->{average})) {
+            $metric_calc->{average} /= $metric_calc->{points};
         }
-        $results->{resource} = $timeserie->{resource};
-        $results->{labels} = $timeserie->{metric}->{labels};
+        $results->{$instance}->{$metric_name} = $metric_calc;
+        $results->{$instance}->{resource} = $timeserie->{resource};
+        $results->{$instance}->{labels} = $timeserie->{metric}->{labels};
     }
-    
-    return $results, $response;
+
+    if (defined($self->{option_results}->{zeroed}) && (!defined($options{operator}) || $options{operator} eq '' || $options{operator} eq 'equals')) {
+        if ($options{dimension} eq $options{dimension_zeroed} && !defined($results->{ $options{instance} })) { 
+            $results->{ $options{instance} } = {
+                $options{metric} => { average => 0, minimum => 0, maximum => 0, total => 0 }
+            };
+        }
+    }
+
+    return $results;
 }
 
 1;

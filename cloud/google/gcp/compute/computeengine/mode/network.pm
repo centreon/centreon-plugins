@@ -112,7 +112,9 @@ sub new {
         'operator:s'      => { name => 'operator', default => 'equals' },
         'instance:s'      => { name => 'instance' },
         'filter-metric:s' => { name => 'filter_metric' },
-        "per-second"      => { name => 'per_second' }
+        "per-second"      => { name => 'per_second' },
+        'timeframe:s'     => { name => 'timeframe' },
+        'aggregation:s@'  => { name => 'aggregation' }
     });
     
     return $self;
@@ -129,6 +131,7 @@ sub check_options {
     
     $self->{gcp_api} = "compute.googleapis.com";
     $self->{gcp_dimension} = (!defined($self->{option_results}->{dimension}) || $self->{option_results}->{dimension} eq '') ? 'metric.labels.instance_name' : $self->{option_results}->{dimension};
+    $self->{gcp_dimension_zeroed} = 'metric.labels.instance_name';
     $self->{gcp_operator} = $self->{option_results}->{operator};
     $self->{gcp_instance} = $self->{option_results}->{instance};
 }
@@ -144,7 +147,7 @@ Check Compute Engine instances network metrics.
 Example:
 
 perl centreon_plugins.pl --plugin=cloud::google::gcp::compute::computeengine::plugin
---custommode=api --mode=network --instance=mycomputeinstance --filter-metric='bytes'
+--mode=network --instance=mycomputeinstance --filter-metric='bytes'
 --aggregation='average' --critical-received-volume='10' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
