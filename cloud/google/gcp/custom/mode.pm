@@ -128,7 +128,7 @@ sub custom_output {
 sub set_counters {
     my ($self, %options) = @_;
 
-    $self->{metrics_mapping} = $self->get_metrics_mapping;
+    $self->{metrics_mapping} = $self->get_metrics_mapping();
     
     $self->{maps_counters_type} = [
         {
@@ -172,8 +172,8 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{gcp_timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : 900;
-    
-    $self->{gcp_aggregations} = ['average'];
+
+    my $aggregations = [];
     if (defined($self->{option_results}->{aggregation})) {
         foreach my $aggregation (@{$self->{option_results}->{aggregation}}) {
             if ($aggregation !~ /average|maximum|minimum|total/i) {
@@ -181,8 +181,12 @@ sub check_options {
                 $self->{output}->option_exit();
             }
             
-            push @{$self->{gcp_aggregations}}, $aggregation;
+            push @$aggregations, $aggregation;
         }
+    }
+    $self->{gcp_aggregations} = ['average'];
+    if (scalar(@$aggregations) > 0) {
+        $self->{gcp_aggregations} = @$aggregations;
     }
 
     foreach my $metric (keys %{$self->{metrics_mapping}}) {

@@ -84,7 +84,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->{gcp_api} = "compute.googleapis.com";
+    $self->{gcp_api} = 'compute.googleapis.com';
     $self->{gcp_dimension} = (!defined($self->{option_results}->{dimension}) || $self->{option_results}->{dimension} eq '') ? 'metric.labels.instance_name' : $self->{option_results}->{dimension};
     $self->{gcp_dimension_zeroed} = 'metric.labels.instance_name';
     $self->{gcp_operator} = $self->{option_results}->{operator};

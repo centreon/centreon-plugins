@@ -32,7 +32,7 @@ sub custom_metric_perfdata {
         label => $self->{result_values}->{perf_label},
         value => $self->{result_values}->{value},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-metric'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric')
     );
 }
 
@@ -52,8 +52,7 @@ sub custom_metric_threshold {
 sub custom_metric_output {
     my ($self, %options) = @_;
 
-    my $msg = "Metric '" . $self->{result_values}->{label}  . "' of resource '" . $self->{result_values}->{display}  . "' value is " . $self->{result_values}->{value};
-    return $msg;
+    return "Metric '" . $self->{result_values}->{label}  . "' of resource '" . $self->{result_values}->{display}  . "' value is " . $self->{result_values}->{value};
 }
 
 sub custom_metric_calc {
@@ -71,13 +70,13 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metrics', type => 0 },
+        { name => 'metrics', type => 1 }
     ];
     
     $self->{maps_counters}->{metrics} = [
         { label => 'metric', set => {
                 key_values => [
-                    { name => 'value' }, { name => 'label' }, { name => 'aggregation' },
+                    { name => 'label' }, { name => 'value' }, { name => 'aggregation' },
                     { name => 'perf_label' }, { name => 'display' }
                 ],
                 closure_custom_calc => $self->can('custom_metric_calc'),
@@ -100,7 +99,8 @@ sub new {
         'instance:s'      => { name => 'instance' },
         'metric:s'        => { name => 'metric' },
         'api:s'           => { name => 'api' },
-        'extra-filter:s@' => { name => 'extra_filter' }
+        'extra-filter:s@' => { name => 'extra_filter' },
+        'aggregation:s@'  => { name => 'aggregation' }
     });
 
     return $self;
@@ -143,43 +143,48 @@ sub check_options {
         }
     }
 
-    $self->{gcp_aggregation} = ['average'];
+    my $aggregations = [];
     if (defined($self->{option_results}->{aggregation})) {
-        $self->{gcp_aggregation} = [];
         foreach my $aggregation (@{$self->{option_results}->{aggregation}}) {
             if ($aggregation ne '') {
-                push @{$self->{gcp_aggregation}}, lc($aggregation);
+                push @$aggregations, lc($aggregation);
             }
         }
+    }
+    $self->{gcp_aggregations} = ['average'];
+    if (scalar(@$aggregations) > 0) {
+        $self->{gcp_aggregations} = @$aggregations;
     }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{metrics} = {};
-
-    my ($results, $raw_results) = $options{custom}->gcp_get_metrics(
+    my $results = $options{custom}->gcp_get_metrics(
         dimension => $self->{gcp_dimension},
         operator => $self->{gcp_operator},
         instance => $self->{gcp_instance},
         metric => $self->{gcp_metric},
         api => $self->{gcp_api},
         extra_filters => $self->{gcp_extra_filters},
-        aggregations => $self->{gcp_aggregation},
+        aggregations => $self->{gcp_aggregations},
         timeframe => $self->{gcp_timeframe}
     );
 
-    foreach my $label (keys %{$results}) {
-        foreach my $aggregation (('minimum', 'maximum', 'average', 'total')) {
-            next if (!defined($results->{$label}->{$aggregation}));
-            $self->{metrics} = {
-                display => $self->{gcp_instance},
-                label => $label,
-                aggregation => $aggregation,
-                value => $results->{$label}->{$aggregation},
-                perf_label => $label . '_' . $aggregation
-            };
+    $self->{metrics} = {};
+    foreach my $instance_name (keys %$results) {
+        foreach my $label (keys %{$results->{$instance_name}}) {
+            foreach my $aggregation (@{$self->{gcp_aggregations}}) {
+                next if (!defined($results->{$instance_name}->{$label}->{$aggregation}));
+            
+                $self->{metrics}->{ $label . '_' . $aggregation }  = {
+                    display => $self->{gcp_instance},
+                    label => $label,
+                    aggregation => $aggregation,
+                    value => $results->{$instance_name}->{$label}->{$aggregation},
+                    perf_label => $label . '_' . $aggregation
+                };
+            }
         }
     }
 }
