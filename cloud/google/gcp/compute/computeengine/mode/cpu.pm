@@ -64,8 +64,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'instance:s@'     => { name => 'instance' },
-        'filter-metric:s' => { name => 'filter_metric' }
+        'dimension:s'     => { name => 'dimension', default => 'metric.labels.instance_name' },
+        'operator:s'      => { name => 'operator', default => 'equals' },
+        'instance:s'      => { name => 'instance' },
+        'filter-metric:s' => { name => 'filter_metric' },
+        'timeframe:s'     => { name => 'timeframe' },
+        'aggregation:s@'  => { name => 'aggregation' }
     });
     
     return $self;
@@ -81,25 +85,9 @@ sub check_options {
     }
 
     $self->{gcp_api} = "compute.googleapis.com";
-    $self->{gcp_dimension} = 'metric.labels.instance_name';
+    $self->{gcp_dimension} = (!defined($self->{option_results}->{dimension}) || $self->{option_results}->{dimension} eq '') ? 'metric.labels.instance_name' : $self->{option_results}->{dimension};
+    $self->{gcp_operator} = $self->{option_results}->{operator};
     $self->{gcp_instance} = $self->{option_results}->{instance};
-    $self->{gcp_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{gcp_aggregations} = ['average'];
-    if (defined($self->{option_results}->{aggregation})) {
-        $self->{gcp_aggregations} = [];
-        foreach my $stat (@{$self->{option_results}->{aggregation}}) {
-            if ($stat ne '') {
-                push @{$self->{gcp_aggregations}}, $stat;
-            }
-        }
-    }
-
-    foreach my $metric (keys %{$self->{metrics_mapping}}) {
-        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
-            && $metric !~ /$self->{option_results}->{filter_metric}/);
-
-        push @{$self->{gcp_metrics}}, $metric;
-    }
 }
 
 1;
@@ -120,14 +108,30 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =over 8
 
+=item B<--dimension>
+
+Filter dimension (Default: 'metric.labels.instance_name').
+
+=item B<--operator>
+
+Filter operator (Default: 'equals'. Can also be: 'regexp', 'starts').
+
 =item B<--instance>
 
-Set instance name (Required).
+Filter value to check (Required).
 
 =item B<--filter-metric>
 
 Filter metrics (Can be: 'instance/cpu/utilization',
 'instance/cpu/reserved_cores') (Can be a regexp).
+
+=item B<--timeframe>
+
+Set timeframe in seconds (i.e. 3600 to check last hour).
+
+=item B<--aggregation>
+
+Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--warning-*> B<--critical-*>
 

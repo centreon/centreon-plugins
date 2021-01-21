@@ -167,32 +167,67 @@ sub set_counters {
     }
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{gcp_timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : 900;
+    
+    $self->{gcp_aggregations} = ['average'];
+    if (defined($self->{option_results}->{aggregation})) {
+        foreach my $aggregation (@{$self->{option_results}->{aggregation}}) {
+            if ($aggregation !~ /average|maximum|minimum|total/i) {
+                $self->{output}->add_option_msg(short_msg => "Aggregation '" . $aggregation . "' is not handled");
+                $self->{output}->option_exit();
+            }
+            
+            push @{$self->{gcp_aggregations}}, $aggregation;
+        }
+    }
+
+    foreach my $metric (keys %{$self->{metrics_mapping}}) {
+        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
+            && $metric !~ /$self->{option_results}->{filter_metric}/);
+
+        push @{$self->{gcp_metrics}}, $metric;
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $metric_results;
-    foreach my $instance (@{$self->{gcp_instance}}) {
-        foreach my $metric (@{$self->{gcp_metrics}}) {
-            ($metric_results, undef) = $options{custom}->gcp_get_metrics(
-                dimension => $self->{gcp_dimension},
-                instance => $instance,
-                metric => $metric,
-                api => $self->{gcp_api},
-                aggregations => $self->{gcp_aggregations},
-                timeframe => $self->{gcp_timeframe},
-            );
-            
-            foreach my $aggregation (@{$self->{gcp_aggregations}}) {
-                next if (!defined($metric_results->{$metric}->{lc($aggregation)}) && 
-                    defined($self->{option_results}->{zeroed}));
+    $self->{metrics} = {};
+    foreach my $metric (@{$self->{gcp_metrics}}) {
+        my ($metric_results) = $options{custom}->gcp_get_metrics(
+            dimension => $self->{gcp_dimension},
+            operator => $self->{gcp_operator},
+            instance => $self->{gcp_instance},
+            metric => $metric,
+            api => $self->{gcp_api},
+            aggregations => $self->{gcp_aggregations},
+            timeframe => $self->{gcp_timeframe}
+        );
 
-                $self->{metrics}->{$instance}->{display} = $metric_results->{labels}->{instance_name};
-                $self->{metrics}->{$instance}->{aggregations}->{lc($aggregation)}->{display} = $aggregation;
-                $self->{metrics}->{$instance}->{aggregations}->{lc($aggregation)}->{timeframe} = $self->{gcp_timeframe};
-                $self->{metrics}->{$instance}->{aggregations}->{lc($aggregation)}->{$metric} = 
-                    defined($metric_results->{$metric}->{lc($aggregation)}) ?
-                    $metric_results->{$metric}->{lc($aggregation)} : 0;
+        foreach my $aggregation (@{$self->{gcp_aggregations}}) {
+            next if (
+                !defined($metric_results->{$metric}->{lc($aggregation)}) && 
+                defined($self->{option_results}->{zeroed})
+            );
+
+            if (!defined($self->{metrics}->{ $metric_results->{labels}->{instance_name} })) {
+                $self->{metrics}->{ $metric_results->{labels}->{instance_name} } = {
+                    display => $metric_results->{labels}->{instance_name},
+                    aggregations => {}
+                };
             }
+            if (!defined($self->{metrics}->{ $metric_results->{labels}->{instance_name} }->{aggregations}->{lc($aggregation)})) {
+                $self->{metrics}->{ $metric_results->{labels}->{instance_name} }->{aggregations}->{lc($aggregation)} = {
+                    display => $aggregation,
+                    timeframe => $self->{gcp_timeframe}
+                };
+            }
+            $self->{metrics}->{ $metric_results->{labels}->{instance_name} }->{aggregations}->{lc($aggregation)}->{$metric} =
+                defined($metric_results->{$metric}->{lc($aggregation)}) ? $metric_results->{$metric}->{lc($aggregation)} : 0
         }
     }
 

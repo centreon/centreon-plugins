@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Data::Dumper;
 
 sub custom_metric_perfdata {
     my ($self, %options) = @_;

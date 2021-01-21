@@ -49,9 +49,6 @@ sub new {
             'authorization-endpoint:s' => { name => 'authorization_endpoint' },
             'monitoring-endpoint:s'    => { name => 'monitoring_endpoint' },
             'scope-endpoint:s'         => { name => 'scope_endpoint' },
-            'timeframe:s'              => { name => 'timeframe' },
-            'interval:s'               => { name => 'interval' },
-            'aggregation:s@'           => { name => 'aggregation' },
             'zeroed'                   => { name => 'zeroed' },
             'timeout:s'                => { name => 'timeout' }
         });
@@ -76,18 +73,7 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    if (defined($self->{option_results}->{aggregation})) {
-        foreach my $aggregation (@{$self->{option_results}->{aggregation}}) {
-            if ($aggregation !~ /average|maximum|minimum|total/i) {
-                $self->{output}->add_option_msg(short_msg => "Aggregation '" . $aggregation . "' is not handled");
-                $self->{output}->option_exit();
-            }
-        }
-    }
-
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : undef;
-    $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
     $self->{key_file} = (defined($self->{option_results}->{key_file})) ? $self->{option_results}->{key_file} : undef;
     $self->{authorization_endpoint} = (defined($self->{option_results}->{authorization_endpoint})) ?
         $self->{option_results}->{authorization_endpoint} : 'https://www.googleapis.com/oauth2/v4/token';
@@ -279,7 +265,15 @@ sub request_api {
 sub gcp_get_metrics_set_url {
     my ($self, %options) = @_;
 
-    my $filter = 'metric.type = "' . $options{api} . '/' . $options{metric} . '" AND ' . $options{dimension} . ' = starts_with(' . $options{instance} . ')';
+    my $filter_instance = $options{dimension};
+    if (defined($options{operator}) && $options{operator} eq 'starts') {
+        $filter_instance .= ' = starts_with("' . $options{instance} . '")';
+    } elsif (defined($options{operator}) && $options{operator} eq 'regexp') {
+        $filter_instance .= ' = monitoring.regex.full_match("' . $options{instance} . '")';
+    } else {
+        $filter_instance .= ' = "' . $options{instance} . '"';
+    }
+    my $filter = 'metric.type = "' . $options{api} . '/' . $options{metric} . '" AND ' . $filter_instance;
     $filter .= ' AND ' . join(' AND ', @{$options{extra_filters}}) 
         if (defined($options{extra_filters}) && $options{extra_filters} ne '');
     my $get_param = [
@@ -297,8 +291,8 @@ sub gcp_get_metrics {
     my ($self, %options) = @_;
 
     my $results = {};
-    my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'.000000Z';
-    my $end_time = DateTime->now->iso8601.'.000000Z';
+    my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601() . '.000000Z';
+    my $end_time = DateTime->now->iso8601() . '.000000Z';
 
     my ($url, $get_param) = $self->gcp_get_metrics_set_url(%options, start_time => $start_time, end_time => $end_time);
     my $response = $self->request_api(
@@ -381,14 +375,6 @@ Set GCP monitoring endpoint URL (Default: 'https://monitoring.googleapis.com/v3'
 =item B<--scope-endpoint>
 
 Set GCP scope endpoint URL (Default: 'https://www.googleapis.com/auth/monitoring.read')
-
-=item B<--timeframe>
-
-Set timeframe in seconds (i.e. 3600 to check last hour).
-
-=item B<--aggregation>
-
-Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--zeroed>
 
