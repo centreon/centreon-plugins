@@ -110,7 +110,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'instance:s@'       => { name => 'instance' },
         'filter-metric:s'   => { name => 'filter_metric' },
-        "per-second"        => { name => 'per_second' },
+        "per-second"        => { name => 'per_second' }
     });
     
     return $self;

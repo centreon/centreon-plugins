@@ -46,8 +46,8 @@ sub long_output {
 sub custom_calc {
     my ($self, %options) = @_;
     
-    $self->{result_values}->{timeframe} = $options{new_datas}->{$self->{instance} . '_timeframe'};
-    $self->{result_values}->{value}->{absolute} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric}};
+    $self->{result_values}->{timeframe} = $options{new_datas}->{ $self->{instance} . '_timeframe' };
+    $self->{result_values}->{value}->{absolute} = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{metric} };
     $self->{result_values}->{value}->{absolute} = eval $self->{result_values}->{value}->{absolute} . $self->{instance_mode}->{metrics_mapping}->{$options{extra_options}->{metric}}->{calc}
         if (defined($self->{instance_mode}->{metrics_mapping}->{$options{extra_options}->{metric}}->{calc}));
     $self->{result_values}->{value}->{per_second} = $self->{result_values}->{value}->{absolute} / $self->{result_values}->{timeframe};
@@ -58,7 +58,7 @@ sub custom_calc {
 sub custom_threshold {
     my ($self, %options) = @_;
 
-    my $threshold = $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{threshold};
+    my $threshold = $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{threshold};
     my $value = $self->{result_values}->{value}->{absolute};
     if (defined($self->{instance_mode}->{option_results}->{per_second})) {
         $value = $self->{result_values}->{value}->{per_second};
@@ -76,23 +76,22 @@ sub custom_threshold {
 sub custom_perfdata {
     my ($self, %options) = @_;
 
-    my $threshold = $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{threshold};
-    my $options = $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{perfdata}->{absolute};
+    my $threshold = $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{threshold};
+    my $options = $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{perfdata}->{absolute};
     my $value = sprintf(
-        $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{perfdata}->{absolute}->{format},
+        $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{perfdata}->{absolute}->{format},
         $self->{result_values}->{value}->{absolute}
     );
     if (defined($self->{instance_mode}->{option_results}->{per_second})) {
         $value = sprintf(
-            $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{perfdata}->{per_second}->{format},
+            $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{perfdata}->{per_second}->{format},
             $self->{result_values}->{value}->{per_second}
         );
-        $options = $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{perfdata}->{per_second};
+        $options = $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{perfdata}->{per_second};
     }
 
     $self->{output}->perfdata_add(
         instances => $self->{instance},
-        label => $threshold,
         value => $value,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $threshold),
         critical => $self->{perfdata}->get_perfdata_for_output( label => 'critical-' . $threshold),
@@ -147,7 +146,7 @@ sub set_counters {
                     display_long => 1,
                     message_multiple => 'All metrics are ok',
                     skipped_code => { -10 => 1 }
-                },
+                }
             ]
         }
     ];
@@ -161,7 +160,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { metric => $metric },
                 closure_custom_output => $self->can('custom_output'),
                 closure_custom_perfdata => $self->can('custom_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_threshold'),
+                closure_custom_threshold_check => $self->can('custom_threshold')
             }
         };
         push @{$self->{maps_counters}->{aggregations}}, $entry;

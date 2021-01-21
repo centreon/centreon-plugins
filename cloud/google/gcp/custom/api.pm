@@ -26,7 +26,6 @@ use DateTime;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use URI::Encode;
 use Digest::MD5 qw(md5_hex);
 use JSON::WebToken;
 
@@ -46,15 +45,15 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'key-file:s'                => { name => 'key_file' },
-            'authorization-endpoint:s'  => { name => 'authorization_endpoint' },
-            'monitoring-endpoint:s'     => { name => 'monitoring_endpoint' },
-            'scope-endpoint:s'          => { name => 'scope_endpoint' },
-            'timeframe:s'               => { name => 'timeframe' },
-            'interval:s'                => { name => 'interval' },
-            'aggregation:s@'            => { name => 'aggregation' },
-            'zeroed'                    => { name => 'zeroed' },
-            'timeout:s'                 => { name => 'timeout' }
+            'key-file:s'               => { name => 'key_file' },
+            'authorization-endpoint:s' => { name => 'authorization_endpoint' },
+            'monitoring-endpoint:s'    => { name => 'monitoring_endpoint' },
+            'scope-endpoint:s'         => { name => 'scope_endpoint' },
+            'timeframe:s'              => { name => 'timeframe' },
+            'interval:s'               => { name => 'interval' },
+            'aggregation:s@'           => { name => 'aggregation' },
+            'zeroed'                   => { name => 'zeroed' },
+            'timeout:s'                => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -121,10 +120,6 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
-    if (defined($self->{access_token})) {
-        $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
-    }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -167,14 +162,16 @@ sub get_access_token {
             exp => $exp,
             iat => $iat,
         }, $decoded_key_file->{private_key}, 'RS256');
-        
-        my $post_data = 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' . $jwt;
-        
-        $self->settings();
 
-        my $content = $self->{http}->request(method => 'POST', query_form_post => $post_data,
-                                             full_url => $self->{authorization_endpoint},
-                                             hostname => '');
+        my $content = $self->{http}->request(
+            method => 'POST',
+            full_url => $self->{authorization_endpoint},
+            hostname => '',
+            post_param => [
+                'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer',
+                'assertion=' . $jwt
+            ]
+        );
 
         if (!defined($content) || $content eq '') {
             $self->{output}->add_option_msg(
@@ -208,8 +205,9 @@ sub get_access_token {
         my $datas = { last_timestamp => time(), access_token => $decoded->{access_token}, expires_on => $exp };
         $options{statefile}->write(data => $datas);
     }
-    
-    return $access_token;
+
+    $self->{access_token} = $access_token;
+    $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
 }
 
 sub get_project_id {
@@ -217,12 +215,10 @@ sub get_project_id {
 
     local $/ = undef;
     if (!open(FILE, "<", $self->{key_file})) {
-        $self->{output}->output_add(
-            severity => 'UNKNOWN',
+        $self->{output}->add_option_msg(
             short_msg => sprintf("Cannot read file '%s': %s", $self->{key_file}, $!)
         );
-        $self->{output}->display();
-        $self->{output}->exit();
+        $self->{output}->option_exit();
     }
     my $key_file = <FILE>;
     close FILE;
@@ -242,13 +238,10 @@ sub get_project_id {
 sub request_api {
     my ($self, %options) = @_;
 
-    if (!defined($self->{access_token})) {
-        $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
-    }
-
     $self->settings();
-
-    $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
+    if (!defined($self->{access_token})) {
+        $self->get_access_token(statefile => $self->{cache});
+    }
 
     my $content = $self->{http}->request(%options);
 
@@ -286,19 +279,18 @@ sub request_api {
 sub gcp_get_metrics_set_url {
     my ($self, %options) = @_;
 
-    my $uri = URI::Encode->new({encode_reserved => 1});
-    my $encoded_filter = $uri->encode('metric.type = "' . $options{api} . '/' . $options{metric} . '"');
-    $encoded_filter .= $uri->encode(' AND ' . $options{dimension} . ' = starts_with(' . $options{instance} . ')');
-    $encoded_filter .= ' AND ' . $uri->encode(join(' AND ', @{$options{extra_filters}}))
+    my $filter = 'metric.type = "' . $options{api} . '/' . $options{metric} . '" AND ' . $options{dimension} . ' = starts_with(' . $options{instance} . ')';
+    $filter .= ' AND ' . join(' AND ', @{$options{extra_filters}}) 
         if (defined($options{extra_filters}) && $options{extra_filters} ne '');
-    my $encoded_start_time = $uri->encode($options{start_time});
-    my $encoded_end_time = $uri->encode($options{end_time});
+    my $get_param = [
+        'filter=' . $filter,
+        'interval.startTime=' . $options{start_time},
+        'interval.endTime=' . $options{end_time}
+    ];
     my $project_id = $self->get_project_id();
+    my $url = $self->{monitoring_endpoint} . '/projects/' . $project_id . '/timeSeries/';
 
-    my $url = $self->{monitoring_endpoint} . "/projects/" . $project_id . "/timeSeries/?filter=" . $encoded_filter .
-        "&interval.startTime=" . $encoded_start_time . "&interval.endTime=" . $encoded_end_time;
-
-    return $url;
+    return ($url, $get_param);
 }
 
 sub gcp_get_metrics {
@@ -308,8 +300,13 @@ sub gcp_get_metrics {
     my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'.000000Z';
     my $end_time = DateTime->now->iso8601.'.000000Z';
 
-    my $full_url = $self->gcp_get_metrics_set_url(%options, start_time => $start_time, end_time => $end_time);
-    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+    my ($url, $get_param) = $self->gcp_get_metrics_set_url(%options, start_time => $start_time, end_time => $end_time);
+    my $response = $self->request_api(
+        method => 'GET',
+        full_url => $url,
+        hostname => '',
+        get_param => $get_param
+    );
 
     my %aggregations = map {$_ => 1} @{$options{aggregations}};
 

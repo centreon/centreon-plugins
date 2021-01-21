@@ -42,8 +42,11 @@ sub custom_metric_threshold {
 
     my $exit = $self->{perfdata}->threshold_check(
         value => $self->{result_values}->{value},
-        threshold => [ { label => 'critical-metric', exit_litteral => 'critical' },
-                       { label => 'warning-metric', exit_litteral => 'warning' } ]);
+        threshold => [
+            { label => 'critical-metric', exit_litteral => 'critical' },
+            { label => 'warning-metric', exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -74,12 +77,14 @@ sub set_counters {
     
     $self->{maps_counters}->{metrics} = [
         { label => 'metric', set => {
-                key_values => [ { name => 'value' }, { name => 'label' }, { name => 'aggregation' },
-                    { name => 'perf_label' }, { name => 'display' } ],
+                key_values => [
+                    { name => 'value' }, { name => 'label' }, { name => 'aggregation' },
+                    { name => 'perf_label' }, { name => 'display' }
+                ],
                 closure_custom_calc => $self->can('custom_metric_calc'),
                 closure_custom_output => $self->can('custom_metric_output'),
                 closure_custom_perfdata => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
+                closure_custom_threshold_check => $self->can('custom_metric_threshold')
             }
         }
     ];    
@@ -89,15 +94,15 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "dimension:s"           => { name => 'dimension' },
-        "instance:s"            => { name => 'instance' },
-        "metric:s"              => { name => 'metric' },
-        "api:s"                 => { name => 'api' },
-        "extra-filter:s@"       => { name => 'extra_filter' },
+        'dimension:s'     => { name => 'dimension' },
+        'instance:s'      => { name => 'instance' },
+        'metric:s'        => { name => 'metric' },
+        'api:s'           => { name => 'api' },
+        'extra-filter:s@' => { name => 'extra_filter' }
     });
-    
+
     return $self;
 }
 
@@ -136,7 +141,7 @@ sub check_options {
             }
         }
     }
-    
+
     $self->{gcp_aggregation} = ['average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{gcp_aggregation} = [];
@@ -154,14 +159,14 @@ sub manage_selection {
     $self->{metrics} = {};
 
     my ($results, $raw_results) = $options{custom}->gcp_get_metrics(
-            dimension => $self->{gcp_dimension},
-            instance => $self->{gcp_instance},
-            metric => $self->{gcp_metric},
-            api => $self->{gcp_api},
-            extra_filters => $self->{gcp_extra_filters},
-            aggregations => $self->{gcp_aggregation},
-            timeframe => $self->{gcp_timeframe},
-        );
+        dimension => $self->{gcp_dimension},
+        instance => $self->{gcp_instance},
+        metric => $self->{gcp_metric},
+        api => $self->{gcp_api},
+        extra_filters => $self->{gcp_extra_filters},
+        aggregations => $self->{gcp_aggregation},
+        timeframe => $self->{gcp_timeframe}
+    );
 
     foreach my $label (keys %{$results}) {
         foreach my $aggregation (('minimum', 'maximum', 'average', 'total')) {
@@ -174,9 +179,7 @@ sub manage_selection {
                 perf_label => $label . '_' . $aggregation,
             };
         }
-    }       
-
-    $self->{output}->output_add(long_msg => sprintf("Raw data:\n%s", Dumper($raw_results)), debug => 1);
+    }
 }
 
 1;

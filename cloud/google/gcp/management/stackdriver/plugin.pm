@@ -30,11 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'get-metrics'   => 'cloud::google::gcp::management::stackdriver::mode::getmetrics',
-    );
+    $self->{modes} = {
+        'get-metrics' => 'cloud::google::gcp::management::stackdriver::mode::getmetrics'
+    };
                         
-    $self->{custom_modes}{api} = 'cloud::google::gcp::custom::api';
+    $self->{custom_modes}->{api} = 'cloud::google::gcp::custom::api';
 
     return $self;
 }

@@ -37,22 +37,22 @@ sub get_metrics_mapping {
                     'min' => '0',
                     'max' => '100',
                     'unit' => '%',
-                    'format' => '%.2f',
-                },
+                    'format' => '%.2f'
+                }
             },
             'threshold' => 'utilization',
-            'calc' => '* 100',
+            'calc' => '* 100'
         },
         'instance/cpu/reserved_cores' => {
             'output_string' => 'Cpu Reserved Cores: %.2f',
             'perfdata' => {
                 'absolute' => {
                     'nlabel' => 'computeengine.cpu.cores.reserved.count',
-                    'format' => '%.2f',
+                    'format' => '%.2f'
                 }
             },
-            'threshold' => 'cores-reserved',
-        },
+            'threshold' => 'cores-reserved'
+        }
     };
 
     return $metrics_mapping;
@@ -64,8 +64,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'instance:s@'       => { name => 'instance' },
-        'filter-metric:s'   => { name => 'filter_metric' },
+        'instance:s@'     => { name => 'instance' },
+        'filter-metric:s' => { name => 'filter_metric' }
     });
     
     return $self;
@@ -79,7 +79,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --instance <name>.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{gcp_api} = "compute.googleapis.com";
     $self->{gcp_dimension} = 'metric.labels.instance_name';
     $self->{gcp_instance} = $self->{option_results}->{instance};
