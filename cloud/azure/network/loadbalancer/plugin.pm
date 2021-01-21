@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         'datapath'    => 'cloud::azure::network::loadbalancer::mode::datapath',
+        'discovery'   => 'cloud::azure::network::loadbalancer::mode::discovery',
         'healthprobe' => 'cloud::azure::network::loadbalancer::mode::healthprobe',
         'snat'        => 'cloud::azure::network::loadbalancer::mode::snat',
         'throughput'  => 'cloud::azure::network::loadbalancer::mode::throughput'
