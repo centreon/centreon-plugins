@@ -25,6 +25,19 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+
+    $options{options}->add_options(arguments => {
+        'per-sec' => { name => 'per_second'}
+    });
+
+    $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM MODE OPTIONS', once => 1);
+
+    return $self;
+}
 
 sub custom_metric_calc {
     my ($self, %options) = @_;
@@ -177,6 +190,14 @@ __END__
 =head1 MODE
 
 Azure custom class for monitor based modes.
+
+=head1 CUSTOM MODE OPTIONS
+
+=over 8
+
+=item B<--per-sec>
+
+Display the statistics based on a per-second period.
 
 =back
 

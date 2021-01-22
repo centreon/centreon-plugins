@@ -30,16 +30,18 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'bytecount' => {
-            'output'   => 'Byte Count',
-            'label'    => 'throughput-bytes',
-            'nlabel'   => 'loadbalancer.throughput.bytes',
-            'unit'     => 'B'
+            'output' => 'Byte Count',
+            'label'  => 'throughput-bytes',
+            'nlabel' => 'loadbalancer.throughput.bytes',
+            'unit'   => 'B',
+            'min'    => '0'
         },
         'packetcount' => {
             'output' => 'Packet Count',
             'label'  => 'throughput-packets',
             'nlabel' => 'loadbalancer.packets.count',
-            'unit'   => ''
+            'unit'   => '',
+            'min'    => '0'
         }
     };
 
@@ -53,7 +55,6 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-metric:s'  => { name => 'filter_metric' },
-        'per-sec'          => { name => 'per_second'},
         'resource:s'       => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' }
     });

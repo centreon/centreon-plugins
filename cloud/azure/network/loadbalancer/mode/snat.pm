@@ -34,21 +34,25 @@ sub get_metrics_mapping {
             'label'    => 'snat-ports-allocated',
             'nlabel'   => 'loadbalancer.snat.ports.allocated.count',
             'unit'     => '',
-            'template' => '%s'
+            'template' => '%s',
+            'min'      => '0'
         },
         'snatconnectioncount' => {
             'output' => 'SNAT Connection Count',
             'label'  => 'snat-connection-count',
             'nlabel' => 'loadbalancer.snat.connection.count',
-            'unit'   => ''
+            'unit'   => '',
+            'min'    => '0'
         },
         'usedsnatports' => {
             'output' => 'Used SNAT Ports',
             'label'  => 'snat-ports-used',
             'nlabel' => 'loadbalancer.snat.ports.used.count',
             'unit'   => '',
+            'min'    => '0'
         }
     };
+
     return $metrics_mapping;
 }
 
@@ -59,7 +63,6 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-metric:s'  => { name => 'filter_metric' },
-        'per-sec'          => { name => 'per_second'},
         'resource:s'       => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' }
     });

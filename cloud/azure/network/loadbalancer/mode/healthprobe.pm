@@ -49,7 +49,6 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-metric:s'  => { name => 'filter_metric' },
-        'per-sec'          => { name => 'per_second'},
         'resource:s'       => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' }
     });
