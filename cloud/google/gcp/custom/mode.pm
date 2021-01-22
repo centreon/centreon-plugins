@@ -186,7 +186,7 @@ sub check_options {
     }
     $self->{gcp_aggregations} = ['average'];
     if (scalar(@$aggregations) > 0) {
-        $self->{gcp_aggregations} = @$aggregations;
+        $self->{gcp_aggregations} = $aggregations;
     }
 
     foreach my $metric (keys %{$self->{metrics_mapping}}) {
