@@ -31,7 +31,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'per-sec' => { name => 'per_second'}
+        'filter-dimension:s' => { name => 'filter_dimension' },
+        'per-sec'            => { name => 'per_second'}
     });
 
     $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM MODE OPTIONS', once => 1);
@@ -153,15 +154,20 @@ sub manage_selection {
     my %metric_results;
     my $raw_results;
 
+    if (defined($self->{option_results}->{filter_dimension}) && $self->{option_results}->{filter_dimension} ne '') {
+        $self->{az_dimension} = $self->{option_results}->{filter_dimension};
+    }
+
     ($metric_results{$self->{az_resource}}, $raw_results) = $options{custom}->azure_get_metrics(
-        resource => $self->{az_resource},
-        resource_group => $self->{az_resource_group},
-        resource_type => $self->{az_resource_type},
+        aggregations       => $self->{az_aggregations},
+        dimension          => $self->{az_dimension},
+        interval           => $self->{az_interval},
+        metrics            => $self->{az_metrics},
+        resource           => $self->{az_resource},
+        resource_group     => $self->{az_resource_group},
         resource_namespace => $self->{az_resource_namespace},
-        metrics => $self->{az_metrics},
-        aggregations => $self->{az_aggregations},
-        timeframe => $self->{az_timeframe},
-        interval => $self->{az_interval}
+        resource_type      => $self->{az_resource_type},
+        timeframe          => $self->{az_timeframe}
     );
 
     foreach my $metric (@{$self->{az_metrics}}) {
@@ -194,6 +200,12 @@ Azure custom class for monitor based modes.
 =head1 CUSTOM MODE OPTIONS
 
 =over 8
+
+=item B<--filter-dimension>
+
+Specify the metric dimension (required for some specific metrics)
+Syntax example:
+--filter-dimension="$metricname eq '$metricvalue'"
 
 =item B<--per-sec>
 

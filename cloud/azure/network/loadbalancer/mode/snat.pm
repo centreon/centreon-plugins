@@ -107,7 +107,6 @@ sub check_options {
             && $metric !~ /$self->{option_results}->{filter_metric}/);
         push @{$self->{az_metrics}}, $metric;
     }
-
 }
 
 1;
