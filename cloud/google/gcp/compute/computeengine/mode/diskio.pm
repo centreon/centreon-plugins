@@ -188,7 +188,7 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =over 8
 
-=item B<--dimension>
+=item B<--dimension-name>
 
 Set dimension name (Default: 'metric.labels.instance_name').
 
@@ -216,7 +216,7 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'read-volume', 'throttled-read-volume',
+Thresholds (Can be: 'read-volume', 'throttled-read-volume',
 'write-volume', 'throttled-write-volume', 'read-ops', 'write-ops').
 
 =item B<--per-second>

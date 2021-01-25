@@ -154,7 +154,7 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =over 8
 
-=item B<--dimension>
+=item B<--dimension-name>
 
 Set dimension name (Default: 'metric.labels.instance_name').
 
@@ -182,7 +182,7 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'received-volume', 'sent-volume',
+Thresholds (Can be: 'received-volume', 'sent-volume',
 'received-packets', 'sent-packets').
 
 =item B<--per-second>

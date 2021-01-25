@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::database::common::mode::cpu;
+package cloud::google::gcp::database::mysql::mode::innodb;
 
 use base qw(cloud::google::gcp::custom::mode);
 
@@ -29,31 +29,73 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'database/cpu/utilization' => {
-            output_string => 'cpu utilization: %.2f',
+        'database/mysql/innodb_data_fsyncs' => {
+            output_string => 'fsync calls: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.cpu.utilization.percentage',
-                    min => 0,
-                    max => 100,
-                    unit => '%',
-                    format => '%.2f'
+                    nlabel => 'database.mysql.innodb.data_fsyncs.count',
+                    format => '%.2f',
+                    min => 0
+                },
+                per_second => {
+                    nlabel => 'database.mysql.innodb.data_fsyncs.persecond',
+                    format => '%.2f',
+                    min => 0
                 }
             },
-            threshold => 'utilization',
-            calc => '* 100',
+            threshold => 'fsyncs-calls',
             order => 1
         },
-        'database/cpu/reserved_cores' => {
-            output_string => 'cpu reserved cores: %.2f',
+        'database/mysql/innodb_os_log_fsyncs' => {
+            output_string => 'fsync calls to the log file: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.cpu.reserved_cores.count',
-                    format => '%.2f'
+                    nlabel => 'database.mysql.innodb.os_log_fsyncs.count',
+                    format => '%.2f',
+                    min => 0
+                },
+                per_second => {
+                    nlabel => 'database.mysql.innodb.os_log_fsyncs.persecond',
+                    format => '%.2f',
+                    min => 0
                 }
             },
-            threshold => 'cores-reserved',
+            threshold => 'fsync-calls-logfile',
             order => 2
+        },
+        'database/mysql/innodb_pages_read' => {
+            output_string => 'pages read: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'database.mysql.innodb.pages_read.count',
+                    format => '%.2f',
+                    min => 0
+                },
+                per_second => {
+                    nlabel => 'database.mysql.innodb.pages_read.persecond',
+                    format => '%.2f',
+                    min => 0
+                }
+            },
+            threshold => 'pages-read',
+            order => 3
+        },
+        'database/mysql/innodb_pages_written' => {
+            output_string => 'pages written: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'database.mysql.innodb.pages_written.count',
+                    format => '%.2f',
+                    min => 0
+                },
+                per_second => {
+                    nlabel => 'database.mysql.innodb.pages_written.persecond',
+                    format => '%.2f',
+                    min => 0
+                }
+            },
+            threshold => 'pages-written',
+            order => 4
         }
     };
 
@@ -70,6 +112,7 @@ sub new {
         'dimension-operator:s' => { name => 'dimension_operator', default => 'equals' },
         'dimension-value:s'    => { name => 'dimension_value' },
         'filter-metric:s'      => { name => 'filter_metric' },
+        "per-second"           => { name => 'per_second' },
         'timeframe:s'          => { name => 'timeframe' },
         'aggregation:s@'       => { name => 'aggregation' }
     });
@@ -95,13 +138,13 @@ __END__
 
 =head1 MODE
 
-Check database CPU metrics.
+Check mysql innodb metrics.
 
 Example:
 
 perl centreon_plugins.pl --plugin=cloud::google::gcp::database::mysql::plugin
---mode=cpu --dimension-value=mydatabaseid --filter-metric='utilization'
---aggregation='average' --critical-cpu-utilization-average='10' --verbose
+--mode=diskio --dimension-value=mydatabaseid --filter-metric='queries'
+--aggregation='average' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
 
@@ -121,8 +164,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/cpu/utilization',
-'database/cpu/reserved_cores') (Can be a regexp).
+Filter metrics (Can be: 'database/mysql/innodb_data_fsyncs', 'database/mysql/innodb_os_log_fsyncs',
+'database/mysql/innodb_pages_read', 'database/mysql/innodb_pages_write') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -134,7 +177,12 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'utilization', 'cores-reserved').
+Thresholds (Can be: 'fsyncs-calls', 'fsync-calls-logfile',
+'pages-read', 'pages-written').
+
+=item B<--per-second>
+
+Change the data to be unit/sec.
 
 =back
 

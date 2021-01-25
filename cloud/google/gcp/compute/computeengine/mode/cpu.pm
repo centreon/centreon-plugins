@@ -107,7 +107,7 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =over 8
 
-=item B<--dimension>
+=item B<--dimension-name>
 
 Set dimension name (Default: 'metric.labels.instance_name').
 
@@ -134,8 +134,7 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds critical (Can be: 'utilization',
-'cores-reserved').
+Thresholds (Can be: 'utilization', 'cores-reserved').
 
 =back
 
