@@ -34,7 +34,7 @@ sub prefix_output {
 sub prefix_aggregations_output {
     my ($self, %options) = @_;
     
-    return "Aggregation '" . $options{instance_value}->{display} . "' Metrics ";
+    return "aggregation '" . $options{instance_value}->{display} . "' metrics ";
 }
 
 sub long_output {
@@ -144,7 +144,7 @@ sub set_counters {
                     name => 'aggregations',
                     cb_prefix_output => 'prefix_aggregations_output',
                     display_long => 1,
-                    message_multiple => 'All metrics are ok',
+                    message_multiple => 'all metrics are ok',
                     skipped_code => { -10 => 1 }
                 }
             ]
@@ -170,6 +170,11 @@ sub set_counters {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{dimension_value})) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --dimension-value <value>.");
+        $self->{output}->option_exit();
+    }
 
     $self->{gcp_timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : 900;
 
@@ -203,9 +208,10 @@ sub manage_selection {
     $self->{metrics} = {};
     foreach my $metric (@{$self->{gcp_metrics}}) {
         my ($metric_results) = $options{custom}->gcp_get_metrics(
-            dimension => $self->{gcp_dimension},
-            operator => $self->{gcp_operator},
-            instance => $self->{gcp_instance},
+            dimension_name => $self->{gcp_dimension_name},
+            dimension_operator => $self->{gcp_dimension_operator},
+            dimension_value => $self->{gcp_dimension_value},
+            instance_key => $self->{gcp_instance_key},
             metric => $metric,
             api => $self->{gcp_api},
             aggregations => $self->{gcp_aggregations},

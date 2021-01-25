@@ -30,105 +30,105 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'instance/disk/read_bytes_count' => {
-            'output_string' => 'Read Bytes: %.2f',
-            'perfdata' => {
-                'absolute' => {
-                    'nlabel' => 'computeengine.disk.read.volume.bytes',
-                    'format' => '%.2f',
-                    'unit' => 'B',
-                    'change_bytes' => 1,
+            output_string => 'read: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.disk.read.volume.bytes',
+                    format => '%.2f',
+                    unit => 'B',
+                    change_bytes => 1
                 },
-                'per_second' => {
-                    'nlabel' => 'computeengine.disk.read.volume.bytespersecond',
-                    'format' => '%.2f',
-                    'unit' => 'B/s',
-                    'change_bytes' => 1,
-                },
+                per_second => {
+                    nlabel => 'computeengine.disk.read.volume.bytespersecond',
+                    format => '%.2f',
+                    unit => 'B/s',
+                    change_bytes => 1
+                }
             },
-            'threshold' => 'read-volume',
+            threshold => 'read-volume',
         },
         'instance/disk/throttled_read_bytes_count' => {
-            'output_string' => 'Throttled Read Bytes: %.2f',
-            'perfdata' => {
+            output_string => 'throttled read: %.2f',
+            perfdata => {
                 'absolute' => {
-                    'nlabel' => 'computeengine.disk.throttled.read.volume.bytes',
-                    'format' => '%.2f',
-                    'unit' => 'B',
-                    'change_bytes' => 1,
+                    nlabel => 'computeengine.disk.throttled.read.volume.bytes',
+                    format => '%.2f',
+                    unit => 'B',
+                    change_bytes => 1
                 },
-                'per_second' => {
-                    'nlabel' => 'computeengine.disk.throttled.read.volume.bytespersecond',
-                    'format' => '%.2f',
-                    'unit' => 'B/s',
-                    'change_bytes' => 1,
-                },
+                per_second => {
+                    nlabel => 'computeengine.disk.throttled.read.volume.bytespersecond',
+                    format => '%.2f',
+                    unit => 'B/s',
+                    change_bytes => 1
+                }
             },
-            'threshold' => 'throttled-read-volume',
+            threshold => 'throttled-read-volume'
         },
         'instance/disk/write_bytes_count' => {
-            'output_string' => 'Write Bytes: %.2f',
-            'perfdata' => {
-                'absolute' => {
-                    'nlabel' => 'computeengine.disk.write.volume.bytes',
-                    'format' => '%.2f',
-                    'unit' => 'B',
-                    'change_bytes' => 1,
+            output_string => 'write: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.disk.write.volume.bytes',
+                    format => '%.2f',
+                    unit => 'B',
+                    change_bytes => 1
                 },
-                'per_second' => {
-                    'nlabel' => 'computeengine.disk.write.volume.bytespersecond',
-                    'format' => '%.2f',
-                    'unit' => 'B/s',
-                    'change_bytes' => 1,
-                },
+                per_second => {
+                    nlabel => 'computeengine.disk.write.volume.bytespersecond',
+                    format => '%.2f',
+                    unit => 'B/s',
+                    change_bytes => 1
+                }
             },
-            'threshold' => 'write-volume',
+            threshold => 'write-volume'
         },
         'instance/disk/throttled_write_bytes_count' => {
-            'output_string' => 'Throttled Write Bytes: %.2f',
-            'perfdata' => {
-                'absolute' => {
-                    'nlabel' => 'computeengine.disk.throttled.write.volume.bytes',
-                    'format' => '%.2f',
-                    'unit' => 'B',
-                    'change_bytes' => 1,
+            output_string => 'throttled write: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.disk.throttled.write.volume.bytes',
+                    format => '%.2f',
+                    unit => 'B',
+                    change_bytes => 1
                 },
-                'per_second' => {
-                    'nlabel' => 'computeengine.disk.throttled.write.volume.bytespersecond',
-                    'format' => '%.2f',
-                    'unit' => 'B/s',
-                    'change_bytes' => 1,
-                },
+                per_second => {
+                    nlabel => 'computeengine.disk.throttled.write.volume.bytespersecond',
+                    format => '%.2f',
+                    unit => 'B/s',
+                    change_bytes => 1
+                }
             },
-            'threshold' => 'throttled-write-volume',
+            threshold => 'throttled-write-volume'
         },
         'instance/disk/read_ops_count' => {
-            'output_string' => 'Read OPS: %.2f',
-            'perfdata' => {
-                'absolute' => {
-                    'nlabel' => 'computeengine.disk.read.ops.count',
-                    'format' => '%.2f',
+            output_string => 'read OPS: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.disk.read.ops.count',
+                    format => '%.2f'
                 },
-                'per_second' => {
-                    'nlabel' => 'computeengine.disk.read.ops.persecond',
-                    'format' => '%.2f',
-                },
+                per_second => {
+                    nlabel => 'computeengine.disk.read.ops.persecond',
+                    format => '%.2f'
+                }
             },
-            'threshold' => 'read-ops',
+            threshold => 'read-ops'
         },
         'instance/disk/write_ops_count' => {
-            'output_string' => 'Write OPS: %.2f',
-            'perfdata' => {
-                'absolute' => {
-                    'nlabel' => 'computeengine.disk.write.ops.count',
-                    'format' => '%.2f',
+            output_string => 'write OPS: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.disk.write.ops.count',
+                    format => '%.2f'
                 },
-                'per_second' => {
-                    'nlabel' => 'computeengine.disk.write.ops.persecond',
-                    'format' => '%.2f',
-                },
+                per_second => {
+                    nlabel => 'computeengine.disk.write.ops.persecond',
+                    format => '%.2f'
+                }
             },
-            'threshold' => 'write-ops',
-        },
+            threshold => 'write-ops'
+        }
     };
 
     return $metrics_mapping;
@@ -140,13 +140,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'dimension:s'     => { name => 'dimension', default => 'metric.labels.instance_name' },
-        'operator:s'      => { name => 'operator', default => 'equals' },
-        'instance:s'      => { name => 'instance' },
-        'filter-metric:s' => { name => 'filter_metric' },
-        "per-second"      => { name => 'per_second' },
-        'timeframe:s'     => { name => 'timeframe' },
-        'aggregation:s@'  => { name => 'aggregation' }
+        'dimension-name:s'     => { name => 'dimension_name', default => 'metric.labels.instance_name' },
+        'dimension-operator:s' => { name => 'dimension_operator', default => 'equals' },
+        'dimension-value:s'    => { name => 'dimension_value' },
+        'filter-metric:s'      => { name => 'filter_metric' },
+        "per-second"           => { name => 'per_second' },
+        'timeframe:s'          => { name => 'timeframe' },
+        'aggregation:s@'       => { name => 'aggregation' }
     });
     
     return $self;
@@ -156,16 +156,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{instance})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --instance <name>.");
-        $self->{output}->option_exit();
-    }
-
-    $self->{gcp_api} = "compute.googleapis.com";
-    $self->{gcp_dimension} = (!defined($self->{option_results}->{dimension}) || $self->{option_results}->{dimension} eq '') ? 'metric.labels.instance_name' : $self->{option_results}->{dimension};
+    $self->{gcp_api} = 'compute.googleapis.com';
+    $self->{gcp_dimension_name} = (!defined($self->{option_results}->{dimension_name}) || $self->{option_results}->{dimension_name} eq '') ? 'metric.labels.instance_name' : $self->{option_results}->{dimension_name};
     $self->{gcp_dimension_zeroed} = 'metric.labels.instance_name';
-    $self->{gcp_operator} = $self->{option_results}->{operator};
-    $self->{gcp_instance} = $self->{option_results}->{instance};
+    $self->{gcp_instance_key} = 'metric.labels.instance_name';
+    $self->{gcp_dimension_operator} = $self->{option_results}->{dimension_operator};
+    $self->{gcp_dimension_value} = $self->{option_results}->{dimension_value};
 }
 
 1;
@@ -179,7 +175,7 @@ Check Compute Engine instances disk IO metrics.
 Example:
 
 perl centreon_plugins.pl --plugin=cloud::google::gcp::compute::computeengine::plugin
---mode=diskio --instance=mycomputeinstance --filter-metric='throttled'
+--mode=diskio --dimension-value=mycomputeinstance --filter-metric='throttled'
 --aggregation='average' --critical-throttled-write-volume='10' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
@@ -188,15 +184,15 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =item B<--dimension>
 
-Filter dimension (Default: 'metric.labels.instance_name').
+Set dimension name (Default: 'metric.labels.instance_name').
 
-=item B<--operator>
+=item B<--dimension-operator>
 
-Filter operator (Default: 'equals'. Can also be: 'regexp', 'starts').
+Set dimension operator (Default: 'equals'. Can also be: 'regexp', 'starts').
 
-=item B<--instance>
+=item B<--dimension-value>
 
-Filter value to check (Required).
+Set dimension value (Required).
 
 =item B<--filter-metric>
 

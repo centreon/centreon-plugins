@@ -265,13 +265,13 @@ sub request_api {
 sub gcp_get_metrics_set_url {
     my ($self, %options) = @_;
 
-    my $filter_instance = $options{dimension};
-    if (defined($options{operator}) && $options{operator} eq 'starts') {
-        $filter_instance .= ' = starts_with("' . $options{instance} . '")';
-    } elsif (defined($options{operator}) && $options{operator} eq 'regexp') {
-        $filter_instance .= ' = monitoring.regex.full_match("' . $options{instance} . '")';
+    my $filter_instance = $options{dimension_name};
+    if (defined($options{dimension_operator}) && $options{dimension_operator} eq 'starts') {
+        $filter_instance .= ' = starts_with("' . $options{dimension_value} . '")';
+    } elsif (defined($options{dimension_operator}) && $options{dimension_operator} eq 'regexp') {
+        $filter_instance .= ' = monitoring.regex.full_match("' . $options{dimension_value} . '")';
     } else {
-        $filter_instance .= ' = "' . $options{instance} . '"';
+        $filter_instance .= ' = "' . $options{dimension_value} . '"';
     }
     my $filter = 'metric.type = "' . $options{api} . '/' . $options{metric} . '" AND ' . $filter_instance;
     $filter .= ' AND ' . join(' AND ', @{$options{extra_filters}}) 
@@ -285,6 +285,20 @@ sub gcp_get_metrics_set_url {
     my $url = $self->{monitoring_endpoint} . '/projects/' . $project_id . '/timeSeries/';
 
     return ($url, $get_param);
+}
+
+sub get_instance {
+    my ($self, %options) = @_;
+
+    my $timeserie = $options{timeserie};
+    foreach (@{$options{instance_key}}) {
+        $timeserie = $timeserie->{$_};
+    }
+    if (ref($timeserie) !~ /ARRAY|HASH/) {
+        return $timeserie;
+    }
+
+    return undef;
 }
 
 sub gcp_get_metrics {
@@ -302,9 +316,15 @@ sub gcp_get_metrics {
     );
 
     my %aggregations = map { $_ => 1 } @{$options{aggregations}};
+    my $instance_key = [split /\./, $options{instance_key}];
     my $results = {};
     foreach my $timeserie (@{$response->{timeSeries}}) {
-        my $instance = $timeserie->{metric}->{labels}->{instance_name};
+        my $instance = $self->get_instance(
+            timeserie => $timeserie,
+            instance_key => $instance_key
+        );
+        next if (!defined($instance));
+
         my $metric_name = lc($timeserie->{metric}->{type});
         $metric_name =~ s/$options{api}\///;
 
@@ -345,9 +365,9 @@ sub gcp_get_metrics {
         $results->{$instance}->{labels} = $timeserie->{metric}->{labels};
     }
 
-    if (defined($self->{option_results}->{zeroed}) && (!defined($options{operator}) || $options{operator} eq '' || $options{operator} eq 'equals')) {
-        if ($options{dimension} eq $options{dimension_zeroed} && !defined($results->{ $options{instance} })) { 
-            $results->{ $options{instance} } = {
+    if (defined($self->{option_results}->{zeroed}) && (!defined($options{dimension_operator}) || $options{dimension_operator} eq '' || $options{dimension_operator} eq 'equals')) {
+        if ($options{dimension_name} eq $options{dimension_zeroed} && !defined($results->{ $options{dimension_value} })) { 
+            $results->{ $options{dimension_value} } = {
                 $options{metric} => { average => 0, minimum => 0, maximum => 0, total => 0 }
             };
         }

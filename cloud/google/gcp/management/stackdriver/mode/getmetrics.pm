@@ -94,13 +94,14 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'dimension:s'     => { name => 'dimension' },
-        'operator:s'      => { name => 'operator', default => 'equals' },
-        'instance:s'      => { name => 'instance' },
-        'metric:s'        => { name => 'metric' },
-        'api:s'           => { name => 'api' },
-        'extra-filter:s@' => { name => 'extra_filter' },
-        'aggregation:s@'  => { name => 'aggregation' }
+        'dimension-name:s'     => { name => 'dimension_name' },
+        'dimension-operator:s' => { name => 'dimension_operator', default => 'equals' },
+        'dimension-value:s'    => { name => 'dimension_value' },
+        'instance-key:s'       => { name => 'instance_key' },
+        'metric:s'             => { name => 'metric' },
+        'api:s'                => { name => 'api' },
+        'extra-filter:s@'      => { name => 'extra_filter' },
+        'aggregation:s@'       => { name => 'aggregation' }
     });
 
     return $self;
@@ -110,12 +111,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{dimension})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --dimension <name>.");
+    if (!defined($self->{option_results}->{dimension_name}) || $self->{option_results}->{dimension_name} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --dimension-name <name>.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{instance})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --instance <name>.");
+    if (!defined($self->{option_results}->{dimension_value}) || $self->{option_results}->{dimension_value} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --dimension-value <value>.");
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{metric})) {
@@ -127,9 +128,11 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->{gcp_dimension} = $self->{option_results}->{dimension};
-    $self->{gcp_operator} = $self->{option_results}->{operator};
-    $self->{gcp_instance} = $self->{option_results}->{instance};
+    $self->{gcp_dimension_name} = $self->{option_results}->{dimension_name};
+    $self->{gcp_dimension_operator} = $self->{option_results}->{dimension_operator};
+    $self->{gcp_dimension_value} = $self->{option_results}->{dimension_value};
+    $self->{gcp_instance_key} = defined($self->{option_results}->{instance_key}) && $self->{option_results}->{instance_key} ne '' ?
+        $self->{option_results}->{instance_key} : $self->{option_results}->{dimension_name};
     $self->{gcp_metric} = $self->{option_results}->{metric};
     $self->{gcp_api} = $self->{option_results}->{api};
     $self->{gcp_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
@@ -161,9 +164,10 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->gcp_get_metrics(
-        dimension => $self->{gcp_dimension},
-        operator => $self->{gcp_operator},
-        instance => $self->{gcp_instance},
+        dimension_name => $self->{gcp_dimension_name},
+        dimension_operator => $self->{gcp_dimension_operator},
+        dimension_value => $self->{gcp_dimension_value},
+        instance_key => $self->{gcp_instance_key},
         metric => $self->{gcp_metric},
         api => $self->{gcp_api},
         extra_filters => $self->{gcp_extra_filters},
@@ -178,7 +182,7 @@ sub manage_selection {
                 next if (!defined($results->{$instance_name}->{$label}->{$aggregation}));
             
                 $self->{metrics}->{ $label . '_' . $aggregation }  = {
-                    display => $self->{gcp_instance},
+                    display => $instance_name,
                     label => $label,
                     aggregation => $aggregation,
                     value => $results->{$instance_name}->{$label}->{$aggregation},
@@ -200,8 +204,8 @@ Check GCP metrics.
 Example:
 
 perl centreon_plugins.pl --plugin=cloud::google::gcp::management::stackdriver::plugin
---custommode=api --mode=get-metrics --api='compute.googleapis.com' --dimension='metric.labels.instance_name'
---metric='instance/cpu/utilization' --instance=mycomputeinstance --aggregation=average
+--custommode=api --mode=get-metrics --api='compute.googleapis.com' --metric='instance/cpu/utilization'
+--dimension-name='metric.labels.instance_name' --dimension-operator=equals --dimension-value=mycomputeinstance --aggregation=average
 --timeframe=600 --warning-metric= --critical-metric=
 
 =over 8
@@ -214,17 +218,21 @@ Set GCP API (Required).
 
 Set stackdriver metric (Required).
 
-=item B<--dimension>
+=item B<--dimension-name>
 
-Set dimension primary filter (Required).
+Set dimension name (Required).
 
-=item B<--operator>
+=item B<--dimension-operator>
 
-Filter operator (Default: 'equals'. Can also be: 'regexp', 'starts').
+Set dimension operator (Default: 'equals'. Can also be: 'regexp', 'starts').
 
-=item B<--instance>
+=item B<--dimension-value>
 
-Set instance name (Required).
+Set dimension value (Required).
+
+=item B<--instance-key>
+
+Set instance key (By default, --dimension-name option is used).
 
 =item B<--warning-metric>
 

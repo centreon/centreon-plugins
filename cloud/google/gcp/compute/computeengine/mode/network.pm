@@ -30,73 +30,73 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'instance/network/received_bytes_count' => {
-            'output_string' => 'Received Bytes: %.2f',
-            'perfdata' => {
-                'absolute' => {
-                    'nlabel' => 'computeengine.network.received.volume.bytes',
-                    'format' => '%.2f',
-                    'unit' => 'B',
-                    'change_bytes' => 1,
+            output_string => 'received: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.network.received.volume.bytes',
+                    format => '%.2f',
+                    unit => 'B',
+                    change_bytes => 1
                 },
-                'per_second' => {
-                    'nlabel' => 'computeengine.network.received.volume.bytespersecond',
-                    'format' => '%.2f',
-                    'unit' => 'B/s',
-                    'change_bytes' => 1,
-                },
+                per_second => {
+                    nlabel => 'computeengine.network.received.volume.bytespersecond',
+                    format => '%.2f',
+                    unit => 'B/s',
+                    change_bytes => 1
+                }
             },
-            'threshold' => 'received-volume',
+            threshold => 'received-volume'
         },
         'instance/network/sent_bytes_count' => {
-            'output_string' => 'Sent Bytes: %.2f',
-            'perfdata' => {
-                'absolute' => {
-                    'nlabel' => 'computeengine.network.sent.volume.bytes',
-                    'format' => '%.2f',
-                    'unit' => 'B',
-                    'change_bytes' => 1,
+            output_string => 'sent: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.network.sent.volume.bytes',
+                    format => '%.2f',
+                    unit => 'B',
+                    change_bytes => 1
                 },
-                'per_second' => {
-                    'nlabel' => 'computeengine.network.sent.volume.bytespersecond',
-                    'format' => '%.2f',
-                    'unit' => 'B/s',
-                    'change_bytes' => 1,
-                },
+                per_second => {
+                    nlabel => 'computeengine.network.sent.volume.bytespersecond',
+                    format => '%.2f',
+                    unit => 'B/s',
+                    change_bytes => 1
+                }
             },
-            'threshold' => 'sent-volume',
+            threshold => 'sent-volume'
         },
         'instance/network/received_packets_count' => {
-            'output_string' => 'Received Packets: %.2f',
-            'perfdata' => {
-                'absolute' => {
-                    'nlabel' => 'computeengine.network.received.packets.count',
-                    'format' => '%.2f',
-                    'unit' => 'packets',
+            output_string => 'received packets: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.network.received.packets.count',
+                    format => '%.2f',
+                    unit => 'packets'
                 },
-                'per_second' => {
-                    'nlabel' => 'computeengine.network.received.packets.persecond',
-                    'format' => '%.2f',
-                    'unit' => 'packets/s',
-                },
+                per_second => {
+                    nlabel => 'computeengine.network.received.packets.persecond',
+                    format => '%.2f',
+                    unit => 'packets/s'
+                }
             },
-            'threshold' => 'received-packets',
+            threshold => 'received-packets'
         },
         'instance/network/sent_packets_count' => {
-            'output_string' => 'Sent Packets: %.2f',
-            'perfdata' => {
-                'absolute' => {
-                    'nlabel' => 'computeengine.network.sent.packets.count',
-                    'format' => '%.2f',
-                    'unit' => 'packets',
+            output_string => 'sent packets: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.network.sent.packets.count',
+                    format => '%.2f',
+                    unit => 'packets'
                 },
-                'per_second' => {
-                    'nlabel' => 'computeengine.network.sent.packets.persecond',
-                    'format' => '%.2f',
-                    'unit' => 'packets/s',
-                },
+                per_second => {
+                    nlabel => 'computeengine.network.sent.packets.persecond',
+                    format => '%.2f',
+                    unit => 'packets/s'
+                }
             },
-            'threshold' => 'sent-packets',
-        },
+            threshold => 'sent-packets'
+        }
     };
 
     return $metrics_mapping;
@@ -108,13 +108,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'dimension:s'     => { name => 'dimension', default => 'metric.labels.instance_name' },
-        'operator:s'      => { name => 'operator', default => 'equals' },
-        'instance:s'      => { name => 'instance' },
-        'filter-metric:s' => { name => 'filter_metric' },
-        "per-second"      => { name => 'per_second' },
-        'timeframe:s'     => { name => 'timeframe' },
-        'aggregation:s@'  => { name => 'aggregation' }
+        'dimension-name:s'     => { name => 'dimension_name', default => 'metric.labels.instance_name' },
+        'dimension-operator:s' => { name => 'dimension_operator', default => 'equals' },
+        'dimension-value:s'    => { name => 'dimension_value' },
+        'filter-metric:s'      => { name => 'filter_metric' },
+        "per-second"           => { name => 'per_second' },
+        'timeframe:s'          => { name => 'timeframe' },
+        'aggregation:s@'       => { name => 'aggregation' }
     });
     
     return $self;
@@ -124,16 +124,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{instance})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --instance <name>.");
-        $self->{output}->option_exit();
-    }
-    
-    $self->{gcp_api} = "compute.googleapis.com";
-    $self->{gcp_dimension} = (!defined($self->{option_results}->{dimension}) || $self->{option_results}->{dimension} eq '') ? 'metric.labels.instance_name' : $self->{option_results}->{dimension};
+    $self->{gcp_api} = 'compute.googleapis.com';
+    $self->{gcp_dimension_name} = (!defined($self->{option_results}->{dimension_name}) || $self->{option_results}->{dimension_name} eq '') ? 'metric.labels.instance_name' : $self->{option_results}->{dimension_name};
     $self->{gcp_dimension_zeroed} = 'metric.labels.instance_name';
-    $self->{gcp_operator} = $self->{option_results}->{operator};
-    $self->{gcp_instance} = $self->{option_results}->{instance};
+    $self->{gcp_instance_key} = 'metric.labels.instance_name';
+    $self->{gcp_dimension_operator} = $self->{option_results}->{dimension_operator};
+    $self->{gcp_dimension_value} = $self->{option_results}->{dimension_value};
 }
 
 1;
@@ -147,7 +143,7 @@ Check Compute Engine instances network metrics.
 Example:
 
 perl centreon_plugins.pl --plugin=cloud::google::gcp::compute::computeengine::plugin
---mode=network --instance=mycomputeinstance --filter-metric='bytes'
+--mode=network --dimension-value=mycomputeinstance --filter-metric='bytes'
 --aggregation='average' --critical-received-volume='10' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
@@ -156,15 +152,15 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =item B<--dimension>
 
-Filter dimension (Default: 'metric.labels.instance_name').
+Set dimension name (Default: 'metric.labels.instance_name').
 
-=item B<--operator>
+=item B<--dimension-operator>
 
-Filter operator (Default: 'equals'. Can also be: 'regexp', 'starts').
+Set dimension operator (Default: 'equals'. Can also be: 'regexp', 'starts').
 
-=item B<--instance>
+=item B<--dimension-value>
 
-Filter value to check (Required).
+Set dimension value (Required).
 
 =item B<--filter-metric>
 
