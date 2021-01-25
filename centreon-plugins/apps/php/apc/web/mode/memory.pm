@@ -27,39 +27,6 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::misc;
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'mem', type => 0, cb_prefix_output => 'prefix_output' }
-    ];
-    
-    $self->{maps_counters}->{mem} = [
-        { label => 'used', set => {
-                key_values => [ { name => 'free' }, { name => 'free' } ],
-                closure_custom_calc => $self->can('custom_used_calc'),
-                closure_custom_output => $self->can('custom_used_output'),
-                threshold_use => 'used_prct',
-                output_error_template => 'Memory Usage: %s',
-                perfdatas => [
-                    { value => 'used', label => 'used', template => '%d',
-                      unit => 'B', min => 0, max => 'total', threshold_total => 'total' },
-                ],
-            }
-        },
-        { label => 'fragmentation', set => {
-                key_values => [ { name => 'fragmentation' } ],
-                output_template => 'Memory Fragmentation: %.2f %%', output_error_template => 'Memory Fragmentation: %s',
-                output_use => 'fragmentation', threshold_use => 'fragmentation',
-                perfdatas => [
-                    { value => 'fragmentation', label => 'fragmentation', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
-                ],
-            }
-        },
-    ];
-}
-
 sub custom_used_calc {
     my ($self, %options) = @_;
     
@@ -88,6 +55,39 @@ sub prefix_output {
     my ($self, %options) = @_;
 
     return "Apc ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'mem', type => 0, cb_prefix_output => 'prefix_output' }
+    ];
+    
+    $self->{maps_counters}->{mem} = [
+        { label => 'used', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'free' } ],
+                closure_custom_calc => $self->can('custom_used_calc'),
+                closure_custom_output => $self->can('custom_used_output'),
+                threshold_use => 'used_prct',
+                output_error_template => 'Memory Usage: %s',
+                perfdatas => [
+                    { label => 'used', template => '%d',
+                      unit => 'B', min => 0, max => 'total', threshold_total => 'total' },
+                
+            }
+        },
+        { label => 'fragmentation', nlabel => 'memory.fragmentation.percentage', set => {
+                key_values => [ { name => 'fragmentation' } ],
+                output_template => 'Memory Fragmentation: %.2f %%', output_error_template => 'Memory Fragmentation: %s',
+                output_use => 'fragmentation', threshold_use => 'fragmentation',
+                perfdatas => [
+                    { label => 'fragmentation', template => '%.2f',
+                      unit => '%', min => 0, max => 100 }
+                ]
+            }
+        }
+    ];
 }
 
 sub new {

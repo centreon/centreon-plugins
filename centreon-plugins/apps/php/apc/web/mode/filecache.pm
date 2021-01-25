@@ -35,88 +35,88 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{fcache} = [
-        { label => 'request-rate', set => {
+        { label => 'request-rate', nlabel => 'requests.persecond', set => {
                 key_values => [ { name => 'rr' } ],
                 output_template => 'Request Rate (global): %.2f',
                 perfdatas => [
                     { label => 'request_rate', template => '%.2f',
-                      unit => 'r/s', min => 0 },
-                ],
+                      unit => 'r/s', min => 0 }
+                ]
             }
         },
-        { label => 'request-rate-now', set => {
+        { label => 'request-rate-now', nlabel => 'requests.now.persecond', set => {
                 key_values => [ { name => 'hits', diff => 1 }, { name => 'misses', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_rr_calc'),
                 output_template => 'Request Rate : %.2f', output_error_template => 'Request Rate : %s',
                 output_use => 'rr_now', threshold_use => 'rr_now',
                 perfdatas => [
-                    { label => 'request_rate_now', value => 'rr_now', template => '%.2f',
-                      unit => 'r/s', min => 0 },
-                ],
+                    { label => 'request_rate_now', template => '%.2f',
+                      unit => 'r/s', min => 0 }
+                ]
             }
         },
-        { label => 'hit-rate', set => {
+        { label => 'hit-rate', nlabel => 'hits.persecond', set => {
                 key_values => [ { name => 'hr' } ],
                 output_template => 'Hit Rate (global): %.2f',
                 perfdatas => [
                     { label => 'hit_rate',template => '%.2f',
-                      unit => 'r/s', min => 0 },
-                ],
+                      unit => 'r/s', min => 0 }
+                ]
             }
         },
-        { label => 'hit-rate-now', set => {
+        { label => 'hit-rate-now', nlabel => 'hits.persecond', set => {
                 key_values => [ { name => 'hits', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_hr_calc'),
                 output_template => 'Hit Rate : %.2f', output_error_template => 'Hit Rate : %s',
                 output_use => 'hr_now', threshold_use => 'hr_now',
                 perfdatas => [
-                    { label => 'hit_rate_now', value => 'hr_now', template => '%.2f',
-                      unit => 'r/s', min => 0 },
-                ],
+                    { label => 'hit_rate_now', template => '%.2f',
+                      unit => 'r/s', min => 0 }
+                ]
             }
         },
-        { label => 'miss-rate', set => {
+        { label => 'miss-rate', nlabel => 'misses.persecond', set => {
                 key_values => [ { name => 'mr' } ],
                 output_template => 'Miss Rate (global): %.2f',
                 perfdatas => [
                     { label => 'miss_rate',template => '%.2f',
-                      unit => 'r/s', min => 0 },
-                ],
+                      unit => 'r/s', min => 0 }
+                ]
             }
         },
-        { label => 'miss-rate-now', set => {
+        { label => 'miss-rate-now', nlabel => 'misses.now.persecond', set => {
                 key_values => [ { name => 'misses', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_mr_calc'),
                 output_template => 'Miss Rate : %.2f', output_error_template => 'Miss Rate : %s',
                 output_use => 'mr_now', threshold_use => 'mr_now',
                 perfdatas => [
                     { label => 'miss_rate_now', value => 'mr_now', template => '%.2f',
-                      unit => 'r/s', min => 0 },
-                ],
+                      unit => 'r/s', min => 0 }
+                ]
             }
         },
-        { label => 'hit-percent', set => {
+        { label => 'hit-percent', nlabel => 'hits.percentage', set => {
                 key_values => [ { name => 'hits' }, { name => 'misses' } ],
                 closure_custom_calc => $self->can('custom_hit_percent_calc'),
                 output_template => 'Hit Ratio (global) : %.2f %%', output_error_template => 'Hit Ratio (global): %s',
                 output_use => 'hit_ratio', threshold_use => 'hit_ratio',
                 perfdatas => [
                     { label => 'hit_ratio', value => 'hit_ratio', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
-                ],
+                      unit => '%', min => 0, max => 100 }
+                ]
             }
         },
-        { label => 'hit-percent-now', set => {
+        { label => 'hit-percent-now', nlabel => 'hits.now.percentage', set => {
                 key_values => [ { name => 'hits', diff => 1 }, { name => 'misses', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_hit_percent_now_calc'),
                 output_template => 'Hit Ratio : %.2f %%', output_error_template => 'Hit Ratio : %s',
                 output_use => 'hit_ratio_now', threshold_use => 'hit_ratio_now',
                 perfdatas => [
                     { label => 'hit_ratio_now', value => 'hit_ratio_now', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
-                ],
+                      unit => '%', min => 0, max => 100 }
+                ]
             }
-        },
+        }
     ];
 }
 
