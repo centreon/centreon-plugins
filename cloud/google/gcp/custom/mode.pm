@@ -82,7 +82,8 @@ sub custom_perfdata {
         $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{perfdata}->{absolute}->{format},
         $self->{result_values}->{value}->{absolute}
     );
-    if (defined($self->{instance_mode}->{option_results}->{per_second})) {
+    if (defined($self->{instance_mode}->{option_results}->{per_second}) && 
+        defined($self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{perfdata}->{per_second})) {
         $value = sprintf(
             $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{perfdata}->{per_second}->{format},
             $self->{result_values}->{value}->{per_second}
@@ -109,7 +110,8 @@ sub custom_output {
     if (defined($self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{perfdata}->{absolute}->{change_bytes})) {
         ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value}->{absolute});
     }
-    if (defined($self->{instance_mode}->{option_results}->{per_second})) {
+    if (defined($self->{instance_mode}->{option_results}->{per_second}) &&
+        defined($self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{perfdata}->{per_second})) {
         $unit = $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{perfdata}->{per_second}->{unit};
         $value = $self->{result_values}->{value}->{per_second};
         
