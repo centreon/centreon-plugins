@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::compute::computeengine::mode::cpu;
+package cloud::google::gcp::database::common::mode::storage;
 
 use base qw(cloud::google::gcp::custom::mode);
 
@@ -29,31 +29,48 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'instance/cpu/utilization' => {
-            output_string => 'cpu utilization: %.2f',
+        'database/disk/bytes_used' => {
+            output_string => 'disk space usage: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.cpu.utilization.percentage',
-                    min => 0,
-                    max => 100,
-                    unit => '%',
-                    format => '%.2f'
+                    nlabel => 'database.space.usage.bytes',
+                    format => '%d',
+                    unit => 'B',
+                    change_bytes => 1
                 }
             },
-            threshold => 'utilization',
-            calc => '* 100',
+            threshold => 'space-usage',
             order => 1
         },
-        'instance/cpu/reserved_cores' => {
-            output_string => 'cpu reserved cores: %.2f',
+        'database/disk/read_ops_count' => {
+            output_string => 'disk read IO operations: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.cpu.reserved_cores.count',
+                    nlabel => 'database.disk.read.io.operations.count',
+                    format => '%.2f'
+                },
+                per_second => {
+                    nlabel => 'database.disk.read.io.operations.persecond',
                     format => '%.2f'
                 }
             },
-            threshold => 'cores-reserved',
+            threshold => 'read-operations',
             order => 2
+        },
+        'database/disk/write_ops_count' => {
+            output_string => 'disk write IO operations: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'database.disk.write.io.operations.count',
+                    format => '%.2f'
+                },
+                per_second => {
+                    nlabel => 'database.disk.write.io.operations.persecond',
+                    format => '%.2f'
+                }
+            },
+            threshold => 'write-operations',
+            order => 3
         }
     };
 
@@ -66,10 +83,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'dimension-name:s'     => { name => 'dimension_name', default => 'metric.labels.instance_name' },
+        'dimension-name:s'     => { name => 'dimension_name', default => 'resource.labels.database_id' },
         'dimension-operator:s' => { name => 'dimension_operator', default => 'equals' },
         'dimension-value:s'    => { name => 'dimension_value' },
         'filter-metric:s'      => { name => 'filter_metric' },
+        "per-second"           => { name => 'per_second' },
         'timeframe:s'          => { name => 'timeframe' },
         'aggregation:s@'       => { name => 'aggregation' }
     });
@@ -81,10 +99,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{gcp_api} = 'compute.googleapis.com';
-    $self->{gcp_dimension_name} = (!defined($self->{option_results}->{dimension_name}) || $self->{option_results}->{dimension_name} eq '') ? 'metric.labels.instance_name' : $self->{option_results}->{dimension_name};
-    $self->{gcp_dimension_zeroed} = 'metric.labels.instance_name';
-    $self->{gcp_instance_key} = 'metric.labels.instance_name';
+    $self->{gcp_api} = 'cloudsql.googleapis.com';
+    $self->{gcp_dimension_name} = (!defined($self->{option_results}->{dimension_name}) || $self->{option_results}->{dimension_name} eq '') ? 'resource.labels.database_id' : $self->{option_results}->{dimension_name};
+    $self->{gcp_dimension_zeroed} = 'resource.labels.database_id';
+    $self->{gcp_instance_key} = 'resource.labels.database_id';
     $self->{gcp_dimension_operator} = $self->{option_results}->{dimension_operator};
     $self->{gcp_dimension_value} = $self->{option_results}->{dimension_value};
 }
@@ -95,13 +113,13 @@ __END__
 
 =head1 MODE
 
-Check Compute Engine instances CPU metrics.
+Check database storage metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::google::gcp::compute::computeengine::plugin
---mode=cpu --dimension-value=mycomputeinstance --filter-metric='utilization'
---aggregation='average' --critical-cpu-utilization-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::google::gcp::database::mysql::plugin
+--mode=diskio --dimension-value=mydatabaseid --filter-metric='space'
+--aggregation='average' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
 
@@ -109,7 +127,7 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =item B<--dimension-name>
 
-Set dimension name (Default: 'metric.labels.instance_name').
+Set dimension name (Default: 'resource.labels.database_id'). Can be: 'resources.labels.region'.
 
 =item B<--dimension-operator>
 
@@ -121,8 +139,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'instance/cpu/utilization',
-'instance/cpu/reserved_cores') (Can be a regexp).
+Filter metrics (Can be: 'database/disk/bytes_used',
+'database/disk/read_ops_count', 'databse/disk/write_ops_count') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -134,7 +152,11 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'utilization', 'cores-reserved').
+Thresholds (Can be: 'space-usage', 'read-operations', 'write-operations').
+
+=item B<--per-second>
+
+Change the data to be unit/sec.
 
 =back
 

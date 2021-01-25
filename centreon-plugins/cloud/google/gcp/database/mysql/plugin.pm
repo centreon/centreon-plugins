@@ -18,24 +18,27 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::management::stackdriver::plugin;
+package cloud::google::gcp::database::mysql::plugin;
 
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '0.1';
     $self->{modes} = {
-        'get-metrics' => 'cloud::google::gcp::management::stackdriver::mode::getmetrics'
+        'cpu'     => 'cloud::google::gcp::database::common::mode::cpu',
+        'innodb'  => 'cloud::google::gcp::database::mysql::mode::innodb',
+        'network' => 'cloud::google::gcp::database::common::mode::network',
+        'queries' => 'cloud::google::gcp::database::mysql::mode::queries',
+        'storage' => 'cloud::google::gcp::database::common::mode::storage'
     };
-                        
-    $self->{custom_modes}->{api} = 'cloud::google::gcp::custom::api';
 
+    $self->{custom_modes}->{api} = 'cloud::google::gcp::custom::api';
     return $self;
 }
 
@@ -45,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Google Cloud Plateform Stackdriver service using API.
+Check Google Cloud Platform MySQL.
 
 =cut
