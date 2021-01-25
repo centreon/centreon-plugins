@@ -45,10 +45,12 @@ sub custom_used_output {
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
-    return sprintf("Memory Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_value . " " . $total_unit,
-                   $used_value . " " . $used_unit, $self->{result_values}->{used_prct},
-                   $free_value . " " . $free_unit, $self->{result_values}->{free_prct});
+    return sprintf(
+        "Memory Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_value . " " . $total_unit,
+        $used_value . " " . $used_unit, $self->{result_values}->{used_prct},
+        $free_value . " " . $free_unit, $self->{result_values}->{free_prct}
+    );
 }
 
 sub prefix_output {
@@ -73,8 +75,8 @@ sub set_counters {
                 output_error_template => 'Memory Usage: %s',
                 perfdatas => [
                     { label => 'used', template => '%d',
-                      unit => 'B', min => 0, max => 'total', threshold_total => 'total' },
-                
+                      unit => 'B', min => 0, max => 'total', threshold_total => 'total' }
+                ]
             }
         },
         { label => 'fragmentation', nlabel => 'memory.fragmentation.percentage', set => {
@@ -96,19 +98,19 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "port:s"            => { name => 'port', },
-        "proto:s"           => { name => 'proto' },
-        "urlpath:s"         => { name => 'url_path', default => "/apc.php" },
-        "credentials"       => { name => 'credentials' },
-        "basic"             => { name => 'basic' },
-        "username:s"        => { name => 'username' },
-        "password:s"        => { name => 'password' },
-        "timeout:s"         => { name => 'timeout', default => 30 },
+        'hostname:s'  => { name => 'hostname' },
+        'port:s'      => { name => 'port', },
+        'proto:s'     => { name => 'proto' },
+        'urlpath:s'   => { name => 'url_path', default => "/apc.php" },
+        'credentials' => { name => 'credentials' },
+        'basic'       => { name => 'basic' },
+        'username:s'  => { name => 'username' },
+        'password:s'  => { name => 'password' },
+        'timeout:s'   => { name => 'timeout', default => 30 },
     });
-    
+
     $self->{http} = centreon::plugins::http->new(%options);
-    
+
     return $self;
 }
 
@@ -123,7 +125,7 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     my $webcontent = $self->{http}->request();
-    
+
     my ($free, $used);
     if ($webcontent =~ /Memory Usage.*?Free:.*?([0-9\.]+)\s*(\S*)/msi) {
         $free = centreon::plugins::misc::convert_bytes(value => $1, unit => $2);
