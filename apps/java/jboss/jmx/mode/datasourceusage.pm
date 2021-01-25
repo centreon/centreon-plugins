@@ -94,8 +94,6 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    jboss.as:statistics=pool,subsystem=datasources,xa-data-source=cassiopee.ProductionDataSource
-
     # 'jboss.as|jboss.as.expr'
     my $request = [
         { mbean => 'jboss.jca:name=*,service=ManagedConnectionPool', attributes => 
