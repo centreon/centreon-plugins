@@ -36,44 +36,44 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "hostname:s"            => { name => 'hostname' },
-        "vhost:s"               => { name => 'vhost' },
-        "port:s"                => { name => 'port', },
-        "proto:s"               => { name => 'proto' },
-        "urlpath:s"             => { name => 'url_path' },
-        "credentials"           => { name => 'credentials' },
-        "basic"                 => { name => 'basic' },
-        "ntlmv2"                => { name => 'ntlmv2' },
-        "username:s"            => { name => 'username' },
-        "password:s"            => { name => 'password' },
-        "header:s@"             => { name => 'header' },
-        "get-param:s@"          => { name => 'get_param' },
-        "timeout:s"             => { name => 'timeout', default => 10 },
-        "cert-file:s"           => { name => 'cert_file' },
-        "key-file:s"            => { name => 'key_file' },
-        "cacert-file:s"         => { name => 'cacert_file' },
-        "cert-pwd:s"            => { name => 'cert_pwd' },
-        "cert-pkcs12"           => { name => 'cert_pkcs12' },
-        "unknown-status:s"      => { name => 'unknown_status' },
-        "warning-status:s"      => { name => 'warning_status' },
-        "critical-status:s"     => { name => 'critical_status' },
-        "warning-numeric:s"       => { name => 'warning_numeric' },
-        "critical-numeric:s"      => { name => 'critical_numeric' },
-        "warning-string:s"        => { name => 'warning_string' },
-        "critical-string:s"       => { name => 'critical_string' },
-        "unknown-string:s"        => { name => 'unknown_string' },
-        "warning-time:s"          => { name => 'warning_time' },
-        "critical-time:s"         => { name => 'critical_time' },
-        "threshold-value:s"       => { name => 'threshold_value', default => 'count' },
-        "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) found' },
-        "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) found' },
-        "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
-        "format-unknown:s"        => { name => 'format_unknown', default => '%{count} element(s) found' },
-        "format-lookup:s"         => { name => 'format_lookup'},
-        "values-separator:s"      => { name => 'values_separator', default => ', ' },
-        "lookup-perfdatas-nagios:s"  => { name => 'lookup_perfdatas_nagios'},
-        "data:s"                  => { name => 'data' },
-        "lookup:s@"               => { name => 'lookup' },
+        'hostname:s'            => { name => 'hostname' },
+        'vhost:s'               => { name => 'vhost' },
+        'port:s'                => { name => 'port', },
+        'proto:s'               => { name => 'proto' },
+        'urlpath:s'             => { name => 'url_path' },
+        'credentials'           => { name => 'credentials' },
+        'basic'                 => { name => 'basic' },
+        'ntlmv2'                => { name => 'ntlmv2' },
+        'username:s'            => { name => 'username' },
+        'password:s'            => { name => 'password' },
+        'header:s@'             => { name => 'header' },
+        'get-param:s@'          => { name => 'get_param' },
+        'timeout:s'             => { name => 'timeout', default => 10 },
+        'cert-file:s'           => { name => 'cert_file' },
+        'key-file:s'            => { name => 'key_file' },
+        'cacert-file:s'         => { name => 'cacert_file' },
+        'cert-pwd:s'            => { name => 'cert_pwd' },
+        'cert-pkcs12'           => { name => 'cert_pkcs12' },
+        'unknown-status:s'      => { name => 'unknown_status' },
+        'warning-status:s'      => { name => 'warning_status' },
+        'critical-status:s'     => { name => 'critical_status' },
+        'warning-numeric:s'       => { name => 'warning_numeric' },
+        'critical-numeric:s'      => { name => 'critical_numeric' },
+        'warning-string:s'        => { name => 'warning_string' },
+        'critical-string:s'       => { name => 'critical_string' },
+        'unknown-string:s'        => { name => 'unknown_string' },
+        'warning-time:s'          => { name => 'warning_time' },
+        'critical-time:s'         => { name => 'critical_time' },
+        'threshold-value:s'       => { name => 'threshold_value', default => 'count' },
+        'format-ok:s'             => { name => 'format_ok', default => '%{count} element(s) found' },
+        'format-warning:s'        => { name => 'format_warning', default => '%{count} element(s) found' },
+        'format-critical:s'       => { name => 'format_critical', default => '%{count} element(s) found' },
+        'format-unknown:s'        => { name => 'format_unknown', default => '%{count} element(s) found' },
+        'format-lookup:s'         => { name => 'format_lookup'},
+        'values-separator:s'      => { name => 'values_separator', default => ', ' },
+        'lookup-perfdatas-nagios:s'  => { name => 'lookup_perfdatas_nagios'},
+        'data:s'                  => { name => 'data' },
+        'lookup:s@'               => { name => 'lookup' }
     });
     
     $self->{count} = 0;
@@ -222,6 +222,7 @@ sub lookup {
 
     $self->{output}->perfdata_add(
         label => 'count',
+        nlabel => 'json.match.total.count',
         value => $self->{count},
         warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
         critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
@@ -245,6 +246,7 @@ sub lookup {
             }
             $self->{output}->perfdata_add(
                 label => 'element_' . $count,
+                nlabel => 'json.match.element.' . $count . '.count',
                 value => $value_expand,
                 warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
                 critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef
@@ -311,7 +313,9 @@ sub lookup_perfdata_nagios {
         my ($value, $unit) = $value_w_unit =~ /(^[0-9]+\.*\,*[0-9]*)(.*)/g;
 
         $self->{output}->perfdata_add(
-            label => $label, unit => $unit,
+            label => $label,
+            nlabel => $label,
+            unit => $unit,
             value => $value,
             warning => $warn,
             critical => $crit,
@@ -345,13 +349,17 @@ sub run {
         threshold => [ { label => 'critical-time', exit_litteral => 'critical' }, { label => 'warning-time', exit_litteral => 'warning' } ]
     );
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Response time %.3fs", $timeelapsed));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("Response time %.3fs", $timeelapsed)
+        );
     } else {
         $self->{output}->output_add(long_msg => sprintf("Response time %.3fs", $timeelapsed));
     }
     $self->{output}->perfdata_add(
-        label => "time", unit => 's',
+        label => 'time',
+        nlabel => 'http.response.time.seconds',
+        unit => 's',
         value => sprintf('%.3f', $timeelapsed),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-time'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),

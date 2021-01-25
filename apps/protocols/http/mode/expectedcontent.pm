@@ -48,30 +48,19 @@ sub custom_content_output {
     return $msg;
 }
 
-sub custom_content_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{content} = $options{new_datas}->{$self->{instance} . '_content'};
-    $self->{result_values}->{code} = $options{new_datas}->{$self->{instance} . '_code'};
-    $self->{result_values}->{header} = $options{new_datas}->{$self->{instance} . '_header'};
-    $self->{result_values}->{first_header} = $options{new_datas}->{$self->{instance} . '_first_header'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'content', threshold => 0, set => {
+        { label => 'content', type => 2, set => {
                 key_values => [ { name => 'content' }, { name => 'code' }, { name => 'first_header' }, { name => 'header' } ],
                 closure_custom_output => $self->can('custom_content_output'),
-                closure_custom_calc => $self->can('custom_content_calc'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check =>  $self->can('custom_content_threshold'),
+                closure_custom_threshold_check =>  $self->can('custom_content_threshold')
             }
         },
         { label => 'size', nlabel => 'http.content.size.bytes', display_ok => 0, set => {
@@ -90,7 +79,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'extracted', nlabel => 'http.extracted.value', display_ok => 0, set => {
+        { label => 'extracted', nlabel => 'http.extracted.value.count', display_ok => 0, set => {
                 key_values => [ { name => 'extracted' } ],
                 output_template => 'Extracted value : %s',
                 perfdatas => [
@@ -133,12 +122,9 @@ sub new {
         'cookies-file:s'        => { name => 'cookies_file' },
         'unknown-status:s'      => { name => 'unknown_status' },
         'warning-status:s'      => { name => 'warning_status' },
-        'critical-status:s'     => { name => 'critical_status' },
-        'unknown-content:s'     => { name => 'unknown_content', default => '' },
-        'warning-content:s'     => { name => 'warning_content', default => '' },
-        'critical-content:s'    => { name => 'critical_content', default => '' },
+        'critical-status:s'     => { name => 'critical_status' }
     });
-    
+
     $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
@@ -181,7 +167,6 @@ sub check_options {
     }
 
     $self->{http}->set_options(%{$self->{option_results}});
-    $self->change_macros(macros => ['warning_content', 'critical_content', 'unknown_content']);
 }
 
 sub manage_selection {
@@ -190,7 +175,7 @@ sub manage_selection {
     my $timing0 = [gettimeofday];
     my $webcontent = $self->{http}->request(%{$self->{options_request}});
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
-        
+
     $self->{global} = { 
         time => $timeelapsed, 
         content => $webcontent,

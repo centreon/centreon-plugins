@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Time::HiRes qw(gettimeofday tv_interval);
 use centreon::plugins::http;
 
@@ -46,7 +46,6 @@ sub set_counters {
                 key_values => [
                     { name => 'http_code' }, { name => 'message' }
                 ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -56,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'time' } ],
                 output_template => 'Response time %.3fs',
                 perfdatas => [
-                    { label => 'time', value => 'time', template => '%.3f', min => 0, unit => 's' }
+                    { label => 'time', template => '%.3f', min => 0, unit => 's' }
                 ]
             }
         },
@@ -64,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'size' } ],
                 output_template => 'Content size : %s',
                 perfdatas => [
-                    { label => 'size', value => 'size', template => '%s', min => 0, unit => 'B' }
+                    { label => 'size', template => '%s', min => 0, unit => 'B' }
                 ]
             }
         }
