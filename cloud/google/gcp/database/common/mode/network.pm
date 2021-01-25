@@ -129,7 +129,7 @@ Check database instances network metrics.
 Example:
 
 perl centreon_plugins.pl --plugin=cloud::google::gcp::database::mysql::plugin
---mode=network --dimension-value=mycomputeinstance --filter-metric='bytes'
+--mode=network --dimension-value=mydatabaseid --filter-metric='bytes'
 --aggregation='average' --critical-received-volume='10' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
@@ -150,9 +150,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'instance/network/received_bytes_count',
-'instance/network/sent_bytes_count', 'instance/network/received_packets_count',
-'instance/network/sent_packets_count') (Can be a regexp).
+Filter metrics (Can be: 'database/network/received_bytes_count',
+'database/network/sent_bytes_count', 'database/network/connections') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -165,7 +164,7 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 =item B<--warning-*> B<--critical-*>
 
 Thresholds warning (Can be: 'received-volume', 'sent-volume',
-'received-packets', 'sent-packets').
+'connections').
 
 =item B<--per-second>
 
