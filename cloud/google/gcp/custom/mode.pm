@@ -151,7 +151,7 @@ sub set_counters {
         }
     ];
 
-    foreach my $metric (keys %{$self->{metrics_mapping}}) {
+    foreach my $metric (sort { $self->{metrics_mapping}->{$a}->{order} <=> $self->{metrics_mapping}->{$b}->{order} } keys %{$self->{metrics_mapping}}) {
         my $entry = {
             label => $self->{metrics_mapping}->{$metric}->{threshold},
             set => {

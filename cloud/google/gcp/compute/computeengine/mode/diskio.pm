@@ -46,11 +46,12 @@ sub get_metrics_mapping {
                 }
             },
             threshold => 'read-volume',
+            order => 1
         },
         'instance/disk/throttled_read_bytes_count' => {
             output_string => 'throttled read: %.2f',
             perfdata => {
-                'absolute' => {
+                absolute => {
                     nlabel => 'computeengine.disk.throttled.read.volume.bytes',
                     format => '%.2f',
                     unit => 'B',
@@ -63,7 +64,8 @@ sub get_metrics_mapping {
                     change_bytes => 1
                 }
             },
-            threshold => 'throttled-read-volume'
+            threshold => 'throttled-read-volume',
+            order => 2
         },
         'instance/disk/write_bytes_count' => {
             output_string => 'write: %.2f',
@@ -81,7 +83,8 @@ sub get_metrics_mapping {
                     change_bytes => 1
                 }
             },
-            threshold => 'write-volume'
+            threshold => 'write-volume',
+            order => 3
         },
         'instance/disk/throttled_write_bytes_count' => {
             output_string => 'throttled write: %.2f',
@@ -99,7 +102,8 @@ sub get_metrics_mapping {
                     change_bytes => 1
                 }
             },
-            threshold => 'throttled-write-volume'
+            threshold => 'throttled-write-volume',
+            order => 4
         },
         'instance/disk/read_ops_count' => {
             output_string => 'read OPS: %.2f',
@@ -113,7 +117,8 @@ sub get_metrics_mapping {
                     format => '%.2f'
                 }
             },
-            threshold => 'read-ops'
+            threshold => 'read-ops',
+            order => 5
         },
         'instance/disk/write_ops_count' => {
             output_string => 'write OPS: %.2f',
@@ -127,7 +132,8 @@ sub get_metrics_mapping {
                     format => '%.2f'
                 }
             },
-            threshold => 'write-ops'
+            threshold => 'write-ops',
+            order => 6
         }
     };
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::database::mysql::mode::cpu;
+package cloud::google::gcp::database::common::mode::network;
 
 use base qw(cloud::google::gcp::custom::mode);
 
@@ -29,29 +29,59 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'database/cpu/utilization' => {
-            output_string => 'cpu utilization: %.2f',
+        'database/network/connections' => {
+            output_string => 'connections: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'mysql.cpu.utilization.percentage',
-                    min => 0,
-                    max => 100,
-                    unit => '%',
-                    format => '%.2f'
+                    nlabel => 'database.network.connections.count',
+                    format => '%.2f',
+                    min => 0
                 }
             },
-            threshold => 'utilization',
-            calc => '* 100'
+            threshold => 'connections',
+            order => 1
         },
-        'database/cpu/reserved_cores' => {
-            output_string => 'cpu reserved cores: %.2f',
+        'database/network/received_bytes_count' => {
+            output_string => 'received: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'mysql.cpu.reserved_cores.count',
-                    format => '%.2f'
+                    nlabel => 'database.network.received.volume.bytes',
+                    format => '%.2f',
+                    min => 0,
+                    unit => 'B',
+                    change_bytes => 1
+                },
+                per_second => {
+                    nlabel => 'database.network.received.volume.bytespersecond',
+                    format => '%.2f',
+                    min => 0,
+                    unit => 'B/s',
+                    change_bytes => 1
                 }
             },
-            threshold => 'cores-reserved'
+            threshold => 'received-volume',
+            order => 2
+        },
+        'database/network/sent_bytes_count' => {
+            output_string => 'sent: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'database.network.sent.volume.bytes',
+                    format => '%.2f',
+                    min => 0,
+                    unit => 'B',
+                    change_bytes => 1
+                },
+                per_second => {
+                    nlabel => 'database.network.sent.volume.bytespersecond',
+                    format => '%.2f',
+                    min => 0,
+                    unit => 'B/s',
+                    change_bytes => 1
+                }
+            },
+            threshold => 'sent-volume',
+            order => 3
         }
     };
 
@@ -68,6 +98,7 @@ sub new {
         'dimension-operator:s' => { name => 'dimension_operator', default => 'equals' },
         'dimension-value:s'    => { name => 'dimension_value' },
         'filter-metric:s'      => { name => 'filter_metric' },
+        "per-second"           => { name => 'per_second' },
         'timeframe:s'          => { name => 'timeframe' },
         'aggregation:s@'       => { name => 'aggregation' }
     });
@@ -93,21 +124,21 @@ __END__
 
 =head1 MODE
 
-Check MySQL CPU metrics.
+Check database instances network metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::google::gcp::compute::computeengine::plugin
---mode=cpu --dimension-value=mydatabaseid --filter-metric='utilization'
---aggregation='average' --critical-cpu-utilization-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::google::gcp::database::mysql::plugin
+--mode=network --dimension-value=mycomputeinstance --filter-metric='bytes'
+--aggregation='average' --critical-received-volume='10' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
 
 =over 8
 
-=item B<--dimension-name>
+=item B<--dimension>
 
-Set dimension name (Default: 'resource.labels.database_id'). Can be: 'resources.labels.region'.
+Set dimension name (Default: 'metric.labels.instance_name').
 
 =item B<--dimension-operator>
 
@@ -119,8 +150,9 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/cpu/utilization',
-'database/cpu/reserved_cores') (Can be a regexp).
+Filter metrics (Can be: 'instance/network/received_bytes_count',
+'instance/network/sent_bytes_count', 'instance/network/received_packets_count',
+'instance/network/sent_packets_count') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -132,7 +164,12 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds critical (Can be: 'utilization', 'cores-reserved').
+Thresholds warning (Can be: 'received-volume', 'sent-volume',
+'received-packets', 'sent-packets').
+
+=item B<--per-second>
+
+Change the data to be unit/sec.
 
 =back
 

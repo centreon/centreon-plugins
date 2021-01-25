@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'cpu'     => 'cloud::google::gcp::database::mysql::mode::cpu',
-        'network' => 'cloud::google::gcp::database::mysql::mode::network'
+        'cpu'     => 'cloud::google::gcp::database::common::mode::cpu',
+        'network' => 'cloud::google::gcp::database::common::mode::network'
     };
 
     $self->{custom_modes}->{api} = 'cloud::google::gcp::custom::api';

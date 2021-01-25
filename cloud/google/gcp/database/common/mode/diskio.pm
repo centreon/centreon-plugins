@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::compute::computeengine::mode::network;
+package cloud::google::gcp::compute::computeengine::mode::diskio;
 
 use base qw(cloud::google::gcp::custom::mode);
 
@@ -29,77 +29,105 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'instance/network/received_bytes_count' => {
-            output_string => 'received: %.2f',
+        'instance/disk/read_bytes_count' => {
+            output_string => 'read: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.network.received.volume.bytes',
+                    nlabel => 'computeengine.disk.read.volume.bytes',
                     format => '%.2f',
                     unit => 'B',
                     change_bytes => 1
                 },
                 per_second => {
-                    nlabel => 'computeengine.network.received.volume.bytespersecond',
+                    nlabel => 'computeengine.disk.read.volume.bytespersecond',
                     format => '%.2f',
                     unit => 'B/s',
                     change_bytes => 1
                 }
             },
-            threshold => 'received-volume',
-            order => 1
+            threshold => 'read-volume',
         },
-        'instance/network/sent_bytes_count' => {
-            output_string => 'sent: %.2f',
+        'instance/disk/throttled_read_bytes_count' => {
+            output_string => 'throttled read: %.2f',
             perfdata => {
-                absolute => {
-                    nlabel => 'computeengine.network.sent.volume.bytes',
+                'absolute' => {
+                    nlabel => 'computeengine.disk.throttled.read.volume.bytes',
                     format => '%.2f',
                     unit => 'B',
                     change_bytes => 1
                 },
                 per_second => {
-                    nlabel => 'computeengine.network.sent.volume.bytespersecond',
+                    nlabel => 'computeengine.disk.throttled.read.volume.bytespersecond',
                     format => '%.2f',
                     unit => 'B/s',
                     change_bytes => 1
                 }
             },
-            threshold => 'sent-volume',
-            order => 2
+            threshold => 'throttled-read-volume'
         },
-        'instance/network/received_packets_count' => {
-            output_string => 'received packets: %.2f',
+        'instance/disk/write_bytes_count' => {
+            output_string => 'write: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.network.received.packets.count',
+                    nlabel => 'computeengine.disk.write.volume.bytes',
                     format => '%.2f',
-                    unit => 'packets'
+                    unit => 'B',
+                    change_bytes => 1
                 },
                 per_second => {
-                    nlabel => 'computeengine.network.received.packets.persecond',
+                    nlabel => 'computeengine.disk.write.volume.bytespersecond',
                     format => '%.2f',
-                    unit => 'packets/s'
+                    unit => 'B/s',
+                    change_bytes => 1
                 }
             },
-            threshold => 'received-packets',
-            order => 3
+            threshold => 'write-volume'
         },
-        'instance/network/sent_packets_count' => {
-            output_string => 'sent packets: %.2f',
+        'instance/disk/throttled_write_bytes_count' => {
+            output_string => 'throttled write: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.network.sent.packets.count',
+                    nlabel => 'computeengine.disk.throttled.write.volume.bytes',
                     format => '%.2f',
-                    unit => 'packets'
+                    unit => 'B',
+                    change_bytes => 1
                 },
                 per_second => {
-                    nlabel => 'computeengine.network.sent.packets.persecond',
+                    nlabel => 'computeengine.disk.throttled.write.volume.bytespersecond',
                     format => '%.2f',
-                    unit => 'packets/s'
+                    unit => 'B/s',
+                    change_bytes => 1
                 }
             },
-            threshold => 'sent-packets',
-            order => 4
+            threshold => 'throttled-write-volume'
+        },
+        'instance/disk/read_ops_count' => {
+            output_string => 'read OPS: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.disk.read.ops.count',
+                    format => '%.2f'
+                },
+                per_second => {
+                    nlabel => 'computeengine.disk.read.ops.persecond',
+                    format => '%.2f'
+                }
+            },
+            threshold => 'read-ops'
+        },
+        'instance/disk/write_ops_count' => {
+            output_string => 'write OPS: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'computeengine.disk.write.ops.count',
+                    format => '%.2f'
+                },
+                per_second => {
+                    nlabel => 'computeengine.disk.write.ops.persecond',
+                    format => '%.2f'
+                }
+            },
+            threshold => 'write-ops'
         }
     };
 
@@ -142,13 +170,13 @@ __END__
 
 =head1 MODE
 
-Check Compute Engine instances network metrics.
+Check Compute Engine instances disk IO metrics.
 
 Example:
 
 perl centreon_plugins.pl --plugin=cloud::google::gcp::compute::computeengine::plugin
---mode=network --dimension-value=mycomputeinstance --filter-metric='bytes'
---aggregation='average' --critical-received-volume='10' --verbose
+--mode=diskio --dimension-value=mycomputeinstance --filter-metric='throttled'
+--aggregation='average' --critical-throttled-write-volume='10' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
 
@@ -168,9 +196,9 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'instance/network/received_bytes_count',
-'instance/network/sent_bytes_count', 'instance/network/received_packets_count',
-'instance/network/sent_packets_count') (Can be a regexp).
+Filter metrics (Can be: 'instance/disk/read_bytes_count', 'instance/disk/throttled_read_bytes_count',
+'instance/disk/write_bytes_count', 'instance/disk/throttled_write_bytes_count',
+'instance/disk/read_ops_count', 'instance/disk/write_ops_count') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -182,8 +210,8 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'received-volume', 'sent-volume',
-'received-packets', 'sent-packets').
+Thresholds warning (Can be: 'read-volume', 'throttled-read-volume',
+'write-volume', 'throttled-write-volume', 'read-ops', 'write-ops').
 
 =item B<--per-second>
 
