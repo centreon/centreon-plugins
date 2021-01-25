@@ -26,12 +26,12 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use Time::HiRes qw(gettimeofday tv_interval);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_content_threshold {
     my ($self, %options) = @_;
 
-    $self->{instance_mode}->{content_status} = catalog_status_threshold($self, %options);
+    $self->{instance_mode}->{content_status} = catalog_status_threshold_ng($self, %options);
     return $self->{instance_mode}->{content_status};
 }
 
@@ -74,30 +74,30 @@ sub set_counters {
                 closure_custom_threshold_check =>  $self->can('custom_content_threshold'),
             }
         },
-        { label => 'size', display_ok => 0, set => {
+        { label => 'size', nlabel => 'http.content.size.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'size' } ],
                 output_template => 'Content size : %s',
                 perfdatas => [
-                    { label => 'size', value => 'size', template => '%s', min => 0, unit => 'B' },
-                ],
+                    { label => 'size', template => '%s', min => 0, unit => 'B' }
+                ]
             }
         },
-        { label => 'time', display_ok => 0, set => {
+        { label => 'time', nlabel => 'http.response.time.seconds', display_ok => 0, set => {
                 key_values => [ { name => 'time' } ],
                 output_template => 'Response time : %.3fs',
                 perfdatas => [
-                    { label => 'time', value => 'time', template => '%.3f', min => 0, unit => 's' },
-                ],
+                    { label => 'time', template => '%.3f', min => 0, unit => 's' }
+                ]
             }
         },
-        { label => 'extracted', display_ok => 0, set => {
+        { label => 'extracted', nlabel => 'http.extracted.value', display_ok => 0, set => {
                 key_values => [ { name => 'extracted' } ],
                 output_template => 'Extracted value : %s',
                 perfdatas => [
-                    { label => 'value', value => 'extracted', template => '%s' },
-                ],
+                    { label => 'value', template => '%s' }
+                ]
             }
-        },
+        }
     ];
 }
 
