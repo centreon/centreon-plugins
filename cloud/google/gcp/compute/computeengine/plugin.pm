@@ -30,13 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'cpu'                   => 'cloud::google::gcp::compute::computeengine::mode::cpu',
-        'diskio'                => 'cloud::google::gcp::compute::computeengine::mode::diskio',
-        'network'               => 'cloud::google::gcp::compute::computeengine::mode::network',
-    );
+    $self->{modes} = {
+        'cpu'     => 'cloud::google::gcp::compute::computeengine::mode::cpu',
+        'diskio'  => 'cloud::google::gcp::compute::computeengine::mode::diskio',
+        'network' => 'cloud::google::gcp::compute::computeengine::mode::network'
+    };
 
-    $self->{custom_modes}{api} = 'cloud::google::gcp::custom::api';
+    $self->{custom_modes}->{api} = 'cloud::google::gcp::custom::api';
     return $self;
 }
 

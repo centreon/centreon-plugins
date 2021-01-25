@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::compute::computeengine::mode::network;
+package cloud::google::gcp::database::mysql::mode::innodb;
 
 use base qw(cloud::google::gcp::custom::mode);
 
@@ -29,76 +29,72 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'instance/network/received_bytes_count' => {
-            output_string => 'received: %.2f',
+        'database/mysql/innodb_data_fsyncs' => {
+            output_string => 'fsync calls: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.network.received.volume.bytes',
+                    nlabel => 'database.mysql.innodb.data_fsyncs.count',
                     format => '%.2f',
-                    unit => 'B',
-                    change_bytes => 1
+                    min => 0
                 },
                 per_second => {
-                    nlabel => 'computeengine.network.received.volume.bytespersecond',
+                    nlabel => 'database.mysql.innodb.data_fsyncs.persecond',
                     format => '%.2f',
-                    unit => 'B/s',
-                    change_bytes => 1
+                    min => 0
                 }
             },
-            threshold => 'received-volume',
+            threshold => 'fsyncs-calls',
             order => 1
         },
-        'instance/network/sent_bytes_count' => {
-            output_string => 'sent: %.2f',
+        'database/mysql/innodb_os_log_fsyncs' => {
+            output_string => 'fsync calls to the log file: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.network.sent.volume.bytes',
+                    nlabel => 'database.mysql.innodb.os_log_fsyncs.count',
                     format => '%.2f',
-                    unit => 'B',
-                    change_bytes => 1
+                    min => 0
                 },
                 per_second => {
-                    nlabel => 'computeengine.network.sent.volume.bytespersecond',
+                    nlabel => 'database.mysql.innodb.os_log_fsyncs.persecond',
                     format => '%.2f',
-                    unit => 'B/s',
-                    change_bytes => 1
+                    min => 0
                 }
             },
-            threshold => 'sent-volume',
+            threshold => 'fsync-calls-logfile',
             order => 2
         },
-        'instance/network/received_packets_count' => {
-            output_string => 'received packets: %.2f',
+        'database/mysql/innodb_pages_read' => {
+            output_string => 'pages read: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.network.received.packets.count',
+                    nlabel => 'database.mysql.innodb.pages_read.count',
                     format => '%.2f',
-                    unit => 'packets'
+                    min => 0
                 },
                 per_second => {
-                    nlabel => 'computeengine.network.received.packets.persecond',
+                    nlabel => 'database.mysql.innodb.pages_read.persecond',
                     format => '%.2f',
-                    unit => 'packets/s'
+                    min => 0
                 }
             },
-            threshold => 'received-packets',
+            threshold => 'pages-read',
             order => 3
         },
-        'instance/network/sent_packets_count' => {
-            output_string => 'sent packets: %.2f',
+        'database/mysql/innodb_pages_written' => {
+            output_string => 'pages written: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.network.sent.packets.count',
+                    nlabel => 'database.mysql.innodb.pages_written.count',
                     format => '%.2f',
-                    unit => 'packets'
+                    min => 0
                 },
                 per_second => {
-                    nlabel => 'computeengine.network.sent.packets.persecond',
+                    nlabel => 'database.mysql.innodb.pages_written.persecond',
                     format => '%.2f',
-                    unit => 'packets/s'
+                    min => 0
                 }
             },
-            threshold => 'sent-packets',
+            threshold => 'pages-written',
             order => 4
         }
     };
@@ -112,7 +108,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'dimension-name:s'     => { name => 'dimension_name', default => 'metric.labels.instance_name' },
+        'dimension-name:s'     => { name => 'dimension_name', default => 'resource.labels.database_id' },
         'dimension-operator:s' => { name => 'dimension_operator', default => 'equals' },
         'dimension-value:s'    => { name => 'dimension_value' },
         'filter-metric:s'      => { name => 'filter_metric' },
@@ -128,10 +124,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{gcp_api} = 'compute.googleapis.com';
-    $self->{gcp_dimension_name} = (!defined($self->{option_results}->{dimension_name}) || $self->{option_results}->{dimension_name} eq '') ? 'metric.labels.instance_name' : $self->{option_results}->{dimension_name};
-    $self->{gcp_dimension_zeroed} = 'metric.labels.instance_name';
-    $self->{gcp_instance_key} = 'metric.labels.instance_name';
+    $self->{gcp_api} = 'cloudsql.googleapis.com';
+    $self->{gcp_dimension_name} = (!defined($self->{option_results}->{dimension_name}) || $self->{option_results}->{dimension_name} eq '') ? 'resource.labels.database_id' : $self->{option_results}->{dimension_name};
+    $self->{gcp_dimension_zeroed} = 'resource.labels.database_id';
+    $self->{gcp_instance_key} = 'resource.labels.database_id';
     $self->{gcp_dimension_operator} = $self->{option_results}->{dimension_operator};
     $self->{gcp_dimension_value} = $self->{option_results}->{dimension_value};
 }
@@ -142,13 +138,13 @@ __END__
 
 =head1 MODE
 
-Check Compute Engine instances network metrics.
+Check mysql innodb metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::google::gcp::compute::computeengine::plugin
---mode=network --dimension-value=mycomputeinstance --filter-metric='bytes'
---aggregation='average' --critical-received-volume='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::google::gcp::database::mysql::plugin
+--mode=diskio --dimension-value=mydatabaseid --filter-metric='queries'
+--aggregation='average' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
 
@@ -156,7 +152,7 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =item B<--dimension-name>
 
-Set dimension name (Default: 'metric.labels.instance_name').
+Set dimension name (Default: 'resource.labels.database_id'). Can be: 'resources.labels.region'.
 
 =item B<--dimension-operator>
 
@@ -168,9 +164,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'instance/network/received_bytes_count',
-'instance/network/sent_bytes_count', 'instance/network/received_packets_count',
-'instance/network/sent_packets_count') (Can be a regexp).
+Filter metrics (Can be: 'database/mysql/innodb_data_fsyncs', 'database/mysql/innodb_os_log_fsyncs',
+'database/mysql/innodb_pages_read', 'database/mysql/innodb_pages_write') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -182,8 +177,8 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'received-volume', 'sent-volume',
-'received-packets', 'sent-packets').
+Thresholds (Can be: 'fsyncs-calls', 'fsync-calls-logfile',
+'pages-read', 'pages-written').
 
 =item B<--per-second>
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::compute::computeengine::mode::network;
+package cloud::google::gcp::storage::mode::bucket;
 
 use base qw(cloud::google::gcp::custom::mode);
 
@@ -29,77 +29,59 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'instance/network/received_bytes_count' => {
+        'storage/object_count' => {
+            output_string => 'objects: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'storage.bucket.objects.count',
+                    format => '%.2f',
+                    min => 0
+                }
+            },
+            threshold => 'bucket-objects',
+            order => 1
+        },
+        'network/received_bytes_count' => {
             output_string => 'received: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.network.received.volume.bytes',
+                    nlabel => 'storage.network.received.volume.bytes',
                     format => '%.2f',
+                    min => 0,
                     unit => 'B',
                     change_bytes => 1
                 },
                 per_second => {
-                    nlabel => 'computeengine.network.received.volume.bytespersecond',
+                    nlabel => 'storage.network.received.volume.bytespersecond',
                     format => '%.2f',
+                    min => 0,
                     unit => 'B/s',
                     change_bytes => 1
                 }
             },
             threshold => 'received-volume',
-            order => 1
+            order => 2
         },
-        'instance/network/sent_bytes_count' => {
+        'network/sent_bytes_count' => {
             output_string => 'sent: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'computeengine.network.sent.volume.bytes',
+                    nlabel => 'storage.network.sent.volume.bytes',
                     format => '%.2f',
+                    min => 0,
                     unit => 'B',
                     change_bytes => 1
                 },
                 per_second => {
-                    nlabel => 'computeengine.network.sent.volume.bytespersecond',
+                    nlabel => 'storage.network.sent.volume.bytespersecond',
                     format => '%.2f',
+                    min => 0,
                     unit => 'B/s',
                     change_bytes => 1
                 }
             },
             threshold => 'sent-volume',
-            order => 2
-        },
-        'instance/network/received_packets_count' => {
-            output_string => 'received packets: %.2f',
-            perfdata => {
-                absolute => {
-                    nlabel => 'computeengine.network.received.packets.count',
-                    format => '%.2f',
-                    unit => 'packets'
-                },
-                per_second => {
-                    nlabel => 'computeengine.network.received.packets.persecond',
-                    format => '%.2f',
-                    unit => 'packets/s'
-                }
-            },
-            threshold => 'received-packets',
             order => 3
-        },
-        'instance/network/sent_packets_count' => {
-            output_string => 'sent packets: %.2f',
-            perfdata => {
-                absolute => {
-                    nlabel => 'computeengine.network.sent.packets.count',
-                    format => '%.2f',
-                    unit => 'packets'
-                },
-                per_second => {
-                    nlabel => 'computeengine.network.sent.packets.persecond',
-                    format => '%.2f',
-                    unit => 'packets/s'
-                }
-            },
-            threshold => 'sent-packets',
-            order => 4
         }
     };
 
@@ -112,7 +94,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'dimension-name:s'     => { name => 'dimension_name', default => 'metric.labels.instance_name' },
+        'dimension-name:s'     => { name => 'dimension_name', default => 'resource.labels.bucket_name' },
         'dimension-operator:s' => { name => 'dimension_operator', default => 'equals' },
         'dimension-value:s'    => { name => 'dimension_value' },
         'filter-metric:s'      => { name => 'filter_metric' },
@@ -128,10 +110,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{gcp_api} = 'compute.googleapis.com';
-    $self->{gcp_dimension_name} = (!defined($self->{option_results}->{dimension_name}) || $self->{option_results}->{dimension_name} eq '') ? 'metric.labels.instance_name' : $self->{option_results}->{dimension_name};
-    $self->{gcp_dimension_zeroed} = 'metric.labels.instance_name';
-    $self->{gcp_instance_key} = 'metric.labels.instance_name';
+    $self->{gcp_api} = 'storage.googleapis.com';
+    $self->{gcp_dimension_name} = (!defined($self->{option_results}->{dimension_name}) || $self->{option_results}->{dimension_name} eq '') ? 'resource.labels.bucket_name' : $self->{option_results}->{dimension_name};
+    $self->{gcp_dimension_zeroed} = 'resource.labels.bucket_name';
+    $self->{gcp_instance_key} = 'resource.labels.bucket_name';
     $self->{gcp_dimension_operator} = $self->{option_results}->{dimension_operator};
     $self->{gcp_dimension_value} = $self->{option_results}->{dimension_value};
 }
@@ -142,12 +124,12 @@ __END__
 
 =head1 MODE
 
-Check Compute Engine instances network metrics.
+Check storage network metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::google::gcp::compute::computeengine::plugin
---mode=network --dimension-value=mycomputeinstance --filter-metric='bytes'
+perl centreon_plugins.pl --plugin=cloud::google::gcp::storage::plugin
+--mode=network --dimension-value=mydatabaseid --filter-metric='sent'
 --aggregation='average' --critical-received-volume='10' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
@@ -156,7 +138,7 @@ Default aggregation: 'average' / All aggregations are valid.
 
 =item B<--dimension-name>
 
-Set dimension name (Default: 'metric.labels.instance_name').
+Set dimension name (Default: 'resource.labels.bucket_name'). Can be: 'resources.labels.location'.
 
 =item B<--dimension-operator>
 
@@ -168,9 +150,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'instance/network/received_bytes_count',
-'instance/network/sent_bytes_count', 'instance/network/received_packets_count',
-'instance/network/sent_packets_count') (Can be a regexp).
+Filter metrics (Can be: 'storage/object_count', 'network/received_bytes_count',
+'network/sent_bytes_count') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -182,8 +163,7 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'received-volume', 'sent-volume',
-'received-packets', 'sent-packets').
+Thresholds (Can be: 'bucket-objects', 'received-volume', 'sent-volume').
 
 =item B<--per-second>
 
