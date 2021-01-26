@@ -36,46 +36,42 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'datasource', type => 1, cb_prefix_output => 'prefix_ds_output', message_multiple => 'All datasources are ok' },
+        { name => 'datasource', type => 1, cb_prefix_output => 'prefix_ds_output', message_multiple => 'All datasources are ok' }
     ];
 
     $self->{maps_counters}->{datasource} = [
         { label => 'active-con', nlabel => 'datasource.connections.active.count', set => {
-                key_values => [ { name => 'ActiveCount' }, { name => 'display' } ],
+                key_values => [ { name => 'ActiveCount' } ],
                 output_template => 'current active connections: %s',
                 perfdatas => [
-                    { label => 'active_con', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display' }
+                    { label => 'active_con', template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'available-con', nlabel => 'datasource.connections.available.count', set => {
-                key_values => [ { name => 'AvailableCount' }, { name => 'display' } ],
+                key_values => [ { name => 'AvailableCount' } ],
                 output_template => 'current available connections: %s',
                 perfdatas => [
-                    { label => 'available_con', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display' }
+                    { label => 'available_con', template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'in-use-con', nlabel => 'datasource.connections.inuse.count', set => {
-                key_values => [ { name => 'InUseCount' }, { name => 'display' } ],
-                output_template => 'Current In Use Connections : %s',
+                key_values => [ { name => 'InUseCount' } ],
+                output_template => 'current in use connections: %s',
                 perfdatas => [
-                    { label => 'in_use_con', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display' }
+                    { label => 'in_use_con', template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'created-con', nlabel => 'datasource.connections.created.count', set => {
-                key_values => [ { name => 'CreatedCount', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'CreatedCount', diff => 1 } ],
                 output_template => 'created connections: %s',
                 perfdatas => [
-                    { label => 'created_con', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display' }
+                    { label => 'created_con', template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
-        },
+        }
     ];
 }
 
@@ -119,6 +115,7 @@ sub manage_selection {
         }
 
         $self->{datasource}->{$ds_name} = {
+            display => $ds_name,
             AvailableCount => defined($result->{$key}->{AvailableConnectionCount}) ? $result->{$key}->{AvailableConnectionCount} : $result->{$key}->{AvailableCount},
             ActiveCount => defined($result->{$key}->{ConnectionCount}) ? $result->{$key}->{ConnectionCount} : $result->{$key}->{ActiveCount},
             CreatedCount => defined($result->{$key}->{ConnectionCreatedCount}) ? $result->{$key}->{ConnectionCreatedCount} : $result->{$key}->{CreatedCount},
