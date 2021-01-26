@@ -381,6 +381,7 @@ sub request_api_paginate {
 
     my $items = [];
     my $get_param;
+    $get_param = $options{get_param} if (defined$options{get_param});
     while (1) {
         my $response = $self->request_api(
             method => 'GET',
@@ -392,7 +393,7 @@ sub request_api_paginate {
         push @$items, @{$response->{items}};
 
         last if (!defined($response->{nextPageToken}));
-        $get_param = ['pageToken=' . $response->{nextPageToken}];
+        $get_param = [@{$options{get_param}}, 'pageToken=' . $response->{nextPageToken}];
     }
 
     return $items;
@@ -429,6 +430,34 @@ sub gcp_list_compute_engine_instances {
         push @$results, @$instances;
     }
     return $results;
+}
+
+sub gcp_cloudsql_set_base_url {
+    my ($self, %options) = @_;
+
+    my $project_id = $self->get_project_id();
+    my $url = 'https://sqladmin.googleapis.com/sql/v1beta4/projects/' . $project_id;
+    return $url;
+}
+
+sub gcp_list_cloudsql_instances {
+    my ($self, %options) = @_;
+
+    my $url = $self->gcp_cloudsql_set_base_url();
+    my $instances = $self->request_api_paginate(
+        url => $url . '/instances'
+    );
+    return $instances;
+}
+
+sub gcp_list_storage_buckets {
+    my ($self, %options) = @_;
+
+    my $buckets = $self->request_api_paginate(
+        url => 'https://storage.googleapis.com/storage/v1/b',
+        get_param => ['project=' . $self->get_project_id()]
+    );
+    return $buckets;
 }
 
 1;
