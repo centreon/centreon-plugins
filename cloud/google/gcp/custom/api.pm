@@ -376,6 +376,61 @@ sub gcp_get_metrics {
     return $results;
 }
 
+sub request_api_paginate {
+    my ($self, %options) = @_;
+
+    my $items = [];
+    my $get_param;
+    while (1) {
+        my $response = $self->request_api(
+            method => 'GET',
+            full_url => $options{url},
+            hostname => '',
+            get_param => $get_param
+        );
+        last if (!defined($response->{items}));
+        push @$items, @{$response->{items}};
+
+        last if (!defined($response->{nextPageToken}));
+        $get_param = ['pageToken=' . $response->{nextPageToken}];
+    }
+
+    return $items;
+}
+
+sub gcp_compute_engine_set_base_url {
+    my ($self, %options) = @_;
+
+    my $project_id = $self->get_project_id();
+    my $url = 'https://compute.googleapis.com/compute/v1/projects/' . $project_id;
+    return $url;
+}
+
+sub gcp_list_compute_engine_zones {
+    my ($self, %options) = @_;
+
+    my $url = $self->gcp_compute_engine_set_base_url();
+    my $zones = $self->request_api_paginate(
+        url => $url . '/zones'
+    );
+    return $zones;
+}
+
+sub gcp_list_compute_engine_instances {
+    my ($self, %options) = @_;
+
+    my $results = [];
+    my $url = $self->gcp_compute_engine_set_base_url();
+    my $zones = $self->gcp_list_compute_engine_zones();
+    foreach (@$zones) {
+        my $instances = $self->request_api_paginate(
+            url => $url . '/zones/' . $_->{name} . '/instances'
+        );
+        push @$results, @$instances;
+    }
+    return $results;
+}
+
 1;
 
 __END__
