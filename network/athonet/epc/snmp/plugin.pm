@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '1.0';
     $self->{modes} = {
         'interfaces-diameter'      => 'network::athonet::epc::snmp::mode::interfacesdiameter',
+        'interfaces-lte'           => 'network::athonet::epc::snmp::mode::interfaceslte',
         'interfaces-ga'            => 'network::athonet::epc::snmp::mode::interfacesga',
         'interfaces-gtpc'          => 'network::athonet::epc::snmp::mode::interfacesgtpc',
         'license'                  => 'network::athonet::epc::snmp::mode::license',
