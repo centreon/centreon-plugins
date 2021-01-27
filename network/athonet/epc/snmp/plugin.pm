@@ -32,8 +32,10 @@ sub new {
     $self->{version} = '1.0';
     $self->{modes} = {
         'interfaces-diameter'      => 'network::athonet::epc::snmp::mode::interfacesdiameter',
+        'interfaces-ga'            => 'network::athonet::epc::snmp::mode::interfacesga',
         'interfaces-gtpc'          => 'network::athonet::epc::snmp::mode::interfacesgtpc',
         'list-interfaces-diameter' => 'network::athonet::epc::snmp::mode::listinterfacesdiameter',
+        'list-interfaces-ga'       => 'network::athonet::epc::snmp::mode::listinterfacesga',
         'list-interfaces-gtpc'     => 'network::athonet::epc::snmp::mode::listinterfacesgtpc',
     };
 
