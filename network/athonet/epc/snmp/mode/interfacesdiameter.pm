@@ -60,7 +60,19 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All diameter interfaces are ok' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'total', nlabel => 'diameter.interfaces.total.count', display_ok => 0, set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'total interfaces: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        }
     ];
 
     $self->{maps_counters}->{interfaces} = [
@@ -134,10 +146,9 @@ sub manage_selection {
         };
     }
 
-    if (scalar(keys %{$self->{interfaces}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No interface found.");
-        $self->{output}->option_exit();
-    }
+    $self->{global} = { total => scalar(keys %{$self->{interfaces}}) };
+
+    return if (scalar(keys %{$self->{interfaces}}) <= 0);
 
     $options{snmp}->load(oids => [
             map($_->{oid}, values(%$mapping))
@@ -202,6 +213,11 @@ Can used special variables like: %{transport_status}, %{transport_type}, %{name}
 
 Set critical threshold for status (Default: '%{transport_status} =~ /down/i').
 Can used special variables like: %{transport_status}, %{transport_type}, %{name}
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'total'.
 
 =back
 
