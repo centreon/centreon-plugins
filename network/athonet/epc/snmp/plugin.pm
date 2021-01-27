@@ -34,6 +34,7 @@ sub new {
         'interfaces-diameter'      => 'network::athonet::epc::snmp::mode::interfacesdiameter',
         'interfaces-ga'            => 'network::athonet::epc::snmp::mode::interfacesga',
         'interfaces-gtpc'          => 'network::athonet::epc::snmp::mode::interfacesgtpc',
+        'license'                  => 'network::athonet::epc::snmp::mode::license',
         'list-interfaces-diameter' => 'network::athonet::epc::snmp::mode::listinterfacesdiameter',
         'list-interfaces-ga'       => 'network::athonet::epc::snmp::mode::listinterfacesga',
         'list-interfaces-gtpc'     => 'network::athonet::epc::snmp::mode::listinterfacesgtpc',
