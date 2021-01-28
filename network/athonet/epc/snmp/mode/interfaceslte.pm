@@ -114,7 +114,6 @@ my $mapping = {
     users_connected    => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.7' }, # iLteConnectedUsers
     users_idle         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.8' }, # iLteIdleUsers
     sessions_active    => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.9' }, # iLteActiveSessions
-    users_idle         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.8' }, # iLteIdleUsers
     attach_req_total   => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.11' }, # iLteTotalAttachReq
     attach_req_succes  => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.12' }, # iLteSuccesfullAttach
     pdn_context_total  => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.14' }, # iLteTotalPDNActReq
