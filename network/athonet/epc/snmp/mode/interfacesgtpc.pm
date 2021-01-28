@@ -115,12 +115,12 @@ sub manage_selection {
 
         if (defined($self->{option_results}->{filter_source_address}) && $self->{option_results}->{filter_source_address} ne '' &&
             $source_address !~ /$self->{option_results}->{filter_source_address}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $source_address . "': no matching 'org' filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $source_address . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_destination_address}) && $self->{option_results}->{filter_destination_address} ne '' &&
             $destination_address !~ /$self->{option_results}->{filter_destination_address}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $destination_address . "': no matching 'org' filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $destination_address . "': no matching filter.", debug => 1);
             next;
         }
 

@@ -123,17 +123,17 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{name} . "': no matching 'org' filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{name} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_local_address}) && $self->{option_results}->{filter_local_address} ne '' &&
             $result->{local_address} !~ /$self->{option_results}->{filter_local_address}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{local_address} . "': no matching 'org' filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{local_address} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_peer_address}) && $self->{option_results}->{filter_peer_address} ne '' &&
             $result->{peer_address} !~ /$self->{option_results}->{filter_peer_address}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{peer_address} . "': no matching 'org' filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{peer_address} . "': no matching filter.", debug => 1);
             next;
         }
 

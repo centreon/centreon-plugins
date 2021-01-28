@@ -347,7 +347,7 @@ sub manage_selection {
         next if (defined($self->{interfaces}->{ $result->{name} }));
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{name} . "': no matching 'org' filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{name} . "': no matching filter.", debug => 1);
             next;
         }
 
