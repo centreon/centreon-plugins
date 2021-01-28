@@ -64,6 +64,7 @@ sub set_counters {
         { name => 'interfaces', type => 3, cb_prefix_output => 'prefix_interface_output', cb_long_output => 'interface_long_output', indent_long_output => '    ', message_multiple => 'All lte interfaces are ok',
             group => [
                 { name => 'global_status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_traffic', type => 0, skipped_code => { -10 => 1 } },
             ]
         }
     ];
@@ -87,6 +88,25 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{global_traffic} = [
+        { label => 'packets-in', nlabel => 'lte.interface.packets.in.count', set => {
+                key_values => [ { name => 'isl_packets_in', diff => 1 } ],
+                output_template => 'packets in: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'packets-out', nlabel => 'lte.interface.packets.out.count', set => {
+                key_values => [ { name => 'isl_packets_in', diff => 1 } ],
+                output_template => 'packets out: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
             }
         }
     ];
