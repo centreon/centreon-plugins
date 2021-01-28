@@ -38,20 +38,20 @@ sub prefix_metric_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All storage metrics are ok", skipped_code => { -10 => 1 } }
     ];
 
     foreach my $statistic ('minimum', 'maximum', 'average', 'sum') {
-        foreach my $metric ('FreeStorageSpace', 'FreeableMemory') {
+        foreach my $metric ('FreeStorageSpace', 'FreeLocalStorage', 'FreeableMemory') {
             my $entry = {
                 label => lc($metric) . '-' . lc($statistic), set => {
                     key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
                     output_template => $metric . ': %.2f %s',
                     output_change_bytes => 1,
                     perfdatas => [
-                        { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic , 
+                        { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic ,
                           template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
                     ]
                 }
@@ -65,7 +65,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'type:s'	      => { name => 'type' },
         'name:s@'	      => { name => 'name' },
@@ -113,7 +113,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('FreeStorageSpace', 'FreeableMemory') {
+    foreach my $metric ('FreeStorageSpace', 'FreeLocalStorage', 'FreeableMemory') {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
 
@@ -161,14 +161,17 @@ __END__
 
 Check RDS instances storage metrics.
 
-Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::rds::plugin --custommode=paws --mode=storage --region='eu-west-1'
---type='cluster' --name='centreon-db-ppd-cluster' --filter-metric='FreeStorageSpace' --statistic='average'
---critical-freestoragespace-average='10G:' --verbose
+Example:
+/usr/lib/centreon/plugins/centreon_aws_rds_api.pl --plugin=cloud::aws::rds::plugin \
+--mode=storage --custommode='awscli' \
+--aws-secret-key='MYAWSSECRETKEY' --aws-access-key='MYAWSACCESSKEY' --region='eu-west-1' \
+--type='instance' --name='MYDBINSTANCEID' --filter-metric='FreeStorageSpace' --statistic='average' \
+--critical-freestoragespace-average='10GB:' --verbose
 
-Works for the following database engines : aurora, mysql, mariadb.
+Works with the following database engines: aurora, mysql, mariadb.
 
-See 'https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MonitoringOverview.html' for more informations.
+See 'https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MonitoringOverview.html' or
+'https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Monitoring.html' for more information.
 
 Default statistic: 'average' / All statistics are valid.
 
@@ -184,18 +187,18 @@ Set the instance name (Required) (Can be multiple).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'freestoragespace', 'freeablememory') 
-(Can be a regexp).
+Filter metrics (Can be: 'freestoragespace', 'freelocalstorage',
+'freeablememory') (Can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'freestoragespace', 'freeablememory',
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds warning ($metric$ can be: 'freestoragespace', 'freelocalstorage',
+'freeablememory'; $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'freestoragespace', 'freeablememory',
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds critical ($metric$ can be: 'freestoragespace', 'freelocalstorage',
+'freeablememory'; $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back
 
