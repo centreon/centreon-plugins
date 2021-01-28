@@ -244,16 +244,14 @@ sub get_duration {
     my ($self, %options) = @_;
 
     # Format: [[dd-]hh:]mm:ss
-    my ($seconds, $min, $lpart) = split /:/, $options{elapsed};
-    my $total_seconds_elapsed = $seconds + ($min * 60);
-    if (defined($lpart)) {
-        my ($day, $hour) = split /-/, $lpart;
-        if (defined($hour)) {
-            $total_seconds_elapsed += ($hour * 60 * 60);
-        }
-        if (defined($day)) {
-            $total_seconds_elapsed += ($day * 86400);
-        }
+    $options{elapsed} =~ /(?:(\d+)-)?(?:(\d+):)?(\d+):(\d+)/;
+    my ($day, $hour, $min, $sec) = ($1, $2, $3, $4);
+    my $total_seconds_elapsed = $sec + ($min * 60);
+    if (defined($hour)) {
+        $total_seconds_elapsed += ($hour * 60 * 60);
+    }
+    if (defined($day)) {
+        $total_seconds_elapsed += ($day * 86400);
     }
 
     return $total_seconds_elapsed;
