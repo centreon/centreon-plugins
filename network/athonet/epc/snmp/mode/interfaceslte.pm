@@ -419,7 +419,7 @@ Check lte interfaces.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='transport'
+Example: --filter-counters='users'
 
 =item B<--filter-name>
 

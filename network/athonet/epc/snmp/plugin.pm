@@ -39,6 +39,7 @@ sub new {
         'list-interfaces-diameter' => 'network::athonet::epc::snmp::mode::listinterfacesdiameter',
         'list-interfaces-ga'       => 'network::athonet::epc::snmp::mode::listinterfacesga',
         'list-interfaces-gtpc'     => 'network::athonet::epc::snmp::mode::listinterfacesgtpc',
+        'lte'                      => 'network::athonet::epc::snmp::mode::lte'
     };
 
     return $self;
