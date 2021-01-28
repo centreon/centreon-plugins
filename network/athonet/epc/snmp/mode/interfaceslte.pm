@@ -37,6 +37,52 @@ sub custom_status_output {
     );
 }
 
+sub custom_attach_req_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'attach requests total: %s success: %s (%.2f%%)',
+        $self->{result_values}->{attach_req_total},
+        $self->{result_values}->{attach_req_success},
+        $self->{result_values}->{prct_success}
+    );
+}
+
+sub custom_attach_req_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{attach_req_total} = $options{new_datas}->{$self->{instance} . '_attach_req_total'} - $options{old_datas}->{$self->{instance} . '_attach_req_total'};
+    $self->{result_values}->{attach_req_success} = $options{new_datas}->{$self->{instance} . '_attach_req_success'} - $options{old_datas}->{$self->{instance} . '_attach_req_success'};
+    $self->{result_values}->{prct_success} = 100;
+    if ($self->{result_values}->{attach_req_total} > 0) {
+        $self->{result_values}->{prct_success} = $self->{result_values}->{attach_req_success} * 100 / $self->{result_values}->{attach_req_total};
+    }
+    return 0;
+}
+
+sub custom_pdn_req_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'pdn context activation requests total: %s success: %s (%.2f%%)',
+        $self->{result_values}->{pdn_context_total},
+        $self->{result_values}->{pdn_context_success},
+        $self->{result_values}->{prct_success}
+    );
+}
+
+sub custom_pdn_req_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{pdn_context_total} = $options{new_datas}->{$self->{instance} . '_pdn_context_total'} - $options{old_datas}->{$self->{instance} . '_pdn_context_total'};
+    $self->{result_values}->{pdn_context_success} = $options{new_datas}->{$self->{instance} . '_pdn_context_success'} - $options{old_datas}->{$self->{instance} . '_pdn_context_success'};
+    $self->{result_values}->{prct_success} = 100;
+    if ($self->{result_values}->{pdn_context_total} > 0) {
+        $self->{result_values}->{prct_success} = $self->{result_values}->{pdn_context_success} * 100 / $self->{result_values}->{pdn_context_total};
+    }
+    return 0;
+}
+
 sub prefix_interface_output {
     my ($self, %options) = @_;
 
@@ -56,6 +102,12 @@ sub interface_long_output {
     );
 }
 
+sub prefix_pdn_rej_output {
+    my ($self, %options) = @_;
+
+    return 'pdn context requests reject ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -65,6 +117,11 @@ sub set_counters {
             group => [
                 { name => 'global_status', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'global_traffic', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_users', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_attach_req', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_pdn_req', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_ue', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_pdn_rej', type => 0, cb_prefix_output => 'prefix_pdn_rej_output', skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -94,18 +151,135 @@ sub set_counters {
 
     $self->{maps_counters}->{global_traffic} = [
         { label => 'packets-in', nlabel => 'lte.interface.packets.in.count', set => {
-                key_values => [ { name => 'isl_packets_in', diff => 1 } ],
+                key_values => [ { name => 'packets_in', diff => 1 } ],
                 output_template => 'packets in: %s',
                 perfdatas => [
-                    { template => '%s', min => 0 }
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'packets-out', nlabel => 'lte.interface.packets.out.count', set => {
-                key_values => [ { name => 'isl_packets_in', diff => 1 } ],
+                key_values => [ { name => 'packets_out', diff => 1 } ],
                 output_template => 'packets out: %s',
                 perfdatas => [
-                    { template => '%s', min => 0 }
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{global_users} = [
+        { label => 'users-connected', nlabel => 'lte.interface.users.connected.count', set => {
+                key_values => [ { name => 'users_connected' } ],
+                output_template => 'connected users: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'users-idle', nlabel => 'lte.interface.users.idle.count', set => {
+                key_values => [ { name => 'users_idle' } ],
+                output_template => 'idle users: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'sessions-active', nlabel => 'lte.interface.sessions.active.count', set => {
+                key_values => [ { name => 'sessions_active' } ],
+                output_template => 'active sessions: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{global_attach_req} = [
+        { label => 'requests-attach-success', nlabel => 'lte.interface.requests.attach.success.count', set => {
+                key_values => [ { name => 'attach_req_success', diff => 1 }, { name => 'attach_req_total', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_attach_req_calc'),
+                closure_custom_output => $self->can('custom_attach_req_output'),
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'attach_req_total', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'requests-attach-success-prct', nlabel => 'lte.interface.requests.attach.success.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'attach_req_success', diff => 1 }, { name => 'attach_req_total', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_attach_req_calc'),
+                closure_custom_output => $self->can('custom_attach_req_output'),
+                threshold_use => 'prct_success',
+                perfdatas => [
+                    { value => 'prct_success', template => '%s', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{global_pdn_req} = [
+        { label => 'requests-pdn-context-activation', nlabel => 'lte.interface.requests.pdn_context.activations.success.count', set => {
+                key_values => [ { name => 'pdn_context_success', diff => 1 }, { name => 'pdn_context_total', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_pdn_req_calc'),
+                closure_custom_output => $self->can('custom_pdn_req_output'),
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'pdn_context_total', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'requests-pdn-context-activation-prct', nlabel => 'lte.interface.requests.pdn_context.activations.success.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'pdn_context_success', diff => 1 }, { name => 'pdn_context_total', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_pdn_req_calc'),
+                closure_custom_output => $self->can('custom_pdn_req_output'),
+                threshold_use => 'prct_success',
+                perfdatas => [
+                    { value => 'prct_success', template => '%s', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{global_ue} = [
+        { label => 'requests-ue-context-release-total', nlabel => 'lte.interface.requests.ue_context_release.total.count', set => {
+                key_values => [ { name => 'ue_release_req', diff => 1 } ],
+                output_template => 'ue context release requests: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'requests-ue-context-release-radio-lost', nlabel => 'lte.interface.requests.ue_context_release.radio_lost.count', set => {
+                key_values => [ { name => 'ue_release_req_radio_lost', diff => 1 } ],
+                output_template => 'ue context release with radio lost requests: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{global_pdn_rej} = [
+        { label => 'requests-pdn-context-rej-insufres', nlabel => 'lte.interface.requests.pdn_context.reject.insufficent_resources.count', set => {
+                key_values => [ { name => 'pdn_rej_insuf_res', diff => 1 } ],
+                output_template => 'insufficent resources: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'requests-pdn-context-rej-noapn', nlabel => 'lte.interface.requests.pdn_context.reject.no_apn.count', set => {
+                key_values => [ { name => 'pdn_rej_no_apn', diff => 1 } ],
+                output_template => 'missing or unknown apn: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'requests-pdn-context-rej-nosub', nlabel => 'lte.interface.requests.pdn_context.reject.not_subscribed.count', set => {
+                key_values => [ { name => 'pdn_rej_no_sub', diff => 1 } ],
+                output_template => 'not subscribed: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -127,22 +301,22 @@ sub new {
 my $map_status = { 0 => 'down', 1 => 'up' };
 
 my $mapping = {
-    sctp_status        => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.3', map => $map_status }, # iLteSCTPState
-    s1ap_status        => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.4', map => $map_status }, # iLteS1APState
-    packets_in         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.5' }, # iLteLoadPktIn
-    packets_out        => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.6' }, # iLteLoadPktOut
-    users_connected    => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.7' }, # iLteConnectedUsers
-    users_idle         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.8' }, # iLteIdleUsers
-    sessions_active    => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.9' }, # iLteActiveSessions
-    attach_req_total   => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.11' }, # iLteTotalAttachReq
-    attach_req_succes  => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.12' }, # iLteSuccesfullAttach
-    pdn_context_total  => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.14' }, # iLteTotalPDNActReq
-    pdn_context_succes => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.15' }, # iLteActivatedPDNContext
+    sctp_status         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.3', map => $map_status }, # iLteSCTPState
+    s1ap_status         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.4', map => $map_status }, # iLteS1APState
+    packets_in          => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.5' }, # iLteLoadPktIn
+    packets_out         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.6' }, # iLteLoadPktOut
+    users_connected     => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.7' }, # iLteConnectedUsers
+    users_idle          => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.8' }, # iLteIdleUsers
+    sessions_active     => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.9' }, # iLteActiveSessions
+    attach_req_total    => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.11' }, # iLteTotalAttachReq
+    attach_req_success  => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.12' }, # iLteSuccesfullAttach
+    pdn_context_total   => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.14' }, # iLteTotalPDNActReq
+    pdn_context_success => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.15' }, # iLteActivatedPDNContext
     ue_release_req            => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.23' }, # iLteUERelReq
     ue_release_req_radio_lost => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.24' }, # iLteUERelReqRadioLost
-    ue_pdn_rej_insuf_res      => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.25' }, # iLtePDNRejInsufRes
-    ue_pdn_rej_no_apn         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.26' }, # iLtePDNRejNoApn
-    ue_pdn_rej_no_sub         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.27' }  # iLtePDNRejNoSubscribed
+    pdn_rej_insuf_res         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.25' }, # iLtePDNRejInsufRes
+    pdn_rej_no_apn            => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.26' }, # iLtePDNRejNoApn
+    pdn_rej_no_sub            => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.27' }  # iLtePDNRejNoSubscribed
 };
 my $mapping_name = {
     name  => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.28' }, # iLteHumanName
@@ -203,6 +377,32 @@ sub manage_selection {
             sctp_status => $result->{sctp_status},
             s1ap_status => $result->{s1ap_status}
         };
+        $self->{interfaces}->{$_}->{global_traffic} = {
+            packets_in => $result->{packets_in},
+            packets_out => $result->{packets_out}
+        };
+        $self->{interfaces}->{$_}->{global_users} = {
+            users_connected => $result->{users_connected},
+            users_idle => $result->{users_idle},
+            sessions_active => $result->{sessions_active}
+        };
+        $self->{interfaces}->{$_}->{global_attach_req} = {
+            attach_req_total => $result->{attach_req_total},
+            attach_req_success => $result->{attach_req_success}
+        };
+        $self->{interfaces}->{$_}->{global_pdn_req} = {
+            pdn_context_total => $result->{pdn_context_total},
+            pdn_context_success => $result->{pdn_context_success}
+        };
+        $self->{interfaces}->{$_}->{global_ue} = {
+            ue_release_req => $result->{ue_release_req},
+            ue_release_req_radio_lost => $result->{ue_release_req_radio_lost}
+        };
+        $self->{interfaces}->{$_}->{global_pdn_rej} = {
+            pdn_rej_insuf_res => $result->{pdn_rej_insuf_res},
+            pdn_rej_no_apn => $result->{pdn_rej_no_apn},
+            pdn_rej_no_sub => $result->{pdn_rej_no_sub}
+        };
     }
 }
 
@@ -243,7 +443,12 @@ Can used special variables like: %{sctp_status}, %{s1ap_status}, %{name}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total'.
+Can be: 'total', 'users-connected', 'users-idle', 'sessions-active',
+'packets-in', 'packets-out', 
+'requests-ue-context-release-total', 'requests-ue-context-release-radio-lost',
+'requests-attach-success', 'requests-attach-success-prct',
+'requests-pdn-context-activation', 'requests-pdn-context-activation-prct', 
+'requests-pdn-context-rej-insufres', 'requests-pdn-context-rej-noapn', 'requests-pdn-context-rej-nosub'.
 
 =back
 
