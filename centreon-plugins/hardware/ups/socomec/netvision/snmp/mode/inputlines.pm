@@ -110,7 +110,8 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         foreach (('current', 'voltage')) {
-            $result->{$_} = 0 if (defined($result->{$_}) && ($result->{$_} eq '' || $result->{$_} == -1 || $result->{$_} == 65535));
+            $result->{$_} = 0 if (defined($result->{$_}) && (
+                $result->{$_} eq '' || $result->{$_} == -1 || $result->{$_} == 65535 || $result->{$_} == 655350));
             $result->{$_} *= 0.1;
         }
 
