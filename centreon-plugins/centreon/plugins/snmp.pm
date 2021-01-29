@@ -66,8 +66,8 @@ sub new {
             'securityengineid:s' => { name => 'snmp_security_engine_id' },
             'snmp-errors-exit:s' => { name => 'snmp_errors_exit', default => 'unknown' },
         });
+        $options{options}->add_help(package => __PACKAGE__, sections => 'SNMP OPTIONS');
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'SNMP OPTIONS');
 
     #####
     $self->{session} = undef;
