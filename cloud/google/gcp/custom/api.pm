@@ -492,7 +492,7 @@ Set GCP monitoring endpoint URL (Default: 'https://monitoring.googleapis.com/v3'
 
 =item B<--scope-endpoint>
 
-Set GCP scope endpoint URL (Default: 'https://www.googleapis.com/auth/monitoring.read')
+Set GCP scope endpoint URL (Default: 'https://www.googleapis.com/auth/cloud-platform')
 
 =item B<--zeroed>
 
