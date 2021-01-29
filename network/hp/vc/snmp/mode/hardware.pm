@@ -39,16 +39,16 @@ sub set_system {
             ['major', 'CRITICAL'],
             ['critical', 'CRITICAL'],
             ['disabled', 'OK'],
-            ['info', 'OK'],
+            ['info', 'OK']
         ],
         'moduleport.loop' => [
             ['ok', 'OK'],
-            ['loop-detected', 'CRITICAL'],
+            ['loop-detected', 'CRITICAL']
         ],
         'moduleport.protection' => [
             ['ok', 'OK'],
             ['pause-flood-detected', 'CRITICAL'],
-            ['in-pause-condition', 'WARNING'],
+            ['in-pause-condition', 'WARNING']
         ],
     };
     
