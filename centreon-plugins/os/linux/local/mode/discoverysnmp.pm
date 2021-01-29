@@ -95,6 +95,7 @@ my $lookup_type = [
     { type => 'macos', re => qr/Darwin/i },
     { type => 'hp-ux', re => qr/HP-UX/i },
     { type => 'freebsd', re => qr/FreeBSD/i },
+    { type => 'aix', re => qr/ AIX / },
 ];
 
 sub define_type {
