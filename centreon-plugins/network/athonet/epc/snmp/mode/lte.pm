@@ -340,7 +340,7 @@ Example: --filter-counters='users'
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total', 'users-connected', 'users-idle', 'sessions-active',
+Can be: 'users-connected', 'users-idle', 'sessions-active',
 'packets-in', 'packets-out', 
 'requests-ue-context-release-total', 'requests-ue-context-release-radio-lost',
 'requests-attach-success', 'requests-attach-success-prct',
