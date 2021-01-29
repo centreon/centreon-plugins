@@ -492,7 +492,7 @@ sub manage_selection {
     # MX [appliance]    |    X     |                  |      X       |    X    |            X           |
     # MR [wireless]     |    X     |         X        |              |    X    |                        |
 
-    $self->{global} = { total => 0, online => 0, offline => 0, alerting => 0 };
+    $self->{global} = { total => 0, online => 0, offline => 0, alerting => 0, offline_prct => 0, online_prct => 0 };
     $self->{devices} = {};
     foreach my $serial (keys %$devices) {
         $self->{devices}->{$serial} = {
@@ -561,8 +561,10 @@ sub manage_selection {
         $self->{output}->output_add(short_msg => 'no devices found');
     }
 
-    $self->{global}->{online_prct} = $self->{global}->{online} * 100 / $self->{global}->{total};
-    $self->{global}->{offline_prct} = $self->{global}->{offline} * 100 / $self->{global}->{total};
+    if ($self->{global}->{total} > 0) {
+        $self->{global}->{online_prct} = $self->{global}->{online} * 100 / $self->{global}->{total};
+        $self->{global}->{offline_prct} = $self->{global}->{offline} * 100 / $self->{global}->{total};
+    }
 }
 
 1;
