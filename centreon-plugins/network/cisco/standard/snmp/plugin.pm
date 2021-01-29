@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
+        'aaa-servers'         => 'centreon::common::cisco::standard::snmp::mode::aaaservers',
         'arp'                 => 'snmp_standard::mode::arp',
         'configuration'       => 'centreon::common::cisco::standard::snmp::mode::configuration',
         'cpu'                 => 'centreon::common::cisco::standard::snmp::mode::cpu',
@@ -38,6 +39,7 @@ sub new {
         'hsrp'                => 'centreon::common::cisco::standard::snmp::mode::hsrp',
         'interfaces'          => 'centreon::common::cisco::standard::snmp::mode::interfaces', 
         'ipsla'               => 'centreon::common::cisco::standard::snmp::mode::ipsla',
+        'list-aaa-servers'    => 'centreon::common::cisco::standard::snmp::mode::listaaaservers',
         'list-interfaces'     => 'snmp_standard::mode::listinterfaces',
         'list-spanning-trees' => 'snmp_standard::mode::listspanningtrees',
         'load'                => 'centreon::common::cisco::standard::snmp::mode::load',
