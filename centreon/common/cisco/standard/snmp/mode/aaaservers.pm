@@ -40,7 +40,7 @@ sub prefix_aaa_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking server '%s' [protocol: %s] ",
+        "Server '%s' [protocol: %s] ",
         $options{instance_value}->{name},
         $options{instance_value}->{protocol}
     );
