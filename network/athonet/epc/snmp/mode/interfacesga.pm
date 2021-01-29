@@ -56,7 +56,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'diameter.interfaces.total.count', display_ok => 0, set => {
+        { label => 'total', nlabel => 'ga.interfaces.total.count', display_ok => 0, set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total interfaces: %s',
                 perfdatas => [
