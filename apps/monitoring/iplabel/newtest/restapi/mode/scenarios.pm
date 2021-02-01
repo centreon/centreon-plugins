@@ -136,7 +136,7 @@ sub manage_selection {
         $last_timestamp = time() - (60 * 5);
     }
 
-    my $instances = $options{custom}->request_api(endpoint => '/rest/api/instances');
+    my $instances = $options{custom}->request_api(endpoint => '/api/instances');
     $self->{robots} = {};
     my $scenarios_last_exec = {};
     my $query_filter = [];
@@ -186,7 +186,7 @@ sub manage_selection {
     }
     my $results = [];
     if ($query_filter_num > 0) {
-        $results = $options{custom}->request_api(endpoint => '/rest/api/results?range=' . $timespan . $query_filter_string);
+        $results = $options{custom}->request_api(endpoint => '/api/results?range=' . $timespan . $query_filter_string);
     }
 
     my $mapping_status = {
