@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::database::common::mode::storage;
+package cloud::google::gcp::cloudsql::common::mode::cpu;
 
 use base qw(cloud::google::gcp::custom::mode);
 
@@ -29,48 +29,31 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'database/disk/bytes_used' => {
-            output_string => 'disk space usage: %.2f',
+        'database/cpu/utilization' => {
+            output_string => 'cpu utilization: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.space.usage.bytes',
-                    format => '%d',
-                    unit => 'B',
-                    change_bytes => 1
+                    nlabel => 'database.cpu.utilization.percentage',
+                    min => 0,
+                    max => 100,
+                    unit => '%',
+                    format => '%.2f'
                 }
             },
-            threshold => 'space-usage',
+            threshold => 'utilization',
+            calc => '* 100',
             order => 1
         },
-        'database/disk/read_ops_count' => {
-            output_string => 'disk read IO operations: %.2f',
+        'database/cpu/reserved_cores' => {
+            output_string => 'cpu reserved cores: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.disk.read.io.operations.count',
-                    format => '%.2f'
-                },
-                per_second => {
-                    nlabel => 'database.disk.read.io.operations.persecond',
+                    nlabel => 'database.cpu.reserved_cores.count',
                     format => '%.2f'
                 }
             },
-            threshold => 'read-operations',
+            threshold => 'cores-reserved',
             order => 2
-        },
-        'database/disk/write_ops_count' => {
-            output_string => 'disk write IO operations: %.2f',
-            perfdata => {
-                absolute => {
-                    nlabel => 'database.disk.write.io.operations.count',
-                    format => '%.2f'
-                },
-                per_second => {
-                    nlabel => 'database.disk.write.io.operations.persecond',
-                    format => '%.2f'
-                }
-            },
-            threshold => 'write-operations',
-            order => 3
         }
     };
 
@@ -87,7 +70,6 @@ sub new {
         'dimension-operator:s' => { name => 'dimension_operator', default => 'equals' },
         'dimension-value:s'    => { name => 'dimension_value' },
         'filter-metric:s'      => { name => 'filter_metric' },
-        "per-second"           => { name => 'per_second' },
         'timeframe:s'          => { name => 'timeframe' },
         'aggregation:s@'       => { name => 'aggregation' }
     });
@@ -113,13 +95,13 @@ __END__
 
 =head1 MODE
 
-Check database storage metrics.
+Check database CPU metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::google::gcp::database::mysql::plugin
---mode=diskio --dimension-value=mydatabaseid --filter-metric='space'
---aggregation='average' --verbose
+perl centreon_plugins.pl --plugin=cloud::google::gcp::cloudsql::mysql::plugin
+--mode=cpu --dimension-value=mydatabaseid --filter-metric='utilization'
+--aggregation='average' --critical-cpu-utilization-average='10' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
 
@@ -139,8 +121,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/disk/bytes_used',
-'database/disk/read_ops_count', 'databse/disk/write_ops_count') (Can be a regexp).
+Filter metrics (Can be: 'database/cpu/utilization',
+'database/cpu/reserved_cores') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -152,11 +134,7 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'space-usage', 'read-operations', 'write-operations').
-
-=item B<--per-second>
-
-Change the data to be unit/sec.
+Thresholds (Can be: 'utilization', 'cores-reserved').
 
 =back
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::database::mysql::mode::discovery;
+package cloud::google::gcp::cloudsql::mysql::mode::discovery;
 
 use base qw(centreon::plugins::mode);
 
