@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::database::common::mode::network;
+package cloud::google::gcp::cloudsql::mysql::mode::innodb;
 
 use base qw(cloud::google::gcp::custom::mode);
 
@@ -29,59 +29,73 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'database/network/connections' => {
-            output_string => 'connections: %.2f',
+        'database/mysql/innodb_data_fsyncs' => {
+            output_string => 'fsync calls: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.network.connections.count',
+                    nlabel => 'database.mysql.innodb.data_fsyncs.count',
+                    format => '%.2f',
+                    min => 0
+                },
+                per_second => {
+                    nlabel => 'database.mysql.innodb.data_fsyncs.persecond',
                     format => '%.2f',
                     min => 0
                 }
             },
-            threshold => 'connections',
+            threshold => 'fsyncs-calls',
             order => 1
         },
-        'database/network/received_bytes_count' => {
-            output_string => 'received: %.2f',
+        'database/mysql/innodb_os_log_fsyncs' => {
+            output_string => 'fsync calls to the log file: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.network.received.volume.bytes',
+                    nlabel => 'database.mysql.innodb.os_log_fsyncs.count',
                     format => '%.2f',
-                    min => 0,
-                    unit => 'B',
-                    change_bytes => 1
+                    min => 0
                 },
                 per_second => {
-                    nlabel => 'database.network.received.volume.bytespersecond',
+                    nlabel => 'database.mysql.innodb.os_log_fsyncs.persecond',
                     format => '%.2f',
-                    min => 0,
-                    unit => 'B/s',
-                    change_bytes => 1
+                    min => 0
                 }
             },
-            threshold => 'received-volume',
+            threshold => 'fsync-calls-logfile',
             order => 2
         },
-        'database/network/sent_bytes_count' => {
-            output_string => 'sent: %.2f',
+        'database/mysql/innodb_pages_read' => {
+            output_string => 'pages read: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.network.sent.volume.bytes',
+                    nlabel => 'database.mysql.innodb.pages_read.count',
                     format => '%.2f',
-                    min => 0,
-                    unit => 'B',
-                    change_bytes => 1
+                    min => 0
                 },
                 per_second => {
-                    nlabel => 'database.network.sent.volume.bytespersecond',
+                    nlabel => 'database.mysql.innodb.pages_read.persecond',
                     format => '%.2f',
-                    min => 0,
-                    unit => 'B/s',
-                    change_bytes => 1
+                    min => 0
                 }
             },
-            threshold => 'sent-volume',
+            threshold => 'pages-read',
             order => 3
+        },
+        'database/mysql/innodb_pages_written' => {
+            output_string => 'pages written: %.2f',
+            perfdata => {
+                absolute => {
+                    nlabel => 'database.mysql.innodb.pages_written.count',
+                    format => '%.2f',
+                    min => 0
+                },
+                per_second => {
+                    nlabel => 'database.mysql.innodb.pages_written.persecond',
+                    format => '%.2f',
+                    min => 0
+                }
+            },
+            threshold => 'pages-written',
+            order => 4
         }
     };
 
@@ -124,13 +138,13 @@ __END__
 
 =head1 MODE
 
-Check database instances network metrics.
+Check mysql innodb metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::google::gcp::database::mysql::plugin
---mode=network --dimension-value=mydatabaseid --filter-metric='bytes'
---aggregation='average' --critical-received-volume='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::google::gcp::cloudsql::mysql::plugin
+--mode=diskio --dimension-value=mydatabaseid --filter-metric='queries'
+--aggregation='average' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
 
@@ -150,8 +164,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/network/received_bytes_count',
-'database/network/sent_bytes_count', 'database/network/connections') (Can be a regexp).
+Filter metrics (Can be: 'database/mysql/innodb_data_fsyncs', 'database/mysql/innodb_os_log_fsyncs',
+'database/mysql/innodb_pages_read', 'database/mysql/innodb_pages_write') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -163,8 +177,8 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'received-volume', 'sent-volume',
-'connections').
+Thresholds (Can be: 'fsyncs-calls', 'fsync-calls-logfile',
+'pages-read', 'pages-written').
 
 =item B<--per-second>
 

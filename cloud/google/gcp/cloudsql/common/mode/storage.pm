@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::database::mysql::mode::innodb;
+package cloud::google::gcp::cloudsql::common::mode::storage;
 
 use base qw(cloud::google::gcp::custom::mode);
 
@@ -29,73 +29,48 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'database/mysql/innodb_data_fsyncs' => {
-            output_string => 'fsync calls: %.2f',
+        'database/disk/bytes_used' => {
+            output_string => 'disk space usage: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.mysql.innodb.data_fsyncs.count',
-                    format => '%.2f',
-                    min => 0
-                },
-                per_second => {
-                    nlabel => 'database.mysql.innodb.data_fsyncs.persecond',
-                    format => '%.2f',
-                    min => 0
+                    nlabel => 'database.space.usage.bytes',
+                    format => '%d',
+                    unit => 'B',
+                    change_bytes => 1
                 }
             },
-            threshold => 'fsyncs-calls',
+            threshold => 'space-usage',
             order => 1
         },
-        'database/mysql/innodb_os_log_fsyncs' => {
-            output_string => 'fsync calls to the log file: %.2f',
+        'database/disk/read_ops_count' => {
+            output_string => 'disk read IO operations: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.mysql.innodb.os_log_fsyncs.count',
-                    format => '%.2f',
-                    min => 0
+                    nlabel => 'database.disk.read.io.operations.count',
+                    format => '%.2f'
                 },
                 per_second => {
-                    nlabel => 'database.mysql.innodb.os_log_fsyncs.persecond',
-                    format => '%.2f',
-                    min => 0
+                    nlabel => 'database.disk.read.io.operations.persecond',
+                    format => '%.2f'
                 }
             },
-            threshold => 'fsync-calls-logfile',
+            threshold => 'read-operations',
             order => 2
         },
-        'database/mysql/innodb_pages_read' => {
-            output_string => 'pages read: %.2f',
+        'database/disk/write_ops_count' => {
+            output_string => 'disk write IO operations: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.mysql.innodb.pages_read.count',
-                    format => '%.2f',
-                    min => 0
+                    nlabel => 'database.disk.write.io.operations.count',
+                    format => '%.2f'
                 },
                 per_second => {
-                    nlabel => 'database.mysql.innodb.pages_read.persecond',
-                    format => '%.2f',
-                    min => 0
+                    nlabel => 'database.disk.write.io.operations.persecond',
+                    format => '%.2f'
                 }
             },
-            threshold => 'pages-read',
+            threshold => 'write-operations',
             order => 3
-        },
-        'database/mysql/innodb_pages_written' => {
-            output_string => 'pages written: %.2f',
-            perfdata => {
-                absolute => {
-                    nlabel => 'database.mysql.innodb.pages_written.count',
-                    format => '%.2f',
-                    min => 0
-                },
-                per_second => {
-                    nlabel => 'database.mysql.innodb.pages_written.persecond',
-                    format => '%.2f',
-                    min => 0
-                }
-            },
-            threshold => 'pages-written',
-            order => 4
         }
     };
 
@@ -138,12 +113,12 @@ __END__
 
 =head1 MODE
 
-Check mysql innodb metrics.
+Check database storage metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::google::gcp::database::mysql::plugin
---mode=diskio --dimension-value=mydatabaseid --filter-metric='queries'
+perl centreon_plugins.pl --plugin=cloud::google::gcp::cloudsql::mysql::plugin
+--mode=diskio --dimension-value=mydatabaseid --filter-metric='space'
 --aggregation='average' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
@@ -164,8 +139,8 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/mysql/innodb_data_fsyncs', 'database/mysql/innodb_os_log_fsyncs',
-'database/mysql/innodb_pages_read', 'database/mysql/innodb_pages_write') (Can be a regexp).
+Filter metrics (Can be: 'database/disk/bytes_used',
+'database/disk/read_ops_count', 'databse/disk/write_ops_count') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -177,8 +152,7 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'fsyncs-calls', 'fsync-calls-logfile',
-'pages-read', 'pages-written').
+Thresholds (Can be: 'space-usage', 'read-operations', 'write-operations').
 
 =item B<--per-second>
 
