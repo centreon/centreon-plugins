@@ -37,7 +37,7 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             'hostname:s@'    => { name => 'hostname' },
@@ -108,7 +108,11 @@ sub send_sms {
         'hex-content=' . $options{message}
     ];
     if (defined($options{from}) && $options{from} ne '') {
-        push @$get_param, 'from=' . $options{from}
+        push @$get_param, 'from=' . $options{from};
+    }
+    if (defined($options{dlr}) && $options{dlr} eq 'yes') {
+        push @$get_param, 'dlr=yes', 'dlr-url=' . $options{dlr_url},
+            'dlr-level=' . $options{dlr_level}, 'dlr-method=' . $options{dlr_method};
     }
 
     my $rv = 'Error sending sms';
