@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::database::mysql::plugin;
+package cloud::google::gcp::cloudsql::mysql::plugin;
 
 use strict;
 use warnings;
@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'cpu'       => 'cloud::google::gcp::database::common::mode::cpu',
-        'discovery' => 'cloud::google::gcp::database::mysql::mode::discovery',
-        'innodb'    => 'cloud::google::gcp::database::mysql::mode::innodb',
-        'network'   => 'cloud::google::gcp::database::common::mode::network',
-        'queries'   => 'cloud::google::gcp::database::mysql::mode::queries',
-        'storage'   => 'cloud::google::gcp::database::common::mode::storage'
+        'cpu'       => 'cloud::google::gcp::cloudsql::common::mode::cpu',
+        'discovery' => 'cloud::google::gcp::cloudsql::mysql::mode::discovery',
+        'innodb'    => 'cloud::google::gcp::cloudsql::mysql::mode::innodb',
+        'network'   => 'cloud::google::gcp::cloudsql::common::mode::network',
+        'queries'   => 'cloud::google::gcp::cloudsql::mysql::mode::queries',
+        'storage'   => 'cloud::google::gcp::cloudsql::common::mode::storage'
     };
 
     $self->{custom_modes}->{api} = 'cloud::google::gcp::custom::api';
@@ -49,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Google Cloud Platform MySQL.
+Check Google CloudSQL MySQL.
 
 =cut

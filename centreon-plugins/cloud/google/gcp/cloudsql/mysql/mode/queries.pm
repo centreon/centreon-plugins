@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::google::gcp::database::common::mode::cpu;
+package cloud::google::gcp::cloudsql::mysql::mode::queries;
 
 use base qw(cloud::google::gcp::custom::mode);
 
@@ -29,30 +29,38 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'database/cpu/utilization' => {
-            output_string => 'cpu utilization: %.2f',
+        'database/mysql/questions' => {
+            output_string => 'questions: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.cpu.utilization.percentage',
-                    min => 0,
-                    max => 100,
-                    unit => '%',
-                    format => '%.2f'
+                    nlabel => 'database.mysql.questions.count',
+                    format => '%.2f',
+                    min => 0
+                },
+                per_second => {
+                    nlabel => 'database.mysql.questions.persecond',
+                    format => '%.2f',
+                    min => 0
                 }
             },
-            threshold => 'utilization',
-            calc => '* 100',
+            threshold => 'questions',
             order => 1
         },
-        'database/cpu/reserved_cores' => {
-            output_string => 'cpu reserved cores: %.2f',
+        'database/mysql/queries' => {
+            output_string => 'queries: %.2f',
             perfdata => {
                 absolute => {
-                    nlabel => 'database.cpu.reserved_cores.count',
-                    format => '%.2f'
+                    nlabel => 'database.mysql.queries.count',
+                    format => '%.2f',
+                    min => 0
+                },
+                per_second => {
+                    nlabel => 'database.mysql.queries.persecond',
+                    format => '%.2f',
+                    min => 0
                 }
             },
-            threshold => 'cores-reserved',
+            threshold => 'queries',
             order => 2
         }
     };
@@ -70,6 +78,7 @@ sub new {
         'dimension-operator:s' => { name => 'dimension_operator', default => 'equals' },
         'dimension-value:s'    => { name => 'dimension_value' },
         'filter-metric:s'      => { name => 'filter_metric' },
+        "per-second"           => { name => 'per_second' },
         'timeframe:s'          => { name => 'timeframe' },
         'aggregation:s@'       => { name => 'aggregation' }
     });
@@ -95,13 +104,13 @@ __END__
 
 =head1 MODE
 
-Check database CPU metrics.
+Check mysql queries metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::google::gcp::database::mysql::plugin
---mode=cpu --dimension-value=mydatabaseid --filter-metric='utilization'
---aggregation='average' --critical-cpu-utilization-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::google::gcp::cloudsql::mysql::plugin
+--mode=diskio --dimension-value=mydatabaseid --filter-metric='queries'
+--aggregation='average' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
 
@@ -121,8 +130,7 @@ Set dimension value (Required).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'database/cpu/utilization',
-'database/cpu/reserved_cores') (Can be a regexp).
+Filter metrics (Can be: 'database/mysql/questions', 'database/mysql/queries') (Can be a regexp).
 
 =item B<--timeframe>
 
@@ -134,7 +142,11 @@ Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (Can be: 'utilization', 'cores-reserved').
+Thresholds (Can be: 'queries', 'questions').
+
+=item B<--per-second>
+
+Change the data to be unit/sec.
 
 =back
 
