@@ -31,11 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'cpu'     => 'cloud::google::gcp::database::common::mode::cpu',
-        'innodb'  => 'cloud::google::gcp::database::mysql::mode::innodb',
-        'network' => 'cloud::google::gcp::database::common::mode::network',
-        'queries' => 'cloud::google::gcp::database::mysql::mode::queries',
-        'storage' => 'cloud::google::gcp::database::common::mode::storage'
+        'cpu'       => 'cloud::google::gcp::database::common::mode::cpu',
+        'discovery' => 'cloud::google::gcp::database::mysql::mode::discovery',
+        'innodb'    => 'cloud::google::gcp::database::mysql::mode::innodb',
+        'network'   => 'cloud::google::gcp::database::common::mode::network',
+        'queries'   => 'cloud::google::gcp::database::mysql::mode::queries',
+        'storage'   => 'cloud::google::gcp::database::common::mode::storage'
     };
 
     $self->{custom_modes}->{api} = 'cloud::google::gcp::custom::api';

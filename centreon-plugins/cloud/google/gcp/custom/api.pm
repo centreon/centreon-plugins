@@ -112,7 +112,7 @@ sub settings {
 sub get_access_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'gcp_api_' . md5_hex($self->{key_file}));
+    my $has_cache_file = $options{statefile}->read(statefile => 'gcp_api_' . md5_hex($self->{key_file} . ':' . $self->{authorization_endpoint}));
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
 
@@ -376,6 +376,90 @@ sub gcp_get_metrics {
     return $results;
 }
 
+sub request_api_paginate {
+    my ($self, %options) = @_;
+
+    my $items = [];
+    my $get_param;
+    $get_param = $options{get_param} if (defined$options{get_param});
+    while (1) {
+        my $response = $self->request_api(
+            method => 'GET',
+            full_url => $options{url},
+            hostname => '',
+            get_param => $get_param
+        );
+        last if (!defined($response->{items}));
+        push @$items, @{$response->{items}};
+
+        last if (!defined($response->{nextPageToken}));
+        $get_param = [@{$options{get_param}}, 'pageToken=' . $response->{nextPageToken}];
+    }
+
+    return $items;
+}
+
+sub gcp_compute_engine_set_base_url {
+    my ($self, %options) = @_;
+
+    my $project_id = $self->get_project_id();
+    my $url = 'https://compute.googleapis.com/compute/v1/projects/' . $project_id;
+    return $url;
+}
+
+sub gcp_list_compute_engine_zones {
+    my ($self, %options) = @_;
+
+    my $url = $self->gcp_compute_engine_set_base_url();
+    my $zones = $self->request_api_paginate(
+        url => $url . '/zones'
+    );
+    return $zones;
+}
+
+sub gcp_list_compute_engine_instances {
+    my ($self, %options) = @_;
+
+    my $results = [];
+    my $url = $self->gcp_compute_engine_set_base_url();
+    my $zones = $self->gcp_list_compute_engine_zones();
+    foreach (@$zones) {
+        my $instances = $self->request_api_paginate(
+            url => $url . '/zones/' . $_->{name} . '/instances'
+        );
+        push @$results, @$instances;
+    }
+    return $results;
+}
+
+sub gcp_cloudsql_set_base_url {
+    my ($self, %options) = @_;
+
+    my $project_id = $self->get_project_id();
+    my $url = 'https://sqladmin.googleapis.com/sql/v1beta4/projects/' . $project_id;
+    return $url;
+}
+
+sub gcp_list_cloudsql_instances {
+    my ($self, %options) = @_;
+
+    my $url = $self->gcp_cloudsql_set_base_url();
+    my $instances = $self->request_api_paginate(
+        url => $url . '/instances'
+    );
+    return $instances;
+}
+
+sub gcp_list_storage_buckets {
+    my ($self, %options) = @_;
+
+    my $buckets = $self->request_api_paginate(
+        url => 'https://storage.googleapis.com/storage/v1/b',
+        get_param => ['project=' . $self->get_project_id()]
+    );
+    return $buckets;
+}
+
 1;
 
 __END__
@@ -408,7 +492,7 @@ Set GCP monitoring endpoint URL (Default: 'https://monitoring.googleapis.com/v3'
 
 =item B<--scope-endpoint>
 
-Set GCP scope endpoint URL (Default: 'https://www.googleapis.com/auth/monitoring.read')
+Set GCP scope endpoint URL (Default: 'https://www.googleapis.com/auth/cloud-platform')
 
 =item B<--zeroed>
 

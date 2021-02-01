@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'bucket'  => 'cloud::google::gcp::storage::mode::bucket'
+        'bucket'    => 'cloud::google::gcp::storage::mode::bucket',
+        'discovery' => 'cloud::google::gcp::storage::mode::discovery'
     };
 
     $self->{custom_modes}->{api} = 'cloud::google::gcp::custom::api';
