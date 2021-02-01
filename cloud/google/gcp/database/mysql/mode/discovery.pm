@@ -32,7 +32,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'prettify'      => { name => 'prettify' }
+        'prettify' => { name => 'prettify' }
     });
 
     return $self;
@@ -52,29 +52,19 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $instances = $options{custom}->gcp_list_cloudsql_instances();
-    use Data::Dumper; print Data::Dumper::Dumper($instances);
     foreach my $instance (@$instances) {
+        next if ($instance->{databaseVersion} !~ /mysql/i);
         my $item = {};
-        $item->{id} = $instance->{id};
         $item->{name} = $instance->{name};
-        $item->{description} = $instance->{description};
-        $item->{status} = $instance->{status};
-        $item->{cpu_platform} = $instance->{cpuPlatform};
-        if ($instance->{machineType} =~ /machineTypes\/(.*?)$/) {
-            $item->{machine_type} = $1;
+        $item->{version} = $instance->{databaseVersion};
+        $item->{state} = $instance->{state};
+        $item->{region} = $instance->{region};
+        $item->{tier} = $instance->{settings}->{tier};
+        $item->{instance_type} = $instance->{settings}->{instance_type};
+        $item->{ip_addresses} = [];
+        foreach (@{$instance->{ipAddresses}}) {
+            push @{$item->{ip_addresses}}, { ip_address => $_->{ipAddress}, type => $_->{type} };
         }
-        if ($instance->{zone} =~ /zones\/(.*?)$/) {
-            $item->{zone} = $1;
-        }
-        $item->{network_interfaces} = [];
-        foreach (@{$instance->{networkInterfaces}}) {
-            push @{$item->{network_interfaces}}, { name => $_->{name}, ip => $_->{networkIP} };
-        }
-        $item->{tags} = [];
-        if (defined($instance->{tags}->{items})) {
-            push @{$item->{tags}}, @{$instance->{tags}->{items}};
-        }
-
         push @$disco_data, $item;
     }
 

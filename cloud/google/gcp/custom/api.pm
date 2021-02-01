@@ -112,7 +112,7 @@ sub settings {
 sub get_access_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'gcp_api_' . md5_hex($self->{key_file}));
+    my $has_cache_file = $options{statefile}->read(statefile => 'gcp_api_' . md5_hex($self->{key_file} . ':' . $self->{authorization_endpoint}));
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
 
