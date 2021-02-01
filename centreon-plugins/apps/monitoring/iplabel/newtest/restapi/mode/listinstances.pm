@@ -44,7 +44,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    return $options{custom}->request_api(endpoint => '/rest/api/instances');
+    return $options{custom}->request_api(endpoint => '/api/instances');
 }
 
 sub run {
