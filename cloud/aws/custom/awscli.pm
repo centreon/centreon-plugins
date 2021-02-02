@@ -596,6 +596,7 @@ sub rds_list_instances {
             Engine => $instance->{Engine},
             StorageType => $instance->{StorageType},
             DBInstanceStatus => $instance->{DBInstanceStatus},
+            AllocatedStorage => $instance->{AllocatedStorage}
         };
     }
 
@@ -626,6 +627,7 @@ sub rds_list_clusters {
             DatabaseName => $cluster->{DatabaseName},
             Engine => $cluster->{Engine},
             Status => $cluster->{Status},
+            AllocatedStorage => $cluster->{AllocatedStorage}
         };
     }
 
