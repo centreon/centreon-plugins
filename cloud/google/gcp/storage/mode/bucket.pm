@@ -129,7 +129,7 @@ Check storage network metrics.
 Example:
 
 perl centreon_plugins.pl --plugin=cloud::google::gcp::storage::plugin
---mode=network --dimension-value=mydatabaseid --filter-metric='sent'
+--mode=bucket --dimension-value=mybucketname --filter-metric='sent'
 --aggregation='average' --critical-received-volume='10' --verbose
 
 Default aggregation: 'average' / All aggregations are valid.
