@@ -63,6 +63,14 @@ sub set_counters {
                     { template => '%s', min => 0, max => 10, label_extra_instance => 1  }
                 ]
             }
+        },
+        { label => 'edge-links-count', nlabel => 'global.links.total.count', set => {
+                key_values => [ { name => 'link_count' } ],
+                output_template => '%s link(s)',
+                perfdatas => [
+                    { template => '%d', unit => '', min => 0, label_extra_instance => 1 }
+                ]
+            }
         }
     ];
 
@@ -158,34 +166,31 @@ sub manage_selection {
             timeframe => $self->{timeframe}
         );
 
-        if (ref($qoes) eq 'HASH') {
-            $self->{edges}->{$edge->{name}}->{global} = {
-                voice => $qoes->{overallLinkQuality}->{score}->{0},
-                video => $qoes->{overallLinkQuality}->{score}->{1},
-                transactional => $qoes->{overallLinkQuality}->{score}->{2}
-            };
+        next if (ref($qoes) ne 'HASH');
 
-            foreach my $link (@{$links}) {
-                next if (!defined($qoes->{$link->{link}->{internalId}}));
+        $self->{edges}->{$edge->{name}}->{global} = {
+            voice => $qoes->{overallLinkQuality}->{score}->{0},
+            video => $qoes->{overallLinkQuality}->{score}->{1},
+            transactional => $qoes->{overallLinkQuality}->{score}->{2}
+        };
 
-                if (defined($self->{option_results}->{filter_link_name}) && $self->{option_results}->{filter_link_name} ne '' &&
-                    $link->{link}->{displayName} !~ /$self->{option_results}->{filter_link_name}/) {
-                    $self->{output}->output_add(long_msg => "skipping '" . $edge->{id} . "'.", debug => 1);
-                    next;
-                }
+        foreach my $link (@{$links}) {
+            next if (!defined($qoes->{$link->{link}->{internalId}}));
 
-                $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
-                    id => $link->{linkId},
-                    display => $link->{link}->{displayName},
-                    voice => $qoes->{$link->{link}->{internalId}}->{score}->{0},
-                    video => $qoes->{$link->{link}->{internalId}}->{score}->{1},
-                    transactional => $qoes->{$link->{link}->{internalId}}->{score}->{2}
-                };
+            if (defined($self->{option_results}->{filter_link_name}) && $self->{option_results}->{filter_link_name} ne '' &&
+                $link->{link}->{displayName} !~ /$self->{option_results}->{filter_link_name}/) {
+                $self->{output}->output_add(long_msg => "skipping '" . $edge->{id} . "'.", debug => 1);
+                next;
             }
-        }
-        if (scalar(keys %{$self->{edges}->{$edge->{name}}->{links}}) <= 0) {
-            $self->{output}->add_option_msg(short_msg => "No link found.");
-            $self->{output}->option_exit();
+
+            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
+            $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
+                id => $link->{linkId},
+                display => $link->{link}->{displayName},
+                voice => $qoes->{$link->{link}->{internalId}}->{score}->{0},
+                video => $qoes->{$link->{link}->{internalId}}->{score}->{1},
+                transactional => $qoes->{$link->{link}->{internalId}}->{score}->{2}
+            };
         }
     }
 

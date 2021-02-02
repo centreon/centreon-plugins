@@ -32,9 +32,19 @@ sub set_counters {
         { name => 'edges', type => 3, cb_prefix_output => 'prefix_edge_output', cb_long_output => 'long_output',
           message_multiple => 'All edges applications usage are ok', indent_long_output => '    ',
             group => [
+                { name => 'global', type => 0 },
                 { name => 'apps', display_long => 1, cb_prefix_output => 'prefix_app_output',
                   message_multiple => 'All applications usage are ok', type => 1 }
             ]
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'edge-applications-count', nlabel => 'edge.applications.total.count', set => {
+                key_values => [ { name => 'app_count' } ],
+                output_template => '%s application(s)',
+                perfdatas => [ { template => '%d', unit => '', min => 0, label_extra_instance => 1 } ]
+            }
         }
     ];
 
@@ -148,6 +158,7 @@ sub manage_selection {
                 next;
             }
 
+            $self->{edges}->{$edge->{name}}->{global}->{app_count}++;
             $self->{edges}->{$edge->{name}}->{apps}->{ $app_name } = {
                 id => $app->{application},
                 display => $app_name,
@@ -156,10 +167,6 @@ sub manage_selection {
                 packets_out => $app->{packetsTx} / $self->{timeframe},
                 packets_in => $app->{packetsRx} / $self->{timeframe}
             };
-        }
-        if (scalar(keys %{$self->{edges}->{$edge->{name}}->{apps}}) <= 0) {
-            $self->{output}->add_option_msg(short_msg => "No application found.");
-            $self->{output}->option_exit();
         }
     }
 

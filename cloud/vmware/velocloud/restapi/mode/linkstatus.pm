@@ -44,9 +44,19 @@ sub set_counters {
         { name => 'edges', type => 3, cb_prefix_output => 'prefix_edge_output', cb_long_output => 'long_output',
           message_multiple => 'All edges links status are ok', indent_long_output => '    ',
             group => [
+                { name => 'global', type => 0 },
                 { name => 'links', display_long => 1, cb_prefix_output => 'prefix_link_output',
                   message_multiple => 'All links status are ok', type => 1 }
             ]
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'edge-links-count', nlabel => 'edge.links.total.count', set => {
+                key_values => [ { name => 'link_count' } ],
+                output_template => '%s link(s)',
+                perfdatas => [ { template => '%d', unit => '', min => 0 } ]
+            }
         }
     ];
 
@@ -134,6 +144,7 @@ sub manage_selection {
                 next;
             }
 
+            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
             $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
@@ -141,10 +152,6 @@ sub manage_selection {
                 vpn_state => $link->{link}->{vpnState},
                 backup_state => defined($link->{link}->{backupState}) ? $link->{link}->{backupState} : '-'
             };
-        }
-        if (scalar(keys %{$self->{edges}->{$edge->{name}}->{links}}) <= 0) {
-            $self->{output}->add_option_msg(short_msg => "No link found.");
-            $self->{output}->option_exit();
         }
     }
 

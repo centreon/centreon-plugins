@@ -57,6 +57,14 @@ sub set_counters {
                     { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
                 ]
             }
+        },
+        { label => 'edge-links-count', nlabel => 'links.total.count', set => {
+                key_values => [ { name => 'link_count' } ],
+                output_template => '%s link(s)',
+                perfdatas => [
+                    { template => '%d', unit => '', min => 0, label_extra_instance => 1 }
+                ]
+            }
         }
     ];
 
@@ -200,6 +208,7 @@ sub manage_selection {
                 next;
             }
 
+            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
             $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
@@ -218,10 +227,6 @@ sub manage_selection {
             }
             $self->{edges}->{$edge->{name}}->{global}->{traffic_in} += (int($link->{bytesRx} * 8 / $self->{timeframe}));
             $self->{edges}->{$edge->{name}}->{global}->{traffic_out} += (int($link->{bytesTx} * 8 / $self->{timeframe}));
-        }
-        if (scalar(keys %{$self->{edges}->{$edge->{name}}->{links}}) <= 0) {
-            $self->{output}->add_option_msg(short_msg => "No link found.");
-            $self->{output}->option_exit();
         }
     }
 
