@@ -197,7 +197,7 @@ Filter application by name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'traffic-in', 'traffic-out',
+Can be: 'edge-applications-count', 'traffic-in', 'traffic-out',
 'packets-in', 'packets-out'.
 
 =back

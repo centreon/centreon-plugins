@@ -184,15 +184,11 @@ Filter link by name (Can be a regexp).
 Set unknown threshold for status (Default: '').
 Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
 
-=item B<--warning-status>
+=item B<--warning-*> B<--critical-*>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
-
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/').
-Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
+Warning & Critical thresholds
+Can be 'status', 'edge-links-count'.
+For 'status', special variables can be used: %{state}, %{vpn_state}, %{backup_state} (Default: '').
 
 =back
 

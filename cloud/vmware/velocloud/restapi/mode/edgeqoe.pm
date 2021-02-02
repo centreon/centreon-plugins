@@ -221,7 +221,7 @@ Filter link by name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'qoe-voice-global', 'qoe-video-global', 'qoe-transactional-global' (global values) and/or
+Can be: 'edge-links-count', 'qoe-voice-global', 'qoe-video-global', 'qoe-transactional-global' (global values) and/or
 'qoe-voice', 'qoe-video', 'qoe-transactional' (per link values).
 
 =back

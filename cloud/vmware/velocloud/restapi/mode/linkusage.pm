@@ -257,7 +257,7 @@ Filter link by name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'links-traffic-in', 'links-traffic-out', 
+Can be: 'edge-links-count', 'links-traffic-in', 'links-traffic-out', 
 'traffic-in', 'traffic-out', 'latency-in',
 'latency-out', 'jitter-in', 'jitter-out',
 'packet-loss-in', 'packet-loss-out'.
