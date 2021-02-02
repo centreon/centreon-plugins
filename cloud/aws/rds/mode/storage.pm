@@ -243,6 +243,7 @@ sub add_metric_space_usage_percent {
     foreach (@{$options{list_rds_instances}}) {
         if ($_->{Name} eq $options{instance}) {
             $total_space = $_->{AllocatedStorage} * 1024 * 1024 * 1024;
+            last;
         }
     }
 
