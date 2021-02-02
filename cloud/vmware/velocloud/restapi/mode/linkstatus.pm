@@ -188,7 +188,9 @@ Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
 
 Warning & Critical thresholds
 Can be 'status', 'edge-links-count'.
-For 'status', special variables can be used: %{state}, %{vpn_state}, %{backup_state} (Default: '').
+
+For 'status', special variables can be used: %{state}, %{vpn_state}, %{backup_state}
+(Critical threshold default: '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/').
 
 =back
 
