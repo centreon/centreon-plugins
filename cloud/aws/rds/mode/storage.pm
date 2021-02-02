@@ -154,10 +154,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'type:s'	                => { name => 'type' },
-        'name:s@'	                => { name => 'name' },
-        'filter-metric:s'           => { name => 'filter_metric' },
-        'add-space-usage-percent:s' => { name => 'add_space_usage_percent' } 
+        'type:s'	              => { name => 'type' },
+        'name:s@'	              => { name => 'name' },
+        'filter-metric:s'         => { name => 'filter_metric' },
+        'add-space-usage-percent' => { name => 'add_space_usage_percent' } 
     });
 
     return $self;
@@ -263,7 +263,7 @@ sub manage_selection {
 
     my $list_rds_instances;
     if (defined($self->{option_results}->{add_space_usage_percent})) {
-        if ($map_type->{ $self->{option_results}->{type} } eq 'instance') {
+        if ($self->{option_results}->{type} eq 'instance') {
             $list_rds_instances = $options{custom}->rds_list_instances();
         } else {
             $list_rds_instances = $options{custom}->rds_list_clusters();
@@ -358,7 +358,7 @@ Check storage usage space percentage (need privileges to describe rds).
 
 =item B<--warning-$metric$> B<--critical-$metric$>
 
-Thresholds ($metric$ can be: 'storage-space-free', 'storage-space-usage-percent', 'memory-free').
+Thresholds ($metric$ can be: 'storage-space-free', 'storage-space-usage-prct', 'memory-free').
 
 =back
 
