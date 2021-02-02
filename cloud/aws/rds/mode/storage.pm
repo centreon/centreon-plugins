@@ -63,7 +63,6 @@ sub custom_metric_calc {
 
     $self->{result_values}->{timeframe} = $options{new_datas}->{$self->{instance} . '_timeframe'};
     $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric}};
-    $self->{result_values}->{value_per_sec} = $self->{result_values}->{value} / $self->{result_values}->{timeframe};
     $self->{result_values}->{metric} = $options{extra_options}->{metric};
     return 0;
 }
@@ -247,7 +246,7 @@ sub add_metric_space_usage_percent {
         }
     }
 
-    return if (!defined($total_space) && $total_space > 0);
+    return if (!defined($total_space) || $total_space <= 0);
 
     my $space_usage = 100 - ($options{free_storage} * 100 / $total_space);
     $self->add_metric(
@@ -297,7 +296,7 @@ sub manage_selection {
                         statistic => lc($statistic)
                     );
                 }
-    
+
                 if (defined($self->{option_results}->{add_space_usage_percent}) && $metric eq 'FreeStorageSpace' &&
                     defined($self->{metrics}->{$instance}->{statistics}->{lc($statistic)})) {
                     $self->add_metric_space_usage_percent(
