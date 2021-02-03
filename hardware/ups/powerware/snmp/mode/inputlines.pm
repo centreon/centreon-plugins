@@ -82,6 +82,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+      'filter-iline:s'      => { name => 'filter_iline' },
     });
 
     return $self;
@@ -127,8 +128,14 @@ sub manage_selection {
         next if ($oid !~ /^$oid_xupsInputEntry\.\d+\.(.*)$/);
         my $instance = $1;
         next if (defined($self->{iline}->{$instance}));
-
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        
+        if (defined($self->{option_results}->{filter_iline}) && $self->{option_results}->{filter_iline} ne '' &&
+              $instance !~ /$self->{option_results}->{filter_iline}/) {
+              $self->{output}->output_add(long_msg => "skipping '" . $result->{qosPolicyOrgName} . "': no matching 'iline' filter.", debug => 1);
+              next;
+        }
+        
         $result->{xupsInputCurrent} = 0 if (defined($result->{xupsInputCurrent}) && $result->{xupsInputCurrent} eq '');
         $self->{iline}->{$instance} = { display => $instance, %$result };
     }
@@ -163,6 +170,10 @@ __END__
 Check Input lines metrics (frequence, voltage, current and true power) (XUPS-MIB).
 
 =over 8
+
+=item B<--filter-iline>
+
+Filter input lines that match the regexp
 
 =item B<--warning-*> B<--critical-*>
 
