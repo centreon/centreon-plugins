@@ -75,7 +75,7 @@ sub set_counters {
                 output_template => 'last execution time: %s',
                 output_use => 'last_execution_human',
                 perfdatas => [
-                    { template => '%d', min => 0, unit => 's' }
+                    { template => '%d', min => 0, unit => 's', label_extra_instance => 1 }
                 ]
             }
         }
