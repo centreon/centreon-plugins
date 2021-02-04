@@ -63,6 +63,14 @@ sub set_counters {
                     { template => '%s', min => 0, max => 10, label_extra_instance => 1  }
                 ]
             }
+        },
+        { label => 'edge-links-count', nlabel => 'global.links.total.count', set => {
+                key_values => [ { name => 'link_count' } ],
+                output_template => '%s link(s)',
+                perfdatas => [
+                    { template => '%d', unit => '', min => 0, label_extra_instance => 1 }
+                ]
+            }
         }
     ];
 
@@ -175,6 +183,7 @@ sub manage_selection {
                 next;
             }
 
+            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
             $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
@@ -212,7 +221,7 @@ Filter link by name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'qoe-voice-global', 'qoe-video-global', 'qoe-transactional-global' (global values) and/or
+Can be: 'edge-links-count', 'qoe-voice-global', 'qoe-video-global', 'qoe-transactional-global' (global values) and/or
 'qoe-voice', 'qoe-video', 'qoe-transactional' (per link values).
 
 =back
