@@ -30,18 +30,18 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'applicationrulehit' => {
-            'output'       => 'Application rules hit count',
-            'label'        => 'application-rules-hits',
-            'nlabel'       => 'firewall.applications.rules.hits.count',
-            'unit'         => '',
-            'min'          => '0'
+            'output' => 'Application rules hit count',
+            'label'  => 'application-rules-hits',
+            'nlabel' => 'firewall.applications.rules.hits.count',
+            'unit'   => '',
+            'min'    => '0'
         },
         'networkrulehit' => {
-            'output'       => 'Network rules hit count',
-            'label'        => 'network-rules-hits',
-            'nlabel'       => 'firewall.newtork.rules.hits.count',
-            'unit'         => '',
-            'min'          => '0'
+            'output' => 'Network rules hit count',
+            'label'  => 'network-rules-hits',
+            'nlabel' => 'firewall.newtork.rules.hits.count',
+            'unit'   => '',
+            'min'    => '0'
         }
     };
 

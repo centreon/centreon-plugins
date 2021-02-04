@@ -30,46 +30,46 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'bytesdroppedddos' => {
-            'output'       => 'Inbound bytes dropped DDoS',
-            'label'        => 'ddos-dropped',
-            'nlabel'       => 'publicip.ddos.dropped.bytes',
-            'unit'         => 'B',
-            'min'          => '0'
+            'output' => 'Inbound bytes dropped DDoS',
+            'label'  => 'ddos-dropped',
+            'nlabel' => 'publicip.ddos.dropped.bytes',
+            'unit'   => 'B',
+            'min'    => '0'
         },
         'bytesforwardedddos' => {
-            'output'       => 'Inbound bytes forwarded DDoS',
-            'label'        => 'ddos-forwarded',
-            'nlabel'       => 'publicip.ddos.forwarded.bytes',
-            'unit'         => 'B',
-            'min'          => '0'
+            'output' => 'Inbound bytes forwarded DDoS',
+            'label'  => 'ddos-forwarded',
+            'nlabel' => 'publicip.ddos.forwarded.bytes',
+            'unit'   => 'B',
+            'min'    => '0'
         },
         'bytesinddos' => {
-            'output'       => 'Inbound bytes DDoS',
-            'label'        => 'ddos-inbound',
-            'nlabel'       => 'publicip.ddos.inbound.bytes',
-            'unit'         => 'B',
-            'min'          => '0'
+            'output' => 'Inbound bytes DDoS',
+            'label'  => 'ddos-inbound',
+            'nlabel' => 'publicip.ddos.inbound.bytes',
+            'unit'   => 'B',
+            'min'    => '0'
         },
         'packetsdroppedddos' => {
-            'output'       => 'Inbound packets dropped DDoS',
-            'label'        => 'ddos-dropped-packets',
-            'nlabel'       => 'publicip.ddos.packets.countpersecond',
-            'unit'         => '/s',
-            'min'          => '0'
+            'output' => 'Inbound packets dropped DDoS',
+            'label'  => 'ddos-dropped-packets',
+            'nlabel' => 'publicip.ddos.packets.countpersecond',
+            'unit'   => '/s',
+            'min'    => '0'
         },
         'packetsforwardedddos' => {
-            'output'       => 'Inbound packets forwarded DDoS',
-            'label'        => 'ddos-forwarded-packets',
-            'nlabel'       => 'publicip.ddos.forwarded.countpersecond',
-            'unit'         => '/s',
-            'min'          => '0'
+            'output' => 'Inbound packets forwarded DDoS',
+            'label'  => 'ddos-forwarded-packets',
+            'nlabel' => 'publicip.ddos.forwarded.countpersecond',
+            'unit'   => '/s',
+            'min'    => '0'
         },
         'packetsinddos' => {
-            'output'       => 'Inbound packets DDoS',
-            'label'        => 'ddos-inbound-packets',
-            'nlabel'       => 'publicip.ddos.inbound.packets.countpersecond',
-            'unit'         => '/s',
-            'min'          => '0'
+            'output' => 'Inbound packets DDoS',
+            'label'  => 'ddos-inbound-packets',
+            'nlabel' => 'publicip.ddos.inbound.packets.countpersecond',
+            'unit'   => '/s',
+            'min'    => '0'
         }
     };
 

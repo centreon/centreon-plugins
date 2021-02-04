@@ -30,11 +30,11 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'firewallhealth' => {
-            'output'       => 'Firewall health state',
-            'label'        => 'firewall-health-percentage',
-            'nlabel'       => 'firewall.health.percentage',
-            'unit'         => '%',
-            'min'          => '0'
+            'output' => 'Firewall health state',
+            'label'  => 'firewall-health-percentage',
+            'nlabel' => 'firewall.health.percentage',
+            'unit'   => '%',
+            'min'    => '0'
         }
     };
 

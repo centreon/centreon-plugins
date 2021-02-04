@@ -30,18 +30,18 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'dataprocessed' => {
-            'output'       => 'Data processed',
-            'label'        => 'processed-data',
-            'nlabel'       => 'firewall.data.processed.bytes',
-            'unit'         => 'B',
-            'min'          => '0'
+            'output' => 'Data processed',
+            'label'  => 'processed-data',
+            'nlabel' => 'firewall.data.processed.bytes',
+            'unit'   => 'B',
+            'min'    => '0'
         },
         'Throughput' => {
-            'output'       => 'Throughput',
-            'label'        => 'throughput',
-            'nlabel'       => 'firewall.throughput.bitspersecond',
-            'unit'         => 'b/s',
-            'min'          => '0'
+            'output' => 'Throughput',
+            'label'  => 'throughput',
+            'nlabel' => 'firewall.throughput.bitspersecond',
+            'unit'   => 'b/s',
+            'min'    => '0'
         }
     };
 
