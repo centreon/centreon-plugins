@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::network::publicip::mode::ddostraffic;
+package cloud::azure::network::firewall::mode::health;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -31,7 +31,7 @@ sub get_metrics_mapping {
     my $metrics_mapping = {
         'firewallhealth' => {
             'output'       => 'Firewall health state',
-            'label'        => 'firewall-health',
+            'label'        => 'firewall-health-percentage',
             'nlabel'       => 'firewall.health.percentage',
             'unit'         => '%',
             'min'          => '0'
@@ -112,9 +112,9 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::firewall::plugin --mode
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::loadbalancer::plugin --mode=datapath --custommode=azcli
+perl centreon_plugins.pl --plugin=cloud::azure::network::firewall::plugin --mode=health --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/azurefirewalls/<firewall_id>'
---aggregation='average'--warning-firewall-health='100:' --critical-firewall-health='50:'
+--aggregation='average' --warning-firewall-health='100:' --critical-firewall-health='50:'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
@@ -128,11 +128,11 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<---warning-healthprobe-availibility-percentage>
+=item B<---warning-firewall-health-percentage>
 
 Warning threshold.
 
-=item B<--critical-healthprobe-availibility-percentage>
+=item B<--critical-firewall-health-percentage>
 
 Critical threshold.
 

@@ -58,6 +58,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure SQL Elastic Pools.
+Check Microsoft Azure Key Vaults.
 
 =cut
