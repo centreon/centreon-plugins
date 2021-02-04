@@ -119,7 +119,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::firewall::plugin --mode
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::firewall::plugin --mode=health --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::network::firewall::plugin --mode=throughput --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/azurefirewalls/<firewall_id>'
 --aggregation='average' --warning-throughput='50000' --critical-throughput='100000'
 

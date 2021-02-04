@@ -147,8 +147,8 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode=datapath --custommode=azcli
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/publicips/<publicip_id>'
+perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode=ddos-traffic --custommode=api
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/publicIPAddresses/<publicip_id>'
 --aggregation='maximum' --warning-ddos-inbound-packets='1000' --critical-ddos-inbound-packets='2000'
 
 Default aggregation: 'maximum' / 'average', 'total', 'minimum' and 'maximum' are valid.

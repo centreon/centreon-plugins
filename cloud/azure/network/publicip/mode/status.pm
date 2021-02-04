@@ -153,6 +153,22 @@ __END__
 
 Check Azure Public IP status.
 
+Example:
+
+Using resource name :
+
+perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode=status --custommode=api
+--resource=<publicip_id> --resource-group=<resourcegroup_id>
+--critical-provisioning-state='%{state} =~ /Failed/i'
+
+Using resource id :
+
+perl centreon_plugins.pl --plugin=cloud::azure::network::publicip::plugin --mode=status --custommode=api
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/publicIPAddresses/<publicip_id>'
+--critical-provisioning-state='%{state} =~ /Failed/i'
+
+Default aggregation: 'maximum' / 'average', 'total', 'minimum' and 'maximum' are valid.
+
 =head1 CUSTOM MODE OPTIONS
 
 =over 8
