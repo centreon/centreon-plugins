@@ -85,13 +85,15 @@ sub custom_metric_perfdata {
 sub custom_metric_output {
     my ($self, %options) = @_;
 
+    my $network = defined($self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{network}) ? { network => '1' } : undef;
+
     my ($value, $unit) = $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{unit} eq 'B' ?
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{value}->{absolute}) :
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{value}->{absolute}, %{$network}) :
         ($self->{result_values}->{value}->{absolute}, $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{unit});
 
     if (defined($self->{instance_mode}->{option_results}->{per_second})) {
         ($value, $unit) = $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{unit} eq 'B' ?
-            $self->{perfdata}->change_bytes(value => $self->{result_values}->{value}->{per_second}) :
+            $self->{perfdata}->change_bytes(value => $self->{result_values}->{value}->{per_second}, %{$network}) :
             ($self->{result_values}->{value}->{per_second}, $unit);
         $unit .=  '/s';
     }
