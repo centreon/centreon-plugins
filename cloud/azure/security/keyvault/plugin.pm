@@ -30,12 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{ $self->{modes} } = (
+    $self->{modes} = {
         'discovery'          => 'cloud::azure::security::keyvault::mode::discovery',
         'service-api'        => 'cloud::azure::security::keyvault::mode::serviceapi',
         'vault-availability' => 'cloud::azure::security::keyvault::mode::vaultavailability',
         'vault-capacity'     => 'cloud::azure::security::keyvault::mode::vaultcapacity'
-    );
+    };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
     $self->{custom_modes}->{api} = 'cloud::azure::custom::api';
