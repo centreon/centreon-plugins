@@ -1,4 +1,0 @@
-
-'serviceapi' => 'cloud::azure::security::keyvault::mode::serviceapi',
-'vaultavailability' => 'cloud::azure::security::keyvault::mode::vaultavailability',
-'vaultcapacity' => 'cloud::azure::security::keyvault::mode::vaultcapacity',
