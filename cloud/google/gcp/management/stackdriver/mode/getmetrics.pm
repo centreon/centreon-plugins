@@ -101,6 +101,7 @@ sub new {
         'metric:s'             => { name => 'metric' },
         'api:s'                => { name => 'api' },
         'extra-filter:s@'      => { name => 'extra_filter' },
+        'timeframe:s'          => { name => 'timeframe' },
         'aggregation:s@'       => { name => 'aggregation' }
     });
 
@@ -233,6 +234,14 @@ Set dimension value (Required).
 =item B<--instance-key>
 
 Set instance key (By default, --dimension-name option is used).
+
+=item B<--timeframe>
+
+Set timeframe in seconds (i.e. 3600 to check last hour).
+
+=item B<--aggregation>
+
+Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total').
 
 =item B<--warning-metric>
 
