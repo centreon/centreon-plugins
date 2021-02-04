@@ -56,6 +56,8 @@ sub run {
         next if ($instance->{databaseVersion} !~ /mysql/i);
         my $item = {};
         $item->{name} = $instance->{name};
+        $item->{database_id} = $instance->{project} . ':' . $instance->{name};
+        $item->{project} = $instance->{project};
         $item->{version} = $instance->{databaseVersion};
         $item->{state} = $instance->{state};
         $item->{region} = $instance->{region};
