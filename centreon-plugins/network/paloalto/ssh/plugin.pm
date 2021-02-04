@@ -39,7 +39,7 @@ sub new {
         'system'      => 'network::paloalto::ssh::mode::system'
     };
 
-    $self->{custom_modes}{ssh} = 'network::paloalto::ssh::custom::cli';
+    $self->{custom_modes}->{ssh} = 'network::paloalto::ssh::custom::cli';
     return $self;
 }
 
