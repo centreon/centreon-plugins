@@ -124,7 +124,7 @@ __END__
 
 =head1 MODE
 
-Check storage network metrics.
+Check storage bucket metrics.
 
 Example:
 
