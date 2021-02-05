@@ -176,8 +176,8 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping volume '" . $name . "': no matching filter.", debug => 1);
+            $_->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping volume '" . $_->{name} . "': no matching filter.", debug => 1);
             next;
         }
 
@@ -223,7 +223,7 @@ Example: --filter-counters='^usage$'
 
 =item B<--filter-name>
 
-Filter volume name (can be a regexp).
+Filter volumes by volume name (can be a regexp).
 
 =item B<--filter-vserver-name>
 
