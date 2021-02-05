@@ -211,6 +211,11 @@ sub lookup {
         }
     }
 
+    if (scalar(keys @{$self->{values}}) == 0) {
+          $self->{output}->output_add(severity => 'CRITICAL' ,short_msg => "Lookup cannot find anything");
+          $self->{output}->option_exit(exit_litteral => 'critical');
+      }
+
     if ($self->{option_results}->{threshold_value} eq 'count') {
         my $exit = lc($self->{perfdata}->threshold_check(
             value => $self->{count},
