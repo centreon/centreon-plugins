@@ -107,7 +107,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Network Firewall health metrics.
+Check Azure Network Firewall hits metrics.
 
 Example:
 
