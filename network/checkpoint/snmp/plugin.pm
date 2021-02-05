@@ -44,7 +44,8 @@ sub new {
         'uptime'          => 'snmp_standard::mode::uptime',
         'vpn-status'      => 'network::checkpoint::snmp::mode::vpnstatus',
         'vrrp-status'     => 'snmp_standard::mode::vrrp',
-        'vsx'             => 'network::checkpoint::snmp::mode::vsx'
+        'vsx'             => 'network::checkpoint::snmp::mode::vsx',
+        'gateway'         => 'network::checkpoint::snmp::mode::gateway'
     };
 
     return $self;
