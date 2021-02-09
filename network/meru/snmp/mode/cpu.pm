@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::fiberstore::snmp::mode::cpu;
+package network::meru::snmp::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -52,24 +52,17 @@ sub new {
     return $self;
 }
 
-my $mapping = {
-    idle_legacy => { oid => '.1.3.6.1.4.1.27975.1.2.11' }, # ssCpuIdle
-    idle        => { oid => '.1.3.6.1.4.1.52642.1.1.2.11' }  # ssCpuIdle
-};
-
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $oid_cpu_idle = '.1.3.6.1.4.1.15983.1.1.3.1.14.3.0'; # mwSystemResourceCpuUsagePercentageIdle
     my $snmp_result = $options{snmp}->get_leef(
-        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
+        oids => [$oid_cpu_idle],
         nothing_quit => 1
     );
-    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
-    my $idle = 'idle';
-    $idle = 'idle_legacy' if (!defined($result->{idle}));
 
     $self->{global} = {
-        cpu_util => 100 - $result->{$idle}
+        cpu_util => 100 - $snmp_result->{$oid_cpu_idle}
     };
 }
 
