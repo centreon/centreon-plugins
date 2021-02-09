@@ -62,7 +62,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'pl', nlabel => 'packet.loss.percentage', set => {
+        { label => 'pl', nlabel => 'packets.loss.percentage', set => {
                 key_values => [ { name => 'pl' } ],
                 output_template => 'lost %s%%',
                 perfdatas => [
