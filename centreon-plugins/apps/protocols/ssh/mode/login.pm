@@ -30,16 +30,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("%s", $self->{result_values}->{message});
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{message} = $options{new_datas}->{$self->{instance} . '_message'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    return 0;
+    return sprintf('%s', $self->{result_values}->{message});
 }
 
 sub set_counters {
@@ -51,11 +42,10 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { 
             label => 'status', 
-            type => 2
+            type => 2,
             critical_default => '%{message} !~ /authentification succeeded/i',
             set => {
                 key_values => [ { name => 'status' }, { name => 'message' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -76,7 +66,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
     });
 

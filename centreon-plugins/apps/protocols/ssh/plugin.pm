@@ -34,7 +34,7 @@ sub new {
         'login' => 'apps::protocols::ssh::mode::login'
     };
 
-    $self->{custom_modes}{api} = 'centreon::common::protocols::ssh::custom::api';
+    $self->{custom_modes}->{api} = 'centreon::common::protocols::ssh::custom::api';
     return $self;
 }
 
