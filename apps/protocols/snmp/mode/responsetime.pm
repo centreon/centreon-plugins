@@ -26,6 +26,12 @@ use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return "SNMP Agent ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -34,43 +40,37 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'rta', set => {
+        { label => 'rta', nlabel => 'response.time.average', set => {
                 key_values => [ { name => 'rta' } ],
                 output_template => 'rta %.3fms',
                 perfdatas => [
-                    { label => 'rta', value => 'rta', template => '%.3f', min => 0, unit => 'ms' },
-                ],
+                    { label => 'rta', template => '%.3f', min => 0, unit => 'ms' }
+                ]
             }
         },
-        { label => 'rtmax', display_ok => 0, set => {
+        { label => 'rtmax', nlabel => 'response.time.max', display_ok => 0, set => {
                 key_values => [ { name => 'rtmax' } ],
                 perfdatas => [
-                    { label => 'rtmax', value => 'rtmax', template => '%.3f', min => 0, unit => 'ms' },
-                ],
+                    { label => 'rtmax', template => '%.3f', min => 0, unit => 'ms' }
+                ]
             }
         },
-        { label => 'rtmin', display_ok => 0, set => {
+        { label => 'rtmin', nlabel => 'response.time.max', display_ok => 0, set => {
                 key_values => [ { name => 'rtmin' } ],
                 perfdatas => [
-                    { label => 'rtmin', value => 'rtmin', template => '%.3f', min => 0, unit => 'ms' },
-                ],
+                    { label => 'rtmin', template => '%.3f', min => 0, unit => 'ms' }
+                ]
             }
         },
-        { label => 'pl', set => {
+        { label => 'pl', nlabel => 'packet.loss.percentage', set => {
                 key_values => [ { name => 'pl' } ],
                 output_template => 'lost %s%%',
                 perfdatas => [
-                    { label => 'pl', value => 'pl', template => '%s', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'pl', template => '%s', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-
-    return "SNMP Agent ";
 }
 
 sub new {
@@ -80,7 +80,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         "timeout:s" => { name => 'timeout' },
-        "packets:s" => { name => 'packets' },
+        "packets:s" => { name => 'packets' }
     });
                                 
     return $self;
