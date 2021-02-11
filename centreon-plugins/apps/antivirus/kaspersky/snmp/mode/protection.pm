@@ -92,7 +92,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'too-many-threats', nlabel => 'protection.hosts.2manythreats.count', set => {
+        { label => 'too-many-threats', nlabel => 'protection.hosts.toomanythreats.count', set => {
                 key_values => [ { name => 'hostsTooManyThreats' } ],
                 output_template => '%d host(s) with too many threats',
                 perfdatas => [
