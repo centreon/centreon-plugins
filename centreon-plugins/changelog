@@ -1,3 +1,15 @@
+2021-02-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Google Cloud CloudSQL MySQL
+ * Plugin added: Google Cloud Storage
+ * Plugin added: Azure Load Balancer
+ * Plugin added: Azure Firewall
+ * Plugin added: Azure Public IPs
+ * Plugin added: Azure Key Vaults
+ * Plugin added: Notification Jasmin SMS
+ * Plugin added: Athonet ePC SNMP
+ * Plugin added: Meru SNMP
+ * Mode added: [cisco/standard/snmp] 'aaa-servers'
+
 2021-01-13 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Hitachi HCP SNMP
  * Plugin added: Aruba AOS-CX Rest API
