@@ -28,8 +28,11 @@ use warnings;
 sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
+    my $label = $self->{result_values}->{label};
+    $label =~ s/\//./g;
     $self->{output}->perfdata_add(
-        label => $self->{result_values}->{perf_label},
+        nlabel => $label,
+        instances =>  $self->{result_values}->{aggregation},
         value => $self->{result_values}->{value},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-metric'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric')
@@ -55,31 +58,19 @@ sub custom_metric_output {
     return "Metric '" . $self->{result_values}->{label}  . "' of resource '" . $self->{result_values}->{display}  . "' value is " . $self->{result_values}->{value};
 }
 
-sub custom_metric_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_value'};
-    $self->{result_values}->{label} = $options{new_datas}->{$self->{instance} . '_label'};
-    $self->{result_values}->{aggregation} = $options{new_datas}->{$self->{instance} . '_aggregation'};
-    $self->{result_values}->{perf_label} = $options{new_datas}->{$self->{instance} . '_perf_label'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metrics', type => 1 }
+        { name => 'metrics', type => 1, message_multiple => 'All metrics are ok' }
     ];
     
     $self->{maps_counters}->{metrics} = [
         { label => 'metric', set => {
                 key_values => [
-                    { name => 'label' }, { name => 'value' }, { name => 'aggregation' },
-                    { name => 'perf_label' }, { name => 'display' }
+                    { name => 'label' }, { name => 'value' },
+                    { name => 'aggregation' }, { name => 'display' }
                 ],
-                closure_custom_calc => $self->can('custom_metric_calc'),
                 closure_custom_output => $self->can('custom_metric_output'),
                 closure_custom_perfdata => $self->can('custom_metric_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_metric_threshold')
@@ -90,7 +81,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -186,8 +177,7 @@ sub manage_selection {
                     display => $instance_name,
                     label => $label,
                     aggregation => $aggregation,
-                    value => $results->{$instance_name}->{$label}->{$aggregation},
-                    perf_label => $label . '_' . $aggregation
+                    value => $results->{$instance_name}->{$label}->{$aggregation}
                 };
             }
         }
