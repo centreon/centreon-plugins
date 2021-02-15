@@ -168,7 +168,7 @@ sub get_session {
     if ($has_cache_file == 0 || !defined($cookie_id)) {
         my ($content) = $self->{http}->request(
             method => 'POST',
-            url_path => $self->{url_path} . '/authenticate',
+            url_path => '/LicenseReportingApplication/authenticate',
             post_param => [
                 'j_username=' . $self->{api_username},
                 'j_password=' . $self->{api_password}
