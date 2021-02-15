@@ -200,22 +200,6 @@ sub get_session {
 sub request {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /\/hosts$/) {
-        $file = '/home/qgarnier/clients/plugins/ppma/hosts.json';
-    } elsif ($options{endpoint} =~ /\/hosts\//) {
-        $file = '/home/qgarnier/clients/plugins/ppma/hosts_250.json';
-    }
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     my $endpoint = $self->{url_path} . $options{endpoint};
 
     $self->settings();
@@ -252,7 +236,6 @@ sub request {
             critical_status => $self->{critical_http_status}
         );
     }
-=cut
 
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
