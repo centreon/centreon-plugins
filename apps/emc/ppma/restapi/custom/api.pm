@@ -173,6 +173,7 @@ sub get_session {
                 'j_username=' . $self->{api_username},
                 'j_password=' . $self->{api_password}
             ],
+            cookies_file => '',
             warning_status => '', unknown_status => '', critical_status => ''
         );
 
@@ -181,7 +182,7 @@ sub get_session {
             $self->{output}->option_exit();
         }
 
-        my (@cookies) = $self->{http}->get_header(name => 'Set-Cookie');
+        my (@cookies) = $self->{http}->get_first_header(name => 'Set-Cookie');
         foreach my $cookie (@cookies) {
             $cookie_id = $1 if ($cookie =~ /JSESSIONID=(.+?);/);
         }

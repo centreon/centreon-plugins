@@ -214,7 +214,8 @@ Can used special variables like: %{status}, %{name}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'isl-packets-in', 'isl-packets-out', 'keepalive-packets-in', 'keepalive-packets-out'.
+Can be: 'paths-total', 'paths-dead',
+'volumes-total', 'volumes-dead', 'volumes-degraded'.
 
 =back
 
