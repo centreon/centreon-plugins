@@ -33,10 +33,9 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'hosts'        => 'apps::emc::ppma::restapi::mode::hosts',
-        'list-hosts'   => 'apps::emc::ppma::restapi::mode::listhosts',
-        'list-volumes' => 'apps::emc::ppma::restapi::mode::listvolumes',
-        'volumes'      => 'apps::emc::ppma::restapi::mode::volumes'
+        'discovery'  => 'apps::emc::ppma::restapi::mode::discovery',
+        'hosts'      => 'apps::emc::ppma::restapi::mode::hosts',
+        'list-hosts' => 'apps::emc::ppma::restapi::mode::listhosts'
     };
 
     $self->{custom_modes}->{api} = 'apps::emc::ppma::restapi::custom::api';
