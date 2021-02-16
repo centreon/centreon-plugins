@@ -18,61 +18,74 @@
 # limitations under the License.
 #
 
-package network::denyall::snmp::mode::reverseproxy;
+package network::ubiquiti::airfiber::snmp::mode::radios;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'status: %s',
-        $self->{result_values}->{status}
+        'state: %s [enabled: %s]',
+        $self->{result_values}->{state},
+        $self->{result_values}->{enabled}
     );
 }
 
-sub rp_long_output {
+sub radio_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking reverse proxy '%s'",
-        $options{instance_value}->{uid}
+        "checking radio interface '%s'",
+        $options{instance_value}->{name}
     );
 }
 
-sub prefix_tenant_output {
+sub prefix_radio_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "reverse proxy '%s' ",
-        $options{instance_value}->{uid}
+        "radio interface '%s' ",
+        $options{instance_value}->{name}
     );
+}
+
+sub prefix_signal_output {
+    my ($self, %options) = @_;
+
+    return 'signal ';
+}
+
+sub prefix_traffic_output {
+    my ($self, %options) = @_;
+
+    return 'traffic ';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'rps', type => 3, cb_prefix_output => 'prefix_rp_output', cb_long_output => 'rp_long_output',
-          indent_long_output => '    ', message_multiple => 'All reverse proxies are ok',
+        { name => 'radios', type => 3, cb_prefix_output => 'prefix_radio_output', cb_long_output => 'radio_long_output',
+          indent_long_output => '    ', message_multiple => 'All radio interfaces are ok',
             group => [
                 { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'cpu', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'memory', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'traffic', type => 0, skipped_code => { -10 => 1 } }
+                { name => 'signal', type => 0, cb_prefix_output => 'prefix_signal_output', skipped_code => { -10 => 1 } },
+                { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
     $self->{maps_counters}->{status} = [
         {
-            label => 'status', type => 2, critical_default => '%{status} =~ /down/i',
+            label => 'status', type => 2, critical_default => '%{enabled} eq "yes" and %{state} eq "down"',
             set => {
-                key_values => [ { name => 'status' }, { name => 'uid' } ],
+                key_values => [ { name => 'enabled' }, { name => 'state' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -80,35 +93,41 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{cpu} = [
-         { label => 'cpu-utilization', nlabel => 'reverse_proxy.cpu.utilization.percentage', set => {
-                key_values => [ { name => 'cpu_usage' } ],
-                output_template => 'cpu usage: %.2f %%',
+    $self->{maps_counters}->{signal} = [
+        { label => 'chain0-signal-receive-power', nlabel => 'radio.interface.chain0.signal.receive.power.dbm', set => {
+                key_values => [ { name => 'chain0_in_power' } ],
+                output_template => 'chain0 receive power: %s dBm',
                 perfdatas => [
-                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                    { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1 }
                 ]
             }
-        }
-    ];
-
-    $self->{maps_counters}->{memory} = [
-         { label => 'memory-usage', nlabel => 'reverse_proxy.memory.usage.bytes', set => {
-                key_values => [ { name => 'memory_used' } ],
-                output_template => 'memory used: %s %s',
-                output_change_bytes => 1,
+        },
+        { label => 'chain1-signal-receive-power', nlabel => 'radio.interface.chain1.signal.receive.power.dbm', set => {
+                key_values => [ { name => 'chain1_in_power' } ],
+                output_template => 'chain1 receive power: %s dBm',
                 perfdatas => [
-                    { template => '%d', min => 0, unit => 'B', label_extra_instance => 1 }
+                    { template => '%s', min => 0, unit => 'dBm', label_extra_instance => 1 }
                 ]
             }
         }
     ];
 
     $self->{maps_counters}->{traffic} = [
-         { label => 'requests', nlabel => 'reverse_proxy.requests.persecond', set => {
-                key_values => [ { name => 'requests_psec' } ],
-                output_template => 'requests: %.2f/s',
+        { label => 'traffic-in', nlabel => 'radio.interface.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
+                output_template => 'in: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { template => '%.2f', min => 0, label_extra_instance => 1 }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'traffic-out', nlabel => 'radio.interface.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
+                output_template => 'out: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
                 ]
             }
         }
@@ -117,66 +136,72 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-uid:s' => { name => 'filter_uid' }
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
 }
 
-my $map_status = { 0 => 'down', 1 => 'ok' };
+my $map_state = { 0 => 'down', 1 => 'up' };
+my $map_enabled = { 1 => 'yes', 2 => 'no' };
 
 my $mapping = {
-    status        => { oid => '.1.3.6.1.4.1.18433.10.1.1.1.8.2.1.3', map => $map_status }, # rpStatus
-    cpu_usage     => { oid => '.1.3.6.1.4.1.18433.10.1.1.1.8.2.1.4' }, # rpCpuUsage
-    memory_used   => { oid => '.1.3.6.1.4.1.18433.10.1.1.1.8.2.1.5' }, # rpMemoryUsage (MB)
-    requests_psec => { oid => '.1.3.6.1.4.1.18433.10.1.1.1.8.2.1.11' } # rpRqstsPrSecond
+    enabled         => { oid => '.1.3.6.1.4.1.41112.1.3.1.1.2', map => $map_enabled }, # radioEnable
+    state           => { oid => '.1.3.6.1.4.1.41112.1.3.2.1.26', map => $map_state },  # radioLinkState
+    chain0_in_power => { oid => '.1.3.6.1.4.1.41112.1.3.2.1.11' }, # rxPower0
+    chain1_in_power => { oid => '.1.3.6.1.4.1.41112.1.3.2.1.14' }, # rxPower1
+    total_out       => { oid => '.1.3.6.1.4.1.41112.1.3.3.1.6' },  # txOctetsOK
+    total_in        => { oid => '.1.3.6.1.4.1.41112.1.3.3.1.19' }  # rxTotalOctets
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_uid = '.1.3.6.1.4.1.18433.10.1.1.1.8.2.1.2'; # rpUid
+     $self->{cache_name} = 'ubiquiti_airfiber_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
+
+    my $oid_name = '.1.3.6.1.4.1.41112.1.3.1.1.14'; # linkName
     my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_uid,
+        oid => $oid_name,
         nothing_quit => 1
     );
 
-    $self->{rps} = {};
+    $self->{radios} = {};
     foreach (keys %$snmp_result) {
         /\.(\d+)$/;
         my $instance = $1;
 
-        if (defined($self->{option_results}->{filter_uid}) && $self->{option_results}->{filter_uid} ne '' &&
-            $snmp_result->{$_} !~ /$self->{option_results}->{filter_uid}/) {
-            $self->{output}->output_add(long_msg => "skipping reverse proxy '" . $snmp_result->{$_} . "'.", debug => 1);
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $snmp_result->{$_} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping radio interface '" . $snmp_result->{$_} . "'.", debug => 1);
             next;
         }
 
-        $self->{rps}->{ $snmp_result->{$_} } = {
-            uid => $snmp_result->{$_},
+        $self->{radios}->{ $snmp_result->{$_} } = {
+            name => $snmp_result->{$_},
             instance => $instance
         };
     }
 
-    return if (scalar(keys %{$self->{rps}}) <= 0);
+    return if (scalar(keys %{$self->{radios}}) <= 0);
 
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping)) ],
-        instances => [ map($_->{instance}, values(%{$self->{rps}})) ],
+        instances => [ map($_->{instance}, values(%{$self->{radios}})) ],
         instance_regexp => '^(.*)$'
     );
     $snmp_result = $options{snmp}->get_leef();
-    foreach (keys %{$self->{rps}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $self->{rps}->{$_}->{instance});
+    foreach (keys %{$self->{radios}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $self->{radios}->{$_}->{instance});
 
-        $self->{rps}->{$_}->{memory} = { memory_used => $result->{memory_used} * 1024 * 1024 };
-        $self->{rps}->{$_}->{cpu} = { cpu_usage => $result->{cpu_usage} };
-        $self->{rps}->{$_}->{status} = { status => $result->{status}, uid => $_ };
-        $self->{rps}->{$_}->{traffic} = { requests_psec => $result->{requests_psec} };
+        $self->{radios}->{$_}->{status} = { state => $result->{state}, enabled => $result->{enabled}, name => $_ };
+        $self->{radios}->{$_}->{traffic} = { traffic_in => $result->{total_in} * 8, traffic_out => $result->{total_out} * 8 };
+        $self->{radios}->{$_}->{signal} = { chain0_in_power => $result->{chain0_in_power}, chain1_in_power => $result->{chain1_in_power} };
     }
 }
 
@@ -186,33 +211,33 @@ __END__
 
 =head1 MODE
 
-Check reverse proxies.
+Check radio interfaces.
 
 =over 8
 
-=item B<--filter-uid>
+=item B<--filter-name>
 
-Filter reverse proxy by UID (can be a regexp).
+Filter interface by name (can be a regexp).
 
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{uid}
+Can used special variables like: %{enabled}, %{state}, %{name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{uid}
+Can used special variables like: %{enabled}, %{state}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /down/i').
-Can used special variables like: %{status}, %{uid}
+Set critical threshold for status (Default: '%{enabled} eq "yes" and %{state} eq "down"').
+Can used special variables like: %{enabled}, %{state}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'space-usage-prct', 'space-usage', 'space-usage-free'.
+Can be: 'traffic-in', 'traffic-out', 'chain0-signal-receive-power', 'chain1-signal-receive-power'.
 
 =back
 

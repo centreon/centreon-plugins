@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::denyall::snmp::mode::listreverseproxy;
+package network::ubiquiti::airfiber::snmp::mode::listradios;
 
 use base qw(centreon::plugins::mode);
 
@@ -30,8 +30,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -41,50 +40,54 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-my $map_status = { 0 => 'down', 1 => 'ok' };
+my $map_state = { 0 => 'down', 1 => 'up' };
+my $map_enabled = { 1 => 'yes', 2 => 'no' };
 
 my $mapping = {
-    uid    => { oid => '.1.3.6.1.4.1.18433.10.1.1.1.8.2.1.2' }, # rpUid
-    status => { oid => '.1.3.6.1.4.1.18433.10.1.1.1.8.2.1.3', map => $map_status } # rpStatus
+    enabled => { oid => '.1.3.6.1.4.1.41112.1.3.1.1.2', map => $map_enabled }, # radioEnable
+    state   => { oid => '.1.3.6.1.4.1.41112.1.3.2.1.26', map => $map_state }   # radioLinkState
 };
-my $oid_rp_entry = '.1.3.6.1.4.1.18433.10.1.1.1.8.2.1'; # rpEntry
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_rp_entry,
-        start => $mapping->{uid}->{oid},
-        end => $mapping->{status}->{oid}
-    );
+    my $oid_name = '.1.3.6.1.4.1.41112.1.3.1.1.14'; # linkName
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_name);
+    my $results = {};
+    foreach (keys %$snmp_result) {
+        /\.(\d+)$/;
 
-    my $rps = {};
-    foreach my $oid (keys %$snmp_result) {
-        next if ($oid !~ /^$mapping->{uid}->{oid}\.(.*)$/);
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
-        $rps->{$1} = $result;
+        $results->{$1} = { name => $snmp_result->{$_} };
     }
 
-    return $rps;
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping)) ],
+        instances => [ map($_, keys(%$results)) ],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef();
+    foreach (keys %$results) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+
+        $results->{$_} = { %$result, %{$results->{$_}} };
+    }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
-  
-    my $rps = $self->manage_selection(%options);
-    foreach (sort keys %$rps) {
-        $self->{output}->output_add(
-            long_msg => sprintf(
-                '[uid: %s] [status: %s]',
-                $rps->{$_}->{uid},
-                $rps->{$_}->{status}
-            )
+
+    my $results = $self->manage_selection(snmp => $options{snmp});
+    foreach my $instance (sort keys %$results) {
+        $self->{output}->output_add(long_msg => 
+            join('', map("[$_ = " . $results->{$instance}->{$_} . ']', ('name', keys(%$mapping))))
         );
     }
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List reverse proxies:'
+        short_msg => 'List radio interfaces:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -93,31 +96,29 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => [keys %$mapping]);
+    $self->{output}->add_disco_format(elements => ['name', keys %$mapping]);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $rps = $self->manage_selection(%options);
-    foreach (sort keys %$rps) { 
+    my $results = $self->manage_selection(snmp => $options{snmp});
+    foreach (sort keys %$results) {        
         $self->{output}->add_disco_entry(
-            %{$rps->{$_}}
+            %{$results->{$_}}
         );
     }
 }
-
 1;
 
 __END__
 
 =head1 MODE
 
-List reverse proxies.
+List radio interfaces.
 
 =over 8
 
 =back
 
 =cut
-    

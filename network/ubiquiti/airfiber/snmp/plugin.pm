@@ -35,7 +35,7 @@ sub new {
         'load'        => 'centreon::common::frogfoot::snmp::mode::load',
         'list-radios' => 'network::ubiquiti::airfiber::snmp::mode::listradios',
         'memory'      => 'centreon::common::frogfoot::snmp::mode::memory',
-        'radios'      => 'network::ubiquiti::airfiber::snmp::radios'
+        'radios'      => 'network::ubiquiti::airfiber::snmp::mode::radios'
     };
 
     return $self;
