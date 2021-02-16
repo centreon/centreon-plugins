@@ -44,7 +44,7 @@ sub rp_long_output {
     );
 }
 
-sub prefix_tenant_output {
+sub prefix_rp_output {
     my ($self, %options) = @_;
 
     return sprintf(
@@ -212,7 +212,7 @@ Can used special variables like: %{status}, %{uid}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'space-usage-prct', 'space-usage', 'space-usage-free'.
+Can be: 'cpu-utilization', 'memory-usage', 'requests'.
 
 =back
 
