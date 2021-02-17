@@ -168,6 +168,11 @@ sub get_certificate_informations {
     );
 
     my ($type, $cert) = $self->{http}->get_certificate();
+    if (!defined($cert)) {
+        $self->{output}->add_option_msg(short_msg => $self->{http}->get_message());
+        $self->{output}->option_exit();
+    }
+
     my $cert_infos;
     if ($type eq 'pem') {
         $cert_infos = $self->pem_type(cert => $cert);

@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use Socket;
+use IO::Socket::INET;
 use IO::Socket::SSL;
 use Net::SSLeay 1.42;
 use DateTime;
@@ -50,7 +51,8 @@ sub new {
             'servername:s'      => { name => 'servername' },
             'ssl-opt:s@'        => { name => 'ssl_opt' },
             'ssl-ignore-errors' => { name => 'ssl_ignore_errors' },
-            'timeout:s'         => { name => 'timeout', default => 3 }
+            'timeout:s'         => { name => 'timeout', default => 3 },
+            'starttls:s'        => { name => 'starttls' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM TCP OPTIONS', once => 1);
@@ -95,17 +97,8 @@ sub check_options {
     return 0;
 }
 
-sub get_certificate_informations {
+sub connect_ssl {
     my ($self, %options) = @_;
-
-    if (defined($self->{ssl_context}) && $self->{ssl_context} ne '') {
-        my $context = new IO::Socket::SSL::SSL_Context(eval $self->{ssl_context});
-        eval { IO::Socket::SSL::set_default_context($context) };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => sprintf("Error setting SSL context: %s", $@));
-            $self->{output}->option_exit();
-        }
-    }
 
     my $socket;
     eval { 
@@ -113,7 +106,7 @@ sub get_certificate_informations {
             PeerHost => $self->{option_results}->{hostname},
             PeerPort => $self->{option_results}->{port},
             $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ) : (),
-            $self->{option_results}->{timeout} ? ( Timeout => $self->{option_results}->{timeout} ) : (),
+            $self->{option_results}->{timeout} ? ( Timeout => $self->{option_results}->{timeout} ) : ()
         );
     };
     if ($@) {
@@ -127,6 +120,74 @@ sub get_certificate_informations {
     if (!defined($self->{option_results}->{ssl_ignore_errors}) && defined($SSL_ERROR)) {
         $self->{output}->add_option_msg(short_msg => "SSL error: $SSL_ERROR");
         $self->{output}->option_exit();
+    }
+
+    return $socket;
+}
+
+sub smtp_plain_com {
+    my ($self, %options) = @_;
+
+    my $buffer;
+    $options{socket}->recv($buffer, 1024);
+
+    $options{socket}->send("HELO\r\n");
+    $options{socket}->recv($buffer, 1024);
+
+    $options{socket}->send("STARTTLS\r\n");
+    $options{socket}->recv($buffer, 1024);
+    if ($buffer !~ /^220\s/) {
+        $self->{output}->add_option_msg(short_msg => "Cannot starttls: $buffer");
+        $self->{output}->option_exit();
+    }
+}
+
+sub connect_starttls {
+    my ($self, %options) = @_;
+
+    my $socket = IO::Socket::INET->new(
+        PeerHost => $self->{option_results}->{hostname},
+        PeerPort => $self->{option_results}->{port},
+        $self->{option_results}->{timeout} ? ( Timeout => $self->{option_results}->{timeout} ) : ()
+    );
+    if (!defined($socket)) {
+        $self->{output}->add_option_msg(short_msg => "Error creating socket: $!");
+        $self->{output}->option_exit();
+    }
+
+    if ($self->{option_results}->{starttls} eq 'smtp') {
+        $self->smtp_plain_com(socket => $socket);
+    }
+    
+    my $rv = IO::Socket::SSL->start_SSL(
+        $socket,
+        $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ) : ()
+    );
+    if (!defined($self->{option_results}->{ssl_ignore_errors}) && !$rv) {
+        $self->{output}->add_option_msg(short_msg => "SSL error: $SSL_ERROR");
+        $self->{output}->option_exit();
+    }
+
+    return $socket;
+}
+
+sub get_certificate_informations {
+    my ($self, %options) = @_;
+
+    if (defined($self->{ssl_context}) && $self->{ssl_context} ne '') {
+        my $context = new IO::Socket::SSL::SSL_Context(eval $self->{ssl_context});
+        eval { IO::Socket::SSL::set_default_context($context) };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => sprintf("Error setting SSL context: %s", $@));
+            $self->{output}->option_exit();
+        }
+    }
+
+    my $socket;
+    if (defined($self->{option_results}->{starttls})) {
+        $socket = $self->connect_starttls();
+    } else {
+        $socket = $self->connect_ssl();
     }
 
     my $cert_infos = {};
@@ -197,6 +258,10 @@ Ignore SSL handshake errors. For example: 'SSL error: SSL wants a read first'.
 =item B<--timeout>
 
 Set timeout in seconds for SSL connection (Default: '3') (only with IO::Socket::SSL >= 1.984).
+
+=item B<--starttls>
+
+Init plaintext connection and start_SSL after. Can be: 'smtp'.
 
 =back
 
