@@ -142,6 +142,20 @@ sub smtp_plain_com {
     }
 }
 
+sub ftp_plain_com {
+    my ($self, %options) = @_;
+
+    my $buffer;
+    $options{socket}->recv($buffer, 1024);
+
+    $options{socket}->send("AUTH TLS\r\n");
+    $options{socket}->recv($buffer, 1024);
+    if ($buffer !~ /^234\s/) {
+        $self->{output}->add_option_msg(short_msg => "Cannot starttls: $buffer");
+        $self->{output}->option_exit();
+    }
+}
+
 sub connect_starttls {
     my ($self, %options) = @_;
 
@@ -157,6 +171,8 @@ sub connect_starttls {
 
     if ($self->{option_results}->{starttls} eq 'smtp') {
         $self->smtp_plain_com(socket => $socket);
+    } elsif ($self->{option_results}->{starttls} eq 'ftp') {
+        $self->ftp_plain_com(socket => $socket);
     }
     
     my $rv = IO::Socket::SSL->start_SSL(
@@ -261,7 +277,7 @@ Set timeout in seconds for SSL connection (Default: '3') (only with IO::Socket::
 
 =item B<--starttls>
 
-Init plaintext connection and start_SSL after. Can be: 'smtp'.
+Init plaintext connection and start_SSL after. Can be: 'smtp', 'ftp'.
 
 =back
 
