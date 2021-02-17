@@ -124,10 +124,21 @@ sub set_proxy {
 sub request {
     my ($self, %options) = @_;
 
+    my %user_agent_params = (keep_alive => 1);
+    if (defined($options{request}->{certinfo}) && $options{request}->{certinfo} == 1) {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'LWP::ConnCache',
+            error_msg => "Cannot load module 'LWP::ConnCache'."
+        );
+        $self->{cache} = LWP::ConnCache->new();
+        $self->{cache}->total_capacity(1);
+        %user_agent_params = (conn_cache => $self->{cache});
+    }
+
     my $request_options = $options{request};
     if (!defined($self->{ua})) {
         $self->{ua} = centreon::plugins::backend::http::useragent->new(
-            keep_alive => 1,
+            %user_agent_params,
             protocols_allowed => ['http', 'https'], 
             timeout => $request_options->{timeout},
             credentials => $request_options->{credentials},
@@ -325,6 +336,13 @@ sub get_message {
     my ($self, %options) = @_;
 
     return $self->{response}->message();
+}
+
+sub get_certificate {
+    my ($self, %options) = @_;
+
+    my ($con) = $self->{cache}->get_connections('https');
+    return ('socket', $con);
 }
 
 1;
