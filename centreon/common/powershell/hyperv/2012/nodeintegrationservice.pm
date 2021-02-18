@@ -53,7 +53,10 @@ Try {
         $item.name = $vm.VMName
         $item.state = $vm.State.value__
         $item.integration_services_state = $vm.IntegrationServicesState
-        $item.integration_services_version = $vm.IntegrationServicesVersion.toString()
+        $item.integration_services_version = $null
+        if ($null -ne $vm.IntegrationServicesVersion) {
+            $item.integration_services_version = $vm.IntegrationServicesVersion.toString()
+        }
         $item.note = $note
 
         $services = New-Object System.Collections.Generic.List[Hashtable];
