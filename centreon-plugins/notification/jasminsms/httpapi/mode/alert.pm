@@ -61,8 +61,8 @@ sub check_options {
         $self->{option_results}->{coding} = 8;
     }
     $self->{option_results}->{coding} = $1 if ($self->{option_results}->{coding} =~ /(\d+)/);
-    if ($self->{option_results}->{coding} < 0 || $self->{option_results}->{coding} > 14) {
-        $self->{output}->add_option_msg(short_msg => "Please set correct --coding option [0-14]");
+    if ($self->{option_results}->{coding} < -1 || $self->{option_results}->{coding} > 14) {
+        $self->{output}->add_option_msg(short_msg => "Please set correct --coding option [-1,14]");
         $self->{output}->option_exit(); 
     }
 
@@ -92,13 +92,26 @@ sub check_options {
     }
 }
 
+my $map_coding = {
+    3 => 'ISO-8859-1',
+    6 => 'ISO-8859-5',
+    7 => 'ISO-8859-8',
+    8 => 'UCS-2BE'
+};
+
 sub encoding_message {
     my ($self, %options) = @_;
 
-    if ($self->{option_results}->{coding} == 8) {
-        $self->{option_results}->{message} = Encode::decode('UTF-8', $self->{option_results}->{message});
-        $self->{option_results}->{message} = Encode::encode('UCS-2BE', $self->{option_results}->{message});
+    if ($self->{option_results}->{coding} != -1) {
+        $self->{option_results}->{message} = $self->{output}->decode($self->{option_results}->{message});
+        if (defined($map_coding->{ $self->{option_results}->{coding} })) {
+            $self->{option_results}->{message} = Encode::encode(
+                $map_coding->{ $self->{option_results}->{coding} },
+                $self->{option_results}->{message}
+            );
+        }
     }
+
     $self->{option_results}->{message} = unpack('H*', $self->{option_results}->{message});
 }
 
@@ -153,6 +166,7 @@ Specify the message to send.
 =item B<--coding>
 
 Sets the Data Coding Scheme bits (Default: 8 (UCS2)).
+Set value to -1 for disable encoding management.
 
 =item B<--dlr-url>
 
