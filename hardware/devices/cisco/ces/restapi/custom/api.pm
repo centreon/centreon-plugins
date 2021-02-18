@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use XML::Simple;
+use XML::LibXML::Simple;
 use Digest::MD5 qw(md5_hex);
 
 sub new {
@@ -198,6 +198,7 @@ sub request_api {
 
     my $result;
     eval {
+        $SIG{__WARN__} = sub {};
         $result = XMLin($content, ForceArray => $options{ForceArray}, KeyAttr => []);
     };
     if ($@) {
