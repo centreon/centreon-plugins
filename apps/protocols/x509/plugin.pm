@@ -22,7 +22,7 @@ package apps::protocols::x509::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -31,9 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'certificate' => 'apps::protocols::x509::mode::certificate',
-        'validity'    => 'apps::protocols::x509::mode::validity' #legacy mode
+        'certificate' => 'apps::protocols::x509::mode::certificate'
     };
+
+    $self->{custom_modes}->{tcp} = 'apps::protocols::x509::custom::tcp';
+    $self->{custom_modes}->{https} = 'apps::protocols::x509::custom::https';
 
     return $self;
 }

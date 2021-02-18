@@ -371,6 +371,10 @@ sub request {
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERDATA'), parameter => $self);
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERFUNCTION'), parameter => \&cb_get_header);
 
+    if (defined($options{request}->{certinfo}) && $options{request}->{certinfo} == 1) {
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CERTINFO'), parameter => 1);
+    }
+
     eval {
         $self->{curl_easy}->perform();
     };
@@ -468,6 +472,13 @@ sub get_message {
     my ($self, %options) = @_;
 
     return $http_code_explained->{$self->{response_code}};
+}
+
+sub get_certificate {
+    my ($self, %options) = @_;
+
+    my $certs = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_CERTINFO'));
+    return ('pem', $certs->[0]->{Cert});
 }
 
 1;

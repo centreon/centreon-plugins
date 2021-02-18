@@ -220,6 +220,12 @@ sub get_message {
     return $self->{'backend_' . $self->{http_backend}}->get_message();
 }
 
+sub get_certificate {
+    my ($self, %options) = @_;
+
+    return $self->{'backend_' . $self->{http_backend}}->get_certificate();
+}
+
 1;
 
 __END__
