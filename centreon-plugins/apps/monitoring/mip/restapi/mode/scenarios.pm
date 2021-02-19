@@ -90,7 +90,7 @@ sub custom_formatted_metric_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => 'scenario.formatted_metric.usage.count',
-        instances => $self->{result_values}->{display},
+        instances => $self->{instance},
         value => $self->{result_values}->{value}
     );
 }
