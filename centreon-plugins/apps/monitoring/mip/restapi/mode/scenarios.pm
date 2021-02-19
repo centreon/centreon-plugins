@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
@@ -33,14 +33,13 @@ my $mapping_units = {
     bytes    => { label => 'bytes', scale => 1, extra_unit => '' },
     ms       => { label => 'milliseconds' },
     bps      => { label => 'bitspersecond', scale => 1, extra_unit => '/s', network => 1 },
-    status   => { label => 'count' },
+    status   => { label => 'count' }
 };
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
+    return 'status: ' . $self->{result_values}->{status};
 }
 
 sub custom_metric_output {
@@ -66,6 +65,15 @@ sub custom_metric_output {
     return $msg;
 }
 
+sub custom_formatted_metric_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'value: %s',
+        $self->{result_values}->{value}
+    );
+}
+
 sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
@@ -73,43 +81,18 @@ sub custom_metric_perfdata {
         unit => $self->{result_values}->{unit},
         nlabel => 'scenario.metric.usage.' . $mapping_units->{ $self->{result_values}->{unit} }->{label},
         instances => $self->{instance},
-        value => $self->{result_values}->{value},
+        value => $self->{result_values}->{value}
     );
 }
 
-
-sub set_counters {
+sub custom_formatted_metric_perfdata {
     my ($self, %options) = @_;
 
-    $self->{maps_counters_type} = [
-        { name => 'scenario', type => 3, cb_prefix_output => 'prefix_scenario_output', cb_long_output => 'scenario_long_output', indent_long_output => '    ', message_multiple => 'All scenarios are ok',
-            group => [
-                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'metric', display_long => 1, cb_prefix_output => 'prefix_metric_output',  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
-            ]
-        }        
-    ];
-    
-    $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-    ];
-
-    $self->{maps_counters}->{metric} = [
-        { label => 'metric', set => {
-                key_values => [ { name => 'value' }, { name => 'unit' }, { name => 'display' },  ],
-                closure_custom_output => $self->can('custom_metric_output'),
-                closure_custom_perfdata => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check => sub { return 'ok'; }
-            }
-        },
-    ];
+    $self->{output}->perfdata_add(
+        nlabel => 'scenario.formatted_metric.usage.count',
+        instances => $self->{result_values}->{display},
+        value => $self->{result_values}->{value}
+    );
 }
 
 sub scenario_long_output {
@@ -130,21 +113,73 @@ sub prefix_metric_output {
     return "metric '" . $options{instance_value}->{display} . "' ";
 }
 
+sub prefix_formatted_metric_output {
+    my ($self, %options) = @_;
+
+    return "formatted metric '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'scenario', type => 3, cb_prefix_output => 'prefix_scenario_output', cb_long_output => 'scenario_long_output', indent_long_output => '    ', message_multiple => 'All scenarios are ok',
+            group => [
+                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'metric', display_long => 1, cb_prefix_output => 'prefix_metric_output',  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'formatted_metrics', display_long => 1, display_short => 0, cb_prefix_output => 'prefix_formatted_metric_output',  message_multiple => 'All formatted metrics are ok', type => 1, skipped_code => { -10 => 1 } }
+            ]
+        }        
+    ];
+
+    $self->{maps_counters}->{global} = [
+        {
+            label => 'status', type => 2,
+            unknown_default => '%{status} =~ /unknown/i',
+            warning_default => '%{status} =~ /warning/i',
+            critical_default => '%{status} =~ /critical/i',
+            set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{metric} = [
+        { label => 'metric', set => {
+                key_values => [ { name => 'value' }, { name => 'unit' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_metric_output'),
+                closure_custom_perfdata => $self->can('custom_metric_perfdata'),
+                closure_custom_threshold_check => sub { return 'ok'; }
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{formatted_metrics} = [
+        { label => 'formatted-metric', set => {
+                key_values => [ { name => 'value' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_formatted_metric_output'),
+                closure_custom_perfdata => $self->can('custom_formatted_metric_perfdata'),
+                closure_custom_threshold_check => sub { return 'ok'; }
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
         'filter-id:s'           => { name => 'filter_id' },
         'filter-display-name:s' => { name => 'filter_display_name' },
         'filter-name:s'         => { name => 'filter_name' },
         'filter-app-name:s'     => { name => 'filter_app_name' },
         'memory'                => { name => 'memory' },
-        'display-instance:s'    => { name => 'display_instance', default => '%{name}' },
-        'unknown-status:s'      => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-        'warning-status:s'      => { name => 'warning_status', default => '%{status} =~ /warning/i' },
-        'critical-status:s'     => { name => 'critical_status', default => '%{status} =~ /critical/i' },
+        'display-instance:s'    => { name => 'display_instance', default => '%{name}' }
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -156,7 +191,6 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{option_results}->{display_instance} = '%{name}' if (!defined($self->{option_results}->{display_instance}) || $self->{option_results}->{display_instance} eq '');
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
     }
@@ -210,6 +244,7 @@ sub manage_selection {
                 display => $scenario_name,
             },
             metric => {},
+            formatted_metrics => {}
         };
 
         my @sorted = sort(keys %{$entry->{results}});
@@ -231,6 +266,14 @@ sub manage_selection {
                 display => $entry->{metricInfo}->{$_}->{label},
                 unit => $entry->{metricInfo}->{$_}->{unit},
                 value => $entry->{results}->{$last_time}->{metrics}->{$_}
+            };
+        }
+
+        foreach my $fmetric_label (keys %{$entry->{results}->{$last_time}->{formatedMetrics}}) {
+            next if ($fmetric_label =~ /^(?:API_VERSION|SCRIPT_VERSION)$/);
+            $self->{scenario}->{$scenario_name}->{formatted_metrics}->{ $fmetric_label } = {
+                display => $fmetric_label,
+                value => $entry->{results}->{$last_time}->{formatedMetrics}->{$fmetric_label}
             };
         }
     }
