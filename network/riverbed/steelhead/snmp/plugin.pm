@@ -31,8 +31,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'bandwidth-optimization'    => 'centreon::common::riverbed::steelhead::snmp::mode::bwoptimization',
         'bandwidth-passthrough'     => 'centreon::common::riverbed::steelhead::snmp::mode::bwpassthrough',
         'connections'               => 'centreon::common::riverbed::steelhead::snmp::mode::connections',
@@ -47,8 +46,8 @@ sub new {
         'status'                    => 'centreon::common::riverbed::steelhead::snmp::mode::status',
         'storage'                   => 'snmp_standard::mode::storage',
         'temperature'               => 'centreon::common::riverbed::steelhead::snmp::mode::temperature',
-        'uptime'                    => 'snmp_standard::mode::uptime',
-    );
+        'uptime'                    => 'snmp_standard::mode::uptime'
+    };
 
     return $self;
 }
