@@ -31,11 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'interfaces'  => 'snmp_standard::mode::interfaces',
-        'load'        => 'centreon::common::frogfoot::snmp::mode::load',
-        'list-radios' => 'network::ubiquiti::airfiber::snmp::mode::listradios',
-        'memory'      => 'centreon::common::frogfoot::snmp::mode::memory',
-        'radios'      => 'network::ubiquiti::airfiber::snmp::mode::radios'
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'load'            => 'centreon::common::frogfoot::snmp::mode::load',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-radios'     => 'network::ubiquiti::airfiber::snmp::mode::listradios',
+        'memory'          => 'centreon::common::frogfoot::snmp::mode::memory',
+        'radios'          => 'network::ubiquiti::airfiber::snmp::mode::radios'
     };
 
     return $self;
