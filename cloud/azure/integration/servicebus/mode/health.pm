@@ -39,7 +39,7 @@ __END__
 
 =head1 MODE
 
-Check Virtual Machine health status.
+Check Service Bus namespace status.
 
 (Usefull to determine host status)
 

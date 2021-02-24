@@ -34,7 +34,7 @@ sub get_metrics_mapping {
             'label'  => 'connection-count',
             'nlabel' => 'signalr.connections.count',
             'unit'   => '',
-            'min'    => '0'
+            'min'    => '0',
         },
         'messagecount' => {
             'output' => 'Message Count',
