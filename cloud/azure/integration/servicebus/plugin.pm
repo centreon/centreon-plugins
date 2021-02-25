@@ -33,7 +33,7 @@ sub new {
     $self->{modes} = {
         'connections' => 'cloud::azure::integration::servicebus::mode::connections',
         'discovery'   => 'cloud::azure::integration::servicebus::mode::discovery',
-        'health'   => 'cloud::azure::integration::servicebus::mode::health',
+        'health'      => 'cloud::azure::integration::servicebus::mode::health',
         'messages'    => 'cloud::azure::integration::servicebus::mode::messages',
         'requests'    => 'cloud::azure::integration::servicebus::mode::requests',
         'resources'   => 'cloud::azure::integration::servicebus::mode::resources'
@@ -60,6 +60,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Key Vaults.
+Check Microsoft Azure Service Bus namespaces.
 
 =cut
