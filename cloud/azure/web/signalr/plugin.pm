@@ -59,6 +59,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Key Vaults.
+Check Microsoft Azure SignalR resources.
 
 =cut
