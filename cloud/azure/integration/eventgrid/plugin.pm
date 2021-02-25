@@ -33,8 +33,7 @@ sub new {
     $self->{modes} = {
         'discovery'  => 'cloud::azure::integration::eventgrid::mode::discovery',
         'events'     => 'cloud::azure::integration::eventgrid::mode::events',
-        'eventstats' => 'cloud::azure::integration::eventgrid::mode::eventstats',
-        'health'     => 'cloud::azure::integration::eventgrid::mode::health'
+        'eventstats' => 'cloud::azure::integration::eventgrid::mode::eventstats'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
