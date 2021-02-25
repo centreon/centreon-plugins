@@ -84,8 +84,6 @@ sub set_counters {
         {
             label => 'status',
             type => 2,
-            warning_default => '%{severity} =~ /minor|warning/',
-            critical_default => '%{severity} =~ /major|critical/',
             set => {
                 key_values => [
                     { name => 'name' }, { name => 'status' },
