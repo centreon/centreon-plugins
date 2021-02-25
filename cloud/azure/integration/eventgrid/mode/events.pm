@@ -132,7 +132,7 @@ sub check_options {
     my $resource_mapping = {
         'topics' => [ 'deadletteredcount', 'droppedeventcount', 'matchedeventcount', 'unmatchedeventcount' ],
         'extensionTopics' => [ 'unmatchedeventcount' ],
-        'eventSubscriptions' => [ 'deadletteredcount', 'droppedeventcount', 'matchedeventcount' ],
+        'eventSubscriptions' => [ 'deadletteredcount', 'droppedeventcount', 'matchedeventcount' ]
     };
     my $metrics_mapping_transformed;
     foreach my $metric_type (@{$resource_mapping->{$type}}) {

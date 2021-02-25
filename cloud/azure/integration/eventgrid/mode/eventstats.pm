@@ -160,7 +160,7 @@ sub check_options {
         ],
         'eventSubscriptions' => [ 
             'deliveryattemptfailcount', 'deliverysuccesscount', 'destinationprocessingdurationinms' 
-        ],
+        ]
     };
     my $metrics_mapping_transformed;
     foreach my $metric_type (@{$resource_mapping->{$type}}) {
