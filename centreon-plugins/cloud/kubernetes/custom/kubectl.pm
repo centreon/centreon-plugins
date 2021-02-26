@@ -111,7 +111,7 @@ sub execute {
         $self->{output}->option_exit();
     }
 
-    return $decoded; 
+    return $decoded->{items}; 
 }
 
 sub kubernetes_list_daemonsets {
