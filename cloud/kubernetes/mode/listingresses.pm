@@ -48,7 +48,7 @@ sub manage_selection {
 
     my $results = $options{custom}->kubernetes_list_ingresses();
     
-    foreach my $ingress (@{$results->{items}}) {
+    foreach my $ingress (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $ingress->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $ingress->{metadata}->{name} . "': no matching filter name.", debug => 1);

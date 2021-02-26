@@ -42,6 +42,7 @@ sub new {
         'list-replicasets'  => 'cloud::kubernetes::mode::listreplicasets',
         'list-services'     => 'cloud::kubernetes::mode::listservices',
         'list-statefulsets' => 'cloud::kubernetes::mode::liststatefulsets',
+        'nodes-discovery'   => 'cloud::kubernetes::mode::nodesdiscovery',
         'node-usage'        => 'cloud::kubernetes::mode::nodeusage',
         'pod-status'        => 'cloud::kubernetes::mode::podstatus',
     );

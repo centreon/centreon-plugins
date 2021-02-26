@@ -47,7 +47,7 @@ sub manage_selection {
 
     my $results = $options{custom}->kubernetes_list_namespaces();
     
-    foreach my $namespace (@{$results->{items}}) {
+    foreach my $namespace (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $namespace->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $namespace->{metadata}->{name} . "': no matching filter name.", debug => 1);
