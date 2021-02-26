@@ -39,7 +39,7 @@ __END__
 
 =head1 MODE
 
-Check Event Grid namespace status.
+Check Automation namespace status.
 
 (Usefull to determine host status)
 

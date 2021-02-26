@@ -122,7 +122,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.EventGrid';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Average'];
+    $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -186,15 +186,15 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=eventstats --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events-stats --custommode=api
 --resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-serviceapi-latency='20' --critical-serviceapi-latency='50'
+--warning-publish-failed='20' --critical-publish-failed='50'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=eventstats --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events-stats --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.KeyVault/vaults/<keyvault_id>'
---aggregation='average' --warning-serviceapi-latency='20' --critical-serviceapi-latency='50'
+--aggregation='average' --warning-publish-failed='20' --critical-publish-failed='50'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 

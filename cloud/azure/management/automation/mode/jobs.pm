@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::integration::eventgrid::mode::events;
+package cloud::azure::management::automation::mode::jobs;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,31 +29,24 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'deadletteredcount' => {
-            'output' => 'Dead Lettered Events',
-            'label'  => 'deadlettered-events',
-            'nlabel' => 'eventgrid.deadlettered.events.count',
+        'totaljob' => {
+            'output' => 'Total Jobs',
+            'label'  => 'jobs-total',
+            'nlabel' => 'automation.jobs.total.count',
             'unit'   => '',
             'min'    => '0'
         },
-        'droppedeventcount' => {
-            'output' => 'Dropped Events',
-            'label'  => 'dropped-events',
-            'nlabel' => 'eventgrid.dropped.events.count',
+        'totalupdatedeploymentmachineruns' => {
+            'output' => 'Total Update Deployment Machine Runs',
+            'label'  => 'update-deployment-machine-runs',
+            'nlabel' => 'automation.machineruns.total.count',
             'unit'   => '',
             'min'    => '0'
         },
-        'matchedeventcount' => {
-            'output' => 'Matched Events',
-            'label'  => 'matched-events',
-            'nlabel' => 'eventgrid.matched.events.count',
-            'unit'   => '',
-            'min'    => '0'
-        },
-        'unmatchedeventcount' => {
-            'output' => 'Unmatched Events',
-            'label'  => 'unmatched-events',
-            'nlabel' => 'eventgrid.unmatched.events.count',
+        'TotalUpdateDeploymentRuns' => {
+            'output' => 'Total Update Deployment Runs	',
+            'label'  => 'update-deployment-runs',
+            'nlabel' => 'automation.runs.total.count',
             'unit'   => '',
             'min'    => '0'
         }
@@ -61,7 +54,6 @@ sub get_metrics_mapping {
 
     return $metrics_mapping;
 }
-
 
 sub new {
     my ($class, %options) = @_;
@@ -71,8 +63,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-metric:s'  => { name => 'filter_metric' },
         'resource:s'       => { name => 'resource' },
-        'resource-group:s' => { name => 'resource_group' },
-        'resource-type:s'  => { name => 'resource_type', default => 'topics' }
+        'resource-group:s' => { name => 'resource_group' }
     });
 
     return $self;
@@ -86,26 +77,17 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
         $self->{output}->option_exit();
     }
-
-    if (!defined($self->{option_results}->{resource_type}) || 
-        $self->{option_results}->{resource_type} !~ /topics|systemTopics|partnerTopic|partnerNamespaces|extensionTopics|eventSubscriptions|domains/) {
-        $self->{output}->add_option_msg(short_msg => 'Please specify an existing Azure Event Grid resource type');
-        $self->{output}->option_exit();
-    }
-
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    my $resource_type = $self->{option_results}->{resource_type};
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.EventGrid\/(.*)\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Automation\/automationAccounts\/(.*)$/) {
         $resource_group = $1;
-        $resource_type = $2;
-        $resource = $3;
+        $resource = $2;
     }
 
     $self->{az_resource} = $resource;
     $self->{az_resource_group} = $resource_group;
-    $self->{az_resource_type} = $resource_type;
-    $self->{az_resource_namespace} = 'Microsoft.EventGrid';
+    $self->{az_resource_type} = 'automationAccounts';
+    $self->{az_resource_namespace} = 'Microsoft.Automation';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
     $self->{az_aggregations} = ['Total'];
@@ -116,27 +98,6 @@ sub check_options {
                 push @{$self->{az_aggregations}}, ucfirst(lc($stat));
             }
         }
-    }
-
-    my $type;
-    if ($resource_type =~ /topics|systemTopics|partnerTopic|partnerNamespaces/) {
-        $type = 'topics';
-
-    } elsif ($resource_type eq 'extensionTopics') {
-        $type = 'extensionTopics';
-    
-    } else {
-        $type = 'eventSubscriptions';
-    }
-
-    my $resource_mapping = {
-        'topics' => [ 'deadletteredcount', 'droppedeventcount', 'matchedeventcount', 'unmatchedeventcount' ],
-        'extensionTopics' => [ 'unmatchedeventcount' ],
-        'eventSubscriptions' => [ 'deadletteredcount', 'droppedeventcount', 'matchedeventcount' ]
-    };
-    my $metrics_mapping_transformed;
-    foreach my $metric_type (@{$resource_mapping->{$type}}) {
-        $metrics_mapping_transformed->{$metric_type} = $self->{metrics_mapping}->{$metric_type};
     }
 
     foreach my $metric (keys %{$self->{metrics_mapping}}) {
@@ -152,21 +113,21 @@ __END__
 
 =head1 MODE
 
-Check Azure Event Grid events.
+Check Azure Automation jobs.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events --custommode=api
---resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-matched-events='20' --critical-matched-events='50'
+perl centreon_plugins.pl --plugin=cloud::azure::management::automation::plugin --mode=jobs --custommode=api
+--resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='total'
+--warning-jobs-total='20' --critical-jobs-total='50'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::management::automation::plugin --mode=jobs --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.KeyVault/vaults/<keyvault_id>'
---aggregation='average' --warning-matched-events='20' --critical-matched-events='50'
+--aggregation='total' --warning-jobs-total='20' --critical-jobs-total='50'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
@@ -180,23 +141,15 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--resource-type>
-
-Set resource type (Default: 'topics'). Can be 'topics', 
-'systemTopics', 'partnerTopics', 'partnerNamespaces',
-'extensionTopics', 'extensionTopics', 'domains').
-
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'matched-events', 'deadlettered-events', 'unmatched-events', 
-'dropped-events'.
+'jobs-total', 'update-deployment-machine-runs', 'update-deployment-runs'.
 
-=item B<--critical-vault-capacity-percentage>
+=item B<--critical-*>
 
 Critical threshold where '*' can be:
-'matched-events', 'deadlettered-events', 'unmatched-events', 
-'dropped-events'.
+'jobs-total', 'update-deployment-machine-runs', 'update-deployment-runs'.
 
 =back
 

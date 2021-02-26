@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::integration::eventgrid::plugin;
+package cloud::azure::management::automation::plugin;
 
 use strict;
 use warnings;
@@ -31,10 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'discovery'  => 'cloud::azure::integration::eventgrid::mode::discovery',
-        'events'     => 'cloud::azure::integration::eventgrid::mode::events',
-        'events-stats' => 'cloud::azure::integration::eventgrid::mode::eventstats',
-        'health'     => 'cloud::azure::integration::eventgrid::mode::health'
+        'jobs'   => 'cloud::azure::management::automation::mode::jobs',
+        'health' => 'cloud::azure::management::automation::mode::health'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
@@ -58,6 +56,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Event Grid.
+Check Microsoft Azure Automation.
 
 =cut
