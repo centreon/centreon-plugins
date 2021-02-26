@@ -141,7 +141,7 @@ sub manage_selection {
 
     my $nodes = $options{custom}->kubernetes_list_nodes();
     
-    foreach my $node (@{$nodes->{items}}) {
+    foreach my $node (@{$nodes}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $node->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $node->{metadata}->{name} . "': no matching filter name.", debug => 1);
@@ -162,7 +162,7 @@ sub manage_selection {
     
     my $pods = $options{custom}->kubernetes_list_pods();
 
-    foreach my $pod (@{$pods->{items}}) {
+    foreach my $pod (@{$pods}) {
         next if (defined($pod->{spec}->{nodeName}) && !defined($self->{nodes}->{$pod->{spec}->{nodeName}}));
         $self->{nodes}->{$pod->{spec}->{nodeName}}->{allocated}++;
     }

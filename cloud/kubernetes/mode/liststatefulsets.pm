@@ -48,7 +48,7 @@ sub manage_selection {
 
     my $results = $options{custom}->kubernetes_list_statefulsets();
     
-    foreach my $statefulset (@{$results->{items}}) {
+    foreach my $statefulset (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $statefulset->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $statefulset->{metadata}->{name} . "': no matching filter name.", debug => 1);

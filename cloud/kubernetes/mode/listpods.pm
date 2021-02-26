@@ -48,7 +48,7 @@ sub manage_selection {
 
     my $results = $options{custom}->kubernetes_list_pods();
     
-    foreach my $pod (@{$results->{items}}) {
+    foreach my $pod (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $pod->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $pod->{metadata}->{name} . "': no matching filter name.", debug => 1);
