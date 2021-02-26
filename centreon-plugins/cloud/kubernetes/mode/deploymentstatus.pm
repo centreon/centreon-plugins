@@ -141,7 +141,7 @@ sub manage_selection {
 
     my $results = $options{custom}->kubernetes_list_deployments();
     
-    foreach my $deployment (@{$results->{items}}) {
+    foreach my $deployment (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $deployment->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{name} . "': no matching filter name.", debug => 1);

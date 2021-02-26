@@ -48,7 +48,7 @@ sub manage_selection {
 
     my $results = $options{custom}->kubernetes_list_daemonsets();
     
-    foreach my $daemonset (@{$results->{items}}) {
+    foreach my $daemonset (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $daemonset->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $daemonset->{metadata}->{name} . "': no matching filter name.", debug => 1);

@@ -48,7 +48,7 @@ sub manage_selection {
 
     my $results = $options{custom}->kubernetes_list_services();
     
-    foreach my $service (@{$results->{items}}) {
+    foreach my $service (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $service->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $service->{metadata}->{name} . "': no matching filter name.", debug => 1);
