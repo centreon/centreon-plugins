@@ -380,8 +380,8 @@ sub request_api_paginate {
     my ($self, %options) = @_;
 
     my $items = [];
-    my $get_param;
-    $get_param = $options{get_param} if (defined$options{get_param});
+    my $get_param = [];
+    $get_param = $options{get_param} if (defined($options{get_param}));
     while (1) {
         my $response = $self->request_api(
             method => 'GET',
