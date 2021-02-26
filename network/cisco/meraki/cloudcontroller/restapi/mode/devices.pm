@@ -299,7 +299,9 @@ sub new {
         'filter-organization-id:s'     => { name => 'filter_organization_id' },
         'filter-tags:s'                => { name => 'filter_tags' },
         'add-switch-ports'             => { name => 'add_switch_ports' },
-        'skip-traffic-disconnect-port' => { name => 'skip_traffic_disconnect_port' }
+        'skip-traffic-disconnect-port' => { name => 'skip_traffic_disconnect_port' },
+        'skip-clients'                 => { name => 'skip_clients' },
+        'skip-performance'             => { name => 'skip_performance' }
     });
 
     return $self;
@@ -350,7 +352,7 @@ sub add_uplink {
 
     my $links = $options{custom}->get_network_device_uplink(
         serial => $options{serial},
-        network_id => $options{network_id}
+        organization_id => $options{organization_id}
     );
 
     if (defined($links)) {
@@ -479,7 +481,7 @@ sub manage_selection {
             next;
         }
 
-        $devices->{ $_->{serial} } = $_->{model};
+        $devices->{ $_->{serial} } = { model => $_->{model}, organization_id => $organization->{id} };
     }
 
     my $device_statuses = $options{custom}->get_organization_device_statuses();
@@ -505,7 +507,7 @@ sub manage_selection {
             device_ports => {}
         };
 
-        if ($devices->{$serial} =~ /^(?:MG|MR)/) {
+        if ($devices->{$serial}->{model} =~ /^(?:MG|MR)/) {
             $self->add_connection_stats(
                 custom => $options{custom},
                 timespan => $timespan,
@@ -514,7 +516,7 @@ sub manage_selection {
                 network_id => $cache_devices->{$serial}->{networkId}
             );
         }
-        if ($devices->{$serial} =~ /^(?:MS|MG|MR|MX)/) {
+        if (!defined($self->{option_results}->{skip_clients}) && $devices->{$serial}->{model} =~ /^(?:MS|MG|MR|MX)/) {
             $self->add_clients(
                 custom => $options{custom},
                 timespan => $timespan,
@@ -522,12 +524,12 @@ sub manage_selection {
                 name => $cache_devices->{$serial}->{name}
             );
         }
-        if ($devices->{$serial} =~ /^(?:MV|MS|MG|MR|MX)/) {
+        if ($devices->{$serial}->{model} =~ /^(?:MV|MS|MG|MR|MX)/) {
             $self->add_uplink(
                 custom => $options{custom},
                 serial => $serial,
                 name => $cache_devices->{$serial}->{name},
-                network_id => $cache_devices->{$serial}->{networkId}
+                organization_id => $devices->{$serial}->{organization_id}
             );
         }
         if (defined($self->{option_results}->{add_switch_ports}) && $devices->{$serial} =~ /^MS/) {
@@ -537,13 +539,13 @@ sub manage_selection {
                 serial => $serial
             );
         }
-        if ($devices->{$serial} =~ /^MX/) {
+        if ($devices->{$serial}->{model} =~ /^MX/) {
             $self->add_performance(
                 custom => $options{custom},
                 serial => $serial,
                 name => $cache_devices->{$serial}->{name},
                 network_id => $cache_devices->{$serial}->{networkId}
-            );
+            ) if (!defined($self->{option_results}->{skip_performance}));
             $self->add_uplink_loss_latency(
                 custom => $options{custom},
                 timespan => $timespan,
@@ -556,6 +558,8 @@ sub manage_selection {
         $self->{global}->{ lc($device_statuses->{$serial}->{status}) }++
             if (defined($self->{global}->{ lc($device_statuses->{$serial}->{status}) }));
     }
+
+    $options{custom}->close_extra_cache();
 
     if (scalar(keys %{$self->{devices}}) <= 0) {
         $self->{output}->output_add(short_msg => 'no devices found');
@@ -600,6 +604,14 @@ Filter devices by tags (Can be a regexp).
 =item B<--add-switch-ports>
 
 Add switch port statuses and traffic.
+
+=item B<--skip-clients>
+
+Don't monitor clients traffic on device.
+
+=item B<--skip-performance>
+
+Don't monitor appliance perfscore.
 
 =item B<--skip-traffic-disconnect-port>
 
