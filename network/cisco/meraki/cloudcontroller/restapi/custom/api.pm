@@ -58,7 +58,11 @@ sub new {
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
     $self->{cache_checked} = 0;
-    $self->{cache_uplink_loss_latency} = {};
+    $self->{cached} = {
+        uplink_statuses => {},
+        uplinks_loss_latency => {},
+        devices_connection_stats => {}
+    };
 
     return $self;
 }
@@ -199,7 +203,7 @@ sub request_api {
     while (1) {
         my $response =  $self->{http}->request(
             hostname => $hostname,
-            url_path => '/api/v0' . $options{endpoint},
+            url_path => '/api/v1' . $options{endpoint},
             critical_status => '',
             warning_status => '',
             unknown_status => ''
@@ -368,7 +372,7 @@ sub get_organization_device_statuses {
     my $results = {};
     foreach my $id (@$organization_ids) {
         my $datas = $self->request_api(
-            endpoint => '/organizations/' . $id . '/deviceStatuses',
+            endpoint => '/organizations/' . $id . '/devices/statuses',
             hostname => $self->get_shard_hostname(organization_id => $id)
         );
         foreach (@$datas) {
@@ -406,10 +410,22 @@ sub get_network_device_connection_stats {
     my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
     $timespan = 1 if ($timespan <= 0);
 
-    return $self->request_api(
-        endpoint => '/networks/' . $options{network_id} . '/devices/' . $options{serial} . '/connectionStats?timespan=' . $options{timespan},
-        hostname => $self->get_shard_hostname(network_id => $options{network_id})
-    );
+    if (!defined($self->{cached}->{devices_connection_stats}->{ $options{network_id} })) {
+        $self->{cached}->{devices_connection_stats}->{ $options{network_id} } = $self->request_api(
+            endpoint => '/networks/' . $options{network_id} . '/wireless/devices/connectionStats?timespan=' . $options{timespan},
+            hostname => $self->get_shard_hostname(network_id => $options{network_id})
+        );
+    }
+
+    my $result;
+    foreach (@{$self->{cached}->{devices_connection_stats}->{ $options{network_id} }}) {
+        if ($_->{serial} eq $options{serial}) {
+            $result = $_->{connectionStats};
+            last;
+        }
+    }
+
+    return $result;
 }
 
 sub get_network_device_uplink {
@@ -417,10 +433,22 @@ sub get_network_device_uplink {
 
     $self->cache_meraki_entities();
 
-    return $self->request_api(
-        endpoint => '/networks/' . $options{network_id} . '/devices/' . $options{serial} . '/uplink',
-        hostname => $self->get_shard_hostname(network_id => $options{network_id})
-    );
+    if (!defined($self->{cached}->{uplink_statuses}->{ $options{organization_id} })) {
+        $self->{cached}->{uplink_statuses}->{ $options{organization_id} } = $self->request_api(
+            endpoint => '/organizations/' . $options{organization_id} . '/uplinks/statuses',
+            hostname => $self->get_shard_hostname(organization_id => $options{organization_id})
+        );
+    }
+
+    my $result;
+    foreach (@{$self->{cached}->{uplink_statuses}->{ $options{organization_id} }}) {
+        if ($_->{serial} eq $options{serial}) {
+            $result = $_->{uplinks};
+            last;
+        }
+    }
+
+    return $result;
 }
 
 sub get_device_clients {
@@ -456,7 +484,7 @@ sub get_network_device_performance {
 
     # 400 = feature not supported. 204 = no content
     return $self->request_api(
-        endpoint => '/networks/' . $options{network_id} . '/devices/' . $options{serial} . '/performance',
+        endpoint => '/devices/' . $options{serial} . '/appliance/performance',
         hostname => $self->get_shard_hostname(network_id => $options{network_id}),
         ignore_codes => { 400 => 1, 204 => 1 }
     );
@@ -469,16 +497,16 @@ sub get_organization_uplink_loss_and_latency {
     my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
     $timespan = 1 if ($timespan <= 0);
 
-    if (!defined($self->{cache_uplink_loss_latency}->{ $options{organization_id} })) {
-        $self->{cache_uplink_loss_latency}->{ $options{organization_id} } = $self->request_api(
-            endpoint => '/organizations/' . $options{organization_id} . '/uplinksLossAndLatency?timespan=' . $options{timespan},
+    if (!defined($self->{cached}->{uplinks_loss_latency}->{ $options{organization_id} })) {
+        $self->{cached}->{uplinks_loss_latency}->{ $options{organization_id} } = $self->request_api(
+            endpoint => '/organizations/' . $options{organization_id} . '/devices/uplinksLossAndLatency?timespan=' . $options{timespan},
             hostname => $self->get_shard_hostname(organization_id => $options{organization_id})
         );
     }
 
     my $result = {};
-    if (defined($self->{cache_uplink_loss_latency}->{ $options{organization_id} })) {
-        foreach (@{$self->{cache_uplink_loss_latency}->{ $options{organization_id} }}) {
+    if (defined($self->{cached}->{uplinks_loss_latency}->{ $options{organization_id} })) {
+        foreach (@{$self->{cached}->{uplinks_loss_latency}->{ $options{organization_id} }}) {
             if ($options{serial} eq $_->{serial}) {
                 $result->{ $_->{uplink} } = $_;
             }
