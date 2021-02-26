@@ -559,6 +559,8 @@ sub manage_selection {
             if (defined($self->{global}->{ lc($device_statuses->{$serial}->{status}) }));
     }
 
+    $options{custom}->close_extra_cache();
+
     if (scalar(keys %{$self->{devices}}) <= 0) {
         $self->{output}->output_add(short_msg => 'no devices found');
     }
