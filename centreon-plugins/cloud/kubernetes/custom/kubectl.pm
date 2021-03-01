@@ -49,7 +49,8 @@ sub new {
             'sudo'              => { name => 'sudo' },
             'command:s'         => { name => 'command', default => 'kubectl' },
             'command-path:s'    => { name => 'command_path' },
-            'command-options:s' => { name => 'command_options', default => '' }
+            'command-options:s' => { name => 'command_options', default => '' },
+            'proxyurl:s'        => { name => 'proxyurl' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CLI OPTIONS', once => 1);
@@ -77,13 +78,22 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
+    if (defined($self->{option_results}->{proxyurl}) && $self->{option_results}->{proxyurl} ne '') {
+        $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
+        $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
+    }
+    
     return 0;
 }
 
 sub execute {
     my ($self, %options) = @_;
 
-    $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $options{cmd_options} . "'", debug => 1);
+    my $cmd_options = $options{cmd_options};
+    # See https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-output-verbosity-and-debugging
+    $cmd_options .= " --v=9" if ($self->{output}->is_debug());
+
+    $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $cmd_options . "'", debug => 1);
     
     my ($response, $exit_code) = centreon::plugins::misc::execute(
         output => $self->{output},
@@ -91,7 +101,8 @@ sub execute {
         sudo => $self->{option_results}->{sudo},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
-        command_options => $options{cmd_options},
+        command_options => $cmd_options,
+        redirect_stderr => ($self->{output}->is_debug()) ? 0 : 1,
         no_quit => 1
     );
 
@@ -229,6 +240,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: none).
+
+=item B<--proxyurl>
+
+Proxy URL if any
 
 =back
 
