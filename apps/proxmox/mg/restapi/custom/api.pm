@@ -62,7 +62,7 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{realm} = (defined($self->{option_results}->{realm})) ? $self->{option_results}->{realm} : 'pam';
+    $self->{realm} = (defined($self->{option_results}->{realm})) ? $self->{option_results}->{realm} : 'pmg';
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -193,6 +193,28 @@ sub get_version {
 
     my $content = $self->request_api(method => 'GET', url_path =>'/api2/json/version');
     return $content->{version};
+}
+
+sub internal_api_recent {
+  my ($self, %options) = @_;
+
+  my $count = $self->request_api(method => 'GET', url_path =>'/api2/json/statistics/recent?timespan=120&hours=1');
+  return $count;
+}
+
+sub api_recent_count {
+  my ($self, %options) = @_;
+
+  my $counts = {};
+  my $list_count = $self->internal_api_recent();
+  foreach my $count (@{$list_count}) {
+      $counts->{$count->{index}} = {
+        Count_in => $count->{count_in},
+        Time => $count->{time},
+        Count_out => $count->{count_out},
+   };
+  }
+  return $counts;
 }
 
 1;
