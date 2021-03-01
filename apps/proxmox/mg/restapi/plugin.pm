@@ -13,7 +13,8 @@ sub new {
     $self->{version} = '1.0';
     $self->{modes} = {
       'version'           => 'apps::proxmox::mg::restapi::mode::version',
-      'count'             => 'apps::proxmox::mg::restapi::mode::count'
+      'count'             => 'apps::proxmox::mg::restapi::mode::count',
+      'spam'              => 'apps::proxmox::mg::restapi::mode::spam'
 
     };
 

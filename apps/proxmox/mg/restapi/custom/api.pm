@@ -198,8 +198,8 @@ sub get_version {
 sub internal_api_recent {
   my ($self, %options) = @_;
 
-  my $count = $self->request_api(method => 'GET', url_path =>'/api2/json/statistics/recent?timespan=120&hours=1');
-  return $count;
+  my $recent = $self->request_api(method => 'GET', url_path =>'/api2/json/statistics/recent?timespan=120&hours=1');
+  return $recent;
 }
 
 sub api_recent_count {
@@ -210,11 +210,24 @@ sub api_recent_count {
   foreach my $count (@{$list_count}) {
       $counts->{$count->{index}} = {
         Count_in => $count->{count_in},
-        Time => $count->{time},
         Count_out => $count->{count_out},
    };
   }
   return $counts;
+}
+
+sub api_recent_spam {
+  my ($self, %options) = @_;
+
+  my $spams = {};
+  my $list_spam = $self->internal_api_recent();
+  foreach my $spam (@{$list_spam}) {
+      $spams->{$spam->{index}} = {
+        Spam_in => $spam->{spam_in},
+        Spam_out => $spam->{spam_out},
+   };
+  }
+  return $spams;
 }
 
 1;

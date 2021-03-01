@@ -1,4 +1,4 @@
-package apps::proxmox::mg::restapi::mode::count;
+package apps::proxmox::mg::restapi::mode::spam;
 
 use base qw(centreon::plugins::mode);
 
@@ -25,17 +25,17 @@ sub check_options {
 
 sub manage_selection {
   my ($self, %options) = @_;
-  $self->{counts} = $options{custom}->api_recent_count();
+  $self->{spams} = $options{custom}->api_recent_spam();
 }
 
 sub run {
   my ($self, %options) = @_;
   $self->manage_selection(%options);
-  foreach my $count_id (max(keys %{$self->{counts}})) {
+  foreach my $spam_id (max(keys %{$self->{spams}})) {
       $self->{output}->output_add(
           long_msg =>
-              "[count_in = '" . $self->{counts}->{$count_id}->{Count_in} . "']" .
-              "[count_out = '" . $self->{counts}->{$count_id}->{Count_out} . "']"
+              "[spam_in = '" . $self->{spams}->{$spam_id}->{Spam_in} . "']" .
+              "[spam_out = '" . $self->{spams}->{$spam_id}->{Spam_out} . "']"
       );
   }
   $self->{output}->output_add(severity => 'OK',
