@@ -463,10 +463,13 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
-            (!defined($_->{tags}) || $_->{tags} !~ /$self->{option_results}->{filter_tags}/)) {
-            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
-            next;
+        if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '') {
+            my $tags;
+            $tags = join(' ', @{$_->{tags}}) if (defined($_->{tags}));
+            if (!defined($tags) || $tags !~ /$self->{option_results}->{filter_tags}/) {
+                $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
+                next;
+            }
         }
         
         my $organization = $options{custom}->get_organization(network_id => $_->{networkId});
