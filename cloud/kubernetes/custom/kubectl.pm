@@ -72,6 +72,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{config_file} = (defined($self->{option_results}->{config_file})) ? $self->{option_results}->{config_file} : '';
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
  
     if (!defined($self->{config_file}) || $self->{config_file} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --config-file option.");
@@ -91,7 +92,7 @@ sub execute {
 
     my $cmd_options = $options{cmd_options};
     # See https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-output-verbosity-and-debugging
-    $cmd_options .= " --v=9" if ($self->{output}->is_debug());
+    $cmd_options .= " --v='9'" if ($self->{output}->is_debug());
 
     $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $cmd_options . "'", debug => 1);
     
@@ -128,7 +129,11 @@ sub execute {
 sub kubernetes_list_daemonsets {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get daemonsets --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $response = $self->execute(
+        cmd_options => "get daemonsets --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
     
     return $response;
 }
@@ -136,7 +141,11 @@ sub kubernetes_list_daemonsets {
 sub kubernetes_list_deployments {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get deployments --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $response = $self->execute(
+        cmd_options => "get deployments --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
     
     return $response;
 }
@@ -144,7 +153,11 @@ sub kubernetes_list_deployments {
 sub kubernetes_list_ingresses {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get ingresses --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $response = $self->execute(
+        cmd_options => "get ingresses --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
     
     return $response;
 }
@@ -152,7 +165,11 @@ sub kubernetes_list_ingresses {
 sub kubernetes_list_namespaces {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get namespaces --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $response = $self->execute(
+        cmd_options => "get namespaces --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
     
     return $response;
 }
@@ -160,15 +177,23 @@ sub kubernetes_list_namespaces {
 sub kubernetes_list_nodes {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get nodes --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
-    
+    my $response = $self->execute(
+        cmd_options => "get nodes --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
+
     return $response;
 }
 
 sub kubernetes_list_replicasets {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get replicasets --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $response = $self->execute(
+        cmd_options => "get replicasets --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
     
     return $response;
 }
@@ -176,7 +201,11 @@ sub kubernetes_list_replicasets {
 sub kubernetes_list_services {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get services --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $response = $self->execute(
+        cmd_options => "get services --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
     
     return $response;
 }
@@ -184,7 +213,11 @@ sub kubernetes_list_services {
 sub kubernetes_list_statefulsets {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get statefulsets --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $response = $self->execute(
+        cmd_options => "get statefulsets --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
     
     return $response;
 }
@@ -192,7 +225,11 @@ sub kubernetes_list_statefulsets {
 sub kubernetes_list_pods {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get pods --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $response = $self->execute(
+        cmd_options => "get pods --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
     
     return $response;
 }
