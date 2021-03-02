@@ -137,10 +137,12 @@ sub request {
 
     my $request_options = $options{request};
     if (!defined($self->{ua})) {
+        my $timeout;
+        $timeout = $1 if (defined($request_options->{timeout}) && $request_options->{timeout} =~ /(\d+)/);
         $self->{ua} = centreon::plugins::backend::http::useragent->new(
             %user_agent_params,
             protocols_allowed => ['http', 'https'], 
-            timeout => $request_options->{timeout},
+            timeout => $timeout,
             credentials => $request_options->{credentials},
             username => $request_options->{username}, 
             password => $request_options->{password}
