@@ -33,14 +33,26 @@ sub run {
   $self->manage_selection(%options);
   foreach my $virus_id (max(keys %{$self->{virus}})) {
       $self->{output}->output_add(
-          long_msg =>
+          severity => 'OK',
+          short_msg =>
               "[Virus_in = '" . $self->{virus}->{$virus_id}->{Virus_in} . "']" .
               "[Virus_out = '" . $self->{virus}->{$virus_id}->{Virus_out} . "']"
       );
+      $self->{output}->perfdata_add(
+          label =>'Virus_in',
+          value =>$self->{virus}->{$virus_id}->{Virus_in},
+          unit  => 'mail',
+          min   => 0
+      );
+      $self->{output}->perfdata_add(
+          label =>'Virus_out',
+          value =>$self->{virus}->{$virus_id}->{Virus_out},
+          unit  => 'mail',
+          min   => 0
+      );
   }
-  $self->{output}->output_add(severity => 'OK',
-                              short_msg => 'List :' );
-  $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+
+  $self->{output}->display(force_long_output => 1);
   $self->{output}->exit();
 }
 

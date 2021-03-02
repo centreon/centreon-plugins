@@ -33,14 +33,26 @@ sub run {
   $self->manage_selection(%options);
   foreach my $count_id (max(keys %{$self->{counts}})) {
       $self->{output}->output_add(
-          long_msg =>
+          severity => 'OK',
+          short_msg =>
               "[count_in = '" . $self->{counts}->{$count_id}->{Count_in} . "']" .
               "[count_out = '" . $self->{counts}->{$count_id}->{Count_out} . "']"
       );
+      $self->{output}->perfdata_add(
+          label =>'mail_in',
+          value =>$self->{counts}->{$count_id}->{Count_in},
+          unit  => 'B',
+          min   => 0
+      );
+      $self->{output}->perfdata_add(
+          label =>'mail_out',
+          value =>$self->{counts}->{$count_id}->{Count_out},
+          unit  => 'B',
+          min   => 0
+      );
   }
-  $self->{output}->output_add(severity => 'OK',
-                              short_msg => 'List :' );
-  $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+
+  $self->{output}->display( force_long_output => 1);
   $self->{output}->exit();
 }
 

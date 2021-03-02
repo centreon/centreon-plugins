@@ -33,14 +33,26 @@ sub run {
   $self->manage_selection(%options);
   foreach my $spam_id (max(keys %{$self->{spams}})) {
       $self->{output}->output_add(
-          long_msg =>
+          severity => 'OK',
+          short_msg =>
               "[spam_in = '" . $self->{spams}->{$spam_id}->{Spam_in} . "']" .
               "[spam_out = '" . $self->{spams}->{$spam_id}->{Spam_out} . "']"
       );
+      $self->{output}->perfdata_add(
+          label =>'spam_in',
+          value =>$self->{spams}->{$spam_id}->{Spam_in},
+          unit  => 'mail',
+          min   => 0
+      );
+      $self->{output}->perfdata_add(
+          label =>'spam_out',
+          value =>$self->{spams}->{$spam_id}->{Spam_out},
+          unit  => 'mail',
+          min   => 0
+      );
   }
-  $self->{output}->output_add(severity => 'OK',
-                              short_msg => 'List :' );
-  $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+
+  $self->{output}->display(force_long_output => 1);
   $self->{output}->exit();
 }
 
