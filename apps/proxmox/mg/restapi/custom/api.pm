@@ -230,6 +230,20 @@ sub api_recent_spam {
   return $spams;
 }
 
+sub api_recent_virus {
+  my ($self, %options) = @_;
+
+  my $virus = {};
+  my $list_virus = $self->internal_api_recent();
+  foreach my $viru (@{$list_virus}) {
+      $virus->{$viru->{index}} = {
+        Virus_in => $viru->{virus_in},
+        Virus_out => $viru->{virus_out},
+   };
+  }
+  return $virus;
+}
+
 1;
 
 __END__

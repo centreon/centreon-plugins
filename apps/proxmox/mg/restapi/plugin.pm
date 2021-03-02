@@ -14,7 +14,8 @@ sub new {
     $self->{modes} = {
       'version'           => 'apps::proxmox::mg::restapi::mode::version',
       'count'             => 'apps::proxmox::mg::restapi::mode::count',
-      'spam'              => 'apps::proxmox::mg::restapi::mode::spam'
+      'spam'              => 'apps::proxmox::mg::restapi::mode::spam',
+      'virus'             => 'apps::proxmox::mg::restapi::mode::virus'
 
     };
 
