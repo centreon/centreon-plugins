@@ -32,7 +32,8 @@ sub new {
             'api-password:s'      => { name => 'api_password' },
             'realm:s'             => { name => 'realm' },
             'timeout:s'           => { name => 'timeout' },
-            'reload-cache-time:s' => { name => 'reload_cache_time', default => 7200 }
+            'reload-cache-time:s' => { name => 'reload_cache_time', default => 7200 },
+            'timespan:s'          => { name => 'timespan'}
         });
     }
 
@@ -63,6 +64,8 @@ sub check_options {
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
     $self->{realm} = (defined($self->{option_results}->{realm})) ? $self->{option_results}->{realm} : 'pmg';
+    $self->{timespan} = (defined($self->{option_results}->{timespan})) ? $self->{option_results}->{timespan} : 120;
+
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -197,8 +200,7 @@ sub get_version {
 
 sub internal_api_recent {
   my ($self, %options) = @_;
-
-  my $recent = $self->request_api(method => 'GET', url_path =>'/api2/json/statistics/recent?timespan=120&hours=1');
+  my $recent = $self->request_api(method => 'GET', url_path =>'/api2/json/statistics/recent?timespan='.$self->{timespan}.'&hours=1');
   return $recent;
 }
 
