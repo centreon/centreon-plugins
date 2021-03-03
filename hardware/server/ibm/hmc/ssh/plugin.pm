@@ -22,7 +22,7 @@ package hardware::server::ibm::hmc::ssh::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,10 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'hardware-errors' => 'hardware::server::ibm::hmc::ssh::mode::hardwareerrors',
-        'led-status'      => 'hardware::server::ibm::hmc::ssh::mode::ledstatus',
-    );
+        'led-status'      => 'hardware::server::ibm::hmc::ssh::mode::ledstatus'
+    };
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }
