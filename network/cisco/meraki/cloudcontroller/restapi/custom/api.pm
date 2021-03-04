@@ -51,7 +51,8 @@ sub new {
             'reload-cache-time:s'       => { name => 'reload_cache_time' },
             'ignore-permission-errors'  => { name => 'ignore_permission_errors' },
             'use-extra-cache'           => { name => 'use_extra_cache' },
-            'reload-extra-cache-time:s' => { name => 'reload_extra_cache_time' }
+            'reload-extra-cache-time:s' => { name => 'reload_extra_cache_time' },
+            'trace-api:s'               => { name => 'trace_api' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -101,6 +102,19 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    if (defined($self->{option_results}->{trace_api})) {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'Time::HiRes',
+            error_msg => "Cannot load module 'Time::HiRes'."
+        );
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'POSIX',
+            error_msg => "Cannot load module 'POSIX'."
+        );
+    }
+
     $self->{cache}->check_options(option_results => $self->{option_results});
     return 0;
 }
@@ -109,6 +123,19 @@ sub get_token {
     my ($self, %options) = @_;
 
     return md5_hex($self->{api_token});
+}
+
+sub trace_api {
+    my ($self, %options) = @_;
+
+    my $trace_file = $self->{option_results}->{trace_api} ne '' ? $self->{option_results}->{trace_api} : '/tmp/cisco_meraki_plugins.trace';
+    open(FH, '>>', $trace_file) or return ;
+
+    my $time = Time::HiRes::time();
+    my $date = POSIX::strftime('%Y%m%d %H:%M:%S', localtime($time));
+    $date .= sprintf('.%03d', ($time - int($time)) * 1000);
+    print FH "$date - $self->{api_token} - $options{url}\n";
+    close FH;
 }
 
 sub get_shard_hostname {
@@ -207,6 +234,8 @@ sub request_api {
     #404: Not found- No such URL, or you don't have access to the API or organization at all. 
     #429: Too Many Requests- You submitted more than 5 calls in 1 second to an Organization, triggering rate limiting. This also applies for API calls made across multiple organizations that triggers rate limiting for one of the organizations.
     while (1) {
+        $self->trace_api(url => $hostname . '/api/v1' . $options{endpoint}) 
+            if (defined($self->{option_results}->{trace_api}));
         my $response =  $self->{http}->request(
             hostname => $hostname,
             url_path => '/api/v1' . $options{endpoint},
