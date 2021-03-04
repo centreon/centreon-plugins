@@ -131,10 +131,13 @@ sub trace_api {
     my $trace_file = $self->{option_results}->{trace_api} ne '' ? $self->{option_results}->{trace_api} : '/tmp/cisco_meraki_plugins.trace';
     open(FH, '>>', $trace_file) or return ;
 
-    my $time = Time::HiRes::time();
-    my $date = POSIX::strftime('%Y%m%d %H:%M:%S', localtime($time));
-    $date .= sprintf('.%03d', ($time - int($time)) * 1000);
-    print FH "$date - $self->{api_token} - $options{url}\n";
+    my $date_start = POSIX::strftime('%Y%m%d %H:%M:%S', localtime($options{time_start}));
+    $date_start .= sprintf('.%03d', ($options{time_start} - int($options{time_start})) * 1000);
+
+    my $time_end = Time::HiRes::time();
+    my $date_end = POSIX::strftime('%Y%m%d %H:%M:%S', localtime($time_end));
+    $date_end .= sprintf('.%03d', ($time_end - int($time_end)) * 1000);
+    print FH "$date_start - $date_end - $self->{api_token} - $options{url} - $options{code}\n";
     close FH;
 }
 
@@ -233,9 +236,9 @@ sub request_api {
     #403: Forbidden- You don't have permission to do that.
     #404: Not found- No such URL, or you don't have access to the API or organization at all. 
     #429: Too Many Requests- You submitted more than 5 calls in 1 second to an Organization, triggering rate limiting. This also applies for API calls made across multiple organizations that triggers rate limiting for one of the organizations.
+    my $time_start;
     while (1) {
-        $self->trace_api(url => $hostname . '/api/v1' . $options{endpoint}) 
-            if (defined($self->{option_results}->{trace_api}));
+        $time_start = Time::HiRes::time() if (defined($self->{option_results}->{trace_api}));
         my $response =  $self->{http}->request(
             hostname => $hostname,
             url_path => '/api/v1' . $options{endpoint},
@@ -245,6 +248,9 @@ sub request_api {
         );
 
         my $code = $self->{http}->get_code();
+        $self->trace_api(time_start => $time_start, url => $hostname . '/api/v1' . $options{endpoint}, code => $code) 
+            if (defined($self->{option_results}->{trace_api}));
+
         return [] if ($code == 403 && $self->{ignore_permission_errors} == 1);
         return undef if (defined($options{ignore_codes}) && defined($options{ignore_codes}->{$code}));
 
