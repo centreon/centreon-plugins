@@ -384,15 +384,17 @@ sub add_uplink_loss_latency {
         $interface =~ s/\s+//g;
         next if (!defined($self->{devices}->{ $options{serial} }->{device_links}->{$interface}));
 
-        my ($latency, $loss) = (0, 0);
+        my ($latency, $loss, $count) = (0, 0, 0);
         foreach my $ts (@{$_->{timeSeries}}) {
+            next if (!defined($ts->{latencyMs}));
             $latency += $ts->{latencyMs};
             $loss += $ts->{lossPercent};
+            $count++;
         }
 
-        if (scalar(@{$_->{timeSeries}}) > 0) {
-            $latency /= scalar(@{$_->{timeSeries}});
-            $loss /= scalar(@{$_->{timeSeries}});
+        if ($count > 0) {
+            $latency /= $count;
+            $loss /= $count;
         }
 
         $self->{devices}->{ $options{serial} }->{device_links}->{$interface}->{loss_percent} = $loss;
