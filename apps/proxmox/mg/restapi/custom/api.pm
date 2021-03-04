@@ -33,7 +33,7 @@ sub new {
             'realm:s'             => { name => 'realm' },
             'timeout:s'           => { name => 'timeout' },
             'reload-cache-time:s' => { name => 'reload_cache_time', default => 7200 },
-            'timespan:s'          => { name => 'timespan'}
+            'timespan:s'          => { name => 'timespan' }
         });
     }
 
@@ -65,7 +65,6 @@ sub check_options {
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
     $self->{realm} = (defined($self->{option_results}->{realm})) ? $self->{option_results}->{realm} : 'pmg';
     $self->{timespan} = (defined($self->{option_results}->{timespan})) ? $self->{option_results}->{timespan} : 120;
-
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -269,6 +268,8 @@ __END__
 =item B<--realm>
 
 =item B<--timeout>
+
+=item B<--timespan>
 
 =back
 
