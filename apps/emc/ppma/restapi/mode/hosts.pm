@@ -201,12 +201,12 @@ Filter hosts by host name (can be a regexp).
 Set unknown threshold for status.
 Can used special variables like: %{status}, %{name}
 
-=item B<--warning-keepalive-status>
+=item B<--warning-status>
 
 Set warning threshold for status.
 Can used special variables like: %{status}, %{name}
 
-=item B<--critical-keepalive-status>
+=item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /powerPathManaged/').
 Can used special variables like: %{status}, %{name}
