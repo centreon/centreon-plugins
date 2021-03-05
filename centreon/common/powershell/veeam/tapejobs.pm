@@ -36,18 +36,28 @@ $culture = new-object "System.Globalization.CultureInfo" "en-us"
     $ps .= centreon::common::powershell::functions::convert_to_json(%options);
 
     $ps .= '
-If (@(Get-PSSnapin -Registered | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -gt 0) {
-    If (@(Get-PSSnapin | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -eq 0) {
-        Try {
-            Get-PSSnapin -Registered | Where-Object {$_.Name -Match "VeeamPSSnapin"} | Add-PSSnapin -ErrorAction STOP
-        } Catch {
-            Write-Host $Error[0].Exception
-            exit 1
+$register_snaps=Get-PSSnapin -Registered
+$all_snaps=Get-PSSnapin
+$load_snaps=@("VeeamPSSnapin")
+$registered=0
+foreach ($load_snaps in $snap_name) {
+    if (@($register_snaps | Where-Object {$_.Name -Match $snap_name} ).count -gt 0) {
+        if (@($all_snaps | Where-Object {$_.Name -Match $snap_name} ).count -eq 0) {
+            Try {
+                $register_snaps | Where-Object {$_.Name -Match $snap_name} | Add-PSSnapin -ErrorAction STOP
+                $registered=1
+            } Catch {
+                Write-Host $Error[0].Exception
+                exit 1
+            }
         }
     }
-} else {
-    Write-Host "Snap-In Veeam no present or not registered"
-    exit 1
+}
+if ($registered -eq 0) {
+    if (@(Get-Module | Where-Object {$_.Name -Match "Veeam.Backup.PowerShell"} ).count -eq 0) {
+        Write-Host "Snap-In/Module Veeam no present or not registered"
+        exit 1
+    }
 }
 
 $ProgressPreference = "SilentlyContinue"
