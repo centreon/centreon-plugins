@@ -90,7 +90,7 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_token} = (defined($self->{option_results}->{api_token})) ? $self->{option_results}->{api_token} : '';
     $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 180;
-    $self->{reload_cache_extra_time} = (defined($self->{option_results}->{reload_cache_extra_time})) ? $self->{option_results}->{reload_cache_extra_time} : 10;
+    $self->{reload_extra_cache_time} = (defined($self->{option_results}->{reload_extra_cache_time})) ? $self->{option_results}->{reload_extra_cache_time} : 10;
     $self->{ignore_permission_errors} = (defined($self->{option_results}->{ignore_permission_errors})) ? 1 : 0;
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
@@ -589,7 +589,7 @@ sub load_extra_cache {
     my $has_cache_file = $self->{cache}->read(statefile => 'cache_extra_cisco_meraki_' . $self->get_token());
     my $cached = $self->{cache}->get(name => 'cached');
     $self->{cached} = $cached if (defined($cached));
-    if (defined($self->{cached}->{devices_statuses}->{update_time}) && ((time() - $self->{cached}->{devices_statuses}->{update_time}) > ($self->{reload_cache_extra_time} * 60))) {
+    if (defined($self->{cached}->{devices_statuses}->{update_time}) && ((time() - $self->{cached}->{devices_statuses}->{update_time}) > ($self->{reload_extra_cache_time} * 60))) {
         $self->{cached}->{devices_statuses} = {};
     }
 
@@ -597,7 +597,7 @@ sub load_extra_cache {
         next if (!defined($self->{cached}->{$entry}));
 
         foreach (keys %{$self->{cached}->{$entry}}) {
-            if ((time() - $self->{cached}->{$entry}->{$_}->{update_time}) > ($self->{reload_cache_extra_time} * 60)) {
+            if ((time() - $self->{cached}->{$entry}->{$_}->{update_time}) > ($self->{reload_extra_cache_time} * 60)) {
                 delete $self->{cached}->{$entry}->{$_};
             }
         }
