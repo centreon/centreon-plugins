@@ -40,7 +40,7 @@ sub custom_content_output {
 
     my $msg = 'HTTP test(s)';
     if (!$self->{output}->is_status(value => $self->{instance_mode}->{content_status}, compare => 'ok', litteral => 1)) {
-        my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '_content'};
+        my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '-content'};
         $filter =~ s/\$self->\{result_values\}->/%/g;
         $msg = sprintf("Content test [filter: '%s']", $filter);
     }
@@ -157,14 +157,13 @@ sub load_request {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->load_request();
 
     # Legacy compat
-    if (defined($self->{option_results}->{expected_string}) && $self->{option_results}->{expected_string} ne '') {
-        $self->{option_results}->{critical_content} = "%{content} !~ /$self->{option_results}->{expected_string}/mi";
+    if (defined($options{option_results}->{expected_string}) && $options{option_results}->{expected_string} ne '') {
+        $options{option_results}->{'critical-content'} = "%{content} !~ /$options{option_results}->{expected_string}/mi";
     }
+    $self->SUPER::check_options(%options);
+    $self->load_request();
 
     $self->{http}->set_options(%{$self->{option_results}});
 }
