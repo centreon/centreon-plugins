@@ -45,7 +45,7 @@ sub new {
             'proto:s'           => { name => 'proto' },
             'token:s'           => { name => 'token' },
             'timeout:s'         => { name => 'timeout', default => 10 },
-            'config-file:s'     => { name => 'config_file' },
+            'config-file:s'     => { name => 'config_file', default => '~/.kube/config' },
             'sudo'              => { name => 'sudo' },
             'command:s'         => { name => 'command', default => 'kubectl' },
             'command-path:s'    => { name => 'command_path' },
@@ -72,12 +72,14 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{config_file} = (defined($self->{option_results}->{config_file})) ? $self->{option_results}->{config_file} : '';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
+    $self->{timeout}  = (defined($self->{option_results}->{timeout})) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
  
     if (!defined($self->{config_file}) || $self->{config_file} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --config-file option.");
         $self->{output}->option_exit();
     }
+
+    $ENV{KUBECONFIG} = $self->{option_results}->{config_file};
     
     if (defined($self->{option_results}->{proxyurl}) && $self->{option_results}->{proxyurl} ne '') {
         $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
@@ -131,7 +133,6 @@ sub kubernetes_list_daemonsets {
 
     my $response = $self->execute(
         cmd_options => "get daemonsets --all-namespaces --output='json'"
-            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -143,7 +144,6 @@ sub kubernetes_list_deployments {
 
     my $response = $self->execute(
         cmd_options => "get deployments --all-namespaces --output='json'"
-            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -155,7 +155,6 @@ sub kubernetes_list_ingresses {
 
     my $response = $self->execute(
         cmd_options => "get ingresses --all-namespaces --output='json'"
-            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -167,7 +166,6 @@ sub kubernetes_list_namespaces {
 
     my $response = $self->execute(
         cmd_options => "get namespaces --all-namespaces --output='json'"
-            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -179,7 +177,6 @@ sub kubernetes_list_nodes {
 
     my $response = $self->execute(
         cmd_options => "get nodes --all-namespaces --output='json'"
-            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
 
@@ -191,7 +188,6 @@ sub kubernetes_list_replicasets {
 
     my $response = $self->execute(
         cmd_options => "get replicasets --all-namespaces --output='json'"
-            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -203,7 +199,6 @@ sub kubernetes_list_services {
 
     my $response = $self->execute(
         cmd_options => "get services --all-namespaces --output='json'"
-            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -215,7 +210,6 @@ sub kubernetes_list_statefulsets {
 
     my $response = $self->execute(
         cmd_options => "get statefulsets --all-namespaces --output='json'"
-            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -227,7 +221,6 @@ sub kubernetes_list_pods {
 
     my $response = $self->execute(
         cmd_options => "get pods --all-namespaces --output='json'"
-            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -254,7 +247,7 @@ Kubernetes CLI (kubectl)
 
 =item B<--config-file>
 
-Kubernetes configuration file path
+Kubernetes configuration file path (Default: '~/.kube/config').
 (Example: --config-file='/root/.kube/config').
 
 =item B<--timeout>
