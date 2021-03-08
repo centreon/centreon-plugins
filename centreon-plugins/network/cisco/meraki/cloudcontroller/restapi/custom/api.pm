@@ -137,7 +137,7 @@ sub trace_api {
     my $time_end = Time::HiRes::time();
     my $date_end = POSIX::strftime('%Y%m%d %H:%M:%S', localtime($time_end));
     $date_end .= sprintf('.%03d', ($time_end - int($time_end)) * 1000);
-    print FH "$date_start - $date_end - $self->{api_token} - $options{url} - $options{code}\n";
+    print FH "$date_start - $date_end - $$ - $self->{api_token} - $options{url} - $options{code}\n";
     close FH;
 }
 
