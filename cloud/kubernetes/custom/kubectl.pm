@@ -128,6 +128,17 @@ sub execute {
     return $decoded->{items}; 
 }
 
+sub kubernetes_list_cronjobs {
+    my ($self, %options) = @_;
+
+    my $response = $self->execute(
+        cmd_options => "get cronjobs --all-namespaces --output='json'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
+    
+    return $response;
+}
+
 sub kubernetes_list_daemonsets {
     my ($self, %options) = @_;
 
@@ -150,11 +161,22 @@ sub kubernetes_list_deployments {
     return $response;
 }
 
-sub kubernetes_list_ingresses {
+sub kubernetes_list_deployments {
     my ($self, %options) = @_;
 
     my $response = $self->execute(
-        cmd_options => "get ingresses --all-namespaces --output='json'"
+        cmd_options => "get deployments --all-namespaces --output='json'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
+    
+    return $response;
+}
+
+sub kubernetes_list_events {
+    my ($self, %options) = @_;
+
+    my $response = $self->execute(
+        cmd_options => "get events --all-namespaces --output='json'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -180,6 +202,17 @@ sub kubernetes_list_nodes {
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
 
+    return $response;
+}
+
+sub kubernetes_list_rcs {
+    my ($self, %options) = @_;
+
+    my $response = $self->execute(
+        cmd_options => "get replicationcontroller --all-namespaces --output='json'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
+    
     return $response;
 }
 
@@ -221,6 +254,17 @@ sub kubernetes_list_pods {
 
     my $response = $self->execute(
         cmd_options => "get pods --all-namespaces --output='json'"
+            . " --request-timeout='" .  $self->{timeout} . "'"
+    );
+    
+    return $response;
+}
+
+sub kubernetes_list_pvs {
+    my ($self, %options) = @_;
+
+    my $response = $self->execute(
+        cmd_options => "get pv --all-namespaces --output='json'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     

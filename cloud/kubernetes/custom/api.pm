@@ -181,6 +181,14 @@ sub request_api_paginate {
     return \@items;
 }
 
+sub kubernetes_list_cronjobs {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/batch/v1beta1/cronjobs');
+    
+    return $response;
+}
+
 sub kubernetes_list_daemonsets {
     my ($self, %options) = @_;
         
@@ -193,6 +201,14 @@ sub kubernetes_list_deployments {
     my ($self, %options) = @_;
         
     my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/apps/v1/deployments');
+    
+    return $response;
+}
+
+sub kubernetes_list_events {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/events');
     
     return $response;
 }
@@ -217,6 +233,14 @@ sub kubernetes_list_nodes {
     my ($self, %options) = @_;
         
     my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/nodes');
+    
+    return $response;
+}
+
+sub kubernetes_list_rcs {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/replicationcontrollers');
     
     return $response;
 }
@@ -249,6 +273,14 @@ sub kubernetes_list_pods {
     my ($self, %options) = @_;
         
     my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/pods');
+    
+    return $response;
+}
+
+sub kubernetes_list_pvs {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/persistentvolumes');
     
     return $response;
 }
