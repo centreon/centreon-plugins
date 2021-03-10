@@ -85,6 +85,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to get veeam tape job status informations.
+Method to get veeam licenses informations.
 
 =cut
