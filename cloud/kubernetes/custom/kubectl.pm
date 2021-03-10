@@ -45,7 +45,7 @@ sub new {
             'proto:s'           => { name => 'proto' },
             'token:s'           => { name => 'token' },
             'timeout:s'         => { name => 'timeout', default => 10 },
-            'config-file:s'     => { name => 'config_file' },
+            'config-file:s'     => { name => 'config_file', default => '~/.kube/config' },
             'sudo'              => { name => 'sudo' },
             'command:s'         => { name => 'command', default => 'kubectl' },
             'command-path:s'    => { name => 'command_path' },
@@ -79,7 +79,15 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $ENV{KUBECONFIG} = $self->{option_results}->{config_file};
+    if ($self->{config_file} =~ /^~/) {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'File::HomeDir',
+            error_msg => "Cannot load module 'File::HomeDir'."
+        );
+        my $home = File::HomeDir->my_home;
+        $self->{config_file} =~ s/\~/$home/;
+    }
     
     if (defined($self->{option_results}->{proxyurl}) && $self->{option_results}->{proxyurl} ne '') {
         $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
@@ -133,6 +141,7 @@ sub kubernetes_list_cronjobs {
 
     my $response = $self->execute(
         cmd_options => "get cronjobs --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -144,6 +153,7 @@ sub kubernetes_list_daemonsets {
 
     my $response = $self->execute(
         cmd_options => "get daemonsets --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -155,6 +165,7 @@ sub kubernetes_list_deployments {
 
     my $response = $self->execute(
         cmd_options => "get deployments --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -166,6 +177,7 @@ sub kubernetes_list_events {
 
     my $response = $self->execute(
         cmd_options => "get events --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -177,6 +189,7 @@ sub kubernetes_list_namespaces {
 
     my $response = $self->execute(
         cmd_options => "get namespaces --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -188,6 +201,7 @@ sub kubernetes_list_nodes {
 
     my $response = $self->execute(
         cmd_options => "get nodes --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
 
@@ -199,6 +213,7 @@ sub kubernetes_list_rcs {
 
     my $response = $self->execute(
         cmd_options => "get replicationcontroller --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -210,6 +225,7 @@ sub kubernetes_list_replicasets {
 
     my $response = $self->execute(
         cmd_options => "get replicasets --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -221,6 +237,7 @@ sub kubernetes_list_services {
 
     my $response = $self->execute(
         cmd_options => "get services --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -232,6 +249,7 @@ sub kubernetes_list_statefulsets {
 
     my $response = $self->execute(
         cmd_options => "get statefulsets --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -243,6 +261,7 @@ sub kubernetes_list_pods {
 
     my $response = $self->execute(
         cmd_options => "get pods --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
@@ -254,6 +273,7 @@ sub kubernetes_list_pvs {
 
     my $response = $self->execute(
         cmd_options => "get pv --all-namespaces --output='json'"
+            . " --kubeconfig='" . $self->{config_file} . "'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
