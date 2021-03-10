@@ -33,7 +33,8 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'mail' => 'apps::proxmox::mg::restapi::mode::mail'
+        'mail'    => 'apps::proxmox::mg::restapi::mode::mail',
+        'version' => 'apps::proxmox::mg::restapi::mode::version'
     };
 
     $self->{custom_modes}->{api} = 'apps::proxmox::mg::restapi::custom::api';
