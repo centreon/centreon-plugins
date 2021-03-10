@@ -29,10 +29,13 @@ our $job_result;
 our $job_tape_type;
 our $job_tape_result;
 our $job_tape_state;
+our $license_type;
+our $license_status;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
     $job_type $job_result $job_tape_type $job_tape_result $job_tape_state
+    $license_type $license_status
 );
 
 $job_type = {
@@ -119,6 +122,16 @@ $job_tape_state = {
     3 => 'Working', 4 => 'Pausing', 5 => 'Resuming',
     6 => 'WaitingTape', 7 => 'Idle', 8 => 'Postprocessing',
     9 => 'WaitingRepository', 10 => 'Pending'
+};
+
+$license_type = {
+    0 => 'rental', 1 => 'perpetual',
+    2 => 'subscription', 3 => 'evaluation',
+    4 => 'free', 5 => 'NFR', 6 => 'empty'
+};
+
+$license_status = {
+    0 => 'valid', 1 => 'expired', 2 => 'invalid'
 };
 
 1;
