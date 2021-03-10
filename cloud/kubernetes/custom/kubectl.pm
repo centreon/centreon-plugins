@@ -45,7 +45,7 @@ sub new {
             'proto:s'           => { name => 'proto' },
             'token:s'           => { name => 'token' },
             'timeout:s'         => { name => 'timeout', default => 10 },
-            'config-file:s'     => { name => 'config_file', default => '~/.kube/config' },
+            'config-file:s'     => { name => 'config_file' },
             'sudo'              => { name => 'sudo' },
             'command:s'         => { name => 'command', default => 'kubectl' },
             'command-path:s'    => { name => 'command_path' },
@@ -144,17 +144,6 @@ sub kubernetes_list_daemonsets {
 
     my $response = $self->execute(
         cmd_options => "get daemonsets --all-namespaces --output='json'"
-            . " --request-timeout='" .  $self->{timeout} . "'"
-    );
-    
-    return $response;
-}
-
-sub kubernetes_list_deployments {
-    my ($self, %options) = @_;
-
-    my $response = $self->execute(
-        cmd_options => "get deployments --all-namespaces --output='json'"
             . " --request-timeout='" .  $self->{timeout} . "'"
     );
     
