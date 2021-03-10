@@ -301,7 +301,8 @@ sub new {
         'add-switch-ports'             => { name => 'add_switch_ports' },
         'skip-traffic-disconnect-port' => { name => 'skip_traffic_disconnect_port' },
         'skip-clients'                 => { name => 'skip_clients' },
-        'skip-performance'             => { name => 'skip_performance' }
+        'skip-performance'             => { name => 'skip_performance' },
+        'skip-connections'             => { name => 'skip_connections' }
     });
 
     return $self;
@@ -512,7 +513,7 @@ sub manage_selection {
             device_ports => {}
         };
 
-        if ($devices->{$serial}->{model} =~ /^(?:MG|MR)/) {
+        if (!defined($self->{option_results}->{skip_connections}) && $devices->{$serial}->{model} =~ /^(?:MG|MR)/) {
             $self->add_connection_stats(
                 custom => $options{custom},
                 timespan => $timespan,
@@ -617,6 +618,10 @@ Don't monitor clients traffic on device.
 =item B<--skip-performance>
 
 Don't monitor appliance perfscore.
+
+=item B<--skip-connections>
+
+Don't monitor connection stats.
 
 =item B<--skip-traffic-disconnect-port>
 
