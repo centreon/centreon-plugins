@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::mode::deploymentstatus;
+package cloud::kubernetes::mode::replicasetstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -31,32 +31,20 @@ sub custom_status_perfdata {
     
     $self->{output}->perfdata_add(
         label => 'desired',
-        nlabel => 'deployment.replicas.desired.count',
+        nlabel => 'replicaset.replicas.desired.count',
         value => $self->{result_values}->{desired},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'current',
-        nlabel => 'deployment.replicas.current.count',
+        nlabel => 'replicaset.replicas.current.count',
         value => $self->{result_values}->{current},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
     );
     $self->{output}->perfdata_add(
-        label => 'available',
-        nlabel => 'deployment.replicas.available.count',
-        value => $self->{result_values}->{available},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
-    );
-    $self->{output}->perfdata_add(
         label => 'ready',
-        nlabel => 'deployment.replicas.ready.count',
+        nlabel => 'replicaset.replicas.ready.count',
         value => $self->{result_values}->{ready},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
-    );
-    $self->{output}->perfdata_add(
-        label => 'up_to_date',
-        nlabel => 'deployment.replicas.uptodate.count',
-        value => $self->{result_values}->{up_to_date},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
     );
 }
@@ -64,12 +52,10 @@ sub custom_status_perfdata {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("Replicas Desired: %s, Current: %s, Available: %s, Ready: %s, Up-to-date: %s",
+    return sprintf("Replicas Desired: %s, Current: %s, Ready: %s",
         $self->{result_values}->{desired},
         $self->{result_values}->{current},
-        $self->{result_values}->{available},
-        $self->{result_values}->{ready},
-        $self->{result_values}->{up_to_date});
+        $self->{result_values}->{ready});
 }
 
 sub custom_status_calc {
@@ -79,9 +65,7 @@ sub custom_status_calc {
     $self->{result_values}->{namespace} = $options{new_datas}->{$self->{instance} . '_namespace'};
     $self->{result_values}->{desired} = $options{new_datas}->{$self->{instance} . '_desired'};
     $self->{result_values}->{current} = $options{new_datas}->{$self->{instance} . '_current'};
-    $self->{result_values}->{available} = $options{new_datas}->{$self->{instance} . '_available'};
     $self->{result_values}->{ready} = $options{new_datas}->{$self->{instance} . '_ready'};
-    $self->{result_values}->{up_to_date} = $options{new_datas}->{$self->{instance} . '_up_to_date'};
 
     return 0;
 }
@@ -90,14 +74,14 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'deployments', type => 1, cb_prefix_output => 'prefix_deployment_output',
-            message_multiple => 'All Deployments status are ok', skipped_code => { -11 => 1 } },
+        { name => 'replicasets', type => 1, cb_prefix_output => 'prefix_replicaset_output',
+            message_multiple => 'All ReplicaSets status are ok', skipped_code => { -11 => 1 } },
     ];
 
-    $self->{maps_counters}->{deployments} = [
+    $self->{maps_counters}->{replicasets} = [
         { label => 'status', set => {
-                key_values => [ { name => 'desired' }, { name => 'current' }, { name => 'up_to_date' },
-                    { name => 'available' }, { name => 'ready' }, { name => 'name' }, { name => 'namespace' } ],
+                key_values => [ { name => 'desired' }, { name => 'current' },
+                    { name => 'ready' }, { name => 'name' }, { name => 'namespace' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => $self->can('custom_status_perfdata'),
@@ -107,10 +91,10 @@ sub set_counters {
     ];
 }
 
-sub prefix_deployment_output {
+sub prefix_replicaset_output {
     my ($self, %options) = @_;
 
-    return "Deployment '" . $options{instance_value}->{name} . "' ";
+    return "ReplicaSet '" . $options{instance_value}->{name} . "' ";
 }
 
 sub new {
@@ -121,8 +105,8 @@ sub new {
     $options{options}->add_options(arguments => {
         "filter-name:s"         => { name => 'filter_name' },
         "filter-namespace:s"    => { name => 'filter_namespace' },
-        "warning-status:s"      => { name => 'warning_status', default => '%{up_to_date} < %{desired}' },
-        "critical-status:s"     => { name => 'critical_status', default => '%{available} < %{desired}' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '%{ready} < %{desired}' },
     });
    
     return $self;
@@ -138,35 +122,33 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{deployments} = {};
+    $self->{replicasets} = {};
 
-    my $results = $options{custom}->kubernetes_list_deployments();
+    my $results = $options{custom}->kubernetes_list_replicasets();
     
-    foreach my $deployment (@{$results}) {
+    foreach my $replicaset (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $deployment->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{name} . "': no matching filter name.", debug => 1);
+            $replicaset->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $replicaset->{metadata}->{name} . "': no matching filter name.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_namespace}) && $self->{option_results}->{filter_namespace} ne '' &&
-            $deployment->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
+            $replicaset->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $replicaset->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
             next;
         }
-
-        $self->{deployments}->{$deployment->{metadata}->{uid}} = {
-            name => $deployment->{metadata}->{name},
-            namespace => $deployment->{metadata}->{namespace},
-            desired => $deployment->{spec}->{replicas},
-            current => (defined($deployment->{status}->{replicas})) && $deployment->{status}->{replicas} =~ /(\d+)/ ? $1 : 0,
-            ready => (defined($deployment->{status}->{readyReplicas})) && $deployment->{status}->{readyReplicas} =~ /(\d+)/ ? $1 : 0,
-            up_to_date => (defined($deployment->{status}->{updatedReplicas})) && $deployment->{status}->{updatedReplicas} =~ /(\d+)/ ? $1 : 0,
-            available => (defined($deployment->{status}->{availableReplicas})) && $deployment->{status}->{availableReplicas} =~ /(\d+)/ ? $1 : 0
-        }            
+        
+        $self->{replicasets}->{$replicaset->{metadata}->{uid}} = {
+            name => $replicaset->{metadata}->{name},
+            namespace => $replicaset->{metadata}->{namespace},
+            desired => $replicaset->{spec}->{replicas},
+            current => (defined($replicaset->{status}->{replicas})) && $replicaset->{status}->{replicas} =~ /(\d+)/ ? $1 : 0,
+            ready => (defined($replicaset->{status}->{readyReplicas})) && $replicaset->{status}->{readyReplicas} =~ /(\d+)/ ? $1 : 0
+        }
     }
     
-    if (scalar(keys %{$self->{deployments}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No deployments found.");
+    if (scalar(keys %{$self->{replicasets}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No ReplicaSets found.");
         $self->{output}->option_exit();
     }
 }
@@ -177,29 +159,29 @@ __END__
 
 =head1 MODE
 
-Check deployment status.
+Check ReplicaSet status.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter deployment name (can be a regexp).
+Filter ReplicaSet name (can be a regexp).
 
 =item B<--filter-namespace>
 
-Filter deployment namespace (can be a regexp).
+Filter ReplicaSet namespace (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{up_to_date} < %{desired}')
+Set warning threshold for status (Default: '')
 Can used special variables like: %{name}, %{namespace}, %{desired}, %{current},
-%{available}, %{unavailable}, %{up_to_date}.
+%{ready}.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{available} < %{desired}').
+Set critical threshold for status (Default: '%{ready} < %{desired}').
 Can used special variables like: %{name}, %{namespace}, %{desired}, %{current},
-%{available}, %{unavailable}, %{up_to_date}.
+%{ready}.
 
 =back
 

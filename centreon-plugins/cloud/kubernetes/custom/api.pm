@@ -74,9 +74,9 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
     $self->{token} = (defined($self->{option_results}->{token})) ? $self->{option_results}->{token} : '';
-    $self->{limit} = (defined($self->{option_results}->{limit})) ? $self->{option_results}->{limit} : '100';
+    $self->{limit} = (defined($self->{option_results}->{limit})) && $self->{option_results}->{limit} =~ /(\d+)/ ? $1 : 100;
  
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -181,6 +181,14 @@ sub request_api_paginate {
     return \@items;
 }
 
+sub kubernetes_list_cronjobs {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/batch/v1beta1/cronjobs');
+    
+    return $response;
+}
+
 sub kubernetes_list_daemonsets {
     my ($self, %options) = @_;
         
@@ -193,6 +201,14 @@ sub kubernetes_list_deployments {
     my ($self, %options) = @_;
         
     my $response = $self->request_api_paginate(method => 'GET', url_path => '/apis/apps/v1/deployments');
+    
+    return $response;
+}
+
+sub kubernetes_list_events {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/events');
     
     return $response;
 }
@@ -217,6 +233,14 @@ sub kubernetes_list_nodes {
     my ($self, %options) = @_;
         
     my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/nodes');
+    
+    return $response;
+}
+
+sub kubernetes_list_rcs {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/replicationcontrollers');
     
     return $response;
 }
@@ -249,6 +273,14 @@ sub kubernetes_list_pods {
     my ($self, %options) = @_;
         
     my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/pods');
+    
+    return $response;
+}
+
+sub kubernetes_list_pvs {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api_paginate(method => 'GET', url_path => '/api/v1/persistentvolumes');
     
     return $response;
 }
