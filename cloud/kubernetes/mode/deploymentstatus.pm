@@ -166,7 +166,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{deployments}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No deployments found.");
+        $self->{output}->add_option_msg(short_msg => "No Deployments found.");
         $self->{output}->option_exit();
     }
 }

@@ -47,7 +47,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'pvs', type => 1, cb_prefix_output => 'prefix_pv_output',
-            message_multiple => 'All persistent volume status are ok', skipped_code => { -11 => 1 } },
+            message_multiple => 'All PersistentVolumes status are ok', skipped_code => { -11 => 1 } },
     ];
 
     $self->{maps_counters}->{pvs} = [
@@ -111,7 +111,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{pvs}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No persistent volumes found.");
+        $self->{output}->add_option_msg(short_msg => "No PersistentVolumes found.");
         $self->{output}->option_exit();
     }
 }

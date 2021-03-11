@@ -51,7 +51,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'nodes', type => 3, cb_prefix_output => 'prefix_output', cb_long_output => 'long_output',
-          message_multiple => 'All nodes status are ok', indent_long_output => '    ',
+          message_multiple => 'All Nodes status are ok', indent_long_output => '    ',
             group => [
                 { name => 'conditions', display_long => 1, cb_prefix_output => 'prefix_condition_output',
                   message_multiple => 'Conditions are ok', type => 1, skipped_code => { -10 => 1 } },
@@ -142,7 +142,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{nodes}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No nodes found.");
+        $self->{output}->add_option_msg(short_msg => "No Nodes found.");
         $self->{output}->option_exit();
     }
 }
