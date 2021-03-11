@@ -126,7 +126,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'pods', type => 3, cb_prefix_output => 'prefix_pod_output', cb_long_output => 'long_output',
-          message_multiple => 'All pods status are ok', indent_long_output => '    ',
+          message_multiple => 'All Pods status are ok', indent_long_output => '    ',
             group => [
                 { name => 'global',  type => 0, skipped_code => { -10 => 1 } },
                 { name => 'containers', display_long => 1, cb_prefix_output => 'prefix_container_output',
@@ -286,7 +286,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{pods}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No pods found.");
+        $self->{output}->add_option_msg(short_msg => "No Pods found.");
         $self->{output}->option_exit();
     }
 }
