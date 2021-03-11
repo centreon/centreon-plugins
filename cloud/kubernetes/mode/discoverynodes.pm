@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::mode::nodesdiscovery;
+package cloud::kubernetes::mode::discoverynodes;
 
 use base qw(centreon::plugins::mode);
 
