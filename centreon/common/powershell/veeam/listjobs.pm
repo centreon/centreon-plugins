@@ -29,6 +29,9 @@ sub get_powershell {
     my (%options) = @_;
 
     my $ps = '
+$ProgressPreference = "SilentlyContinue"
+$WarningPreference = "SilentlyContinue"
+
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
 ';
@@ -38,9 +41,6 @@ $culture = new-object "System.Globalization.CultureInfo" "en-us"
     $ps .= centreon::common::powershell::veeam::functions::powershell_init();
 
     $ps .= '
-$ProgressPreference = "SilentlyContinue"
-$WarningPreference = "SilentlyContinue"
-
 Try {
     $ErrorActionPreference = "Stop"
 
