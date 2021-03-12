@@ -39,6 +39,7 @@ $culture = new-object "System.Globalization.CultureInfo" "en-us"
 
     $ps .= '
 $ProgressPreference = "SilentlyContinue"
+$WarningPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
