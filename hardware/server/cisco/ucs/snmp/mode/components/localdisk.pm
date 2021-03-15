@@ -18,18 +18,18 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::mode::components::localdisk;
+package hardware::server::cisco::ucs::snmp::mode::components::localdisk;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_presence %mapping_operability);
+use hardware::server::cisco::ucs::snmp::mode::components::resources qw(%mapping_presence %mapping_operability);
 
 # In MIB 'CISCO-UNIFIED-COMPUTING-STORAGE-MIB'
 my $mapping1 = {
-    cucsStorageLocalDiskPresence => { oid => '.1.3.6.1.4.1.9.9.719.1.45.4.1.10', map => \%mapping_presence },
+    cucsStorageLocalDiskPresence => { oid => '.1.3.6.1.4.1.9.9.719.1.45.4.1.10', map => \%mapping_presence }
 };
 my $mapping2 = {
-    cucsStorageLocalDiskOperability => { oid => '.1.3.6.1.4.1.9.9.719.1.45.4.1.9', map => \%mapping_operability },
+    cucsStorageLocalDiskOperability => { oid => '.1.3.6.1.4.1.9.9.719.1.45.4.1.9', map => \%mapping_operability }
 };
 my $oid_cucsStorageLocalDiskDn = '.1.3.6.1.4.1.9.9.719.1.45.4.1.2';
 

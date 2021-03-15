@@ -18,13 +18,13 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::mode::equipment;
+package hardware::server::cisco::ucs::snmp::mode::equipment;
 
 use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
+use hardware::server::cisco::ucs::snmp::mode::components::resources qw($thresholds);
 
 sub set_system {
     my ($self, %options) = @_;
@@ -33,7 +33,7 @@ sub set_system {
 
     $self->{thresholds} = $thresholds;
 
-    $self->{components_path} = 'hardware::server::cisco::ucs::mode::components';
+    $self->{components_path} = 'hardware::server::cisco::ucs::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu', 'chassis', 'iocard', 'blade', 'fex', 'cpu', 'memory', 'localdisk'];
 }
 

@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::mode::components::fan;
+package hardware::server::cisco::ucs::snmp::mode::components::fan;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_presence %mapping_operability);
+use hardware::server::cisco::ucs::snmp::mode::components::resources qw(%mapping_presence %mapping_operability);
 
 # In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
 my $mapping1 = {

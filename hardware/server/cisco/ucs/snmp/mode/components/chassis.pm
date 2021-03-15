@@ -18,16 +18,16 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::mode::components::chassis;
+package hardware::server::cisco::ucs::snmp::mode::components::chassis;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_operability);
+use hardware::server::cisco::ucs::snmp::mode::components::resources qw(%mapping_operability);
 
 # In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
 # Don't do the 'presence'. Is 'unknown' ??!!!
 my $mapping1 = {
-    cucsEquipmentChassisOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.15.7.1.27', map => \%mapping_operability },
+    cucsEquipmentChassisOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.15.7.1.27', map => \%mapping_operability }
 };
 my $oid_cucsEquipmentChassisDn = '.1.3.6.1.4.1.9.9.719.1.15.7.1.2';
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::mode::faults;
+package hardware::server::cisco::ucs::snmp::mode::faults;
 
 use base qw(centreon::plugins::mode);
 
@@ -48,13 +48,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-severity:s@"  => { name => 'filter_severity', },
-                                  "filter-message:s"    => { name => 'filter_message' },
-                                  "retention:s"         => { name => 'retention' },
-                                  "memory"              => { name => 'memory' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'filter-severity:s@' => { name => 'filter_severity', },
+        'filter-message:s'   => { name => 'filter_message' },
+        'retention:s'        => { name => 'retention' },
+        'memory'             => { name => 'memory' }
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{severities} = {};
     return $self;
@@ -78,7 +78,7 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Wrong filter_severity status '" . $val . "'.");
             $self->{output}->option_exit();
         }
-        
+
         $self->{severities}->{$filter} = $threshold;
     }
     if (scalar(keys %{$self->{severities}}) == 0) {
@@ -111,11 +111,13 @@ sub run {
     my ($start, $last_instance);
     my ($num_eventlog_checked, $num_errors) = (0, 0);
     my %oids = ($oid_cucsFaultDescription => undef, $oid_cucsFaultCreationTime => undef, $oid_cucsFaultSeverity => undef, $oid_cucsFaultDn => undef);
-    
+
     if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache}->read(statefile => "cache_ciscoucs_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No new problems detected.");
+        $self->{statefile_cache}->read(statefile => 'cache_ciscoucs_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
+        $self->{output}->output_add(
+            severity => 'OK', 
+            short_msg => 'No new problems detected.'
+        );
         $start = $self->{statefile_cache}->get(name => 'start');
         $last_instance = $start;
         if (defined($start)) {
@@ -124,16 +126,21 @@ sub run {
             }
         }
     } else {
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No problems detected.");
+        $self->{output}->output_add(
+            severity => 'OK', 
+            short_msg => 'No problems detected.'
+        );
     }
     
-    my $result = $self->{snmp}->get_multiple_table(oids => [ 
-                                                            { oid => $oid_cucsFaultDescription, start => $oids{$oid_cucsFaultDescription} },
-                                                            { oid => $oid_cucsFaultCreationTime, start => $oids{$oid_cucsFaultCreationTime} },
-                                                            { oid => $oid_cucsFaultSeverity, start => $oids{$oid_cucsFaultSeverity} },
-                                                            { oid => $oid_cucsFaultDn, start => $oids{$oid_cucsFaultDn} },
-                                                           ] );
+    my $result = $self->{snmp}->get_multiple_table(
+        oids => [ 
+            { oid => $oid_cucsFaultDescription, start => $oids{$oid_cucsFaultDescription} },
+            { oid => $oid_cucsFaultCreationTime, start => $oids{$oid_cucsFaultCreationTime} },
+            { oid => $oid_cucsFaultSeverity, start => $oids{$oid_cucsFaultSeverity} },
+            { oid => $oid_cucsFaultDn, start => $oids{$oid_cucsFaultDn} }
+        ]
+    );
+
     my @exits_global;
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_cucsFaultDn}})) {
         next if ($key !~ /^$oid_cucsFaultDn\.(\d+)$/);
@@ -163,11 +170,13 @@ sub run {
         my $exit = $self->{output}->get_most_critical(status => \@exits);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $num_errors++;
-            $self->{output}->output_add(long_msg => sprintf("%s : %s (%s)", 
-                                                            scalar(localtime($timestamp)),
-                                                            $message, $dn
-                                                           )
-                                        );
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "%s : %s (%s)", 
+                    scalar(localtime($timestamp)),
+                    $message, $dn
+                )
+            );
         }
     }
     
@@ -175,16 +184,17 @@ sub run {
     if ($num_errors != 0) {
         # Message problem
         my $exit = $self->{output}->get_most_critical(status => \@exits_global);
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("%d problem detected (use verbose for more details)", $num_errors)
-                                    );
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("%d problem detected (use verbose for more details)", $num_errors)
+        );
     }
-    
+
     if (defined($self->{option_results}->{memory})) {
         $datas->{start} = $last_instance;
         $self->{statefile_cache}->write(data => $datas);
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }

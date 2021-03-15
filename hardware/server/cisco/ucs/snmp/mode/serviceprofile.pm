@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::mode::serviceprofile;
+package hardware::server::cisco::ucs::snmp::mode::serviceprofile;
 
 use base qw(centreon::plugins::mode);
 
@@ -27,7 +27,7 @@ use warnings;
 
 my %error_status = (
     1 => ["online", 'OK'],
-    2 => ["offline", 'CRITICAL'], 
+    2 => ["offline", 'CRITICAL']
 );
 
 sub new {
@@ -35,12 +35,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "skip"                    => { name => 'skip' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' },
+        'skip'       => { name => 'skip' }
+    });
 
     return $self;
 }
@@ -66,12 +65,13 @@ sub run {
     my $oid_cucsLsBindingDn = '.1.3.6.1.4.1.9.9.719.1.26.2.1.2';
     my $oid_cucsLsBindingOperState = '.1.3.6.1.4.1.9.9.719.1.26.2.1.10';
 
-    my $result = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_cucsLsBindingDn },
-                                                            { oid => $oid_cucsLsBindingOperState },
-                                                            ],
-                                                   nothing_quit => 1
-                                                   );
+    my $result = $self->{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_cucsLsBindingDn },
+            { oid => $oid_cucsLsBindingOperState }
+        ],
+        nothing_quit => 1
+    );
 
     my $ls_online = 0;
     my $ls_offline = 0;
@@ -142,4 +142,3 @@ Threshold critical for 'online' service profiles.
 =back
 
 =cut
-    

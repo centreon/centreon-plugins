@@ -18,18 +18,18 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::mode::components::blade;
+package hardware::server::cisco::ucs::snmp::mode::components::blade;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_presence %mapping_overall_status);
+use hardware::server::cisco::ucs::snmp::mode::components::resources qw(%mapping_presence %mapping_overall_status);
 
 # In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
 my $mapping1 = {
-    cucsComputeBladePresence => { oid => '.1.3.6.1.4.1.9.9.719.1.9.2.1.45', map => \%mapping_presence },
+    cucsComputeBladePresence => { oid => '.1.3.6.1.4.1.9.9.719.1.9.2.1.45', map => \%mapping_presence }
 };
 my $mapping2 = {
-    cucsComputeBladeOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.9.2.1.42', map => \%mapping_overall_status },
+    cucsComputeBladeOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.9.2.1.42', map => \%mapping_overall_status }
 };
 my $oid_cucsComputeBladeDn = '.1.3.6.1.4.1.9.9.719.1.9.2.1.2';
 
