@@ -208,7 +208,7 @@ And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent') ('percent', 'bps', 'counter').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 

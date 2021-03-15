@@ -468,23 +468,16 @@ Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{dup
 Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} eq "enabled" and %{linkstatus} ne "true"').
 Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down', 'total-link-up', 'total-link-down',
-'in-traffic', 'out-traffic', 'in-crc', 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
-'speed' (b/s).
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down', 'total-link-up', 'total-link-down',
 'in-traffic', 'out-traffic', 'in-crc', 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent') ('percent', 'bps', 'counter').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 

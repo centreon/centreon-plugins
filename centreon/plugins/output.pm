@@ -195,20 +195,21 @@ sub output_add {
 sub perfdata_add {
     my ($self, %options) = @_;
     my $perfdata = {
-        label => '', value => '', unit => '', warning => '', critical => '', min => '', max => '', mode => $self->{mode},
+        label => '', value => '', unit => '', warning => '', critical => '', min => '', max => '', mode => $self->{mode}
     };
     foreach (keys %options) {
         next if (!defined($options{$_}));
         $perfdata->{$_} = $options{$_};
     }
 
-    if (defined($self->{option_results}->{use_new_perfdata}) && defined($options{nlabel})) {
+    if ((defined($self->{option_results}->{use_new_perfdata}) || defined($options{force_new_perfdata})) && 
+        defined($options{nlabel})) {
         $perfdata->{label} = $options{nlabel};
     }
     if (defined($options{instances})) {
         $options{instances} = [$options{instances}] if (!ref($options{instances}));
         my ($external_instance_separator, $internal_instance_separator) = ('#', '~');
-        if (defined($self->{option_results}->{use_new_perfdata})) {
+        if (defined($self->{option_results}->{use_new_perfdata}) || defined($options{force_new_perfdata})) {
             $perfdata->{label} = join('~', @{$options{instances}}) . '#' . $perfdata->{label};
         } else {
             $perfdata->{label} .= '_' . join('_', @{$options{instances}});

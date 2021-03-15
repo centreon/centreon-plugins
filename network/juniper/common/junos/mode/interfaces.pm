@@ -294,9 +294,9 @@ Set warning threshold for all error counters.
 
 Set critical threshold for all error counters.
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning (will superseed --warning-errors).
+Thresholds (will superseed --[warning-critical]-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
@@ -304,19 +304,9 @@ Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'to
 
 And also: 'fcs-errors (%)', 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
-=item B<--critical-*>
-
-Threshold critical (will superseed --warning-errors).
-Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
-'speed' (b/s).
-
-And also: 'in-fcserror' (%), 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
-
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent') ('percent', 'bps', 'counter').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 

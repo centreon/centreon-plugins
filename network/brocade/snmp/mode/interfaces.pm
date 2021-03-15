@@ -311,7 +311,7 @@ Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'to
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: 'percent') ('percent', 'bps', 'counter').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
