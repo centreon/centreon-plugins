@@ -209,14 +209,19 @@ Check faults.
 
 =over 8
 
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '%{severity} =~ /minor|warning/')
+Can used special variables like: %{severity}, %{description}, %{dn}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{severity} =~ /major|critical/').
+Can used special variables like: %{severity}, %{description}, %{dn}
+
 =item B<--memory>
 
 Only check new fault.
-
-=item B<--filter-severity>
-
-Filter on severity. (Default: 'critical|major=critical', 'warning|minor=warning')
-Can be: critical, major, warning, minor, info, cleared. 
 
 =item B<--filter-message>
 
