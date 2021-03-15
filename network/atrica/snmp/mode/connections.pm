@@ -151,7 +151,7 @@ sub set_counters_traffic {
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in_cir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In CIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'in-eir', filter => 'add_traffic', nlabel => 'interface.traffic.in.eir.bitspersecond', set => {
@@ -159,7 +159,7 @@ sub set_counters_traffic {
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in_eir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In EIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'out-cir', filter => 'add_traffic', nlabel => 'interface.traffic.out.cir.bitspersecond', set => {
@@ -167,7 +167,7 @@ sub set_counters_traffic {
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out_cir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out CIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'out-eir', filter => 'add_traffic', nlabel => 'interface.traffic.out.eir.bitspersecond', set => {
@@ -175,7 +175,7 @@ sub set_counters_traffic {
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out_eir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out EIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         }
     ;
@@ -190,7 +190,7 @@ sub set_counters_errors {
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in_eir_discard' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In EIR Discard : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'out-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.out.eir.discard.count', set => {
@@ -198,7 +198,7 @@ sub set_counters_errors {
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out_eir_discard' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out EIR Discard : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         }
     ;
@@ -277,8 +277,7 @@ sub custom_traffic_calc {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, 
-                                  no_set_traffic => 1, no_set_errors => 1, no_cast => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_set_traffic => 1, no_set_errors => 1, no_cast => 1);
     bless $self, $class;
     
     return $self;
@@ -304,8 +303,10 @@ sub load_traffic {
         $self->load_speed(%options);
     }
     $self->set_oids_traffic();
-    $self->{snmp}->load(oids => [$self->{oid_ing_cir}, $self->{oid_ing_eir}, 
-                                 $self->{oid_eg_cir}, $self->{oid_eg_eir}], instances => $self->{array_interface_selected});
+    $self->{snmp}->load(oids => [
+        $self->{oid_ing_cir}, $self->{oid_ing_eir}, 
+        $self->{oid_eg_cir}, $self->{oid_eg_eir}], instances => $self->{array_interface_selected}
+    );
 }
 
 sub load_errors {
@@ -411,11 +412,11 @@ Can be: 'in-cir', 'in-eir', 'out-cir', 'out-eir', 'in-eir-discard', 'out-eir-dis
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent') ('percent', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for discards (Default: '%') ('%', 'b/s').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--interface>
 
@@ -436,10 +437,6 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
-
-=item B<--no-skipped-counters>
-
-Don't skip counters when no change.
 
 =item B<--reload-cache-time>
 

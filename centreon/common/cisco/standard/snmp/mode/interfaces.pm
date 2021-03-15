@@ -107,9 +107,9 @@ sub set_counters_errors {
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Crc : %s',
                 closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
-        },
+        }
     ;
 }
 
@@ -119,7 +119,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'add-err-disable'   => { name => 'add_err_disable' },
+        'add-err-disable'   => { name => 'add_err_disable' }
     });
 
     return $self;
@@ -249,11 +249,11 @@ Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'to
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent') ('percent', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: '%') ('%', 'absolute').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -278,10 +278,6 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
-
-=item B<--no-skipped-counters>
-
-Don't skip counters when no change.
 
 =item B<--force-counters32>
 

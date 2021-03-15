@@ -200,17 +200,18 @@ sub custom_traffic_calc {
 sub custom_errors_perfdata {
     my ($self, %options) = @_;
 
-    if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units_errors} =~ /percent/) {
         my $nlabel = $self->{nlabel};
         $nlabel =~ s/count$/percentage/;
         $self->{output}->perfdata_add(
             label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1}, unit => '%',
             nlabel => $nlabel,
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-            value => sprintf("%.2f", $self->{result_values}->{prct}),
+            value => sprintf('%.2f', $self->{result_values}->{prct}),
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
-            min => 0, max => 100
+            min => 0,
+            max => 100
         );
     } else {
         $self->{output}->perfdata_add(
@@ -220,7 +221,8 @@ sub custom_errors_perfdata {
             value => $self->{result_values}->{used},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
-            min => 0, max => $self->{result_values}->{total}
+            min => 0,
+            max => $self->{result_values}->{total}
         );
     }
 }
@@ -229,7 +231,7 @@ sub custom_errors_threshold {
     my ($self, %options) = @_;
 
     my $exit = 'ok';
-    if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units_errors} =~ /percent/) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } else {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
@@ -241,9 +243,11 @@ sub custom_errors_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Packets %s : %.2f%% (%s)',
+        'Packets %s : %.2f%% (%s on %s)',
         $self->{result_values}->{label},
-        $self->{result_values}->{prct}, $self->{result_values}->{used}
+        $self->{result_values}->{prct},
+        $self->{result_values}->{used},
+        $self->{result_values}->{total}
     );
 }
 
@@ -256,18 +260,28 @@ sub custom_errors_calc {
         return -2;
     }
 
-    my $diff = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2}} - 
-        $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2}});
-    my $total = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} - 
+    my $errors = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} };
+    my $errors_diff = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} } - 
+        $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} });
+    my $total = $options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
+    my $total_diff = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} - 
         $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'});
-    if ($total == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
-        $self->{error_msg} = "skipped";
-        return -2;
+
+    $self->{result_values}->{prct} = 0;
+    $self->{result_values}->{used} = $errors_diff;
+    $self->{result_values}->{total} = $total_diff;
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent_delta') {
+        $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent') {
+        $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
+        $self->{result_values}->{used} = $errors;
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'delta') {
+        $self->{result_values}->{used} = $errors_diff;
+    } else {
+        $self->{result_values}->{used} = $errors;
+        $self->{result_values}->{total} = $total;
     }
 
-    $self->{result_values}->{prct} = $total == 0 ? 0 : $diff * 100 / $total;
-    $self->{result_values}->{used} = $diff;
-    $self->{result_values}->{total} = $total;
     if (defined($options{extra_options}->{label})) {
         $self->{result_values}->{label} = $options{extra_options}->{label};
     } else {
@@ -792,11 +806,11 @@ sub new {
         'global-oper-down-rule:s'  => { name => 'global_oper_down_rule', default => $self->default_global_oper_down_rule() },
         'interface:s'              => { name => 'interface' },
         'units-traffic:s'          => { name => 'units_traffic', default => '%' },
-        'units-errors:s'           => { name => 'units_errors', default => '%' },
+        'units-errors:s'           => { name => 'units_errors', default => 'percent_delta' },
         'speed:s'                  => { name => 'speed' },
         'speed-in:s'               => { name => 'speed_in' },
         'speed-out:s'              => { name => 'speed_out' },
-        'no-skipped-counters'      => { name => 'no_skipped_counters' },
+        'no-skipped-counters'      => { name => 'no_skipped_counters' }, # legacy
         'display-transform-src:s'  => { name => 'display_transform_src' },
         'display-transform-dst:s'  => { name => 'display_transform_dst' },
         'show-cache'               => { name => 'show_cache' },
@@ -853,10 +867,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Wrong option --units-traffic.');
         $self->{output}->option_exit();
     }
-    if (defined($self->{option_results}->{add_errors}) && 
-        (!defined($self->{option_results}->{units_errors}) || $self->{option_results}->{units_errors} !~ /^(%|absolute|b\/s)$/)) {
-        $self->{output}->add_option_msg(short_msg => 'Wrong option --units-errors.');
-        $self->{output}->option_exit();
+    if (defined($self->{option_results}->{add_errors})) {
+        $self->{option_results}->{units_errors} = 'percent_delta'
+            if (!defined($self->{option_results}->{units_errors}) || $self->{option_results}->{units_errors} eq '%');
+        $self->{option_results}->{units_errors} = 'delta' if ($self->{option_results}->{units_errors} eq 'absolute'); # compat
+        if ($self->{option_results}->{units_errors} !~ /^(?:percent|percent_delta|delta|counter)$/) {
+            $self->{output}->add_option_msg(short_msg => 'Wrong option --units-errors.');
+            $self->{output}->option_exit();
+        }
     }
 
     $self->{get_speed} = 0;
@@ -1501,11 +1519,11 @@ Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'to
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent') ('percent', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: '%') ('%', 'absolute').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -1538,10 +1556,6 @@ Get interface speed configuration for interface type 'adsl' and 'vdsl2'.
 Syntax: --map-speed-dsl=interface-src-name,interface-dsl-name
 
 E.g: --map-speed-dsl=Et0.835,Et0-vdsl2
-
-=item B<--no-skipped-counters>
-
-Don't skip counters when no change.
 
 =item B<--force-counters64>
 

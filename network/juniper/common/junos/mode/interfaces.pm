@@ -94,7 +94,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-            'add-optical'   => { name => 'add_optical' },
+            'add-optical'   => { name => 'add_optical' }
         }
     );
     
@@ -316,11 +316,11 @@ And also: 'in-fcserror' (%), 'input-power' (dBm), 'bias-current' (mA), 'output-p
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent') ('percent', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: '%') ('%', 'absolute').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -345,10 +345,6 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
-
-=item B<--no-skipped-counters>
-
-Don't skip counters when no change.
 
 =item B<--force-counters32>
 

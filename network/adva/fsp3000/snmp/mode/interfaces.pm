@@ -174,7 +174,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-            'add-optical'   => { name => 'add_optical' },
+            'add-optical' => { name => 'add_optical' }
         }
     );
     
@@ -313,7 +313,7 @@ Can be: 'laser-temp', 'input-power', 'output-power', 'traffic-in', 'traffic-out'
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent') ('percent', 'bps', 'counter').
 
 =item B<--interface>
 
