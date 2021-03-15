@@ -42,7 +42,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-         { label => 'status', threshold => 0, display_ok => 0, set => {
+         {
+             label => 'status', type => 2, critical_default => '%{http_code} < 200 or %{http_code} >= 300',
+             display_ok => 0, set => {
                 key_values => [
                     { name => 'http_code' }, { name => 'message' }
                 ],
@@ -97,9 +99,6 @@ sub new {
         'get-param:s@'         => { name => 'get_param' },
         'post-param:s@'        => { name => 'post_param' },
         'cookies-file:s'       => { name => 'cookies_file' },
-        'unknown-status:s'     => { name => 'unknown_status', default => '' },
-        'warning-status:s'     => { name => 'warning_status' },
-        'critical-status:s'    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
         'warning:s'            => { name => 'warning' },
         'critical:s'           => { name => 'critical' }
     });
@@ -121,8 +120,6 @@ sub check_options {
         $options{option_results}->{'critical-http-response-time-seconds'} = $options{option_results}->{critical};
     }    
     $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
