@@ -196,7 +196,7 @@ Set critical threshold for all error counters.
 Thresholds (will superseed --[warning|critical]-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 
 And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror' (%), 'in-fragment' (%),
@@ -213,6 +213,10 @@ Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta',
 =item B<--units-errors>
 
 Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+
+=item B<--units-cast>
+
+Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--nagvis-perfdata>
 

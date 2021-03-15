@@ -472,7 +472,7 @@ Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{dup
 
 Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down', 'total-link-up', 'total-link-down',
-'in-traffic', 'out-traffic', 'in-crc', 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'in-traffic', 'out-traffic', 'in-crc', 'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 
 =item B<--units-traffic>
@@ -482,6 +482,10 @@ Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta',
 =item B<--units-errors>
 
 Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+
+=item B<--units-cast>
+
+Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--nagvis-perfdata>
 
