@@ -18,18 +18,18 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::mode::components::cpu;
+package hardware::server::cisco::ucs::snmp::mode::components::cpu;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_presence %mapping_operability);
+use hardware::server::cisco::ucs::snmp::mode::components::resources qw(%mapping_presence %mapping_operability);
 
 # In MIB 'CISCO-UNIFIED-COMPUTING-PROCESSOR-MIB'
 my $mapping1 = {
-    cucsProcessorUnitPresence => { oid => '.1.3.6.1.4.1.9.9.719.1.41.9.1.13', map => \%mapping_presence },
+    cucsProcessorUnitPresence => { oid => '.1.3.6.1.4.1.9.9.719.1.41.9.1.13', map => \%mapping_presence }
 };
 my $mapping2 = {
-    cucsProcessorUnitOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.41.9.1.9', map => \%mapping_operability },
+    cucsProcessorUnitOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.41.9.1.9', map => \%mapping_operability }
 };
 my $oid_cucsProcessorUnitDn = '.1.3.6.1.4.1.9.9.719.1.41.9.1.2';
 

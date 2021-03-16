@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::plugin;
+package hardware::server::cisco::ucs::snmp::plugin;
 
 use strict;
 use warnings;
@@ -30,12 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'equipment'        => 'hardware::server::cisco::ucs::mode::equipment',
-        'faults'           => 'hardware::server::cisco::ucs::mode::faults',
-        'audit-logs'       => 'hardware::server::cisco::ucs::mode::auditlogs',
-        'service-profile'  => 'hardware::server::cisco::ucs::mode::serviceprofile',
-    );
+    $self->{modes} = {
+        'audit-logs'      => 'hardware::server::cisco::ucs::snmp::mode::auditlogs',
+        'equipment'       => 'hardware::server::cisco::ucs::snmp::mode::equipment',
+        'faults'          => 'hardware::server::cisco::ucs::snmp::mode::faults',
+        'mgmt-entities'   => 'hardware::server::cisco::ucs::snmp::mode::mgmtentities',
+        'service-profile' => 'hardware::server::cisco::ucs::snmp::mode::serviceprofile'
+    };
 
     return $self;
 }
