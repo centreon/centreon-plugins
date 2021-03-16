@@ -166,7 +166,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin -
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventGrid/<EventGridType>/<keyvault_id>'
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventGrid/<EventGridType>/<topic_rsc_id>'
 --aggregation='average' --warning-matched-events='20' --critical-matched-events='50'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
