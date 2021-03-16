@@ -36,7 +36,7 @@ sub new {
         'health'      => 'cloud::azure::integration::servicebus::mode::health',
         'messages'    => 'cloud::azure::integration::servicebus::mode::messages',
         'requests'    => 'cloud::azure::integration::servicebus::mode::requests',
-        'resources'   => 'cloud::azure::integration::servicebus::mode::resources'
+        'namespaces'  => 'cloud::azure::integration::servicebus::mode::namespaces'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
