@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::security::keyvault::plugin;
+package cloud::azure::integration::servicebus::plugin;
 
 use strict;
 use warnings;
@@ -31,10 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'discovery'          => 'cloud::azure::security::keyvault::mode::discovery',
-        'service-api'        => 'cloud::azure::security::keyvault::mode::serviceapi',
-        'vault-availability' => 'cloud::azure::security::keyvault::mode::vaultavailability',
-        'vault-capacity'     => 'cloud::azure::security::keyvault::mode::vaultcapacity'
+        'connections' => 'cloud::azure::integration::servicebus::mode::connections',
+        'discovery'   => 'cloud::azure::integration::servicebus::mode::discovery',
+        'health'      => 'cloud::azure::integration::servicebus::mode::health',
+        'messages'    => 'cloud::azure::integration::servicebus::mode::messages',
+        'requests'    => 'cloud::azure::integration::servicebus::mode::requests',
+        'namespaces'  => 'cloud::azure::integration::servicebus::mode::namespaces'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
@@ -58,6 +60,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Key Vaults.
+Check Microsoft Azure Service Bus namespaces.
 
 =cut

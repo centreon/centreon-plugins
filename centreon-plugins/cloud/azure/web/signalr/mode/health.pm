@@ -18,9 +18,9 @@
 # limitations under the License.
 #
 
-package cloud::azure::security::keyvault::mode::discovery;
+package cloud::azure::web::signalr::mode::errors;
 
-use base qw(cloud::azure::management::monitor::mode::discovery);
+use base qw(cloud::azure::management::monitor::mode::health);
 
 use strict;
 use warnings;
@@ -29,8 +29,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{namespace} = 'Microsoft.KeyVault';
-    $self->{type} = 'vaults';
+    $self->{az_resource_namespace} = 'Microsoft.SignalRService';
+    $self->{az_resource_type} = 'SignalR';
 }
 
 1;
@@ -39,21 +39,37 @@ __END__
 
 =head1 MODE
 
-Azure Security Key Vaults discovery.
+Check SignalR health status.
 
 =over 8
 
+=item B<--resource>
+
+Set resource name or id (Required).
+
 =item B<--resource-group>
 
-Specify resource group.
+Set resource group (Required if resource's name is used).
 
-=item B<--location>
+=item B<--warning-status>
 
-Specify location.
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}, %{summary}
 
-=item B<--prettify>
+=item B<--critical-status>
 
-Prettify JSON output.
+Set critical threshold for status (Default: '%{status} =~ /^Unavailable$/').
+Can used special variables like: %{status}, %{summary}
+
+=item B<--unknown-status>
+
+Set unknown threshold for status (Default: '%{status} =~ /^Unknown$/').
+Can used special variables like: %{status}, %{summary}
+
+=item B<--ok-status>
+
+Set ok threshold for status (Default: '%{status} =~ /^Available$/').
+Can used special variables like: %{status}, %{summary}
 
 =back
 
