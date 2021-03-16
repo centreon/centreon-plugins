@@ -135,7 +135,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Service Bus connections statistics.
+Check Azure Service Bus messages metrics.
 
 Example:
 
