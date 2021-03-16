@@ -188,13 +188,13 @@ Example:
 Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events-stats --custommode=api
---resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='average'
+--resource=<topic_rsc_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-publish-failed='20' --critical-publish-failed='50'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::eventgrid::plugin --mode=events-stats --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.KeyVault/vaults/<keyvault_id>'
+--resource='resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventGrid/<EventGridType>/<topic_rsc_id>''
 --aggregation='average' --warning-publish-failed='20' --critical-publish-failed='50'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
