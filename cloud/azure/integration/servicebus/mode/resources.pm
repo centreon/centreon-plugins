@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::integration::servicebus::mode::resources;
+package cloud::azure::integration::servicebus::mode::namespaces;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -114,13 +114,13 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=resources --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=namespaces --custommode=api
 --resource=<busnamespace_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-cpu-usage-percentage='80' --critical-cpu-usage-percentage='90'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=resources --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=namespaces --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ServiceBus/namespaces/<busnamespace_id>'
 --aggregation='average' --warning-cpu-usage-percentage='80' --critical-cpu-usage-percentage='90'
 
