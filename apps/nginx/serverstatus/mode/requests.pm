@@ -43,7 +43,6 @@ sub custom_requests_perfdata {
     );
 }
 
-
 sub custom_requests_calc {
     my ($self, %options) = @_;
 
@@ -56,6 +55,15 @@ sub custom_requests_calc {
         $options{extra_options}->{output_str} . (defined($self->{instance_mode}->{option_results}->{per_minute}) ? '/min' : '/s'),
         $self->{result_values}->{value}
     );
+    return 0;
+}
+
+sub custom_dropped_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{dropped} =
+        ($options{new_datas}->{ $self->{instance} . '_accepts' } - $options{old_datas}->{ $self->{instance} . '_accepts' }) -
+        ($options{new_datas}->{ $self->{instance} . '_handled' } - $options{old_datas}->{ $self->{instance} . '_handled' });
     return 0;
 }
 
@@ -83,6 +91,16 @@ sub set_counters {
                 output_template => '%s',
                 output_use => 'output_str', threshold_use => 'value',
                 closure_custom_perfdata => $self->can('custom_requests_perfdata')
+            }
+        },
+        { label => 'connections-dropped', nlabel => 'server.connections.dropped.count', set => {
+                key_values => [ { name => 'accepts', diff => 1 }, { name => 'handled', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_dropped_calc'),
+                output_template => 'connections dropped: %d',
+                output_use => 'dropped', threshold_use => 'dropped',
+                perfdatas => [
+                    { value => 'dropped', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'requests', nlabel => 'server.requests.persecond', set => {
