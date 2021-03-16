@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::security::keyvault::plugin;
+package cloud::azure::web::signalr::plugin;
 
 use strict;
 use warnings;
@@ -31,10 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'discovery'          => 'cloud::azure::security::keyvault::mode::discovery',
-        'service-api'        => 'cloud::azure::security::keyvault::mode::serviceapi',
-        'vault-availability' => 'cloud::azure::security::keyvault::mode::vaultavailability',
-        'vault-capacity'     => 'cloud::azure::security::keyvault::mode::vaultcapacity'
+        'discovery'   => 'cloud::azure::web::signalr::mode::discovery',
+        'errors'      => 'cloud::azure::web::signalr::mode::errors',
+        'health'      => 'cloud::azure::web::signalr::mode::health',
+        'usage'       => 'cloud::azure::web::signalr::mode::usage',
+        'traffic'     => 'cloud::azure::web::signalr::mode::traffic'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
@@ -58,6 +59,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Key Vaults.
+Check Microsoft Azure SignalR resources.
 
 =cut

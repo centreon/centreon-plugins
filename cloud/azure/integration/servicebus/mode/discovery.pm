@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::security::keyvault::mode::discovery;
+package cloud::azure::integration::servicebus::mode::discovery;
 
 use base qw(cloud::azure::management::monitor::mode::discovery);
 
@@ -29,8 +29,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{namespace} = 'Microsoft.KeyVault';
-    $self->{type} = 'vaults';
+    $self->{namespace} = 'Microsoft.ServiceBus';
+    $self->{type} = 'namespaces';
 }
 
 1;
@@ -39,7 +39,7 @@ __END__
 
 =head1 MODE
 
-Azure Security Key Vaults discovery.
+Azure Service Bus namespaces discovery.
 
 =over 8
 

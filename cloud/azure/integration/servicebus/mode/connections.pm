@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::security::keyvault::mode::vaultavailability;
+package cloud::azure::integration::servicebus::mode::connections;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,14 +29,27 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'availability' => {
-            'output' => 'Overall Vault Availability',
-            'label'  => 'vault-availability-percentage',
-            'nlabel' => 'keyvault.vault.availability.percentage',
-            'unit'   => '%',
-            'min'    => '0',
-            'max'    => '100'
-        }
+        'activeconnections' => {
+            'output' => 'Active Connections',
+            'label'  => 'active-connections',
+            'nlabel' => 'servicebus.namespace.connections.active.count',
+            'unit'   => '',
+            'min'    => '0'
+        },
+        'connectionsclosed' => {
+            'output' => 'Connections Closed',
+            'label'  => 'closed-connections',
+            'nlabel' => 'servicebus.namespace.connections.closed.count',
+            'unit'   => '',
+            'min'    => '0'
+        },
+        'connectionsopened' => {
+            'output' => 'Connections Opened',
+            'label'  => 'opened-connections',
+            'nlabel' => 'servicebus.namespace.connections.opened.count',
+            'unit'   => '',
+            'min'    => '0'
+        },
     };
 
     return $metrics_mapping;
@@ -66,15 +79,15 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.KeyVault\/vaults\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.ServiceBus\/namespaces\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }
 
     $self->{az_resource} = $resource;
     $self->{az_resource_group} = $resource_group;
-    $self->{az_resource_type} = 'vaults';
-    $self->{az_resource_namespace} = 'Microsoft.KeyVault';
+    $self->{az_resource_type} = 'namespaces';
+    $self->{az_resource_namespace} = 'Microsoft.ServiceBus';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
     $self->{az_aggregations} = ['Average'];
@@ -100,21 +113,21 @@ __END__
 
 =head1 MODE
 
-Check Azure Security Key Vault availability.
+Check Azure Service Bus connections statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=vault-availability --custommode=api
---resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-vault-availability-percentage='100:' --critical-vault-availability-percentage='50:'
+perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=connections --custommode=api
+--resource=<busnamespace_id> --resource-group=<resourcegroup_id> --aggregation='average'
+--warning-servicebus-active-connections='1000' --critical-servicebus-active-connections='2000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=vault-availability --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.KeyVault/vaults/<keyvault_id>'
---aggregation='average' --warning-vault-availability-percentage='100:' --critical-vault-availability-percentage='50:'
+perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=connections --custommode=api
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ServiceBus/namespaces/<busnamespace_id>'
+--aggregation='average' --warning-servicebus-active-connections='1000' --critical-servicebus-active-connections='2000'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
@@ -128,13 +141,15 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-vault-availability-percentage>
+=item B<--warning-*>
 
-Warning threshold.
+Warning threshold where '*' can be:
+'closed-connection', 'active-connections', 'opened-connections'.
 
-=item B<--critical-vault-availability-percentage>
+=item B<--critical-*>
 
-Critical threshold.
+Critical threshold where '*' can be:
+'closed-connection', 'active-connections', 'opened-connections'.
 
 =back
 

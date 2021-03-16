@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::security::keyvault::mode::vaultavailability;
+package cloud::azure::web::signalr::mode::errors;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,10 +29,18 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'availability' => {
-            'output' => 'Overall Vault Availability',
-            'label'  => 'vault-availability-percentage',
-            'nlabel' => 'keyvault.vault.availability.percentage',
+        'systemerrors' => {
+            'output' => 'System Errors',
+            'label'  => 'system-errors',
+            'nlabel' => 'signalr.errors.system.percentage',
+            'unit'   => '%',
+            'min'    => '0',
+            'max'    => '100'
+        },
+        'usererrors' => {
+            'output' => 'User Errors',
+            'label'  => 'user-errors',
+            'nlabel' => 'signalr.errors.user.percentage',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
@@ -66,18 +74,18 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.KeyVault\/vaults\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.SignalRService\/SignalR\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }
 
     $self->{az_resource} = $resource;
     $self->{az_resource_group} = $resource_group;
-    $self->{az_resource_type} = 'vaults';
-    $self->{az_resource_namespace} = 'Microsoft.KeyVault';
+    $self->{az_resource_type} = 'SignalR';
+    $self->{az_resource_namespace} = 'Microsoft.SignalRService';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Average'];
+    $self->{az_aggregations} = ['Maximum'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -100,23 +108,23 @@ __END__
 
 =head1 MODE
 
-Check Azure Security Key Vault availability.
+Check Azure Web SignalR errors.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=vault-availability --custommode=api
---resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-vault-availability-percentage='100:' --critical-vault-availability-percentage='50:'
+perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=errors --custommode=api
+--resource=<signalr_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
+--warning-connection-count='800' --warning-connection-count='900'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=vault-availability --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.KeyVault/vaults/<keyvault_id>'
---aggregation='average' --warning-vault-availability-percentage='100:' --critical-vault-availability-percentage='50:'
+perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=errors --custommode=api
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.SignalRService/SignalR/<signalr_id>'
+--aggregation='maximum' --warning-connection-count='800' --warning-connection-count='900'
 
-Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
+Default aggregation: 'maximum' / 'minimum', 'total' and 'average' are valid.
 
 =over 8
 
@@ -128,13 +136,15 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-vault-availability-percentage>
+=item B<--warning-*>
 
-Warning threshold.
+Warning threshold where '*' can be:
+'system-errors', 'user-errors'.
 
-=item B<--critical-vault-availability-percentage>
+=item B<--critical-*>
 
-Critical threshold.
+Critical threshold where '*' can be:
+'system-errors', 'user-errors'.
 
 =back
 
