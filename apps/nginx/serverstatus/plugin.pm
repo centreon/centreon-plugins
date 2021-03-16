@@ -22,7 +22,7 @@ package apps::nginx::serverstatus::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,12 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'connections'   => 'apps::nginx::serverstatus::mode::connections',
-        'responsetime'  => 'apps::nginx::serverstatus::mode::responsetime',
-        'requests'      => 'apps::nginx::serverstatus::mode::requests',
-    );
+    $self->{modes} = {
+        'connections' => 'apps::nginx::serverstatus::mode::connections',
+        'requests'    => 'apps::nginx::serverstatus::mode::requests'
+    };
 
+    $self->{custom_modes}->{api} = 'apps::nginx::serverstatus::custom::api';
     return $self;
 }
 
