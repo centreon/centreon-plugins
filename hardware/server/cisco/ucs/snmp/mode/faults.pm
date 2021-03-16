@@ -20,69 +20,112 @@
 
 package hardware::server::cisco::ucs::snmp::mode::faults;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use POSIX;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my %severity_map = (
-    0 => 'cleared',
-    1 => 'info',
-    3 => 'warning',
-    4 => 'minor',
-    5 => 'major',
-    6 => 'critical',
-);
+my $map_severity = {
+    0 => 'cleared', 1 => 'info', 2 => 'condition',
+    3 => 'warning', 4 => 'minor', 5 => 'major',
+    6 => 'critical'
+};
 
-my $oid_cucsFaultDescription = '.1.3.6.1.4.1.9.9.719.1.1.1.1.11';
-my $oid_cucsFaultCreationTime = '.1.3.6.1.4.1.9.9.719.1.1.1.1.10';
-my $oid_cucsFaultSeverity = '.1.3.6.1.4.1.9.9.719.1.1.1.1.20';
-my $oid_cucsFaultDn = '.1.3.6.1.4.1.9.9.719.1.1.1.1.2';
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'fault [severity: %s] [dn: %s] [description: %s] %s',
+        $self->{result_values}->{severity},
+        $self->{result_values}->{dn},
+        $self->{result_values}->{description},
+        scalar(localtime($self->{result_values}->{created}))
+    );
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Faults ';
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
+        { name => 'faults', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { nlabel => 'faults.problems.current.count', min => 0 },
+          group => [ { name => 'fault', skipped_code => { -11 => 1 } } ]
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'faults-total', nlabel => 'faults.total.count', display_ok => 0, set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'total: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    foreach (values %$map_severity) {
+        push @{$self->{maps_counters}->{global}},
+            { label => 'faults-' . $_, nlabel => 'faults.' . $_ . '.count', display_ok => 0, set => {
+                    key_values => [ { name => $_ }, { name => 'total' } ],
+                    output_template => $_ . ': %s',
+                    perfdatas => [
+                        { template => '%s', min => 0, max => 'total' }
+                    ]
+                }
+            };
+    }
+
+    $self->{maps_counters}->{fault} = [
+        {
+            label => 'status',
+            type => 2,
+            warning_default => '%{severity} =~ /minor|warning/',
+            critical_default => '%{severity} =~ /major|critical/',
+            set => {
+                key_values => [
+                    { name => 'dn' }, { name => 'severity' },
+                    { name => 'description' }, { name => 'created' }
+                ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-severity:s@' => { name => 'filter_severity', },
         'filter-message:s'   => { name => 'filter_message' },
         'retention:s'        => { name => 'retention' },
         'memory'             => { name => 'memory' }
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
-    $self->{severities} = {};
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
-    }
-    foreach my $val (@{$self->{option_results}->{filter_severity}}) {
-        if ($val !~ /(.*?)=(.*)/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong filter-severity option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-
-        my ($filter, $threshold) = ($1, $2);
-        if ($self->{output}->is_litteral_status(status => $threshold) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong filter_severity status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-
-        $self->{severities}->{$filter} = $threshold;
-    }
-    if (scalar(keys %{$self->{severities}}) == 0) {
-        $self->{severities} = { 'major|critical' => 'critical', 'minor|warning' => 'warning' };
     }
 }
 
@@ -102,101 +145,62 @@ sub get_timestamp {
     return $currentTmsp;
 }
 
-sub run {
+my $mapping = {
+    dn          => { oid => '.1.3.6.1.4.1.9.9.719.1.1.1.1.2' },  # cucsFaultDn
+    created     => { oid => '.1.3.6.1.4.1.9.9.719.1.1.1.1.10' }, # cucsFaultCreationTime
+    description => { oid => '.1.3.6.1.4.1.9.9.719.1.1.1.1.11' }, # cucsFaultDescription
+    severity    => { oid => '.1.3.6.1.4.1.9.9.719.1.1.1.1.20', map => $map_severity } # cucsFaultSeverity
+};
+
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
+
     my $datas = {};
     my ($start, $last_instance);
-    my ($num_eventlog_checked, $num_errors) = (0, 0);
-    my %oids = ($oid_cucsFaultDescription => undef, $oid_cucsFaultCreationTime => undef, $oid_cucsFaultSeverity => undef, $oid_cucsFaultDn => undef);
-
     if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache}->read(statefile => 'cache_ciscoucs_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
-        $self->{output}->output_add(
-            severity => 'OK', 
-            short_msg => 'No new problems detected.'
-        );
+        $self->{statefile_cache}->read(statefile => 'cache_ciscoucs_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
         $start = $self->{statefile_cache}->get(name => 'start');
-        $last_instance = $start;
-        if (defined($start)) {
-            foreach (keys %oids) {
-                $oids{$_} = $_ . '.' . $start;
-            }
-        }
-    } else {
-        $self->{output}->output_add(
-            severity => 'OK', 
-            short_msg => 'No problems detected.'
-        );
+        $start = $start - 1 if (defined($start));
     }
-    
-    my $result = $self->{snmp}->get_multiple_table(
-        oids => [ 
-            { oid => $oid_cucsFaultDescription, start => $oids{$oid_cucsFaultDescription} },
-            { oid => $oid_cucsFaultCreationTime, start => $oids{$oid_cucsFaultCreationTime} },
-            { oid => $oid_cucsFaultSeverity, start => $oids{$oid_cucsFaultSeverity} },
-            { oid => $oid_cucsFaultDn, start => $oids{$oid_cucsFaultDn} }
-        ]
+
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [ map({ oid => $_->{oid}, start => $_->{oid} . (defined($start) ? '.' . $start : '') }, values(%$mapping)) ],
+        return_type => 1
     );
 
-    my @exits_global;
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_cucsFaultDn}})) {
-        next if ($key !~ /^$oid_cucsFaultDn\.(\d+)$/);
+    $self->{global} = {
+        total => 0, cleared => 0, info => 0, condition => 0,
+        warning => 0, minor => 0, major => 0, critical => 0
+    };
+    $self->{faults} = { global => { fault => {} } };
+    my ($i, $current_time) = (1, time());
+    foreach my $oid ($options{snmp}->oid_lex_sort(keys %$snmp_result)) {
+        next if ($oid !~ /^$mapping->{dn}->{oid}\.(\d+)$/);
         my $instance = $1;
-        $last_instance = $instance;
+        if (defined($self->{option_results}->{memory})) {
+            $last_instance = $instance;
+            next if (defined($start) && ($start + 1) >= $instance); # we skip last one from previous check)
+        }
 
-        my $message = centreon::plugins::misc::trim($result->{$oid_cucsFaultDescription}->{$oid_cucsFaultDescription . '.' . $instance});
-        my $severity = $result->{$oid_cucsFaultSeverity}->{$oid_cucsFaultSeverity . '.' . $instance};
-        my $timestamp = $self->get_timestamp(value => $result->{$oid_cucsFaultCreationTime}->{$oid_cucsFaultCreationTime . '.' . $instance});
-        my $dn = $result->{$oid_cucsFaultDn}->{$oid_cucsFaultDn . '.' . $instance};
-        
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $result->{description} = centreon::plugins::misc::trim($result->{description});
+        $result->{created} = $self->get_timestamp(value => $result->{created});
         if (defined($self->{option_results}->{retention})) {
-            next if (time() - $timestamp > $self->{option_results}->{retention});
+            next if ($current_time - $result->{created} > $self->{option_results}->{retention});
         }
 
-        $num_eventlog_checked++;        
-        next if (defined($self->{option_results}->{filter_message}) && $self->{option_results}->{filter_message} ne '' && $message !~ /$self->{option_results}->{filter_message}/);
-        
-        my @exits;
-        foreach (keys %{$self->{severities}}) {
-            if ($severity_map{$severity} =~ /$_/) {
-                push @exits, $self->{severities}->{$_};
-                push @exits_global, $self->{severities}->{$_};
-            }
-        }
-        
-        my $exit = $self->{output}->get_most_critical(status => \@exits);
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $num_errors++;
-            $self->{output}->output_add(
-                long_msg => sprintf(
-                    "%s : %s (%s)", 
-                    scalar(localtime($timestamp)),
-                    $message, $dn
-                )
-            );
-        }
-    }
-    
-    $self->{output}->output_add(long_msg => sprintf("Number of message checked: %s", $num_eventlog_checked));
-    if ($num_errors != 0) {
-        # Message problem
-        my $exit = $self->{output}->get_most_critical(status => \@exits_global);
-        $self->{output}->output_add(
-            severity => $exit,
-            short_msg => sprintf("%d problem detected (use verbose for more details)", $num_errors)
-        );
+        $self->{global}->{total}++;
+        next if (defined($self->{option_results}->{filter_message}) && $self->{option_results}->{filter_message} ne '' && $result->{description} !~ /$self->{option_results}->{filter_message}/);
+
+        $self->{faults}->{global}->{fault}->{$i} = $result;
+        $self->{global}->{ $result->{severity} }++;
+        $i++;
     }
 
     if (defined($self->{option_results}->{memory})) {
         $datas->{start} = $last_instance;
         $self->{statefile_cache}->write(data => $datas);
     }
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -234,4 +238,3 @@ Event older (current time - retention time) is not checked (in seconds).
 =back
 
 =cut
-    

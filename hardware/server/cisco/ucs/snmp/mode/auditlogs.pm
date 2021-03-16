@@ -117,7 +117,6 @@ sub new {
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
-    $self->{severities} = {};
     return $self;
 }
 

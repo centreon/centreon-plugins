@@ -20,101 +20,123 @@
 
 package hardware::server::cisco::ucs::snmp::mode::serviceprofile;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my %error_status = (
-    1 => ["online", 'OK'],
-    2 => ["offline", 'CRITICAL']
-);
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'status: %s',
+        $self->{result_values}->{status}
+    );
+}
+
+sub prefix_sp_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Service profile '%s' ",
+        $options{instance_value}->{dn}
+    );
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Service profiles ';
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', cb_prefix_output => 'prefix_global_output', type => 0 },
+        { name => 'sp', type => 1, cb_prefix_output => 'prefix_sp_output', message_multiple => 'All service profiles are ok' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'total', nlabel => 'serviceprofiles.total.count', display_ok => 0, set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'total: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'online', nlabel => 'serviceprofiles.online.count', display_ok => 0, set => {
+                key_values => [ { name => 'online' }, { name => 'total' } ],
+                output_template => 'online: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total' }
+                ]
+            }
+        },
+        { label => 'offline', nlabel => 'serviceprofiles.offline.count', display_ok => 0, set => {
+                key_values => [ { name => 'offline' }, { name => 'total' } ],
+                output_template => 'offline: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{sp} = [
+        {
+            label => 'status', type => 2, critical_default => '%{status} eq "offline"',
+            set => {
+                key_values => [ { name => 'dn' }, { name => 'status' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        'warning:s'  => { name => 'warning' },
-        'critical:s' => { name => 'critical' },
-        'skip'       => { name => 'skip' }
     });
 
     return $self;
 }
 
-sub check_options {
+my $map_status = {
+    1 => 'online',
+    2 => 'offline'
+};
+
+my $mapping = {
+    dn     => { oid => '.1.3.6.1.4.1.9.9.719.1.26.2.1.2' }, # cucsLsBindingDn
+    status => { oid => '.1.3.6.1.4.1.9.9.719.1.26.2.1.10', map => $map_status } # cucsLsBindingOperState
+};
+
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    my $oid_cucsLsBindingDn = '.1.3.6.1.4.1.9.9.719.1.26.2.1.2';
-    my $oid_cucsLsBindingOperState = '.1.3.6.1.4.1.9.9.719.1.26.2.1.10';
-
-    my $result = $self->{snmp}->get_multiple_table(
-        oids => [
-            { oid => $oid_cucsLsBindingDn },
-            { oid => $oid_cucsLsBindingOperState }
-        ],
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [ map({ oid => $_->{oid} }, values(%$mapping)) ],
+        return_type => 1,
         nothing_quit => 1
     );
 
-    my $ls_online = 0;
-    my $ls_offline = 0;
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_cucsLsBindingDn}})) {
-        # index
-        $key =~ /\.(\d+)$/;
-        my $ls_index = $1;
-        my $ls_name = $result->{$oid_cucsLsBindingDn}->{$oid_cucsLsBindingDn . '.' . $ls_index};
-        my $ls_operstate = $result->{$oid_cucsLsBindingOperState}->{$oid_cucsLsBindingOperState . '.' . $ls_index};
-
-        if ($ls_operstate == 1) {
-            $ls_online++;
-        } else {
-            $ls_offline++;
-        }
-
-        if ($ls_operstate == 2 && defined($self->{option_results}->{skip})) {
-            next;
-        }
-        if ($ls_operstate != 1) {
-            $self->{output}->output_add(severity => ${$error_status{$ls_operstate}}[1],
-                                        short_msg => sprintf("Service profile '%s' is %s", $ls_name, ${$error_status{$ls_operstate}}[0]));
-        }
+    $self->{global} = { total => 0, online => 0, offline => 0 };
+    $self->{sp} = {};
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{dn}->{oid}\.(.*)$/);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
+        $self->{sp}->{ $result->{dn} } = $result;
+        $self->{global}->{ $result->{status} }++;
+        $self->{global}->{total}++;
     }
-
-    my $ls_total = $ls_online + $ls_offline;
-    my $exit = $self->{perfdata}->threshold_check(value => $ls_online, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("%d service profiles online", $ls_online));
-
-    $self->{output}->perfdata_add(label => "sp_online",
-                                  value => $ls_online,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0, max => $ls_total);
-
-    $self->{output}->perfdata_add(label => "sp_offline",
-                                  value => $ls_offline,
-                                  min => 0, max => $ls_total);
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -123,21 +145,24 @@ __END__
 
 =head1 MODE
 
-Check service profiles status.
+Check service profiles.
 
 =over 8
 
-=item B<--skip>
+=item B<--warning-status>
 
-Skip 'offline' service profiles.
+Set warning threshold for status.
+Can used special variables like: %{dn}, %{status}
 
-=item B<--warning>
+=item B<--critical-status>
 
-Threshold warning for 'online' service profiles.
+Set critical threshold for status (Default: '%{status} eq "offline"').
+Can used special variables like: %{dn}, %{status}
 
-=item B<--critical>
+=item B<--warning-*> B<--critical-*>
 
-Threshold critical for 'online' service profiles.
+Thresholds.
+Can be: 'total', 'online', 'offline'.
 
 =back
 

@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'equipment'        => 'hardware::server::cisco::ucs::snmp::mode::equipment',
-        'faults'           => 'hardware::server::cisco::ucs::snmp::mode::faults',
-        'audit-logs'       => 'hardware::server::cisco::ucs::snmp::mode::auditlogs',
-        'service-profile'  => 'hardware::server::cisco::ucs::snmp::mode::serviceprofile'
+        'audit-logs'      => 'hardware::server::cisco::ucs::snmp::mode::auditlogs',
+        'equipment'       => 'hardware::server::cisco::ucs::snmp::mode::equipment',
+        'faults'          => 'hardware::server::cisco::ucs::snmp::mode::faults',
+        'service-profile' => 'hardware::server::cisco::ucs::snmp::mode::serviceprofile'
     };
 
     return $self;
