@@ -34,6 +34,7 @@ sub new {
         'audit-logs'      => 'hardware::server::cisco::ucs::snmp::mode::auditlogs',
         'equipment'       => 'hardware::server::cisco::ucs::snmp::mode::equipment',
         'faults'          => 'hardware::server::cisco::ucs::snmp::mode::faults',
+        'mgmt-entities'   => 'hardware::server::cisco::ucs::snmp::mode::mgmtentities',
         'service-profile' => 'hardware::server::cisco::ucs::snmp::mode::serviceprofile'
     };
 
