@@ -44,7 +44,7 @@ sub get_metrics_mapping {
             'min'    => '0'
         },
         'TotalUpdateDeploymentRuns' => {
-            'output' => 'Total Update Deployment Runs	',
+            'output' => 'Total Update Deployment Runs',
             'label'  => 'update-deployment-runs',
             'nlabel' => 'automation.runs.total.count',
             'unit'   => '',
