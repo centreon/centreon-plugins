@@ -43,7 +43,7 @@ sub get_metrics_mapping {
             'unit'   => '',
             'min'    => '0'
         },
-        'TotalUpdateDeploymentRuns' => {
+        'totalupdatedeploymentruns' => {
             'output' => 'Total Update Deployment Runs',
             'label'  => 'update-deployment-runs',
             'nlabel' => 'automation.runs.total.count',
@@ -120,13 +120,13 @@ Example:
 Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::automation::plugin --mode=jobs --custommode=api
---resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='total'
+--resource=<job_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-jobs-total='20' --critical-jobs-total='50'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::automation::plugin --mode=jobs --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.KeyVault/vaults/<keyvault_id>'
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Automation/automationAccounts/<job_id>'
 --aggregation='total' --warning-jobs-total='20' --critical-jobs-total='50'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
