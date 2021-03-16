@@ -103,6 +103,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'per-minute'  => { name => 'per_minute' }
     });
 
     return $self;
@@ -142,6 +143,10 @@ __END__
 Check Nginx request statistics.
 
 =over 8
+
+=item B<--per-minute>
+
+Per second metrics are computed per minute.
 
 =item B<--warning-*> B<--critical-*>
 
