@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::mode::components::resources;
+package hardware::server::cisco::ucs::snmp::mode::components::resources;
 
 use strict;
 use warnings;
@@ -47,7 +47,7 @@ our @EXPORT_OK = qw($thresholds %mapping_presence %mapping_operability %mapping_
     10 => 'unconfiguredBad',
     11 => 'predictiveFailure',
     12 => 'disabledForRemoval',
-    13 => 'foreignConfiguration',
+    13 => 'foreignConfiguration'
 );
 %mapping_presence = (
     0 => 'unknown', 
@@ -60,7 +60,7 @@ our @EXPORT_OK = qw($thresholds %mapping_presence %mapping_operability %mapping_
     21 => 'mismatchIdentityUnestablishable',
     30 => 'inaccessible',
     40 => 'unauthorized',
-    100 => 'notSupported',
+    100 => 'notSupported'
 );
 %mapping_operability = (
     0 => 'unknown',
@@ -90,7 +90,7 @@ our @EXPORT_OK = qw($thresholds %mapping_presence %mapping_operability %mapping_
     105 => 'upgradeProblem',
     106 => 'peerCommProblem',
     107 => 'autoUpgrade',
-    108 => 'linkActivateBlocked',
+    108 => 'linkActivateBlocked'
 );
 %mapping_overall_status = (
     0 => 'indeterminate',
@@ -122,7 +122,7 @@ our @EXPORT_OK = qw($thresholds %mapping_presence %mapping_operability %mapping_
     201 => 'bios-restore',
     202 => 'cmos-reset',
     203 => 'diagnostics',
-    204 => 'diagnostic-failed',
+    204 => 'diagnostic-failed'
 );
 
 $thresholds = {
@@ -140,7 +140,7 @@ $thresholds = {
         ['unconfiguredBad', 'CRITICAL'], 
         ['predictiveFailure', 'WARNING'], 
         ['disabledForRemoval', 'OK'],
-        ['foreignConfiguration', 'OK'], 
+        ['foreignConfiguration', 'OK'],
     ],
     'default.presence' => [
         ['unknown', 'UNKNOWN'], 
@@ -153,7 +153,7 @@ $thresholds = {
         ['mismatchIdentityUnestablishable', 'WARNING'],
         ['inaccessible', 'UNKNOWN'],
         ['unauthorized', 'UNKNOWN'],
-        ['notSupported', 'WARNING'],
+        ['notSupported', 'WARNING']
     ],
     'default.operability' => [
         ['unknown', 'UNKNOWN'], 
@@ -182,7 +182,7 @@ $thresholds = {
         ['postFailure', 'WARNING'],
         ['upgradeProblem', 'WARNING'],
         ['peerCommProblem', 'WARNING'],
-        ['autoUpgrade', 'OK'],
+        ['autoUpgrade', 'OK']
     ],
     'default.overall_status' => [
         ['indeterminate', 'UNKNOWN'],
@@ -214,8 +214,8 @@ $thresholds = {
         ['bios-restore', 'WARNING'],
         ['cmos-reset', 'WARNING'],
         ['diagnostics', 'OK'],
-        ['diagnostic-failed', 'WARNING'],
-    ],
+        ['diagnostic-failed', 'WARNING']
+    ]
 };
 
 1;

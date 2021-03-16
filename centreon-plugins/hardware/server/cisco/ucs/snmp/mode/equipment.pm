@@ -18,13 +18,13 @@
 # limitations under the License.
 #
 
-package hardware::server::cisco::ucs::mode::equipment;
+package hardware::server::cisco::ucs::snmp::mode::equipment;
 
 use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
+use hardware::server::cisco::ucs::snmp::mode::components::resources qw($thresholds);
 
 sub set_system {
     my ($self, %options) = @_;
@@ -33,7 +33,7 @@ sub set_system {
 
     $self->{thresholds} = $thresholds;
 
-    $self->{components_path} = 'hardware::server::cisco::ucs::mode::components';
+    $self->{components_path} = 'hardware::server::cisco::ucs::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu', 'chassis', 'iocard', 'blade', 'fex', 'cpu', 'memory', 'localdisk'];
 }
 
@@ -46,7 +46,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -88,7 +88,9 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='fan.operability,OK,poweredOff|removed'
+Eg: --threshold-overload='fan.operability,OK,poweredOff|removed' 
+--threshold-overload='presence,OK,missing' 
+--threshold-overload='operability,OK,removed'
 
 =back
 
