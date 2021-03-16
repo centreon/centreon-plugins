@@ -29,6 +29,36 @@ use apps::backup::veeam::local::mode::resources::types qw($license_type $license
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::misc;
 use JSON::XS;
+use POSIX;
+
+my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
+my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
+
+sub custom_expires_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
+        unit => $self->{instance_mode}->{option_results}->{unit},
+        value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_expires_threshold {
+    my ($self, %options) = @_;
+
+    return $self->{perfdata}->threshold_check(
+        value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
+}
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -86,13 +116,12 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'expires-seconds', nlabel => 'license.expires.seconds', set => {
+        { label => 'expires', nlabel => 'license.expires', set => {
                 key_values      => [ { name => 'expires_seconds' }, { name => 'expires_human' } ],
                 output_template => 'expires in %s',
                 output_use => 'expires_human',
-                perfdatas => [
-                    { template => '%d', min => 0, unit => 's', label_extra_instance => 1 }
-                ]
+                closure_custom_perfdata => $self->can('custom_expires_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_expires_threshold')
             }
         },
         { label => 'license-instances-usage', nlabel => 'license.instances.usage.count', set => {
@@ -137,10 +166,20 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-to:s'       => { name => 'filter_to' },
         'filter-type:s'     => { name => 'filter_type' },
-        'filter-status:s'   => { name => 'filter_status' }
+        'filter-status:s'   => { name => 'filter_status' },
+        'unit:s'            => { name => 'unit', default => 's' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
+        $self->{option_results}->{unit} = 's';
+    }
 }
 
 sub manage_selection {
@@ -186,7 +225,7 @@ sub manage_selection {
     }
 
     #[
-    #  {"licensed_instances":7150,"expiration_time":"1632960000","type":0,"licensed_to":"Centreon Services","status":0,"used_instance":165}
+    #  {"licensed_instances":7150,"expiration_time":"1632960000","type":0,"licensed_to":"Centreon Services","status":0,"used_instances":165}
     #]
 
     $self->{global} = { total => 0 };
@@ -214,17 +253,17 @@ sub manage_selection {
             type => $license_type->{ $license->{type} },
             status => $license_status->{ $license->{status} }
         };
-        if (defined($license_status->{expiration_time})) {
-            $self->{licenses}->{ $license->{licensed_to} }->{expires_seconds} = $license_status->{expiration_time} - $current_time;
+        if (defined($license->{expiration_time})) {
+            $self->{licenses}->{ $license->{licensed_to} }->{expires_seconds} = $license->{expiration_time} - $current_time;
             $self->{licenses}->{ $license->{licensed_to} }->{expires_human} = centreon::plugins::misc::change_seconds(
                 value => $self->{licenses}->{ $license->{licensed_to} }->{expires_seconds}
             );
         }
         if (defined($license->{licensed_instances}) && $license->{licensed_instances} > 0) {
             $self->{licenses}->{ $license->{licensed_to} }->{instances_total} = $license->{licensed_instances};
-            $self->{licenses}->{ $license->{licensed_to} }->{instances_used} = $license->{used_instance};
-            $self->{licenses}->{ $license->{licensed_to} }->{instances_free} = $license->{licensed_instances} - $license->{used_instance};
-            $self->{licenses}->{ $license->{licensed_to} }->{instances_prct_used} = $license->{used_instance} * 100 / $license->{licensed_instances};
+            $self->{licenses}->{ $license->{licensed_to} }->{instances_used} = $license->{used_instances};
+            $self->{licenses}->{ $license->{licensed_to} }->{instances_free} = $license->{licensed_instances} - $license->{used_instances};
+            $self->{licenses}->{ $license->{licensed_to} }->{instances_prct_used} = $license->{used_instances} * 100 / $license->{licensed_instances};
             $self->{licenses}->{ $license->{licensed_to} }->{instances_prct_free} = 100 - $self->{licenses}->{ $license->{licensed_to} }->{instances_prct_used};
         }
 
@@ -293,10 +332,15 @@ Can used special variables like: %{to}, %{status}, %{type}.
 Set critical threshold for status (Default: '%{status} =~ /expired|invalid/i').
 Can used special variables like: %{to}, %{status}, %{type}.
 
+=item B<--unit>
+
+Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
+'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total', 'expires-seconds', 'license-instances-usage', 'license-instances-free', 'license-instances-usage-prct'.
+Can be: 'total', 'expires', 'license-instances-usage', 'license-instances-free', 'license-instances-usage-prct'.
 
 =back
 
