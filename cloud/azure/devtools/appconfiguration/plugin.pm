@@ -31,9 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'discovery'   => 'cloud::azure::devtools::appconfiguration::mode::discovery',
-        'health'      => 'cloud::azure::devtools::appconfiguration::mode::health',
-        'http-requests'    => 'cloud::azure::devtools::appconfiguration::mode::httprequests'
+        'discovery'     => 'cloud::azure::devtools::appconfiguration::mode::discovery',
+        'http-requests' => 'cloud::azure::devtools::appconfiguration::mode::httprequests'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
@@ -57,6 +56,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Service Bus namespaces.
+Check Microsoft Azure App Configuration.
 
 =cut

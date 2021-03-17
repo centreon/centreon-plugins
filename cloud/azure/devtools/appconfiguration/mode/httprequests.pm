@@ -119,17 +119,17 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::devtools::appconfiguration::plugin --mode=connections --custommode=api
---resource=<busnamespace_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-servicebus-active-connections='1000' --critical-servicebus-active-connections='2000'
+perl centreon_plugins.pl --plugin=cloud::azure::devtools::appconfiguration::plugin --mode=http-requests --custommode=api
+--resource=<busnamespace_id> --resource-group=<resourcegroup_id> --aggregation='count' 
+--warning-http-requests='1000' --critical-http-requests='2000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::devtools::appconfiguration::plugin --mode=connections --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ServiceBus/namespaces/<busnamespace_id>'
---aggregation='average' --warning-servicebus-active-connections='1000' --critical-servicebus-active-connections='2000'
+perl centreon_plugins.pl --plugin=cloud::azure::devtools::appconfiguration::plugin --mode=http-requests --custommode=api
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.AppConfiguration/configurationStores/<configurationstores_id>'
+--aggregation='count' --warning-http-requests='1000' --critical-http-requests='2000'
 
-Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
+Default aggregation: 'count' / 'total', 'average', 'minimum' and 'maximum' are valid.
 
 =over 8
 
@@ -144,12 +144,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'closed-connection', 'active-connections', 'opened-connections'.
+'http-requests', 'http-requests-duration', 'http-throttled-requests'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'closed-connection', 'active-connections', 'opened-connections'.
+'http-requests', 'http-requests-duration', 'http-throttled-requests'.
 
 =back
 
