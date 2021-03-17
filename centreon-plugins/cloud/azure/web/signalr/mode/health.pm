@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::signalr::mode::errors;
+package cloud::azure::web::signalr::mode::health;
 
 use base qw(cloud::azure::management::monitor::mode::health);
 
