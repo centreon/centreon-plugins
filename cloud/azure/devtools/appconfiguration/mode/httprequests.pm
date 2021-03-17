@@ -32,21 +32,21 @@ sub get_metrics_mapping {
         'httpincomingrequestcount' => {
             'output' => 'Incoming HTTP requests',
             'label'  => 'http-requests',
-            'nlabel' => 'http.incoming.requests.count',
+            'nlabel' => 'appconfiguration.http.incoming.requests.count',
             'unit'   => '',
             'min'    => '0'
         },
         'httpincomingrequestduration' => {
             'output' => 'Incoming HTTP requests duration',
             'label'  => 'http-requests-duration',
-            'nlabel' => 'http.incoming.requests.milliseconds',
+            'nlabel' => 'appconfiguration.http.incoming.requests.milliseconds',
             'unit'   => 'ms',
             'min'    => '0'
         },
         'throttledhttprequestcount' => {
             'output' => 'Throttled Incoming HTTP requests',
             'label'  => 'http-throttled-requests',
-            'nlabel' => 'http.throttled.incoming.requests.count',
+            'nlabel' => 'appconfiguration.http.throttled.incoming.requests.count',
             'unit'   => '',
             'min'    => '0'
         }
