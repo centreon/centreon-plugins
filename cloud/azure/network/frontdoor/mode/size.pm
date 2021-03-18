@@ -45,7 +45,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'ResponseSize' => {
+        'responsesize' => {
             'output' => 'Response Size',
             'label'  => 'response-size',
             'nlabel' => 'frontdoor.size.response.bytes',
@@ -128,7 +128,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::frontdoor::plugin --mod
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::frontdoor::plugin --mode=requests --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::network::frontdoor::plugin --mode=size --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/frontdoors/<frontdoor_id>'
 --aggregation='total' --warning-requests-size='300000' --critical-requests-size='400000'
 
@@ -147,12 +147,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-' billable-response-size Response-size requests-size.
+'billable-response-size', 'response-size', 'requests-size'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'waf-requests-count', 'backend-request-count', 'total-requests-count'.
+'billable-response-size', 'response-size', 'requests-size'.
 
 =back
 
