@@ -99,7 +99,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Web FrontDoor backend health.
+Check Azure FrontDoor backend health.
 
 Example:
 
@@ -113,7 +113,7 @@ Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::frontdoor::plugin --mode=backendhealth --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/frontdoors/<frontdoor_id>'
---aggregation='maximum' --warning-backend-health-percentage='100:' --critical-backend-health-percentage='90:'
+--aggregation='average' --warning-backend-health-percentage='100:' --critical-backend-health-percentage='90:'
 
 Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
