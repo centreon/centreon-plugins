@@ -116,7 +116,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Web FrontDoor requests size.
+Check Azure Front Door requests size.
 
 Example:
 

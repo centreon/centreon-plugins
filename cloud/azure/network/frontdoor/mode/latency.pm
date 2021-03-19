@@ -108,7 +108,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Web FrontDoor latency.
+Check Azure Front Door latency.
 
 Example:
 
