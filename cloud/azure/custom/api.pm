@@ -334,7 +334,7 @@ sub azure_get_resource_health_set_url {
 
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" .
         $options{resource_group} . "/providers/" . $options{resource_namespace} . "/" . $options{resource_type} .
-        "/" . $options{resource} . "/providers/Microsoft.ResourceHealth/availabilityStatuses/current?api-version=" . $self->{api_version};
+        "/" . $options{resource} . "/providers/Microsoft.ResourceHealth/availabilityStatuses/current?api-version=" . $options{api_version};
 
     return $url;
 }
