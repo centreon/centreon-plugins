@@ -99,7 +99,7 @@ __END__
 
 =head1 MODE
 
-Check Azure FrontDoor backend health.
+Check Azure Front Door backend health.
 
 Example:
 
