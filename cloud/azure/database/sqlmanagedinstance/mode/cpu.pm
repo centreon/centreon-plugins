@@ -31,7 +31,7 @@ sub get_metrics_mapping {
     my $metrics_mapping = {
         'avg_cpu_percent' => {
             'output' => 'Average CPU percentage',
-            'label'  => 'average',
+            'label'  => 'cpu-average',
             'nlabel' => 'sqlmanagedinstance.cpu.utilization.percentage',
             'unit'   => '%',
             'min'    => '0',
@@ -115,13 +115,13 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqlmanagedinstance::plugin --mode=cpu --custommode=api
 --resource=<managedInstances_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-average='80'' --critical-average='90'
+--warning-cpu-average='80'' --critical-cpu-average='90'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::sqlmanagedinstance::plugin --mode=cpu --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Sql/managedInstances/<managedInstances_id>'
---aggregation='average' --warning-average='80'' --critical-average='90'
+--aggregation='average' --warning-cpu-average='80'' --critical-cpu-average='90'
 
 Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
@@ -138,12 +138,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'average', 'core-count'.
+'cpu-average', 'core-count'.
 
 =item B<--critical-*>
 
 Critical threshold  where '*' can be:.
-'average', 'core-count'.
+'cpu-average', 'core-count'.
 
 =back
 
