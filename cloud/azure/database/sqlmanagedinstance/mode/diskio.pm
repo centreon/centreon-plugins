@@ -33,14 +33,22 @@ sub get_metrics_mapping {
             'output' => 'IO bytes read',
             'label'  => 'bytes-read',
             'nlabel' => 'sqlmanagedinstance.bytes.read.bytes',
-            'unit'   => '',
+            'unit'   => 'B',
             'min'    => '0',
             'max'    => ''
         },
         'io_bytes_written' => {
-            'output' => 'io_bytes_written',
+            'output' => 'IO bytes written',
             'label'  => 'bytes-written',
             'nlabel' => 'sqlmanagedinstance.bytes.written.bytes',
+            'unit'   => 'B',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'io_requests' => {
+            'output' => 'IO requests count',
+            'label'  => 'requests',
+            'nlabel' => 'sqlmanagedinstance.io.requests.count',
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
@@ -138,12 +146,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'bytes-written', 'bytes-read'.
+'bytes-written', 'bytes-read', 'requests'.
 
 =item B<--critical-*>
 
 Critical threshold  where '*' can be:.
-'bytes-written', 'bytes-read'.
+'bytes-written', 'bytes-read', 'requests'.
 
 =back
 
