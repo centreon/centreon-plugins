@@ -29,8 +29,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{az_resource_namespace} = 'Microsoft.Network';
-    $self->{az_resource_type} = 'frontdoors';
+    $self->{az_resource_namespace} = 'Microsoft.Sql';
+    $self->{az_resource_type} = 'managedInstances';
 }
 
 1;
