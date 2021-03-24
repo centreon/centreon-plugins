@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::data;
+package cloud::azure::common::appservice::mode::gcusage;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,21 +29,29 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'bytesreceived' => {
-            'output'  => 'Data In',
-            'label'   => 'data-in',
-            'nlabel'  => 'appservice.data.in.bytes',
-            'unit'    => 'B',
-            'min'     => '0',
-            'max'     => ''
+        'gen0collections' => {
+            'output' => 'Gen 0 Garbage Collections',
+            'label'  => 'gc-gen0',
+            'nlabel' => 'appservice.gc.gen0.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
         },
-        'bytessent' => {
-            'output'  => 'Data Out',
-            'label'   => 'data-out',
-            'nlabel'  => 'appservice.data.out.bytes',
-            'unit'    => 'B',
-            'min'     => '0',
-            'max'     => ''
+        'gen1collections' => {
+            'output' => 'Gen 1 Garbage Collections',
+            'label'  => 'gc-gen2',
+            'nlabel' => 'appservice.gc.gen1.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'Gen2collections' => {
+            'output' => 'Gen 2 Garbage Collections',
+            'label'  => 'gc-gen2',
+            'nlabel' => 'appservice.gc.gen2.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
         }
     };
 
@@ -107,21 +115,21 @@ __END__
 
 =head1 MODE
 
-Check Azure App Service bandwith consumed by the app.
+Check Azure App Service garbage collector.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=data --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=gc-usage --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
---warning-data-in='80000' --critical-data-in='90000'
+--warning-gc-gen0='80' --critical-gc-gen0='90'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=data --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=gc-usage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
---aggregation='total' --warning-data-in='80000' --critical-data-in='90000'
+--aggregation='total' --warning-gc-gen0='80' --critical-gc-gen0='90'
 
 Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
@@ -138,12 +146,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'data-in', 'data-out'.
+'gc-gen0', 'gc-gen1', 'gc-gen2'.
 
 =item B<--critical-*>
 
 Critical threshold  where '*' can be:.
-'data-in', 'data-out'.
+'gc-gen0', 'gc-gen1', 'gc-gen2'.
 
 =back
 

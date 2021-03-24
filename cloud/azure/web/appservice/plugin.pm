@@ -31,18 +31,18 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'data'              => 'cloud::azure::web::appservice::mode::data',
-        'health'            => 'cloud::azure::web::appservice::mode::health',
-        'memory'            => 'cloud::azure::web::appservice::mode::memory',
-        'status'            => 'cloud::azure::web::appservice::mode::status',
-        'cpu-time'          => 'cloud::azure::web::appservice::mode::cputime',
-        'gc-usage'          => 'cloud::azure::web::appservice::mode::gcusage',
-        'app-usage'         => 'cloud::azure::web::appservice::mode::appusage',
-        'discovery'         => 'cloud::azure::web::appservice::mode::discovery',
-        'io-operations'     => 'cloud::azure::web::appservice::mode::iooperations',
-        'http-requests'     => 'cloud::azure::web::appservice::mode::httprequests',
-        'response-time'     => 'cloud::azure::web::appservice::mode::responsetime',
-        'filesystem-usage'  => 'cloud::azure::web::appservice::mode::filesystem'
+        'data'              => 'cloud::azure::common::appservice::mode::data',
+        'health'            => 'cloud::azure::common::appservice::mode::health',
+        'memory'            => 'cloud::azure::common::appservice::mode::memory',
+        'status'            => 'cloud::azure::common::appservice::mode::status',
+        'cpu-time'          => 'cloud::azure::common::appservice::mode::cputime',
+        'gc-usage'          => 'cloud::azure::common::appservice::mode::gcusage',
+        'app-usage'         => 'cloud::azure::common::appservice::mode::appusage',
+        'discovery'         => 'cloud::azure::common::appservice::mode::discovery',
+        'io-operations'     => 'cloud::azure::common::appservice::mode::iooperations',
+        'http-requests'     => 'cloud::azure::common::appservice::mode::httprequests',
+        'response-time'     => 'cloud::azure::common::appservice::mode::responsetime',
+        'filesystem-usage'  => 'cloud::azure::common::appservice::mode::filesystem'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';

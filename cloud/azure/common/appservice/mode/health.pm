@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::health;
+package cloud::azure::common::appservice::mode::health;
 
 use base qw(cloud::azure::management::monitor::mode::health);
 

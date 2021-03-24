@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::gcusage;
+package cloud::azure::common::appservice::mode::memory;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,29 +29,29 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'gen0collections' => {
-            'output' => 'Gen 0 Garbage Collections',
-            'label'  => 'gc-gen0',
-            'nlabel' => 'appservice.gc.gen0.count',
-            'unit'   => '',
-            'min'    => '0',
-            'max'    => ''
+        'averagememoryworkingset' => {
+            'output'  => 'Average memory working set',
+            'label'   => 'app-average-memory',
+            'nlabel'  => 'appservice.memory.average.usage.bytes',
+            'unit'    => 'B',
+            'min'     => '0',
+            'max'     => '',
         },
-        'gen1collections' => {
-            'output' => 'Gen 1 Garbage Collections',
-            'label'  => 'gc-gen2',
-            'nlabel' => 'appservice.gc.gen1.count',
-            'unit'   => '',
-            'min'    => '0',
-            'max'    => ''
+        'memoryworkingset' => {
+            'output'  => 'Memory working set',
+            'label'   => 'app-memory',
+            'nlabel'  => 'appservice.memory.usage.bytes',
+            'unit'    => 'B',
+            'min'     => '0',
+            'max'     => '',
         },
-        'Gen2collections' => {
-            'output' => 'Gen 2 Garbage Collections',
-            'label'  => 'gc-gen2',
-            'nlabel' => 'appservice.gc.gen2.count',
-            'unit'   => '',
-            'min'    => '0',
-            'max'    => ''
+        'privatebytes' => {
+            'output'  => 'Private Bytes',
+            'label'   => 'app-private-bytes',
+            'nlabel'  => 'appservice.memory.privatebytes.usage.bytes',
+            'unit'    => 'B',
+            'min'     => '0',
+            'max'     => '',
         }
     };
 
@@ -92,7 +92,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.Web';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Total'];
+    $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -115,23 +115,23 @@ __END__
 
 =head1 MODE
 
-Check Azure App Service garbage collector.
+Check Azure App Service app memory usage.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=gc-usage --custommode=api
---resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
---warning-gc-gen0='80' --critical-gc-gen0='90'
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=memory --custommode=api
+--resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='average'
+--warning-app-memory='80' --critical-app-memory='90'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=gc-usage --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=memory --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
---aggregation='total' --warning-gc-gen0='80' --critical-gc-gen0='90'
+--aggregation='average' --warning-app-memory='80'' --critical-app-memory='90'
 
-Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
+Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
 =over 8
 
@@ -146,12 +146,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'gc-gen0', 'gc-gen1', 'gc-gen2'.
+'app-average-memory', 'app-memory', 'app-private-bytes'.
 
 =item B<--critical-*>
 
 Critical threshold  where '*' can be:.
-'gc-gen0', 'gc-gen1', 'gc-gen2'.
+'app-average-memory', 'app-memory', 'app-private-bytes'.
 
 =back
 

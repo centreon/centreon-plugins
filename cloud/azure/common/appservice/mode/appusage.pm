@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::filesystem;
+package cloud::azure::common::appservice::mode::appusage;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,11 +29,51 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'filesystemusage' => {
-            'output' => 'File System Usage',
-            'label'  => 'usage',
-            'nlabel' => 'appservice.filesystem.usage.bytes',
-            'unit'   => 'B',
+        'appconnections' => {
+            'output' => 'Connections',
+            'label'  => 'connections',
+            'nlabel' => 'appservice.connections.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'currentassemblies' => {
+            'output' => 'Current Assemblies',
+            'label'  => 'assemblies',
+            'nlabel' => 'appservice.assemblies.current.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'handles' => {
+            'output' => 'Handle Count',
+            'label'  => 'handle',
+            'nlabel' => 'appservice.handle.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'threads' => {
+            'output' => 'Thread Count',
+            'label'  => 'thread',
+            'nlabel' => 'appservice.thread.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+         'totalappdomains' => {
+            'output' => 'Total App Domains',
+            'label'  => 'app-domains',
+            'nlabel' => 'appservice.appdomains.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'totalappdomainsunloaded' => {
+            'output' => 'Total App Domains Unloaded',
+            'label'  => 'app-domain-unloaded',
+            'nlabel' => 'appservice.appdomains.unloaded.count',
+            'unit'   => '',
             'min'    => '0',
             'max'    => ''
         }
@@ -75,7 +115,7 @@ sub check_options {
     $self->{az_resource_type} = 'sites';
     $self->{az_resource_namespace} = 'Microsoft.Web';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT6H';
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
     $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
@@ -99,21 +139,21 @@ __END__
 
 =head1 MODE
 
-Check Azure App Service file system usage.
+Check Azure App Service app usage.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=filesystem-usage --custommode=api
---resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-usage='80000' --critical-usage='90000'
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=app-usage --custommode=api
+--resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
+--warning-thread='80' --critical-thread='90'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=filesystem-usage --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=app-usage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
---aggregation='average' --warning-usage='80000' --critical-usage='90000'
+--aggregation='average' --warning-thread='80' --critical-thread='90'
 
 Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
@@ -127,13 +167,17 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-usage>
+=item B<--warning-*>
 
-File system usage warning threshold.
+Warning threshold where '*' can be:
+'connections', 'assemblies', 'handle', 'thread', 'app-domains', 
+'app-domain-unloaded'.
 
-=item B<--critical-usage>
+=item B<--critical-*>
 
-File system usage critical threshold.
+Critical threshold  where '*' can be:.
+'connections', 'assemblies', 'handle', 'thread', 'app-domains', 
+'app-domain-unloaded'.
 
 =back
 

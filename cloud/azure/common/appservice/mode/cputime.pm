@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::status;
+package cloud::azure::common::appservice::mode::cputime;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,11 +29,11 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'healthcheckstatus' => {
-            'output' => 'Health check status',
-            'label'  => 'status',
-            'nlabel' => 'appservice.status.count',
-            'unit'   => '',
+        'cputime' => {
+            'output' => 'CPU Time',
+            'label'  => 'cpu-time',
+            'nlabel' => 'appservice.cpu.consumed.seconds',
+            'unit'   => 's',
             'min'    => '0',
             'max'    => ''
         }
@@ -75,8 +75,8 @@ sub check_options {
     $self->{az_resource_type} = 'sites';
     $self->{az_resource_namespace} = 'Microsoft.Web';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT6H';
-    $self->{az_aggregations} = ['Average'];
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
+    $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -99,23 +99,23 @@ __END__
 
 =head1 MODE
 
-Check Azure App Service app health status.
+Check Azure App Service CPU time consumed by the app.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=status --custommode=api
---resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-status='80000'' --critical-status='90000'
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=cpu-time --custommode=api
+--resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
+--warning-cpu-time='80' --critical-cpu-time='90'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=filesystem-status --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=cpu-time --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
---aggregation='average' --warning-status='80000' --critical-status='90000'
+--aggregation='total' --warning-cpu-time='80' --critical-cpu-time='90'
 
-Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
+Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
 =over 8
 
@@ -127,13 +127,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-status>
+=item B<--warning-cpu-time>
 
-App status warning threshold.
+Consumed CPU time warning threshold.
 
-=item B<--critical-status>
+=item B<--critical-cpu-time>
 
-App status critical threshold.
+Consumed CPU time critical threshold.
 
 =back
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::discovery;
+package cloud::azure::common::appservice::mode::discovery;
 
 use base qw(cloud::azure::management::monitor::mode::discovery);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::httprequests;
+package cloud::azure::common::appservice::mode::httprequests;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -185,13 +185,13 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=http-requests --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=http-requests --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-requests='80' --critical-requests='90'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=http-requests --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=http-requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
 --aggregation='total' --warning-requests='80' --critical-requests='90'
 

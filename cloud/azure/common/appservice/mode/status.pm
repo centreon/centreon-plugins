@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::iooperations;
+package cloud::azure::common::appservice::mode::status;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,51 +29,11 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'iootherbytespersecond' => {
-            'output' => 'IO Other Bytes Per Second',
-            'label'  => 'other-bytes',
-            'nlabel' => 'appservice.bytes.other.bytespersecond',
-            'unit'   => 'B/s',
-            'min'    => '0',
-            'max'    => ''
-        },
-        'iootheroperationspersecond' => {
-            'output' => 'IO Other Operations Per Second',
-            'label'  => 'other-operations',
-            'nlabel' => 'appservice.operations.other.bytespersecond',
-            'unit'   => 'B/s',
-            'min'    => '0',
-            'max'    => ''
-        },
-        'ioreadbytespersecond' => {
-            'output' => 'IO Read Bytes Per Second',
-            'label'  => 'read-bytes',
-            'nlabel' => 'appservice.bytes.read.bytespersecond',
-            'unit'   => 'B/s',
-            'min'    => '0',
-            'max'    => ''
-        },
-        'ioreadoperationspersecond' => {
-            'output' => 'IO Read Operations Per Second',
-            'label'  => 'read-operations',
-            'nlabel' => 'appservice.operations.read.bytespersecond',
-            'unit'   => 'B/s',
-            'min'    => '0',
-            'max'    => ''
-        },
-        'iowritebytespersecond' => {
-            'output' => 'IO Write Bytes Per Second',
-            'label'  => 'write-bytes',
-            'nlabel' => 'appservice.bytes.write.bytespersecond',
-            'unit'   => 'B/s',
-            'min'    => '0',
-            'max'    => ''
-        },
-        'iowriteoperationspersecond' => {
-            'output' => 'IO Write Operations Per Second',
-            'label'  => 'write-operations',
-            'nlabel' => 'appservice.operations.write.bytespersecond',
-            'unit'   => 'B/s',
+        'healthcheckstatus' => {
+            'output' => 'Health check status',
+            'label'  => 'status',
+            'nlabel' => 'appservice.status.count',
+            'unit'   => '',
             'min'    => '0',
             'max'    => ''
         }
@@ -115,8 +75,8 @@ sub check_options {
     $self->{az_resource_type} = 'sites';
     $self->{az_resource_namespace} = 'Microsoft.Web';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Total'];
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT6H';
+    $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -139,23 +99,23 @@ __END__
 
 =head1 MODE
 
-Check Azure App Service I/O operations by the app.
+Check Azure App Service app health status.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=io-operations --custommode=api
---resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
---warning-write-bytes='80000' --critical-write-bytes='90000'
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=status --custommode=api
+--resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='average'
+--warning-status='80000'' --critical-status='90000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=io-operations --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=filesystem-status --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
---aggregation='total' --warning-write-bytes='80000' --critical-write-bytes='90000'
+--aggregation='average' --warning-status='80000' --critical-status='90000'
 
-Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
+Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
 =over 8
 
@@ -167,17 +127,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-status>
 
-Warning threshold where '*' can be:
-'other-bytes', 'other-operations', 'read-bytes', 'read-operations', 
-'write-bytes', 'write-operations'.
+App status warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-status>
 
-Critical threshold  where '*' can be:.
-'other-bytes', 'other-operations', 'read-bytes', 'read-operations', 
-'write-bytes', 'write-operations'.
+App status critical threshold.
 
 =back
 

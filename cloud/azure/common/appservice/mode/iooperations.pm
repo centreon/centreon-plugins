@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::appusage;
+package cloud::azure::common::appservice::mode::iooperations;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,51 +29,51 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'appconnections' => {
-            'output' => 'Connections',
-            'label'  => 'connections',
-            'nlabel' => 'appservice.connections.count',
-            'unit'   => '',
+        'iootherbytespersecond' => {
+            'output' => 'IO Other Bytes Per Second',
+            'label'  => 'other-bytes',
+            'nlabel' => 'appservice.bytes.other.bytespersecond',
+            'unit'   => 'B/s',
             'min'    => '0',
             'max'    => ''
         },
-        'currentassemblies' => {
-            'output' => 'Current Assemblies',
-            'label'  => 'assemblies',
-            'nlabel' => 'appservice.assemblies.current.count',
-            'unit'   => '',
+        'iootheroperationspersecond' => {
+            'output' => 'IO Other Operations Per Second',
+            'label'  => 'other-operations',
+            'nlabel' => 'appservice.operations.other.bytespersecond',
+            'unit'   => 'B/s',
             'min'    => '0',
             'max'    => ''
         },
-        'handles' => {
-            'output' => 'Handle Count',
-            'label'  => 'handle',
-            'nlabel' => 'appservice.handle.count',
-            'unit'   => '',
+        'ioreadbytespersecond' => {
+            'output' => 'IO Read Bytes Per Second',
+            'label'  => 'read-bytes',
+            'nlabel' => 'appservice.bytes.read.bytespersecond',
+            'unit'   => 'B/s',
             'min'    => '0',
             'max'    => ''
         },
-        'threads' => {
-            'output' => 'Thread Count',
-            'label'  => 'thread',
-            'nlabel' => 'appservice.thread.count',
-            'unit'   => '',
+        'ioreadoperationspersecond' => {
+            'output' => 'IO Read Operations Per Second',
+            'label'  => 'read-operations',
+            'nlabel' => 'appservice.operations.read.bytespersecond',
+            'unit'   => 'B/s',
             'min'    => '0',
             'max'    => ''
         },
-         'totalappdomains' => {
-            'output' => 'Total App Domains',
-            'label'  => 'app-domains',
-            'nlabel' => 'appservice.appdomains.count',
-            'unit'   => '',
+        'iowritebytespersecond' => {
+            'output' => 'IO Write Bytes Per Second',
+            'label'  => 'write-bytes',
+            'nlabel' => 'appservice.bytes.write.bytespersecond',
+            'unit'   => 'B/s',
             'min'    => '0',
             'max'    => ''
         },
-        'totalappdomainsunloaded' => {
-            'output' => 'Total App Domains Unloaded',
-            'label'  => 'app-domain-unloaded',
-            'nlabel' => 'appservice.appdomains.unloaded.count',
-            'unit'   => '',
+        'iowriteoperationspersecond' => {
+            'output' => 'IO Write Operations Per Second',
+            'label'  => 'write-operations',
+            'nlabel' => 'appservice.operations.write.bytespersecond',
+            'unit'   => 'B/s',
             'min'    => '0',
             'max'    => ''
         }
@@ -116,7 +116,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.Web';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Average'];
+    $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -139,23 +139,23 @@ __END__
 
 =head1 MODE
 
-Check Azure App Service app usage.
+Check Azure App Service I/O operations by the app.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=app-usage --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=io-operations --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
---warning-thread='80' --critical-thread='90'
+--warning-write-bytes='80000' --critical-write-bytes='90000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=app-usage --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=io-operations --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
---aggregation='average' --warning-thread='80' --critical-thread='90'
+--aggregation='total' --warning-write-bytes='80000' --critical-write-bytes='90000'
 
-Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
+Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
 =over 8
 
@@ -170,14 +170,14 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'connections', 'assemblies', 'handle', 'thread', 'app-domains', 
-'app-domain-unloaded'.
+'other-bytes', 'other-operations', 'read-bytes', 'read-operations', 
+'write-bytes', 'write-operations'.
 
 =item B<--critical-*>
 
 Critical threshold  where '*' can be:.
-'connections', 'assemblies', 'handle', 'thread', 'app-domains', 
-'app-domain-unloaded'.
+'other-bytes', 'other-operations', 'read-bytes', 'read-operations', 
+'write-bytes', 'write-operations'.
 
 =back
 

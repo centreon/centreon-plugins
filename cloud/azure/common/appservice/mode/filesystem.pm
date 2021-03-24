@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::memory;
+package cloud::azure::common::appservice::mode::filesystem;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,29 +29,13 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'averagememoryworkingset' => {
-            'output'  => 'Average memory working set',
-            'label'   => 'app-average-memory',
-            'nlabel'  => 'appservice.memory.average.usage.bytes',
-            'unit'    => 'B',
-            'min'     => '0',
-            'max'     => '',
-        },
-        'memoryworkingset' => {
-            'output'  => 'Memory working set',
-            'label'   => 'app-memory',
-            'nlabel'  => 'appservice.memory.usage.bytes',
-            'unit'    => 'B',
-            'min'     => '0',
-            'max'     => '',
-        },
-        'privatebytes' => {
-            'output'  => 'Private Bytes',
-            'label'   => 'app-private-bytes',
-            'nlabel'  => 'appservice.memory.privatebytes.usage.bytes',
-            'unit'    => 'B',
-            'min'     => '0',
-            'max'     => '',
+        'filesystemusage' => {
+            'output' => 'File System Usage',
+            'label'  => 'usage',
+            'nlabel' => 'appservice.filesystem.usage.bytes',
+            'unit'   => 'B',
+            'min'    => '0',
+            'max'    => ''
         }
     };
 
@@ -91,7 +75,7 @@ sub check_options {
     $self->{az_resource_type} = 'sites';
     $self->{az_resource_namespace} = 'Microsoft.Web';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT6H';
     $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
@@ -115,21 +99,21 @@ __END__
 
 =head1 MODE
 
-Check Azure App Service app memory usage.
+Check Azure App Service file system usage.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=memory --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=filesystem-usage --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-app-memory='80' --critical-app-memory='90'
+--warning-usage='80000' --critical-usage='90000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=memory --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=filesystem-usage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
---aggregation='average' --warning-app-memory='80'' --critical-app-memory='90'
+--aggregation='average' --warning-usage='80000' --critical-usage='90000'
 
 Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
@@ -143,15 +127,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-usage>
 
-Warning threshold where '*' can be:
-'app-average-memory', 'app-memory', 'app-private-bytes'.
+File system usage warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-usage>
 
-Critical threshold  where '*' can be:.
-'app-average-memory', 'app-memory', 'app-private-bytes'.
+File system usage critical threshold.
 
 =back
 

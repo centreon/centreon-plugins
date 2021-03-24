@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::web::appservice::mode::cputime;
+package cloud::azure::common::appservice::mode::data;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,13 +29,21 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'cputime' => {
-            'output' => 'CPU Time',
-            'label'  => 'cpu-time',
-            'nlabel' => 'appservice.cpu.consumed.seconds',
-            'unit'   => 's',
-            'min'    => '0',
-            'max'    => ''
+        'bytesreceived' => {
+            'output'  => 'Data In',
+            'label'   => 'data-in',
+            'nlabel'  => 'appservice.data.in.bytes',
+            'unit'    => 'B',
+            'min'     => '0',
+            'max'     => ''
+        },
+        'bytessent' => {
+            'output'  => 'Data Out',
+            'label'   => 'data-out',
+            'nlabel'  => 'appservice.data.out.bytes',
+            'unit'    => 'B',
+            'min'     => '0',
+            'max'     => ''
         }
     };
 
@@ -99,21 +107,21 @@ __END__
 
 =head1 MODE
 
-Check Azure App Service CPU time consumed by the app.
+Check Azure App Service bandwith consumed by the app.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=cpu-time --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=data --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
---warning-cpu-time='80' --critical-cpu-time='90'
+--warning-data-in='80000' --critical-data-in='90000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=cpu-time --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=data --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
---aggregation='total' --warning-cpu-time='80' --critical-cpu-time='90'
+--aggregation='total' --warning-data-in='80000' --critical-data-in='90000'
 
 Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
@@ -127,13 +135,15 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-cpu-time>
+=item B<--warning-*>
 
-Consumed CPU time warning threshold.
+Warning threshold where '*' can be:
+'data-in', 'data-out'.
 
-=item B<--critical-cpu-time>
+=item B<--critical-*>
 
-Consumed CPU time critical threshold.
+Critical threshold  where '*' can be:.
+'data-in', 'data-out'.
 
 =back
 
