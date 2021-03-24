@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::analytics::eventhub::mode::messages;
+package cloud::azure::analytics::eventhub::mode::requests;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,24 +29,24 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'capturedmessages' => {
-            'output' => 'Captured messages',
-            'label'  => 'captured-messages',
-            'nlabel' => 'eventhub.messages.captured.count',
+        'incomingrequests' => {
+            'output' => 'Incoming Requests',
+            'label'  => 'incoming-requests',
+            'nlabel' => 'eventhub.requests.incoming.count',
             'unit'   => '',
             'min'    => '0'
         },
-        'incomingmessages' => {
-            'output' => 'Incoming Messages',
-            'label'  => 'incoming-messages',
-            'nlabel' => 'eventhub.messages.incoming.count',
+        'successfulrequests' => {
+            'output' => 'Successful Requests',
+            'label'  => 'successful-requests',
+            'nlabel' => 'eventhub.requests.successful.count',
             'unit'   => '',
             'min'    => '0'
         },
-        'outgoingmessages' => {
-            'output' => 'Outgoing Messages',
-            'label'  => 'outgoing-messages',
-            'nlabel' => 'eventhub.messages.outgoing.count',
+        'throttledrequests' => {
+            'output' => 'Throttled Requests',
+            'label'  => 'throttled-requests',
+            'nlabel' => 'eventhub.requests.throttled.count',
             'unit'   => '',
             'min'    => '0'
         }
@@ -121,21 +121,21 @@ __END__
 
 =head1 MODE
 
-Check Azure Event Hub messages statistics.
+Check Azure Event Hub requests statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=messages --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=requests --custommode=api
 --resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='total'
---warning-eventhub-active-messages='1000' --critical-eventhub-active-messages='2000'
+--warning-throttled-requests='800' --critical-throttled-requests='900'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=messages --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.eventhub/<resource_type>/<eventhub_id>'
---aggregation='total' --warning-eventhub-active-messages='1000' --critical-eventhub-active-messages='2000'
+--aggregation='total' --warning-throttled-requests='800' --critical-throttled-requests='900'
 
 Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.
 
@@ -157,12 +157,12 @@ Can be: 'namespaces', 'clusters'.
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'captured-messages', 'outgoing-messages', 'incoming-messages'.
+'incoming-requests', 'throttled-requests', 'successful-requests'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'captured-messages', 'outgoing-messages', 'incoming-messages'.
+'incoming-requests', 'throttled-requests', 'successful-requests'.
 
 =back
 

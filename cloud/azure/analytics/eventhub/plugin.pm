@@ -37,6 +37,7 @@ sub new {
         'errors'      => 'cloud::azure::analytics::eventhub::mode::errors',
         'health'      => 'cloud::azure::analytics::eventhub::mode::health',
         'messages'    => 'cloud::azure::analytics::eventhub::mode::messages',
+        'requests'    => 'cloud::azure::analytics::eventhub::mode::requests',
         'throughput'  => 'cloud::azure::analytics::eventhub::mode::throughput'
     };
 
@@ -61,6 +62,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Event Hub namespaces.
+Check Microsoft Azure Event Hub namespaces & clusters.
 
 =cut
