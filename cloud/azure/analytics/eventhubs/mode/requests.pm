@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::analytics::eventhub::mode::connections;
+package cloud::azure::analytics::eventhubs::mode::requests;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,24 +29,24 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'activeconnections' => {
-            'output' => 'Active Connections',
-            'label'  => 'active-connections',
-            'nlabel' => 'eventhub.connections.active.count',
+        'incomingrequests' => {
+            'output' => 'Incoming Requests',
+            'label'  => 'incoming-requests',
+            'nlabel' => 'eventhubs.requests.incoming.count',
             'unit'   => '',
             'min'    => '0'
         },
-        'connectionsclosed' => {
-            'output' => 'Connections Closed',
-            'label'  => 'closed-connections',
-            'nlabel' => 'eventhub.connections.closed.count',
+        'successfulrequests' => {
+            'output' => 'Successful Requests',
+            'label'  => 'successful-requests',
+            'nlabel' => 'eventhubs.requests.successful.count',
             'unit'   => '',
             'min'    => '0'
         },
-        'connectionsopened' => {
-            'output' => 'Connections Opened',
-            'label'  => 'opened-connections',
-            'nlabel' => 'eventhub.connections.opened.count',
+        'throttledrequests' => {
+            'output' => 'Throttled Requests',
+            'label'  => 'throttled-requests',
+            'nlabel' => 'eventhubs.requests.throttled.count',
             'unit'   => '',
             'min'    => '0'
         }
@@ -98,7 +98,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.EventHub';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Average'];
+    $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -121,23 +121,23 @@ __END__
 
 =head1 MODE
 
-Check Azure Event Hub connections statistics.
+Check Azure Event Hub requests statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=connections --custommode=api
---resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='average'
---warning-active-connections='1000' --critical-active-connections='2000'
+perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=requests --custommode=api
+--resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='total'
+--warning-throttled-requests='800' --critical-throttled-requests='900'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=connections --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhubnamespace_id>'
---aggregation='average' --warning-active-connections='1000' --critical-active-connections='2000'
+perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=requests --custommode=api
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhub_id>'
+--aggregation='total' --warning-throttled-requests='800' --critical-throttled-requests='900'
 
-Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
+Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.
 
 =over 8
 
@@ -157,12 +157,12 @@ Can be: 'namespaces', 'clusters'.
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'active-connections', 'opened-connections', 'closed-connections'.
+'incoming-requests', 'throttled-requests', 'successful-requests'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'active-connections', 'opened-connections', 'closed-connections'.
+'incoming-requests', 'throttled-requests', 'successful-requests'.
 
 =back
 

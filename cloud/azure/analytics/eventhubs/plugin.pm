@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::analytics::eventhub::plugin;
+package cloud::azure::analytics::eventhubs::plugin;
 
 use strict;
 use warnings;
@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'backlog'     => 'cloud::azure::analytics::eventhub::mode::backlog',
-        'connections' => 'cloud::azure::analytics::eventhub::mode::connections',
-        'discovery'   => 'cloud::azure::analytics::eventhub::mode::discovery',
-        'errors'      => 'cloud::azure::analytics::eventhub::mode::errors',
-        'health'      => 'cloud::azure::analytics::eventhub::mode::health',
-        'messages'    => 'cloud::azure::analytics::eventhub::mode::messages',
-        'requests'    => 'cloud::azure::analytics::eventhub::mode::requests',
-        'throughput'  => 'cloud::azure::analytics::eventhub::mode::throughput'
+        'backlog'     => 'cloud::azure::analytics::eventhubs::mode::backlog',
+        'connections' => 'cloud::azure::analytics::eventhubs::mode::connections',
+        'discovery'   => 'cloud::azure::analytics::eventhubs::mode::discovery',
+        'errors'      => 'cloud::azure::analytics::eventhubs::mode::errors',
+        'health'      => 'cloud::azure::analytics::eventhubs::mode::health',
+        'messages'    => 'cloud::azure::analytics::eventhubs::mode::messages',
+        'requests'    => 'cloud::azure::analytics::eventhubs::mode::requests',
+        'throughput'  => 'cloud::azure::analytics::eventhubs::mode::throughput'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
@@ -62,6 +62,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Event Hub namespaces & clusters.
+Check Microsoft Azure Event Hubs namespaces & clusters.
 
 =cut

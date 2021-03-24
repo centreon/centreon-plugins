@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::analytics::eventhub::mode::messages;
+package cloud::azure::analytics::eventhubs::mode::errors;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,24 +29,24 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'capturedmessages' => {
-            'output' => 'Captured messages',
-            'label'  => 'captured-messages',
-            'nlabel' => 'eventhub.messages.captured.count',
+        'quotaexceedederrors' => {
+            'output' => 'Quota Exceeded Errors',
+            'label'  => 'quota-exceeded-errors',
+            'nlabel' => 'eventhubs.errors.quotaexceeded.count',
             'unit'   => '',
             'min'    => '0'
         },
-        'incomingmessages' => {
-            'output' => 'Incoming Messages',
-            'label'  => 'incoming-messages',
-            'nlabel' => 'eventhub.messages.incoming.count',
+        'servererrors' => {
+            'output' => 'Server Errors',
+            'label'  => 'server-errors',
+            'nlabel' => 'eventhubs.errors.server.count',
             'unit'   => '',
             'min'    => '0'
         },
-        'outgoingmessages' => {
-            'output' => 'Outgoing Messages',
-            'label'  => 'outgoing-messages',
-            'nlabel' => 'eventhub.messages.outgoing.count',
+        'usererrors' => {
+            'output' => 'User Errors',
+            'label'  => 'user-errors',
+            'nlabel' => 'eventhubs.errors.user.count',
             'unit'   => '',
             'min'    => '0'
         }
@@ -78,12 +78,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group & --resource-type options or --resource <id>.');
         $self->{output}->option_exit();
     }
+
     my $resource = $self->{option_results}->{resource};
     if ($resource !~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.EventHub\/(.*)\/(.*)$/ && (!defined($self->{option_results}->{resource_group}) ||
         $self->{option_results}->{resource_group} eq '' || !defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '')) {
             $self->{output}->add_option_msg(short_msg => 'Invalid or missing --resource-group or --resource-type option');
             $self->{output}->option_exit();
     }
+    
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
     my $resource_type = defined($self->{option_results}->{resource_type}) ? $self->{option_results}->{resource_type} : '';
     if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.EventHub\/(.*)\/(.*)$/) {
@@ -121,21 +123,21 @@ __END__
 
 =head1 MODE
 
-Check Azure Event Hub messages statistics.
+Check Azure Event Hub errors statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=messages --custommode=api
---resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='total'
---warning-eventhub-active-messages='1000' --critical-eventhub-active-messages='2000'
+perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=errors --custommode=api
+--resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='average'
+--warning-active-errors='1000' --critical-active-errors='2000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=messages --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhub_id>'
---aggregation='total' --warning-eventhub-active-messages='1000' --critical-eventhub-active-messages='2000'
+perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=errors --custommode=api
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhubnamespace_id>'
+--aggregation='average' --warning-active-errors='1000' --critical-active-errors='2000'
 
 Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.
 
@@ -157,12 +159,12 @@ Can be: 'namespaces', 'clusters'.
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'captured-messages', 'outgoing-messages', 'incoming-messages'.
+'server-errors', 'user-errors', 'quota-exceeded-errors'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'captured-messages', 'outgoing-messages', 'incoming-messages'.
+'server-errors', 'user-errors', 'quota-exceeded-errors'.
 
 =back
 

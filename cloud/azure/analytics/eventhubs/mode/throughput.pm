@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::analytics::eventhub::mode::throughput;
+package cloud::azure::analytics::eventhubs::mode::throughput;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -32,21 +32,21 @@ sub get_metrics_mapping {
         'capturedbytes' => {
             'output' => 'Captured Bytes',
             'label'  => 'captured-bytes',
-            'nlabel' => 'eventhub.throughput.captured.bytes',
+            'nlabel' => 'eventhubs.throughput.captured.bytes',
             'unit'   => 'B',
             'min'    => '0'
         },
         'IncomingBytes' => {
             'output' => 'Incoming Bytes',
             'label'  => 'incoming-bytes',
-            'nlabel' => 'eventhub.throughput.incoming.bytes',
+            'nlabel' => 'eventhubs.throughput.incoming.bytes',
             'unit'   => 'B',
             'min'    => '0'
         },
         'OutgoingBytes' => {
             'output' => 'Outgoing Bytes',
             'label'  => 'outgoing-bytes',
-            'nlabel' => 'eventhub.throughput.outgoing.bytes',
+            'nlabel' => 'eventhubs.throughput.outgoing.bytes',
             'unit'   => 'B',
             'min'    => '0'
         }
@@ -127,13 +127,13 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=throughput --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=throughput --custommode=api
 --resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='total'
 --warning-incoming-bytes='800000000' --critical-incoming-bytes='900000000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=throughput --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=throughput --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhub_id>'
 --aggregation='total' --warning-incoming-bytes='800000000' --critical-incoming-bytes='900000000'
 

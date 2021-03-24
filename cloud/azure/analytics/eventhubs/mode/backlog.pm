@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::analytics::eventhub::mode::errors;
+package cloud::azure::analytics::eventhubs::mode::backlog;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,24 +29,10 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'quotaexceedederrors' => {
-            'output' => 'Quota Exceeded Errors',
-            'label'  => 'quota-exceeded-errors',
-            'nlabel' => 'eventhub.errors.quotaexceeded.count',
-            'unit'   => '',
-            'min'    => '0'
-        },
-        'servererrors' => {
-            'output' => 'Server Errors',
-            'label'  => 'server-errors',
-            'nlabel' => 'eventhub.errors.server.count',
-            'unit'   => '',
-            'min'    => '0'
-        },
-        'usererrors' => {
-            'output' => 'User Errors',
-            'label'  => 'user-errors',
-            'nlabel' => 'eventhub.errors.user.count',
+        'CaptureBacklog' => {
+            'output' => 'Capture Backlog',
+            'label'  => 'backlog-capture',
+            'nlabel' => 'eventhubs.backlog.capture.count',
             'unit'   => '',
             'min'    => '0'
         }
@@ -78,14 +64,12 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group & --resource-type options or --resource <id>.');
         $self->{output}->option_exit();
     }
-
     my $resource = $self->{option_results}->{resource};
     if ($resource !~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.EventHub\/(.*)\/(.*)$/ && (!defined($self->{option_results}->{resource_group}) ||
         $self->{option_results}->{resource_group} eq '' || !defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '')) {
             $self->{output}->add_option_msg(short_msg => 'Invalid or missing --resource-group or --resource-type option');
             $self->{output}->option_exit();
     }
-    
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
     my $resource_type = defined($self->{option_results}->{resource_type}) ? $self->{option_results}->{resource_type} : '';
     if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.EventHub\/(.*)\/(.*)$/) {
@@ -123,21 +107,21 @@ __END__
 
 =head1 MODE
 
-Check Azure Event Hub errors statistics.
+Check Azure Event Hubs backlog statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=errors --custommode=api
---resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='average'
---warning-active-errors='1000' --critical-active-errors='2000'
+perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=backlog --custommode=api
+--resource=<eventhub_id> --resource-group=<resourcegroup_id> --resource-type=<resource_type> --aggregation='total'
+--warning-backlog-capture='1000' --critical-backlog-capture='2000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=errors --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhubnamespace_id>'
---aggregation='average' --warning-active-errors='1000' --critical-active-errors='2000'
+perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhubs::plugin --mode=backlog --custommode=api
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhub_id>'
+--aggregation='total' --warning-backlog-capture='1000' --critical-backlog-capture='2000'
 
 Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.
 
@@ -156,15 +140,13 @@ Set resource group (Required if resource's name is used).
 Set resource group (Required if resource's name is used).
 Can be: 'namespaces', 'clusters'.
 
-=item B<--warning-*>
+=item B<--warning-backlog-capture>
 
-Warning threshold where '*' can be:
-'server-errors', 'user-errors', 'quota-exceeded-errors'.
+Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-backlog-capture>
 
-Critical threshold where '*' can be:
-'server-errors', 'user-errors', 'quota-exceeded-errors'.
+Critical threshold.
 
 =back
 

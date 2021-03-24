@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::analytics::eventhub::mode::health;
+package cloud::azure::analytics::eventhubs::mode::health;
 
 use base qw(cloud::azure::management::monitor::mode::health);
 
@@ -39,7 +39,7 @@ __END__
 
 =head1 MODE
 
-Check Event Hub namespace/cluster status.
+Check Event Hubs namespace/cluster status.
 
 =over 8
 

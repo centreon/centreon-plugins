@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::analytics::eventhub::mode::discovery;
+package cloud::azure::analytics::eventhubs::mode::discovery;
 
 use base qw(centreon::plugins::mode);
 
@@ -114,7 +114,7 @@ __END__
 
 =head1 MODE
 
-Azure Event Hub Resources discovery.
+Azure Event Hubs Resources discovery.
 
 =over 8
 
