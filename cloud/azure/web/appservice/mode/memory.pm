@@ -36,7 +36,6 @@ sub get_metrics_mapping {
             'unit'    => 'B',
             'min'     => '0',
             'max'     => '',
-            'network' => '1'
         },
         'memoryworkingset' => {
             'output'  => 'Memory working set',
@@ -45,7 +44,6 @@ sub get_metrics_mapping {
             'unit'    => 'B',
             'min'     => '0',
             'max'     => '',
-            'network' => '1'
         },
         'privatebytes' => {
             'output'  => 'Private Bytes',
@@ -54,7 +52,6 @@ sub get_metrics_mapping {
             'unit'    => 'B',
             'min'     => '0',
             'max'     => '',
-            'network' => '1'
         }
     };
 

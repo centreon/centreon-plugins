@@ -32,20 +32,18 @@ sub get_metrics_mapping {
         'bytesreceived' => {
             'output'  => 'Data In',
             'label'   => 'data-in',
-            'nlabel'  => 'appservice.data.execution.count',
-            'unit'    => 'B/s',
+            'nlabel'  => 'appservice.data.in.bytes',
+            'unit'    => 'B',
             'min'     => '0',
-            'max'     => '',
-            'network' => '1'
+            'max'     => ''
         },
         'bytessent' => {
             'output'  => 'Data Out',
             'label'   => 'data-out',
-            'nlabel'  => 'appservice.data.execution.units.count',
-            'unit'    => 'B/s',
+            'nlabel'  => 'appservice.data.out.bytes',
+            'unit'    => 'B',
             'min'     => '0',
-            'max'     => '',
-            'network' => '1'
+            'max'     => ''
         }
     };
 
