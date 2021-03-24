@@ -134,7 +134,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mo
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=requests --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.eventhub/<resource_type>/<eventhub_id>'
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhub_id>'
 --aggregation='total' --warning-throttled-requests='800' --critical-throttled-requests='900'
 
 Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.

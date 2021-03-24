@@ -120,7 +120,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mo
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=backlog --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.eventhub/<resource_type>/<eventhub_id>'
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhub_id>'
 --aggregation='total' --warning-backlog-capture='1000' --critical-backlog-capture='2000'
 
 Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.

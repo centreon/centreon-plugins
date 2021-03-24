@@ -49,7 +49,7 @@ sub get_metrics_mapping {
             'nlabel' => 'eventhub.errors.user.count',
             'unit'   => '',
             'min'    => '0'
-        },
+        }
     };
 
     return $metrics_mapping;
@@ -136,7 +136,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mo
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::analytics::eventhub::plugin --mode=errors --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.eventhub/<resource_type>/<eventhubnamespace_id>'
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.EventHub/<resource_type>/<eventhubnamespace_id>'
 --aggregation='average' --warning-active-errors='1000' --critical-active-errors='2000'
 
 Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.
