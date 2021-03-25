@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'functionexecutioncount' => {
             'output' => 'Function Execution Count',
             'label'  => 'execution-count',
-            'nlabel' => 'appservice.executions.count.count',
+            'nlabel' => 'functions.executions.count.count',
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
@@ -40,7 +40,7 @@ sub get_metrics_mapping {
         'functionexecutionunits' => {
             'output' => 'Function Execution Units',
             'label'  => 'execution-unit',
-            'nlabel' => 'appservice.executions.units.count',
+            'nlabel' => 'functions.executions.units.count',
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
