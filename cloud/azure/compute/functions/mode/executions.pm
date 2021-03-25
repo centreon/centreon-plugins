@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::compute::functions::mode::functions;
+package cloud::azure::compute::functions::mode::executions;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'functionexecutioncount' => {
             'output' => 'Function Execution Count',
             'label'  => 'execution-count',
-            'nlabel' => 'functions.executions.count.count',
+            'nlabel' => 'functions.executions.count',
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
