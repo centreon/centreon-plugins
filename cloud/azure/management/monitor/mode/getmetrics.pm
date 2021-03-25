@@ -99,7 +99,8 @@ sub new {
         "resource-type:s"       => { name => 'resource_type' },
         "resource-namespace:s"  => { name => 'resource_namespace' },
         "metric:s@"             => { name => 'metric' },
-        "filter-dimension:s"    => { name => 'filter_dimension'}
+        "filter-dimension:s"    => { name => 'filter_dimension'},
+        "metricnamespace:s"     => { name => 'metricnamespace' }
     });
 
     return $self;
@@ -151,6 +152,9 @@ sub check_options {
     if (defined($self->{option_results}->{filter_dimension}) && $self->{option_results}->{filter_dimension} ne '') {
         $self->{az_metrics_dimension} = $self->{option_results}->{filter_dimension};
     }
+    if (defined($self->{option_results}->{metricnamespace}) && $self->{option_results}->{metricnamespace} ne '') {
+        $self->{az_metricnamespace} = $self->{option_results}->{metricnamespace};
+    }
 }
 
 sub manage_selection {
@@ -163,6 +167,7 @@ sub manage_selection {
         resource_namespace => $self->{az_resource_namespace},
         metrics => $self->{az_metrics},
         aggregations => $self->{az_aggregation},
+        metricnamespace => $self->{az_metricnamespace},
         timeframe => $self->{az_timeframe},
         interval => $self->{az_interval},
         dimension => $self->{az_metrics_dimension}
@@ -170,7 +175,7 @@ sub manage_selection {
 
     $self->{metrics} = {};
     foreach my $label (keys %{$results}) {
-        foreach my $aggregation (('minimum', 'maximum', 'average', 'total')) {
+        foreach my $aggregation (('minimum', 'maximum', 'average', 'total', 'count')) {
             next if (!defined($results->{$label}->{$aggregation}));
 
             $self->{metrics}->{$label . '_' . $aggregation} = {
@@ -229,6 +234,10 @@ Set resource type (Required if resource's name is used).
 =item B<--metric>
 
 Set monitor metrics (Required) (Can be multiple).
+
+=item B<--metricnamespace>
+
+Set monitor metricnamespace.
 
 =item B<--filter-dimension>
 

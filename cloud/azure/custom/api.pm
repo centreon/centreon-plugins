@@ -279,6 +279,7 @@ sub azure_get_metrics_set_url {
         "&metricnames=" . $encoded_metrics . "&aggregation=" . $encoded_aggregations .
         "&timespan=" . $encoded_timespan . "&interval=" . $options{interval};
     $url .= "&\$filter=" . $options{dimension} if defined($options{dimension});
+    $url .= "&metricnamespace=" . $uri->encode($options{metricnamespace}) if defined($options{metricnamespace});
 
     return $url;
 }
@@ -719,7 +720,7 @@ Set interval of the metric query (Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H,
 
 =item B<--aggregation>
 
-Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total').
+Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total', 'count').
 
 =item B<--zeroed>
 
