@@ -32,6 +32,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'filter-type:s'    => { name => 'filter_type' },
         'resource-group:s' => { name => 'resource_group' },
         'location:s'       => { name => 'location' },
         'prettify'         => { name => 'prettify' },
@@ -45,6 +46,7 @@ sub check_options {
     $self->SUPER::init(%options);
 
     $self->{namespace} = 'Microsoft.EventHub';
+    $self->{filter_type} = $self->{option_results}->{filter_type};
     $self->{location} = $self->{option_results}->{location};
     $self->{resource_group} = $self->{option_results}->{resource_group};
 }
@@ -58,6 +60,7 @@ sub run {
 
     my ($resources, $custom_resources);
     foreach my $resource_type ('namespaces', 'clusters') {
+        next if (defined($self->{filter_type}) && $self->{filter_type} ne '' && $resource_type !~ /$self->{filter_type}/);
         $custom_resources->{$resource_type} = $options{custom}->azure_list_resources(
             namespace => $self->{namespace},
             resource_type => $resource_type,
@@ -122,9 +125,10 @@ Azure Event Hubs Resources discovery.
 
 Specify resources namespace.
 
-=item B<--type>
+=item B<--filter-type>
 
-Specify resources type.
+Only discover resources of a specific type.
+Can be 'clusters', 'namespaces'.
 
 =item B<--resource-group>
 
