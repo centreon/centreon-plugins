@@ -1,4 +1,8 @@
-# HOWTO Centos 
+# HOWTO Centos
+
+> :warning: **cwrapper_perl is deprecated** because of security issue.
+> Use it at your own risk.
+> Prefer usage of a sudoers file
 
 Install dependencies:
 
@@ -7,7 +11,7 @@ Install dependencies:
 Compile the wrapper:
 
     # gcc -o cwrapper_perl cwrapper_perl.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
-    
+
 Create a fatpack: https://github.com/centreon/centreon-plugins/blob/master/doc/en/user/guide.rst#can-i-have-one-standalone-perl-file-
 
 Comment following lines in the end of fatpack file:
@@ -27,7 +31,7 @@ Set setuid right:
 
     # chown root:root cwrapper_perl
     # chmod 4775 cwrapper_perl
-    
+
 Test it:
 
     $ cwrapper_perl centreon_protocol_udp.pl --plugin --mode=connection --hostname=10.30.2.65 --port=161
