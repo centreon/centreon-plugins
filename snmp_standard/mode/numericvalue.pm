@@ -199,7 +199,7 @@ sub check_data {
     my $exit = $self->{perfdata}->threshold_check(value => $value,
                                                   threshold => [ { label => 'critical-' . $options{num}, exit_litteral => 'critical' }, { label => 'warning-' . $options{num}, exit_litteral => 'warning' } ]);
     if (defined($options{entry}->{format_scale})) {
-        my $network = $options{entry}->{format_scale_type} =~ /^network$/i ? { network => 1 } : undef;
+        my $network = $options{entry}->{format_scale_type} =~ /^network$/i ? { network => 1 } : {};
         my ($value_mod, $value_unit) = $self->{perfdata}->change_bytes(value => $value, %{$network});
         $value_unit .= '/s' if (defined($options{entry}->{counter_per_seconds}));
         $self->{output}->output_add(severity => $exit,
