@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'collection'      => 'apps::protocols::snmp::mode::collection',
         'dynamic-command' => 'snmp_standard::mode::dynamiccommand',
         'numeric-value'   => 'snmp_standard::mode::numericvalue',
         'response-time'   => 'apps::protocols::snmp::mode::responsetime',
