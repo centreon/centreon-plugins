@@ -654,6 +654,58 @@ sub set_functions {
     }
 }
 
+sub prepare_variables {
+    my ($self, %options) = @_;
+
+    return undef if (!defined($options{value}));
+    $options{value} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$self->{result_values}->{expand}->{'$1'}/g;
+    return $options{value};
+}
+
+sub prepare_perfdatas {
+    my ($self, %options) = @_;
+
+    return undef if (!defined($options{perfdatas}));
+    my $perfdatas = [];
+    foreach (@{$options{perfdatas}}) {
+        next if (!defined($_->{nlabel}) || $_->{nlabel} eq '');
+        next if (!defined($_->{value}) || $_->{value} eq '');
+        my $perf = {};
+        $perf->{nlabel} = $self->substitute_string(value => $_->{nlabel});
+        $perf->{value} = $self->substitute_string(value => $_->{value});
+        foreach my $label (('warning', 'critical', 'min', 'max', 'unit')) {
+            next if (!defined($_->{$label}));
+            $perf->{$label} = $self->substitute_string(value => $_->{$label});
+        }
+        if (defined($_->{instances})) {
+            $perf->{instances} = [];
+            foreach my $instance (@{$_->{instances}}) {
+                push @{$perf->{instances}}, $self->substitute_string(value => $instance);
+            }
+        }
+        push @$perfdatas, $perf;
+    }
+
+    return $perfdatas;
+}
+
+sub prepare_formatting {
+    my ($self, %options) = @_;
+
+    return undef if (!defined($options{formatting}));
+    my $format = {};
+    $format->{printf_msg} = $options{formatting}->{printf_msg};
+    $format->{display_ok} = $options{formatting}->{display_ok};
+    if (defined($options{formatting}->{printf_var})) {
+        $format->{printf_var} = [];
+        foreach my $var (@{$options{formatting}->{printf_var}}) {
+            push @{$format->{printf_var}}, $self->substitute_string(value => $var);
+        }
+    }
+
+    return $format
+}
+
 sub add_selection {
     my ($self, %options) = @_;
 
@@ -662,11 +714,20 @@ sub add_selection {
     my $i = -1;
     foreach (@{$self->{config}->{selection}}) {
         $i++;
+        my $config = {};
         $self->{expand} = {};
         $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
         $self->set_expand_table(section => "selection > $i > expand_table", expand => $_->{expand_table});
         $self->set_expand(section => "selection > $i > expand", expand => $_->{expand});
         $self->set_functions(section => "selection > $i > functions", functions => $_->{functions});
+        $config->{unknow} = $self->prepare_variables(section => "selection > $i > unknown", value => $_->{unknown});
+        $config->{warning} = $self->prepare_variables(section => "selection > $i > warning", value => $_->{warning});
+        $config->{critical} = $self->prepare_variables(section => "selection > $i > critical", value => $_->{critical});
+        $config->{perfdatas} = $self->prepare_perfdatas(section => "selection > $i > perfdatas", perfdatas => $_->{perfdatas});
+        $config->{formatting} = $self->prepare_formatting(section => "selection > $i > formatting", formatting => $_->{formatting});
+        $config->{formatting_unknown} = $self->prepare_formatting(section => "selection > $i > formatting_unknown", formatting => $_->{formatting_unknown});
+        $config->{formatting_warning} = $self->prepare_formatting(section => "selection > $i > formatting_warning", formatting => $_->{formatting_warning});
+        $config->{formatting_critical} = $self->prepare_formatting(section => "selection > $i > formatting_critical", formatting => $_->{formatting_critical});
     }
 
     use Data::Dumper; print Data::Dumper::Dumper($self->{expand});
