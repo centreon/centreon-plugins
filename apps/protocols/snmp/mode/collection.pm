@@ -655,6 +655,7 @@ sub set_expand_table {
         my $table = $self->get_table_instance(table => $result->{table}, instance => $result->{instance});
         next if (!defined($table));
 
+        $self->{expand}->{ $name . '.instance' } = $result->{instance};
         foreach (keys %$table) {
             $self->{expand}->{ $name . '.' . $_ } = $table->{$_};
         }
@@ -727,6 +728,15 @@ sub prepare_variables {
     return undef if (!defined($options{value}));
     $options{value} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$self->{result_values}->{expand}->{'$1'}/g;
     return $options{value};
+}
+
+sub check_filter {
+    my ($self, %options) = @_;
+
+    return 0 if (!defined($options{filter}) || $options{filter} eq '');
+    $options{filter} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$self->{expand}->{'$1'}/g;
+    return 0 if (eval "$options{filter}");
+    return 1;
 }
 
 sub prepare_perfdatas {
@@ -802,7 +812,44 @@ sub add_selection {
 sub add_selection_loop {
     my ($self, %options) = @_;
 
-    # TODO
+    return if (!defined($self->{config}->{selection_loop}));
+    my $i = -1;
+    foreach (@{$self->{config}->{selection_loop}}) {
+        $i++;
+
+        next if (!defined($_->{source}) || $_->{source} eq '');
+        $self->{current_section} = '[selection_loop > ' . $i . ' > source]';
+        my $result = $self->parse_special_variable(chars => [split //, $_->{source}], start => 0);
+        if ($result->{type} != 2) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed");
+            $self->{output}->option_exit();
+        }
+        next if (!defined($self->{snmp_collected}->{tables}->{ $result->{table} }));
+
+        foreach my $instance (keys %{$self->{snmp_collected}->{tables}->{ $result->{table} }}) {
+            $self->{expand} = {};
+            $self->{expand}->{ $result->{table} . '.instance' } = $instance;
+            foreach my $label (keys %{$self->{snmp_collected}->{tables}->{ $result->{table} }->{$instance}}) {
+                $self->{expand}->{ $result->{table} . '.' . $label } =
+                    $self->{snmp_collected}->{tables}->{ $result->{table} }->{$instance}->{$label};
+            }
+            my $config = {};
+            $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
+            $self->set_expand_table(section => "selection_loop > $i > expand_table", expand => $_->{expand_table});
+            $self->set_expand(section => "selection_loop > $i > expand", expand => $_->{expand});
+            $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions});
+            next if ($self->check_filter(filter => $_->{filter}));
+            $config->{unknow} = $self->prepare_variables(section => "selection_loop > $i > unknown", value => $_->{unknown});
+            $config->{warning} = $self->prepare_variables(section => "selection_loop > $i > warning", value => $_->{warning});
+            $config->{critical} = $self->prepare_variables(section => "selection_loop > $i > critical", value => $_->{critical});
+            $config->{perfdatas} = $self->prepare_perfdatas(section => "selection_loop > $i > perfdatas", perfdatas => $_->{perfdatas});
+            $config->{formatting} = $self->prepare_formatting(section => "selection_loop > $i > formatting", formatting => $_->{formatting});
+            $config->{formatting_unknown} = $self->prepare_formatting(section => "selection_loop > $i > formatting_unknown", formatting => $_->{formatting_unknown});
+            $config->{formatting_warning} = $self->prepare_formatting(section => "selection_loop > $i > formatting_warning", formatting => $_->{formatting_warning});
+            $config->{formatting_critical} = $self->prepare_formatting(section => "selection_loop > $i > formatting_critical", formatting => $_->{formatting_critical});
+            $self->{selections}->{'s' . $i . '-' . $instance} = { expand => $self->{expand}, config => $config };
+        }
+    }
 }
 
 sub set_formatting {
