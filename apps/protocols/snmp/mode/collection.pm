@@ -269,6 +269,16 @@ sub get_leef_variable {
     return $self->{snmp_collected}->{leefs}->{ $options{name} };
 }
 
+sub get_table_instance {
+    my ($self, %options) = @_;
+
+    return undef if (
+        !defined($self->{snmp_collected}->{tables}->{ $options{table} }) ||
+        !defined($self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} })
+    );
+    return $self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} };
+}
+
 sub get_table_attribute_value {
     my ($self, %options) = @_;
 
@@ -514,14 +524,51 @@ sub substitute_string {
     return $str;
 }
 
+sub set_expand_table {
+    my ($self, %options) = @_;
+
+    return if (!defined($options{expand}));
+    foreach my $name (keys %{$options{expand}}) {
+        $self->{current_section} = '[' . $options{section} . ' > ' . $name . ']';
+        my $result = $self->parse_special_variable(chars => [split //, $options{expand}->{$name}], start => 0);
+        if ($result->{type} != 3) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed");
+            $self->{output}->option_exit();
+        }
+        my $table = $self->get_table_instance(table => $result->{table}, instance => $result->{instance});
+        next if (!defined($table));
+
+        foreach (keys %$table) {
+            $self->{expand}->{ $result->{table} . '.' . $_ } = $table->{$_};
+        }
+    }
+}
+
+sub set_expand {
+    my ($self, %options) = @_;
+
+    return if (!defined($options{expand}));
+    foreach my $name (keys %{$options{expand}}) {
+        $self->{current_section} = '[' . $options{section} . ' > ' . $name . ']';
+        $self->{expand}->{$name} = $self->substitute_string(value => $options{expand}->{$name});
+    }
+}
+
 sub add_selection {
     my ($self, %options) = @_;
 
-    $self->{expand} = { name => 'ppp' };
-    $self->{current_section} = '[selection > expand_table > mytable]';
+    return if (!defined($self->{config}->{selection}));
 
-    my $str = 'caca %(snmp.tables.plcOther.[20].plop) %(name) %(snmp.leefs.macAddress) TEST';
-    my $data = $self->substitute_string(value => $str);
+    my $i = -1;
+    foreach (@{$self->{config}->{selection}}) {
+        $i++;
+        $self->{expand} = {};
+        $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
+        $self->set_expand_table(section => "selection > $i > expand_table >", expand => $_->{expand_table});
+        $self->set_expand(section => "selection > $i > expand >", expand => $_->{expand});
+    }
+
+    use Data::Dumper; print Data::Dumper::Dumper($self->{expand});
 }
 
 sub add_selection_loop {
