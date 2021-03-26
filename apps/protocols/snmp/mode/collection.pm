@@ -263,10 +263,22 @@ sub get_local_variable {
     return $self->{expand}->{ $options{name} };
 }
 
+sub set_local_variable {
+    my ($self, %options) = @_;
+
+    $self->{expand}->{ $options{name} } = $options{value};
+}
+
 sub get_leef_variable {
     my ($self, %options) = @_;
 
     return $self->{snmp_collected}->{leefs}->{ $options{name} };
+}
+
+sub set_leef_variable {
+    my ($self, %options) = @_;
+
+    $self->{snmp_collected}->{leefs}->{ $options{name} } = $options{value};
 }
 
 sub get_table_instance {
@@ -288,6 +300,55 @@ sub get_table_attribute_value {
         !defined($self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} })
     );
     return $self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} };
+}
+
+sub set_table_attribute_value {
+    my ($self, %options) = @_;
+
+    $self->{snmp_collected}->{tables}->{ $options{table} } = {}
+        if (!defined($self->{snmp_collected}->{tables}->{ $options{table} }));
+    $self->{snmp_collected}->{tables}->{ $options{table} } = {}
+        if (!defined($self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }));
+    $self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} } = $options{value};
+}
+
+sub get_special_variable_value {
+    my ($self, %options) = @_;
+
+    my $data;
+    if ($options{type} == 0) {
+        $data = $self->get_local_variable(name => $options{label});
+    } elsif ($options{type} == 1) {
+        $data = $self->get_leef_variable(name => $options{label});
+    } elsif ($options{type} == 4) {
+        $data = $self->get_table_attribute_value(
+            table => $options{table},
+            instance => $options{instance},
+            attribute => $options{label}
+        );
+    }
+
+    return $data;
+}
+
+sub set_special_variable_value {
+    my ($self, %options) = @_;
+
+    my $data;
+    if ($options{type} == 0) {
+        $data = $self->set_local_variable(name => $options{label}, value => $options{value});
+    } elsif ($options{type} == 1) {
+        $data = $self->set_leef_variable(name => $options{label}, value => $options{value});
+    } elsif ($options{type} == 4) {
+        $data = $self->set_table_attribute_value(
+            table => $options{table},
+            instance => $options{instance},
+            attribute => $options{label},
+            value => $options{value}
+        );
+    }
+
+    return $data;
 }
 
 sub strcmp {
@@ -502,18 +563,7 @@ sub substitute_string {
     for (my $i = 0; $i < scalar(@$arr); $i++) {
         next if ($i <= $end);
         if (defined($results->{$i})) {
-            my $data;
-            if ($results->{$i}->{type} == 0) {
-                $data = $self->get_local_variable(name => $results->{$i}->{label});
-            } elsif ($results->{$i}->{type} == 1) {
-                $data = $self->get_leef_variable(name => $results->{$i}->{label});
-            } elsif ($results->{$i}->{type} == 4) {
-                $data = $self->get_table_attribute_value(
-                    table => $results->{$i}->{table},
-                    instance => $results->{$i}->{instance},
-                    attribute => $results->{$i}->{label}
-                );
-            }
+            my $data = $self->get_special_variable_value(%{$results->{$i}});
             $end = $results->{$i}->{end};
             $str .= defined($data) ? $data : '';
         } else {
@@ -539,7 +589,7 @@ sub set_expand_table {
         next if (!defined($table));
 
         foreach (keys %$table) {
-            $self->{expand}->{ $result->{table} . '.' . $_ } = $table->{$_};
+            $self->{expand}->{ $name . '.' . $_ } = $table->{$_};
         }
     }
 }
@@ -554,6 +604,56 @@ sub set_expand {
     }
 }
 
+sub exec_func_map {
+    my ($self, %options) = @_;
+
+    if (!defined($options{map_name}) || $options{map_name} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set map_name attribute");
+        $self->{output}->option_exit();
+    }
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|1|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+    my $data = $self->get_special_variable_value(%$result);
+    my $value = $self->get_map_value(value => $data, map => $options{map_name});
+    if (!defined($value)) {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} unknown map attribute: $options{map_name}");
+        $self->{output}->option_exit();
+    }
+    my $dst = $result;
+    if (defined($options{dst}) && $options{dst}) {
+        $dst = $self->parse_special_variable(chars => [split //, $options{dst}], start => 0);
+        if ($dst->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in dst attribute");
+            $self->{output}->option_exit();
+        }
+    }
+
+    $self->set_special_variable_value(value => $value, %$dst);
+}
+
+sub set_functions {
+    my ($self, %options) = @_;
+
+    return if (!defined($options{functions}));
+    my $i = -1;
+    foreach (@{$options{functions}}) {
+        $i++;
+        $self->{current_section} = '[' . $options{section} . ' > ' . $i . ']';
+        next if (!defined($_->{type}));
+        if ($_->{type} eq 'map') {
+            $self->exec_func_map(%$_);
+        }
+    }
+}
+
 sub add_selection {
     my ($self, %options) = @_;
 
@@ -564,8 +664,9 @@ sub add_selection {
         $i++;
         $self->{expand} = {};
         $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
-        $self->set_expand_table(section => "selection > $i > expand_table >", expand => $_->{expand_table});
-        $self->set_expand(section => "selection > $i > expand >", expand => $_->{expand});
+        $self->set_expand_table(section => "selection > $i > expand_table", expand => $_->{expand_table});
+        $self->set_expand(section => "selection > $i > expand", expand => $_->{expand});
+        $self->set_functions(section => "selection > $i > functions", functions => $_->{functions});
     }
 
     use Data::Dumper; print Data::Dumper::Dumper($self->{expand});
