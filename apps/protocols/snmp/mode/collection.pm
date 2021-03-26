@@ -27,6 +27,74 @@ use warnings;
 use JSON::XS;
 use centreon::plugins::statefile;
 
+sub custom_select_threshold {
+    my ($self, %options) = @_;
+    my $status = 'ok';
+    my $message;
+
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+
+        if (defined($self->{result_values}->{config}->{critical}) && $self->{result_values}->{config}->{critical} &&
+            eval "$self->{result_values}->{config}->{critical}") {
+            $status = 'critical';
+        } elsif (defined($self->{result_values}->{config}->{warning}) && $self->{result_values}->{config}->{warning} ne '' &&
+            eval "$self->{result_values}->{config}->{warning}") {
+            $status = 'warning';
+        } elsif (defined($self->{result_values}->{config}->{unknown}) && $self->{result_values}->{config}->{unknown} &&
+            eval "$self->{result_values}->{config}->{unknown}") {
+            $status = 'unknown';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+
+    $self->{result_values}->{last_status} = $status;
+    return $status;
+}
+
+sub custom_select_perfdata {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{result_values}->{config}->{perfdatas}));
+    foreach (@{$self->{result_values}->{config}->{perfdatas}}) {
+        $self->{output}->perfdata_add(%$_);
+    }
+}
+
+sub custom_select_output {
+    my ($self, %options) = @_;
+
+    return '' if (
+        $self->{result_values}->{last_status} eq 'ok' && defined($self->{result_values}->{config}->{formatting}) &&
+        defined($self->{result_values}->{config}->{formatting}->{display_ok}) &&
+        $self->{result_values}->{config}->{formatting}->{display_ok} =~ /^false|0$/
+    );
+
+    my $format;
+    if (defined($self->{result_values}->{config}->{ 'formatting_' . $self->{result_values}->{last_status} })) {
+        $format = $self->{result_values}->{config}->{ 'formatting_' . $self->{result_values}->{last_status} };
+    } elsif (defined($self->{result_values}->{config}->{formatting})) {
+        $format = $self->{result_values}->{config}->{formatting};
+    }
+
+    if (defined($format)) {
+        return sprintf(
+            $format->{printf_msg}, @{$format->{printf_var}} 
+        );
+    }
+
+    # without formatting: [name: xxxxxx][test: xxxx][test2: xxx][mytable.plcRead: xxx][mytable.plcWrite: xxx]
+    my $output = '';
+    foreach (sort keys %{$self->{result_values}->{expand}}) {
+        $output .= '[' . $_ . ': ' . $self->{result_values}->{expand}->{$_} . ']';
+    }
+
+    return $output;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -36,11 +104,10 @@ sub set_counters {
 
     $self->{maps_counters}->{selections} = [
         { label => 'select', threshold => 0, set => {
-                key_values => [ { name => 'percent_load' } ],
-                output_template => 'load: %.2f %%',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
+                key_values => [ { name => 'expand' }, { name => 'config' } ],
+                closure_custom_output => $self->can('custom_select_output'),
+                closure_custom_perfdata => $self->can('custom_select_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_select_threshold')
             }
         }
     ];
@@ -88,7 +155,7 @@ sub read_config {
     }
 
     eval {
-        $self->{config} = JSON::XS->new->utf8->decode($content);
+        $self->{config} = JSON::XS->new->decode($content);
     };
     if ($@) {
         $self->{output}->output_add(long_msg => "json config error: $@", debug => 1);
@@ -728,15 +795,14 @@ sub add_selection {
         $config->{formatting_unknown} = $self->prepare_formatting(section => "selection > $i > formatting_unknown", formatting => $_->{formatting_unknown});
         $config->{formatting_warning} = $self->prepare_formatting(section => "selection > $i > formatting_warning", formatting => $_->{formatting_warning});
         $config->{formatting_critical} = $self->prepare_formatting(section => "selection > $i > formatting_critical", formatting => $_->{formatting_critical});
+        $self->{selections}->{'s' . $i} = { expand => $self->{expand}, config => $config };
     }
-
-    use Data::Dumper; print Data::Dumper::Dumper($self->{expand});
 }
 
 sub add_selection_loop {
     my ($self, %options) = @_;
 
-    
+    # TODO
 }
 
 sub set_formatting {
@@ -757,11 +823,10 @@ sub manage_selection {
     $self->read_config();
     $self->collect_snmp(snmp => $options{snmp});
 
+    $self->{selections} = {};
     $self->add_selection();
     $self->add_selection_loop();
     $self->set_formatting();
-
-    exit(1);
 }
 
 1;
