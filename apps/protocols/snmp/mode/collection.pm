@@ -27,62 +27,19 @@ use warnings;
 use JSON::XS;
 use centreon::plugins::statefile;
 
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf("Output source status is '%s'", $self->{result_values}->{status});
-}
-
-sub prefix_oline_output {
-    my ($self, %options) = @_;
-
-    return "Output line '" . $options{instance_value}->{display} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'oline', type => 1, cb_prefix_output => 'prefix_oline_output', message_multiple => 'All output lines are ok', skipped_code => { -10 => 1 } }
+        { name => 'selections', type => 1, message_multiple => 'All selections are ok', skipped_code => { -10 => 1 } }
     ];
 
-    $self->{maps_counters}->{global} = [
-        {
-            label => 'source-status',
-            type => 2,
-            unknown_default => '%{status} =~ /unknown/i',
-            set => {
-                key_values => [ { name => 'status' } ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        }
-    ];
-
-    $self->{maps_counters}->{oline} = [
-        { label => 'load', nlabel => 'line.output.load.percentage', set => {
+    $self->{maps_counters}->{selections} = [
+        { label => 'select', threshold => 0, set => {
                 key_values => [ { name => 'percent_load' } ],
                 output_template => 'load: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
-            }
-        },
-        { label => 'current', nlabel => 'line.output.current.ampere', set => {
-                key_values => [ { name => 'current' } ],
-                output_template => 'current: %.2f A',
-                perfdatas => [
-                    { template => '%.2f', min => 0, unit => 'A', label_extra_instance => 1 }
-                ]
-            }
-        },
-        { label => 'voltage', nlabel => 'line.output.voltage.volt', set => {
-                key_values => [ { name => 'voltage' } ],
-                output_template => 'voltage: %.2f V',
-                perfdatas => [
-                    { template => '%.2f', unit => 'V', label_extra_instance => 1 }
                 ]
             }
         }
@@ -293,60 +250,308 @@ sub collect_snmp {
     $self->save_snmp_cache();
 }
 
-# on va faire une methode de selection globale pour trouver.
-# apres le comportement change.
+sub exist_table_name {
+    my ($self, %options) = @_;
 
-#"expand_table": {
-#   "mytable": "%(snmp.tables.plcData[1])"
-# },
-# "expand": {
-#    "serial": "%(snmp.leefs.serialNum)",
-#    "test": "test display",
-#    "test2": "other %(snmp.tables.plcOther.plop[1])"
-#},
-# on stocke dans:
-#    'snmp.tables.plcData' { 'instance' => { 'plcWrite' => 'xxx' }'
+    return 1 if (defined($self->{snmp_collected}->{tables}->{ $options{name} }));
+    return 0;
+}
+
+sub get_local_variable {
+    my ($self, %options) = @_;
+
+    return $self->{expand}->{ $options{name} };
+}
+
+sub get_leef_variable {
+    my ($self, %options) = @_;
+
+    return $self->{snmp_collected}->{leefs}->{ $options{name} };
+}
+
+sub get_table_attribute_value {
+    my ($self, %options) = @_;
+
+    return undef if (
+        !defined($self->{snmp_collected}->{tables}->{ $options{table} }) ||
+        !defined($self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }) ||
+        !defined($self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} })
+    );
+    return $self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} };
+}
+
+sub strcmp {
+    my ($self, %options) = @_;
+
+    my @cmp = split //, $options{test};
+    for (my $i = 0; $i < scalar(@cmp); $i++) {
+        return 0 if (
+            !defined($options{chars}->[ $options{start} + $i ]) ||
+            $options{chars}->[ $options{start} + $i ] ne $cmp[$i]
+        );
+    }
+
+    return 1;
+}
+
+sub parse_forward {
+    my ($self, %options) = @_;
+
+    my ($string, $i) = ('', 0);
+    while (1) {
+        return (1, 'cannot find ' . $options{stop} . ' character')
+            if (!defined($options{chars}->[ $options{start} + $i ]));
+        last if ($options{chars}->[ $options{start} + $i ] =~ /$options{stop}/);
+        return (1, "character '" . $options{chars}->[ $options{start} + $i ] . "' forbidden")
+            if ($options{chars}->[ $options{start} + $i ] !~ /$options{allowed}/);
+
+        $string .= $options{chars}->[ $options{start} + $i ];
+        $i++;
+    }
+
+    return (0, undef, $options{start} + $i, $string);
+}
 
 =pod
-"selection": [
-    {
-        "name": "TDO1 : Interrupteur Général IG",
-        "expand_table": {
-            "mytable": "%(snmp.tables.plcData[1])"
-        },
-        "expand": {
-            "serial": "%(snmp.leefs.serialNum)",
-            "test": "test display",
-            "test2": "other %(snmp.tables.plcOther.plop[1])"
-        },
-        "map": {
-            "%(mytable.plcWrite)": "disjoncteur"
-        },
-        "warning": "%(mytable.plcWrite) eq 'ouvert'",
-        "critical": "%(mytable.plcWrite) eq 'ferme'",
-        "perfdatas": [
-            { "nlabel": "test.count", "instances": ["%(test)", "%(name)"], "value": "%(mytable.plcWrite)", "warning": "20", "critical": "30", "min": 0 }
-        ],
-        "custom_formatting": {
-            "printf_msg":"name %s serial %s data is %.2f",
-            "printf_var":[
-                "%(name)",
-                "%(serial)",
-                "%(mytable.plcRead)"
-            ]
+managed variables:
+    %(snmp.tables.plcData)
+    %(snmp.tables.plcData.[1])
+    %(snmp.tables.plcOther.[1].plop)
+    %(snmp.tables.plcOther.[%(mytable.instance)]
+    %(snmp.tables.plcOther.[%(snmp.tables.plcOther.[%(mytable.instance)].test)]
+    %(test2)
+    %(mytable.test)
+
+result:
+    - type:
+        0=%(test) (label)
+        1=%(snmp.leefs.variable)
+        2=%(snmp.tables.test)
+        3=%(snmp.tables.test.[2])
+        4=%(snmp.tables.test.[2].attrname)
+=cut
+sub parse_snmp_tables {
+    my ($self, %options) = @_;
+
+    my ($code, $msg_error, $end, $table_label, $instance_label, $label);
+    ($code, $msg_error, $end, $table_label) = $self->parse_forward(
+        chars => $options{chars},
+        start => $options{start}, 
+        allowed => '[a-zA-Z0-9]',
+        stop => '[).]'
+    );
+    if ($code) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
+        $self->{output}->option_exit();
+    }
+    if (!$self->exist_table_name(name => $table_label)) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " unknown table '$table_label'");
+        $self->{output}->option_exit();
+    }
+    if ($options{chars}->[$end] eq ')') {
+        return { type => 2, end => $end, table => $table_label };
+    }
+
+    # instance part managenent
+    if (!defined($options{chars}->[$end + 1]) || $options{chars}->[$end + 1] ne '[') {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable snmp.tables character '[' mandatory");
+        $self->{output}->option_exit();
+    }
+    if ($self->strcmp(chars => $options{chars}, start => $end + 2, test => '%(')) {
+        my $result = $self->parse_special_variable(chars => $options{chars}, start => $end + 2);
+        # type allowed: 0,1,4
+        if ($result->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable type not allowed');
+            $self->{output}->option_exit();
+        }
+        $end = $result->{end} + 1;
+        if ($result->{type} == 0) {
+            $instance_label = $self->get_local_variable(name => $result->{label});
+        } elsif ($result->{type} == 1) {
+            $instance_label = $self->get_leef_variable(name => $result->{label});
+        } elsif ($result->{type} == 4) {
+            $instance_label = $self->get_table_attribute_value(
+                table => $result->{table},
+                instance => $result->{instance},
+                attribute => $result->{label}
+            );
+        }
+        $instance_label = defined($instance_label) ? $instance_label : '';
+    } else {
+        ($code, $msg_error, $end, $instance_label) = $self->parse_forward(
+            chars => $options{chars},
+            start => $end + 2, 
+            allowed => '[0-9\.]',
+            stop => '[\]]'
+        );
+        if ($code) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
+            $self->{output}->option_exit();
         }
     }
-],
-=cut
+
+    if (!defined($options{chars}->[$end + 1]) ||
+        $options{chars}->[$end + 1] !~ /[.)]/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable snmp.tables character [.)] missing');
+        $self->{output}->option_exit();
+    }
+
+    if ($options{chars}->[$end + 1] eq ')') {
+        return { type => 3, end => $end + 1, table => $table_label, instance => $instance_label };
+    }
+
+    ($code, $msg_error, $end, $label) = $self->parse_forward(
+        chars => $options{chars},
+        start => $end + 2,
+        allowed => '[a-zA-Z0-9]',
+        stop => '[)]'
+    );
+    if ($code) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
+        $self->{output}->option_exit();
+    }
+
+    return { type => 4, end => $end, table => $table_label, instance => $instance_label, label => $label };
+}
+
+sub parse_snmp_type {
+    my ($self, %options) = @_;
+
+    if ($self->strcmp(chars => $options{chars}, start => $options{start}, test => 'leefs.')) {
+        my ($code, $msg_error, $end, $label) = $self->parse_forward(
+            chars => $options{chars},
+            start => $options{start} + 6,
+            allowed => '[a-zA-Z0-9]',
+            stop => '[)]'
+        );
+        if ($code) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
+            $self->{output}->option_exit();
+        }
+        return { type => 1, end => $end, label => $label };
+    } elsif ($self->strcmp(chars => $options{chars}, start => $options{start}, test => 'tables.')) {
+        return $self->parse_snmp_tables(chars => $options{chars}, start => $options{start} + 7);
+    } else {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable snmp not followed by leefs/tables');
+        $self->{output}->option_exit();
+    }
+}
+
+sub parse_special_variable {
+    my ($self, %options) = @_;
+
+    my $start = $options{start};
+    if ($options{chars}->[$start] ne '%' || 
+        $options{chars}->[$start + 1] ne '(') {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable not starting by %(');
+        $self->{output}->option_exit();
+    }
+
+    my $result = { start => $options{start} };
+    if ($self->strcmp(chars => $options{chars}, start => $start + 2, test => 'snmp.')) {
+        my $parse = $self->parse_snmp_type(chars => $options{chars}, start => $start + 2 + 5);
+        $result = { %$parse, %$result };
+    } else {
+        my ($code, $msg_error, $end, $label) = $self->parse_forward(
+            chars => $options{chars},
+            start => $start + 2, 
+            allowed => '[a-zA-Z0-9.]',
+            stop => '[)]'
+        );
+        if ($code) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
+            $self->{output}->option_exit();
+        }
+        $result->{end} = $end;
+        $result->{type} = 0;
+        $result->{label} = $label;
+    }
+
+    return $result;
+}
+
+sub substitute_string {
+    my ($self, %options) = @_;
+
+    my $arr = [split //, $options{value}];
+    my $results = {};
+    my $last_end = -1;
+    while ($options{value} =~ /\Q%(\E/g) {
+        next if ($-[0] < $last_end);
+        my $result = $self->parse_special_variable(chars => $arr, start => $-[0]);
+        if ($result->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed");
+            $self->{output}->option_exit();
+        }
+        $last_end = $result->{end};
+        $results->{ $result->{start} } = $result;
+    }
+
+    my $end = -1;
+    my $str = '';
+    for (my $i = 0; $i < scalar(@$arr); $i++) {
+        next if ($i <= $end);
+        if (defined($results->{$i})) {
+            my $data;
+            if ($results->{$i}->{type} == 0) {
+                $data = $self->get_local_variable(name => $results->{$i}->{label});
+            } elsif ($results->{$i}->{type} == 1) {
+                $data = $self->get_leef_variable(name => $results->{$i}->{label});
+            } elsif ($results->{$i}->{type} == 4) {
+                $data = $self->get_table_attribute_value(
+                    table => $results->{$i}->{table},
+                    instance => $results->{$i}->{instance},
+                    attribute => $results->{$i}->{label}
+                );
+            }
+            $end = $results->{$i}->{end};
+            $str .= defined($data) ? $data : '';
+        } else {
+            $str .= $arr->[$i];
+        }
+    }
+
+    return $str;
+}
+
+sub add_selection {
+    my ($self, %options) = @_;
+
+    $self->{expand} = { name => 'ppp' };
+    $self->{current_section} = '[selection > expand_table > mytable]';
+
+    my $str = 'caca %(snmp.tables.plcOther.[20].plop) %(name) %(snmp.leefs.macAddress) TEST';
+    my $data = $self->substitute_string(value => $str);
+}
+
+sub add_selection_loop {
+    my ($self, %options) = @_;
+
+    
+}
+
+sub set_formatting {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{config}->{formatting}));
+    if (defined($self->{config}->{formatting}->{custom_message_global})) {
+        $self->{maps_counters_type}->[0]->{message_multiple} = $self->{config}->{formatting}->{custom_message_global};
+    }
+    if (defined($self->{config}->{formatting}->{separator})) {
+        $self->{maps_counters_type}->[0]->{message_separator} = $self->{config}->{formatting}->{separator};
+    }
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->read_config();
     $self->collect_snmp(snmp => $options{snmp});
-    use Data::Dumper; print Data::Dumper::Dumper($self->{snmp_collected});
 
-    
+    $self->add_selection();
+    $self->add_selection_loop();
+    $self->set_formatting();
+
     exit(1);
 }
 
