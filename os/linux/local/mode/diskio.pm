@@ -170,7 +170,7 @@ sub manage_selection {
     }
 
     $self->{device} = {};
-    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s*/msg) {
+    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)/mg) {
         my ($partition_name, $read_sector, $write_sector, $read_ms, $write_ms, $ms_ticks) = ($1, $2, $4, $3, $5, $6);
 
         next if (defined($self->{option_results}->{filter_partition_name}) && $self->{option_results}->{filter_partition_name} ne '' &&
