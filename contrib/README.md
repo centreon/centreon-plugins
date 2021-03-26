@@ -1,8 +1,7 @@
 # HOWTO Centos
 
 > :warning: **cwrapper_perl is deprecated** because of security issue.
-> Use it at your own risk.
-> Prefer usage of a sudoers file
+> Prefer usage of a sudoers file or use it at your own risk.
 
 Install dependencies:
 
