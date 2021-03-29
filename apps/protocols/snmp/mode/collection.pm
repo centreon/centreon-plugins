@@ -812,6 +812,7 @@ sub add_selection {
         $self->set_expand_table(section => "selection > $i > expand_table", expand => $_->{expand_table});
         $self->set_expand(section => "selection > $i > expand", expand => $_->{expand});
         $self->set_functions(section => "selection > $i > functions", functions => $_->{functions});
+        next if ($self->check_filter(filter => $_->{filter}));
         next if ($self->check_filter_option());
         $config->{unknow} = $self->prepare_variables(section => "selection > $i > unknown", value => $_->{unknown});
         $config->{warning} = $self->prepare_variables(section => "selection > $i > warning", value => $_->{warning});
