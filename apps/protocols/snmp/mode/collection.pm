@@ -910,6 +910,10 @@ sub disco_show {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    # TODO:
+    #   add some functions types (percent, scale)
+    #   choose functions position: before_expand, after_expand
+    #   can cache only some parts of snmp requests
     $self->read_config();
     $self->collect_snmp(snmp => $options{snmp});
 
