@@ -99,8 +99,8 @@ sub new {
         "resource-type:s"       => { name => 'resource_type' },
         "resource-namespace:s"  => { name => 'resource_namespace' },
         "metric:s@"             => { name => 'metric' },
-        "filter-dimension:s"    => { name => 'filter_dimension'},
-        "metricnamespace:s"     => { name => 'metricnamespace' }
+        "filter-dimension:s"    => { name => 'filter_dimension' },
+        "metric-namespace:s"    => { name => 'metric_namespace' }
     });
 
     return $self;
@@ -152,8 +152,8 @@ sub check_options {
     if (defined($self->{option_results}->{filter_dimension}) && $self->{option_results}->{filter_dimension} ne '') {
         $self->{az_metrics_dimension} = $self->{option_results}->{filter_dimension};
     }
-    if (defined($self->{option_results}->{metricnamespace}) && $self->{option_results}->{metricnamespace} ne '') {
-        $self->{az_metricnamespace} = $self->{option_results}->{metricnamespace};
+    if (defined($self->{option_results}->{metric_namespace}) && $self->{option_results}->{metric_namespace} ne '') {
+        $self->{az_metric_namespace} = $self->{option_results}->{metric_namespace};
     }
 }
 
@@ -167,7 +167,7 @@ sub manage_selection {
         resource_namespace => $self->{az_resource_namespace},
         metrics => $self->{az_metrics},
         aggregations => $self->{az_aggregation},
-        metricnamespace => $self->{az_metricnamespace},
+        metric_namespace => $self->{az_metric_namespace},
         timeframe => $self->{az_timeframe},
         interval => $self->{az_interval},
         dimension => $self->{az_metrics_dimension}
@@ -235,9 +235,9 @@ Set resource type (Required if resource's name is used).
 
 Set monitor metrics (Required) (Can be multiple).
 
-=item B<--metricnamespace>
+=item B<--metric-namespace>
 
-Set monitor metricnamespace.
+Set monitor metric namespace.
 
 =item B<--filter-dimension>
 
