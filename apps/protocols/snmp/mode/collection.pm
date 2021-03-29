@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use JSON::XS;
 use centreon::plugins::statefile;
+use Safe;
 
 sub custom_select_threshold {
     my ($self, %options) = @_;
@@ -37,14 +38,18 @@ sub custom_select_threshold {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
         if (defined($self->{result_values}->{config}->{critical}) && $self->{result_values}->{config}->{critical} &&
-            eval "$self->{result_values}->{config}->{critical}") {
+            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{critical})) {
             $status = 'critical';
         } elsif (defined($self->{result_values}->{config}->{warning}) && $self->{result_values}->{config}->{warning} ne '' &&
-            eval "$self->{result_values}->{config}->{warning}") {
+            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{warning})) {
             $status = 'warning';
         } elsif (defined($self->{result_values}->{config}->{unknown}) && $self->{result_values}->{config}->{unknown} &&
-            eval "$self->{result_values}->{config}->{unknown}") {
+            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{unknown})) {
             $status = 'unknown';
+        }
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
+            $self->{output}->option_exit();
         }
     };
     if (defined($message)) {
@@ -124,6 +129,7 @@ sub new {
         'filter-selection:s%' => { name => 'filter_selection' },
     });
 
+    $self->{safe} = Safe->new();
     $self->{snmp_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -737,7 +743,12 @@ sub check_filter {
 
     return 0 if (!defined($options{filter}) || $options{filter} eq '');
     $options{filter} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$self->{expand}->{'$1'}/g;
-    return 0 if (eval "$options{filter}");
+    my $result = $self->{safe}->reval("$options{filter}");
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
+        $self->{output}->option_exit();
+    }
+    return 0 if ($result);
     return 1;
 }
 
