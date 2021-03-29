@@ -119,7 +119,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'config:s' => { name => 'config' }
+        'config:s'            => { name => 'config' },
+        'filter-selection:s%' => { name => 'filter_selection' },
     });
 
     $self->{snmp_cache} = centreon::plugins::statefile->new(%options);
@@ -739,6 +740,19 @@ sub check_filter {
     return 1;
 }
 
+sub check_filter_option {
+    my ($self, %options) = @_;
+
+    foreach (keys %{$self->{option_results}->{filter_selection}}) {
+        return 1 if (
+            defined($self->{expand}->{$_}) && $self->{option_results}->{filter_selection}->{$_} ne '' &&
+            $self->{expand}->{$_} !~ /$self->{option_results}->{filter_selection}->{$_}/
+        );
+    }
+
+    return 0;
+}
+
 sub prepare_perfdatas {
     my ($self, %options) = @_;
 
@@ -797,6 +811,7 @@ sub add_selection {
         $self->set_expand_table(section => "selection > $i > expand_table", expand => $_->{expand_table});
         $self->set_expand(section => "selection > $i > expand", expand => $_->{expand});
         $self->set_functions(section => "selection > $i > functions", functions => $_->{functions});
+        next if ($self->check_filter_option());
         $config->{unknow} = $self->prepare_variables(section => "selection > $i > unknown", value => $_->{unknown});
         $config->{warning} = $self->prepare_variables(section => "selection > $i > warning", value => $_->{warning});
         $config->{critical} = $self->prepare_variables(section => "selection > $i > critical", value => $_->{critical});
@@ -839,6 +854,7 @@ sub add_selection_loop {
             $self->set_expand(section => "selection_loop > $i > expand", expand => $_->{expand});
             $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions});
             next if ($self->check_filter(filter => $_->{filter}));
+            next if ($self->check_filter_option());
             $config->{unknow} = $self->prepare_variables(section => "selection_loop > $i > unknown", value => $_->{unknown});
             $config->{warning} = $self->prepare_variables(section => "selection_loop > $i > warning", value => $_->{warning});
             $config->{critical} = $self->prepare_variables(section => "selection_loop > $i > critical", value => $_->{critical});
@@ -864,9 +880,40 @@ sub set_formatting {
     }
 }
 
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['name']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->read_config();
+    $self->collect_snmp(snmp => $options{snmp});
+
+    $self->{selections} = {};
+    $self->add_selection();
+    $self->add_selection_loop();
+    foreach (values %{$self->{selections}}) {
+        my $entry = {};
+        foreach my $label (keys %{$_->{expand}}) {
+            my $name = $label;
+            $name =~ s/\./_/g;
+            $entry->{$name} = $_->{expand}->{$label};
+        }
+        $self->{output}->add_disco_entry(%$entry);
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
+    # TODO:
+    #   add some functions types (percent, scale)
+    #   choose functions position: before_expand, after_expand
+    #   can cache only some parts of snmp requests
     $self->read_config();
     $self->collect_snmp(snmp => $options{snmp});
 
@@ -890,6 +937,11 @@ Collect and compute SNMP datas.
 
 config used (Required).
 Can be a file or json content.
+
+=item B<--filter-selection>
+
+Filter selections.
+Eg: --filter-selection='name=test'
 
 =back
 
