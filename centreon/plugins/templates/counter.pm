@@ -134,7 +134,7 @@ sub new {
         );
         $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     }
-    
+
     $self->{maps_counters} = {} if (!defined($self->{maps_counters}));
     $self->set_counters(%options);
     
@@ -753,23 +753,9 @@ sub compat_threshold_counter {
 sub change_macros {
     my ($self, %options) = @_;
 
-    my ($code) = centreon::plugins::misc::mymodule_load(
-        output => $self->{output}, module => 'Safe', 
-        no_quit => 1
-    );
-    my $safe;
-    $safe = Safe->new() if ($code == 0);
-
     foreach (@{$options{macros}}) {
         if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-            if ($code == 0) {
-                my $result = $safe->reval($self->{option_results}->{$_});
-                if ($@) {
-                    $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
-                    $self->{output}->option_exit();
-                }
-            }
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$values->{$1}/g;
         }
     }
 }

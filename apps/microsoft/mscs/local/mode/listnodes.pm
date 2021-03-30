@@ -70,7 +70,7 @@ sub manage_selection {
     
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping '" . $name . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
             next;
         }
     
@@ -86,8 +86,10 @@ sub run {
         $self->{output}->output_add(long_msg => "'" . $name . "' [state = " . $self->{nodes}->{$name}->{state} . "]");
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Nodes:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List nodes:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }

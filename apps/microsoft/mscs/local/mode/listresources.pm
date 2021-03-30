@@ -121,11 +121,13 @@ sub disco_show {
 
     $self->manage_selection(disco => 1);
     foreach my $id (sort keys %{$self->{resources}}) {     
-        $self->{output}->add_disco_entry(name => $self->{resources}->{$id}->{name}, 
-                                         state => $self->{resources}->{$id}->{state},
-                                         id => $id,
-                                         owner_node => $self->{resources}->{$id}->{owner_node},
-                                         class => $self->{resources}->{$id}->{class});
+        $self->{output}->add_disco_entry(
+            name => $self->{resources}->{$id}->{name}, 
+            state => $self->{resources}->{$id}->{state},
+            id => $id,
+            owner_node => $self->{resources}->{$id}->{owner_node},
+            class => $self->{resources}->{$id}->{class}
+        );
     }
 }
 
