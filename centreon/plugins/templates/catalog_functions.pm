@@ -39,16 +39,16 @@ sub catalog_status_threshold {
         my $label = $self->{label};
         $label =~ s/-/_/g;
         if (defined($self->{instance_mode}->{option_results}->{'ok_' . $label}) && $self->{instance_mode}->{option_results}->{'ok_' . $label} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'ok_-' . $label})) {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{'ok_' . $label})) {
             $status = 'ok';
         } elsif (defined($self->{instance_mode}->{option_results}->{'critical_' . $label}) && $self->{instance_mode}->{option_results}->{'critical_' . $label} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'critical_-' . $label})) {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{'critical_' . $label})) {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{'warning_' . $label}) && $self->{instance_mode}->{option_results}->{'warning_' . $label} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'warning_-' . $label})) {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{'warning_' . $label})) {
             $status = 'warning';
         } elsif (defined($self->{instance_mode}->{option_results}->{'unknown_' . $label}) && $self->{instance_mode}->{option_results}->{'unknown_' . $label} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'unknown_-' . $label})) {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{'unknown_' . $label})) {
             $status = 'unknown';
         }
     };
