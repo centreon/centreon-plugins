@@ -37,6 +37,7 @@ sub custom_select_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
+        our $expand = $self->{result_values}->{expand};
         if (defined($self->{result_values}->{config}->{critical}) && $self->{result_values}->{config}->{critical} &&
             $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{critical})) {
             $status = 'critical';
@@ -130,6 +131,7 @@ sub new {
     });
 
     $self->{safe} = Safe->new();
+    $self->{safe}->share('$expand');
     $self->{snmp_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -734,7 +736,7 @@ sub prepare_variables {
     my ($self, %options) = @_;
 
     return undef if (!defined($options{value}));
-    $options{value} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$self->{result_values}->{expand}->{'$1'}/g;
+    $options{value} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$expand->{'$1'}/g;
     return $options{value};
 }
 
@@ -742,7 +744,8 @@ sub check_filter {
     my ($self, %options) = @_;
 
     return 0 if (!defined($options{filter}) || $options{filter} eq '');
-    $options{filter} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$self->{expand}->{'$1'}/g;
+    our $expand = $self->{expand};
+    $options{filter} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$expand->{'$1'}/g;
     my $result = $self->{safe}->reval("$options{filter}");
     if ($@) {
         $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);

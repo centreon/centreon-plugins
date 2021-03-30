@@ -40,10 +40,10 @@ sub custom_threshold_output {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
         if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{warning_status}") {
+                 $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
             $status = 'warning';
         }
 
