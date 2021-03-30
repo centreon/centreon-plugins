@@ -40,9 +40,8 @@ sub custom_hosts_calc {
 
 sub custom_hosts_output {
     my ($self, %options) = @_;
-    my $msg = '';
-    $msg .= "[up:".$self->{result_values}->{total_up}."][down:".$self->{result_values}->{total_down}."][unreachable:".$self->{result_values}->{total_unreachable}."]";
-    return $msg
+
+    return "[up:".$self->{result_values}->{total_up}."][down:".$self->{result_values}->{total_down}."][unreachable:".$self->{result_values}->{total_unreachable}."]";
 }
 
 sub custom_hosts_perfdata {
@@ -68,10 +67,10 @@ sub custom_hosts_threshold {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
         if (defined($self->{instance_mode}->{option_results}->{critical_total}) && $self->{instance_mode}->{option_results}->{critical_total} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_total}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{critical_total})) {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{warning_total}) && $self->{instance_mode}->{option_results}->{warning_total} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_total}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{warning_total})) {
             $status = 'warning';
         }
     };
@@ -123,10 +122,10 @@ sub custom_services_threshold {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
         if (defined($self->{instance_mode}->{option_results}->{critical_total}) && $self->{instance_mode}->{option_results}->{critical_total} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_total}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{critical_total})) {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{warning_total}) && $self->{instance_mode}->{option_results}->{warning_total} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_total}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{warning_total})) {
             $status = 'warning';
         }
     };
@@ -229,10 +228,10 @@ sub custom_groups_threshold {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
         if (defined($self->{instance_mode}->{option_results}->{critical_groups}) && $self->{instance_mode}->{option_results}->{critical_groups} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_groups}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{critical_groups})) {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{warning_groups}) && $self->{instance_mode}->{option_results}->{warning_groups} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{warning_groups}") {
+                 $self->eval(value => $self->{instance_mode}->{option_results}->{warning_groups})) {
             $status = 'warning';
         }
     };
@@ -273,8 +272,10 @@ sub set_counters {
 
     $self->{maps_counters}->{logicalgroups} = [
         { label => 'group-svc-global', threshold => 0, set => {
-                key_values => [ { name => 'ok' }, { name => 'unknown' }, { name => 'critical' }, { name => 'warning' },
-                                { name => 'up' }, { name => 'down' }, { name => 'unreachable' }, { name => 'display' } ],
+                key_values => [
+                    { name => 'ok' }, { name => 'unknown' }, { name => 'critical' }, { name => 'warning' },
+                    { name => 'up' }, { name => 'down' }, { name => 'unreachable' }, { name => 'display' }
+                ],
                 closure_custom_calc => $self->can('custom_groups_calc'),
                 closure_custom_output => $self->can('custom_groups_output'),
                 closure_custom_threshold_check => $self->can('custom_groups_threshold'),
