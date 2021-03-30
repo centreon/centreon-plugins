@@ -26,7 +26,6 @@ use strict;
 use warnings;
 use JSON::XS;
 use centreon::plugins::statefile;
-use Safe;
 
 sub custom_select_threshold {
     my ($self, %options) = @_;
@@ -39,13 +38,13 @@ sub custom_select_threshold {
 
         our $expand = $self->{result_values}->{expand};
         if (defined($self->{result_values}->{config}->{critical}) && $self->{result_values}->{config}->{critical} &&
-            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{critical})) {
+            $self->{safe}->reval($self->{result_values}->{config}->{critical})) {
             $status = 'critical';
         } elsif (defined($self->{result_values}->{config}->{warning}) && $self->{result_values}->{config}->{warning} ne '' &&
-            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{warning})) {
+            $self->{safe}->reval($self->{result_values}->{config}->{warning})) {
             $status = 'warning';
         } elsif (defined($self->{result_values}->{config}->{unknown}) && $self->{result_values}->{config}->{unknown} &&
-            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{unknown})) {
+            $self->{safe}->reval($self->{result_values}->{config}->{unknown})) {
             $status = 'unknown';
         }
         if ($@) {
