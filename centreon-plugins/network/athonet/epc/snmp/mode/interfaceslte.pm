@@ -96,7 +96,8 @@ sub prefix_interface_output {
 sub interface_long_output {
     my ($self, %options) = @_;
 
-    return sprintf("checking lte interface '%s' [eNodeB ID: %s]",
+    return sprintf(
+        "checking lte interface '%s' [eNodeB ID: %s]",
         $options{instance_value}->{name},
         $options{instance_value}->{enbid}
     );

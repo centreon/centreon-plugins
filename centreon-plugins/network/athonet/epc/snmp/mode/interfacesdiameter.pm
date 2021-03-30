@@ -49,10 +49,14 @@ sub prefix_interface_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Diameter interface '%s' [local: %s] [peer: %s] ",
+        "Diameter interface '%s' [local: %s] [peer: %s]%s%s ",
         $options{instance_value}->{name},
         $options{instance_value}->{local_hostname},
-        $options{instance_value}->{peer_hostname}
+        $options{instance_value}->{peer_hostname},
+        (defined($options{instance_value}->{secondary_local_addr}) && $options{instance_value}->{secondary_local_addr} ne '') ?
+            ' [secondary local: ' . $options{instance_value}->{secondary_local_addr} . ']' : '',
+        (defined($options{instance_value}->{secondary_peer_addr}) && $options{instance_value}->{secondary_peer_addr} ne '') ?
+            ' [secondary peer: ' . $options{instance_value}->{secondary_peer_addr} . ']' : '',
     );
 }
 
@@ -79,7 +83,9 @@ sub set_counters {
         {
             label => 'status', type => 2, critical_default => '%{status} =~ /down/i',
             set => {
-                key_values => [ { name => 'status' }, { name => 'name' } ],
+                key_values => [
+                    { name => 'status' }, { name => 'name' }, { name => 'owner' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -103,7 +109,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-name:s'  => { name => 'filter_name' },
+        'filter-owner:s' => { name => 'filter_owner' }
     });
 
     return $self;
@@ -111,12 +118,21 @@ sub new {
 
 my $map_status = { 0 => 'down', 1 => 'up' };
 my $map_transport_type = { 0 => 'sctp', 1 => 'tcp', 2 => 'udp' };
+my $map_owner = {
+    0 => 'unknown', 1 => 'mme', 2 => 'msc', 3 => 'sgsn', 
+    4 => 'fgw', 5 => 'wifi', 6 => 'spgw', 7 => 'hlr-hss',
+    8 => 'sgw', 9 => 'pgw', 10 => 'pcrf', 11 => 'dpiaf',
+    12 => 'aaa', 13 => 'ocs'
+};
 
 my $mapping = {
-    peer_hostname    => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.4' }, # iDiameterPeerHostName
-    transport_type   => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.8', map => $map_transport_type }, # iDiameterTransportType
-    transport_status => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.9', map => $map_status }, # iDiameterTransportState
-    status           => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.10', map => $map_status }  # iDiameterState
+    peer_hostname        => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.4' }, # iDiameterPeerHostName
+    transport_type       => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.8', map => $map_transport_type }, # iDiameterTransportType
+    transport_status     => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.9', map => $map_status }, # iDiameterTransportState
+    status               => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.10', map => $map_status }, # iDiameterState
+    owner                => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.11', map => $map_owner }, # iDiameterOwner
+    secondary_local_addr => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.12' }, # iDiameterSecondaryLocalAddress
+    secondary_peer_addr  => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.13' }  # iDiameterSecondaryPeerAddress
 };
 
 sub manage_selection {
@@ -146,7 +162,7 @@ sub manage_selection {
         };
     }
 
-    $self->{global} = { total => scalar(keys %{$self->{interfaces}}) };
+    $self->{global} = { total => 0 };
 
     return if (scalar(keys %{$self->{interfaces}}) <= 0);
 
@@ -161,8 +177,17 @@ sub manage_selection {
     foreach (keys %{$self->{interfaces}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
 
+        if (defined($self->{option_results}->{filter_owner}) && $self->{option_results}->{filter_owner} ne '' &&
+            $result->{owner} !~ /$self->{option_results}->{filter_owner}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $self->{interfaces}->{$_}->{name} . "': no matching filter.", debug => 1);
+            delete $self->{interfaces}->{$_};
+            next;
+        }
+
         $self->{interfaces}->{$_} = { %{$self->{interfaces}->{$_}}, %$result };
     }
+
+    $self->{global}->{total} = scalar(keys %{$self->{interfaces}});
 }
 
 1;
@@ -184,20 +209,24 @@ Example: --filter-counters='transport'
 
 Filter interfaces by name (can be a regexp).
 
+=item B<--filter-owner>
+
+Filter interfaces by owner (can be a regexp).
+
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{name}
+Can used special variables like: %{status}, %{name}, %{owner}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{name}
+Can used special variables like: %{status}, %{name}, %{owner}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /down/i').
-Can used special variables like: %{status}, %{name}
+Can used special variables like: %{status}, %{name}, %{owner}
 
 =item B<--unknown-transport-status>
 

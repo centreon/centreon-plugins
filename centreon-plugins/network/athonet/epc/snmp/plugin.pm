@@ -31,11 +31,14 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
+        'aggregate'                => 'network::athonet::epc::snmp::mode::aggregate',
+        'apns'                     => 'network::athonet::epc::snmp::mode::apns',
         'interfaces-diameter'      => 'network::athonet::epc::snmp::mode::interfacesdiameter',
         'interfaces-lte'           => 'network::athonet::epc::snmp::mode::interfaceslte',
         'interfaces-ga'            => 'network::athonet::epc::snmp::mode::interfacesga',
         'interfaces-gtpc'          => 'network::athonet::epc::snmp::mode::interfacesgtpc',
         'license'                  => 'network::athonet::epc::snmp::mode::license',
+        'list-apns'                => 'network::athonet::epc::snmp::mode::listapns',
         'list-interfaces-diameter' => 'network::athonet::epc::snmp::mode::listinterfacesdiameter',
         'list-interfaces-ga'       => 'network::athonet::epc::snmp::mode::listinterfacesga',
         'list-interfaces-gtpc'     => 'network::athonet::epc::snmp::mode::listinterfacesgtpc',
