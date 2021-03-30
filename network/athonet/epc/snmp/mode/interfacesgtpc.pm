@@ -39,10 +39,11 @@ sub prefix_interface_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Gtp control interface source '%s' destination '%s' [type: %s] ",
+        "Gtp control interface source '%s' destination '%s' [type: %s] [owner: %s] ",
         $options{instance_value}->{source_address},
         $options{instance_value}->{destination_address},
-        $options{instance_value}->{type}
+        $options{instance_value}->{type},
+        $options{instance_value}->{owner}
     );
 }
 
@@ -85,7 +86,8 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'filter-source-address:s'      => { name => 'filter_source_address' },
-        'filter-destination-address:s' => { name => 'filter_destination_address' }
+        'filter-destination-address:s' => { name => 'filter_destination_address' },
+        'filter-type:s'                => { name => 'filter_type' }
     });
 
     return $self;
@@ -93,6 +95,14 @@ sub new {
 
 my $map_status = { 0 => 'down', 1 => 'up' };
 my $map_type = { 1 => 'gTPv1', 2 => 'gTPv2', 11 => 'gTPPrime' };
+my $map_owner = {
+    0 => 'unknown', 1 => 'mme', 2 => 'msc', 3 => 'sgsn', 
+    4 => 'fgw', 5 => 'wifi', 6 => 'sgw', 7 => 'pgw', 8 => 'hlr-hss'
+};
+
+my $mapping = {
+    owner => { oid => '.1.3.6.1.4.1.35805.10.2.12.9.1.8', map => $map_owner } # gTPcOwner
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -123,6 +133,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $destination_address . "': no matching filter.", debug => 1);
             next;
         }
+        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+            $type !~ /$self->{option_results}->{filter_type}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $type . "': no matching filter.", debug => 1);
+            next;
+        }
 
         $self->{interfaces}->{$instance} = {
             source_address => $source_address,
@@ -133,6 +148,20 @@ sub manage_selection {
     }
 
     $self->{global} = { total => scalar(keys %{$self->{interfaces}}) };
+    return if (scalar(keys %{$self->{interfaces}}) <= 0);
+
+    $options{snmp}->load(oids => [
+            map($_->{oid}, values(%$mapping))
+        ],
+        instances => [keys %{$self->{interfaces}}],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+
+    foreach (keys %{$self->{interfaces}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        $self->{interfaces}->{$_} = { %{$self->{interfaces}->{$_}}, %$result };
+    }
 }
 
 1;
@@ -152,6 +181,10 @@ Filter interfaces by source address (can be a regexp).
 =item B<--filter-destination-address>
 
 Filter interfaces by destination address (can be a regexp).
+
+=item B<--filter-type>
+
+Filter interfaces by type (can be a regexp).
 
 =item B<--unknown-status>
 
