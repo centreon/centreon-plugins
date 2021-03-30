@@ -197,7 +197,7 @@ sub read {
     }
 
     if ($self->{storable} == 1) {
-        open FILE, $self->{statefile_dir} . '/' . $self->{statefile};
+        open FILE, '<', $self->{statefile_dir} . '/' . $self->{statefile};
         eval {
             $self->{datas} = Storable::fd_retrieve(*FILE);
         };
