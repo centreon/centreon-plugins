@@ -825,7 +825,7 @@ sub add_selection {
         $self->set_functions(section => "selection > $i > functions", functions => $_->{functions});
         next if ($self->check_filter(filter => $_->{filter}));
         next if ($self->check_filter_option());
-        $config->{unknow} = $self->prepare_variables(section => "selection > $i > unknown", value => $_->{unknown});
+        $config->{unknown} = $self->prepare_variables(section => "selection > $i > unknown", value => $_->{unknown});
         $config->{warning} = $self->prepare_variables(section => "selection > $i > warning", value => $_->{warning});
         $config->{critical} = $self->prepare_variables(section => "selection > $i > critical", value => $_->{critical});
         $config->{perfdatas} = $self->prepare_perfdatas(section => "selection > $i > perfdatas", perfdatas => $_->{perfdatas});
@@ -868,7 +868,7 @@ sub add_selection_loop {
             $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions});
             next if ($self->check_filter(filter => $_->{filter}));
             next if ($self->check_filter_option());
-            $config->{unknow} = $self->prepare_variables(section => "selection_loop > $i > unknown", value => $_->{unknown});
+            $config->{unknown} = $self->prepare_variables(section => "selection_loop > $i > unknown", value => $_->{unknown});
             $config->{warning} = $self->prepare_variables(section => "selection_loop > $i > warning", value => $_->{warning});
             $config->{critical} = $self->prepare_variables(section => "selection_loop > $i > critical", value => $_->{critical});
             $config->{perfdatas} = $self->prepare_perfdatas(section => "selection_loop > $i > perfdatas", perfdatas => $_->{perfdatas});
