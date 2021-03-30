@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::athonet::epc::snmp::mode::listinterfacesgtpc;
+package network::athonet::epc::snmp::mode::listapns;
 
 use base qw(centreon::plugins::mode);
 
@@ -40,38 +40,22 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-my $map_status = { 0 => 'down', 1 => 'up' };
-my $map_type = { 1 => 'gTPv1', 2 => 'gTPv2', 11 => 'gTPPrime' };
-my $map_owner = {
-    0 => 'unknown', 1 => 'mme', 2 => 'msc', 3 => 'sgsn', 
-    4 => 'fgw', 5 => 'wifi', 6 => 'sgw', 7 => 'pgw', 8 => 'hlr-hss'
-};
-
 my $mapping = {
-    source_address      => { oid => '.1.3.6.1.4.1.35805.10.2.12.9.1.1' }, # gTPcAddressSource
-    destination_address => { oid => '.1.3.6.1.4.1.35805.10.2.12.9.1.3' }, # gTPcAddressDestination
-    type                => { oid => '.1.3.6.1.4.1.35805.10.2.12.9.1.5', map => $map_type }, # gTPcGTPType
-    status              => { oid => '.1.3.6.1.4.1.35805.10.2.12.9.1.6', map => $map_status }, # gTPcState
-    owner               => { oid => '.1.3.6.1.4.1.35805.10.2.12.9.1.8', map => $map_owner } # gTPcOwner
+    name  => { oid => '.1.3.6.1.4.1.35805.10.2.99.14.1.1' } # aPNRowApnKey
 };
-my $oid_gtpcInterfacesEntry = '.1.3.6.1.4.1.35805.10.2.12.9.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_gtpcInterfacesEntry,
-        end => $mapping->{owner}->{oid},
+        oid => $mapping->{name}->{oid},
         nothing_quit => 1
     );
 
     my $results = {};
     foreach (keys %$snmp_result) {
-        next if (! /^$mapping->{source_address}->{oid}\.(.*)$/);
-        my $instance = $1;
-
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        $results->{$instance} = $result;
+        my $name = $self->{output}->decode($snmp_result->{$_});
+        $results->{$name} = { name => $name };
     }
 
     return $results;
@@ -89,7 +73,7 @@ sub run {
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List gtp control interfaces:'
+        short_msg => 'List access point names:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -118,7 +102,7 @@ __END__
 
 =head1 MODE
 
-List GTP control interfaces.
+List access point names.
 
 =over 8
 

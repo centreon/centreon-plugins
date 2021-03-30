@@ -42,6 +42,12 @@ sub check_options {
 
 my $map_status = { 0 => 'down', 1 => 'up' };
 my $map_transport_type = { 0 => 'sctp', 1 => 'tcp', 2 => 'udp' };
+my $map_owner = {
+    0 => 'unknown', 1 => 'mme', 2 => 'msc', 3 => 'sgsn', 
+    4 => 'fgw', 5 => 'wifi', 6 => 'spgw', 7 => 'hlr-hss',
+    8 => 'sgw', 9 => 'pgw', 10 => 'pcrf', 11 => 'dpiaf',
+    12 => 'aaa', 13 => 'ocs'
+};
 
 my $mapping = {
     local_hostname   => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.2' }, # iDiameterLocalHostName
@@ -52,7 +58,8 @@ my $mapping = {
     peer_address     => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.7' }, # iDiameterPeerAddress
     transport_type   => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.8', map => $map_transport_type }, # iDiameterTransportType
     transport_status => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.9', map => $map_status }, # iDiameterTransportState
-    status           => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.10', map => $map_status }  # iDiameterState
+    status           => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.10', map => $map_status }, # iDiameterState
+    owner            => { oid => '.1.3.6.1.4.1.35805.10.2.12.2.1.11', map => $map_owner } # iDiameterOwner
 };
 my $oid_diameterInterfacesEntry = '.1.3.6.1.4.1.35805.10.2.12.2.1';
 
@@ -62,7 +69,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_diameterInterfacesEntry,
         start => $mapping->{local_hostname}->{oid},
-        end => $mapping->{status}->{oid},
+        end => $mapping->{owner}->{oid},
         nothing_quit => 1
     );
 
