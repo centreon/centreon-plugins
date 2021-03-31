@@ -192,19 +192,19 @@ sub default_global_admin_up_rule {
 
 sub default_global_admin_down_rule {
     my ($self, %options) = @_;
-    
+
     return '%{admstatus} ne "enable"';
 }
 
 sub default_global_oper_up_rule {
     my ($self, %options) = @_;
-    
+
     return '%{opstatus} eq "enabled"';
 }
 
 sub default_global_oper_down_rule {
     my ($self, %options) = @_;
-    
+
     return '%{opstatus} ne "enabled"';
 }
 
@@ -318,16 +318,18 @@ sub add_result_global {
     $self->{global} = { total_port => 0, global_link_up => 0, global_link_down => 0, global_admin_up => 0,
                         global_admin_down => 0, global_oper_up => 0, global_oper_down => 0};
     foreach (@{$self->{array_interface_selected}}) {
-        my $linkstatus = $self->{oid_linkstatus_mapping}->{$self->{results}->{$self->{oid_linkstatus} . '.' . $_}};
-        my $opstatus = $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $_}};
-        my $admstatus = $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $_}};
+        my $values = {
+            linkstatus => $self->{oid_linkstatus_mapping}->{$self->{results}->{$self->{oid_linkstatus} . '.' . $_}},
+            opstatus => $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $_}},
+            admstatus => $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $_}}
+        };
         foreach (('global_link_up', 'global_link_down', 'global_admin_up', 'global_admin_down', 'global_oper_up', 'global_oper_down')) {
             eval {
                 local $SIG{__WARN__} = sub { return ; };
                 local $SIG{__DIE__} = sub { return ; };
-        
+
                 if (defined($self->{option_results}->{$_ . '_rule'}) && $self->{option_results}->{$_ . '_rule'} ne '' &&
-                    eval "$self->{option_results}->{$_ . '_rule'}") {
+                    $self->{output}->test_eval(test => $self->{option_results}->{$_ . '_rule'}, values => $values)) {
                     $self->{global}->{$_}++;
                 }
             };
@@ -385,11 +387,11 @@ sub add_result_cast {
         $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}} : 0;
         $self->{int}->{$options{instance}}->{mode_cast} = 64;
     }
-    
+
     foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'obcast')) {
         $self->{int}->{$options{instance}}->{$_} = 0 if (!defined($self->{int}->{$options{instance}}->{$_}));
     }
-    
+
     $self->{int}->{$options{instance}}->{total_in_packets} = $self->{int}->{$options{instance}}->{iucast} + $self->{int}->{$options{instance}}->{imcast} + $self->{int}->{$options{instance}}->{ibcast};
     $self->{int}->{$options{instance}}->{total_out_packets} = $self->{int}->{$options{instance}}->{oucast} + $self->{int}->{$options{instance}}->{omcast} + $self->{int}->{$options{instance}}->{obcast};
 }
