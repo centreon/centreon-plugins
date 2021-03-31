@@ -159,7 +159,7 @@ sub connector_response_status {
     }
 
     foreach (('unknown_connector_status', 'warning_connector_status', 'critical_connector_status')) {
-        $self->{$_} =~ s/%\{(.*?)\}/\$self->{result}->{$1}/g;
+        $self->{$_} =~ s/%\{(.*?)\}/\$values->{$1}/g;
     }
 
     # Check response
@@ -170,13 +170,13 @@ sub connector_response_status {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
         if (defined($self->{critical_connector_status}) && $self->{critical_connector_status} ne '' &&
-            eval "$self->{critical_connector_status}") {
+            $self->{output}->test_eval(test => $self->{critical_connector_status}, values => $self->{result})) {
             $status = 'critical';
         } elsif (defined($self->{warning_connector_status}) && $self->{warning_connector_status} ne '' &&
-                 eval "$self->{warning_connector_status}") {
+                 $self->{output}->test_eval(test => $self->{warning_connector_status}, values => $self->{result})) {
             $status = 'warning';
         } elsif (defined($self->{unknown_connector_status}) && $self->{unknown_connector_status} ne '' &&
-                 eval "$self->{unknown_connector_status}") {
+                 $self->{output}->test_eval(test => $self->{unknown_connector_status}, values => $self->{result})) {
             $status = 'unknown';
         }
     };
