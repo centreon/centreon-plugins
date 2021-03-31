@@ -56,7 +56,7 @@ sub new {
     $self->{last_timestamp} = undef;
 
     $self->{result_values} = {};
-    $self->{safe_test} = -1;
+    $self->{safe_test} = 0;
 
     return $self;
 }
