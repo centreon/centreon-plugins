@@ -83,6 +83,7 @@ sub new {
     $self->{global_status} = 0;
     $self->{encode_import} = 0;
     $self->{perlqq} = 0;
+    $self->{safe_test} = 0;
 
     $self->{disco_elements} = [];
     $self->{disco_entries} = [];
@@ -867,6 +868,39 @@ sub is_debug {
         return 1;
     }
     return 0;
+}
+
+sub load_eval {
+    my ($self) = @_;
+
+    my ($code) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'Safe', 
+        no_quit => 1
+    );
+    if ($code == 0) {
+        $self->{safe} = Safe->new();
+        $self->{safe}->share('$values');
+    }
+}
+
+sub test_eval {
+    my ($self, %options) = @_;
+
+    $self->load_eval() if ($self->{safe_test} == 0);
+
+    my $result;
+    if (defined($self->{safe})) {
+        our $values = $options{values};
+        $result = $self->{safe}->reval($options{test}, 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+    } else {
+        my $values = $options{values};
+        $result = eval "$options{test}";
+    }
+
+    return $result;
 }
 
 sub use_new_perfdata {
