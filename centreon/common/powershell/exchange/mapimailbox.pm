@@ -49,14 +49,14 @@ exit 0
 
 sub check {
     my ($self, %options) = @_;
-    # options: stdout
-    
+
     # Following output:
     #[name= Mailbox Database 0975194476 ][server= SRVI-WIN-TEST ][result= Success ][error=...]
-   
     if ($options{stdout} !~ /^\[name=(.*?)\]\[server=(.*?)\]\[result=(.*?)\]\[error=(.*)\]$/) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot find informations');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot find informations'
+        );
         return ;
     }
     $self->{data} = {};
@@ -64,21 +64,27 @@ sub check {
         (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
          centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "MAPI connection to '" . $options{mailbox} . "' is '" . $self->{data}->{result} . "'.");
-    $self->{output}->output_add(long_msg => sprintf("Database: %s, Server: %s\nError: %s",
-                                                    $self->{data}->{database}, $self->{data}->{server}, $self->{data}->{error}));
-    
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => "MAPI connection to '" . $options{mailbox} . "' is '" . $self->{data}->{result} . "'."
+    );
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "Database: %s, Server: %s\nError: %s",
+            $self->{data}->{database}, $self->{data}->{server}, $self->{data}->{error}
+        )
+    );
+
     my ($status, $message) = ('ok');
     eval {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
+
         if (defined($self->{option_results}->{critical}) && $self->{option_results}->{critical} ne '' &&
-            eval "$self->{option_results}->{critical}") {
+            $self->{output}->test_eval(test => $self->{option_results}->{critical}, values => $self->{data})) {
             $status = 'critical';
         } elsif (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
-                 eval "$self->{option_results}->{warning}") {
+                 $self->{output}->test_eval(test => $self->{option_results}->{warning}, values => $self->{data})) {
             $status = 'warning';
         }
     };
@@ -86,9 +92,13 @@ sub check {
         $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
     }
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $status,
-                                    short_msg => sprintf("MAPI connection to '%s' is '%s'",
-                                                         $options{mailbox}, $self->{data}->{result}));
+        $self->{output}->output_add(
+            severity => $status,
+            short_msg => sprintf(
+                "MAPI connection to '%s' is '%s'",
+                $options{mailbox}, $self->{data}->{result}
+            )
+        );
     }
 }
 
