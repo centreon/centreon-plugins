@@ -56,15 +56,7 @@ sub new {
     $self->{last_timestamp} = undef;
 
     $self->{result_values} = {};
-
-    my ($code) = centreon::plugins::misc::mymodule_load(
-        output => $self->{output}, module => 'Safe', 
-        no_quit => 1
-    );
-    if ($code == 0) {
-        $self->{safe} = Safe->new();
-        $self->{safe}->share('$values');
-    }
+    $self->{safe_test} = -1;
 
     return $self;
 }
@@ -243,6 +235,18 @@ sub perfdata {
 
 sub eval {
     my ($self, %options) = @_;
+
+    if ($self->{safe_test} == 0) {
+        my ($code) = centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'Safe', 
+            no_quit => 1
+        );
+        if ($code == 0) {
+            $self->{safe} = Safe->new();
+            $self->{safe}->share('$values');
+        }
+        $self->{safe_test} = 1;
+    }
 
     my $result;
     if (defined($self->{safe})) {
