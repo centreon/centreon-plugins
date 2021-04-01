@@ -139,15 +139,15 @@ sub custom_metric_calc {
 sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
-    $self->{output}->perfdata_add(label => $self->{result_values}->{instance},
-                                  value => $self->{result_values}->{perfdata_value},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance}),
-                                  unit => $self->{result_values}->{perfdata_unit},
-                                  min => $self->{result_values}->{min},
-                                  max => $self->{result_values}->{max},
-                                 );
-
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{instance},
+        value => $self->{result_values}->{perfdata_value},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance}),
+        unit => $self->{result_values}->{perfdata_unit},
+        min => $self->{result_values}->{min},
+        max => $self->{result_values}->{max},
+    );
 }
 
 sub custom_metric_threshold {
@@ -156,9 +156,13 @@ sub custom_metric_threshold {
     my $label_warn = ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance};
     my $label_crit = ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance};
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{perfdata_value},
-                                                  threshold => [ { label => $label_crit, exit_litteral => 'critical' },
-                                                                 { label => $label_warn, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{perfdata_value},
+        threshold => [
+            { label => $label_crit, exit_litteral => 'critical' },
+            { label => $label_warn, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -173,7 +177,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_metric_calc'),
                 closure_custom_output => $self->can('custom_metric_output'),
                 closure_custom_perfdata => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
+                closure_custom_threshold_check => $self->can('custom_metric_threshold')
             }
         }
     ];
@@ -184,7 +188,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_metric_calc'),
                 closure_custom_output => $self->can('custom_metric_output'),
                 closure_custom_perfdata => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
+                closure_custom_threshold_check => $self->can('custom_metric_threshold')
             }
         }
     ];
@@ -321,15 +325,19 @@ sub manage_selection {
         }
 
         next if (!defined($self->{vmetrics}->{$vcurve}->{values}) || scalar(@{$self->{vmetrics}->{$vcurve}->{values}}) == 0);
-        
-        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                sum(@{$self->{vmetrics}->{$vcurve}->{values}}) / scalar(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'avg');
-        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                sum(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'sum');
-        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                min(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'min');
-        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                max(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'max');
+
+        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+            $config_data->{formatting}->{printf_metric_value},
+            sum(@{$self->{vmetrics}->{$vcurve}->{values}}) / scalar(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'avg');
+        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+            $config_data->{formatting}->{printf_metric_value},
+            sum(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'sum');
+        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+            $config_data->{formatting}->{printf_metric_value},
+            min(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'min');
+        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+            $config_data->{formatting}->{printf_metric_value},
+            max(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'max');
         $self->{vmetrics}->{$vcurve}->{aggregated_value} = eval "$self->{vmetrics}->{$vcurve}->{aggregated_value} $config_data->{virtualcurve}->{$vcurve}->{custom}" if (defined($config_data->{virtualcurve}->{$vcurve}->{custom}));
 
         $self->{vmetrics}->{$vcurve}->{unit} = (defined($config_data->{virtualcurve}->{$vcurve}->{unit})) ? $config_data->{virtualcurve}->{$vcurve}->{unit} : '';
