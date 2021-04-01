@@ -218,7 +218,6 @@ sub request_api_csv {
     }
 
     $self->settings();
-
     $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
 
     my $content = $self->{http}->request(%options);
@@ -239,17 +238,11 @@ sub request_api_csv {
             $self->{output}->option_exit();
         }
     }    
-    
-    my $decoded;
-    eval {
-        $decoded = decode('UTF-8', $content);
-    };
-    if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response: $@");
-        $self->{output}->option_exit();
+
+    if (!centreon::plugins::misc::minimal_version(Text::CSV->VERSION, '1.31')) {
+        $content =~ s/^\x{feff}//; # patched in Test-CSV 1.31
     }
-    $decoded =~ s/^\x{feff}//;
+    my $decoded = encode('UTF-8', $content);
 
     my @rows;
     eval {
@@ -261,7 +254,6 @@ sub request_api_csv {
         }
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot parse csv response: $@");
         $self->{output}->option_exit();
     }
