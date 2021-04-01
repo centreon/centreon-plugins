@@ -51,7 +51,7 @@ sub check_options {
 
     foreach (('unknown_status', 'warning_status', 'critical_status')) {
         if (defined($options{request}->{$_})) {
-            $options{request}->{$_} =~ s/%\{http_code\}/\$self->{response}->code/g;
+            $options{request}->{$_} =~ s/%\{http_code\}/\$values->{code}/g;
         }
     }
 
@@ -257,14 +257,15 @@ sub request {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
+        my $code = $self->{response}->code();
         if (defined($request_options->{critical_status}) && $request_options->{critical_status} ne '' &&
-            eval "$request_options->{critical_status}") {
+            $self->{output}->test_eval(test => $request_options->{critical_status}, values => { code => $code })) {
             $status = 'critical';
         } elsif (defined($request_options->{warning_status}) && $request_options->{warning_status} ne '' &&
-            eval "$request_options->{warning_status}") {
+            $self->{output}->test_eval(test => $request_options->{warning_status}, values => { code => $code })) {
             $status = 'warning';
         } elsif (defined($request_options->{unknown_status}) && $request_options->{unknown_status} ne '' &&
-            eval "$request_options->{unknown_status}") {
+            $self->{output}->test_eval(test => $request_options->{unknown_status}, values => { code => $code })) {
             $status = 'unknown';
         }
     };

@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Time::Local;
 
 sub custom_active_perfdata {
@@ -38,11 +39,13 @@ sub custom_active_perfdata {
     $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
     $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
 
-    $self->{output}->perfdata_add(label => 'active_mailboxes', nlabel => 'exchange.mailboxes.active.count',
-                                  value => $self->{result_values}->{active},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  unit => 'mailboxes', min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'active_mailboxes', nlabel => 'exchange.mailboxes.active.count',
+        value => $self->{result_values}->{active},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        unit => 'mailboxes', min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_active_threshold {
@@ -52,9 +55,13 @@ sub custom_active_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_active};
     }
-    my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 
 }
@@ -62,12 +69,13 @@ sub custom_active_threshold {
 sub custom_active_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Active mailboxes on %s : %d/%d (%.2f%%)",
-                        $self->{result_values}->{report_date},
-                        $self->{result_values}->{active},
-                        $self->{result_values}->{total},
-                        $self->{result_values}->{prct_active});
-    return $msg;
+    return sprintf(
+        'Active mailboxes on %s : %d/%d (%.2f%%)',
+        $self->{result_values}->{report_date},
+        $self->{result_values}->{active},
+        $self->{result_values}->{total},
+        $self->{result_values}->{prct_active}
+    );
 }
 
 sub custom_active_calc {
@@ -87,34 +95,13 @@ sub custom_usage_perfdata {
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     
-    $self->{output}->perfdata_add(label => 'used' . $extra_label, nlabel => $self->{result_values}->{display} . '#exchange.mailboxes.usage.bytes',
-                                  unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  min => 0);
-}
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
+    $self->{output}->perfdata_add(
+        label => 'used' . $extra_label,
+        nlabel => $self->{result_values}->{display} . '#exchange.mailboxes.usage.bytes',
+        unit => 'B',
+        value => $self->{result_values}->{used},
+        min => 0
+    );
 }
 
 sub custom_status_output {
@@ -125,12 +112,13 @@ sub custom_status_output {
     my ($prohibit_send_quota_value, $prohibit_send_quota_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{prohibit_send_quota});
     my ($prohibit_send_receive_quota_value, $prohibit_send_receive_quota_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{prohibit_send_receive_quota});
     
-    my $msg = sprintf("Used: %s Issue Warning Quota: %s Prohibit Send Quota: %s Prohibit Send/Receive Quota: %s", 
-            $used_value . " " . $used_unit, 
-            $issue_warning_quota_value . " " . $issue_warning_quota_unit, 
-            $prohibit_send_quota_value . " " . $prohibit_send_quota_unit, 
-            $prohibit_send_receive_quota_value . " " . $prohibit_send_receive_quota_unit);
-    return $msg;
+    return sprintf(
+        "Used: %s Issue Warning Quota: %s Prohibit Send Quota: %s Prohibit Send/Receive Quota: %s", 
+        $used_value . " " . $used_unit, 
+        $issue_warning_quota_value . " " . $issue_warning_quota_unit, 
+        $prohibit_send_quota_value . " " . $prohibit_send_quota_unit, 
+        $prohibit_send_receive_quota_value . " " . $prohibit_send_receive_quota_unit
+    );
 }
 
 sub custom_status_calc {
@@ -191,31 +179,39 @@ sub set_counters {
                 output_template => 'Usage (inactive mailboxes): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_usage_inactive', value => 'storage_used_inactive', template => '%d',
-                      min => 0, unit => 'B' },
-                ],
+                    { label => 'total_usage_inactive', template => '%d', min => 0, unit => 'B' }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{mailboxes} = [
-        { label => 'usage', set => {
-                key_values => [ { name => 'storage_used' }, { name => 'issue_warning_quota' },
-                    { name => 'prohibit_send_quota' }, { name => 'prohibit_send_receive_quota' }, { name => 'name' } ],
+        {
+            label => 'status',
+            type => 2,
+            warning_default => '%{used} > %{issue_warning_quota}',
+            critical_default => '%{used} > %{prohibit_send_quota}',
+            set => {
+                key_values => [
+                    { name => 'storage_used' }, { name => 'issue_warning_quota' },
+                    { name => 'prohibit_send_quota' }, { name => 'prohibit_send_receive_quota' },
+                    { name => 'name' }
+                ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'items', nlabel => 'exchange.mailboxes.items.count', set => {
                 key_values => [ { name => 'items' }, { name => 'name' } ],
                 output_template => 'Items: %d',
                 perfdatas => [
-                    { label => 'items', value => 'items', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                    { label => 'items', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -225,21 +221,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-mailbox:s"      => { name => 'filter_mailbox' },
-        "warning-status:s"      => { name => 'warning_status', default => '%{used} > %{issue_warning_quota}' },
-        "critical-status:s"     => { name => 'critical_status', default => '%{used} > %{prohibit_send_quota}' },
-        "units:s"               => { name => 'units', default => '%' },
-        "filter-counters:s"     => { name => 'filter_counters', default => 'active|total' }, 
+        'filter-mailbox:s'  => { name => 'filter_mailbox' },
+        'units:s'           => { name => 'units', default => '%' },
+        'filter-counters:s' => { name => 'filter_counters', default => 'active|total' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {

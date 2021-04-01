@@ -38,12 +38,12 @@ sub custom_threshold_output {
     eval {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
+
         if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{warning_status}") {
+                 $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
             $status = 'warning';
         }
 
@@ -1324,27 +1324,29 @@ sub manage_selection {
 
 sub add_result_global {
     my ($self, %options) = @_;
-    
+
     foreach (('global_admin_up_rule', 'global_admin_down_rule', 'global_oper_up_rule', 'global_oper_down_rule')) {
         if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$$1/g;
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$values->{$1}/g;
         }
     }
-    
+
     $self->{global} = {
         total_port => 0, global_admin_up => 0, global_admin_down => 0,
         global_oper_up => 0, global_oper_down => 0
     };
     foreach (@{$self->{array_interface_selected}}) {
-        my $opstatus = $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $_}};
-        my $admstatus = $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $_}};
+        my $values = {
+            opstatus => $self->{oid_opstatus_mapping}->{ $self->{results}->{$self->{oid_opstatus} . '.' . $_} },
+            admstatus => $self->{oid_adminstatus_mapping}->{ $self->{results}->{$self->{oid_adminstatus} . '.' . $_} }
+        };
         foreach (('global_admin_up', 'global_admin_down', 'global_oper_up', 'global_oper_down')) {
             eval {
                 local $SIG{__WARN__} = sub { return ; };
                 local $SIG{__DIE__} = sub { return ; };
-        
+
                 if (defined($self->{option_results}->{$_ . '_rule'}) && $self->{option_results}->{$_ . '_rule'} ne '' &&
-                    eval "$self->{option_results}->{$_ . '_rule'}") {
+                    $self->{output}->test_eval(test => $self->{option_results}->{$_ . '_rule'}, values => $values)) {
                     $self->{global}->{$_}++;
                 }
             };

@@ -134,7 +134,7 @@ sub new {
         );
         $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     }
-    
+
     $self->{maps_counters} = {} if (!defined($self->{maps_counters}));
     $self->set_counters(%options);
     
@@ -755,7 +755,7 @@ sub change_macros {
 
     foreach (@{$options{macros}}) {
         if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$values->{$1}/g;
         }
     }
 }
