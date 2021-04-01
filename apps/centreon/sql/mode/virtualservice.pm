@@ -363,9 +363,10 @@ sub manage_selection {
                 max(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'max');
 
             if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'none') {
-                $self->{vmetrics}->{$vcurve}->{aggregated_value} = ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'none' && defined($config_data->{virtualcurve}->{$vcurve}->{custom})) ?
-                                                                eval "$config_data->{virtualcurve}->{$vcurve}->{custom}" :
-                                                                eval "$self->{vmetrics}->{$vcurve}->{aggregated_value} $config_data->{virtualcurve}->{$vcurve}->{custom}";
+                $self->{vmetrics}->{$vcurve}->{aggregated_value} = (
+                    $config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'none' && defined($config_data->{virtualcurve}->{$vcurve}->{custom})) ?
+                        eval "$config_data->{virtualcurve}->{$vcurve}->{custom}" :
+                        eval "$self->{vmetrics}->{$vcurve}->{aggregated_value} $config_data->{virtualcurve}->{$vcurve}->{custom}";
             }
 
             $self->{vmetrics}->{$vcurve}->{unit} = (defined($config_data->{virtualcurve}->{$vcurve}->{unit})) ? $config_data->{virtualcurve}->{$vcurve}->{unit} : '';
