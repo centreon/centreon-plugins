@@ -59,7 +59,7 @@ sub change_macros {
 
     foreach (('warning', 'critical')) {
         if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{data}->{$1}/g;
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$values->{$1}/g;
         }
     }
 }

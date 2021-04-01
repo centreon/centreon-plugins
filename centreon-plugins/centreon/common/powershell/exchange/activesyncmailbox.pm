@@ -73,18 +73,18 @@ sub check {
         ($self->{data}->{scenario}, $self->{data}->{result}, $self->{data}->{latency}, $self->{data}->{error}) = 
             ($self->{output}->decode($1), centreon::plugins::misc::trim($2), 
              centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
-        
+
         $checked++;
         my ($status, $message) = ('ok');
         eval {
             local $SIG{__WARN__} = sub { $message = $_[0]; };
             local $SIG{__DIE__} = sub { $message = $_[0]; };
-            
+
             if (defined($self->{option_results}->{critical}) && $self->{option_results}->{critical} ne '' &&
-                eval "$self->{option_results}->{critical}") {
+                $self->{output}->test_eval(test => $self->{option_results}->{critical}, values => $self->{data})) {
                 $status = 'critical';
             } elsif (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
-                     eval "$self->{option_results}->{warning}") {
+                     $self->{output}->test_eval(test => $self->{option_results}->{warning}, values => $self->{data})) {
                 $status = 'warning';
             }
         };
@@ -92,21 +92,29 @@ sub check {
             $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $status,
-                                        short_msg => sprintf("ActiveSync scenario '%s' to '%s' is '%s'",
-                                                             $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}));
+            $self->{output}->output_add(
+                severity => $status,
+                short_msg => sprintf(
+                    "ActiveSync scenario '%s' to '%s' is '%s'",
+                    $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}
+                )
+            );
         }
         
         if ($self->{data}->{latency} =~ /^(\d+)/) {
-            $self->{output}->perfdata_add(label => $self->{data}->{scenario}, unit => 's',
-                                          value => sprintf("%.3f", $1 / 1000),
-                                          min => 0);
+            $self->{output}->perfdata_add(
+                label => $self->{data}->{scenario}, unit => 's',
+                value => sprintf("%.3f", $1 / 1000),
+                min => 0
+            );
         }
     }
-    
+
     if ($checked == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot find informations');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot find informations'
+        );
     }
 }
 

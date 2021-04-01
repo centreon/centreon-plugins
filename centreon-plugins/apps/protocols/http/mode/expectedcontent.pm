@@ -41,7 +41,7 @@ sub custom_content_output {
     my $msg = 'HTTP test(s)';
     if (!$self->{output}->is_status(value => $self->{instance_mode}->{content_status}, compare => 'ok', litteral => 1)) {
         my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '-content'};
-        $filter =~ s/\$self->\{result_values\}->/%/g;
+        $filter =~ s/\$values->/%/g;
         $msg = sprintf("Content test [filter: '%s']", $filter);
     }
     

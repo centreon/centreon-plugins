@@ -83,6 +83,7 @@ sub new {
     $self->{global_status} = 0;
     $self->{encode_import} = 0;
     $self->{perlqq} = 0;
+    $self->{safe_test} = 0;
 
     $self->{disco_elements} = [];
     $self->{disco_entries} = [];
@@ -869,6 +870,60 @@ sub is_debug {
     return 0;
 }
 
+sub load_eval {
+    my ($self) = @_;
+
+    my ($code) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'Safe', 
+        no_quit => 1
+    );
+    if ($code == 0) {
+        $self->{safe} = Safe->new();
+        $self->{safe}->share('$values');
+        $self->{safe}->share('$assign_var');
+    }
+}
+
+sub test_eval {
+    my ($self, %options) = @_;
+
+    $self->load_eval() if ($self->{safe_test} == 0);
+
+    my $result;
+    if (defined($self->{safe})) {
+        our $values = $options{values};
+        $result = $self->{safe}->reval($options{test}, 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+    } else {
+        my $values = $options{values};
+        $result = eval "$options{test}";
+    }
+
+    return $result;
+}
+
+sub assign_eval {
+    my ($self, %options) = @_;
+
+    $self->load_eval() if ($self->{safe_test} == 0);
+
+    our $assign_var;
+    if (defined($self->{safe})) {
+        our $values = $options{values};
+        $self->{safe}->reval("\$assign_var = $options{eval}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+    } else {
+        my $values = $options{values};
+        eval "\$assign_var = $options{eval}";
+    }
+
+    return $assign_var;
+}
+
 sub use_new_perfdata {
     my ($self, %options) = @_;
 
@@ -1090,8 +1145,7 @@ sub apply_pfdata_math {
 sub apply_pfdata_min {
     my ($self, %options) = @_;
 
-    my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    my $pattern_pf = $self->assign_eval(eval => "\"$options{args}->{pattern_pf}\"");
     my $min;
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
@@ -1107,8 +1161,7 @@ sub apply_pfdata_min {
 sub apply_pfdata_max {
     my ($self, %options) = @_;
 
-    my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    my $pattern_pf = $self->assign_eval(eval => "\"$options{args}->{pattern_pf}\"");
     my $max;
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
@@ -1124,8 +1177,7 @@ sub apply_pfdata_max {
 sub apply_pfdata_sum {
     my ($self, %options) = @_;
 
-    my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    my $pattern_pf = $self->assign_eval(eval => "\"$options{args}->{pattern_pf}\"");
     my ($sum, $num) = (0, 0);
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
@@ -1141,8 +1193,7 @@ sub apply_pfdata_sum {
 sub apply_pfdata_average {
     my ($self, %options) = @_;
 
-    my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    my $pattern_pf = $self->assign_eval(eval => "\"$options{args}->{pattern_pf}\"");
     my ($sum, $num) = (0, 0);
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
@@ -1387,7 +1438,7 @@ Change traffic values in percent: --change-perfdata=traffic_in,,percent()
 
 =back
 
-=item B<--extend-perfdata-group> 
+=item B<--extend-perfdata-group>
 
 Extend perfdata from multiple perfdatas (methods in target are: min, max, average, sum)
 Syntax: --extend-perfdata-group=searchlabel,newlabel,target[,[newuom],[min],[max]]

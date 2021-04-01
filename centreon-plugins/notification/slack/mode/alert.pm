@@ -67,7 +67,7 @@ sub new {
         "ntlm"                  => { name => 'ntlm' },
         "username:s"            => { name => 'username' },
         "password:s"            => { name => 'password' },
-        "timeout:s"             => { name => 'timeout' },
+        "timeout:s"             => { name => 'timeout' }
     });
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{payload_attachment} = { fields => [] }; 
@@ -91,11 +91,10 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to specify --host-name option.");
         $self->{output}->option_exit();
     }
-    
+
     foreach (('graph_url', 'link_url')) {
         if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{option_results}->{$1}/g;
-            eval "\$self->{option_results}->{\$_} = \"$self->{option_results}->{$_}\"";
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/$self->{option_results}->{$1}/eg;
         }
     }
 
