@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_load' } ],
                 output_template => 'Cpu Load : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_load', value => 'cpu_load_absolute', template => '%.2f',
+                    { label => 'cpu_load', value => 'cpu_load', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'memory_used' } ],
                 output_template => 'Memory Used : %.2f %%',
                 perfdatas => [
-                    { label => 'memory_used', value => 'memory_used_absolute', template => '%.2f',
+                    { label => 'memory_used', value => 'memory_used', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'disk_used' } ],
                 output_template => 'Disk Used : %.2f %%',
                 perfdatas => [
-                    { label => 'disk_used', value => 'disk_used_absolute', template => '%.2f',
+                    { label => 'disk_used', value => 'disk_used', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

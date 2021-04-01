@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'current_connections' } ],
                 output_template => 'Current Connections : %s',
                 perfdatas => [
-                    { label => 'current_connections', value => 'current_connections_absolute', template => '%s',
+                    { label => 'current_connections', value => 'current_connections', template => '%s',
                       min => 0 },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'total_connections', diff => 1 } ],
                 output_template => 'Total Connections : %s',
                 perfdatas => [
-                    { label => 'total_connections', value => 'total_connections_absolute', template => '%s',
+                    { label => 'total_connections', value => 'total_connections', template => '%s',
                       min => 0 },
                 ],
             }
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'total_ssl_connections', diff => 1 } ],
                 output_template => 'Total SSL Connections : %s',
                 perfdatas => [
-                    { label => 'total_ssl_connections', value => 'total_ssl_connections_absolute', template => '%s',
+                    { label => 'total_ssl_connections', value => 'total_ssl_connections', template => '%s',
                       min => 0 },
                 ],
             }

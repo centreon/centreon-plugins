@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -59,7 +59,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'SMCLI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
+    $self->{custommode_name} = $options{custommode_name};
     
     # 1 means we use a file to read
     $self->{no_smclicmd} = 0;
@@ -82,7 +82,7 @@ sub set_defaults {
     
     # Manage default value
     foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
+        if ($_ eq $self->{custommode_name}) {
             if (ref($options{default}->{$_}) eq 'ARRAY') {
                 for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
                     foreach my $opt (keys %{$options{default}->{$_}[$i]}) {

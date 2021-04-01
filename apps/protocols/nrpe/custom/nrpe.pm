@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,13 +44,12 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s" => { name => 'hostname' },
+            'hostname:s' => { name => 'hostname' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM MODE OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{nrpe} = centreon::plugins::nrpe->new(%options);
     
     return $self;
@@ -62,21 +61,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;

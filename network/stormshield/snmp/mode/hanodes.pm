@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,8 +108,8 @@ sub set_counters {
                 key_values => [ { name => 'ntqHAQuality' }, { name => 'display' } ],
                 output_template => 'health: %s%%',
                 perfdatas => [
-                    { label => 'health', value => 'ntqHAQuality_absolute', template => '%d', min => 0, max => 100,
-                       unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'health', value => 'ntqHAQuality', template => '%d', min => 0, max => 100,
+                       unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         }

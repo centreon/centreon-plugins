@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,20 +32,20 @@ sub set_counters {
         { name => 'global', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'mail', set => {
+        { label => 'global-utilization', nlabel => 'cpu.global.utilization.percentage', set => {
                 key_values => [ { name => 'perCentCPUUtilization' } ],
-                output_template => 'CPU Mail usage is: %.2f%%',
+                output_template => 'cpu global usage is: %.2f%%',
                 perfdatas => [
-                    { label => 'cpu_mail', value => 'perCentCPUUtilization_absolute', template => '%.2f', 
+                    { value => 'perCentCPUUtilization', template => '%.2f', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
         },
-        { label => 'websecurity', set => {
+        { label => 'proxy-utilization', nlabel => 'cpu.proxy.utilization.percentage', set => {
                 key_values => [ { name => 'cacheCpuUsage' } ],
-                output_template => 'CPU WebSecurity usage is: %.2f%%',
+                output_template => 'cpu proxy usage is: %.2f%%',
                 perfdatas => [
-                    { label => 'cpu_websecurity', value => 'cacheCpuUsage_absolute', template => '%.2f', 
+                    { value => 'cacheCpuUsage', template => '%.2f', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -85,19 +85,13 @@ __END__
 =head1 MODE
 
 Check cpu usage of web security and mail (ASYNCOS-MAIL-MIB, ASYNCOSWEBSECURITYAPPLIANCE-MIB).
-Use linux SNMP plugin for global CPU.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'mail', 'websecurity'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'mail', 'websecurity'.
+Thresholds.
+Can be: 'global-utilization', 'proxy-utilization'.
 
 =back
 

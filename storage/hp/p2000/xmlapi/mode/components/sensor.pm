@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -48,7 +48,7 @@ sub check {
         cmd => 'show sensor-status', 
         base_type => 'sensors',
         key => 'sensor-name', 
-        properties_name => '^(value|sensor-type|status)$'
+        properties_name => '^(?:value|sensor-type|status)$'
     );
 
     #<OBJECT basetype="sensors" name="sensor" oid="22" format="rows">

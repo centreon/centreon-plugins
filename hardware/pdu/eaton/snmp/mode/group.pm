@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,39 +27,39 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'group', type => 1, cb_prefix_output => 'prefix_group_output', message_multiple => 'All groups are ok', skipped_code => { -10 => 1 } },
+        { name => 'group', type => 1, cb_prefix_output => 'prefix_group_output', message_multiple => 'All groups are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{group} = [
         { label => 'current', nlabel => 'group.current.ampere', set => {
-                key_values => [ { name => 'groupCurrent', no_value => 0 } ],
+                key_values => [ { name => 'groupCurrent', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { value => 'groupCurrent_absolute', template => '%.2f', 
-                      min => 0, unit => 'A', label_extra_instance => 1 },
-                ],
+                    { value => 'groupCurrent', template => '%.2f', 
+                      min => 0, unit => 'A', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'voltage', nlabel => 'group.voltage.volt', set => {
-                key_values => [ { name => 'groupVoltage', no_value => 0 } ],
+                key_values => [ { name => 'groupVoltage', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { value => 'groupVoltage_absolute', template => '%.2f', 
-                      unit => 'V', label_extra_instance => 1 },
-                ],
+                    { value => 'groupVoltage', template => '%.2f', 
+                      unit => 'V', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'power', nlabel => 'group.power.watt', set => {
-                key_values => [ { name => 'groupWatts', no_value => 0 } ],
+                key_values => [ { name => 'groupWatts', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Power : %.2f W',
                 perfdatas => [
-                    { value => 'groupWatts_absolute', template => '%.2f', 
-                      unit => 'W', label_extra_instance => 1 },
-                ],
+                    { value => 'groupWatts', template => '%.2f', 
+                      unit => 'W', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -69,6 +69,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -90,7 +91,6 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{group} = {};
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $mapping->{groupName}->{oid} },
@@ -101,17 +101,27 @@ sub manage_selection {
         return_type => 1, nothing_quit => 1
     );
 
+    $self->{group} = {};
     foreach my $oid (keys %{$snmp_result}) {
-        $oid =~ /\.(\d+\.\d+)$/;
-        my $instance = $1;
-        next if (defined($self->{group}->{$instance}));
-        
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $oid =~ /\.(\d+)\.(\d+)$/;
+        my ($strapping_index, $group_index) = ($1, $2);
+        next if (defined($self->{group}->{$strapping_index . '.' . $group_index}));
+
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $strapping_index . '.' . $group_index);
         $result->{groupVoltage} *= 0.001 if (defined($result->{groupVoltage}));
         $result->{groupCurrent} *= 0.001 if (defined($result->{groupCurrent}));
-        my $display = $instance;
-        $display = $result->{groupName} if (defined($result->{groupName}) && $result->{groupName} ne '');
-        $self->{group}->{$display} = { display => $display, %$result };
+        my $display = $strapping_index . '.' . $group_index;
+        if (defined($result->{groupName}) && $result->{groupName} ne '') {
+            $display = $result->{groupName} . ' strapping ' . $strapping_index;
+        }
+
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $display !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{group}->{$strapping_index . '.' . $group_index} = { display => $display, %$result };
     }
 
     if (scalar(keys %{$self->{group}}) <= 0) {
@@ -129,6 +139,10 @@ __END__
 Check group metrics (voltage, current and power).
 
 =over 8
+
+=item B<--filter-name>
+
+Filter group name (can be a regexp).
 
 =item B<--warning-*>
 

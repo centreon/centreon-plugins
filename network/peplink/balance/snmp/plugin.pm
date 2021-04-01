@@ -31,11 +31,11 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'cpu'               => 'network::peplink::balance::snmp::mode::cpu',
-                            'interfaces'        => 'snmp_standard::mode::interfaces',
-                            'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-                            'memory'            => 'network::peplink::balance::snmp::mode::memory',
-                         );
+        'cpu'               => 'network::peplink::balance::snmp::mode::cpu',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'memory'            => 'network::peplink::balance::snmp::mode::memory',
+    );
 
     return $self;
 }

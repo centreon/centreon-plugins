@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,26 +37,26 @@ sub set_counters {
                 key_values => [ { name => '202' } ],
                 output_template => '202: %d',
                 perfdatas => [
-                    { value => '202_absolute', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'results-400', nlabel => 'results.400.count', set => {
                 key_values => [ { name => '400' } ],
                 output_template => '400: %d',
                 perfdatas => [
-                    { value => '400_absolute', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'results-404', nlabel => 'results.404.count', set => {
                 key_values => [ { name => '404' } ],
                 output_template => '404: %d',
                 perfdatas => [
-                    { value => '404_absolute', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -72,19 +72,14 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "host:s@"       => { name => 'host' },
-        "service:s@"    => { name => 'service' },
-        "status:s@"     => { name => 'status' },
-        "output:s@"     => { name => 'output' },
-        "perfdata:s@"   => { name => 'perfdata' },
+        'host:s@'     => { name => 'host' },
+        'service:s@'  => { name => 'service' },
+        'status:s@'   => { name => 'status' },
+        'output:s@'   => { name => 'output' },
+        'perfdata:s@' => { name => 'perfdata' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 }
 
 sub manage_selection {

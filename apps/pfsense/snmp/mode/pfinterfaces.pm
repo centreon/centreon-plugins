@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,46 +34,46 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{pfint} = [
-        { label => 'traffic-in-pass', set => {
-                key_values => [ { name => 'pfInterfacesIf4BytesInPass', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+        { label => 'traffic-in-pass', nlabel => 'pfinterface.pass.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'pfInterfacesIf4BytesInPass', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic In Pass : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in_pass', value => 'pfInterfacesIf4BytesInPass_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'traffic_in_pass', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'traffic-out-pass', set => {
-                key_values => [ { name => 'pfInterfacesIf4BytesOutPass', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+        { label => 'traffic-out-pass', nlabel => 'pfinterface.pass.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'pfInterfacesIf4BytesOutPass', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic Out Pass : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out_pass', value => 'pfInterfacesIf4BytesOutPass_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'traffic_out_pass', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'traffic-in-block', set => {
-                key_values => [ { name => 'pfInterfacesIf4BytesInBlock', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+        { label => 'traffic-in-block', nlabel => 'pfinterface.block.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'pfInterfacesIf4BytesInBlock', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic In Block : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in_block', value => 'pfInterfacesIf4BytesInBlock_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'traffic_in_block', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'traffic-out-block', set => {
-                key_values => [ { name => 'pfInterfacesIf4BytesOutBlock', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+        { label => 'traffic-out-block', nlabel => 'pfinterface.block.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'pfInterfacesIf4BytesOutBlock', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic Out Block : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out_block', value => 'pfInterfacesIf4BytesOutBlock_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'traffic_out_block', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -87,12 +87,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
     return $self;
 }
 
@@ -101,17 +100,18 @@ my $mapping = {
     pfInterfacesIf4BytesInPass      => { oid => '.1.3.6.1.4.1.12325.1.200.1.8.2.1.7' },
     pfInterfacesIf4BytesInBlock     => { oid => '.1.3.6.1.4.1.12325.1.200.1.8.2.1.8' },
     pfInterfacesIf4BytesOutPass     => { oid => '.1.3.6.1.4.1.12325.1.200.1.8.2.1.9' },
-    pfInterfacesIf4BytesOutBlock    => { oid => '.1.3.6.1.4.1.12325.1.200.1.8.2.1.10' },
+    pfInterfacesIf4BytesOutBlock    => { oid => '.1.3.6.1.4.1.12325.1.200.1.8.2.1.10' }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
- 
+
     if ($options{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
         $self->{output}->option_exit();
     }
     my $snmp_result = $options{snmp}->get_table(oid => $oid_pfInterfacesIfDescr, nothing_quit => 1);
+
     $self->{pfint} = {};
     foreach my $oid (keys %{$snmp_result}) {
         $oid =~ /^$oid_pfInterfacesIfDescr\.(.*)$/;
@@ -123,16 +123,20 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping pfInterface '" . $name . "'.", debug => 1);
             next;
         }
-        
+
         $self->{pfint}->{$instance} = { display => $name };
     }
-    
-    $options{snmp}->load(oids => [$mapping->{pfInterfacesIf4BytesInPass}->{oid}, $mapping->{pfInterfacesIf4BytesOutPass}->{oid},
-        $mapping->{pfInterfacesIf4BytesInBlock}->{oid}, $mapping->{pfInterfacesIf4BytesOutBlock}->{oid},
+
+    $options{snmp}->load(
+        oids => [
+            $mapping->{pfInterfacesIf4BytesInPass}->{oid}, $mapping->{pfInterfacesIf4BytesOutPass}->{oid},
+            $mapping->{pfInterfacesIf4BytesInBlock}->{oid}, $mapping->{pfInterfacesIf4BytesOutBlock}->{oid},
         ], 
-        instances => [keys %{$self->{pfint}}], instance_regexp => '^(.*)$');
+        instances => [keys %{$self->{pfint}}],
+        instance_regexp => '^(.*)$'
+    );
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    
+
     foreach my $instance (keys %{$self->{pfint}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);        
 
@@ -140,13 +144,13 @@ sub manage_selection {
             $self->{pfint}->{$instance}->{$_} = $result->{$_} * 8;
         }
     }
-    
+
     if (scalar(keys %{$self->{pfint}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No pfInterface found.");
         $self->{output}->option_exit();
     }
-    
-    $self->{cache_name} = "pfsense_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+
+    $self->{cache_name} = 'pfsense_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

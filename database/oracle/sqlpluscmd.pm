@@ -46,24 +46,24 @@ sub new {
     }
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-                "sqlplus-cmd:s"             => { name => 'sqlplus_cmd'},
-                "oracle-home:s"             => { name => 'oracle_home' },
-                "tnsadmin-home:s"           => { name => 'tnsadmin_home' },
-                "tnsnames-sid:s"            => { name => 'tnsnames_sid'},
-                "tnsnames-servicename:s"    => { name => 'tnsnames_servicename'},
-                "username:s"                => { name => 'username' },
-                "password:s"                => { name => 'password' },
-                "local-connexion"           => { name => 'local_connexion', default => 0 }, 
-                "sysdba"                    => { name => 'sysdba', default => 0 }, 
-                "sql-errors-exit:s"         => { name => 'sql_errors_exit', default => 'unknown' },
-                "tempdir:s"                 => { name => 'tempdir', default => '/tmp' },
+                'sqlplus-cmd:s'          => { name => 'sqlplus_cmd'},
+                'oracle-home:s'          => { name => 'oracle_home' },
+                'tnsadmin-home:s'        => { name => 'tnsadmin_home' },
+                'tnsnames-sid:s'         => { name => 'tnsnames_sid'},
+                'tnsnames-servicename:s' => { name => 'tnsnames_servicename'},
+                'username:s'             => { name => 'username' },
+                'password:s'             => { name => 'password' },
+                'local-connexion'        => { name => 'local_connexion', default => 0 }, 
+                'sysdba'                 => { name => 'sysdba', default => 0 }, 
+                'sql-errors-exit:s'      => { name => 'sql_errors_exit', default => 'unknown' },
+                'tempdir:s'              => { name => 'tempdir', default => '/tmp' }
             }
         );
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'sqlpluscmd OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
+    $self->{sqlmode_name} = $options{sqlmode_name};
     $self->{args} = undef;
     $self->{stdout} = undef;
     $self->{columns} = undef;
@@ -77,22 +77,17 @@ sub new {
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
+
     foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
+        if ($_ eq $self->{sqlmode_name}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
                 foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
                     if (!defined($self->{option_results}->{$opt}[$i])) {
@@ -106,8 +101,6 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still data_source
-    # return 0 = no data_source left
 
     $self->{sid} = defined($self->{option_results}->{sid}[0]) ? $self->{option_results}->{sid}[0] : $self->{option_results}->{tnsnames_sid};
     $self->{service_name} = defined($self->{option_results}->{service_name}[0]) ? $self->{option_results}->{service_name}[0] : $self->{option_results}->{tnsnames_servicename};

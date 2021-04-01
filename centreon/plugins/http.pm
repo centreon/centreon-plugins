@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,17 +33,24 @@ sub new {
             'http-peer-addr:s'  => { name => 'http_peer_addr' },
             'proxyurl:s'        => { name => 'proxyurl' },
             'proxypac:s'        => { name => 'proxypac' },
+            'insecure'          => { name => 'insecure' },
             'http-backend:s'    => { name => 'http_backend', default => 'lwp' },
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'HTTP GLOBAL OPTIONS');
     }
 
-    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'centreon::plugins::backend::http::lwp',
-                                           error_msg => "Cannot load module 'centreon::plugins::backend::http::lwp'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output},
+        module => 'centreon::plugins::backend::http::lwp',
+        error_msg => "Cannot load module 'centreon::plugins::backend::http::lwp'."
+    );
     $self->{backend_lwp} = centreon::plugins::backend::http::lwp->new(%options);
 
-    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'centreon::plugins::backend::http::curl',
-                                           error_msg => "Cannot load module 'centreon::plugins::backend::http::curl'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output},
+        module => 'centreon::plugins::backend::http::curl',
+        error_msg => "Cannot load module 'centreon::plugins::backend::http::curl'."
+    );
     $self->{backend_curl} = centreon::plugins::backend::http::curl->new(%options);
 
     $self->{output} = $options{output};
@@ -76,6 +83,12 @@ sub add_header {
     $self->{add_headers}->{$options{key}} = $options{value};
 }
 
+sub remove_header {
+    my ($self, %options) = @_;
+
+    delete $self->{add_headers}->{$options{key}} if (defined($self->{add_headers}->{$options{key}}));
+}
+
 sub check_options {
     my ($self, %options) = @_;
 
@@ -87,10 +100,9 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (defined($options{request}->{curl_backend_options}) && 
-        $self->{http_backend} eq 'curl') {
-        foreach (keys %{$options{request}->{curl_backend_options}}) {
-            $options{request}->{$_} = $options{request}->{curl_backend_options}->{$_};
+    if (defined($options{request}->{$self->{http_backend} . '_backend_options'})) {
+        foreach (keys %{$options{request}->{$self->{http_backend} . '_backend_options'}}) {
+            $options{request}->{$_} = $options{request}->{$self->{http_backend} . '_backend_options'}->{$_};
         }
     }
 
@@ -116,7 +128,7 @@ sub check_options {
     $options{request}->{headers} = {};
     if (defined($options{request}->{header})) {
         foreach (@{$options{request}->{header}}) {
-            if (/^(.*?):(.*)/) {
+            if (/^(:.+?|.+?):(.*)/) {
                 $options{request}->{headers}->{$1} = $2;
             }
         }
@@ -129,7 +141,7 @@ sub check_options {
         if (defined($options{request}->{$method . '_param'})) {
             $options{request}->{$method . '_params'} = {};
             foreach (@{$options{request}->{$method . '_param'}}) {
-                if (/^([^=]+)={0,1}(.*)$/) {
+                if (/^([^=]+)={0,1}(.*)$/s) {
                     my $key = $1;
                     my $value = defined($2) ? $2 : 1;
                     if (defined($options{request}->{$method . '_params'}->{$key})) {
@@ -144,7 +156,7 @@ sub check_options {
             }
         }
     }
-    
+
     $self->{'backend_' . $self->{http_backend}}->check_options(%options);
 }
 
@@ -208,6 +220,12 @@ sub get_message {
     return $self->{'backend_' . $self->{http_backend}}->get_message();
 }
 
+sub get_certificate {
+    my ($self, %options) = @_;
+
+    return $self->{'backend_' . $self->{http_backend}}->get_certificate();
+}
+
 1;
 
 __END__
@@ -235,6 +253,10 @@ Proxy URL
 =item B<--proxypac>
 
 Proxy pac file (can be an url or local file)
+
+=item B<--insecure>
+
+Insecure SSL connections.
 
 =item B<--http-backend>
 

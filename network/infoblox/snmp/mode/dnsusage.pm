@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'ibDnsQueryRate' } ],
                 output_template => 'Total query rate : %s',
                 perfdatas => [
-                    { label => 'total_query_rate', value => 'ibDnsQueryRate_absolute', template => '%s',
+                    { label => 'total_query_rate', value => 'ibDnsQueryRate', template => '%s',
                       min => 0 },
                 ],
             }
@@ -48,7 +48,7 @@ sub set_counters {
                 key_values => [ { name => 'ibDnsHitRatio' } ],
                 output_template => 'Total hit ratio : %.2f %%',
                 perfdatas => [
-                    { label => 'total_hit_ratio', value => 'ibDnsHitRatio_absolute', template => '%.2f',
+                    { label => 'total_hit_ratio', value => 'ibDnsHitRatio', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -60,8 +60,8 @@ sub set_counters {
                 key_values => [ { name => 'ibBindZoneSuccess', diff => 1 }, { name => 'display' } ],
                 output_template => 'Success responses : %s',
                 perfdatas => [
-                    { label => 'success_count', value => 'ibBindZoneSuccess_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'success_count', value => 'ibBindZoneSuccess', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -69,8 +69,8 @@ sub set_counters {
                 key_values => [ { name => 'ibBindZoneReferral', diff => 1 }, { name => 'display' } ],
                 output_template => 'Referrals : %s',
                 perfdatas => [
-                    { label => 'referral_count', value => 'ibBindZoneReferral_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'referral_count', value => 'ibBindZoneReferral', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -78,8 +78,8 @@ sub set_counters {
                 key_values => [ { name => 'ibBindZoneNxRRset', diff => 1 }, { name => 'display' } ],
                 output_template => 'Non-existent record : %s',
                 perfdatas => [
-                    { label => 'nxrrset_count', value => 'ibBindZoneNxRRset_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'nxrrset_count', value => 'ibBindZoneNxRRset', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -87,8 +87,8 @@ sub set_counters {
                 key_values => [ { name => 'ibBindZoneFailure', diff => 1 }, { name => 'display' } ],
                 output_template => 'Failed queries : %s',
                 perfdatas => [
-                    { label => 'failure_count', value => 'ibBindZoneFailure_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'failure_count', value => 'ibBindZoneFailure', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -100,10 +100,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'filter-name:s' => { name => 'filter_name' },
+    });
     
     return $self;
 }
@@ -138,10 +137,13 @@ sub manage_selection {
     }
     
     $self->{dns} = {};
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
             { oid => $oid_ibZoneStatisticsEntry },
             { oid => $oid_ibDnsModule, start => $mapping2->{ibDnsHitRatio}->{oid} },
-        ], nothing_quit => 1);
+        ],
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result->{$oid_ibZoneStatisticsEntry}}) {
         next if ($oid !~ /^$mapping->{ibBindZoneName}->{oid}\.(.*)$/);

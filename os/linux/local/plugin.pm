@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,7 +22,7 @@ package os::linux::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,12 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'               => 'os::linux::local::mode::cpu',
         'cpu-detailed'      => 'os::linux::local::mode::cpudetailed',
         'cmd-return'        => 'os::linux::local::mode::cmdreturn',
         'connections'       => 'os::linux::local::mode::connections',
         'directlvm-usage'   => 'os::linux::local::mode::directlvmusage',
+        'discovery-nmap'    => 'os::linux::local::mode::discoverynmap',
         'discovery-snmp'    => 'os::linux::local::mode::discoverysnmp',
         'diskio'            => 'os::linux::local::mode::diskio',
         'files-size'        => 'os::linux::local::mode::filessize',
@@ -58,8 +59,10 @@ sub new {
         'swap'              => 'os::linux::local::mode::swap',
         'systemd-sc-status' => 'os::linux::local::mode::systemdscstatus',
         'traffic'           => 'os::linux::local::mode::traffic',
-        'uptime'            => 'os::linux::local::mode::uptime',
-    );
+        'uptime'            => 'os::linux::local::mode::uptime'
+    };
+
+    $self->{custom_modes}->{cli} = 'os::linux::local::custom::cli';
 
     return $self;
 }

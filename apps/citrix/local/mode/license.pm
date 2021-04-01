@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,48 +29,88 @@ use Win32::OLE;
 sub custom_license_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Licenses Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)",
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
-        $self->{result_values}->{prct_used_absolute},
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
-        $self->{result_values}->{prct_free_absolute});
-    return $msg;
+    return sprintf(
+        'total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+        $self->{result_values}->{total},
+        $self->{result_values}->{used},
+        $self->{result_values}->{prct_used},
+        $self->{result_values}->{free},
+        $self->{result_values}->{prct_free}
+    );
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Licenses ';
+}
+
+sub prefix_license_output {
+    my ($self, %options) = @_;
+
+    return "License '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0,  cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+        { name => 'licenses', type => 1, cb_prefix_output => 'prefix_license_output', message_multiple => 'All licenses are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'usage', nlabel => 'licenses.usage.count', set => {
+        { label => 'licenses-usage', nlabel => 'licenses.usage.count', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
-                    { label => 'mem_used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { template => '%d', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'usage-free', display_ok => 0, nlabel => 'licenses.free.count', set => {
+        { label => 'licenses-usage-free', display_ok => 0, nlabel => 'licenses.free.count', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
-                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute', cast_int => 1 },
-                ],
+                    { template => '%d', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'usage-prct', display_ok => 0, nlabel => 'licenses.usage.percentage', set => {
+        { label => 'licenses-usage-prct', display_ok => 0, nlabel => 'licenses.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' } ],
-                output_template => 'Licenses Used : %.2f %%',
+                output_template => 'used: %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{licenses} = [
+        { label => 'license-usage', nlabel => 'license.usage.count', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_license_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
+        { label => 'license-usage-free', display_ok => 0, nlabel => 'license.free.count', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_license_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'license-usage-prct', display_ok => 0, nlabel => 'license.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_license_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
     ];
 }
 
@@ -80,6 +120,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -95,15 +136,29 @@ sub manage_selection {
     }
 
     $self->{global} = { total => 0, used => 0 };
-    my $query = "Select InUseCount,Count from Citrix_GT_License_Pool";
+    my $query = "Select PLD,InUseCount,Count from Citrix_GT_License_Pool";
     my $resultset = $wmi->ExecQuery($query);
+
+    $self->{licenses} = {};
     foreach my $obj (in $resultset) {
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $obj->{PLD} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping license '" . $obj->{PLD} . "': no matching filter.", debug => 1);
+            next;
+        }
+        
         $self->{global}->{used} += $obj->{InUseCount};
         $self->{global}->{total} += $obj->{Count};
+        $self->{licenses}->{ $obj->{PLD} }->{display} = $obj->{PLD};
+        $self->{licenses}->{ $obj->{PLD} }->{used} = $obj->{InUseCount};
+        $self->{licenses}->{ $obj->{PLD} }->{total} = $obj->{Count};
+        $self->{licenses}->{ $obj->{PLD} }->{prct_used} = $obj->{InUseCount} * 100 / $obj->{Count};
+        $self->{licenses}->{ $obj->{PLD} }->{prct_free} = 100 - $self->{licenses}->{ $obj->{PLD} }->{prct_used};
+        $self->{licenses}->{ $obj->{PLD} }->{free} = $obj->{Count} - $obj->{InUseCount};
     }
 
-    if ($self->{global}->{total} == 0) {
-        $self->{output}->add_option_msg(short_msg => 'Cant get licenses count');
+    if (scalar(keys %{$self->{licenses}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'Cannot get licenses');
         $self->{output}->option_exit();
     }
 
@@ -122,10 +177,15 @@ Check Citrix licenses.
 
 =over 8
 
+=item B<--filter-name>
+
+Filter license name.
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
+Can be: 'license-usage', 'license-usage-free, 'license-usage-prct' (%),
+'licenses-usage', 'licenses-usage-free', 'licenses-usage-prct' (%).
 
 =back
 

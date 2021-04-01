@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -52,13 +52,18 @@ sub check {
         
         my $state = $health{$results->{$disk_id}->{'health-numeric'}};
         
-        $self->{output}->output_add(long_msg => sprintf("disk '%s' status is %s [instance: %s]",
-                                                        $disk_id, $state, $disk_id)
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "disk '%s' status is %s [instance: %s]",
+                $disk_id, $state, $disk_id
+            )
+        );
         my $exit = $self->get_severity(label => 'default', section => 'disk', value => $state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Disk '%s' status is '%s'", $disk_id, $state));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Disk '%s' status is '%s'", $disk_id, $state)
+            );
         }
     }
 }

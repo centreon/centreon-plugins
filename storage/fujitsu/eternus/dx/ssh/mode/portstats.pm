@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'read_iops' }, { name => 'display' } ],
                 output_template => 'Read IOPS : %d',
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops_absolute', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', value => 'read_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'write_iops' }, { name => 'display' } ],
                 output_template => 'Write IOPS : %d',
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_iops_absolute', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', value => 'write_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'read_traffic' }, { name => 'display' } ],
                 output_template => 'Read Traffic : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'read_traffic', value => 'read_traffic_absolute', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_traffic', value => 'read_traffic', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'write_traffic' }, { name => 'display' } ],
                 output_template => 'Write Traffic : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'write_traffic', value => 'write_traffic_absolute', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_traffic', value => 'write_traffic', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

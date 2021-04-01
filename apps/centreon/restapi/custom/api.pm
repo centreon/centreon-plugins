@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,19 +43,18 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port' },
-            "proto:s"           => { name => 'proto' },
-            "api-username:s"    => { name => 'api_username' },
-            "api-password:s"    => { name => 'api_password' },
-            "api-path:s"        => { name => 'api_path' },
-            "timeout:s"         => { name => 'timeout' },
+            'hostname:s'     => { name => 'hostname' },
+            'port:s'         => { name => 'port' },
+            'proto:s'        => { name => 'proto' },
+            'api-username:s' => { name => 'api_username' },
+            'api-password:s' => { name => 'api_password' },
+            'api-path:s'     => { name => 'api_path' },
+            'timeout:s'      => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
     
@@ -68,21 +67,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -138,7 +123,6 @@ sub settings {
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     if (defined($self->{auth_token})) {
         $self->{http}->add_header(key => 'Centreon-Auth-Token', value => $self->{auth_token});
-        $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     }
     $self->{http}->set_options(%{$self->{option_results}});
 }
@@ -205,7 +189,10 @@ sub request_api {
         method => $options{method},
         url_path => $options{url_path},
         query_form_post => $encoded_form_post,
-        critical_status => '', warning_status => '', unknown_status => ''
+        header => $options{header},
+        critical_status => '',
+        warning_status => '',
+        unknown_status => ''
     );
 
     my $decoded;
@@ -226,7 +213,8 @@ sub submit_result {
     my ($response, $raw) = $self->request_api(
         method => 'POST',
         url_path => $self->{api_path} . '?action=submit&object=centreon_submit_results',
-        query_form_post => $options{post_data}
+        query_form_post => $options{post_data},
+        header => ['Content-Type: application/json']
     );
     
     return ($response, $raw);

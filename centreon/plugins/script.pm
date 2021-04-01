@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,6 @@ use strict;
 use warnings;
 use centreon::plugins::output;
 use centreon::plugins::misc;
-use FindBin;
 use Pod::Usage;
 use Pod::Find qw(pod_where);
 
@@ -52,7 +51,7 @@ sub new {
 sub prepare_destroy {
     my ($self) = @_;
 
-    %handlers = undef;
+    %handlers = ();
 }
 
 sub set_signal_handlers {
@@ -97,7 +96,7 @@ sub get_global_version {
 
 sub get_plugin {
     my ($self) = @_;
-    
+
     # Need to load global 'Output' and 'Options'
     if ($alternative_fatpacker == 0) {
         require centreon::plugins::options;
@@ -131,7 +130,7 @@ sub get_plugin {
     $self->{environment} = $self->{options}->get_option(argument => 'environment');
     $self->{ignore_warn_msg} = $self->{options}->get_option(argument => 'ignore_warn_msg');
     $self->{convert_args} = $self->{options}->get_option(argument => 'convert_args');
-    
+
     my $global_timeout = $self->{options}->get_option(argument => 'global_timeout');
     if (defined($global_timeout) && $global_timeout =~ /(\d+)/) {
         $SIG{ALRM} = \&class_handle_ALRM;
@@ -147,7 +146,7 @@ sub get_plugin {
 
 sub convert_args {
     my ($self) = @_;
-    
+
     if ($self->{convert_args} =~ /^(.+?),(.*)/) {
         my ($search, $replace) = ($1, $2);
         for (my $i = 0; $i <= $#ARGV; $i++) {
@@ -175,27 +174,30 @@ sub display_local_help {
             close $str_fh;
         }
     }
-    
+
     $self->{output}->add_option_msg(long_msg => $stdout) if (defined($stdout));
 }
 
 sub check_directory {
     my ($self, $directory) = @_;
-    
+
     opendir(my $dh, $directory) || return ;
     while (my $filename = readdir $dh) {
         $self->check_directory($directory . '/' . $filename) if ($filename !~ /^\./ && -d $directory . '/' . $filename);
         if ($filename eq 'plugin.pm') {
             my $stdout = '';
-            
+
             {
                 local *STDOUT;
                 open STDOUT, '>', \$stdout;
-                pod2usage(-exitval => 'NOEXIT', -input => $directory . "/" . $filename,
-                          -verbose => 99, 
-                          -sections => "PLUGIN DESCRIPTION");
+                pod2usage(
+                    -exitval => 'NOEXIT',
+                    -input => $directory . "/" . $filename,
+                    -verbose => 99, 
+                    -sections => 'PLUGIN DESCRIPTION'
+                );
             }
-            $self->{plugins_result}->{$directory . "/" . $filename} = $stdout;
+            $self->{plugins_result}->{$directory . '/' . $filename} = $stdout;
         }
     }
     closedir $dh;
@@ -213,18 +215,18 @@ sub fatpacker_find_plugin {
             }
         }
     }
-    
+
     return $plugins;
 }
 
 sub check_plugin_option {
     my ($self) = @_;
-    
+
     if (defined($self->{version})) {
         $self->{output}->add_option_msg(short_msg => 'Global Version: ' . $global_version);
         $self->{output}->option_exit(nolabel => 1);
     }
-    
+
     my $no_plugin = 1;
     if ($alternative_fatpacker == 1) {
         my $integrated_plugins = $self->fatpacker_find_plugin();
@@ -233,7 +235,7 @@ sub check_plugin_option {
             $no_plugin = 0;
         }
     }
-    
+
     if ($no_plugin == 1) {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--plugin' option.");
         $self->{output}->option_exit();
@@ -246,7 +248,7 @@ sub display_list_plugin {
 
     if ($alternative_fatpacker == 1) {
         my $integrated_plugins = $self->fatpacker_find_plugin();
-        
+
         foreach my $key (sort @$integrated_plugins) {
             # Need to load it to get the description
             centreon::plugins::misc::mymodule_load(
@@ -272,27 +274,66 @@ sub display_list_plugin {
         }
         return ;
     }
-    
+
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'FindBin', 
+        error_msg => "Cannot load module 'FindBin'."
+    );
+    my $directory = $FindBin::Bin;
+    if (defined($ENV{PAR_TEMP})) {
+        $directory = $ENV{PAR_TEMP} . '/inc/lib';
+    }
     # Search file 'plugin.pm'
-    $self->check_directory($FindBin::Bin);
+    $self->check_directory($directory);
     foreach my $key (sort keys %{$self->{plugins_result}}) {
         my $name = $key;
-        $name =~ s/^$FindBin::Bin\/(.*)\.pm/$1/;
+        $name =~ s/^\Q$directory\E\/(.*)\.pm/$1/;
         $name =~ s/\//::/g;
         $self->{plugins_result}->{$key} =~ s/^Plugin Description/DESCRIPTION/i;
-        
+
         $self->{output}->add_option_msg(long_msg => '-----------------');
         $self->{output}->add_option_msg(long_msg => 'PLUGIN: ' . $name);
         $self->{output}->add_option_msg(long_msg => $self->{plugins_result}->{$key});
     }
 }
 
+sub check_relaunch_get_args {
+    my ($self) = @_;
+
+    my $args = ['--plugin=' . $self->{plugin}, @ARGV];
+    push @$args, '--ignore-warn-msg' if (defined($self->{ignore_warn_msg}));
+    push @$args, '--help' if (defined($self->{help}));
+    push @$args, '--global-timeout', $self->{global_timeout} if (defined($self->{global_timeout}));
+    foreach ((
+        ['output_xml', 0], ['output_json', 0], ['output_openmetrics', 0], 
+        ['disco_format', 0], ['disco_show', 0], ['use_new_perfdata', 0], ['debug', 0], ['verbose', 0],
+        ['range_perfdata', 1], ['filter_uom', 1], ['opt_exit', 1], ['filter_perfdata', 1],
+        ['output_file', 1], ['float_precision', 1]
+    )) {
+        my $option = $self->{output}->get_option(option => $_->[0]);
+        if (defined($option)) {
+            my $option_label = $_->[0];
+            $option_label =~ s/_/-/g;
+            push @$args, "--$option_label" if ($_->[1] == 0);
+            push @$args, "--$option_label", $option if ($_->[1] == 1);
+        }
+    }
+
+    return $args;
+}
+
 sub check_relaunch {
     my $self = shift;
+
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'FindBin', 
+        error_msg => "Cannot load module 'FindBin'."
+    );
+
     my $need_restart = 0;
-    my $cmd = $FindBin::Bin . "/" . $FindBin::Script;
-    my @args = ();
-    
+    my $cmd = $FindBin::Bin . '/' . $FindBin::Script;
+    my $args = [];
+
     if (defined($self->{environment})) {
         foreach (keys %{$self->{environment}}) {
             if ($_ ne '' && (!defined($ENV{$_}) || $ENV{$_} ne $self->{environment}->{$_})) {
@@ -301,7 +342,9 @@ sub check_relaunch {
             }
         }
     }
-    
+
+    my $rebuild_args = $self->check_relaunch_get_args();
+
     if (defined($self->{runas}) && $self->{runas} ne '') {
         # Check if it's already me and user exist ;)
         my ($name, $passwd, $uid) = getpwnam($self->{runas});
@@ -311,37 +354,40 @@ sub check_relaunch {
         }
         if ($uid != $>) {
             if ($> == 0) {
-                unshift @args, "-s", "/bin/bash", "-l", $self->{runas}, "-c", join(" ", $cmd, "--plugin=" . $self->{plugin}, @ARGV);
-                $cmd = "su";
+                unshift @$args, '-s', '/bin/bash', '-l', $self->{runas}, '-c', join(' ', $cmd, $rebuild_args);
+                $cmd = 'su';
             } else {
-                unshift @args, "-S", "-u", $self->{runas}, $cmd, "--plugin=" . $self->{plugin}, @ARGV;
-                $cmd = "sudo";
+                unshift @$args, '-S', '-u', $self->{runas}, $cmd, @$rebuild_args;
+                $cmd = 'sudo';
             }
             $need_restart = 1;
         }
     }
 
     if ($need_restart == 1) {
-        if (scalar(@args) <= 0) {
-            unshift @args, @ARGV, '--plugin=' . $self->{plugin}
+        if (scalar(@$args) <= 0) {
+            unshift @$args, @$rebuild_args;
         }
 
         my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
             command => $cmd,
-            arguments => [@args],
+            arguments => $args,
             timeout => 30,
             wait_exit => 1
         );
 
         if ($exit_code <= -1000) {
             if ($exit_code == -1000) {
-                $self->{output}->output_add(severity => 'UNKNOWN', 
-                                            short_msg => $stdout);
+                $self->{output}->output_add(
+                    severity => 'UNKNOWN', 
+                    short_msg => $stdout
+                );
             }
             $self->{output}->display();
             $self->{output}->exit();
         }
-        print $stdout;
+        chomp $stdout;
+        print $stdout . "\n";
         # We put unknown
         if (!($exit_code >= 0 && $exit_code <= 4)) {
             exit 3;
@@ -370,7 +416,7 @@ sub run {
     $self->convert_args() if (defined($self->{convert_args}));
 
     $self->check_relaunch();
-    
+
     (undef, $self->{plugin}) = 
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
                                                error_msg => 'Cannot load module --plugin.');

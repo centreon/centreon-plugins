@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,6 +36,7 @@ sub new {
         'connection-time'          => 'centreon::common::protocols::sql::mode::connectiontime',
         'connected-users'          => 'database::oracle::mode::connectedusers',
         'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
+        'dataguard'                => 'database::oracle::mode::dataguard',
         'data-files-status'        => 'database::oracle::mode::datafilesstatus',
         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
         'dictionary-cache-usage'   => 'database::oracle::mode::dictionarycacheusage',
@@ -44,6 +45,7 @@ sub new {
         'invalid-object'           => 'database::oracle::mode::invalidobject',
         'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
         'list-asm-diskgroups'      => 'database::oracle::mode::listasmdiskgroups',
+        'list-tablespaces'         => 'database::oracle::mode::listtablespaces',
         'long-queries'             => 'database::oracle::mode::longqueries',
         'password-expiration'      => 'database::oracle::mode::passwordexpiration',
         'process-usage'            => 'database::oracle::mode::processusage',
@@ -56,13 +58,11 @@ sub new {
         'sql'                      => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',
         'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
-        'temp-tablespace'          => 'database::oracle::mode::temptablespace',
-        'tnsping'                  => 'database::oracle::mode::tnsping',
-        'undo-tablespace'          => 'database::oracle::mode::undotablespace',
+        'tnsping'                  => 'database::oracle::mode::tnsping'
     );
 
-    $self->{sql_modes}{dbi} = 'database::oracle::dbi';
-    $self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
+    $self->{sql_modes}->{dbi} = 'database::oracle::dbi';
+    $self->{sql_modes}->{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
 						 
     return $self;
 }
@@ -75,7 +75,7 @@ sub init {
         'port:s@'       => { name => 'port' },
         'sid:s'         => { name => 'sid' },
         'servicename:s' => { name => 'servicename' },
-        'container:s'   => { name => 'container' },
+        'container:s'   => { name => 'container' }
     });
 
     $self->{options}->parse_options();

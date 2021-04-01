@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,8 +28,7 @@ use centreon::plugins::misc;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(health|chassis|temperature|psu)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|psu\.(voltage|power|current)|chassis\.(power|current))$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -41,8 +40,8 @@ sub set_system {
             ['ok', 'OK'],
             ['nonCritical', 'WARNING'],
             ['critical', 'CRITICAL'],
-            ['nonRecoverable', 'CRITICAL'],
-        ],
+            ['nonRecoverable', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'hardware::server::dell::cmc::snmp::mode::components';
@@ -78,9 +77,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {});
-    
+
     return $self;
 }
 

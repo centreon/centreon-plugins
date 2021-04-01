@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,10 +27,10 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|disk|smartdisk|fan|raid)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|disk|smartdisk|fan)$';
-    
+
+    $self->{regexp_threshold_numeric_check_section_option} =
+        '^(?:temperature|disk|smartdisk|fan|psu\.fanspeed|psu\.temperature)$';
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
@@ -40,39 +40,48 @@ sub set_system {
             ['invalid', 'CRITICAL'],
             ['rwError', 'CRITICAL'],
             ['unknown', 'UNKNOWN'],
+
+            ['abnormal', 'WARNING'],
+            ['good', 'OK'],
+            ['warning', 'WARNING'],
+            ['error', 'CRITICAL']
         ],
         smartdisk => [
             ['GOOD', 'OK'],
-            ['NORMAL', 'WARNING'],
+            ['NORMAL', 'OK'],
             ['--', 'OK'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ],
         raid => [
             ['Ready', 'OK'],
+            ['Synchronizing', 'OK'],
             ['degraded', 'WARNING'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ],
+        psu => [
+            ['ok', 'OK'],
+            ['fail', 'CRITICAL']
+        ]
     };
-    
+
     $self->{components_path} = 'storage::qnap::snmp::mode::components';
-    $self->{components_module} = ['temperature', 'disk', 'fan', 'raid'];
+    $self->{components_module} = ['disk', 'fan', 'psu', 'raid', 'temperature'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-    });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -89,7 +98,7 @@ Check hardware (NAS.mib) (Fans, Temperatures, Disks, Raid).
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'disk', 'temperature', 'raid'.
+Can be: 'disk', 'fan', 'psu', 'raid', 'temperature'.
 
 =item B<--filter>
 

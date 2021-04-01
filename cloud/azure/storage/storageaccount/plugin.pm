@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,9 +35,11 @@ sub new {
         'blob-capacity'             => 'cloud::azure::storage::storageaccount::mode::blobcapacity',
         'blob-container-count'      => 'cloud::azure::storage::storageaccount::mode::blobcontainercount',
         'blob-count'                => 'cloud::azure::storage::storageaccount::mode::blobcount',
+        'discovery'                 => 'cloud::azure::storage::storageaccount::mode::discovery',
         'file-capacity'             => 'cloud::azure::storage::storageaccount::mode::filecapacity',
         'file-count'                => 'cloud::azure::storage::storageaccount::mode::filecount',
         'file-share-count'          => 'cloud::azure::storage::storageaccount::mode::filesharecount',
+        'health'                    => 'cloud::azure::storage::storageaccount::mode::health',
         'list-resources'            => 'cloud::azure::storage::storageaccount::mode::listresources',
         'queue-capacity'            => 'cloud::azure::storage::storageaccount::mode::queuecapacity',
         'queue-count'               => 'cloud::azure::storage::storageaccount::mode::queuecount',
@@ -59,10 +61,9 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{options}->add_options(arguments =>
-                                    {
-                                        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
-                                    });
+    $self->{options}->add_options(arguments => {
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+    });
 
     $self->SUPER::init(%options);
 }

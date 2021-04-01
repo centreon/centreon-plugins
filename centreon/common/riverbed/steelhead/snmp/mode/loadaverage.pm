@@ -1,25 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
-#
-# Centreon is a full-fledged industry-strength solution that meets
-# the needs in IT infrastructure and application monitoring for
-# service performance.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
-#
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,7 +29,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -57,38 +37,35 @@ sub set_counters {
                 key_values => [ { name => 'cpuUtil1' } ],
                 output_template => 'CPU Average: %.2f%%',
                 perfdatas => [
-                    { label => 'total_cpu_avg', value => 'cpuUtil1_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'total_cpu_avg', template => '%.2f',
+                      min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => '1min', nlabel => 'cpu.1m.usage.percentage', set => {
                 key_values => [ { name => 'cpuLoad1' } ],
                 output_template => 'Load 1 min: %.2f',
                 perfdatas => [
-                    { label => 'load1', value => 'cpuLoad1_absolute', template => '%.2f',
-                      min => 0 },
-                ],
+                    { label => 'load1', template => '%.2f', min => 0 }
+                ]
             }
         },
         { label => '5min', nlabel => 'cpu.5m.usage.percentage', set => {
                 key_values => [ { name => 'cpuLoad5' } ],
                 output_template => 'Load 5 min: %.2f',
                 perfdatas => [
-                    { label => 'load5', value => 'cpuLoad5_absolute', template => '%.2f',
-                      min => 0 },
-                ],
+                    { label => 'load5', template => '%.2f', min => 0 }
+                ]
             }
         },
         { label => '15min', nlabel => 'cpu.15m.usage.percentage', set => {
                 key_values => [ { name => 'cpuLoad15' } ],
                 output_template => 'Load 15 min: %.2f',
                 perfdatas => [
-                    { label => 'load15', value => 'cpuLoad15_absolute', template => '%.2f',
-                      min => 0 },
-                ],
+                    { label => 'load15', template => '%.2f', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -107,26 +84,26 @@ my $mappings = {
         cpuLoad1 => { oid => '.1.3.6.1.4.1.17163.1.1.5.1.1' },
         cpuLoad5 => { oid => '.1.3.6.1.4.1.17163.1.1.5.1.2' },
         cpuLoad15 => { oid => '.1.3.6.1.4.1.17163.1.1.5.1.3' },
-        cpuUtil1 => { oid => '.1.3.6.1.4.1.17163.1.1.5.1.4' },
+        cpuUtil1 => { oid => '.1.3.6.1.4.1.17163.1.1.5.1.4' }
     },
     ex => {
         cpuLoad1 => { oid => '.1.3.6.1.4.1.17163.1.51.5.1.1' },
         cpuLoad5 => { oid => '.1.3.6.1.4.1.17163.1.51.5.1.2' },
         cpuLoad15 => { oid => '.1.3.6.1.4.1.17163.1.51.5.1.3' },
-        cpuUtil1 => { oid => '.1.3.6.1.4.1.17163.1.51.5.1.4' },
+        cpuUtil1 => { oid => '.1.3.6.1.4.1.17163.1.51.5.1.4' }
     },
     interceptor => {
         cpuLoad1 => { oid => '.1.3.6.1.4.1.17163.1.3.5.1.1' },
         cpuLoad5 => { oid => '.1.3.6.1.4.1.17163.1.3.5.1.2' },
         cpuLoad15 => { oid => '.1.3.6.1.4.1.17163.1.3.5.1.3' },
-        cpuUtil1 => { oid => '.1.3.6.1.4.1.17163.1.3.5.1.4' },
+        cpuUtil1 => { oid => '.1.3.6.1.4.1.17163.1.3.5.1.4' }
     },
 };
 
 my $oids = {
     common => '.1.3.6.1.4.1.17163.1.1.5.1',
     ex => '.1.3.6.1.4.1.17163.1.51.5.1',
-    interceptor => '.1.3.6.1.4.1.17163.1.3.5.1',
+    interceptor => '.1.3.6.1.4.1.17163.1.3.5.1'
 };
 
 sub manage_selection {
@@ -134,23 +111,16 @@ sub manage_selection {
 
     my $results = $options{snmp}->get_multiple_table(
         oids => [ 
-            { oid => $oids->{common}, 
-              start => $mappings->{common}->{cpuLoad1}->{oid},
-              end => $mappings->{common}->{cpuUtil1}->{oid} },
-            { oid => $oids->{ex},
-              start => $mappings->{ex}->{cpuLoad1}->{oid},
-              end => $mappings->{ex}->{cpuUtil1}->{oid} },
-            { oid => $oids->{interceptor},
-              start => $mappings->{interceptor}->{cpuLoad1}->{oid},
-              end => $mappings->{interceptor}->{cpuUtil1}->{oid} }
+            { oid => $oids->{common}, start => $mappings->{common}->{cpuLoad1}->{oid}, end => $mappings->{common}->{cpuUtil1}->{oid} },
+            { oid => $oids->{ex}, start => $mappings->{ex}->{cpuLoad1}->{oid}, end => $mappings->{ex}->{cpuUtil1}->{oid} },
+            { oid => $oids->{interceptor}, start => $mappings->{interceptor}->{cpuLoad1}->{oid}, end => $mappings->{interceptor}->{cpuUtil1}->{oid} }
         ]
     );
 
     foreach my $equipment (keys %{$oids}) {
         next if (!%{$results->{$oids->{$equipment}}});
 
-        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment},
-            results => $results->{$oids->{$equipment}}, instance => 0);
+        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment}, results => $results->{$oids->{$equipment}}, instance => 0);
 
         $self->{global} = {
             cpuLoad1 => $result->{cpuLoad1} / 100,

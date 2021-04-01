@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,10 +27,9 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(global|temperature|voltage|fan)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan)$';
-    
+
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:fan|temperature|voltage)$';
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
@@ -38,34 +37,33 @@ sub set_system {
             ['non recoverable', 'CRITICAL'],
             ['non critical', 'WARNING'],
             ['critical', 'CRITICAL'],
-            ['nominal', 'OK'],
+            ['nominal', 'OK']
         ],
-        fan => [
-            ['offline', 'WARNING'],
-            ['.*', 'OK'],
-        ],
+        health => [
+            ['Normal', 'OK'],
+            ['Warning', 'WARNING'],
+            ['.*', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'hardware::server::ibm::mgmt_cards::imm::snmp::mode::components';
-    $self->{components_module} = ['global', 'temperature', 'voltage', 'fan'];
+    $self->{components_module} = ['cpu', 'disk', 'fan', 'global', 'memory', 'power', 'temperature', 'voltage'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -82,7 +80,7 @@ Check sensors (Fans, Temperatures, Voltages).
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'global', 'fan', 'temperature', 'voltage'.
+Can be: 'cpu', 'disk', 'fan', 'global', 'memory', 'power', 'temperature', 'voltage'.
 
 =item B<--filter>
 

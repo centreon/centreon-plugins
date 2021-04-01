@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,20 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'expression'       => 'cloud::prometheus::restapi::mode::expression',
-                        'target-status'    => 'cloud::prometheus::restapi::mode::targetstatus',
-                        );
+        'expression'       => 'cloud::prometheus::restapi::mode::expression',
+        'target-status'    => 'cloud::prometheus::restapi::mode::targetstatus',
+    );
 
     $self->{custom_modes}{api} = 'cloud::prometheus::restapi::custom::api';
     return $self;
 }
-
-sub init {
-    my ( $self, %options ) = @_;
-
-    $self->SUPER::init(%options);
-}
-
 
 1;
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,11 +35,13 @@ sub custom_usage_perfdata {
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     my %total_options = (total => $self->{result_values}->{total}, cast_int => 1);
 
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label . $extra_label, unit => 'B',
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_output {
@@ -48,11 +50,12 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Memory Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        'Memory Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -64,24 +67,23 @@ sub custom_usage_calc {
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
     $self->{result_values}->{used} = $self->{result_values}->{prct_used} * $self->{result_values}->{total} / 100;
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
-
     return 0;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'hypervisor', type => 1, cb_prefix_output => 'prefix_hypervisor_output', message_multiple => 'All hypervisors are ok', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{hypervisor} = [
         { label => 'cpu', set => {
                 key_values => [ { name => 'hypervisorCpuUsagePercent' }, { name => 'display' } ],
                 output_template => 'CPU Usage : %s %%',
                 perfdatas => [
-                    { label => 'cpu_usage', value => 'hypervisorCpuUsagePercent_absolute', template => '%s', unit => '%',
-                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_usage', value => 'hypervisorCpuUsagePercent', template => '%s', unit => '%',
+                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -97,8 +99,8 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorAverageLatency' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'hypervisorAverageLatency_absolute', template => '%s', unit => 'µs',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'avg_latency', value => 'hypervisorAverageLatency', template => '%s', unit => 'µs',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -106,8 +108,8 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorReadIOPerSecond' }, { name => 'display' } ],
                 output_template => 'Read IOPs : %s',
                 perfdatas => [
-                    { label => 'read_iops', value => 'hypervisorReadIOPerSecond_absolute', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', value => 'hypervisorReadIOPerSecond', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -115,8 +117,8 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorWriteIOPerSecond' }, { name => 'display' } ],
                 output_template => 'Write IOPs : %s',
                 perfdatas => [
-                    { label => 'write_iops', value => 'hypervisorWriteIOPerSecond_absolute', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', value => 'hypervisorWriteIOPerSecond', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -124,8 +126,8 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorVmCount' }, { name => 'display' } ],
                 output_template => 'VM Count : %s',
                 perfdatas => [
-                    { label => 'vm_count', value => 'hypervisorVmCount_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'vm_count', value => 'hypervisorVmCount', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -136,9 +138,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "filter-name:s"       => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' },
     });
 
     return $self;
@@ -146,7 +148,7 @@ sub new {
 
 sub prefix_hypervisor_output {
     my ($self, %options) = @_;
-    
+
     return "Hypervisor '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -172,8 +174,10 @@ sub manage_selection {
     }
     
     $self->{hypervisor} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_hypervisorEntry,
-                                                nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_hypervisorEntry,
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{hypervisorName}->{oid}\.(.*)$/);
@@ -186,12 +190,13 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{hypervisorName} . "': no matching filter.", debug => 1);
             next;
         }
-        
-        $self->{hypervisor}->{$instance} = { display => $result->{hypervisorName}, 
+
+        $self->{hypervisor}->{$instance} = {
+            display => $result->{hypervisorName}, 
             %$result,
         };
     }
-    
+
     if (scalar(keys %{$self->{hypervisor}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No hypervisor found.");
         $self->{output}->option_exit();

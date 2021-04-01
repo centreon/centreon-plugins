@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -60,30 +60,26 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'volume', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes statistics are ok', skipped_code => { -2 => 1, -10 => 1 } },
+        { name => 'volume', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes statistics are ok', skipped_code => { -2 => 1, -10 => 1 } }
     ];
     
     $self->{maps_counters}->{volume} = [
         { label => 'read', nlabel => 'volume.io.read.usage.bytespersecond', set => {
-                key_values => [ { name => 'data-read-numeric', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'data-read-numeric', per_second => 1 } ],
                 output_template => 'Read I/O : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'data-read-numeric_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'write', nlabel => 'volume.io.write.usage.bytespersecond', set => {
-                key_values => [ { name => 'data-written-numeric', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'data-written-numeric', per_second => 1 } ],
                 output_template => 'Write I/O : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'data-written-numeric_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'read-cache-hits', nlabel => 'volume.cache.read.hits.percentage', set => {
@@ -93,8 +89,8 @@ sub set_counters {
                 output_use => 'read-cache-hits_prct',  threshold_use => 'read-cache-hits_prct',
                 perfdatas => [
                     { value => 'read-cache-hits_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'write-cache-hits', nlabel => 'volume.cache.write.hits.percentage', set => {
@@ -104,19 +100,18 @@ sub set_counters {
                 output_use => 'write-cache-hits_prct', threshold_use => 'write-cache-hits_prct',
                 perfdatas => [
                     { value => 'write-cache-hits_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'iops', nlabel => 'volume.io.usage.iops', set => {
                 key_values => [ { name => 'iops' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { value => 'iops_absolute', 
-                      unit => 'iops', min => 0, label_extra_instance => 1 },
-                ],
+                    { unit => 'iops', min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -126,8 +121,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'name:s'    => { name => 'name' },
-        'regexp'    => { name => 'use_regexp' },
+        'name:s' => { name => 'name' },
+        'regexp' => { name => 'use_regexp' },
     });
 
     return $self;
@@ -204,4 +199,3 @@ Allows to use regexp to filter volume name (with option --name).
 =back
 
 =cut
-    

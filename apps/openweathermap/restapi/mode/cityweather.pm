@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'temperature' } ],
                 output_template => 'Temperature: %d C',
                 perfdatas => [
-                    { label => 'temperature', value => 'temperature_absolute', template => '%d',
+                    { label => 'temperature', value => 'temperature', template => '%d',
                       unit => 'C' }
                 ],
             }
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'humidity' } ],
                 output_template => 'Humidity: %.2f%%',
                 perfdatas => [
-                    { label => 'humidity', value => 'humidity_absolute', template => '%.1f',
+                    { label => 'humidity', value => 'humidity', template => '%.1f',
                       min => 0, max => 100, unit => '%' }
                 ],
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'clouds' } ],
                 output_template => 'Clouds: %.2f%%',
                 perfdatas => [
-                    { label => 'clouds', value => 'clouds_absolute', template => '%.1f',
+                    { label => 'clouds', value => 'clouds', template => '%.1f',
                       min => 0, max => 100, unit => '%' }
                 ],
             }
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'wind' } ],
                 output_template => 'Wind: %.2f m/s',
                 perfdatas => [
-                    { label => 'wind', value => 'wind_absolute', template => '%.1f',
+                    { label => 'wind', value => 'wind', template => '%.1f',
                       min => 0, unit => 'm/s' }
                 ],
             }

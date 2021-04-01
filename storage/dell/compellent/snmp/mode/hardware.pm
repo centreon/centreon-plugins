@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,10 +27,8 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(ctrl|disk|encl|ctrlfan|ctrlpower|ctrlvoltage|ctrltemp|enclfan|enclpower|encliomod|encltemp|volume|cache|server|sc)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(ctrltemp|ctrlvoltage|ctrlfan|encltemp)$';
+
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:ctrltemp|ctrlvoltage|ctrlfan|encltemp)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -38,18 +36,20 @@ sub set_system {
         default => [
             ['up', 'OK'],
             ['down', 'CRITICAL'],
-            ['degraded', 'WARNING'],
-        ],
+            ['degraded', 'WARNING']
+        ]
     };
     
     $self->{components_path} = 'storage::dell::compellent::snmp::mode::components';
-    $self->{components_module} = ['ctrl', 'disk', 'ctrlfan', 'ctrlpower', 'ctrlvoltage', 'ctrltemp',
-        'encl', 'enclfan', 'enclpower', 'encliomod', 'encltemp', 'volume', 'cache', 'server', 'sc'];
+    $self->{components_module} = [
+        'ctrl', 'disk', 'diskfolder', 'ctrlfan', 'ctrlpower', 'ctrlvoltage', 'ctrltemp',
+        'encl', 'enclfan', 'enclpower', 'encliomod', 'encltemp', 'volume', 'cache', 'server', 'sc'
+    ];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -58,11 +58,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { });
+
     return $self;
 }
 
@@ -79,7 +77,7 @@ Check sensors.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'ctrl', 'disk', 'encl', 'ctrlfan', 'ctrlpower', 'ctrlvoltage',
+Can be: 'ctrl', 'disk', 'diskfolder', 'encl', 'ctrlfan', 'ctrlpower', 'ctrlvoltage',
 'ctrltemp', 'enclfan', 'enclpower', 'encliomod', 'encltemp', 'volume', 'cache', 'server', 'sc'.
 
 =item B<--filter>

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,32 +28,30 @@ use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
-   
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
     ];
-   
+
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'queries.total.persecond', set => {
-                key_values => [ { name => 'total', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'total', per_second => 1 } ],
                 output_template => 'Total : %d',
                 perfdatas => [
-                    { value => 'total_per_second', template => '%d', unit => '/s', min => 0 },
+                    { template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },
     ];
-    
+
     foreach ('insert', 'query', 'update', 'delete', 'getmore', 'command') {
         push @{$self->{maps_counters}->{global}}, {
             label => $_, nlabel => 'queries.' . $_ . '.persecond',  display_ok => 0, set => {
-                key_values => [ { name => $_, diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => $_, per_second => 1 } ],
                 output_template => $_ . ' : %.2f',
                 perfdatas => [
-                    { value => $_ . '_per_second',template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         };
         push @{$self->{maps_counters}->{global}}, {
@@ -61,8 +59,8 @@ sub set_counters {
                 key_values => [ { name => $_, diff => 1 } ],
                 output_template => $_ . ' count : %d',
                 perfdatas => [
-                    { value => $_ . '_absolute', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         };
     }
@@ -71,7 +69,7 @@ sub set_counters {
 sub prefix_output {
     my ($self, %options) = @_;
 
-    return "Requests ";
+    return 'Requests ';
 }
 
 sub new {
@@ -86,14 +84,11 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
 
     $self->{global} = {};
-    
-    my $server_stats = $self->{custom}->run_command(
+    my $server_stats = $options{custom}->run_command(
         database => 'admin',
-        command => $self->{custom}->ordered_hash(serverStatus => 1),
+        command => $options{custom}->ordered_hash(serverStatus => 1),
     );
     
     foreach my $querie (keys %{$server_stats->{opcounters}}) {
@@ -101,7 +96,7 @@ sub manage_selection {
         $self->{global}->{total} += $server_stats->{opcounters}->{$querie};
     }
 
-    $self->{cache_name} = "mongodb_" . $self->{mode} . '_' . $self->{custom}->get_hostname() . '_' . $self->{custom}->get_port() . '_' .
+    $self->{cache_name} = 'mongodb_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,13 +30,18 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'dashboard'             => 'apps::automation::ansible::tower::mode::dashboard',
-        'discovery'             => 'apps::automation::ansible::tower::mode::discovery',
-        'inventory-statistics'  => 'apps::automation::ansible::tower::mode::inventorystatistics',
-    );
-                        
-    $self->{custom_modes}{towercli} = 'apps::automation::ansible::tower::custom::towercli';
+    $self->{modes} = {
+        'discovery'     => 'apps::automation::ansible::tower::mode::discovery',
+        'hosts'         => 'apps::automation::ansible::tower::mode::hosts',
+        'inventories'   => 'apps::automation::ansible::tower::mode::inventories',
+        'jobs'          => 'apps::automation::ansible::tower::mode::jobs',
+        'job-templates' => 'apps::automation::ansible::tower::mode::jobtemplates',
+        'schedules'     => 'apps::automation::ansible::tower::mode::schedules'
+    };
+
+    $self->{custom_modes}->{api} = 'apps::automation::ansible::tower::custom::api';
+    $self->{custom_modes}->{towercli} = 'apps::automation::ansible::tower::custom::towercli';
+    
     return $self;
 }
 

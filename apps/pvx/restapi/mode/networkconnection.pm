@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'syns_ratio' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Ratio: %.2f',
                 perfdatas => [
-                    { label => 'ratio', value => 'syns_ratio_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'ratio', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'syns' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Connections Attempts: %.2f conn/s',
                 perfdatas => [
-                    { label => 'attempt', value => 'syns_absolute', template => '%.2f',
-                      min => 0, unit => 'connections/s', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'attempt', template => '%.2f',
+                      min => 0, unit => 'connections/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'ct_count' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Successful Connections: %.2f conn/s',
                 perfdatas => [
-                    { label => 'successful', value => 'ct_count_absolute', template => '%.2f',
-                      min => 0, unit => 'connections/s', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'successful', template => '%.2f',
+                      min => 0, unit => 'connections/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -64,8 +64,8 @@ sub set_counters {
                 key_values => [ { name => 'ct' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Average Connection Time: %.3f ms',
                 perfdatas => [
-                    { label => 'connection_time', value => 'ct_absolute', template => '%.3f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'connection_time', template => '%.3f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -83,21 +83,24 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "instance:s"            => { name => 'instance', default => 'layer' },
-                                    "top:s"                 => { name => 'top' },
-                                    "filter:s"              => { name => 'filter' },
-                                    "from:s"                => { name => 'from' },
-                                    "filter-counters:s"     => { name => 'filter_counters' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        'instance:s' => { name => 'instance', default => 'layer' },
+        'top:s'      => { name => 'top' },
+        'filter:s'   => { name => 'filter' },
+        'from:s'     => { name => 'from' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{from}) || $self->{option_results}->{from} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --from option as a PVQL object.");
+        $self->{output}->option_exit();
+    }
 
     if (!defined($self->{option_results}->{instance}) || $self->{option_results}->{instance} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --instance option as a PVQL object.");
@@ -137,7 +140,7 @@ sub manage_selection {
         $instance = ${$result->{key}}[0]->{value} if (defined(${$result->{key}}[0]->{value}));
         $instance = ${$result->{key}}[0]->{status} if (defined(${$result->{key}}[0]->{status}));
         $self->{instances}->{$instance}->{key} = $instance;
-        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if ($self->{option_results}->{instance} =~ /application/);
+        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if (defined($apps->{$instance}->{name}) && $self->{option_results}->{instance} =~ /application/);
         $self->{instances}->{$instance}->{syns_ratio} = (defined(${$result->{values}}[0]->{value})) ? ${$result->{values}}[0]->{value} : 1;
         $self->{instances}->{$instance}->{syns} = ${$result->{values}}[1]->{value} / $self->{pvql_timeframe};
         $self->{instances}->{$instance}->{ct_count} = ${$result->{values}}[2]->{value} / $self->{pvql_timeframe};

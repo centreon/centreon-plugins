@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,12 +30,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"   => { name => 'warning', default => '' },
-                                  "critical:s"  => { name => 'critical', default => '' },
-                                  "average"     => { name => 'average' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'   => { name => 'warning', default => '' },
+        'critical:s'  => { name => 'critical', default => '' },
+        'average'     => { name => 'average' },
+    });
 
     return $self;
 }
@@ -83,7 +82,7 @@ sub run {
     my $oid_CpuLoad15m = '.1.3.6.1.4.1.2021.10.1.3.3';
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_CpuLoad1m, $oid_CpuLoad5m, $oid_CpuLoad15m], nothing_quit => 1);
-    
+
     my ($msg, $cpu_load1, $cpu_load5, $cpu_load15);
     $result->{$oid_CpuLoad1m} =~ s/,/\./g;
     $result->{$oid_CpuLoad5m} =~ s/,/\./g;
@@ -92,8 +91,10 @@ sub run {
     if (defined($self->{option_results}->{average})) {    
         my $result2 = $self->{snmp}->get_table(oid => $oid_CountCpu);
         if (scalar(keys %$result2) <= 0){
-            $self->{output}->output_add(severity => 'unknown',
-                                        short_msg => 'Unable to get number of CPUs');
+            $self->{output}->output_add(
+                severity => 'unknown',
+                short_msg => 'Unable to get number of CPUs'
+            );
             $self->{output}->display();
             $self->{output}->exit();    
         }

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,9 +39,8 @@ sub set_counters {
                 output_template => 'Total Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_traffic', value => 'total_traffic_absolute', template => '%d',
-                      min => 0, unit => 'b/s' },
-                ],
+                    { label => 'total_traffic', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
         },
         { label => 'total-server-traffic', set => {
@@ -49,9 +48,8 @@ sub set_counters {
                 output_template => 'Total Server Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_server_traffic', value => 'total_server_traffic_absolute', template => '%d',
-                      min => 0, unit => 'b/s' },
-                ],
+                    { label => 'total_server_traffic', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
         },
         { label => 'total-client-traffic', set => {
@@ -59,21 +57,21 @@ sub set_counters {
                 output_template => 'Total Client Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_client_traffic', value => 'total_client_traffic_absolute', template => '%d',
-                      min => 0, unit => 'b/s' },
-                ],
+                    { label => 'total_client_traffic', template => '%d', min => 0, unit => 'b/s' }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{instances} = [
         { label => 'traffic', set => {
                 key_values => [ { name => 'traffic' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic', value => 'traffic_absolute', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key_absolute' },
-                ],
+                    { label => 'traffic', template => '%d',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
         },
         { label => 'server-traffic', set => {
@@ -81,9 +79,9 @@ sub set_counters {
                 output_template => 'Server Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'server_traffic', value => 'server_traffic_absolute', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key_absolute' },
-                ],
+                    { label => 'server_traffic', template => '%d',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
         },
         { label => 'client-traffic', set => {
@@ -91,11 +89,11 @@ sub set_counters {
                 output_template => 'Client Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'client_traffic', value => 'client_traffic_absolute', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key_absolute' },
-                ],
+                    { label => 'client_traffic', template => '%d',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -116,22 +114,25 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                    "instance:s"            => { name => 'instance', default => 'layer' },
-                                    "top:s"                 => { name => 'top' },
-                                    "filter:s"              => { name => 'filter' },
-                                    "from:s"                => { name => 'from' },
-                                    "filter-counters:s"     => { name => 'filter_counters' },
-                                });
-   
+
+    $options{options}->add_options(arguments => {
+        'instance:s' => { name => 'instance', default => 'layer' },
+        'top:s'      => { name => 'top' },
+        'filter:s'   => { name => 'filter' },
+        'from:s'     => { name => 'from' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{from}) || $self->{option_results}->{from} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --from option as a PVQL object.");
+        $self->{output}->option_exit();
+    }
 
     if (!defined($self->{option_results}->{instance}) || $self->{option_results}->{instance} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --instance option as a PVQL object.");
@@ -171,7 +172,7 @@ sub manage_selection {
         $instance = ${$result->{key}}[0]->{value} if (defined(${$result->{key}}[0]->{value}));
         $instance = ${$result->{key}}[0]->{status} if (defined(${$result->{key}}[0]->{status}));
         $self->{instances}->{$instance}->{key} = $instance;
-        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if ($self->{option_results}->{instance} =~ /application/);
+        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if (defined($apps->{$instance}->{name}) && $self->{option_results}->{instance} =~ /application/);
         $self->{instances}->{$instance}->{traffic} = ${$result->{values}}[0]->{value} * 8 / $self->{pvql_timeframe};
         $self->{instances}->{$instance}->{server_traffic} = ${$result->{values}}[1]->{value} * 8 / $self->{pvql_timeframe};
         $self->{instances}->{$instance}->{client_traffic} = ${$result->{values}}[2]->{value} * 8 / $self->{pvql_timeframe};

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,22 +40,22 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "host:s"                => { name => 'host' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "timeout:s"             => { name => 'timeout', default => 50 },
-            "sudo"                  => { name => 'sudo' },
-            "command:s"             => { name => 'command', default => 'tower-cli' },
-            "command-path:s"        => { name => 'command_path' },
-            "command-options:s"     => { name => 'command_options', default => '' },
-            "proxyurl:s"            => { name => 'proxyurl' },
+            'hostname:s'        => { name => 'hostname' },
+            'username:s'        => { name => 'username' },
+            'password:s'        => { name => 'password' },
+            'timeout:s'         => { name => 'timeout', default => 50 },
+            'sudo'              => { name => 'sudo' },
+            'command:s'         => { name => 'command', default => 'tower-cli' },
+            'command-path:s'    => { name => 'command_path' },
+            'command-options:s' => { name => 'command_options', default => '' },
+            'nossl'             => { name => 'nossl' },
+            'proxyurl:s'        => { name => 'proxyurl' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'TOWERCLI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
-    
+
     return $self;
 }
 
@@ -65,21 +65,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -89,9 +75,15 @@ sub check_options {
         $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
     }
 
-    $self->{host} = (defined($self->{option_results}->{host})) ? $self->{option_results}->{host} : undef;
-    $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
-    $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) && $self->{option_results}->{hostname} ne '' ? $self->{option_results}->{hostname} : undef;
+    $self->{username} = (defined($self->{option_results}->{username})) && $self->{option_results}->{username} ne '' ? $self->{option_results}->{username} : undef;
+    $self->{password} = (defined($self->{option_results}->{password})) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : undef;
+
+    if (defined($self->{option_results}->{nossl})) {
+        $ENV{TOWER_VERIFY_SSL} = 'no';
+        $self->{hostname} = 'http://' . $self->{hostname} if (defined($self->{hostname}));
+        $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
+    }
 
     return 0;
 }
@@ -100,14 +92,15 @@ sub execute {
     my ($self, %options) = @_;
 
     $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $options{cmd_options} . "'", debug => 1);
-    
+
     my ($response) = centreon::plugins::misc::execute(
         output => $self->{output},
         options => $self->{option_results},
         sudo => $self->{option_results}->{sudo},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
-        command_options => $options{cmd_options});
+        command_options => $options{cmd_options}
+    );
 
     my $raw_results;
 
@@ -127,11 +120,11 @@ sub tower_list_hosts_set_cmd {
     my ($self, %options) = @_;
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
-    
+
     my $cmd_options = "host list --insecure --all-pages --format json";
-    $cmd_options .= " --tower-host '$self->{host}'" if (defined($self->{host}) && $self->{host} ne '');
-    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}) && $self->{username} ne '');
-    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}) && $self->{password} ne '');
+    $cmd_options .= " --tower-host '$self->{hostname}'" if (defined($self->{hostname}));
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}));
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}));
     $cmd_options .= " --group '$options{group}'" if (defined($options{group}) && $options{group} ne '');
     $cmd_options .= " --inventory '$options{inventory}'" if (defined($options{inventory}) && $options{inventory} ne '');
         
@@ -144,7 +137,7 @@ sub tower_list_hosts {
     my $cmd_options = $self->tower_list_hosts_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
     
-    return $raw_results;
+    return $raw_results->{results};
 }
 
 sub tower_list_inventories_set_cmd {
@@ -152,10 +145,10 @@ sub tower_list_inventories_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     
-    my $cmd_options = "inventory list --insecure --all-pages --format json";
-    $cmd_options .= " --tower-host '$self->{host}'" if (defined($self->{host}) && $self->{host} ne '');
-    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}) && $self->{username} ne '');
-    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}) && $self->{password} ne '');
+    my $cmd_options = 'inventory list --insecure --all-pages --format json';
+    $cmd_options .= " --tower-host '$self->{hostname}'" if (defined($self->{hostname}));
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}));
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}));
         
     return $cmd_options; 
 }
@@ -166,7 +159,7 @@ sub tower_list_inventories {
     my $cmd_options = $self->tower_list_inventories_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
     
-    return $raw_results;
+    return $raw_results->{results};
 }
 
 sub tower_list_projects_set_cmd {
@@ -175,9 +168,9 @@ sub tower_list_projects_set_cmd {
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     
     my $cmd_options = "project list --insecure --all-pages --format json";
-    $cmd_options .= " --tower-host '$self->{host}'" if (defined($self->{host}) && $self->{host} ne '');
-    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}) && $self->{username} ne '');
-    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}) && $self->{password} ne '');
+    $cmd_options .= " --tower-host '$self->{hostname}'" if (defined($self->{hostname}));
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}));
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}));
         
     return $cmd_options; 
 }
@@ -186,6 +179,92 @@ sub tower_list_projects {
     my ($self, %options) = @_;
 
     my $cmd_options = $self->tower_list_projects_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+    
+    return $raw_results->{results};
+}
+
+sub tower_list_job_templates_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = "job_template list --insecure --all-pages --format json";
+    $cmd_options .= " --tower-host '$self->{hostname}'" if (defined($self->{hostname}));
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}));
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}));
+        
+    return $cmd_options; 
+}
+
+sub tower_list_job_templates {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->tower_list_job_templates_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+    
+    return $raw_results->{results};
+}
+
+sub tower_list_schedules {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_option_msg(short_msg => 'method unsupported (try to use --custommode=api)');
+    $self->{output}->option_exit();
+}
+
+sub tower_list_unified_jobs {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_option_msg(short_msg => 'method unsupported (try to use --custommode=api)');
+    $self->{output}->option_exit();
+}
+
+sub tower_launch_job_template_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = "job launch --job-template=$options{launch_job_template_id} ";
+    $cmd_options .= " --inventory '$options{launch_inventory}'" if (defined($options{launch_inventory}));
+    $cmd_options .= " --credential '$options{launch_credential}'" if (defined($options{launch_credential}));
+    $cmd_options .= " --tags '$options{launch_tags}'" if (defined($options{launch_tags}));
+    $cmd_options .= " --limit '$options{launch_limit}'" if (defined($options{launch_limit}));
+    $cmd_options .= " --extra-vars '$options{launch_extra_vars}'" if (defined($options{launch_extra_vars}));
+    $cmd_options .= ' --insecure --format json';
+    $cmd_options .= " --tower-host '$self->{hostname}'" if (defined($self->{hostname}));
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}));
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}));
+        
+    return $cmd_options; 
+}
+
+sub tower_launch_job_template {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->tower_launch_job_template_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results;
+}
+
+sub tower_get_job_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = "job get $options{job_id} --insecure --format json";
+    $cmd_options .= " --tower-host '$self->{hostname}'" if (defined($self->{hostname}));
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}));
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}));
+        
+    return $cmd_options; 
+}
+
+sub tower_get_job {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->tower_get_job_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
@@ -207,9 +286,9 @@ To install the Tower CLI : https://docs.ansible.com/ansible-tower/latest/html/to
 
 =over 8
 
-=item B<--host>
+=item B<--hostname>
 
-Ansible Tower host (Default uses setting in 'tower config').
+Ansible Tower hostname (Default uses setting in 'tower config').
 
 =item B<--username>
 
@@ -218,6 +297,10 @@ Ansible Tower username (Default uses setting in 'tower config').
 =item B<--password>
 
 Ansible Tower password (Default uses setting in 'tower config').
+
+=item B<--nossl>
+
+Use http connection.
 
 =item B<--timeout>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'cpu-routing'       => 'network::juniper::common::junos::mode::cpurouting', # routing engine
-        'hardware'          => 'network::juniper::common::junos::mode::hardware',
-        'interfaces'        => 'snmp_standard::mode::interfaces',
-        'list-interfaces'   => 'snmp_standard::mode::listinterfaces', 
-        'memory-routing'    => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
-        'list-storages'     => 'snmp_standard::mode::liststorages',
-        'stack'             => 'network::juniper::common::junos::mode::stack',
-        'storage'           => 'snmp_standard::mode::storage',
+        'cpu'             => 'network::juniper::common::junos::mode::cpu',
+        'hardware'        => 'network::juniper::common::junos::mode::hardware',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces', 
+        'memory'          => 'network::juniper::common::junos::mode::memory',
+        'list-storages'   => 'snmp_standard::mode::liststorages',
+        'stack'           => 'network::juniper::common::junos::mode::stack',
+        'storage'         => 'snmp_standard::mode::storage',
     );
 
     return $self;

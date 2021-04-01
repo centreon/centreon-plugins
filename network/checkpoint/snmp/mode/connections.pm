@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,13 +29,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"   => { name => 'warning' },
-                                  "critical:s"  => { name => 'critical' },
-                                  "units:s"     => { name => 'units', default => 'absolute' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'warning:s'   => { name => 'warning' },
+        'critical:s'  => { name => 'critical' },
+        'units:s'     => { name => 'units', default => 'absolute' }
+    });
 
     return $self;
 }
@@ -66,7 +65,7 @@ sub run {
     my $oid_fwNumCom = '.1.3.6.1.4.1.2620.1.1.25.3.0';
     my $oid_fwConnTableLimit = '.1.3.6.1.4.1.2620.1.1.25.10.0';
     my $result = $self->{snmp}->get_leef(oids => [$oid_fwNumCom, $oid_fwConnTableLimit], nothing_quit => 1);
-    
+
     my $value = $result->{$oid_fwNumCom};
     my $extra = '';
     my %total_options = ();
@@ -77,20 +76,31 @@ sub run {
             $value = $prct_used;
             %total_options = ( total => $result->{$oid_fwConnTableLimit}, cast_int => 1);
         }
+    } elsif ($self->{option_results}->{units} eq '%') {
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Couldn't get fwConnTableLimit OID ($oid_fwConnTableLimit) to compute thresholds"
+        );
+        $self->{output}->display();
+        $self->{output}->exit();
     }
 
-    
     my $exit = $self->{perfdata}->threshold_check(value => $value, 
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Connections: %d%s", $result->{$oid_fwNumCom}, $extra));
-    $self->{output}->perfdata_add(label => "connections", unit => 'con',
-                                  value => $result->{$oid_fwNumCom},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
-                                  min => 0
-                                 );
-    
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf("Connections: %d%s", $result->{$oid_fwNumCom}, $extra)
+    );
+    $self->{output}->perfdata_add(
+        label => 'connections', unit => 'con',
+        nlabel => 'connections.active.count',
+        value => $result->{$oid_fwNumCom},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
+        min => 0,
+        max => (defined($result->{$oid_fwConnTableLimit}) && $result->{$oid_fwConnTableLimit} > 0) ? $result->{$oid_fwConnTableLimit} : undef
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }

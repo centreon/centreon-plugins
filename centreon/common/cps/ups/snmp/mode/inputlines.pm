@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'voltage' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { value => 'voltage_absolute', template => '%.2f', unit => 'V' },
+                    { value => 'voltage', template => '%.2f', unit => 'V' },
                 ],
             }
         },
@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'frequence' } ],
                 output_template => 'Frequence : %.2f Hz',
                 perfdatas => [
-                    { value => 'frequence_absolute', template => '%.2f', min => 0, unit => 'Hz' },
+                    { value => 'frequence', template => '%.2f', min => 0, unit => 'Hz' },
                 ],
             }
         },

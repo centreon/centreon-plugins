@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,6 +23,7 @@ package centreon::common::monitoring::openmetrics::custom::file;
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -40,24 +41,22 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s"          => { name => 'hostname' },
-            "ssh-option:s@"       => { name => 'ssh_option' },
-            "ssh-path:s"          => { name => 'ssh_path' },
-            "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-            "timeout:s"           => { name => 'timeout', default => 10 },
-            "sudo"                => { name => 'sudo' },
-            "command:s"           => { name => 'command', default => 'cat' },
-            "command-path:s"      => { name => 'command_path' },
-            "command-options:s"   => { name => 'command_options' },
+            'hostname:s'        => { name => 'hostname' },
+            'ssh-option:s@'     => { name => 'ssh_option' },
+            'ssh-path:s'        => { name => 'ssh_path' },
+            'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+            'timeout:s'         => { name => 'timeout', default => 10 },
+            'sudo'              => { name => 'sudo' },
+            'command:s'         => { name => 'command', default => 'cat' },
+            'command-path:s'    => { name => 'command_path' },
+            'command-options:s' => { name => 'command_options' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'FILE OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
 
     return $self;
-
 }
 
 sub set_options {
@@ -66,21 +65,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -90,6 +75,15 @@ sub check_options {
     }
 
     return 0;
+}
+
+sub get_uuid {
+    my ($self, %options) = @_;
+
+    return md5_hex(
+        ((defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') ? $self->{option_results}->{hostname} : 'none') . '_' .
+        ((defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '') ? $self->{option_results}->{command_options} : 'none')
+    );
 }
 
 sub scrape {

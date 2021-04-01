@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'temperature', no_value => 0, } ],
                 output_template => 'Ambiant Temperature: %.2f C', output_error_template => 'Ambiant Temperature: %s',
                 perfdatas => [
-                    { value => 'temperature_absolute', label => 'temperature', template => '%.2f',
+                    { value => 'temperature', label => 'temperature', template => '%.2f',
                       unit => 'C' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'humidity', no_value => 0 } ],
                 output_template => 'Humidity: %.2f %%', output_error_template => 'Humidity: %s',
                 perfdatas => [
-                    { value => 'humidity_absolute', label => 'humidity', template => '%.2f',
+                    { value => 'humidity', label => 'humidity', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }

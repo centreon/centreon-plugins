@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,6 +22,7 @@ package storage::hp::3par::ssh::custom::custom;
 
 use strict;
 use warnings;
+use centreon::plugins::ssh;
 use centreon::plugins::misc;
 
 sub new {
@@ -37,24 +38,21 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
             'hostname:s'        => { name => 'hostname' },
-            'ssh-option:s@'     => { name => 'ssh_option' },
-            'ssh-path:s'        => { name => 'ssh_path' },
-            'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
             'timeout:s'         => { name => 'timeout', default => 45 },
             'command:s'         => { name => 'command' },
             'command-path:s'    => { name => 'command_path' },
-            'command-options:s' => { name => 'command_options' },
+            'command-options:s' => { name => 'command_options' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'SSH OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
-    
+    $self->{ssh} = centreon::plugins::ssh->new(%options);
+
     return $self;
 }
 
@@ -64,33 +62,15 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{remote} = 1;
-    if (defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '') {
-        $self->{option_results}->{remote} = undef;
-    } elsif (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to set hostname option.");
-        $self->{output}->option_exit();
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        $self->{ssh}->check_options(option_results => $self->{option_results});
     }
- 
+
     return 0;
 }
 
@@ -99,7 +79,7 @@ sub check_options {
 ##############
 sub execute_command {
     my ($self, %options) = @_;
-    
+
     $self->{ssh_commands} = '';
     my $append = '';
     foreach (@{$options{commands}}) {
@@ -107,14 +87,32 @@ sub execute_command {
        $append = ';';
     }
 
-    return centreon::plugins::misc::execute(
-        ssh_pipe => 1,
-        output => $self->{output},
-        options => $self->{option_results},
-        command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{ssh_commands},
-        command_path => $self->{option_results}->{command_path},
-        command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef
-    );
+    my $content;
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        ($content) = $self->{ssh}->execute(
+            ssh_pipe => 1,
+            hostname => $self->{option_results}->{hostname},
+            command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{ssh_commands},
+            command_path => $self->{option_results}->{command_path},
+            command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef,
+            timeout => $self->{option_results}->{timeout}
+        );
+    } else {
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
+            $self->{output}->add_option_msg(short_msg => 'please set --hostname option for ssh connection (or --command for local)');
+            $self->{output}->option_exit();
+        }
+        ($content) = centreon::plugins::misc::execute(
+            ssh_pipe => 1,
+            output => $self->{output},
+            options => { timeout => $self->{option_results}->{timeout} },
+            command => $self->{option_results}->{command},
+            command_path => $self->{option_results}->{command_path},
+            command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef
+        );
+    }
+
+    return $content;
 }
 
 1;
@@ -136,18 +134,6 @@ my ssh
 =item B<--hostname>
 
 Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
 
 =item B<--timeout>
 

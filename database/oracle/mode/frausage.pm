@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'percent_space_usage' }, { name => 'display' } ],
                 output_template => 'used : %.2f %%',
                 perfdatas => [
-                    { value => 'percent_space_usage_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'percent_space_usage', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'percent_space_reclaimable' }, { name => 'display' } ],
                 output_template => 'reclaimable : %.2f %%',
                 perfdatas => [
-                    { value => 'percent_space_reclaimable_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'percent_space_reclaimable', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -76,26 +76,36 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $options{sql}->connect();
-    $options{sql}->query(query => q{
-        SELECT file_type, percent_space_used, percent_space_reclaimable
-            FROM v$recovery_area_usage
-     });
+    if ($options{sql}->is_version_minimum(version => '11')) {
+        $options{sql}->query(query => q{
+            SELECT file_type, percent_space_used, percent_space_reclaimable
+                FROM v$recovery_area_usage
+        });
+    } else {
+        $options{sql}->query(query => q{
+            SELECT name, space_used, space_reclaimable, space_limit
+                FROM v$recovery_file_dest
+        });
+    }
     my $result = $options{sql}->fetchall_arrayref();
     $options{sql}->disconnect();
 
     $self->{file} = {};
     foreach my $row (@$result) {
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $$row[0] !~ /$self->{option_results}->{filter_type}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $$row[0] . "': no matching filter.", debug => 1);
+            $row->[0] !~ /$self->{option_results}->{filter_type}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $row->[0] . "': no matching filter.", debug => 1);
             next;
         }
-        
-        $self->{file}->{$$row[0]} = { 
-            display => $$row[0],
-            percent_space_usage => $$row[1],
-            percent_space_reclaimable => $$row[2],
-        };
+
+        $self->{file}->{$row->[0]} = { display => $row->[0] };
+        if ($options{sql}->is_version_minimum(version => '11')) {
+            $self->{file}->{$row->[0]}->{percent_space_usage} = $row->[1];
+            $self->{file}->{$row->[0]}->{percent_space_reclaimable} = $row->[2];
+        } else {
+            $self->{file}->{$row->[0]}->{percent_space_usage} = $row->[1] * 100 / $row->[3];
+            $self->{file}->{$row->[0]}->{percent_space_reclaimable} = $row->[2] * 100 / $row->[3];
+        }
     }
 
     if (scalar(keys %{$self->{file}}) <= 0) {

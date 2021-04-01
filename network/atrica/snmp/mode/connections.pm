@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,8 +29,8 @@ sub set_oids_label {
     my ($self, %options) = @_;
 
     $self->{oids_label} = {
-        'atrconncepgendescr'    => { oid => '.1.3.6.1.4.1.6110.2.7.5.1.1', cache => 'reload_cache_index_value' },
-        'atrconningdescr'       => { oid => '.1.3.6.1.4.1.6110.2.2.1.1.2', cache => 'reload_cache_index_value' },
+        'atrconncepgendescr' => { oid => '.1.3.6.1.4.1.6110.2.7.5.1.1', get => 'reload_get_simple', cache => 'reload_cache_index_value' },
+        'atrconningdescr'    => { oid => '.1.3.6.1.4.1.6110.2.2.1.1.2', get => 'reload_get_simple', cache => 'reload_cache_index_value' }
     };
 }
 
@@ -148,40 +148,36 @@ sub set_counters_traffic {
     push @{$self->{maps_counters}->{int}}, 
         { label => 'in-cir', filter => 'add_traffic', nlabel => 'interface.traffic.in.cir.bitspersecond', set => {
                 key_values => [ { name => 'in_cir', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in_cir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In CIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'in-eir', filter => 'add_traffic', nlabel => 'interface.traffic.in.eir.bitspersecond', set => {
                 key_values => [ { name => 'in_eir', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in_eir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In EIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'out-cir', filter => 'add_traffic', nlabel => 'interface.traffic.out.cir.bitspersecond', set => {
-                key_values => [ { name => 'out_cir', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'out_cir', diff => 1 }, { name => 'speed_out' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out_cir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out CIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'out-eir', filter => 'add_traffic', nlabel => 'interface.traffic.out.eir.bitspersecond', set => {
-                key_values => [ { name => 'out_eir', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'out_eir', diff => 1 }, { name => 'speed_out' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out_eir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out EIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
-        },
+        }
     ;
 }
 
@@ -189,24 +185,22 @@ sub set_counters_errors {
     my ($self, %options) = @_;
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'in-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.in.eir.discards.count', set => {
-                key_values => [ { name => 'in_eir_discard', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
-                per_second => 1,
+        { label => 'in-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.in.eir.discard.count', set => {
+                key_values => [ { name => 'in_eir_discard', diff => 1 }, { name => 'speed_in' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in_eir_discard' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In EIR Discard : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
-        { label => 'out-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.out.eir.discards.count', set => {
-                key_values => [ { name => 'out_eir_discard', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
-                per_second => 1,
+        { label => 'out-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.out.eir.discard.count', set => {
+                key_values => [ { name => 'out_eir_discard', diff => 1 }, { name => 'speed_out' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out_eir_discard' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out EIR Discard : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
-        },
+        }
     ;
 }
 
@@ -214,33 +208,50 @@ sub custom_traffic_perfdata {
     my ($self, %options) = @_;
     
     my ($warning, $critical);
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} =~ /bps|counter/) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
-    
-    $self->{output}->perfdata_add(
-        label => $self->{result_values}->{label}, unit => 'b/s',
-        nlabel => $self->{nlabel},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-        value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
-        warning => $warning,
-        critical => $critical,
-        min => 0, max => $self->{result_values}->{speed}
-    );
+
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq 'counter') {
+        my $nlabel = $self->{nlabel};
+        $nlabel =~ s/bitspersecond/bits/;
+        $self->{output}->perfdata_add(
+            force_new_perfdata => 1,
+            nlabel => $nlabel,
+            unit => 'b',
+            instances => $self->{result_values}->{display},
+            value => $self->{result_values}->{traffic_counter},
+            warning => $warning,
+            critical => $critical,
+            min => 0
+        );
+    } else {
+        $self->{output}->perfdata_add(
+            label => $self->{result_values}->{label}, unit => 'b/s',
+            nlabel => $self->{nlabel},
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+            value => sprintf('%.2f', $self->{result_values}->{traffic_per_seconds}),
+            warning => $warning,
+            critical => $critical,
+            min => 0, max => $self->{result_values}->{speed}
+        );
+    }
 }
 
 sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
-    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'bps') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'counter') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_counter}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -252,9 +263,11 @@ sub custom_traffic_output {
     $label =~ s/_/ /g;
     $label =~ s/(\w+)/\u$1/g;
     my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);    
-    my $msg = sprintf("Traffic %s : %s/s (%s)",
-                      $label, $traffic_value . $traffic_unit,
-                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-');
+    my $msg = sprintf(
+        "Traffic %s : %s/s (%s)",
+        $label, $traffic_value . $traffic_unit,
+        defined($self->{result_values}->{traffic_prct}) ? sprintf('%.2f%%', $self->{result_values}->{traffic_prct}) : '-'
+    );
     return $msg;
 }
 
@@ -263,13 +276,10 @@ sub custom_traffic_calc {
     
     return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
 
-    my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
-    if ($diff_traffic == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
-        $self->{error_msg} = "skipped";
-        return -2;
-    }
-    
+    my $diff_traffic = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} } - $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} });
+
     $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
+    $self->{result_values}->{traffic_counter} = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} };
     if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) && 
         $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
@@ -283,8 +293,7 @@ sub custom_traffic_calc {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, 
-                                  no_set_traffic => 1, no_set_errors => 1, no_cast => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_set_traffic => 1, no_set_errors => 1, no_cast => 1);
     bless $self, $class;
     
     return $self;
@@ -310,8 +319,10 @@ sub load_traffic {
         $self->load_speed(%options);
     }
     $self->set_oids_traffic();
-    $self->{snmp}->load(oids => [$self->{oid_ing_cir}, $self->{oid_ing_eir}, 
-                                 $self->{oid_eg_cir}, $self->{oid_eg_eir}], instances => $self->{array_interface_selected});
+    $self->{snmp}->load(oids => [
+        $self->{oid_ing_cir}, $self->{oid_ing_eir}, 
+        $self->{oid_eg_cir}, $self->{oid_eg_eir}], instances => $self->{array_interface_selected}
+    );
 }
 
 sub load_errors {
@@ -405,23 +416,18 @@ Default (depends of the atrica release):
 '%{admstatus} eq "up" and %{opstatus} ne "up"'
 Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'in-cir', 'in-eir', 'out-cir', 'out-eir', 'in-eir-discard', 'out-eir-discard'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'in-cir', 'in-eir', 'out-cir', 'out-eir', 'in-eir-discard', 'out-eir-discard'.
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for discards (Default: '%') ('%', 'b/s').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--interface>
 
@@ -442,10 +448,6 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
-
-=item B<--no-skipped-counters>
-
-Don't skip counters when no change.
 
 =item B<--reload-cache-time>
 

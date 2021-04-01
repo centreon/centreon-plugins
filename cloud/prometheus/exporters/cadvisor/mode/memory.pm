@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -131,8 +131,8 @@ sub set_counters {
                 output_template => 'Cache: %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'cache', value => 'cache_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'cache', value => 'cache', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },
@@ -141,8 +141,8 @@ sub set_counters {
                 output_template => 'Rss: %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'rss', value => 'rss_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'rss', value => 'rss', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },
@@ -151,8 +151,8 @@ sub set_counters {
                 output_template => 'Swap: %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'swap', value => 'swap_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'swap', value => 'swap', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },

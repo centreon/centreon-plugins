@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'hosts' }, { name => 'display' } ],
                 output_template => 'Number of hosts : %s',
                 perfdatas => [
-                    { label => 'total_hosts', value => 'hosts_absolute', template => '%s', 
+                    { label => 'total_hosts', value => 'hosts', template => '%s', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'services' }, { name => 'display' } ],
                 output_template => 'Number of services : %s',
                 perfdatas => [
-                    { label => 'total_services', value => 'services_absolute', template => '%s', 
+                    { label => 'total_services', value => 'services', template => '%s', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -65,12 +65,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-poller:s" => { name => 'filter_poller' },
-                                  "centreon-storage-database:s" => { name => 'centreon_storage_database', default => 'centreon_storage' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'filter-poller:s'             => { name => 'filter_poller' },
+        'centreon-storage-database:s' => { name => 'centreon_storage_database', default => 'centreon_storage' },
+    });
+
     return $self;
 }
 
@@ -78,7 +77,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $query = "SELECT instances.name, COUNT(DISTINCT hosts.host_id) as num_hosts, count(DISTINCT services.host_id, services.service_id) as num_services
-    FROM " . $self->{option_results}->{centreon_storage_database} .  ".instances, " . $self->{option_results}->{centreon_storage_database} . ".hosts, " . $self->{option_results}->{centreon_storage_database} . ".services WHERE instances.running = '1' AND instances.instance_id = hosts.instance_id AND hosts.enabled = '1' AND hosts.host_id = services.host_id AND services.enabled = '1' GROUP BY hosts.instance_id";
+        FROM " . $self->{option_results}->{centreon_storage_database} .  ".instances, " . $self->{option_results}->{centreon_storage_database} . ".hosts, " . $self->{option_results}->{centreon_storage_database} . ".services WHERE instances.running = '1' AND instances.instance_id = hosts.instance_id AND hosts.enabled = '1' AND hosts.host_id = services.host_id AND services.enabled = '1' GROUP BY hosts.instance_id";
     $options{sql}->connect();
     $options{sql}->query(query => $query);
 

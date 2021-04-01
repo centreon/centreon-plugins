@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -93,8 +93,8 @@ sub set_counters {
                 key_values => [ { name => 'sysTmmStatTmUsageRatio1m' }, { name => 'display' } ],
                 output_template => 'CPU Usage 1min : %s %%', output_error_template => "CPU Usage 1min : %s",
                 perfdatas => [
-                    { label => 'cpu_1m', value => 'sysTmmStatTmUsageRatio1m_absolute',  template => '%s',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_1m', value => 'sysTmmStatTmUsageRatio1m',  template => '%s',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -102,8 +102,8 @@ sub set_counters {
                 key_values => [ { name => 'sysTmmStatTmUsageRatio5m' }, { name => 'display' } ],
                 output_template => 'CPU Usage 5min : %s %%', output_error_template => "CPU Usage 5min : %s",
                 perfdatas => [
-                    { label => 'cpu_5m', value => 'sysTmmStatTmUsageRatio5m_absolute',  template => '%s',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_5m', value => 'sysTmmStatTmUsageRatio5m',  template => '%s',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -111,8 +111,8 @@ sub set_counters {
                 key_values => [ { name => 'sysTmmStatClientCurConns' }, { name => 'display' } ],
                 output_template => 'Current Client Connections : %s', output_error_template => "Current Client Connections : %s",
                 perfdatas => [
-                    { label => 'current_client_connections', value => 'sysTmmStatClientCurConns_absolute',  template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_client_connections', value => 'sysTmmStatClientCurConns',  template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -120,8 +120,8 @@ sub set_counters {
                 key_values => [ { name => 'sysTmmStatClientTotConns', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Client Connections : %s', output_error_template => "Total Client Connections : %s",
                 perfdatas => [
-                    { label => 'total_client_connections', value => 'sysTmmStatClientTotConns_absolute',  template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_client_connections', value => 'sysTmmStatClientTotConns',  template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -129,8 +129,8 @@ sub set_counters {
                 key_values => [ { name => 'sysTmmStatServerCurConns' }, { name => 'display' } ],
                 output_template => 'Current Server Connections : %s', output_error_template => "Current Server Connections : %s",
                 perfdatas => [
-                    { label => 'current_server_connections', value => 'sysTmmStatServerCurConns_absolute',  template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_server_connections', value => 'sysTmmStatServerCurConns',  template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -138,8 +138,8 @@ sub set_counters {
                 key_values => [ { name => 'sysTmmStatServerTotConns', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Server Connections : %s', output_error_template => "Total Server Connections : %s",
                 perfdatas => [
-                    { label => 'total_server_connections', value => 'sysTmmStatServerTotConns_absolute',  template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_server_connections', value => 'sysTmmStatServerTotConns',  template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -157,11 +157,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-name:s" => { name => 'filter_name' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
+
     return $self;
 }
 
@@ -186,8 +185,10 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    my $results = $options{snmp}->get_table(oid => $oid_sysTmmStatEntry,
-                                            nothing_quit => 1);
+    my $results = $options{snmp}->get_table(
+        oid => $oid_sysTmmStatEntry,
+        nothing_quit => 1
+    );
     
     $self->{tmm} = {};
     foreach my $oid (keys %$results) {

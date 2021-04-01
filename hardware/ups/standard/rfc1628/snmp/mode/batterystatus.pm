@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -35,9 +35,10 @@ sub custom_status_output {
 sub custom_load_output {
     my ($self, %options) = @_;
 
-    return sprintf("charge remaining: %s%% (%s minutes remaining)", 
-        $self->{result_values}->{charge_remain_absolute},
-        $self->{result_values}->{minute_remain_absolute}
+    return sprintf(
+        "charge remaining: %s%% (%s minutes remaining)", 
+        $self->{result_values}->{charge_remain},
+        $self->{result_values}->{minute_remain}
     );
 }
 
@@ -49,46 +50,59 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2,
+            unknown_default => '%{status} =~ /unknown/i',
+            warning_default => '%{status} =~ /low/i',
+            critical_default => '%{status} =~ /depleted/i',
+            set => {
                 key_values => [ { name => 'status' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'charge-remaining', nlabel => 'battery.charge.remaining.percent', set => {
                 key_values => [ { name => 'charge_remain' }, { name => 'minute_remain' } ],
                 closure_custom_output => $self->can('custom_load_output'),
                 perfdatas => [
-                    { label => 'load', value => 'charge_remain_absolute', template => '%s', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'load', template => '%s', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        },
+        { label => 'charge-remaining-minutes', nlabel => 'battery.charge.remaining.minutes', display_ok => 0, set => {
+                key_values => [ { name => 'minute_remain' } ],
+                output_template => 'minutes remaining: %s',
+                perfdatas => [
+                    { label => 'charge_remaining', template => '%s', min => 0, unit => 'minutes' }
+                ]
             }
         },
         { label => 'current', nlabel => 'battery.current.ampere', display_ok => 0, set => {
                 key_values => [ { name => 'current', no_value => 0 } ],
                 output_template => 'current: %s A',
                 perfdatas => [
-                    { label => 'current', value => 'current_absolute', template => '%s', min => 0, unit => 'A' },
-                ],
+                    { label => 'current', template => '%s', min => 0, unit => 'A' }
+                ]
             }
         },
         { label => 'voltage', nlabel => 'battery.voltage.volt', display_ok => 0, set => {
                 key_values => [ { name => 'voltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'voltage_absolute', template => '%s', unit => 'V' },
-                ],
+                    { label => 'voltage', template => '%s', unit => 'V' }
+                ]
             }
         },
         { label => 'temperature', nlabel => 'battery.temperature.celsius', display_ok => 0, set => {
                 key_values => [ { name => 'temperature', no_value => 0 } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
-                    { label => 'temp', value => 'temperature_absolute', template => '%s', unit => 'C' },
-                ],
+                    { label => 'temp', template => '%s', unit => 'C' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -97,20 +111,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        'unknown-status:s'      => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-        'warning-status:s'      => { name => 'warning_status', default => '%{status} =~ /low/i' },
-        'critical-status:s'     => { name => 'critical_status', default => '%{status} =~ /depleted/i' },
+    $options{options}->add_options(arguments => {
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 my $map_status = { 1 => 'unknown', 2 => 'normal', 3 => 'low', 4 => 'depleted' };
@@ -121,7 +125,7 @@ my $mapping = {
     upsEstimatedChargeRemaining     => { oid => '.1.3.6.1.2.1.33.1.2.4' },
     upsBatteryVoltage               => { oid => '.1.3.6.1.2.1.33.1.2.5' }, # in dV
     upsBatteryCurrent               => { oid => '.1.3.6.1.2.1.33.1.2.6' }, # in dA
-    upsBatteryTemperature           => { oid => '.1.3.6.1.2.1.33.1.2.7' }, # in degrees Centigrade
+    upsBatteryTemperature           => { oid => '.1.3.6.1.2.1.33.1.2.7' }  # in degrees Centigrade
 };
 
 sub manage_selection {
@@ -129,7 +133,12 @@ sub manage_selection {
     
     my $oid_upsBattery = '.1.3.6.1.2.1.33.1.2';
     my $snmp_result = $options{snmp}->get_table(oid => $oid_upsBattery, nothing_quit => 1);
-    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
+
+    # some ups doesn't set the instance...
+    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result);
+    if (!defined($result->{upsBatteryStatus})) {
+        $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
+    }
 
     $self->{global} = {
         current => (defined($result->{upsBatteryCurrent}) && $result->{upsBatteryCurrent} =~ /\d/) ? $result->{upsBatteryCurrent} * 0.1 : 0,
@@ -137,7 +146,7 @@ sub manage_selection {
         temperature => $result->{upsBatteryTemperature},
         minute_remain => (defined($result->{upsEstimatedMinutesRemaining}) && $result->{upsEstimatedMinutesRemaining} =~ /\d/) ? $result->{upsEstimatedMinutesRemaining} : 'unknown',
         charge_remain => (defined($result->{upsEstimatedChargeRemaining}) && $result->{upsEstimatedChargeRemaining} =~ /\d/) ? $result->{upsEstimatedChargeRemaining} : undef,
-        status => $result->{upsBatteryStatus},
+        status => $result->{upsBatteryStatus}
     };
 }
 
@@ -169,8 +178,8 @@ Can used special variables like: %{status}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'charge-remaining' (%), 'current' (A), 'voltage' (V), 'temperature' (C).
-
+Can be: 'charge-remaining' (%), 'charge-remaining-minutes',
+'current' (A), 'voltage' (V), 'temperature' (C).
 
 =back
 

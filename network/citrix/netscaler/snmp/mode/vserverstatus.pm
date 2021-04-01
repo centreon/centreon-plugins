@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,59 +36,58 @@ sub set_counters {
     $self->{maps_counters}->{vservers} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'state' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => $self->can('custom_threshold_output')
             }
         },
-        { label => 'health', set => {
+        { label => 'health', nlabel => 'vserver.health.percentage', set => {
                 key_values => [ { name => 'health' }, { name => 'display' } ],
                 output_template => 'Health: %.2f %%', output_error_template => 'Health: %s',
                 perfdatas => [
-                    { value => 'health_absolute', label => 'health', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'health', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'in-traffic', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+        { label => 'in-traffic', nlabel => 'vserver.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'in', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'in_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'out-traffic', set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+        { label => 'out-traffic', nlabel => 'vserver.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'out', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'out_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'traffic_out', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'clients', set => {
+        { label => 'clients', nlabel => 'vserver.connections.client.count', set => {
                 key_values => [ { name => 'clients', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Client Connections : %s',
                 perfdatas => [
-                    { label => 'clients', value => 'clients_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'clients', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'servers', set => {
+        { label => 'servers', nlabel => 'vserver.connections.server.count', set => {
                 key_values => [ { name => 'servers', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Server Connections : %s',
                 perfdatas => [
-                    { label => 'servers', value => 'servers_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'servers', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -138,16 +137,8 @@ sub custom_threshold_output {
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'State : ' . $self->{result_values}->{state};
 
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    return 0;
+    return 'State : ' . $self->{result_values}->{state};
 }
 
 sub new {
@@ -156,9 +147,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s"           => { name => 'filter_name' },
-        "filter-type:s"           => { name => 'filter_type' },
-        "threshold-overload:s@"   => { name => 'threshold_overload' },
+        'filter-name:s'         => { name => 'filter_name' },
+        'filter-type:s'         => { name => 'filter_type' },
+        'force-counters64'      => { name => 'force_counters64' },
+        'threshold-overload:s@' => { name => 'threshold_overload' }
     });
 
     return $self;
@@ -222,17 +214,22 @@ my $mapping2 = {
 sub manage_selection {
     my ($self, %options) = @_;
  
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
-                                                            { oid => $mapping->{vsvrFullName}->{oid} },
-                                                            { oid => $mapping->{vsvrState}->{oid} },
-                                                            { oid => $mapping->{vsvrEntityType}->{oid} },
-                                                         ], return_type => 1, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping->{vsvrFullName}->{oid} },
+            { oid => $mapping->{vsvrState}->{oid} },
+            { oid => $mapping->{vsvrEntityType}->{oid} }
+        ],
+        return_type => 1,
+        nothing_quit => 1
+    );
+
     $self->{vservers} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{vsvrFullName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        
+
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $result->{vsvrEntityType} !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping Virtual Server '" . $result->{vsvrFullName} . "'.", debug => 1);
@@ -246,32 +243,38 @@ sub manage_selection {
         
         $self->{vservers}->{$instance} = { display => $result->{vsvrFullName}, state => $result->{vsvrState} };
     }
-    
-    $options{snmp}->load(oids => [$mapping2->{vsvrTotalRequestBytesLow}->{oid}, $mapping2->{vsvrTotalRequestBytesHigh}->{oid},
-        $mapping2->{vsvrTotalResponseBytesLow}->{oid}, $mapping2->{vsvrTotalResponseBytesHigh}->{oid},
-        $mapping2->{vsvrTotalRequestBytes}->{oid}, $mapping2->{vsvrTotalResponseBytes}->{oid},
-        $mapping2->{vsvrTotalClients}->{oid}, $mapping2->{vsvrHealth}->{oid}, $mapping2->{vsvrTotalServers}->{oid}
-        ], 
-        instances => [keys %{$self->{vservers}}], instance_regexp => '^(.*)$');
-    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    
-    foreach (keys %{$self->{vservers}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);        
-        
-        $self->{vservers}->{$_}->{out} = (defined($result->{vsvrTotalResponseBytes}) ? $result->{vsvrTotalResponseBytes} * 8 :
-            (($result->{vsvrTotalResponseBytesHigh} << 32) + $result->{vsvrTotalResponseBytesLow})) * 8;
-        $self->{vservers}->{$_}->{in} = (defined($result->{vsvrTotalRequestBytes}) ? $result->{vsvrTotalRequestBytes} * 8 :
-            (($result->{vsvrTotalRequestBytesHigh} << 32) + $result->{vsvrTotalRequestBytesLow})) * 8;
-        $self->{vservers}->{$_}->{health} = $result->{vsvrHealth};
-        $self->{vservers}->{$_}->{clients} = $result->{vsvrTotalClients};
-        $self->{vservers}->{$_}->{servers} = $result->{vsvrTotalServers};
-    }
-    
+
     if (scalar(keys %{$self->{vservers}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No virtual server found.");
         $self->{output}->option_exit();
     }
     
+    $options{snmp}->load(
+        oids => defined($self->{option_results}->{force_counters64}) ? [
+            $mapping2->{vsvrTotalRequestBytes}->{oid}, $mapping2->{vsvrTotalResponseBytes}->{oid},
+            $mapping2->{vsvrTotalClients}->{oid}, $mapping2->{vsvrHealth}->{oid}, $mapping2->{vsvrTotalServers}->{oid}
+        ] : [
+            $mapping2->{vsvrTotalRequestBytesLow}->{oid}, $mapping2->{vsvrTotalRequestBytesHigh}->{oid},
+            $mapping2->{vsvrTotalResponseBytesLow}->{oid}, $mapping2->{vsvrTotalResponseBytesHigh}->{oid},
+            $mapping2->{vsvrTotalRequestBytes}->{oid}, $mapping2->{vsvrTotalResponseBytes}->{oid},
+            $mapping2->{vsvrTotalClients}->{oid}, $mapping2->{vsvrHealth}->{oid}, $mapping2->{vsvrTotalServers}->{oid}
+        ],
+        instances => [keys %{$self->{vservers}}], instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+
+    foreach (keys %{$self->{vservers}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);        
+        
+        $self->{vservers}->{$_}->{out} = defined($result->{vsvrTotalResponseBytes}) ? $result->{vsvrTotalResponseBytes} * 8 :
+            (($result->{vsvrTotalResponseBytesHigh} << 32) + $result->{vsvrTotalResponseBytesLow}) * 8;
+        $self->{vservers}->{$_}->{in} = defined($result->{vsvrTotalRequestBytes}) ? $result->{vsvrTotalRequestBytes} * 8 :
+            (($result->{vsvrTotalRequestBytesHigh} << 32) + $result->{vsvrTotalRequestBytesLow}) * 8;
+        $self->{vservers}->{$_}->{health} = $result->{vsvrHealth};
+        $self->{vservers}->{$_}->{clients} = $result->{vsvrTotalClients};
+        $self->{vservers}->{$_}->{servers} = $result->{vsvrTotalServers};
+    }
+
     $self->{cache_name} = "citrix_netscaler_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
@@ -307,6 +310,11 @@ Filter by virtual server name (can be a regexp).
 =item B<--filter-type>
 
 Filter which type of vserver (can be a regexp).
+
+=item B<--force-counters64>
+
+Force to use 64 bits counters only. Can be used to improve performance,
+or to solve a missing counters bug.
 
 =item B<--threshold-overload>
 

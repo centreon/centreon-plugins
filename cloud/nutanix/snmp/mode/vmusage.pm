@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,18 +29,18 @@ use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{vm} = [
         { label => 'cpu', set => {
                 key_values => [ { name => 'vmCpuUsagePercent' }, { name => 'display' } ],
                 output_template => 'CPU Usage : %s %%',
                 perfdatas => [
-                    { label => 'cpu_usage', value => 'vmCpuUsagePercent_absolute', template => '%s', unit => '%',
-                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_usage', template => '%s', unit => '%',
+                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -48,8 +48,8 @@ sub set_counters {
                 key_values => [ { name => 'vmAverageLatency' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'vmAverageLatency_absolute', template => '%s', unit => 'µs',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'avg_latency', template => '%s', unit => 'µs',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -57,8 +57,8 @@ sub set_counters {
                 key_values => [ { name => 'vmReadIOPerSecond' }, { name => 'display' } ],
                 output_template => 'Read IOPs : %s',
                 perfdatas => [
-                    { label => 'read_iops', value => 'vmReadIOPerSecond_absolute', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -66,28 +66,28 @@ sub set_counters {
                 key_values => [ { name => 'vmWriteIOPerSecond' }, { name => 'display' } ],
                 output_template => 'Write IOPs : %s',
                 perfdatas => [
-                    { label => 'write_iops', value => 'vmWriteIOPerSecond_absolute', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'vmRxBytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'vmRxBytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'vmRxBytes_per_second', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%.2f', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'vmTxBytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'vmTxBytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'vmTxBytes_per_second', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%.2f', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -98,17 +98,17 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "filter-name:s"       => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' },
     });
-    
+
     return $self;
 }
 
 sub prefix_vm_output {
     my ($self, %options) = @_;
-    
+
     return "Virtual machine '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -135,8 +135,10 @@ sub manage_selection {
     }
     
     $self->{vm} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_vmEntry,
-                                                nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_vmEntry,
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{vmName}->{oid}\.(.*)$/);
@@ -149,19 +151,20 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{vmName} . "': no matching filter.", debug => 1);
             next;
         }
-        
+    
         $result->{vmRxBytes} *= 8;
         $result->{vmTxBytes} *= 8;
-        $self->{vm}->{$instance} = { display => $result->{vmName}, 
-            %$result,
+        $self->{vm}->{$instance} = {
+            display => $result->{vmName}, 
+            %$result
         };
     }
-    
+
     if (scalar(keys %{$self->{vm}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No virtual machine found.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{cache_name} = "nutanix_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));

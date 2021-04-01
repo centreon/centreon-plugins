@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,8 +32,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'health-status'  => 'centreon::common::smcli::mode::healthstatus',
-                        );
+        'health-status'  => 'centreon::common::smcli::mode::healthstatus',
+    );
+
     $self->{custom_modes}{smcli} = 'centreon::common::smcli::custom::custom';
     $self->{default} = {
         'health-status' => { 
@@ -46,12 +47,6 @@ sub new {
         }
     };
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);    
 }
 
 1;

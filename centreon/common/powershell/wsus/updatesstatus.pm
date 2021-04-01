@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,9 +26,6 @@ use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
 
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
@@ -59,14 +56,15 @@ Try {
 
     $wsusStatus = $wsusObject.GetStatus()
 
-    $returnObject = New-Object -TypeName PSObject
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesWithClientErrorsCount" -Value $wsusStatus.UpdatesWithClientErrorsCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesWithServerErrorsCount" -Value $wsusStatus.UpdatesWithServerErrorsCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesNeedingFilesCount" -Value $wsusStatus.UpdatesNeedingFilesCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesNeededByComputersCount" -Value $wsusStatus.UpdatesNeededByComputersCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesUpToDateCount" -Value $wsusStatus.UpdatesUpToDateCount
+    $item = @{
+        UpdatesWithClientErrorsCount = $wsusStatus.UpdatesWithClientErrorsCount;
+        UpdatesWithServerErrorsCount = $wsusStatus.UpdatesWithServerErrorsCount;
+        UpdatesNeedingFilesCount = $wsusStatus.UpdatesNeedingFilesCount;
+        UpdatesNeededByComputersCount = $wsusStatus.UpdatesNeededByComputersCount;
+        UpdatesUpToDateCount = $wsusStatus.UpdatesUpToDateCount
+    }
     
-    $jsonString = $returnObject | ConvertTo-JSON-20
+    $jsonString = $item | ConvertTo-JSON-20
     Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
@@ -76,7 +74,7 @@ Try {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 1;

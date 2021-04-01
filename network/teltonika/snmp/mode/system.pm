@@ -58,35 +58,33 @@ sub set_counters {
                 key_values => [ { name => 'signal' } ],
                 output_template => 'signal strength: %s Dbm',
                 perfdatas => [
-                    { value => 'signal_absolute', template => '%s', min => 0 , unit => 'Dbm' },
-                ],
+                    { template => '%s', min => 0 , unit => 'Dbm' },
+                ]
             }
         },
         { label => 'temperature', nlabel => 'system.temperature.celsius', display_ok => 0, set => {
                 key_values => [ { name => 'temperature' } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
-                    { value => 'temperature_absolute', template => '%s', min => 0 , unit => 'C' },
+                    { template => '%s', min => 0 , unit => 'C' },
                 ],
             }
         },
         { label => 'traffic-in', nlabel => 'system.traffic.in.bitspersecond', display_ok => 0, set => {
-                key_values => [ { name => 'traffic_in', diff => 1 } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
                 output_template => 'traffic in: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_in_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'traffic-out', nlabel => 'system.traffic.out.bitspersecond', display_ok => 0, set => {
-                key_values => [ { name => 'traffic_out', diff => 1 } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
                 output_template => 'traffic out: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_out_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
@@ -94,7 +92,7 @@ sub set_counters {
                 key_values => [ { name => 'rsrp' } ],
                 output_template => 'signal receive power: %s Dbm',
                 perfdatas => [
-                    { value => 'rsrp_absolute', template => '%s', min => 0 , unit => 'Dbm' },
+                    { template => '%s', min => 0 , unit => 'Dbm' },
                 ],
             }
         },
@@ -102,7 +100,7 @@ sub set_counters {
                 key_values => [ { name => 'rsrq' } ],
                 output_template => 'signal receive quality: %s Dbm',
                 perfdatas => [
-                    { value => 'rsrq_absolute', template => '%s', min => 0 , unit => 'Dbm' },
+                    { template => '%s', min => 0 , unit => 'Dbm' },
                 ],
             }
         },
@@ -115,8 +113,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'warning-status:s'          => { name => 'warning_status', default => '' },
-        'critical-status:s'         => { name => 'critical_status', default => '%{connection_state} !~ /connected/i' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{connection_state} !~ /connected/i' },
     });
     
     return $self;
@@ -142,11 +140,14 @@ sub manage_selection {
     my $oid_Received = '.1.3.6.1.4.1.48690.2.20.0';
     my $oid_RSRP = '.1.3.6.1.4.1.48690.2.23.0';
     my $oid_RSRQ = '.1.3.6.1.4.1.48690.2.24.0';
-    my $result = $options{snmp}->get_leef(oids => [
-        $oid_SimState, $oid_PinState, $oid_NetState, $oid_ConnectionState,
-        $oid_Signal, $oid_Temperature, $oid_Sent, $oid_Received,
-        $oid_RSRP, $oid_RSRQ
-    ], nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(
+        oids => [
+            $oid_SimState, $oid_PinState, $oid_NetState, $oid_ConnectionState,
+            $oid_Signal, $oid_Temperature, $oid_Sent, $oid_Received,
+            $oid_RSRP, $oid_RSRQ
+        ],
+        nothing_quit => 1
+    );
 
     $self->{cache_name} = "teltonika_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));

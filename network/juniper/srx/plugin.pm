@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,9 +32,9 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'hardware'          => 'network::juniper::common::junos::mode::hardware',
-        'cpu-routing'       => 'network::juniper::common::junos::mode::cpurouting', # routing engine
+        'cpu'               => 'network::juniper::common::junos::mode::cpu',
         'cpu-forwarding'    => 'network::juniper::common::junos::mode::cpuforwarding', # packet forwarding engine
-        'memory-routing'    => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
+        'memory'            => 'network::juniper::common::junos::mode::memory',
         'memory-forwarding' => 'network::juniper::common::junos::mode::memoryforwarding', # packet forwarding engine
         'cp-sessions'       => 'network::juniper::common::junos::mode::cpsessions', # CP = 'central point'
         'flow-sessions'     => 'network::juniper::common::junos::mode::flowsessions',

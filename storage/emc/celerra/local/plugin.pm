@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,7 +22,7 @@ package storage::emc::celerra::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,9 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                         'getreason'    => 'storage::emc::celerra::local::mode::getreason',
-                         );
+    $self->{modes} = {
+        'filesystems' => 'storage::emc::celerra::local::mode::filesystems',
+        'getreason'   => 'storage::emc::celerra::local::mode::getreason',
+        'pools'       => 'storage::emc::celerra::local::mode::pools'
+    };
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,52 +24,64 @@ use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
+use centreon::common::cisco::smallbusiness::snmp::mode::components::resources qw(
+    $oid_rlPhdUnitEnvParamEntry
+    $oid_rlPhdUnitEnvParamMonitorAutoRecoveryEnable
+);
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu)$';
-    
+
+    $self->{regexp_threshold_numeric_check_section_option} = '^temperature$';
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
-        fan => [
+        default => [
             ['normal', 'OK'],
             ['notPresent', 'OK'],
             ['warning', 'WARNING'],
             ['critical', 'CRITICAL'],
             ['shutdown', 'CRITICAL'],
-            ['notFunctioning', 'CRITICAL'],
+            ['notFunctioning', 'CRITICAL']
         ],
-        psu => [
-            ['normal', 'OK'],
-            ['notPresent', 'OK'],
-            ['warning', 'WARNING'],
-            ['critical', 'CRITICAL'],
-            ['shutdown', 'CRITICAL'],
-            ['notFunctioning', 'CRITICAL'],
-        ],
+        temperature => [
+            ['ok', 'OK'],
+            ['unavailable', 'OK'],
+            ['nonoperational', 'CRITICAL']
+        ]
     };
-    
+
     $self->{components_path} = 'centreon::common::cisco::smallbusiness::snmp::mode::components';
-    $self->{components_module} = ['psu', 'fan'];
+    $self->{components_module} = ['psu', 'fan', 'temperature'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
+    push @{$self->{request}}, {
+        oid => $oid_rlPhdUnitEnvParamEntry,
+        start => '.1.3.6.1.4.1.9.6.1.101.53.15.1.2', # rlPhdUnitEnvParamMainPSStatus
+        end => $oid_rlPhdUnitEnvParamMonitorAutoRecoveryEnable
+    };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+
+    $self->{sb_new} = 0;
+    foreach (keys %{$self->{results}->{$oid_rlPhdUnitEnvParamEntry}}) {
+        if (/^$oid_rlPhdUnitEnvParamMonitorAutoRecoveryEnable\./) {
+            $self->{sb_new} = 1;
+            last;
+        }
+    }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -80,14 +92,14 @@ __END__
 
 =head1 MODE
 
-Check environment (Fans, Power supplies).
+Check environment.
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'psu'.
+Can be: 'fan', 'psu', 'temperature'.
 
 =item B<--filter>
 
@@ -109,6 +121,16 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='fan,CRITICAL,^(?!(normal)$)'
+
+=item B<--warning>
+
+Set warning threshold (syntax: type,regexp,threshold)
+Example: --warning='temperature,.*,30'
+
+=item B<--critical>
+
+Set critical threshold (syntax: type,regexp,threshold)
+Example: --critical='temperature,.*,40'
 
 =back
 

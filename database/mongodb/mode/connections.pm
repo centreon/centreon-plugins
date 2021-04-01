@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active: %d',
                 perfdatas => [
-                    { value => 'active_absolute', template => '%d', min => 0, unit => 'conn' },
+                    { template => '%d', min => 0, unit => 'conn' },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'current' } ],
                 output_template => 'Current: %d',
                 perfdatas => [
-                    { value => 'current_absolute', template => '%d', min => 0, unit => 'conn' },
+                    { template => '%d', min => 0, unit => 'conn' },
                 ],
             }
         },
@@ -54,16 +54,15 @@ sub set_counters {
                 key_values => [ { name => 'usage' } ],
                 output_template => 'Usage: %.2f %%',
                 perfdatas => [
-                    { value => 'usage_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
         { label => 'total-created', nlabel => 'connections.created.persecond', set => {
-                key_values => [ { name => 'totalCreated', diff => 1 } ],
+                key_values => [ { name => 'totalCreated', per_second => 1 } ],
                 output_template => 'Created: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { value => 'totalCreated_per_second', template => '%.2f', min => 0, unit => 'conn/s' },
+                    { template => '%.2f', min => 0, unit => 'conn/s' },
                 ],
             }
         },
@@ -86,21 +85,14 @@ sub new {
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
 
     $self->{global} = {};
 
-    my $server_stats = $self->{custom}->run_command(
+    my $server_stats = $options{custom}->run_command(
         database => 'admin',
-        command => $self->{custom}->ordered_hash(serverStatus => 1),
+        command => $options{custom}->ordered_hash(serverStatus => 1),
     );
     
     $self->{global}->{active} = $server_stats->{connections}->{active};
@@ -108,7 +100,7 @@ sub manage_selection {
     $self->{global}->{usage} = $server_stats->{connections}->{current} / ($server_stats->{connections}->{current} + $server_stats->{connections}->{available});
     $self->{global}->{totalCreated} = $server_stats->{connections}->{totalCreated};
     
-    $self->{cache_name} = "mongodb_" . $self->{mode} . '_' . $self->{custom}->get_hostname() . '_' . $self->{custom}->get_port() . '_' .
+    $self->{cache_name} = "mongodb_" . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 

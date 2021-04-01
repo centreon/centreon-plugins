@@ -29,9 +29,9 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'battery-status'   => 'hardware::ups::alpha::snmp::mode::batterystatus',
-                         'alarms'           => 'hardware::ups::alpha::snmp::mode::alarms',
-                         );
+        'alarms'           => 'hardware::ups::alpha::snmp::mode::alarms',
+        'battery-status'   => 'hardware::ups::alpha::snmp::mode::batterystatus',
+    );
 
     return $self;
 }

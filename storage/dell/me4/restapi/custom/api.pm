@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,21 +43,21 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-username:s'    => { name => 'api_username' },
-            'api-password:s'    => { name => 'api_password' },
-            'hostname:s'        => { name => 'hostname' },
-            'port:s'            => { name => 'port' },
-            'proto:s'           => { name => 'proto' },
-            'timeout:s'         => { name => 'timeout' },
+            'api-username:s' => { name => 'api_username' },
+            'api-password:s' => { name => 'api_password' },
+            'hostname:s'     => { name => 'hostname' },
+            'port:s'         => { name => 'port' },
+            'proto:s'        => { name => 'proto' },
+            'timeout:s'      => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
-    
+    $self->{set_lang} = 0;
+
     return $self;
 }
 
@@ -67,21 +67,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -195,25 +181,23 @@ sub request_api {
     }
 
     $self->settings();
-    
-    my $lang = $self->{http}->request(method => 'GET', url_path => '/api/set/cli-parameters/locale/English');
 
-    $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':' . $self->{port} .
-        $options{url_path} . "'", debug => 1);
-
+    if ($self->{set_lang} == 0) {
+        $self->{http}->request(method => 'GET', url_path => '/api/set/cli-parameters/locale/English');
+        $self->{set_lang} = 1;
+    }
     my $content = $self->{http}->request(%options);
     
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
-    
+
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }

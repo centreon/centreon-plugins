@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'application-usage' => 'cloud::vmware::velocloud::restapi::mode::applicationusage',
         'category-usage'    => 'cloud::vmware::velocloud::restapi::mode::categoryusage',
         'discovery'         => 'cloud::vmware::velocloud::restapi::mode::discovery',
@@ -39,10 +39,10 @@ sub new {
         'link-status'       => 'cloud::vmware::velocloud::restapi::mode::linkstatus',
         'link-usage'        => 'cloud::vmware::velocloud::restapi::mode::linkusage',
         'list-edges'        => 'cloud::vmware::velocloud::restapi::mode::listedges',
-        'list-links'        => 'cloud::vmware::velocloud::restapi::mode::listlinks',
-    );
+        'list-links'        => 'cloud::vmware::velocloud::restapi::mode::listlinks'
+    };
 
-    $self->{custom_modes}{api} = 'cloud::vmware::velocloud::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'cloud::vmware::velocloud::restapi::custom::api';
     return $self;
 }
 

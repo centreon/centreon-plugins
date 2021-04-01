@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -109,7 +109,7 @@ sub set_counters {
 sub prefix_deployment_output {
     my ($self, %options) = @_;
 
-    return "Deployment '" . $options{instance_value}->{display} . "' ";
+    return "Deployment '" . $options{instance_value}->{display} . " [namespace: ". $options{instance_value}->{namespace} ."]' ";
 }
 
 sub new {
@@ -189,6 +189,7 @@ sub manage_selection {
     foreach my $result (@{$results}) {
         $self->{deployments}->{$result->{metric}->{$self->{labels}->{deployment}}}->{display} = $result->{metric}->{$self->{labels}->{deployment}};
         $self->{deployments}->{$result->{metric}->{$self->{labels}->{deployment}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
+        $self->{deployments}->{$result->{metric}->{$self->{labels}->{deployment}}}->{namespace} = $result->{metric}->{namespace};
     }
     
     if (scalar(keys %{$self->{deployments}}) <= 0) {

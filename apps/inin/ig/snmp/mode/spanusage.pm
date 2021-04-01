@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -61,8 +61,8 @@ sub set_counters {
                 key_values => [ { name => 'i3IgSpanInfoActiveChannels' }, { name => 'display' } ],
                 output_template => 'Current Active Channels : %s',
                 perfdatas => [
-                    { label => 'active_channels', value => 'i3IgSpanInfoActiveChannels_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'active_channels', value => 'i3IgSpanInfoActiveChannels', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

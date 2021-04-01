@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -133,7 +133,7 @@ sub manage_selection {
         
         my $create_time = Date::Parse::str2time($result->{msgGenerationTime});
         if (!defined($create_time)) {
-            $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+            $self->{output}->output_add(severity => 'UNKNOWN',
                                                    short_msg => "Can't Parse date '" . $result->{msgGenerationTime} . "'");
             next;
         }

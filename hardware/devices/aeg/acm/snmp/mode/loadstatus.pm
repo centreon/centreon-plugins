@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'loadVoltage' } ],
                 output_template => 'Voltage : %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'loadVoltage_absolute', template => '%s', 
+                    { label => 'voltage', value => 'loadVoltage', template => '%s', 
                       unit => 'V' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'loadCurrent' } ],
                 output_template => 'Current : %s A',
                 perfdatas => [
-                    { label => 'current', value => 'loadCurrent_absolute', template => '%s', 
+                    { label => 'current', value => 'loadCurrent', template => '%s', 
                       min => 0, unit => 'A' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'loadPower' } ],
                 output_template => 'Power : %s W',
                 perfdatas => [
-                    { label => 'power', value => 'loadPower_absolute', template => '%s', 
+                    { label => 'power', value => 'loadPower', template => '%s', 
                       unit => 'w'},
                 ],
             }

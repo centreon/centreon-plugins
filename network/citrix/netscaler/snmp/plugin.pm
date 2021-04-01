@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,19 +30,20 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.6';
-    %{$self->{modes}} = (
-            'certificates-expire'   => 'network::citrix::netscaler::snmp::mode::certificatesexpire',
-            'cpu'                   => 'network::citrix::netscaler::snmp::mode::cpu',
-            'storage'               => 'network::citrix::netscaler::snmp::mode::storage',
-            'health'                => 'network::citrix::netscaler::snmp::mode::health',
-            'ha-state'              => 'network::citrix::netscaler::snmp::mode::hastate',
-            'interfaces'            => 'snmp_standard::mode::interfaces',
-            'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
-            'list-vservers'         => 'network::citrix::netscaler::snmp::mode::listvservers',
-            'vserver-status'        => 'network::citrix::netscaler::snmp::mode::vserverstatus',
-            'memory'                => 'network::citrix::netscaler::snmp::mode::memory',
-            'connections'           => 'network::citrix::netscaler::snmp::mode::connections',
-    );
+    $self->{modes} = {
+        'certificates-expire' => 'network::citrix::netscaler::snmp::mode::certificatesexpire',
+        'connections'         => 'network::citrix::netscaler::snmp::mode::connections',
+        'cpu'                 => 'network::citrix::netscaler::snmp::mode::cpu',
+        'health'              => 'network::citrix::netscaler::snmp::mode::health',
+        'ha-state'            => 'network::citrix::netscaler::snmp::mode::hastate',
+        'interfaces'          => 'snmp_standard::mode::interfaces',
+        'list-interfaces'     => 'snmp_standard::mode::listinterfaces',
+        'list-vservers'       => 'network::citrix::netscaler::snmp::mode::listvservers',
+        'memory'              => 'network::citrix::netscaler::snmp::mode::memory',
+        'uptime'              => 'snmp_standard::mode::uptime',
+        'storage'             => 'network::citrix::netscaler::snmp::mode::storage',
+        'vserver-status'      => 'network::citrix::netscaler::snmp::mode::vserverstatus'
+    };
 
     return $self;
 }

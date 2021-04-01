@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,8 +46,8 @@ sub set_counters {
                                     output_template => $metric . ': %d %s',
                                     output_change_bytes => 1,
                                     perfdatas => [
-                                        { label => lc($metric) . '_' . lc($storage_type) . '_' . lc($statistic), value => $metric . '_' . $storage_type . '_' . $statistic . '_absolute', 
-                                        template => '%d', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                                        { label => lc($metric) . '_' . lc($storage_type) . '_' . lc($statistic), value => $metric . '_' . $storage_type . '_' . $statistic , 
+                                        template => '%d', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
                                     ],
                                 }
                             };
@@ -124,13 +124,12 @@ sub manage_selection {
     foreach my $instance (@{$self->{aws_instance}}) {
         foreach my $storage_type (@{$self->{aws_storage_type}}) {
             $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-                region => $self->{option_results}->{region},
                 namespace => 'AWS/S3',
                 dimensions => [ {Name => 'StorageType', Value => $storage_type }, { Name => 'BucketName', Value => $instance } ],
                 metrics => $self->{aws_metrics},
                 statistics => $self->{aws_statistics},
                 timeframe => $self->{aws_timeframe},
-                period => $self->{aws_period},
+                period => $self->{aws_period}
             );
             
             foreach my $metric (@{$self->{aws_metrics}}) {

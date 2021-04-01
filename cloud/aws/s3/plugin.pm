@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,9 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'bucket-size'               => 'cloud::aws::s3::mode::bucketsize',
-        'objects'                   => 'cloud::aws::s3::mode::objects',
-        'requests'                  => 'cloud::aws::s3::mode::requests',
+        'bucket-size'   => 'cloud::aws::s3::mode::bucketsize',
+        'discovery'     => 'cloud::aws::s3::mode::discovery',
+        'objects'       => 'cloud::aws::s3::mode::objects',
+        'requests'      => 'cloud::aws::s3::mode::requests',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

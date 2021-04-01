@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,11 +38,10 @@ sub set_counters {
                 key_values => [ { name => 'systemTemperature' } ],
                 output_template => 'Temperature: %.2f C',
                 perfdatas => [
-                    { label => 'temperature', value => 'systemTemperature_absolute', template => '%.2f',
-                      min => 0, unit => 'C' },
-                ],
+                    { label => 'temperature', template => '%.2f', min => 0, unit => 'C' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -53,6 +52,7 @@ sub new {
 
     $options{options}->add_options(arguments =>{
     });
+
     return $self;
 }
 
@@ -62,12 +62,12 @@ my $mappings = {
     },
     ex => {
         systemTemperature => { oid => '.1.3.6.1.4.1.17163.1.51.2.9' },
-    },
+    }
 };
 
 my $oids = {
     common => '.1.3.6.1.4.1.17163.1.1.2.9',
-    ex => '.1.3.6.1.4.1.17163.1.51.2.9',
+    ex => '.1.3.6.1.4.1.17163.1.51.2.9'
 };
 
 sub manage_selection {
@@ -75,21 +75,17 @@ sub manage_selection {
 
     my $results = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oids->{common},
-              start => $mappings->{common}->{systemTemperature}->{oid},
-              end => $mappings->{common}->{systemTemperature}->{oid} },
-            { oid => $oids->{ex},
-              start => $mappings->{ex}->{systemTemperature}->{oid},
-              end => $mappings->{ex}->{systemTemperature}->{oid} }
+            { oid => $oids->{common}, start => $mappings->{common}->{systemTemperature}->{oid}, end => $mappings->{common}->{systemTemperature}->{oid} },
+            { oid => $oids->{ex}, start => $mappings->{ex}->{systemTemperature}->{oid}, end => $mappings->{ex}->{systemTemperature}->{oid} }
         ]
     );
 
     foreach my $equipment (keys %{$oids}) {
         next if (!%{$results->{$oids->{$equipment}}});
-        
+
         my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment},
             results => $results->{$oids->{$equipment}}, instance => 0);
-        
+
         $self->{global} = {
             systemTemperature => $result->{systemTemperature},
         };

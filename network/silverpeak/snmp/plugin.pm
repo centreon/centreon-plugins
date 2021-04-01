@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                            'alarms'               => 'network::silverpeak::snmp::mode::alarms',
-                            'interfaces'           => 'snmp_standard::mode::interfaces', 
-                            'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                            'status'               => 'network::silverpeak::snmp::mode::status',
-                            'uptime'               => 'network::silverpeak::snmp::mode::uptime',
-                         );
+        'alarms'          => 'network::silverpeak::snmp::mode::alarms',
+        'interfaces'      => 'snmp_standard::mode::interfaces', 
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'status'          => 'network::silverpeak::snmp::mode::status',
+        'uptime'          => 'network::silverpeak::snmp::mode::uptime',
+    );
 
     return $self;
 }

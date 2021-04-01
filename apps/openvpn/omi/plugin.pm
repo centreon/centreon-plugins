@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,11 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'server-usage'    => 'apps::openvpn::omi::mode::serverusage',
-                         );
+    $self->{modes} = {
+        'server-usage' => 'apps::openvpn::omi::mode::serverusage',
+    };
 
-    $self->{custom_modes}{api} = 'apps::openvpn::omi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::openvpn::omi::custom::api';
     return $self;
 }
 

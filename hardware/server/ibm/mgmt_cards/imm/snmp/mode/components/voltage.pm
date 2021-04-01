@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -56,9 +56,13 @@ sub check {
         $result->{voltDescr} = centreon::plugins::misc::trim($result->{voltDescr});
         $self->{components}->{voltage}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("voltage '%s' value is %s [instance: %s].",
-                                    $result->{voltDescr}, $result->{voltReading}, $instance));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "voltage '%s' value is %s [instance: %s].",
+                $result->{voltDescr}, $result->{voltReading}, $instance
+            )
+        );
+
         if (defined($result->{voltReading})) {
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{voltReading});
             if ($checked == 0) {
@@ -75,11 +79,12 @@ sub check {
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-voltage-instance-' . $instance);    
             }
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Voltage '%s' is %s", $result->{voltDescr}, $result->{voltReading}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Voltage '%s' is %s", $result->{voltDescr}, $result->{voltReading})
+                );
             }
             $self->{output}->perfdata_add(
-                label => "volt",
                 nlabel => 'hardware.voltage.volt',
                 instances => $result->{voltDescr},
                 value => $result->{voltReading},

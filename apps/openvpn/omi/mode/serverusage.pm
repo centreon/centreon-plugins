@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,38 +28,36 @@ use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0 }
     ];
-    
+
     $self->{maps_counters}->{global} = [
-        { label => 'num-clients', set => {
+        { label => 'num-clients', nlabel => 'clients.current.count',set => {
                 key_values => [ { name => 'num_clients' } ],
                 output_template => 'Current Clients: %s',
                 perfdatas => [
-                    { label => 'num_clients', value => 'num_clients_absolute', template => '%s', min => 0 },
-                ],
+                    { label => 'num_clients', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'traffic-in', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 } ],
-                per_second => 1, output_change_bytes => 2,
+        { label => 'traffic-in', nlabel => 'server.traffic.in.bitspersecond',set => {
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s' },
-                ],
+                    { label => 'traffic_in', template => '%.2f', min => 0, unit => 'b/s' }
+                ]
             }
         },
-        { label => 'traffic-out', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 } ],
-                per_second => 1, output_change_bytes => 2,
+        { label => 'traffic-out', nlabel => 'server.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out', value => 'traffic_out_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s' },
-                ],
+                    { label => 'traffic_out', template => '%.2f', min => 0, unit => 'b/s' }
+                ]
             }
         }
     ];
@@ -69,11 +67,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
@@ -82,12 +79,12 @@ sub manage_selection {
 
     my $result = $options{custom}->command(cmd => 'load-stats');
     # SUCCESS: nclients=6,bytesin=7765329961,bytesout=18435500727
-    
+
     $self->{global} = { num_clients => 0, traffic_in => 0, traffic_out => 0 };
     if ($result =~ /nclients=(\d+),bytesin=(\d+),bytesout=(\d+)/) {
         $self->{global} = { num_clients => $1, traffic_in => $2 * 8, traffic_out => $3 * 8 };
     }
-    
+
     #status
     #OpenVPN CLIENT LIST
     #Updated,Thu Jan 10 16:05:32 2019
@@ -113,8 +110,8 @@ sub manage_selection {
             }
         }
     }
-    
-    $self->{cache_name} = "openvpn" . '_' . $self->{mode} . '_' . $options{custom}->get_connect_info() . '_' . 
+
+    $self->{cache_name} = 'openvpn_' . $self->{mode} . '_' . $options{custom}->get_connect_info() . '_' . 
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
@@ -129,14 +126,9 @@ Check server usage.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'num-clients', 'traffic-in', 'traffic-out'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'num-clients', 'traffic-in', 'traffic-out'.
 
 =back

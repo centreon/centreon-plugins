@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'ratio' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Ratio: %.2f',
                 perfdatas => [
-                    { label => 'ratio', value => 'ratio_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'ratio', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'error_hits' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Hits Error: %.3f hits/s',
                 perfdatas => [
-                    { label => 'hits_error', value => 'error_hits_absolute', template => '%.3f',
-                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'hits_error', template => '%.3f',
+                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'hits' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Hits: %.3f hits/s',
                 perfdatas => [
-                    { label => 'hits', value => 'hits_absolute', template => '%.3f',
-                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'hits', template => '%.3f',
+                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -73,22 +73,25 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                    "instance:s"            => { name => 'instance', default => 'layer' },
-                                    "top:s"                 => { name => 'top' },
-                                    "filter:s"              => { name => 'filter' },
-                                    "from:s"                => { name => 'from', default => 'http' },
-                                    "filter-counters:s"     => { name => 'filter_counters' },
-                                });
-   
+
+    $options{options}->add_options(arguments => {
+        'instance:s' => { name => 'instance', default => 'layer' },
+        'top:s'      => { name => 'top' },
+        'filter:s'   => { name => 'filter' },
+        'from:s'     => { name => 'from', default => 'http' }
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{from}) || $self->{option_results}->{from} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --from option as a PVQL object.");
+        $self->{output}->option_exit();
+    }
 
     if (!defined($self->{option_results}->{instance}) || $self->{option_results}->{instance} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --instance option as a PVQL object.");
@@ -128,7 +131,7 @@ sub manage_selection {
         $instance = ${$result->{key}}[0]->{value} if (defined(${$result->{key}}[0]->{value}));
         $instance = ${$result->{key}}[0]->{status} if (defined(${$result->{key}}[0]->{status}));
         $self->{instances}->{$instance}->{key} = $instance;
-        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if ($self->{option_results}->{instance} =~ /application/);
+        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if (defined($apps->{$instance}->{name}) && $self->{option_results}->{instance} =~ /application/);
         $self->{instances}->{$instance}->{error_hits} = (defined(${$result->{values}}[0]->{value})) ? ${$result->{values}}[0]->{value} / $self->{pvql_timeframe} : 0;
         $self->{instances}->{$instance}->{hits} = ${$result->{values}}[1]->{value} / $self->{pvql_timeframe};
         $self->{instances}->{$instance}->{ratio} = (defined(${$result->{values}}[0]->{value})) ? ${$result->{values}}[1]->{value} / (${$result->{values}}[0]->{value} + ${$result->{values}}[1]->{value}) : 1;

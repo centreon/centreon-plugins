@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,35 +24,25 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::misc;
 
 sub custom_status_output {
     my ($self, %options) = @_;
- 
-    my $msg = sprintf('status : %s', $self->{result_values}->{status});
-    return $msg;
-}
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return sprintf('status : %s', $self->{result_values}->{status});
 }
 
 sub custom_packet_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Packet %s %s : %.2f %% (%s)",
+    return sprintf(
+        'Packet %s %s : %.2f %% (%s)',
         ucfirst($self->{result_values}->{type}),
         ucfirst($self->{result_values}->{label}), 
         $self->{result_values}->{result_prct},
         $self->{result_values}->{diff_value}
     );
-    return $msg;
 }
 
 sub custom_packet_calc {
@@ -72,18 +62,17 @@ sub custom_packet_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } },
+        { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } }
     ];
-    
+
     $self->{maps_counters}->{interface} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} ne "RU"', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'in-discard', set => {
@@ -93,8 +82,8 @@ sub set_counters {
                 threshold_use => 'result_prct',
                 perfdatas => [
                     { label => 'packets_discard_in', value => 'result_prct', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'out-discard', set => {
@@ -104,8 +93,8 @@ sub set_counters {
                 threshold_use => 'result_prct',
                 perfdatas => [
                     { label => 'packets_discard_out', value => 'result_prct', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'in-error', set => {
@@ -115,8 +104,8 @@ sub set_counters {
                 threshold_use => 'result_prct',
                 perfdatas => [
                     { label => 'packets_error_in', value => 'result_prct', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'out-error', set => {
@@ -126,10 +115,10 @@ sub set_counters {
                 threshold_use => 'result_prct',
                 perfdatas => [
                     { label => 'packets_error_out', value => 'result_prct', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -137,26 +126,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "remote"            => { name => 'remote' },
-        "ssh-option:s@"     => { name => 'ssh_option' },
-        "ssh-path:s"        => { name => 'ssh_path' },
-        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"         => { name => 'timeout', default => 30 },
-        "sudo"              => { name => 'sudo' },
-        "command:s"         => { name => 'command', default => 'ip' },
-        "command-path:s"    => { name => 'command_path', default => '/sbin' },
-        "command-options:s" => { name => 'command_options', default => '-s addr 2>&1' },
-        "filter-state:s"    => { name => 'filter_state', },
-        "name:s"            => { name => 'name' },
-        "regexp"            => { name => 'use_regexp' },
-        "regexp-isensitive" => { name => 'use_regexpi' },
-        "no-loopback"       => { name => 'no_loopback', },
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} ne "RU"' },
+        'filter-state:s'     => { name => 'filter_state', },
+        'filter-interface:s' => { name => 'filter_interface' },
+        'no-loopback'        => { name => 'no_loopback' }
     });
 
     return $self;
@@ -168,30 +142,15 @@ sub prefix_interface_output {
     return "Interface '" . $options{instance_value}->{display} . "' ";
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->{hostname} = $self->{option_results}->{hostname};
-    if (!defined($self->{hostname})) {
-        $self->{hostname} = 'me';
-    }
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
-}
-
 sub do_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'ip',
+        command_path => '/sbin',
+        command_options => '-s addr 2>&1'
     );
-    
+
     my $mapping = {
         ifconfig => {
             get_interface => '^(\S+)(.*?)(\n\n|\n$)',
@@ -210,29 +169,25 @@ sub do_selection {
             error_out => 'TX:.*?errors.*?\d+.*?\d+.*?(\d+)',
         },
     };
-    
+
     my $type = 'ifconfig';
     if ($stdout =~ /^\d+:\s+\S+:\s+</ms) {
         $type = 'iproute';
     }
-    
+
     $self->{interface} = {};
     while ($stdout =~ /$mapping->{$type}->{get_interface}/msg) {
         my ($interface_name, $values) = ($1, $2);
         my $states = '';
         $states .= 'R' if ($values =~ /RUNNING|LOWER_UP/ms);
         $states .= 'U' if ($values =~ /UP/ms);
-        
+        $interface_name =~ s/:$//;
+
         next if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms);
         next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-                 $states !~ /$self->{option_results}->{filter_state}/);
-        
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
-            && $interface_name !~ /$self->{option_results}->{name}/i);
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
-            && $interface_name !~ /$self->{option_results}->{name}/);
-        next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
-            && $interface_name ne $self->{option_results}->{name});
+            $states !~ /$self->{option_results}->{filter_state}/);
+        next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
+            $interface_name !~ /$self->{option_results}->{filter_interface}/);
 
         $self->{interface}->{$interface_name} = {
             display => $interface_name,
@@ -249,7 +204,7 @@ sub do_selection {
             }
         }
     }
-    
+
     if (scalar(keys %{$self->{interface}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No interface found.");
         $self->{output}->option_exit();
@@ -259,10 +214,10 @@ sub do_selection {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->do_selection();
-    $self->{cache_name} = "cache_linux_local_" . $self->{hostname} . '_' . $self->{mode} . '_' .
+    $self->do_selection(custom => $options{custom});
+    $self->{cache_name} = 'cache_linux_local_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all'));
 }
 
 1;
@@ -272,6 +227,8 @@ __END__
 =head1 MODE
 
 Check packets errors and discards on interfaces.
+
+Command used: /sbin/ip -s addr 2>&1
 
 =over 8
 
@@ -326,17 +283,9 @@ in-error, out-error, in-discard, out-discard
 Threshold critical in percent of total packets. Can be:
 in-error, out-error, in-discard, out-discard
 
-=item B<--name>
+=item B<--filter-interface>
 
-Set the interface name (empty means 'check all interfaces')
-
-=item B<--regexp>
-
-Allows to use regexp to filter storage mount point (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
+Filter interface name (regexp can be used).
 
 =item B<--filter-state>
 

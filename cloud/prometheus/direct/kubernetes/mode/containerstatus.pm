@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -72,8 +72,8 @@ sub set_counters {
                 key_values => [ { name => 'restarts' }, { name => 'perf' } ],
                 output_template => 'Restarts count : %d',
                 perfdatas => [
-                    { label => 'restarts_count', value => 'restarts_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'restarts_count', value => 'restarts', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },
@@ -83,7 +83,7 @@ sub set_counters {
 sub prefix_container_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] ";
+    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . ", namespace: " . $options{instance_value}->{namespace} . "] ";
 }
 
 sub new {
@@ -186,6 +186,7 @@ sub manage_selection {
         $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{status} = $result->{metric}->{__name__} if ($result->{metric}->{__name__} =~ /running|terminated|waiting/ && ${$result->{value}}[1] == 1);
         $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{reason} = "";
         $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{reason} = $result->{metric}->{reason} if ($result->{metric}->{__name__} =~ /reason/ && ${$result->{value}}[1] == 1);
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{namespace} = $result->{metric}->{namespace};
     }
 
     if (scalar(keys %{$self->{containers}}) <= 0) {

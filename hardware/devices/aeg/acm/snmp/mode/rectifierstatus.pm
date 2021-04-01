@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'rectVoltage' } ],
                 output_template => 'Voltage : %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'rectVoltage_absolute', template => '%s', 
+                    { label => 'voltage', value => 'rectVoltage', template => '%s', 
                       unit => 'V' },
                 ],
             }
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'rectCurrent' } ],
                 output_template => 'Current : %s A',
                 perfdatas => [
-                    { label => 'current', value => 'rectCurrent_absolute', template => '%s', 
+                    { label => 'current', value => 'rectCurrent', template => '%s', 
                       min => 0, unit => 'A' },
                 ],
             }
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'nbrOfFaultyRect' } ],
                 output_template => 'Faulty rectifiers : %s',
                 perfdatas => [
-                    { label => 'faulty_count', value => 'nbrOfFaultyRect_absolute', template => '%s', 
+                    { label => 'faulty_count', value => 'nbrOfFaultyRect', template => '%s', 
                       min => 0, unit => '' },
                 ],
             }

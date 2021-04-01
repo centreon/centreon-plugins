@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,14 +27,24 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'edges', type => 3, cb_prefix_output => 'prefix_edge_output', cb_long_output => 'long_output',
           message_multiple => 'All edges applications usage are ok', indent_long_output => '    ',
             group => [
+                { name => 'global', type => 0 },
                 { name => 'apps', display_long => 1, cb_prefix_output => 'prefix_app_output',
-                  message_multiple => 'All applications usage are ok', type => 1 },
+                  message_multiple => 'All applications usage are ok', type => 1 }
             ]
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'edge-applications-count', nlabel => 'edge.applications.total.count', set => {
+                key_values => [ { name => 'app_count' } ],
+                output_template => '%s application(s)',
+                perfdatas => [ { template => '%d', unit => '', min => 0, label_extra_instance => 1 } ]
+            }
         }
     ];
 
@@ -44,9 +54,8 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_in_absolute', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'traffic-out', nlabel => 'application.traffic.out.bitspersecond', set => {
@@ -54,29 +63,26 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_out_absolute', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'packets-in', nlabel => 'application.packets.in.persecond', set => {
                 key_values => [ { name => 'packets_in' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Packets In: %.2f packets/s',
                 perfdatas => [
-                    { value => 'packets_in_absolute', template => '%.2f',
-                      min => 0, unit => 'packets/s', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', min => 0, unit => 'packets/s', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'packets-out', nlabel => 'application.packets.out.persecond', set => {
                 key_values => [ { name => 'packets_out' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Packets Out: %.2f packets/s',
                 perfdatas => [
-                    { value => 'packets_out_absolute', template => '%.2f',
-                      min => 0, unit => 'packets/s', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', min => 0, unit => 'packets/s', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -88,7 +94,7 @@ sub prefix_edge_output {
 
 sub prefix_app_output {
     my ($self, %options) = @_;
-    
+
     return "Application '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
 }
 
@@ -102,14 +108,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "filter-edge-name:s"        => { name => 'filter_edge_name' },
-        "filter-application-name:s" => { name => 'filter_application_name' },
-        "warning-status:s"          => { name => 'warning_status', default => '' },
-        "critical-status:s"         => { name => 'critical_status', default => '' },
+        'filter-edge-name:s'        => { name => 'filter_edge_name' },
+        'filter-application-name:s' => { name => 'filter_application_name' }
     });
-   
+
     return $self;
 }
 
@@ -118,17 +122,14 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $results = $options{custom}->list_edges();
+
     $self->{edges} = {};
-
-    my $results = $options{custom}->list_edges;
-
     foreach my $edge (@{$results}) {
         if (defined($self->{option_results}->{filter_edge_name}) && $self->{option_results}->{filter_edge_name} ne '' &&
             $edge->{name} !~ /$self->{option_results}->{filter_edge_name}/) {
@@ -136,8 +137,8 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{$edge->{name}}->{id} = $edge->{id};
-        $self->{edges}->{$edge->{name}}->{display} = $edge->{name};
+        $self->{edges}->{ $edge->{name} }->{id} = $edge->{id};
+        $self->{edges}->{ $edge->{name} }->{display} = $edge->{name};
 
         my $apps = $options{custom}->get_apps_metrics(
             edge_id => $edge->{id},
@@ -145,31 +146,32 @@ sub manage_selection {
         );
 
         foreach my $app (@{$apps}) {
+            my $app_name = $options{custom}->get_application_name(
+                app_id => $app->{application}
+            );
+            $app_name = $app->{application} if (!defined($app_name));
+
             if (defined($self->{option_results}->{filter_application_name}) &&
                 $self->{option_results}->{filter_application_name} ne '' &&
-                $app->{name} !~ /$self->{option_results}->{filter_application_name}/) {
-                $self->{output}->output_add(long_msg => "skipping '" . $edge->{id} . "'.", debug => 1);
+                $app_name !~ /$self->{option_results}->{filter_application_name}/) {
+                $self->{output}->output_add(long_msg => "skipping '" . $app_name . "'.", debug => 1);
                 next;
             }
 
-            $self->{edges}->{$edge->{name}}->{apps}->{$app->{name}} = {
+            $self->{edges}->{$edge->{name}}->{global}->{app_count}++;
+            $self->{edges}->{$edge->{name}}->{apps}->{ $app_name } = {
                 id => $app->{application},
-                display => $app->{name},
+                display => $app_name,
                 traffic_out => int($app->{bytesTx} * 8 / $self->{timeframe}),
                 traffic_in => int($app->{bytesRx} * 8 / $self->{timeframe}),
                 packets_out => $app->{packetsTx} / $self->{timeframe},
-                packets_in => $app->{packetsRx} / $self->{timeframe},
+                packets_in => $app->{packetsRx} / $self->{timeframe}
             };
         }
     }
 
     if (scalar(keys %{$self->{edges}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No edge found.");
-        $self->{output}->option_exit();
-    }
-    foreach (keys %{$self->{edges}}) {
-        last if (defined($self->{edges}->{$_}->{apps}));
-        $self->{output}->add_option_msg(short_msg => "No applications found.");
         $self->{output}->option_exit();
     }
 }
@@ -192,16 +194,10 @@ Filter edge by name (Can be a regexp).
 
 Filter application by name (Can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'traffic-in', 'traffic-out',
-'packets-in', 'packets-out'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'traffic-in', 'traffic-out',
+Thresholds.
+Can be: 'edge-applications-count', 'traffic-in', 'traffic-out',
 'packets-in', 'packets-out'.
 
 =back

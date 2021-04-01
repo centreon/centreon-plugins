@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,6 +36,7 @@ sub new {
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'network::hp::procurve::snmp::mode::memory',
+        'virtual-chassis'  => 'network::hp::procurve::snmp::mode::virtualchassis',
     );
 
     return $self;

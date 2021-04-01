@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,9 +66,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "unknown-status:s"        => { name => 'unknown_status', default => '' },
-        "warning-status:s"        => { name => 'warning_status', default => '' },
-        "critical-status:s"       => { name => 'critical_status', default => '%{h248_link_status} =~ /down/i || %{registration_state} =~ /notRegistred/i' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{h248_link_status} =~ /down/i || %{registration_state} =~ /notRegistred/i' },
     });
 
     return $self;
@@ -120,12 +120,12 @@ Check controller status.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/i').
+Set unknown threshold for status (Default: '').
 Can used special variables like: %{h248_link_status}, %{registration_state}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /batteryLow/i').
+Set warning threshold for status (Default: '').
 Can used special variables like: %{h248_link_status}, %{registration_state}
 
 =item B<--critical-status>

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,7 +44,7 @@ my $mapping2 = {
     TempHighCritical => { oid => '.1.3.6.1.4.1.3854.3.5.2.1.12' }, # temperatureHighCritical
     TempLowWarning   => { oid => '.1.3.6.1.4.1.3854.3.5.2.1.10' }, # temperatureLowWarning
     TempLowCritical  => { oid => '.1.3.6.1.4.1.3854.3.5.2.1.9' }, # temperatureLowCritical
-    TempDegreeType   => { oid => '.1.3.6.1.4.1.3854.3.5.2.1.5'}, # temperatureUnit
+    TempDegreeType   => { oid => '.1.3.6.1.4.1.3854.3.5.2.1.5', map => \%map_degree_type }, # temperatureUnit
 };
 
 my $oid_hhmsSensorArrayTempEntry = '.1.3.6.1.4.1.3854.1.2.2.1.16.1';

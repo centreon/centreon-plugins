@@ -1,4 +1,4 @@
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'OpenContextCount' } ],
                 output_template => 'Open Views: %d',
                 perfdatas => [
-                    { label => 'open_views', value => 'OpenContextCount_absolute', template => '%d',
+                    { label => 'open_views', value => 'OpenContextCount', template => '%d',
                       min => 0, unit => 'views' },
                 ],
             }

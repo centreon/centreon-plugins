@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'OpenFiles' } ],
                 output_template => 'Open files: %s files',
                 perfdatas => [
-                    { label => 'open_files', value => 'OpenFiles_absolute',
+                    { label => 'open_files', value => 'OpenFiles',
                       template => '%s', min => 0, unit => 'files' },
                 ],
             }
@@ -93,7 +93,7 @@ sub set_counters {
                 key_values => [ { name => 'MessagesPerSecond' } ],
                 output_template => 'Message processing speed: %s messages/s',
                 perfdatas => [
-                    { label => 'processing_speed', value => 'MessagesPerSecond_absolute',
+                    { label => 'processing_speed', value => 'MessagesPerSecond',
                       template => '%s', min => 0, unit => 'messages/s' },
                 ],
             }
@@ -103,7 +103,7 @@ sub set_counters {
                 output_template => 'Read throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'read_throughput', value => 'ReadMegabytesPerSecond_absolute',
+                    { label => 'read_throughput', value => 'ReadMegabytesPerSecond',
                       template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
@@ -113,7 +113,7 @@ sub set_counters {
                 output_template => 'Write throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'write_throughput', value => 'WriteMegabytesPerSecond_absolute',
+                    { label => 'write_throughput', value => 'WriteMegabytesPerSecond',
                       template => '%s', min => 0, unit => 'B/s' },
                 ],
             }

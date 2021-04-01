@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,20 +32,21 @@ sub new {
     $self->{output} = $options{output};
     
     $self->{options}->add_options(
-    arguments => {
-            'mode:s'         => { name => 'mode_name' },
-            'dyn-mode:s'     => { name => 'dynmode_name' },
-            'list-mode'      => { name => 'list_mode' },
-            'mode-version:s' => { name => 'mode_version' },
-            'sqlmode:s'      => { name => 'sqlmode_name', default => 'dbi' },
-            'list-sqlmode'   => { name => 'list_sqlmode' },
-            'multiple'       => { name => 'multiple' },
-            'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
+        arguments => {
+            'mode:s'            => { name => 'mode_name' },
+            'dyn-mode:s'        => { name => 'dynmode_name' },
+            'list-mode'         => { name => 'list_mode' },
+            'mode-version:s'    => { name => 'mode_version' },
+            'sqlmode:s'         => { name => 'sqlmode_name', default => 'dbi' },
+            'list-sqlmode'      => { name => 'list_sqlmode' },
+            'multiple'          => { name => 'multiple' },
+            'no-sanity-options' => { name => 'no_sanity_options' },
+            'pass-manager:s'    => { name => 'pass_manager' }
         }
     );
     $self->{version} = '1.0';
-    %{$self->{modes}} = ();
-    %{$self->{sql_modes}} = ('dbi' => 'centreon::plugins::dbi');
+    $self->{modes} = {};
+    $self->{sql_modes} = { 'dbi' => 'centreon::plugins::dbi' };
     $self->{default} = undef;
     $self->{sqldefault} = {};
     $self->{sqlmode_current} = undef;
@@ -74,7 +75,7 @@ sub init {
         $self->{options}->display_help();
         $self->{output}->option_exit();
     }
-    if (defined($options{version}) && !defined($self->{mode_name})&& !defined($self->{dynmode_name})) {
+    if (defined($options{version}) && !defined($self->{mode_name}) && !defined($self->{dynmode_name})) {
         $self->version();
     }
     if (defined($self->{list_mode})) {
@@ -83,7 +84,7 @@ sub init {
     if (defined($self->{list_sqlmode})) {
         $self->list_sqlmode();
     }
-    $self->{options}->set_sanity();
+    $self->{options}->set_sanity() if (!defined($self->{no_sanity_options}));
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
@@ -92,9 +93,16 @@ sub init {
 
     if (defined($self->{sqlmode_name}) && $self->{sqlmode_name} ne '') {
         $self->is_sqlmode(sqlmode => $self->{sqlmode_name});
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{sql_modes}{$self->{sqlmode_name}}, 
-                                               error_msg => "Cannot load module --sqlmode.");
-        $self->{sqlmode_current} = $self->{sql_modes}{$self->{sqlmode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{sqlmode_name});
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => $self->{sql_modes}->{$self->{sqlmode_name}}, 
+            error_msg => "Cannot load module --sqlmode."
+        );
+        $self->{sqlmode_current} = $self->{sql_modes}->{$self->{sqlmode_name}}->new(
+            options => $self->{options},
+            output => $self->{output}, 
+            sqlmode_name => $self->{sqlmode_name},
+            mode_name => $self->{mode_name}
+        );
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--sqlmode'.");
         $self->{output}->option_exit();
@@ -142,7 +150,7 @@ sub init {
     $self->{sqlmode_current}->set_defaults(default => $self->{sqldefault});
 
     while ($self->{sqlmode_current}->check_options()) {
-        $self->{sqlmode_current} = $self->{sql_modes}{$self->{sqlmode_name}}->new(noptions => 1, options => $self->{options}, output => $self->{output}, mode => $self->{sqlmode_name});
+        $self->{sqlmode_current} = $self->{sql_modes}->{$self->{sqlmode_name}}->new(noptions => 1, options => $self->{options}, output => $self->{output}, mode => $self->{sqlmode_name});
         $self->{sqlmode_current}->set_options(option_results => $self->{option_results});
         push @{$self->{sqlmode_stored}}, $self->{sqlmode_current};
     }
@@ -205,7 +213,7 @@ sub is_sqlmode {
     my ($self, %options) = @_;
     
     # $options->{sqlmode} = mode
-    if (!defined($self->{sql_modes}{$options{sqlmode}})) {
+    if (!defined($self->{sql_modes}->{$options{sqlmode}})) {
         $self->{output}->add_option_msg(short_msg => "mode '" . $options{sqlmode} . "' doesn't exist (use --list-sqlmode option to show available modes).");
         $self->{output}->option_exit();
     }
@@ -290,7 +298,11 @@ List available sql modes.
 
 =item B<--multiple>
 
-Multiple database connections (some mode needs it).
+Multiple database connections (required by some specific modes).
+
+=item B<--pass-manager>
+
+Use a password manager.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,11 +43,13 @@ sub custom_usage_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label . $extra_label, unit => 'B',
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -70,11 +72,12 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -86,17 +89,16 @@ sub custom_usage_calc {
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
-
     return 0;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'sp', type => 1, cb_prefix_output => 'prefix_sp_output', message_multiple => 'All storage pools are ok', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{sp} = [
         { label => 'usage', set => {
                 key_values => [ { name => 'display' }, { name => 'spitUsedCapacity' }, { name => 'spitTotalCapacity' } ],
@@ -110,8 +112,8 @@ sub set_counters {
                 key_values => [ { name => 'spitAvgLatencyUsecs' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'spitAvgLatencyUsecs_absolute', template => '%s', unit => 'µs',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'avg_latency', value => 'spitAvgLatencyUsecs', template => '%s', unit => 'µs',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -119,8 +121,8 @@ sub set_counters {
                 key_values => [ { name => 'spitIOPerSecond' }, { name => 'display' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { label => 'iops', value => 'spitIOPerSecond_absolute', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'iops', value => 'spitIOPerSecond', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -133,9 +135,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s"       => { name => 'filter_name' },
-        "units:s"             => { name => 'units', default => '%' },
-        "free"                => { name => 'free' },
+        'filter-name:s' => { name => 'filter_name' },
+        'units:s'       => { name => 'units', default => '%' },
+        'free'          => { name => 'free' },
     });
 
     return $self;
@@ -166,8 +168,10 @@ sub manage_selection {
     }
     
     $self->{sp} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_spitEntry,
-                                                nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_spitEntry,
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{spitStoragePoolName}->{oid}\.(.*)$/);
@@ -180,12 +184,13 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{spitStoragePoolName} . "': no matching filter.", debug => 1);
             next;
         }
-        
-        $self->{sp}->{$instance} = { display => $result->{spitStoragePoolName}, 
-            %$result,
+    
+        $self->{sp}->{$instance} = {
+            display => $result->{spitStoragePoolName}, 
+            %$result
         };
     }
-    
+
     if (scalar(keys %{$self->{sp}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No storage pool found.");
         $self->{output}->option_exit();

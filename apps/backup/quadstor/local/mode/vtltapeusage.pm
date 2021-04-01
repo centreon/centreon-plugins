@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Number of tapes : %s',
                 perfdatas => [
-                    { label => 'count', value => 'count_absolute', template => '%s', 
+                    { label => 'count', value => 'count', template => '%s', 
                       unit => 'tapes', min => 0 },
                 ],
             }
@@ -154,25 +154,24 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'vcconfig' },
-                                  "command-path:s"    => { name => 'command_path', default => '/quadstorvtl/bin' },
-                                  "command-options:s" => { name => 'command_options', default => '-l -v %{vtl_name}' },
-                                  "vtl-name:s"        => { name => 'vtl_name' },
-                                  "filter-name:s"     => { name => 'filter_name' },
-                                  "warning-status:s"  => { name => 'warning_status', default => '' },
-                                  "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /active/i' },
-                                  "units:s"           => { name => 'units', default => '%' },
-                                  "free"              => { name => 'free' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'vcconfig' },
+        'command-path:s'    => { name => 'command_path', default => '/quadstorvtl/bin' },
+        'command-options:s' => { name => 'command_options', default => '-l -v %{vtl_name}' },
+        'vtl-name:s'        => { name => 'vtl_name' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /active/i' },
+        'units:s'           => { name => 'units', default => '%' },
+        'free'              => { name => 'free' },
+    });
     
     return $self;
 }
@@ -199,12 +198,15 @@ sub prefix_tape_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    sudo => $self->{option_results}->{sudo},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
+
     $self->{global}->{count} = 0;
     $self->{tape} = {};
     #Pool    Label    Element Address Vtype       WORM Size  Used% Status

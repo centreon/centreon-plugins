@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,15 +38,12 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    $self->{aws_region} = defined($self->{option_results}->{region}) ? $self->{option_results}->{region} : 'us-east-1';
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{dimensions} = $options{custom}->cloudwatch_list_metrics(
-        region => $self->{aws_region},
         namespace => 'AWS/Billing'
     );
 }

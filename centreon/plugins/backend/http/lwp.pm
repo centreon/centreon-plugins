@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,8 +33,8 @@ sub new {
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
         $options{options}->add_options(arguments => {
-            "ssl:s"         => { name => 'ssl' },
-            "ssl-opt:s@"    => { name => 'ssl_opt' },
+            'ssl:s'      => { name => 'ssl' },
+            'ssl-opt:s@' => { name => 'ssl_opt' },
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'BACKEND LWP OPTIONS', once => 1);
     }
@@ -42,7 +42,7 @@ sub new {
     $self->{output} = $options{output};
     $self->{ua} = undef;
     $self->{debug_handlers} = 0;
-    
+
     return $self;
 }
 
@@ -51,7 +51,7 @@ sub check_options {
 
     foreach (('unknown_status', 'warning_status', 'critical_status')) {
         if (defined($options{request}->{$_})) {
-            $options{request}->{$_} =~ s/%\{http_code\}/\$self->{response}->code/g;
+            $options{request}->{$_} =~ s/%\{http_code\}/\$values->{code}/g;
         }
     }
 
@@ -70,6 +70,10 @@ sub check_options {
         push @{$options{request}->{ssl_opt}}, 'SSL_ca_file => "' . $options{request}->{cacert_file} . '"'
             if (defined($options{request}->{cacert_file}));
     }
+    if ($options{request}->{insecure}) {
+        push @{$options{request}->{ssl_opt}}, 'SSL_verify_mode => SSL_VERIFY_NONE';
+    }
+
     my $append = '';
     foreach (@{$options{request}->{ssl_opt}}) {
         if ($_ ne '') {
@@ -83,8 +87,10 @@ sub set_proxy {
     my ($self, %options) = @_;
 
     if (defined($options{request}->{proxypac}) && $options{request}->{proxypac} ne '') {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'HTTP::ProxyPAC',
-                                               error_msg => "Cannot load module 'HTTP::ProxyPAC'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'HTTP::ProxyPAC',
+            error_msg => "Cannot load module 'HTTP::ProxyPAC'."
+        );
         my ($pac, $pac_uri);
         eval {
             if ($options{request}->{proxypac} =~ /^(http|https):\/\//) {
@@ -106,48 +112,78 @@ sub set_proxy {
         }
     }
     if (defined($options{request}->{proxyurl}) && $options{request}->{proxyurl} ne '') {
-        $self->{ua}->proxy(['http', 'https'], $options{request}->{proxyurl});
+        my $proxyurl = $options{request}->{proxyurl};
+        if ($options{request}->{proto} eq "https" ||
+            (defined($options{request}->{full_url}) && $options{request}->{full_url} =~ /^https/)) {
+            $proxyurl = 'connect://' . $2 if ($proxyurl =~ /^(http|https):\/\/(.*)/);
+        }
+        $self->{ua}->proxy(['http', 'https'], $proxyurl);
     }
 }
 
 sub request {
     my ($self, %options) = @_;
 
+    my %user_agent_params = (keep_alive => 1);
+    if (defined($options{request}->{certinfo}) && $options{request}->{certinfo} == 1) {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'LWP::ConnCache',
+            error_msg => "Cannot load module 'LWP::ConnCache'."
+        );
+        $self->{cache} = LWP::ConnCache->new();
+        $self->{cache}->total_capacity(1);
+        %user_agent_params = (conn_cache => $self->{cache});
+    }
+
     my $request_options = $options{request};
     if (!defined($self->{ua})) {
+        my $timeout;
+        $timeout = $1 if (defined($request_options->{timeout}) && $request_options->{timeout} =~ /(\d+)/);
         $self->{ua} = centreon::plugins::backend::http::useragent->new(
-            keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout},
-            credentials => $request_options->{credentials}, username => $request_options->{username}, password => $request_options->{password});
+            %user_agent_params,
+            protocols_allowed => ['http', 'https'], 
+            timeout => $timeout,
+            credentials => $request_options->{credentials},
+            username => $request_options->{username}, 
+            password => $request_options->{password}
+        );
         if (defined($request_options->{cookies_file})) {
-            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'HTTP::Cookies',
-                                                   error_msg => "Cannot load module 'HTTP::Cookies'.");
-            $self->{ua}->cookie_jar(HTTP::Cookies->new(file => $request_options->{cookies_file},
-                                                       autosave => 1));
+            centreon::plugins::misc::mymodule_load(
+                output => $self->{output},
+                module => 'HTTP::Cookies',
+                error_msg => "Cannot load module 'HTTP::Cookies'."
+            );
+            $self->{ua}->cookie_jar(
+                HTTP::Cookies->new(
+                    file => $request_options->{cookies_file},
+                    autosave => 1
+                )
+            );
         }
     }
-    
+
     if ($self->{output}->is_debug() && $self->{debug_handlers} == 0) {
         $self->{debug_handlers} = 1;
-        $self->{ua}->add_handler("request_send", sub {
+        $self->{ua}->add_handler('request_send', sub {
             my ($response, $ua, $handler) = @_;
 
-            $self->{output}->output_add(long_msg => "======> request send", debug => 1);
+            $self->{output}->output_add(long_msg => '======> request send', debug => 1);
             $self->{output}->output_add(long_msg => $response->as_string, debug => 1);
             return ; 
         });
         $self->{ua}->add_handler("response_done", sub { 
             my ($response, $ua, $handler) = @_;
-            
-            $self->{output}->output_add(long_msg => "======> response done", debug => 1);
+
+            $self->{output}->output_add(long_msg => '======> response done', debug => 1);
             $self->{output}->output_add(long_msg => $response->as_string, debug => 1);
             return ;
         });
     }
-    
+
     if (defined($request_options->{no_follow})) {
         $self->{ua}->requests_redirectable(undef);
     } else {
-        $self->{ua}->requests_redirectable([ 'GET', 'HEAD', 'POST' ]);
+        $self->{ua}->requests_redirectable([ 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH' ]);
     }
     if (defined($request_options->{http_peer_addr})) {
         push @LWP::Protocol::http::EXTRA_SOCK_OPTS, PeerAddr => $request_options->{http_peer_addr};
@@ -157,9 +193,9 @@ sub request {
     if (defined($request_options->{full_url})) {
         $url = $request_options->{full_url};
     } elsif (defined($request_options->{port}) && $request_options->{port} =~ /^[0-9]+$/) {
-        $url = $request_options->{proto}. "://" . $request_options->{hostname} . ':' . $request_options->{port} . $request_options->{url_path};
+        $url = $request_options->{proto}. '://' . $request_options->{hostname} . ':' . $request_options->{port} . $request_options->{url_path};
     } else {
-        $url = $request_options->{proto}. "://" . $request_options->{hostname} . $request_options->{url_path};
+        $url = $request_options->{proto}. '://' . $request_options->{hostname} . $request_options->{url_path};
     }
 
     my $uri = URI->new($url);
@@ -168,32 +204,29 @@ sub request {
     }
     $req = HTTP::Request->new($request_options->{method}, $uri);
 
-    my $content_type_forced;
+    my $content_type_forced = 0;
     foreach my $key (keys %{$request_options->{headers}}) {
-        if ($key !~ /content-type/i) {
-            $req->header($key => $request_options->{headers}->{$key});
-        } else {
-            $content_type_forced = $request_options->{headers}->{$key};
+        $req->header($key => $request_options->{headers}->{$key});
+        if ($key =~ /content-type/i) {
+            $content_type_forced = 1;
         }
     }
 
-    if ($request_options->{method} eq 'POST') {
-        if (defined($content_type_forced)) {
-            $req->content_type($content_type_forced);
-            $req->content($request_options->{query_form_post});
-        } else {
-            my $uri_post = URI->new();
-            if (defined($request_options->{post_params})) {
-                $uri_post->query_form($request_options->{post_params});
-            }
-            $req->content_type('application/x-www-form-urlencoded');
-            $req->content($uri_post->query);
-        }
+    if ($content_type_forced == 1) {
+        $req->content($request_options->{query_form_post});
+    } elsif (defined($options{request}->{post_params})) {
+        my $uri_post = URI->new();
+        $uri_post->query_form($request_options->{post_params});
+        $req->content_type('application/x-www-form-urlencoded');
+        $req->content($uri_post->query);
     }
 
     if (defined($request_options->{credentials}) && defined($request_options->{ntlmv2})) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Authen::NTLM',
-                                               error_msg => "Cannot load module 'Authen::NTLM'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'Authen::NTLM',
+            error_msg => "Cannot load module 'Authen::NTLM'."
+        );
         Authen::NTLM::ntlmv2(1);
     }
 
@@ -204,7 +237,7 @@ sub request {
     $self->set_proxy(request => $request_options, url => $url);
 
     if (defined($request_options->{cert_pkcs12}) && $request_options->{cert_file} ne '' && $request_options->{cert_pwd} ne '') {
-        eval "use Net::SSL"; die $@ if $@;
+        eval 'use Net::SSL'; die $@ if $@;
         $ENV{HTTPS_PKCS12_FILE} = $request_options->{cert_file};
         $ENV{HTTPS_PKCS12_PASSWORD} = $request_options->{cert_pwd};
     }
@@ -224,14 +257,15 @@ sub request {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
+        my $code = $self->{response}->code();
         if (defined($request_options->{critical_status}) && $request_options->{critical_status} ne '' &&
-            eval "$request_options->{critical_status}") {
+            $self->{output}->test_eval(test => $request_options->{critical_status}, values => { code => $code })) {
             $status = 'critical';
         } elsif (defined($request_options->{warning_status}) && $request_options->{warning_status} ne '' &&
-            eval "$request_options->{warning_status}") {
+            $self->{output}->test_eval(test => $request_options->{warning_status}, values => { code => $code })) {
             $status = 'warning';
         } elsif (defined($request_options->{unknown_status}) && $request_options->{unknown_status} ne '' &&
-            eval "$request_options->{unknown_status}") {
+            $self->{output}->test_eval(test => $request_options->{unknown_status}, values => { code => $code })) {
             $status = 'unknown';
         }
     };
@@ -247,8 +281,10 @@ sub request {
                 $self->{response}->www_authenticate =~ /(\S+)/);
         }
 
-        $self->{output}->output_add(severity => $status,
-                                    short_msg => $short_msg);
+        $self->{output}->output_add(
+            severity => $status,
+            short_msg => $short_msg
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -259,12 +295,13 @@ sub request {
 
 sub get_headers {
     my ($self, %options) = @_;
-    
+
     my $headers = '';
     foreach ($options{response}->header_field_names()) {
-        $headers .= "$_: " . $options{response}->header($_) . "\n";
+        my $value = $options{response}->header($_);
+        $headers .= "$_: " . (defined($value) ? $value : '') . "\n";
     }
-    
+
     return $headers;
 }
 
@@ -302,6 +339,13 @@ sub get_message {
     my ($self, %options) = @_;
 
     return $self->{response}->message();
+}
+
+sub get_certificate {
+    my ($self, %options) = @_;
+
+    my ($con) = $self->{cache}->get_connections('https');
+    return ('socket', $con);
 }
 
 1;

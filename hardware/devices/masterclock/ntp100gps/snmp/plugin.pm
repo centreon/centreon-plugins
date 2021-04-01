@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'gps-status'       => 'hardware::devices::masterclock::ntp100gps::snmp::mode::gpsstatus',
-                         'ntp-performance'  => 'hardware::devices::masterclock::ntp100gps::snmp::mode::ntpperformance',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                        );
+        'gps-status'       => 'hardware::devices::masterclock::ntp100gps::snmp::mode::gpsstatus',
+        'ntp-performance'  => 'hardware::devices::masterclock::ntp100gps::snmp::mode::ntpperformance',
+        'uptime'           => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

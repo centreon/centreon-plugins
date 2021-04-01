@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,12 +29,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                    "namespace:s"   => { name => 'namespace' },
-                                    "metric:s"      => { name => 'metric' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'namespace:s' => { name => 'namespace' },
+        'metric:s'    => { name => 'metric' },
+    });
 
     return $self;
 }
@@ -47,21 +46,22 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{metrics} = $options{custom}->cloudwatch_list_metrics(region => $self->{option_results}->{region},
-                                                                namespace => $self->{option_results}->{namespace},
-                                                                metric => $self->{option_results}->{metric});
+    $self->{metrics} = $options{custom}->cloudwatch_list_metrics(
+        namespace => $self->{option_results}->{namespace},
+        metric => $self->{option_results}->{metric}
+    );
 }
 
 sub get_dimensions_str {
     my ($self, %options) = @_;
-    
+
     my $dimensions = '';
     my $append = '';
     foreach (@{$options{dimensions}}) {
         $dimensions .= $append . "Name=$_->{Name},Value=$_->{Value}";
         $append = ',';
     }
-    
+
     return $dimensions;
 }
 
@@ -73,16 +73,18 @@ sub run {
         $self->{output}->output_add(long_msg => sprintf("[Namespace = %s][Dimensions = %s][Metric = %s]",
             $_->{Namespace}, $self->get_dimensions_str(dimensions => $_->{Dimensions}), $_->{MetricName}));
     }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List metrics:');
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List metrics:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['namespace', 'metric', 'dimensions']);
 }
 

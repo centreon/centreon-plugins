@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,14 +27,18 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 my $mapping = {
     systemBatteryStateSettings  => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.50.1.4', map => \%map_state },
     systemBatteryStatus         => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.50.1.5', map => \%map_status },
-    systemBatteryLocationName   => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.50.1.7' },
+    systemBatteryLocationName   => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.50.1.7' }
 };
 my $oid_systemBatteryTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.50.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_systemBatteryTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_systemBatteryTableEntry,
+        start => $mapping->{systemBatteryStateSettings}->{oid},
+        end => $mapping->{systemBatteryLocationName}->{oid}
+    };
 }
 
 sub check {
@@ -52,21 +56,34 @@ sub check {
         next if ($self->check_filter(section => 'systembattery', instance => $instance));
         $self->{components}->{systembattery}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("system battery '%s' status is '%s' [instance = %s] [state = %s]",
-                                    $result->{systemBatteryLocationName}, $result->{systemBatteryStatus}, $instance, 
-                                    $result->{systemBatteryStateSettings}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "system battery '%s' status is '%s' [instance = %s] [state = %s]",
+                $result->{systemBatteryLocationName},
+                $result->{systemBatteryStatus}, $instance, 
+                $result->{systemBatteryStateSettings}
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default.state', section => 'systembattery.state', value => $result->{systemBatteryStateSettings});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("System battery '%s' state is '%s'", $result->{systemBatteryLocationName}, $result->{systemBatteryStateSettings}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "System battery '%s' state is '%s'", $result->{systemBatteryLocationName}, $result->{systemBatteryStateSettings}
+                )
+            );
             next;
         }
 
         $exit = $self->get_severity(label => 'default.status', section => 'systembattery.status', value => $result->{systemBatteryStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("System battery '%s' status is '%s'", $result->{systemBatteryLocationName}, $result->{systemBatteryStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "System battery '%s' status is '%s'", $result->{systemBatteryLocationName}, $result->{systemBatteryStatus}
+                )
+            );
         }
     }
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,7 +66,7 @@ sub set_counters {
                 key_values => [ { name => 'mginputCurrent', no_value => 0 } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { label => 'current', value => 'mginputCurrent_absolute', template => '%.2f', 
+                    { label => 'current', value => 'mginputCurrent', template => '%.2f', 
                       min => 0, unit => 'A', label_extra_instance => 1 },
                 ],
             }
@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'mginputVoltage', no_value => 0 } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { label => 'voltage', value => 'mginputVoltage_absolute', template => '%.2f', 
+                    { label => 'voltage', value => 'mginputVoltage', template => '%.2f', 
                       unit => 'V', label_extra_instance => 1 },
                 ],
             }
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'mginputFrequency', no_value => 0 } ],
                 output_template => 'Frequence : %.2f Hz',
                 perfdatas => [
-                    { label => 'frequence', value => 'mginputFrequency_absolute', template => '%.2f', 
+                    { label => 'frequence', value => 'mginputFrequency', template => '%.2f', 
                       unit => 'Hz', label_extra_instance => 1 },
                 ],
             }

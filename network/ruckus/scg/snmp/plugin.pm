@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,20 +31,20 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'ap-status'        => 'network::ruckus::scg::snmp::mode::apstatus',
-                         'ap-usage'         => 'network::ruckus::scg::snmp::mode::apusage',
-                         'cpu'              => 'snmp_standard::mode::cpu',
-                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-aps'         => 'network::ruckus::scg::snmp::mode::listaps',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-ssids'       => 'network::ruckus::scg::snmp::mode::listssids',
-                         'load'             => 'snmp_standard::mode::loadaverage',
-                         'memory'           => 'snmp_standard::mode::memory',
-                         'ssid-usage'       => 'network::ruckus::scg::snmp::mode::ssidusage',
-                         'system-stats'     => 'network::ruckus::scg::snmp::mode::systemstats',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                         );
+        'ap-status'        => 'network::ruckus::scg::snmp::mode::apstatus',
+        'ap-usage'         => 'network::ruckus::scg::snmp::mode::apusage',
+        'cpu'              => 'snmp_standard::mode::cpu',
+        'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-aps'         => 'network::ruckus::scg::snmp::mode::listaps',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-ssids'       => 'network::ruckus::scg::snmp::mode::listssids',
+        'load'             => 'snmp_standard::mode::loadaverage',
+        'memory'           => 'snmp_standard::mode::memory',
+        'ssid-usage'       => 'network::ruckus::scg::snmp::mode::ssidusage',
+        'system-stats'     => 'network::ruckus::scg::snmp::mode::systemstats',
+        'uptime'           => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

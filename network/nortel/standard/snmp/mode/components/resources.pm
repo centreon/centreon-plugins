@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,10 +24,10 @@ use strict;
 use warnings;
 use Exporter;
 
-our ($map_comp_status, $map_fan_status, $map_psu_status, $map_card_status);
+our ($map_comp_status, $map_fan_status, $map_psu_status, $map_card_status, $map_led_status);
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw($map_comp_status $map_fan_status $map_psu_status $map_card_status);
+our @EXPORT_OK = qw($map_comp_status $map_fan_status $map_psu_status $map_card_status $map_led_status);
 
 $map_fan_status = {
     1 => 'unknown',
@@ -63,6 +63,16 @@ $map_comp_status = {
     10 => 'fatalErr',
     11 => 'notConfig',
     12 => 'obsoleted',
+};
+
+$map_led_status = {
+    1 => 'unknown',
+    2 => 'greenSteady',
+    3 => 'greenBlinking',
+    4 => 'amberSteady',
+    5 => 'amberBlinking',
+    6 => 'greenamberBlinking',
+    7 => 'off'
 };
 
 1;

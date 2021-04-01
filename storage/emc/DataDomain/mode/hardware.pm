@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,10 +28,9 @@ use storage::emc::DataDomain::lib::functions;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|temperature|psu|disk|battery)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(battery|temperature)$';
-    
+
     $self->{cb_hook1} = 'get_version'; # before the loads
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -80,7 +79,7 @@ sub set_system {
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -89,10 +88,8 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -103,8 +100,10 @@ sub get_version {
     my $oid_sysDescr = '.1.3.6.1.2.1.1.1.0'; # 'Data Domain OS 5.4.1.1-411752'
     my $result = $options{snmp}->get_leef(oids => [ $oid_sysDescr ]);
     if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $result->{$oid_sysDescr}))) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot get DataDomain OS version.');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot get DataDomain OS version.'
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }

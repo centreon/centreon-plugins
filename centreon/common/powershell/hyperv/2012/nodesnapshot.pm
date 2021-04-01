@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,17 +22,20 @@ package centreon::common::powershell::hyperv::2012::nodesnapshot;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
 
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
+
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $ProgressPreference = "SilentlyContinue"
 
 Try {
@@ -41,18 +44,24 @@ Try {
     if ($vms.Length -gt 0) {
         $snapshots = Get-VMSnapshot -VMName *
     }
-    
+
+    $items = New-Object System.Collections.Generic.List[Hashtable];
     Foreach ($vm in $vms) {
-        $i=0
+        $item = @{}
+
         $note = $vm.Notes -replace "\r",""
         $note = $note -replace "\n"," - "
+        $item.note = $note
+        $item.name = $vm.VMName
+        $item.state = $vm.State.value__
+
+        $checkpoints = New-Object System.Collections.Generic.List[Hashtable];
         Foreach ($snap in $snapshots) {
             if ($snap.VMName -eq $vm.VMName) {
-                if ($i -eq 0) {
-                    Write-Host "[name=" $vm.VMName "][state=" $vm.State "][note=" $note "]"
-                }
-                Write-Host "[checkpointCreationTime=" (get-date -date $snap.CreationTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "][type= snapshot]"
-                $i=1
+                $checkpoint = @{}
+                $checkpoint.type = "snapshot"
+                $checkpoint.creation_time = (get-date -date $snap.CreationTime.ToUniversalTime() -UFormat ' . "'%s'" . ')
+                $checkpoints.Add($checkpoint)
             }
         }
         if ($vm.status -imatch "Backing") {
@@ -60,16 +69,21 @@ Try {
             Foreach ($VMDisk in $VMDisks) {
                 $VHD = Get-VHD $VMDisk.Path
                 if ($VHD.Path -imatch ".avhdx" -or $VHD.VhdType -imatch "Differencing") {
+                    $checkpoint = @{}
                     $parent = Get-Item $VHD.ParentPath
-                    if ($i -eq 0) {
-                        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][note=" $note "]"
-                    }
-                    Write-Host "[checkpointCreationTime=" (get-date -date $parent.LastWriteTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "][type= backing]"
-                    $i=1
+                    $checkpoint.type = "backing"
+                    $checkpoint.creation_time = (get-date -date $parent.LastWriteTime.ToUniversalTime() -UFormat ' . "'%s'" . ')
+                    $checkpoints.Add($checkpoint)
                 }
             }
         }
+
+        $item.checkpoints = $checkpoints
+        $items.Add($item)
     }
+
+    $jsonString = $items | ConvertTo-JSON-20 -forceArray $true
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1
@@ -78,7 +92,7 @@ Try {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 1;

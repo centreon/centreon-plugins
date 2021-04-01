@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => $map[$i]->[0], diff => 1 } ],
                 output_template => $map[$i]->[1],
                 perfdatas => [
-                    { label => $perf_label, value => $map[$i]->[0] . '_absolute', template => '%s', min => 0 },
+                    { label => $perf_label, value => $map[$i]->[0] , template => '%s', min => 0 },
                 ],
             }
         };
@@ -115,7 +115,7 @@ Check bind global server usage.
 Only display some counters (regexp can be used).
 Example: --filter-counters='request'
 
-=item B<--warning-*> <--critical-*>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 'opcode-query', 'opcode-iquery', 'opcode-status', 'opcode-notify', 'opcode-update',

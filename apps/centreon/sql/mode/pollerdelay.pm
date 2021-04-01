@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'delay' }, { name => 'display' } ],
                 output_template => 'delay for last update is %d seconds',
                 perfdatas => [
-                    { label => 'delay', value => 'delay_absolute', template => '%s',
+                    { label => 'delay', value => 'delay', template => '%s',
                       unit => 's', label_extra_instance => 1 },
                 ],
             }
@@ -80,7 +80,7 @@ sub manage_selection {
             next;
         }
         
-    	if ($$row[3] == 0) {
+        if ($$row[3] == 0) {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => sprintf("%s is not running", $$row[1]));
             next;

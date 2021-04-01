@@ -29,23 +29,24 @@ my $mapping = {
     v6 => {
         temperatureValue => { oid => '.1.3.6.1.4.1.4526.22.5.1.2' },
         temperatureType => { oid => '.1.3.6.1.4.1.4526.22.5.1.3' },
-        temperatureMax => { oid => '.1.3.6.1.4.1.4526.22.5.1.5' },
     },
     v4 => {
         temperatureValue => { oid => '.1.3.6.1.4.1.4526.18.5.1.2' },
-        temperatureStatus => { oid => '.1.3.6.1.4.1.4526.18.5.1.3' },
-    },
+        temperatureStatus => { oid => '.1.3.6.1.4.1.4526.18.5.1.3' }
+    }
 };
 my $oid_temperatureTable = {
     v4 => '.1.3.6.1.4.1.4526.18.5',
-    v6 => '.1.3.6.1.4.1.4526.22.5',
+    v6 => '.1.3.6.1.4.1.4526.22.5'
 };
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_temperatureTable->{$self->{mib_ver}}, 
-        start => $mapping->{$self->{mib_ver}}->{temperatureValue} };
+    push @{$self->{request}}, {
+        oid => $oid_temperatureTable->{$self->{mib_ver}},
+        start => $mapping->{$self->{mib_ver}}->{temperatureValue}->{oid}
+    };
 }
 
 sub check {
@@ -64,25 +65,36 @@ sub check {
         next if ($self->check_filter(section => 'temperature', instance => $instance));
         $self->{components}->{temperature}->{total}++;
         
-        my $temperatureMax_string = defined($result->{temperatureMax}) && $result->{temperatureMax} != -1 ? "  ($result->{temperatureMax} max)" : '';
-        my $temperatureMax_unit = defined($result->{temperatureMax}) && $self->{mib_ver} == 6 ? 'C' : 'F';
-        
-        $self->{output}->output_add(long_msg => sprintf("temperature '%s' status is %s [value = %s%s]", 
-                                        $instance, $result->{temperatureStatus}, $result->{temperatureValue}, $temperatureMax_unit));
-        my $exit = $self->get_severity(label => 'default', section => 'temperature', value => $result->{temperatureStatus});
+        my $temperature_unit = $self->{mib_ver} eq 'v6' ? 'C' : 'F';
+        my $temperature_status = defined($result->{temperatureStatus}) ? $result->{temperatureStatus} : 'n/a';
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' status is %s [value = %s%s]", 
+                $instance,
+                defined($result->{temperatureStatus}) ? $result->{temperatureStatus} : 'n/a',
+                $result->{temperatureValue},
+                $temperature_unit
+            )
+        );
+        my $exit = $self->get_severity(label => 'default', section => 'temperature', value => $temperature_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' status is %s.", $instance, $result->{temperatureStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Temperature '%s' status is %s.", $instance, $temperature_status)
+            );
         }
                 
         my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{temperatureValue});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Temperature '%s' is %s%s", $instance, $result->{temperatureValue}, $temperatureMax_unit));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Temperature '%s' is %s%s", $instance, $result->{temperatureValue}, $temperature_unit)
+            );
         }
         $self->{output}->perfdata_add(
-            label => 'temp', unit => $temperatureMax_unit,
-            nlabel => 'hardware.temperature.' . (($temperatureMax_unit eq 'C') ? 'celsius' : 'fahrenheit'),
+            label => 'temp', unit => $temperature_unit,
+            nlabel => 'hardware.temperature.' . (($temperature_unit eq 'C') ? 'celsius' : 'fahrenheit'),
             instances => $instance,
             value => $result->{temperatureValue},
             warning => $warn,

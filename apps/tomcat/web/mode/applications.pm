@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -54,8 +54,8 @@ sub set_counters {
                 key_values => [ { name => 'sessions' }, { name => 'display' } ],
                 output_template => 'active sessions: %s',
                 perfdatas => [
-                    { value => 'sessions_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'sessions', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -115,7 +115,7 @@ sub manage_selection {
     );
 
     $self->{application} = {};
-    while ($webcontent =~ /^(.*?):(.*?):(.*?):(.*)/mg) {
+    while ($webcontent =~ /^(.*?)\s*:\s*(.*?)\s*:\s*(.*?)\s*:\s*(.*)/mg) {
         my ($context, $state, $sessions, $contextpath) = ($1, $2, $3, $4);
 
         next if (defined($self->{option_results}->{filter_path}) && $self->{option_results}->{filter_path} ne '' &&

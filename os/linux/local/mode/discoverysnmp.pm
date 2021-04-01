@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,16 +34,16 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "subnet:s"              => { name => 'subnet' },
-        "snmp-port:s"           => { name => 'snmp_port', default => 161 },
-        "snmp-version:s@"       => { name => 'snmp_version' },
-        "snmp-community:s@"     => { name => 'snmp_community' },
-        "snmp-timeout:s"        => { name => 'snmp_timeout', default => 1 },
-        "prettify"              => { name => 'prettify' },
+        'subnet:s'          => { name => 'subnet' },
+        'snmp-port:s'       => { name => 'snmp_port', default => 161 },
+        'snmp-version:s@'   => { name => 'snmp_version' },
+        'snmp-community:s@' => { name => 'snmp_community' },
+        'snmp-timeout:s'    => { name => 'snmp_timeout', default => 1 },
+        'prettify'          => { name => 'prettify' }
     });
-    
+
     $self->{snmp} = centreon::plugins::snmp->new(%options, noptions => 1);
-                                
+
     return $self;
 }
 
@@ -84,6 +84,7 @@ my $lookup_type = [
     { type => 'stonesoft', re => qr/Forcepoint/i },
     { type => 'redback', re => qr/Redback/i },
     { type => 'palo alto', re => qr/Palo Alto/i },
+    { type => 'hp procurve', re => qr/HP.*Switch/i },
     { type => 'hp procurve', re => qr/HP ProCurve/i },
     { type => 'hp standard', re => qr/HPE Comware/i },
     { type => 'hp msl', re => qr/HP MSL/i },
@@ -94,11 +95,13 @@ my $lookup_type = [
     { type => 'macos', re => qr/Darwin/i },
     { type => 'hp-ux', re => qr/HP-UX/i },
     { type => 'freebsd', re => qr/FreeBSD/i },
+    { type => 'aix', re => qr/ AIX / },
 ];
 
 sub define_type {
     my ($self, %options) = @_;
 
+    return "unknown" unless (defined($options{desc}) && $options{desc} ne '');
     foreach (@$lookup_type) {
         if ($options{desc} =~ /$_->{re}/) {
             return $_->{type};
@@ -151,6 +154,7 @@ sub run {
         my %host;
         $host{type} = $self->define_type(desc => $result->{$self->{oid_sysDescr}});
         $host{desc} = $result->{$self->{oid_sysDescr}};
+        $host{desc} =~ s/\n/ /g if (defined($host{desc}));
         $host{ip} = $ip->addr;
         $host{hostname} = $result->{$self->{oid_sysName}};
         $host{snmp_version} = $last_version;

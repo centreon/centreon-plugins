@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,8 +30,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -44,7 +43,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{instances} = $options{custom}->ec2_list_resources(region => $self->{option_results}->{region});
+    $self->{instances} = $options{custom}->ec2_list_resources();
 }
 
 sub run {
@@ -53,7 +52,8 @@ sub run {
     $self->manage_selection(%options);
     foreach (@{$self->{instances}}) {
         next if ($_->{Type} !~ m/instance/);
-        $self->{output}->output_add(long_msg => sprintf("[Id = %s][AvailabilityZone = %s][InstanceType = %s][State = %s][Tags = %s][KeyName = %s]",
+        $self->{output}->output_add(
+            long_msg => sprintf("[Id = %s][AvailabilityZone = %s][InstanceType = %s][State = %s][Tags = %s][KeyName = %s]",
             $_->{Name}, $_->{AvailabilityZone}, $_->{InstanceType}, $_->{State}, $_->{Tags}, $_->{KeyName}));
     }
     

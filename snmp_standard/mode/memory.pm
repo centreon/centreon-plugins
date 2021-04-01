@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,25 +28,27 @@ use warnings;
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Ram Total: %s %s Used (-buffers/cache): %s %s (%.2f%%) Free: %s %s (%.2f%%)",
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
-        $self->{result_values}->{prct_used_absolute},
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
-        $self->{result_values}->{prct_free_absolute});
-    return $msg;
+    return sprintf(
+        'Ram Total: %s %s Used (-buffers/cache): %s %s (%.2f%%) Free: %s %s (%.2f%%)',
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
+        $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_swap_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Swap Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)",
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
-        $self->{result_values}->{prct_used_absolute},
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
-        $self->{result_values}->{prct_free_absolute});
-    return $msg;
+    return sprintf(
+        'Swap Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)',
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
+        $self->{result_values}->{prct_free}
+    );
 }
 
 sub set_counters {
@@ -54,35 +56,32 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'ram', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'swap', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
+        { name => 'swap', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } }
     ];
-    
+
     $self->{maps_counters}->{ram} = [
         { label => 'usage', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { label => 'used', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { label => 'free', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
-                key_values => [ { name => 'prct_used' } ],
-                output_template => 'Used : %.2f %%',
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%' },
-                ],
+                    { label => 'used_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'buffer', nlabel => 'memory.buffer.bytes', set => {
@@ -90,9 +89,8 @@ sub set_counters {
                 output_template => 'Buffer: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'buffer', value => 'memBuffer_absolute', template => '%d',
-                      min => 0, unit => 'B' },
-                ],
+                    { label => 'buffer', template => '%d', min => 0, unit => 'B' }
+                ]
             }
         },
         { label => 'cached', nlabel => 'memory.cached.bytes', set => {
@@ -100,9 +98,8 @@ sub set_counters {
                 output_template => 'Cached: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'cached', value => 'memCached_absolute', template => '%d',
-                      min => 0, unit => 'B' },
-                ],
+                    { label => 'cached', template => '%d', min => 0, unit => 'B' }
+                ]
             }
         },
         { label => 'shared', nlabel => 'memory.shared.bytes', set => {
@@ -110,40 +107,37 @@ sub set_counters {
                 output_template => 'Shared: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'shared', value => 'memShared_absolute', template => '%d',
-                      min => 0, unit => 'B' },
-                ],
+                    { label => 'shared', template => '%d', min => 0, unit => 'B' }
+                ]
             }
-        },
+        }
     ];
     $self->{maps_counters}->{swap} = [
         { label => 'swap', nlabel => 'swap.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
-                    { label => 'swap', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { label => 'swap', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'swap-free', display_ok => 0, nlabel => 'swap.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
-                    { label => 'swap_free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { label => 'swap_free', template => '%d', min => 0, max => 'total',
+                      unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'swap-prct', display_ok => 0, nlabel => 'swap.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' } ],
-                output_template => 'Used : %.2f %%',
+                output_template => 'Swap Used : %.2f %%',
                 perfdatas => [
-                    { label => 'swap_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%' },
-                ],
+                    { label => 'swap_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -151,33 +145,17 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        'units:s'   => { name => 'units', default => '%' },
-        'free'      => { name => 'free' },
-        'swap'      => { name => 'check_swap' },
-        'redhat'    => { name => 'redhat' },
+        'units:s'            => { name => 'units', default => '%' },
+        'free'               => { name => 'free' },
+        'swap'               => { name => 'check_swap' },
+        'patch-redhat'       => { name => 'patch_redhat' },
+        'redhat'             => { name => 'redhat' }, # for legacy (do nothing)
+        'autodetect-redhat'  => { name => 'autodetect_redhat' } # for legacy (do nothing)
     });
-    
+
     return $self;
-}
-
-sub compat_threshold_counter {
-    my ($self, %options) = @_;
-
-    foreach ('warning', 'critical') {
-        foreach my $th (@{$options{compat}->{th}}) {
-            next if (!defined($options{option_results}->{$_ . '-' . $th->[0]}) || $options{option_results}->{$_ . '-' . $th->[0]} eq '');
-
-            if (defined($options{compat}->{free})) {
-                $options{option_results}->{$_ . '-' . $th->[1]->{free}} = $options{option_results}->{$_ . '-' . $th->[0]};
-                $options{option_results}->{$_ . '-' . $th->[0]} = undef;
-            } elsif (defined($options{compat}->{units}) && $options{compat}->{units} eq '%') {
-                $options{option_results}->{$_ . '-' . $th->[1]->{prct}} = $options{option_results}->{$_ . '-' . $th->[0]};
-                $options{option_results}->{$_ . '-' . $th->[0]} = undef;
-            }
-        }
-    }
 }
 
 sub check_options {
@@ -205,12 +183,10 @@ my $mapping = {
     memTotalReal => { oid => '.1.3.6.1.4.1.2021.4.5' },
     memAvailReal => { oid => '.1.3.6.1.4.1.2021.4.6' },
     memTotalFree => { oid => '.1.3.6.1.4.1.2021.4.11' },
-    memShared => { oid => '.1.3.6.1.4.1.2021.4.13' },
-    memBuffer => { oid => '.1.3.6.1.4.1.2021.4.14' },
-    memCached => { oid => '.1.3.6.1.4.1.2021.4.15' },
+    memShared    => { oid => '.1.3.6.1.4.1.2021.4.13' },
+    memBuffer    => { oid => '.1.3.6.1.4.1.2021.4.14' },
+    memCached    => { oid => '.1.3.6.1.4.1.2021.4.15' }
 };
-
-my $oid_memory = '.1.3.6.1.4.1.2021.4';
 
 sub memory_calc {
     my ($self, %options) = @_;
@@ -221,59 +197,16 @@ sub memory_calc {
     my $cached = ($options{result}->{memCached}) ? $options{result}->{memCached} * 1024 : 0;
     my ($used, $free, $prct_used, $prct_free) = (0, 0, 0, 0);
 
-    if ($total != 0) {
-        #### procps-ng-3.3.10-23
-        ## Mem:
-        ## total = MemTotal in /proc/meminfo
-        ## used = total - free - buffer - cache
-        ## free = MemFree in /proc/meminfo
-        ## shared = Shmem in /proc/meminfo
-        ## buffers = Buffers in /proc/meminfo
-        ## cache = Cached and Slab in /proc/meminfo
-        ## available = MemAvailable in /proc/meminfo
-        ## Swap:
-        ## total = SwapTotal in /proc/meminfo
-        ## used = total - free
-        ## free = SwapFree in /proc/meminfo
-        #### net-snmp-5.7.2-38
-        ## memTotalSwap = SwapTotal in /proc/meminfo
-        ## memAvailSwap = SwapFree in /proc/meminfo
-        ## memTotalReal = MemTotal in /proc/meminfo
-        ## memAvailReal = MemFree in /proc/meminfo
-        ## memTotalFree = memAvailSwap + memAvailReal
-        ## memShared = MemShared in /proc/meminfo
-        ## memBuffer = Buffers in /proc/meminfo
-        ## memCached = Cached in /proc/meminfo (missing Slab)
+    # rhel patch introduced: net-snmp-5.7.2-43.el7 (https://bugzilla.redhat.com/show_bug.cgi?id=1250060)
+    # rhel patch reverted:   net-snmp-5.7.2-47.el7 (https://bugzilla.redhat.com/show_bug.cgi?id=1779609)
 
-        #### procps-ng-3.3.10-26
-        ## Mem:
-        ## total = MemTotal in /proc/meminfo
-        ## used = total - free - buffer - cache
-        ## free = MemFree in /proc/meminfo
-        ## shared = Shmem in /proc/meminfo
-        ## buffers = Buffers in /proc/meminfo
-        ## cache = Cached and SReclaimable in /proc/meminfo (https://gitlab.com/procps-ng/procps/commit/05d751c4f076a2f0118b914c5e51cfbb4762ad8e)
-        ## available = MemAvailable in /proc/meminfo
-        ## Swap:
-        ## total = SwapTotal in /proc/meminfo
-        ## used = total - free
-        ## free = SwapFree in /proc/meminfo
-        #### net-snmp-5.7.2-43
-        ## memTotalSwap = SwapTotal in /proc/meminfo
-        ## memAvailSwap = SwapFree in /proc/meminfo
-        ## memTotalReal = MemTotal in /proc/meminfo
-        ## memAvailReal = MemFree + Buffers + Cached + SReclaimable in /proc/meminfo (https://bugzilla.redhat.com/attachment.cgi?id=1554747&action=diff)
-        ## memTotalFree = memAvailSwap + memAvailReal
-        ## memShared = MemShared in /proc/meminfo
-        ## memBuffer = Buffers in /proc/meminfo
-        ## memCached = Cached + SReclaimable in /proc/meminfo (https://bugzilla.redhat.com/attachment.cgi?id=1554747&action=diff)
-        
-        $used = (defined($self->{option_results}->{redhat})) ? $total - $available : $total - $available - $buffer - $cached;
-        $free = (defined($self->{option_results}->{redhat})) ? $available : $total - $used;
+    if ($total != 0) {
+        $used = (defined($self->{option_results}->{patch_redhat})) ? $total - $available : $total - $available - $buffer - $cached;
+        $free = (defined($self->{option_results}->{patch_redhat})) ? $available : $total - $used;
         $prct_used = $used * 100 / $total;
         $prct_free = 100 - $prct_used;
     }
-    
+
     $self->{ram} = {
         total => $total,
         used => $used,
@@ -282,7 +215,7 @@ sub memory_calc {
         prct_free => $prct_free,
         memShared => ($options{result}->{memShared}) ? $options{result}->{memShared} * 1024 : 0,
         memBuffer => $buffer,
-        memCached => $cached,
+        memCached => $cached
     };
 }
 
@@ -304,14 +237,17 @@ sub swap_calc {
         used => $used,
         free => $free,
         prct_used => $prct_used,
-        prct_free => $prct_free,
+        prct_free => $prct_free
     };
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{snmp}->get_table(oid => $oid_memory, end => $mapping->{memCached}->{oid});
+    my $results = $options{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
+        nothing_quit => 1
+    );
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => 0);
 
     $self->memory_calc(result => $result);
@@ -349,15 +285,13 @@ Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%),
 'swap' (B), 'swap-free' (B), 'swap-prct' (%),
 'buffer' (B), 'cached' (B), 'shared' (B).
 
-=item B<--redhat>
+=item B<--patch-redhat>
 
-If using RedHat distribution with net-snmp >= 5.7.2-43.
+If using RedHat distribution with net-snmp >= 5.7.2-43 and net-snmp < 5.7.2-47. But you should update net-snmp!!!!
 
 This version: used = memTotalReal - memAvailReal // free = memAvailReal
 
 Others versions: used = memTotalReal - memAvailReal - memBuffer - memCached // free = total - used
-
-(grep for '##' in this mode for more informations)
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,7 +46,7 @@ sub custom_update_output {
     my ($self, %options) = @_;
 
     my $msg = sprintf("Update time: %s",
-                        $self->{result_values}->{update_time_absolute} != 0 ? centreon::plugins::misc::change_seconds(value => $self->{result_values}->{update_time_absolute}) : 0);
+                        $self->{result_values}->{update_time} != 0 ? centreon::plugins::misc::change_seconds(value => $self->{result_values}->{update_time}) : 0);
     return $msg;
 }
 
@@ -76,8 +76,8 @@ sub set_counters {
                 key_values => [ { name => 'update_time'}, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_update_output'),
                 perfdatas => [
-                    { label => 'update_time', value => 'update_time_absolute', template => '%d',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'update_time', value => 'update_time', template => '%d',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

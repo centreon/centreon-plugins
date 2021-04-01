@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -42,18 +42,17 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s@"             => { name => 'hostname' },
-            "freebox-app-id:s@"       => { name => 'freebox_app_id' },
-            "freebox-app-token:s@"    => { name => 'freebox_app_token' },
-            "freebox-api-version:s@"  => { name => 'freebox_api_version', },
-            "timeout:s@"              => { name => 'timeout' },
-            "resolution:s@"           => { name => 'resolution' },
+            'hostname:s@'            => { name => 'hostname' },
+            'freebox-app-id:s@'      => { name => 'freebox_app_id' },
+            'freebox-app-token:s@'   => { name => 'freebox_app_token' },
+            'freebox-api-version:s@' => { name => 'freebox_api_version', },
+            'timeout:s@'             => { name => 'timeout' },
+            'resolution:s@'          => { name => 'resolution' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
 
     $self->{session_token} = undef;
@@ -68,21 +67,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -214,15 +199,18 @@ sub get_performance {
         $encoded = encode_json($json_request);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
+        $self->{output}->add_option_msg(short_msg => 'Cannot encode json request');
         $self->{output}->option_exit();
     }
     
     $self->settings();
-    my $content = $self->{http}->request(url_path => '/api/' . $self->{freebox_api_version} . '/' . $options{path},
-                                         method => 'POST', query_form_post => $encoded, 
-                                         critical_status => '', warning_status => '', unknown_status => '');
+    my $content = $self->{http}->request(
+        url_path => '/api/' . $self->{freebox_api_version} . '/' . $options{path},
+        method => 'POST', query_form_post => $encoded, 
+        critical_status => '', warning_status => '', unknown_status => ''
+    );
     my $decoded = $self->manage_response(content => $content);
+
     my ($datas, $total) = ({}, 0);
     foreach my $data (@{$decoded->{result}->{data}}) {
         foreach my $label (keys %$data) {
@@ -233,9 +221,7 @@ sub get_performance {
         $total++;
     }
     
-    foreach (keys %$datas) {
-        $datas->{$_} /= $total;
-    }
+    $datas->{$_} = $datas->{$_} / $total / 100 foreach (keys %$datas);
 
     return $datas;
 }

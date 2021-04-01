@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,21 +26,25 @@ use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_sta
 
 my $mapping = {
     powerSupplyStatus       => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.12.1.5', map => \%map_status },
-    powerSupplyLocationName => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.12.1.8' },
+    powerSupplyLocationName => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.12.1.8' }
 };
 my $oid_powerSupplyTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.12.1';
 
 sub load {
     my ($self) = @_;
-    
-    push @{$self->{request}}, { oid => $oid_powerSupplyTableEntry };
+
+    push @{$self->{request}}, {
+        oid => $oid_powerSupplyTableEntry,
+        start => $mapping->{powerSupplyStatus}->{oid},
+        end => $mapping->{powerSupplyLocationName}->{oid}
+    };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
-    $self->{components}->{psu} = {name => 'power supplies', total => 0, skip => 0};
+    $self->{components}->{psu} = { name => 'power supplies', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'psu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_powerSupplyTableEntry}})) {
@@ -51,15 +55,23 @@ sub check {
         next if ($self->check_filter(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is '%s' [instance = %s]",
-                                    $result->{powerSupplyLocationName}, $result->{powerSupplyStatus}, $instance, 
-                                    ));
-   
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' status is '%s' [instance = %s]",
+                $result->{powerSupplyLocationName}, $result->{powerSupplyStatus}, $instance, 
+            )
+        );
 
         my $exit = $self->get_severity(label => 'default.status', section => 'psu.status', value => $result->{powerSupplyStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power supply '%s' status is '%s'", $result->{powerSupplyLocationName}, $result->{powerSupplyStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Power supply '%s' status is '%s'",
+                    $result->{powerSupplyLocationName},
+                    $result->{powerSupplyStatus}
+                )
+            );
         }
     }
 }

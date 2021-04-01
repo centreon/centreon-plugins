@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -99,7 +99,7 @@ ORDER BY pgsa.query_start, pgsa.procpid DESC
         }
         
         my $exit_code = $self->{perfdata}->threshold_check(value => $row->{seconds}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        if ($self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
+        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(long_msg => sprintf("Request from client '%s' too long (%d sec) on database '%s': %s",
                                                             $row->{client_addr}, $row->{seconds}, $row->{datname}, $row->{current_query}));
             $dbquery->{$row->{datname}}->{total}++;

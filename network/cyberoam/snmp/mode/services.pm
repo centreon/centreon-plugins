@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,11 +27,9 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(service)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         default => [            
             ['untouched', 'OK'],
@@ -41,29 +39,31 @@ sub set_system {
             ['exiting', 'CRITICAL'],
             ['dead', 'CRITICAL'],
             ['unregistered', 'OK'],
-        ],
+            ['frozen', 'CRITICAL']
+        ]
     };
-    
+
     $self->{components_path} = 'network::cyberoam::snmp::mode::components';
     $self->{components_module} = ['service'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+    $self->{results} = $self->{snmp}->get_multiple_table(
+        oids => $self->{request},
+        return_type => 1
+    );
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

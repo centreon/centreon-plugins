@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,16 +23,16 @@ package storage::synology::snmp::mode::components::psu;
 use strict;
 use warnings;
 
-my %map_status = (1 => 'Normal', 2 => 'Failed');
+my $map_status = { 1 => 'Normal', 2 => 'Failed' };
 
 my $mapping = {
-    synoSystempowerStatus => { oid => '.1.3.6.1.4.1.6574.1.3', map => \%map_status  },
+    synoSystempowerStatus => { oid => '.1.3.6.1.4.1.6574.1.3', map => $map_status  }
 };
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $mapping->{synoSystempowerStatus}->{oid} };
+    push @{$self->{request_leef}}, $mapping->{synoSystempowerStatus}->{oid} . '.0';
 }
 
 sub check {
@@ -41,15 +41,24 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking power supply");
     $self->{components}->{psu} = {name => 'psu', total => 0, skip => 0};
     return if ($self->check_filter(section => 'psu'));
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results_leef}, instance => '0');
+    return if (!defined($result->{synoSystempowerStatus}));
+
     $self->{components}->{psu}->{total}++;
 
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{synoSystempowerStatus}->{oid}}, instance => '0');
-    $self->{output}->output_add(long_msg => sprintf("power supply status is %s.",
-                                    $result->{synoSystempowerStatus}));
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "power supply status is %s.",
+            $result->{synoSystempowerStatus}
+        )
+    );
     my $exit = $self->get_severity(label => 'default', section => 'psu', value => $result->{synoSystempowerStatus});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Power Supply status is %s.", $result->{synoSystempowerStatus}));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("Power Supply status is %s.", $result->{synoSystempowerStatus})
+        );
     }
 }
 

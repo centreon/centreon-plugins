@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,21 +27,19 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(service)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         default => [
             ['unknown', 'OK'],
             ['working', 'OK'],
             ['inactive', 'OK'],
             ['warning', 'WARNING'],
-            ['failed', 'CRITICAL'],
-        ],
+            ['failed', 'CRITICAL']
+        ]
     };
-    
+
     $self->{components_path} = 'network::infoblox::snmp::mode::components';
     $self->{components_module} = ['service'];
 }
@@ -50,10 +48,8 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -80,8 +76,8 @@ Can be: 'service'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=service,fan1
+Filter component instances (syntax: component,regexp_filter). Component instances are excluded if matching regexp_filter.
+E.g: --filter=service,fan1
 
 =item B<--no-component>
 
@@ -148,16 +144,22 @@ sub check {
         next if ($oid !~ /^$mapping->{ibNodeServiceName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ibMemberNodeServiceStatusEntry}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'service', instance => $result->{ibNodeServiceName}));
-        
+
         $self->{components}->{service}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("service '%s' status is '%s' [instance = %s]",
-                                                        $result->{ibNodeServiceName}, $result->{ibNodeServiceStatus}, $result->{ibNodeServiceName}));
-        my $exit = $self->get_severity(section => 'default', instance => $result->{ibNodeServiceName}, value => $result->{ibNodeServiceStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "service '%s' status is '%s' [instance = %s]",
+                $result->{ibNodeServiceName}, $result->{ibNodeServiceStatus}, $result->{ibNodeServiceName}
+            )
+        );
+        my $exit = $self->get_severity(label => 'default', section => 'service', instance => $result->{ibNodeServiceName}, value => $result->{ibNodeServiceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Service '%s' status is '%s'", $result->{ibNodeServiceName}, $result->{ibNodeServiceStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Service '%s' status is '%s'", $result->{ibNodeServiceName}, $result->{ibNodeServiceStatus})
+            );
         }
     }
 }

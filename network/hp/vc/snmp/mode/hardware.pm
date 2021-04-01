@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,9 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(domain|enclosure|module|port|moduleport|physicalserver|enet|fc|profile)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
@@ -41,16 +39,16 @@ sub set_system {
             ['major', 'CRITICAL'],
             ['critical', 'CRITICAL'],
             ['disabled', 'OK'],
-            ['info', 'OK'],
+            ['info', 'OK']
         ],
         'moduleport.loop' => [
             ['ok', 'OK'],
-            ['loop-detected', 'CRITICAL'],
+            ['loop-detected', 'CRITICAL']
         ],
         'moduleport.protection' => [
             ['ok', 'OK'],
             ['pause-flood-detected', 'CRITICAL'],
-            ['in-pause-condition', 'WARNING'],
+            ['in-pause-condition', 'WARNING']
         ],
     };
     
@@ -69,10 +67,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1, no_absent => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }

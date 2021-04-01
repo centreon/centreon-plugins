@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,8 +40,8 @@ sub set_counters {
                 key_values => [ { name => 'read_iops' }, { name => 'display' } ],
                 output_template => 'Read IOPs : %s',
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops_absolute', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', value => 'read_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -50,8 +50,8 @@ sub set_counters {
                 output_template => 'Read usage : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'read_usage', value => 'read_bps_absolute', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_usage', value => 'read_bps', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -59,8 +59,8 @@ sub set_counters {
                 key_values => [ { name => 'read_latency' }, { name => 'display' } ],
                 output_template => 'Read latency : %s ms',
                 perfdatas => [
-                    { label => 'read_latency', value => 'read_latency_absolute', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_latency', value => 'read_latency', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -68,8 +68,8 @@ sub set_counters {
                 key_values => [ { name => 'write_iops' }, { name => 'display' } ],
                 output_template => 'Write IOPs : %s',
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_iops_absolute', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', value => 'write_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -78,8 +78,8 @@ sub set_counters {
                 output_template => 'Write Usage : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'write_usage', value => 'write_bps_absolute', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_usage', value => 'write_bps', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -87,8 +87,8 @@ sub set_counters {
                 key_values => [ { name => 'write_latency' }, { name => 'display' } ],
                 output_template => 'Write Latency : %s ms',
                 perfdatas => [
-                    { label => 'write_latency', value => 'write_latency_absolute', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_latency', value => 'write_latency', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -105,25 +105,26 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "cem-host:s"      => { name => 'cem_host' },
-                                  "cem-user:s"      => { name => 'cem_user' },
-                                  "cem-password:s"  => { name => 'cem_password' },
-                                  "cem-port:s"      => { name => 'cem_port', default => 3033 },
-                                  "sdk-path-dll:s"  => { name => 'sdk_path_dll' },
-                                  "timeout:s"           => { name => 'timeout', default => 50 },
-                                  "command:s"           => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "no-ps"               => { name => 'no_ps' },
-                                  "ps-exec-only"        => { name => 'ps_exec_only' },
-                                  "ps-sc-filter:s"      => { name => 'ps_sc_filter' },
-                                  "start-time:s"        => { name => 'start_time' },
-                                  "end-time:s"          => { name => 'end_time' },
-                                  "timezone:s"          => { name => 'timezone' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'cem-host:s'        => { name => 'cem_host' },
+        'cem-user:s'        => { name => 'cem_user' },
+        'cem-password:s'    => { name => 'cem_password' },
+        'cem-port:s'        => { name => 'cem_port', default => 3033 },
+        'sdk-path-dll:s'    => { name => 'sdk_path_dll' },
+        'timeout:s'         => { name => 'timeout', default => 50 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'             => { name => 'no_ps' },
+        'ps-exec-only'      => { name => 'ps_exec_only' },
+        'ps-display'        => { name => 'ps_display' },
+        'ps-sc-filter:s'    => { name => 'ps_sc_filter' },
+        'start-time:s'      => { name => 'start_time' },
+        'end-time:s'        => { name => 'end_time' },
+        'timezone:s'        => { name => 'timezone' },
+    });
+
     return $self;
 }
 
@@ -131,32 +132,34 @@ sub get_iso8601 {
     my ($self, %options) = @_;
     my $value = $options{date}->datetime . '.' . sprintf("%03d", $options{date}->millisecond());
     my $offset = $options{date}->offset();
-    
+
     $value .= "-" if ($offset < 0);
     $value .= "+" if ($offset >= 0);
     $offset = abs($offset);
     $value .= sprintf("%02d:%02d", $offset / 3600, $offset % 3600);
-    
+
     return $value;
 }
 
 sub parse_date {
     my ($self, %options) = @_;
-    
+
     if ($options{date} !~ /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/) {
         $self->{output}->add_option_msg(short_msg => "Wrong time option '" . $options{date} . "'.");
         $self->{output}->option_exit();
     }
-    
-    my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
-                           %{$self->{tz}});
+
+    my $dt = DateTime->new(
+        year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
+        %{$self->{tz}}
+    );
     return $dt;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
  	$self->{option_results}->{timezone} = 'GMT' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
     foreach my $label (('cem_host', 'cem_user', 'cem_password', 'cem_port', 'sdk_path_dll')) {
         if (!defined($self->{option_results}->{$label}) || $self->{option_results}->{$label} eq '') {
@@ -166,7 +169,7 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }
-    
+
     my ($dt_start, $dt_end);
     $self->{tz} = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     if (defined($self->{option_results}->{end_time}) && $self->{option_results}->{end_time} ne '') {
@@ -175,7 +178,7 @@ sub check_options {
         $dt_end = DateTime->now(%{$self->{tz}});
     }
     $self->{end_time} = $self->get_iso8601(date => $dt_end);
-    
+
     if (defined($self->{option_results}->{start_time}) && $self->{option_results}->{start_time} ne '') {
         $dt_start = $self->parse_date(date => $self->{option_results}->{start_time});
     } else {
@@ -186,29 +189,45 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::dell::compellent::hbausage::get_powershell(cem_host => $self->{option_results}->{cem_host},
-                                                                            cem_user => $self->{option_results}->{cem_user},
-                                                                            cem_password => $self->{option_results}->{cem_password},
-                                                                            cem_port => $self->{option_results}->{cem_port},
-                                                                            sdk_path_dll => $self->{option_results}->{sdk_path_dll},
-                                                                            no_ps => $self->{option_results}->{no_ps},
-                                                                            filter_sc => $self->{option_results}->{ps_sc_filter},
-                                                                            end_time => $self->{end_time}, start_time => $self->{start_time});
-    
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                            timeout => $self->{option_results}->{timeout},
-                                                            command => $self->{option_results}->{command},
-                                                            command_path => $self->{option_results}->{command_path},
-                                                            command_options => $self->{option_results}->{command_options});
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::dell::compellent::hbausage::get_powershell(
+            cem_host => $self->{option_results}->{cem_host},
+            cem_user => $self->{option_results}->{cem_user},
+            cem_password => $self->{option_results}->{cem_password},
+            cem_port => $self->{option_results}->{cem_port},
+            sdk_path_dll => $self->{option_results}->{sdk_path_dll},
+            filter_sc => $self->{option_results}->{ps_sc_filter},
+            end_time => $self->{end_time}, start_time => $self->{start_time}
+        );
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
+
     # microseconds for latencies
     #[sc=PRD-SAN-01][name=xxxx][ReadIops=39,5][ReadKbPerSecond=1220,75][ReadLatency=3997][WriteIops=95,75][WriteKbPerSecond=1217][WriteLatency=3903,25]
     $self->{hba} = {};
@@ -217,9 +236,11 @@ sub manage_selection {
         my ($sc, $name, $read_iops, $read_kbps, $read_latency, $write_iops, $write_kbps, $write_latency) = 
             ($1, $2, $3, $4, $5, $6, $7, $8);
         my $display = $sc . '/' . $name;
-        
-        $self->{hba}->{$name} = { display => $display, read_iops => $read_iops, read_bps => $read_kbps * 1000, read_latency => $read_latency / 1000,
-                                  write_iops => $write_iops, write_bps => $write_kbps * 1000, write_latency => $write_latency / 1000 };
+    
+        $self->{hba}->{$name} = {
+            display => $display, read_iops => $read_iops, read_bps => $read_kbps * 1000, read_latency => $read_latency / 1000,
+            write_iops => $write_iops, write_bps => $write_kbps * 1000, write_latency => $write_latency / 1000
+        };
     }
 }
 
@@ -273,6 +294,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 

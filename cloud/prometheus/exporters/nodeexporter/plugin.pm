@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,23 +31,16 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'cpu'               => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
-                        'cpu-detailed'      => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
-                        'load'              => 'cloud::prometheus::exporters::nodeexporter::mode::load',
-                        'memory'            => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
-                        'storage'           => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
-                        );
+        'cpu'               => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
+        'cpu-detailed'      => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
+        'load'              => 'cloud::prometheus::exporters::nodeexporter::mode::load',
+        'memory'            => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
+        'storage'           => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
+    );
 
     $self->{custom_modes}{api} = 'cloud::prometheus::restapi::custom::api';
     return $self;
 }
-
-sub init {
-    my ( $self, %options ) = @_;
-
-    $self->SUPER::init(%options);
-}
-
 
 1;
 

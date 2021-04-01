@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::moxa::switch::snmp::mode::cpu',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::moxa::switch::snmp::mode::memory',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                        );
+        'cpu'              => 'network::moxa::switch::snmp::mode::cpu',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::moxa::switch::snmp::mode::memory',
+        'uptime'           => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

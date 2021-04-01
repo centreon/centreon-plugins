@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,33 +32,30 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'categories', type => 1, cb_prefix_output => 'prefix_categories_output',
-          message_multiple => 'All categories are ok' },
+          message_multiple => 'All categories are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'malware-detected', set => {
-                key_values => [ { name => 'stMalwareDetected', diff => 1 } ],
+        { label => 'malware-detected', nlabel => 'malwares.detected.persecond', set => {
+                key_values => [ { name => 'stMalwareDetected', per_second => 1 } ],
                 output_template => 'Malware detected (per sec): %d',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'malware_detected', value => 'stMalwareDetected_per_second', template => '%d',
-                      min => 0, unit => 'detections/s' },
-                ],
+                    { label => 'malware_detected', template => '%d', min => 0, unit => 'detections/s' }
+                ]
             }
-        },
+        }
     ];
     $self->{maps_counters}->{categories} = [
-        { label => 'category', set => {
-                key_values => [ { name => 'stCategoryCount', diff => 1 }, { name => 'stCategoryName' } ],
+        { label => 'category', nlabel => 'category.malwares.detected.persecond', set => {
+                key_values => [ { name => 'stCategoryCount', per_second => 1 }, { name => 'stCategoryName' } ],
                 output_template => 'detections (per sec): %d',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'category', value => 'stCategoryCount_per_second', template => '%d',
+                    { label => 'category', template => '%d',
                       min => 0, unit => 'detections/s', label_extra_instance => 1,
-                      instance_use => 'stCategoryName_absolute' },
-                ],
+                      instance_use => 'stCategoryName' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -73,17 +70,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-name:s"     => { name => 'filter_name' },
-                                    "filter-counters:s" => { name => 'filter_counters', default => '' },
-                                });
-    return $self;
-}
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
+    return $self;
 }
 
 my $oid_stMalwareDetected = '.1.3.6.1.4.1.1230.2.7.2.1.2.0';
@@ -97,21 +88,18 @@ my $oid_stCategoriesEntry = '.1.3.6.1.4.1.1230.2.7.2.1.10.1';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "mcafee_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'mcafee_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     my $results = $options{snmp}->get_leef(oids => [ $oid_stMalwareDetected ], nothing_quit => 1);
-
     my $results2 = $options{snmp}->get_table(oid => $oid_stCategoriesEntry, nothing_quit => 1);
-    
-    $self->{global} = {};
-    $self->{categories} = {};
 
     $self->{global} = {
         stMalwareDetected => $results->{$oid_stMalwareDetected},
     };
 
+    $self->{categories} = {};
     foreach my $oid (keys %{$results2}) {
         next if ($oid !~ /^$mapping->{stCategoryName}->{oid}\.(\d+)/);
         my $instance = $1;
@@ -123,9 +111,9 @@ sub manage_selection {
             next;
         }
 
-        $self->{categories}->{$result->{stCategoryName}} = {
+        $self->{categories}->{ $result->{stCategoryName} } = {
             stCategoryName => $result->{stCategoryName},
-            stCategoryCount => $result->{stCategoryCount},
+            stCategoryCount => $result->{stCategoryCount}
         }
     }
 

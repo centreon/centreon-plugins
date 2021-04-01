@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,11 +37,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'ntp-hostname:s'          => { name => 'ntp_hostname' },
-        'ntp-port:s'              => { name => 'ntp_port', default => 123 },
-        'warning:s'               => { name => 'warning' },
-        'critical:s'              => { name => 'critical' },
-        'timeout:s'               => { name => 'timeout', default => 30 },
+        'ntp-hostname:s' => { name => 'ntp_hostname' },
+        'ntp-port:s'     => { name => 'ntp_port', default => 123 },
+        'warning:s'      => { name => 'warning' },
+        'critical:s'     => { name => 'critical' },
+        'timeout:s'      => { name => 'timeout', default => 30 },
     });
 
     return $self;

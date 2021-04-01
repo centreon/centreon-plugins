@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -54,13 +54,21 @@ sub check {
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{systemHealthStat}->{oid}}, instance => '0');
     $self->{components}->{global}->{total}++;
     
-    $self->{output}->output_add(long_msg => sprintf("system health status is '%s'", 
-                                                    $result->{systemHealthStat}));
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "system health status is '%s'", 
+            $result->{systemHealthStat}
+        )
+    );
     my $exit = $self->get_severity(section => 'global', value => $result->{systemHealthStat});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("System health status is '%s'.", 
-                                                         $result->{systemHealthStat}));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf(
+                "System health status is '%s'.", 
+                $result->{systemHealthStat}
+            )
+        );
     }
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'alarm-datacenter'     => 'apps::vmware::connector::mode::alarmdatacenter',
         'alarm-host'           => 'apps::vmware::connector::mode::alarmhost',
         'countvm-host'         => 'apps::vmware::connector::mode::countvmhost', 
@@ -56,6 +56,7 @@ sub new {
         'memory-host'          => 'apps::vmware::connector::mode::memoryhost',
         'memory-vm'            => 'apps::vmware::connector::mode::memoryvm',
         'net-host'             => 'apps::vmware::connector::mode::nethost',
+        'net-vm'               => 'apps::vmware::connector::mode::netvm',
         'service-host'         => 'apps::vmware::connector::mode::servicehost',
         'snapshot-vm'          => 'apps::vmware::connector::mode::snapshotvm',
         'stat-connectors'      => 'apps::vmware::connector::mode::statconnectors',
@@ -70,9 +71,9 @@ sub new {
         'uptime-host'          => 'apps::vmware::connector::mode::uptimehost',
         'vmoperation-cluster'  => 'apps::vmware::connector::mode::vmoperationcluster',
         'vsan-cluster-usage'   => 'apps::vmware::connector::mode::vsanclusterusage',
-    );
+    };
 
-    $self->{custom_modes}{connector} = 'apps::vmware::connector::custom::connector';
+    $self->{custom_modes}->{connector} = 'apps::vmware::connector::custom::connector';
     return $self;
 }
 

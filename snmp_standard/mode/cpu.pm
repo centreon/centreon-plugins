@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'average' }, { name => 'count' } ],
                 output_template => '%.2f %%',
                 perfdatas => [
-                    { label => 'total_cpu_avg', value => 'average_absolute', template => '%.2f',
+                    { label => 'total_cpu_avg', value => 'average', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -50,12 +50,11 @@ sub set_counters {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu', value => 'cpu', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
-
     ];
 }
 
@@ -98,16 +97,19 @@ sub manage_selection {
         my $cpu_num = $1;
 
         $cpu += $result->{$key};
-        $self->{cpu_core}->{$i} = { display => $i,
-                                    cpu => $result->{$key} };
+        $self->{cpu_core}->{$i} = {
+            display => $i,
+            cpu => $result->{$key}
+        };
 
         $i++;
     }
 
     my $avg_cpu = $cpu / $i;
-    $self->{cpu_avg} = { average => $avg_cpu,
-                         count => $i };
-
+    $self->{cpu_avg} = {
+        average => $avg_cpu,
+        count => $i
+    };
 }
 
 1;

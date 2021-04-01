@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,23 +24,17 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("Status is '%s', VPN State is '%s'",
-        $self->{result_values}->{state}, $self->{result_values}->{vpn_state});
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{vpn_state} = $options{new_datas}->{$self->{instance} . '_vpn_state'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    
-    return 0;
+    return sprintf(
+        "status is '%s' [vpn state: '%s'] [backup state: '%s']",
+        $self->{result_values}->{state},
+        $self->{result_values}->{vpn_state},
+        $self->{result_values}->{backup_state}
+    );
 }
 
 sub set_counters {
@@ -50,22 +44,37 @@ sub set_counters {
         { name => 'edges', type => 3, cb_prefix_output => 'prefix_edge_output', cb_long_output => 'long_output',
           message_multiple => 'All edges links status are ok', indent_long_output => '    ',
             group => [
+                { name => 'global', type => 0 },
                 { name => 'links', display_long => 1, cb_prefix_output => 'prefix_link_output',
-                  message_multiple => 'All links status are ok', type => 1 },
+                  message_multiple => 'All links status are ok', type => 1 }
             ]
         }
     ];
 
+    $self->{maps_counters}->{global} = [
+        { label => 'edge-links-count', nlabel => 'edge.links.total.count', set => {
+                key_values => [ { name => 'link_count' } ],
+                output_template => '%s link(s)',
+                perfdatas => [ { template => '%d', unit => '', min => 0 } ]
+            }
+        }
+    ];
+
     $self->{maps_counters}->{links} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'vpn_state' },
-                    { name => 'display' }, { name => 'id' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+        {
+            label => 'status',
+            type => 2,
+            critical_default => '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/',
+            set => {
+                key_values => [
+                    { name => 'state' }, { name => 'vpn_state' }, { name => 'backup_state' },
+                    { name => 'display' }, { name => 'id' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -93,11 +102,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-edge-name:s"    => { name => 'filter_edge_name' },
-        "filter-link-name:s"    => { name => 'filter_link_name' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/' },
+        'filter-edge-name:s' => { name => 'filter_edge_name' },
+        'filter-link-name:s' => { name => 'filter_link_name' }
     });
    
     return $self;
@@ -108,17 +114,14 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $results = $options{custom}->list_edges();
+
     $self->{edges} = {};
-
-    my $results = $options{custom}->list_edges;
-
     foreach my $edge (@{$results}) {
         if (defined($self->{option_results}->{filter_edge_name}) && $self->{option_results}->{filter_edge_name} ne '' &&
             $edge->{name} !~ /$self->{option_results}->{filter_edge_name}/) {
@@ -141,22 +144,19 @@ sub manage_selection {
                 next;
             }
 
+            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
             $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
                 state => $link->{link}->{state},
                 vpn_state => $link->{link}->{vpnState},
+                backup_state => defined($link->{link}->{backupState}) ? $link->{link}->{backupState} : '-'
             };
         }
     }
 
     if (scalar(keys %{$self->{edges}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No edge found.");
-        $self->{output}->option_exit();
-    }
-    foreach (keys %{$self->{edges}}) {
-        last if (defined($self->{edges}->{$_}->{links}));
-        $self->{output}->add_option_msg(short_msg => "No link found.");
         $self->{output}->option_exit();
     }
 }
@@ -182,17 +182,15 @@ Filter link by name (Can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{state}, %{vpn_state}.
+Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
 
-=item B<--warning-status>
+=item B<--warning-*> B<--critical-*>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{vpn_state}.
+Warning & Critical thresholds
+Can be 'status', 'edge-links-count'.
 
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/').
-Can used special variables like: %{state}, %{vpn_state}.
+For 'status', special variables can be used: %{state}, %{vpn_state}, %{backup_state}
+(Critical threshold default: '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/').
 
 =back
 

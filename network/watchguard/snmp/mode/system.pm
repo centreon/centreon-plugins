@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,35 +34,32 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'connections', set => {
+        { label => 'connections', nlabel => 'system.connections.current.count', set => {
                 key_values => [ { name => 'connections' } ],
-                output_template => 'Current connections : %s',
+                output_template => 'Current connections: %s',
                 perfdatas => [
-                    { label => 'current_connections', value => 'connections_absolute', template => '%s',
-                      min => 0 },
-                ],
+                    { label => 'current_connections', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'in-traffic', set => {
-                key_values => [ { name => 'in_traffic', diff => 1 } ],
-                output_template => 'Traffic In : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+        { label => 'in-traffic', nlabel => 'system.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'in_traffic', per_second => 1 } ],
+                output_template => 'Traffic in: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'in_traffic_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
-                ],
+                    { label => 'traffic_in', template => '%s', min => 0, unit => 'b/s' }
+                ]
             }
         },
-        { label => 'out-traffic', set => {
-                key_values => [ { name => 'out_traffic', diff => 1 } ],
-                output_template => 'Traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+        { label => 'out-traffic', nlabel => 'system.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'out_traffic', per_second => 1 } ],
+                output_template => 'Traffic out: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'out_traffic_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
-                ],
+                    { label => 'traffic_out', template => '%s', min => 0, unit => 'b/s' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -70,11 +67,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -82,20 +78,27 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     if ($options{snmp}->is_snmpv1()) {
-        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
+        $self->{output}->add_option_msg(short_msg => 'Need to use SNMP v2c or v3.');
         $self->{output}->option_exit();
     }
 
     my $oid_wgSystemTotalSendBytes = '.1.3.6.1.4.1.3097.6.3.8.0';
     my $oid_wgSystemTotalRecvBytes = '.1.3.6.1.4.1.3097.6.3.9.0';
     my $oid_wgSystemCurrActiveConns = '.1.3.6.1.4.1.3097.6.3.80.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
             $oid_wgSystemTotalSendBytes, $oid_wgSystemTotalRecvBytes, $oid_wgSystemCurrActiveConns
-        ], nothing_quit => 1);
+        ],
+        nothing_quit => 1
+    );
 
-    $self->{global} = { out_traffic => $snmp_result->{$oid_wgSystemTotalSendBytes}, 
-        in_traffic => $snmp_result->{$oid_wgSystemTotalRecvBytes}, connections => $snmp_result->{$oid_wgSystemCurrActiveConns} };
-     $self->{cache_name} = "watchguard_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+    $self->{global} = {
+        out_traffic => $snmp_result->{$oid_wgSystemTotalSendBytes} * 8,
+        in_traffic => $snmp_result->{$oid_wgSystemTotalRecvBytes} * 8,
+        connections => $snmp_result->{$oid_wgSystemCurrActiveConns}
+    };
+
+    $self->{cache_name} = 'watchguard_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
@@ -112,16 +115,11 @@ Check system statistics.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^(connections)$'
+Example: --filter-counters='^connections$'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'in-traffic', 'out-traffic', 'connections'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'in-traffic', 'out-traffic', 'connections'.
 
 =back

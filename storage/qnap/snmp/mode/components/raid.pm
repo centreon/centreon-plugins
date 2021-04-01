@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,12 +47,20 @@ sub check {
         
         my $status = $self->{results}->{$oid_raidStatus}->{$oid};
         $self->{components}->{raid}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("raid '%s' status is %s [instance: %s]",
-                                    $instance, $status, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "raid '%s' status is %s [instance: %s]",
+                $instance, $status, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'raid', value => $status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Raid '%s' status is %s.", $instance, $status));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Raid '%s' status is %s.", $instance, $status
+                )
+            );
         }
     }
 }

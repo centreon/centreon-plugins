@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,8 +46,8 @@ sub set_counters {
                 output_template => 'In Peak : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in_peak', value => 'in_peak_absolute', template => '%.2f',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in_peak', value => 'in_peak', template => '%.2f',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -64,8 +64,8 @@ sub set_counters {
                 output_template => 'Out Peak : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out_peak', value => 'out_peak_absolute', template => '%.2f',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out_peak', value => 'out_peak', template => '%.2f',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

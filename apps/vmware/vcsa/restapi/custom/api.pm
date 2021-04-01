@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,20 +44,19 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>  {
+        $options{options}->add_options(arguments => {
             'hostname:s'        => { name => 'hostname' },
             'port:s'            => { name => 'port'},
             'proto:s'           => { name => 'proto' },
             'api-username:s'    => { name => 'api_username' },
             'api-password:s'    => { name => 'api_password' },
-            'timeout:s'         => { name => 'timeout', default => 30 },
+            'timeout:s'         => { name => 'timeout', default => 30 }
         });
     }
     
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
 
@@ -70,21 +69,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -129,11 +114,6 @@ sub settings {
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
     $self->{http}->add_header(key => 'Accept', value => 'application/json;charset=UTF-8');
-    if (defined($self->{session_id})) {
-        $self->{http}->add_header(key => 'vmware-api-session-id', value => $self->{session_id});
-    } else {
-        $self->{http}->add_header(key => 'vmware-api-session-id', value => 'null');
-    }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -158,6 +138,7 @@ sub clean_session_id {
     my $datas = { last_timestamp => time() };
     $options{statefile}->write(data => $datas);
     $self->{session_id} = undef;
+    $self->{http}->add_header(key => 'vmware-api-session-id', value => undef);
 }
 
 sub authenticate {
@@ -165,16 +146,16 @@ sub authenticate {
 
     my $has_cache_file = $options{statefile}->read(statefile => 'vcsa_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $session_id = $options{statefile}->get(name => 'session_id');
-    
+
     if ($has_cache_file == 0 || !defined($session_id)) {
         my $content = $self->{http}->request(
             method => 'POST',
+            query_form_post => '',
             url_path => '/rest/com/vmware/cis/session',
             credentials => 1, basic => 1,
             username => $self->{api_username},
             password => $self->{api_password},
-            warning_status => '', unknown_status => '', critical_status => '',
-            curl_backend_options => { header => ['Content-Length: 0'] },
+            warning_status => '', unknown_status => '', critical_status => ''
         );
         if ($self->{http}->get_code() != 200) {
             $self->{output}->add_option_msg(short_msg => "Login error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
@@ -195,6 +176,7 @@ sub authenticate {
     }
 
     $self->{session_id} = $session_id;
+    $self->{http}->add_header(key => 'vmware-api-session-id', value => $self->{session_id});
 }
 
 sub request_api {
@@ -204,13 +186,14 @@ sub request_api {
     if (!defined($self->{session_id})) {
         $self->authenticate(statefile => $self->{cache});
     }
+    
     my $content = $self->{http}->request(%options, 
         warning_status => '', unknown_status => '', critical_status => ''
     );
 
     # Maybe there is an issue with the session_id. So we retry.
     if ($self->{http}->get_code() != 200) {
-        $self->clean_session_id();
+        $self->clean_session_id(statefile => $self->{cache});
         $self->authenticate(statefile => $self->{cache});
         $content = $self->{http}->request(%options, 
             warning_status => '', unknown_status => '', critical_status => ''
@@ -220,6 +203,10 @@ sub request_api {
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
         $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
+        $self->{output}->option_exit();
+    }
+    if ($self->{http}->get_code() != 200) {
+        $self->{output}->add_option_msg(short_msg => 'api request error: ' . (defined($decoded->{type}) ? $decoded->{type} : 'unknown'));
         $self->{output}->option_exit();
     }
 

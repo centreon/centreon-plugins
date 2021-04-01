@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,17 +27,16 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(psu|fan)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
-    
+
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature)$';
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         fan => [
             ['up', 'OK'],
             ['absent', 'OK'],
-            ['down', 'CRITICAL'],
+            ['down', 'CRITICAL']
         ],
         psu => [    
             ['up', 'OK'],
@@ -49,12 +48,20 @@ sub set_system {
             ['critical', 'CRITICAL'],
             ['shutdown', 'CRITICAL'],
             ['notPresent', 'OK'],
-            ['notFunctioning', 'CRITICAL'],
+            ['notFunctioning', 'CRITICAL']
         ],
+        stack => [
+            ['ok', 'OK'],
+            ['unsupported', 'CRITICAL'],
+            ['codeMismatch', 'CRITICAL'],
+            ['configMismatch', 'WARNING'],
+            ['unitDown', 'CRITICAL'],
+            ['notPresent', 'OK']
+        ]
     };
     
     $self->{components_path} = 'centreon::common::force10::snmp::mode::components';
-    $self->{components_module} = ['fan', 'psu', 'temperature'];
+    $self->{components_module} = ['fan', 'psu', 'stack'];
 }
 
 sub snmp_execute {
@@ -66,13 +73,12 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 

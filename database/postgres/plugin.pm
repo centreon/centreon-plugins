@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,20 +32,22 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'backends'         => 'database::postgres::mode::backends',
-                         'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'database-size'    => 'database::postgres::mode::databasesize',
-                         'hitratio'         => 'database::postgres::mode::hitratio',
-                         'locks'            => 'database::postgres::mode::locks',
-                         'list-databases'   => 'database::postgres::mode::listdatabases',
-                         'query-time'       => 'database::postgres::mode::querytime',
-                         'sql'              => 'centreon::common::protocols::sql::mode::sql',
-                         'statistics'       => 'database::postgres::mode::statistics',
-                         'tablespace'       => 'database::postgres::mode::tablespace',
-                         'timesync'         => 'database::postgres::mode::timesync',
-                         'vacuum'           => 'database::postgres::mode::vacuum',
-                         );
-    $self->{sql_modes}{psqlcmd} = 'database::postgres::psqlcmd';
+        'backends'         => 'database::postgres::mode::backends',
+        'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
+        'database-size'    => 'database::postgres::mode::databasesize',
+        'hitratio'         => 'database::postgres::mode::hitratio',
+        'locks'            => 'database::postgres::mode::locks',
+        'list-databases'   => 'database::postgres::mode::listdatabases',
+        'query-time'       => 'database::postgres::mode::querytime',
+        'sql'              => 'centreon::common::protocols::sql::mode::sql',
+        'sql-string'       => 'centreon::common::protocols::sql::mode::sqlstring',
+        'statistics'       => 'database::postgres::mode::statistics',
+        'tablespace'       => 'database::postgres::mode::tablespace',
+        'timesync'         => 'database::postgres::mode::timesync',
+        'vacuum'           => 'database::postgres::mode::vacuum',
+    );
+
+    $self->{sql_modes}->{psqlcmd} = 'database::postgres::psqlcmd';
     return $self;
 }
 
@@ -53,12 +55,12 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(
-                                   arguments => {
-                                                'host:s@'      => { name => 'db_host' },
-                                                'port:s@'      => { name => 'db_port' },
-                                                'database:s@'  => { name => 'db_name' },
-                                                }
-                                  );
+        arguments => {
+            'host:s@'      => { name => 'db_host' },
+            'port:s@'      => { name => 'db_port' },
+            'database:s@'  => { name => 'db_name' }
+        }
+    );
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();
@@ -67,19 +69,19 @@ sub init {
         @{$self->{sqldefault}->{dbi}} = ();
         @{$self->{sqldefault}->{psqlcmd}} = ();
         for (my $i = 0; $i < scalar(@{$options_result->{db_host}}); $i++) {
-            $self->{sqldefault}->{dbi}[$i] = { data_source => 'Pg:host=' . $options_result->{db_host}[$i] };
-            $self->{sqldefault}->{psqlcmd}[$i] = { host => $options_result->{db_host}[$i] };
-            if (defined($options_result->{db_port}[$i])) {
-                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{db_port}[$i];
-                $self->{sqldefault}->{psqlcmd}[$i]->{port} = $options_result->{db_port}[$i];
+            $self->{sqldefault}->{dbi}->[$i] = { data_source => 'Pg:host=' . $options_result->{db_host}->[$i] };
+            $self->{sqldefault}->{psqlcmd}->[$i] = { host => $options_result->{db_host}->[$i] };
+            if (defined($options_result->{db_port}->[$i])) {
+                $self->{sqldefault}->{dbi}->[$i]->{data_source} .= ';port=' . $options_result->{db_port}->[$i];
+                $self->{sqldefault}->{psqlcmd}->[$i]->{port} = $options_result->{db_port}->[$i];
             }
-            $options_result->{db_name}[$i] = (defined($options_result->{db_name}[$i]) && $options_result->{db_name}[$i] ne '') ? $options_result->{db_name}[$i] : 'postgres';
-            $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';database=' . $options_result->{db_name}[$i];
-            $self->{sqldefault}->{psqlcmd}[$i]->{dbname} = $options_result->{db_name}[$i];
+            $options_result->{db_name}->[$i] = (defined($options_result->{db_name}[$i]) && $options_result->{db_name}->[$i] ne '') ? $options_result->{db_name}->[$i] : 'postgres';
+            $self->{sqldefault}->{dbi}->[$i]->{data_source} .= ';database=' . $options_result->{db_name}->[$i];
+            $self->{sqldefault}->{psqlcmd}->[$i]->{dbname} = $options_result->{db_name}->[$i];
         }
     }
-    
-    $self->SUPER::init(%options);    
+
+    $self->SUPER::init(%options);
 }
 
 1;

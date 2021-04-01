@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,7 +32,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'name:s'        => { name => 'name' },
-        'regexp"        => { name => 'use_regexp' },
+        'regexp'        => { name => 'use_regexp' },
         'filter-type:s' => { name => 'filter_type' },
     });
 

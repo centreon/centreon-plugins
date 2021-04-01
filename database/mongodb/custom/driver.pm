@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,23 +40,23 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s"    => { name => 'hostname' },
-            "port:s"        => { name => 'port' },
-            "protocol:s"    => { name => 'protocol' },
-            "username:s"    => { name => 'username' },
-            "password:s"    => { name => 'password' },
-            "timeout:s"     => { name => 'timeout' },
-            "ssl-opt:s@"    => { name => 'ssl_opt' },
+            'hostname:s' => { name => 'hostname' },
+            'port:s'     => { name => 'port' },
+            'protocol:s' => { name => 'protocol' },
+            'username:s' => { name => 'username' },
+            'password:s' => { name => 'password' },
+            'timeout:s'  => { name => 'timeout' },
+            'ssl-opt:s@' => { name => 'ssl_opt' }
         });
     }
+
     $options{options}->add_help(package => __PACKAGE__, sections => 'DRIVER OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
-    
+
     return $self;
 }
 
@@ -66,31 +66,22 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : 'localhost';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 27017;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
+    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : '';
     $self->{protocol} = (defined($self->{option_results}->{protocol})) ? $self->{option_results}->{protocol} : 'mongodb';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
+
+    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
+        $self->{output}->option_exit();
+    }
 
     foreach (@{$self->{option_results}->{ssl_opt}}) {
         $_ =~ /(\w+)\s*=>\s*(\w+)/;
@@ -122,10 +113,10 @@ sub connect {
     $uri = $self->{protocol} . '://';
     $uri .= $encoded_username . ':' . $encoded_password . '@' if ($encoded_username ne '' && $encoded_password ne '');
     $uri .= $self->{hostname} if ($self->{hostname} ne '');
-    $uri .= ':' . $self->{port} if ($self->{port} ne '');
+    $uri .= ':' . $self->{port} if ($self->{port} ne '' && $self->{protocol} ne 'mongodb+srv');
 
     $self->{output}->output_add(long_msg => 'Connection URI: ' . $uri, debug => 1);
-    
+
     my $ssl = (defined($self->{ssl_opts})) ? $self->{ssl_opts} : 0;
     $self->{client} = MongoDB::MongoClient->new(host => $uri, ssl => $ssl);
     $self->{client}->connect();
@@ -158,7 +149,7 @@ sub run_command {
     if (!defined($self->{client})) {
         $self->connect();
     }
-        
+
     my $db = $self->{client}->get_database($options{database});
     return $db->run_command($options{command});
 }
@@ -208,7 +199,7 @@ MongoDB server hostname.
 
 =item B<--port>
 
-Port used (Default: 27017)
+Port used by MongoDB.
 
 =item B<--protocol>
 

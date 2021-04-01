@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'available' }  ],
                 output_template => "available : %s",
                 perfdatas => [
-                    { label => 'total_available', value => 'available_absolute', template => '%d', min => 0 },
+                    { label => 'total_available', value => 'available', template => '%d', min => 0 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'failed' }  ],
                 output_template => "failed : %s",
                 perfdatas => [
-                    { label => 'total_failed', value => 'failed_absolute', template => '%d', min => 0 },
+                    { label => 'total_failed', value => 'failed', template => '%d', min => 0 },
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'backing-up' }  ],
                 output_template => "backing-up : %s",
                 perfdatas => [
-                    { label => 'total_backing_up', value => 'backing-up_absolute', template => '%d', min => 0 },
+                    { label => 'total_backing_up', value => 'backing-up', template => '%d', min => 0 },
                 ],
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'maintenance' }  ],
                 output_template => "maintenance : %s",
                 perfdatas => [
-                    { label => 'total_maintenance', value => 'maintenance_absolute', template => '%d', min => 0 },
+                    { label => 'total_maintenance', value => 'maintenance', template => '%d', min => 0 },
                 ],
             }
         },
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'stopped' }  ],
                 output_template => "stopped : %s",
                 perfdatas => [
-                    { label => 'total_stopped', value => 'stopped_absolute', template => '%d', min => 0 },
+                    { label => 'total_stopped', value => 'stopped', template => '%d', min => 0 },
                 ],
             }
         },
@@ -95,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'storage-full' }  ],
                 output_template => "storage-full : %s",
                 perfdatas => [
-                    { label => 'total_storage_full', value => 'storage-full_absolute', template => '%d', min => 0 },
+                    { label => 'total_storage_full', value => 'storage-full', template => '%d', min => 0 },
                 ],
             }
         },
@@ -118,24 +118,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-instanceid:s" => { name => 'filter_instanceid' },
-                                    "warning-status:s"    => { name => 'warning_status', default => '' },
-                                    "critical-status:s"   => { name => 'critical_status', default => '' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "filter-instanceid:s" => { name => 'filter_instanceid' },
+        "warning-status:s"    => { name => 'warning_status', default => '' },
+        "critical-status:s"   => { name => 'critical_status', default => '' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
 
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
@@ -159,7 +153,7 @@ sub manage_selection {
         available => 0, 'backing-up' => 0, failed => 0, maintenance => 0, stopped => 0, 'storage-full' => 0,
     };
     $self->{aws_instances} = {};
-    my $result = $options{custom}->rds_get_instances_status(region => $self->{option_results}->{region});
+    my $result = $options{custom}->rds_get_instances_status();
     foreach my $instance_id (keys %{$result}) {
         if (defined($self->{option_results}->{filter_instanceid}) && $self->{option_results}->{filter_instanceid} ne '' &&
             $instance_id !~ /$self->{option_results}->{filter_instanceid}/) {

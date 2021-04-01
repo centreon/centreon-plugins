@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,7 +20,7 @@
 
 package snmp_standard::mode::uptime;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
@@ -29,42 +29,86 @@ use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Time::HiRes qw(time);
 
+my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
+my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
+
+sub custom_uptime_output { 
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'System uptime is: %s',
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{uptime}, start => 'd')
+    );
+}
+
+sub custom_uptime_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        label => 'uptime', unit => $self->{instance_mode}->{option_results}->{unit},
+        nlabel => 'system.uptime.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
+        value => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_uptime_threshold {
+    my ($self, %options) = @_;
+
+    return $self->{perfdata}->threshold_check(
+        value => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'uptime', set => {
+                key_values => [ { name => 'uptime' } ],
+                closure_custom_output => $self->can('custom_uptime_output'),
+                closure_custom_perfdata => $self->can('custom_uptime_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_uptime_threshold')
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "warning:s"         => { name => 'warning' },
-        "critical:s"        => { name => 'critical' },
-        "force-oid:s"       => { name => 'force_oid' },
-        "check-overload"    => { name => 'check_overload' },
-        "reboot-window:s"   => { name => 'reboot_window', default => 5000 },
-        "unit:s"            => { name => 'unit', default => 's' },
+        'force-oid:s'     => { name => 'force_oid' },
+        'check-overload'  => { name => 'check_overload' },
+        'reboot-window:s' => { name => 'reboot_window', default => 5000 },
+        'unit:s'          => { name => 'unit', default => 's' }
     });
-    
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
-my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
-
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
     if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
         $self->{option_results}->{unit} = 's';
     }
-    
+
     $self->{statefile_cache}->check_options(%options);
 }
 
@@ -75,7 +119,7 @@ sub check_overload {
     
     my $current_time = floor(time() * 100);
     $self->{new_datas} = { last_time => $current_time, uptime => $options{timeticks} };
-    $self->{statefile_cache}->read(statefile => "cache_" . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
+    $self->{statefile_cache}->read(statefile => 'cache_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
     my $old_uptime = $self->{statefile_cache}->get(name => 'uptime');
     my $last_time = $self->{statefile_cache}->get(name => 'last_time');
     $self->{new_datas}->{overload} = $self->{statefile_cache}->get(name => 'overload') || 0;
@@ -93,15 +137,14 @@ sub check_overload {
         }
     }
     $options{timeticks} += ($self->{new_datas}->{overload} * 4294967296);
-    
+
     $self->{statefile_cache}->write(data => $self->{new_datas});
     return $options{timeticks};
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
+
     # To be used first for OS
     my $oid_hrSystemUptime = '.1.3.6.1.2.1.25.1.1.0';
     # For network equipment or others
@@ -109,34 +152,21 @@ sub run {
     my ($result, $value);
     
     if (defined($self->{option_results}->{force_oid})) {
-        $result = $self->{snmp}->get_leef(oids => [ $self->{option_results}->{force_oid} ], nothing_quit => 1);
-        $value = $result->{$self->{option_results}->{force_oid}};
+        $result = $options{snmp}->get_leef(oids => [ $self->{option_results}->{force_oid} ], nothing_quit => 1);
+        $value = $result->{ $self->{option_results}->{force_oid} };
     } else {
-        $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemUptime, $oid_sysUpTime ], nothing_quit => 1);
+        $result = $options{snmp}->get_leef(oids => [ $oid_hrSystemUptime, $oid_sysUpTime ], nothing_quit => 1);
         if (defined($result->{$oid_hrSystemUptime})) {
             $value = $result->{$oid_hrSystemUptime};
         } else {
             $value = $result->{$oid_sysUpTime};
         }
     }
-    
-    $value = $self->check_overload(timeticks => $value);
+
+    $value = $self->check_overload(timeticks => $value, snmp => $options{snmp});
     $value = floor($value / 100);
-    
-    my $exit_code = $self->{perfdata}->threshold_check(value => floor($value / $unitdiv->{$self->{option_results}->{unit}}), 
-                              threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
-    $self->{output}->perfdata_add(label => 'uptime', unit => $self->{option_results}->{unit},
-                                  value => floor($value / $unitdiv->{$self->{option_results}->{unit}}),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
 
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("System uptime is: %s",
-                                                     centreon::plugins::misc::change_seconds(value => $value, start => 'd')));
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{global} = { uptime => $value };
 }
 
 1;
@@ -149,13 +179,13 @@ Check system uptime.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-uptime>
 
-Threshold warning in seconds.
+Threshold warning.
 
-=item B<--critical>
+=item B<--critical-uptime>
 
-Threshold critical in seconds.
+Threshold critical.
 
 =item B<--force-oid>
 

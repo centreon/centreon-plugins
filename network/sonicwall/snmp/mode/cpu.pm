@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'CPU Usage %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'prct_used_absolute', template => '%.2f',
+                    { label => 'cpu', value => 'prct_used', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,12 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                            'alarms'            => 'apps::cisco::cms::restapi::mode::alarms',
-                            'calls'             => 'apps::cisco::cms::restapi::mode::calls',
-                            'database-status'   => 'apps::cisco::cms::restapi::mode::databasestatus',
-                            'licenses'          => 'apps::cisco::cms::restapi::mode::licenses',
-                            'system-status'     => 'apps::cisco::cms::restapi::mode::systemstatus',
-                        );
+        'alarms'            => 'apps::cisco::cms::restapi::mode::alarms',
+        'calls'             => 'apps::cisco::cms::restapi::mode::calls',
+        'database-status'   => 'apps::cisco::cms::restapi::mode::databasestatus',
+        'licenses'          => 'apps::cisco::cms::restapi::mode::licenses',
+        'system-status'     => 'apps::cisco::cms::restapi::mode::systemstatus',
+    );
+
     $self->{custom_modes}{xmlapi} = 'apps::cisco::cms::restapi::custom::xmlapi';
     return $self;
 }

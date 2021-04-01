@@ -18,7 +18,7 @@ sub set_counters {
                 key_values => [ { name => 'VideoPacketLossRate' } ],
                 output_template => 'Packet Loss Rate: %.2f%%',
                 perfdatas => [
-                    { label => 'video_pckt_loss_rate', value => 'VideoPacketLossRate_absolute',
+                    { label => 'video_pckt_loss_rate', value => 'VideoPacketLossRate',
                       template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -27,7 +27,7 @@ sub set_counters {
                 key_values => [ { name => 'VideoPostFECPLR' } ],
                 output_template => 'Packet Loss Rate After Correction: %.2f%%',
                 perfdatas => [
-                    { label => 'video_post_fecplr', value => 'VideoPostFECPLR_absolute',
+                    { label => 'video_post_fecplr', value => 'VideoPostFECPLR',
                       template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'VideoLocalFrameLossPercentageAvg' } ],
                 output_template => 'Video Frame Loss: %.2f%%',
                 perfdatas => [
-                    { label => 'video_frame_loss_prct_avg', value => 'VideoLocalFrameLossPercentageAvg_absolute',
+                    { label => 'video_frame_loss_prct_avg', value => 'VideoLocalFrameLossPercentageAvg',
                       template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'RecvFrameRateAverage' } ],
                 output_template => 'Receiver Frame Rate: %.2f/s',
                 perfdatas => [
-                    { label => 'rcv_frame_rate_avg', value => 'RecvFrameRateAverage_absolute',
+                    { label => 'rcv_frame_rate_avg', value => 'RecvFrameRateAverage',
                       template => '%.2f', unit => 'frames/s', min => 0 },
                 ],
             }
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'InboundVideoFrameRateAvg' } ],
                 output_template => 'Inbound Video Frame Rate: %.2f%%',
                 perfdatas => [
-                    { label => 'inbound_video_frame_rate_avg', value => 'InboundVideoFrameRateAvg_absolute',
+                    { label => 'inbound_video_frame_rate_avg', value => 'InboundVideoFrameRateAvg',
                       template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'OutboundVideoFrameRateAvg' } ],
                 output_template => 'Outbound Video Frame Rate: %.2f%%',
                 perfdatas => [
-                    { label => 'outbound_video_frame_rate_avg', value => 'OutboundVideoFrameRateAvg_absolute',
+                    { label => 'outbound_video_frame_rate_avg', value => 'OutboundVideoFrameRateAvg',
                       template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -74,7 +74,7 @@ sub set_counters {
                 key_values => [ { name => 'TotalStreams' } ],
                 output_template => 'Streams Count: %.2f/s',
                 perfdatas => [
-                    { label => 'stream_count', value => 'TotalStreams_absolute', template => '%.2f',
+                    { label => 'stream_count', value => 'TotalStreams', template => '%.2f',
                       unit => 'streams/s', min => 0 },
                 ],
             }

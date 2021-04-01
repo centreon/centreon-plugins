@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -63,9 +63,11 @@ sub run {
         $edge{device_family} = $edge->{deviceFamily};
         $edge{name} = $edge->{name};
         $edge{description} = $edge->{description};
+        $edge{description} =~ s/\n//g if (defined($edge{description}));
         $edge{edge_state} = $edge->{edgeState};
         $edge{service_state} = $edge->{serviceState};
         $edge{ha_state} = $edge->{haState};
+        $edge{type} = 'edge';
         
         push @disco_data, \%edge;
     }

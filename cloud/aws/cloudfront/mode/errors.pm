@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -82,7 +82,7 @@ sub set_counters {
                 key_values => [ { name => $metric }, { name => 'display' } ],
                 output_template => $metrics_mapping{$metric}->{output} . ': %.2f',
                 perfdatas => [
-                    { value => $metric . '_absolute', template => '%.2f', label_extra_instance => 1 }
+                    { value => $metric , template => '%.2f', label_extra_instance => 1 }
                 ],
             }
         };
@@ -145,7 +145,6 @@ sub manage_selection {
     my %metric_results;
     foreach my $instance (@{$self->{aws_instance}}) {
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/CloudFront',
             dimensions => [ { Name => 'Region', Value => 'Global' }, { Name => 'DistributionId', Value => $instance } ],
             metrics => $self->{aws_metrics},
@@ -160,7 +159,9 @@ sub manage_selection {
 
                 $self->{metrics}->{$instance}->{display} = $instance;
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
-                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = 
+                    defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? 
+                    $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
         }
     }

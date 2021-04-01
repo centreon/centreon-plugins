@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ use storage::emc::unisphere::restapi::mode::components::resources qw($health_sta
 sub load {
     my ($self) = @_;
 
-    $self->{json_results}->{sp} = $self->{custom}->request_api(method => 'GET', url_path => '/api/types/storageProcessor/instances');
+    $self->{json_results}->{sp} = $self->{custom}->request_api(method => 'GET', url_path => '/api/types/storageProcessor/instances?fields=health');
 }
 
 sub check {

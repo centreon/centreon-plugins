@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,16 +30,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "oid-filter:s"            => { name => 'oid_filter', default => 'ifname' },
-                                  "oid-display:s"           => { name => 'oid_display', default => 'ifname' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'oid-filter:s'  => { name => 'oid_filter', default => 'ifname' },
+        'oid-display:s' => { name => 'oid_display', default => 'ifname' }
+    });
 
     $self->{oids_label} = {
         'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
         'ifalias' => '.1.3.6.1.2.1.31.1.1.1.18',
-        'ifname' => '.1.3.6.1.2.1.31.1.1.1.1',
+        'ifname' => '.1.3.6.1.2.1.31.1.1.1.1'
     };
     
     return $self;
@@ -59,7 +58,7 @@ sub run {
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $self->{oids_label}->{'ifname'} }})) {
         next if ($key !~ /^$self->{oids_label}->{'ifname'}\.(.*)$/);
-        $self->{datas}->{'ifname' . "_" . $1} = $self->{output}->to_utf8($interfaceTables->{$self->{oids_label}->{'ifname'} }->{$key});
+        $self->{datas}->{'ifname' . "_" . $1} = $self->{output}->decode($interfaceTables->{$self->{oids_label}->{'ifname'} }->{$key});
         push @{$self->{datas}->{all_ids}}, $1;
     }
     
@@ -85,8 +84,10 @@ sub run {
         }
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Frequencies:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'Frequencies:'
+    );
 
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();

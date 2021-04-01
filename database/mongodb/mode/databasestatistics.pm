@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,8 +39,8 @@ sub set_counters {
                 output_template => 'Storage Size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'storageSize_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'storageSize', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -49,8 +49,8 @@ sub set_counters {
                 output_template => 'Data Size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'dataSize_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'dataSize', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -59,8 +59,8 @@ sub set_counters {
                 output_template => 'Index Size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'indexSize_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'indexSize', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -68,8 +68,8 @@ sub set_counters {
                 key_values => [ { name => 'collections' }, { name => 'display' } ],
                 output_template => 'Collections: %s',
                 perfdatas => [
-                    { value => 'collections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'collections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -77,8 +77,8 @@ sub set_counters {
                 key_values => [ { name => 'views' }, { name => 'display' } ],
                 output_template => 'Views: %s',
                 perfdatas => [
-                    { value => 'views_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'views', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -86,8 +86,8 @@ sub set_counters {
                 key_values => [ { name => 'documents' }, { name => 'display' } ],
                 output_template => 'Documents: %s',
                 perfdatas => [
-                    { value => 'documents_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'documents', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -95,8 +95,8 @@ sub set_counters {
                 key_values => [ { name => 'indexes' }, { name => 'display' } ],
                 output_template => 'Indexes: %s',
                 perfdatas => [
-                    { value => 'indexes_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'indexes', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -115,34 +115,26 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-database:s"   => { name => 'filter_database' },
+        'filter-database:s' => { name => 'filter_database' }
     });
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
+
+    my $databases = $options{custom}->list_databases();
 
     $self->{databases} = {};
-    
-    my $databases = $self->{custom}->list_databases();
-
     foreach my $database (sort @{$databases}) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' 
             && $database !~ /$self->{option_results}->{filter_database}/);
 
-        my $db_stats = $self->{custom}->run_command(
+        my $db_stats = $options{custom}->run_command(
             database => $database,
-            command => $self->{custom}->ordered_hash('dbStats' => 1),
+            command => $options{custom}->ordered_hash(dbStats => 1),
         );
-        
+
         $self->{databases}->{$db_stats->{db}} = {
             display => $db_stats->{db},
             collections => $db_stats->{collections},

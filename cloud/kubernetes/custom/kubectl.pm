@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,22 +40,23 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port' },
-            "proto:s"           => { name => 'proto' },
-            "token:s"           => { name => 'token' },
-            "timeout:s"         => { name => 'timeout', default => 10 },
-            "config-file:s"     => { name => 'config_file' },
-            "sudo"              => { name => 'sudo' },
-            "command:s"         => { name => 'command', default => 'kubectl' },
-            "command-path:s"    => { name => 'command_path' },
-            "command-options:s" => { name => 'command_options', default => '' },
+            'hostname:s'        => { name => 'hostname' },
+            'port:s'            => { name => 'port' },
+            'proto:s'           => { name => 'proto' },
+            'token:s'           => { name => 'token' },
+            'timeout:s'         => { name => 'timeout', default => 10 },
+            'config-file:s'     => { name => 'config_file', default => '~/.kube/config' },
+            'context:s'         => { name => 'context' },
+            'sudo'              => { name => 'sudo' },
+            'command:s'         => { name => 'command', default => 'kubectl' },
+            'command-path:s'    => { name => 'command_path' },
+            'command-options:s' => { name => 'command_options', default => '' },
+            'proxyurl:s'        => { name => 'proxyurl' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CLI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
 
     return $self;
 }
@@ -66,30 +67,33 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
 
     $self->{config_file} = (defined($self->{option_results}->{config_file})) ? $self->{option_results}->{config_file} : '';
+    $self->{context} = (defined($self->{option_results}->{context})) ? $self->{option_results}->{context} : '';
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
  
     if (!defined($self->{config_file}) || $self->{config_file} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --config-file option.");
         $self->{output}->option_exit();
+    }
+
+    if ($self->{config_file} =~ /^~/) {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'File::HomeDir',
+            error_msg => "Cannot load module 'File::HomeDir'."
+        );
+        my $home = File::HomeDir->my_home;
+        $self->{config_file} =~ s/\~/$home/;
+    }
+    
+    if (defined($self->{option_results}->{proxyurl}) && $self->{option_results}->{proxyurl} ne '') {
+        $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
+        $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
     }
     
     return 0;
@@ -98,7 +102,11 @@ sub check_options {
 sub execute {
     my ($self, %options) = @_;
 
-    $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $options{cmd_options} . "'", debug => 1);
+    my $cmd_options = $options{cmd_options};
+    # See https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-output-verbosity-and-debugging
+    $cmd_options .= " --v='9'" if ($self->{output}->is_debug());
+
+    $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $cmd_options . "'", debug => 1);
     
     my ($response, $exit_code) = centreon::plugins::misc::execute(
         output => $self->{output},
@@ -106,7 +114,8 @@ sub execute {
         sudo => $self->{option_results}->{sudo},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
-        command_options => $options{cmd_options},
+        command_options => $cmd_options,
+        redirect_stderr => ($self->{output}->is_debug()) ? 0 : 1,
         no_quit => 1
     );
 
@@ -126,13 +135,29 @@ sub execute {
         $self->{output}->option_exit();
     }
 
-    return $decoded; 
+    return $decoded->{items}; 
+}
+
+sub kubernetes_list_cronjobs {
+    my ($self, %options) = @_;
+
+    my $cmd = "get cronjobs --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
+    
+    return $response;
 }
 
 sub kubernetes_list_daemonsets {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get daemonsets --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $cmd = "get daemonsets --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
     
     return $response;
 }
@@ -140,15 +165,23 @@ sub kubernetes_list_daemonsets {
 sub kubernetes_list_deployments {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get deployments --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $cmd = "get deployments --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
     
     return $response;
 }
 
-sub kubernetes_list_ingresses {
+sub kubernetes_list_events {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get ingresses --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $cmd = "get events --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
     
     return $response;
 }
@@ -156,7 +189,11 @@ sub kubernetes_list_ingresses {
 sub kubernetes_list_namespaces {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get namespaces --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $cmd = "get namespaces --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
     
     return $response;
 }
@@ -164,7 +201,23 @@ sub kubernetes_list_namespaces {
 sub kubernetes_list_nodes {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get nodes --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $cmd = "get nodes --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
+
+    return $response;
+}
+
+sub kubernetes_list_rcs {
+    my ($self, %options) = @_;
+
+    my $cmd = "get replicationcontroller --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
     
     return $response;
 }
@@ -172,7 +225,11 @@ sub kubernetes_list_nodes {
 sub kubernetes_list_replicasets {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get replicasets --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $cmd = "get replicasets --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
     
     return $response;
 }
@@ -180,7 +237,11 @@ sub kubernetes_list_replicasets {
 sub kubernetes_list_services {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get services --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $cmd = "get services --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
     
     return $response;
 }
@@ -188,7 +249,11 @@ sub kubernetes_list_services {
 sub kubernetes_list_statefulsets {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get statefulsets --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $cmd = "get statefulsets --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
     
     return $response;
 }
@@ -196,7 +261,23 @@ sub kubernetes_list_statefulsets {
 sub kubernetes_list_pods {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get pods --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
+    my $cmd = "get pods --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
+    
+    return $response;
+}
+
+sub kubernetes_list_pvs {
+    my ($self, %options) = @_;
+
+    my $cmd = "get pv --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
     
     return $response;
 }
@@ -221,8 +302,12 @@ Kubernetes CLI (kubectl)
 
 =item B<--config-file>
 
-Kubernetes configuration file path
+Kubernetes configuration file path (Default: '~/.kube/config').
 (Example: --config-file='/root/.kube/config').
+
+=item B<--context>
+
+Context to use in configuration file.
 
 =item B<--timeout>
 
@@ -244,6 +329,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: none).
+
+=item B<--proxyurl>
+
+Proxy URL if any
 
 =back
 

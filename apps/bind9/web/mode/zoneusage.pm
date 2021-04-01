@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -63,8 +63,8 @@ sub set_counters {
                 key_values => [ { name => $map[$i]->[0], diff => 1 }, { name => 'display' } ],
                 output_template => $map[$i]->[1],
                 perfdatas => [
-                    { label => $perf_label, value => $map[$i]->[0] . '_absolute', template => '%s', min => 0, 
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => $perf_label, value => $map[$i]->[0] , template => '%s', min => 0, 
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         };
@@ -139,10 +139,10 @@ Example: --filter-counters='request'
 
 Filter zone name (can be a regexp).
 
-=item B<--warning-*> <--critical-*>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: qtype-a', 'qtype-cname', 'qtype-mx', 'qtype-txt', 'qtype-soa', 'qtype-ptr', 'qtype-ns', 'qtype-any',
+Can be: qtype-a', 'qtype-cname', 'qtype-mx', 'qtype-txt', 'qtype-soa', 'qtype-ptr', 'qtype-ns',
 'nsstat-requestv4', 'nsstat-requestv6'.
 
 =back

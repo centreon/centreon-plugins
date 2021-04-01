@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,6 +33,9 @@ my %map_disk_status = (
     4 => 'failed',
     5 => 'spare',     # since OS 5.4
     6 => 'available', # since OS 5.4
+    8 => 'raidReconstruction', # since OS 7.x
+    9 => 'copyReconstruction', # since OS 7.x 
+    10 => 'system',            # since OS 7.x
 );
 
 sub load {

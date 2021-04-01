@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,15 +30,16 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = ( 
+    $self->{modes} = {
         'cluster-statistics'    => 'database::elasticsearch::restapi::mode::clusterstatistics',
         'indice-statistics'     => 'database::elasticsearch::restapi::mode::indicestatistics',
         'license'               => 'database::elasticsearch::restapi::mode::license',
         'list-indices'          => 'database::elasticsearch::restapi::mode::listindices',
         'list-nodes'            => 'database::elasticsearch::restapi::mode::listnodes',
-        'node-statistics'       => 'database::elasticsearch::restapi::mode::nodestatistics',
-    );
-    $self->{custom_modes}{api} = 'database::elasticsearch::restapi::custom::api';
+        'node-statistics'       => 'database::elasticsearch::restapi::mode::nodestatistics'
+    };
+
+    $self->{custom_modes}->{api} = 'database::elasticsearch::restapi::custom::api';
     return $self;
 }
 

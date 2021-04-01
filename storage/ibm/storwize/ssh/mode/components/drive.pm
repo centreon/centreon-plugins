@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,34 +25,42 @@ use warnings;
 
 sub load {
     my ($self) = @_;
-    
+
     $self->{ssh_commands} .= 'echo "==========lsdrive=========="; lsdrive -delim : ; echo "===============";';
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking drives");
     $self->{components}->{drive} = {name => 'drives', total => 0, skip => 0};
     return if ($self->check_filter(section => 'drive'));
 
     return if ($self->{results} !~ /==========lsdrive==.*?\n(.*?)==============/msi);
     my $content = $1;
-    
-    my $result = $self->get_hasharray(content => $content, delim => ':');
+
+    my $result = $self->{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {
         next if ($self->check_filter(section => 'drive', instance => $_->{id}));
         $self->{components}->{drive}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("drive '%s' status is '%s' [instance: %s].",
-                                    $_->{id}, $_->{status},
-                                    $_->{id}
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "drive '%s' status is '%s' [instance: %s].",
+                $_->{id}, $_->{status},
+                $_->{id}
+            )
+        );
         my $exit = $self->get_severity(label => 'default', section => 'drive', value => $_->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Drive '%s' status is '%s'",
-                                                             $_->{id}, $_->{status}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Drive '%s' status is '%s'",
+                    $_->{id},
+                    $_->{status}
+                )
+            );
         }
     }
 }

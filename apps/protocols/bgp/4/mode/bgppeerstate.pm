@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -71,8 +71,8 @@ sub set_counters {
                 key_values => [ { name => 'seconds' }, { name => 'display' } ],
                 output_template => 'Last update : %ss',
                 perfdatas => [
-                    { label => 'seconds', value => 'seconds_absolute', template => '%s',
-                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'seconds', value => 'seconds', template => '%s',
+                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

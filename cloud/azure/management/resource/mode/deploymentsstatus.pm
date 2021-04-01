@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'succeeded' }  ],
                 output_template => "succeeded : %s",
                 perfdatas => [
-                    { label => 'total_succeeded', value => 'succeeded_absolute', template => '%d', min => 0 },
+                    { label => 'total_succeeded', value => 'succeeded', template => '%d', min => 0 },
                 ],
             }
         },
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'failed' }  ],
                 output_template => "failed : %s",
                 perfdatas => [
-                    { label => 'total_failed', value => 'failed_absolute', template => '%d', min => 0 },
+                    { label => 'total_failed', value => 'failed', template => '%d', min => 0 },
                 ],
             }
         },

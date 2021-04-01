@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,68 +20,94 @@
 
 package os::linux::local::mode::swap;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+
+sub custom_swap_output {
+    my ($self, %options) = @_;
+    
+    return sprintf(
+        'Swap Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)',
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
+        $self->{result_values}->{prct_free}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'swap', type => 0, skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{swap} = [
+        { label => 'usage', nlabel => 'swap.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_swap_output'),
+                perfdatas => [
+                    { label => 'used', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
+            }
+        },
+        { label => 'usage-free', display_ok => 0, nlabel => 'swap.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_swap_output'),
+                perfdatas => [
+                    { label => 'free', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
+            }
+        },
+        { label => 'usage-prct', display_ok => 0, nlabel => 'swap.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' } ],
+                output_template => 'Swap used: %.2f %%',
+                perfdatas => [
+                    { label => 'used_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'cat' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '/proc/meminfo 2>&1' },
-                                  "warning:s"         => { name => 'warning', },
-                                  "critical:s"        => { name => 'critical', },
-                                  "no-swap:s"               => { name => 'no_swap' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'no-swap:s' => { name => 'no_swap' }
+    });
+
     $self->{no_swap} = 'critical';
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
+    $self->SUPER::check_options(%options);
     if (defined($self->{option_results}->{no_swap}) && $self->{option_results}->{no_swap} ne '') {
         if ($self->{output}->is_litteral_status(status => $self->{option_results}->{no_swap}) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong --no-swap status '" . $self->{option_results}->{no_swap} . "'.");
             $self->{output}->option_exit();
         }
-         $self->{no_swap} = $self->{option_results}->{no_swap};
+        $self->{no_swap} = $self->{option_results}->{no_swap};
     }
+
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
-    
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'cat',
+        command_options => '/proc/meminfo 2>&1'
+    );
+
     my ($total_size, $swap_free);
     foreach (split(/\n/, $stdout)) {
         if (/^SwapTotal:\s+(\d+)/i) {
@@ -92,39 +118,33 @@ sub run {
     }
     
     if (!defined($total_size) || !defined($swap_free)) {
-        $self->{output}->add_option_msg(short_msg => "Some informations missing.");
+        $self->{output}->add_option_msg(short_msg => "Some information missing.");
         $self->{output}->option_exit();
     }
+
     if ($total_size == 0) {
-        $self->{output}->output_add(severity => $self->{no_swap},
-                                    short_msg => 'No active swap.');
+        $self->{output}->output_add(
+            severity => $self->{no_swap},
+            short_msg => 'No active swap.'
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
-    
-    my $swap_used = $total_size - $swap_free;
-    
-    my $prct_used = $swap_used * 100 / $total_size;
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
+    my $swap_used = $total_size - $swap_free;
+    my $prct_used = $swap_used * 100 / $total_size;
+    my $prct_free = 100 - $prct_used;
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
     my ($swap_used_value, $swap_used_unit) = $self->{perfdata}->change_bytes(value => $swap_used);
     my ($swap_free_value, $swap_free_unit) = $self->{perfdata}->change_bytes(value => ($total_size - $swap_used));
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                                            $total_value . " " . $total_unit,
-                                            $swap_used_value . " " . $swap_used_unit, $prct_used,
-                                            $swap_free_value . " " . $swap_free_unit, (100 - $prct_used)));
-    
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $swap_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
-                                  min => 0, max => $total_size);
- 
-    $self->{output}->display();
-    $self->{output}->exit();
+
+    $self->{swap} = {
+        used => $swap_used,
+        free => $swap_free,
+        prct_used => $prct_used,
+        prct_free => $prct_free,
+        total => $total_size
+    };
 }
 
 1;
@@ -135,60 +155,17 @@ __END__
 
 Check swap memory (need '/proc/meminfo' file).
 
+Command used: cat /proc/meminfo 2>&1
+
 =over 8
-
-=item B<--warning>
-
-Threshold warning in percent.
-
-=item B<--critical>
-
-Threshold critical in percent.
 
 =item B<--no-swap>
 
 Threshold if no active swap (default: 'critical').
 
-=item B<--remote>
+=item B<--warning-*> B<--critical-*>
 
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'cat').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '/proc/meminfo 2>&1').
+Threshold, can be 'usage' (in Bytes), 'usage-free' (in Bytes), 'usage-prct' (%).
 
 =back
 

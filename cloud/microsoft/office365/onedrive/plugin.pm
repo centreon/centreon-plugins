@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,7 +32,8 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'list-sites'            => 'cloud::microsoft::office365::onedrive::mode::listsites',
-        'usage'                 => 'cloud::microsoft::office365::onedrive::mode::usage',
+        'site-usage'            => 'cloud::microsoft::office365::onedrive::mode::siteusage',
+        'users-activity'        => 'cloud::microsoft::office365::onedrive::mode::usersactivity',
     );
 
     $self->{custom_modes}{graphapi} = 'cloud::microsoft::office365::custom::graphapi';

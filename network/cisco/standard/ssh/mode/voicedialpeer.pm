@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,7 +49,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'peers total %s',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%s', min => 0 },
+                    { value => 'total', template => '%s', min => 0 },
                 ],
             }
         },
@@ -57,7 +57,7 @@ sub set_counters {
                 key_values => [ { name => 'oper_up' } ],
                 output_template => 'peers operational up %s',
                 perfdatas => [
-                    { value => 'oper_up_absolute', template => '%s', min => 0 },
+                    { value => 'oper_up', template => '%s', min => 0 },
                 ],
             }
         },

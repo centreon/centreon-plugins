@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,19 +30,21 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'cpu'                  => 'snmp_standard::mode::cpu',
-                         'cpu-detailed'         => 'snmp_standard::mode::cpudetailed',
-                         'connections'          => 'network::stormshield::snmp::mode::connections',
-                         'interfaces'           => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         'load'                 => 'snmp_standard::mode::loadaverage',
-                         'ha-nodes'             => 'network::stormshield::snmp::mode::hanodes',
-                         'memory'               => 'os::freebsd::snmp::mode::memory',
-                         'storage'              => 'snmp_standard::mode::storage',
-                         'swap'                 => 'snmp_standard::mode::swap',
-                         'vpn-status'           => 'network::stormshield::snmp::mode::vpnstatus',
-                         );
+    $self->{modes} = {
+        'cpu'               => 'snmp_standard::mode::cpu',
+        'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
+        'connections'       => 'network::stormshield::snmp::mode::connections',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'load'              => 'snmp_standard::mode::loadaverage',
+        'ha-nodes'          => 'network::stormshield::snmp::mode::hanodes',
+        'health'            => 'network::stormshield::snmp::mode::health',
+        'memory'            => 'os::freebsd::snmp::mode::memory',
+        'qos'               => 'network::stormshield::snmp::mode::qos',
+        'storage'           => 'snmp_standard::mode::storage',
+        'swap'              => 'snmp_standard::mode::swap',
+        'vpn-status'        => 'network::stormshield::snmp::mode::vpnstatus'
+    };
 
     return $self;
 }

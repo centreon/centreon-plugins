@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,13 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{ $self->{modes} } = (
+    $self->{modes} = {
         'node'     => 'network::cisco::aci::apic::restapi::mode::node',
         'tenant'   => 'network::cisco::aci::apic::restapi::mode::tenant',
-        'fabric'   => 'network::cisco::aci::apic::restapi::mode::fabric',
-    );
+        'fabric'   => 'network::cisco::aci::apic::restapi::mode::fabric'
+    };
 
-    $self->{custom_modes}{api} = 'network::cisco::aci::apic::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'network::cisco::aci::apic::restapi::custom::api';
     return $self;
 }
 

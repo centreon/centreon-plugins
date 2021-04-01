@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'upsBatteryCapacity' } ],
                 output_template => 'Remaining capacity : %s %%',
                 perfdatas => [
-                    { label => 'load', value => 'upsBatteryCapacity_absolute', template => '%s', 
+                    { label => 'load', value => 'upsBatteryCapacity', template => '%s', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'upsBatteryChargingCurrent' } ],
                 output_template => 'Current : %s A',
                 perfdatas => [
-                    { label => 'current', value => 'upsBatteryChargingCurrent_absolute', template => '%s', 
+                    { label => 'current', value => 'upsBatteryChargingCurrent', template => '%s', 
                       min => 0, unit => 'A' },
                 ],
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'upsBatteryVoltage' } ],
                 output_template => 'Voltage : %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'upsBatteryVoltage_absolute', template => '%s', 
+                    { label => 'voltage', value => 'upsBatteryVoltage', template => '%s', 
                       unit => 'V' },
                 ],
             }
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'upsBatteryTemperature' } ],
                 output_template => 'Temperature : %s C',
                 perfdatas => [
-                    { label => 'temperature', value => 'upsBatteryTemperature_absolute', template => '%s', 
+                    { label => 'temperature', value => 'upsBatteryTemperature', template => '%s', 
                       unit => 'C'},
                 ],
             }
@@ -100,12 +100,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "unknown-status:s"        => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-                                "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /batteryLow/i' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /batteryDepleted/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /batteryLow/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /batteryDepleted/i' },
+    });
 
     return $self;
 }
@@ -133,9 +132,11 @@ my $oid_upsBattery = '.1.3.6.1.4.1.7309.6.1.2';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_upsBattery,
-                                                nothing_quit => 1);
-                                                         
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_upsBattery,
+        nothing_quit => 1
+    );
+
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
     $result->{upsBatteryVoltage} *= 0.1;
     $result->{upsBatteryChargingCurrent} *= 0.1;

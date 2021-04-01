@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,22 +30,16 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.3';
-    %{$self->{modes}} = (
-                        'container-usage'   => 'cloud::docker::restapi::mode::containerusage',
-                        'list-containers'   => 'cloud::docker::restapi::mode::listcontainers',
-                        'node-status'       => 'cloud::docker::restapi::mode::nodestatus',
-                        );
+    $self->{modes} = {
+        'container-usage'   => 'cloud::docker::restapi::mode::containerusage',
+        'list-containers'   => 'cloud::docker::restapi::mode::listcontainers',
+        'node-status'       => 'cloud::docker::restapi::mode::nodestatus',
+        'service-status'    => 'cloud::docker::restapi::mode::servicestatus'
+    };
 
-    $self->{custom_modes}{api} = 'cloud::docker::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'cloud::docker::restapi::custom::api';
     return $self;
 }
-
-sub init {
-    my ( $self, %options ) = @_;
-
-    $self->SUPER::init(%options);
-}
-
 
 1;
 

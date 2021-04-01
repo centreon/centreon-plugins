@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,20 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                            'events'        => 'cloud::ibm::softlayer::mode::events',
-                            'open-tickets'  => 'cloud::ibm::softlayer::mode::opentickets',
-                        );
+    $self->{modes} = {
+        'events'        => 'cloud::ibm::softlayer::mode::events',
+        'open-tickets'  => 'cloud::ibm::softlayer::mode::opentickets'
+    };
 
-    $self->{custom_modes}{xmlapi} = 'cloud::ibm::softlayer::custom::xmlapi';
+    $self->{custom_modes}->{xmlapi} = 'cloud::ibm::softlayer::custom::xmlapi';
 
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);
 }
 
 1;

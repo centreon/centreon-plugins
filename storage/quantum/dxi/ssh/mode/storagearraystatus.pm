@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,17 +28,8 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = "status is '" . $self->{result_values}->{status} . "'";
-    return $msg;
-}
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    return 0;
+    return "status is '" . $self->{result_values}->{status} . "'";
 }
 
 sub prefix_output {
@@ -49,15 +40,14 @@ sub prefix_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All storage array status are ok' },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'status', set => {
                 key_values => [ { name => 'status' }, { name => 'name' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
@@ -70,32 +60,18 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"          => { name => 'hostname' },
-                                  "ssh-option:s@"       => { name => 'ssh_option' },
-                                  "ssh-path:s"          => { name => 'ssh_path' },
-                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "sudo"                => { name => 'sudo' },
-                                  "command:s"           => { name => 'command', default => 'syscli' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '--getstatus storagearray' },
-                                  "warning-status:s"    => { name => 'warning_status' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /Normal/i' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /Normal/i' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
     
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
@@ -103,15 +79,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {};
-
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
-                                                                options => $self->{option_results},
-                                                                sudo => $self->{option_results}->{sudo},
-                                                                command => $self->{option_results}->{command},
-                                                                command_path => $self->{option_results}->{command_path},
-                                                                command_options => $self->{option_results}->{command_options},
-                                                                );
+    my $stdout = $options{custom}->execute_command(command => 'syscli --getstatus storagearray');
     # Output data:
     #   List of Storage Arrays:
     #   Total Count = 2
@@ -122,11 +90,12 @@ sub manage_selection {
     #     Name = a0
     #     Status = Normal
 
+    $self->{global} = {};
     my $id;
     foreach (split(/\n/, $stdout)) {
-        $id = $1 if ($_ =~ /.*\[Array\s=\s(.*)\]$/i);
-        $self->{global}->{$id}->{status} = $1 if ($_ =~ /.*Status\s=\s(.*)$/i && defined($id) && $id ne '');
-        $self->{global}->{$id}->{name} = $1 if ($_ =~ /.*Name\s=\s(.*)$/i && defined($id) && $id ne '');
+        $id = $1 if (/.*\[Array\s=\s(.*)\]$/i);
+        $self->{global}->{$id}->{status} = $1 if (/.*Status\s=\s(.*)$/i && defined($id) && $id ne '');
+        $self->{global}->{$id}->{name} = $1 if (/.*Name\s=\s(.*)$/i && defined($id) && $id ne '');
     }
 }
 
@@ -140,10 +109,6 @@ Check storage array status.
 
 =over 8
 
-=item B<--hostname>
-
-Hostname to query.
-
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
@@ -153,38 +118,6 @@ Can used special variables like: %{name}, %{status}
 
 Set critical threshold for status (Default: '%{status} !~ /Normal/i').
 Can used special variables like: %{name}, %{status}
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'syscli').
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options (Default: '--getstatus storagearray').
 
 =back
 

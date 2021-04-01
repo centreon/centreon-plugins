@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'bamservice'               => 'apps::centreon::local::mode::bamservice',
         'broker-stats'             => 'apps::centreon::local::mode::brokerstats',
+        'centengine-stats'         => 'apps::centreon::local::mode::centenginestats',
         'centreon-plugins-version' => 'apps::centreon::local::mode::centreonpluginsversion',
         'downtime-trap'            => 'apps::centreon::local::mode::downtimetrap',
         'dummy'                    => 'apps::centreon::local::mode::dummy',

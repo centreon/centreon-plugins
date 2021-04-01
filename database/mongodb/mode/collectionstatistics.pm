@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,7 +44,7 @@ sub set_counters {
                 output_template => 'Storage Size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'storageSize_absolute', template => '%s',
+                    { value => 'storageSize', template => '%s',
                       min => 0, unit => 'B', label_extra_instance => 1 },
                 ],
             }
@@ -54,7 +54,7 @@ sub set_counters {
                 output_template => 'Index Size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'totalIndexSize_absolute', template => '%s',
+                    { value => 'totalIndexSize', template => '%s',
                       min => 0, unit => 'B', label_extra_instance => 1 },
                 ],
             }
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'display' } ],
                 output_template => 'Documents: %s',
                 perfdatas => [
-                    { value => 'count_absolute', template => '%s',
+                    { value => 'count', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -72,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'nindexes' }, { name => 'display' } ],
                 output_template => 'Indexes: %s',
                 perfdatas => [
-                    { value => 'nindexes_absolute', template => '%s',
+                    { value => 'nindexes', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -103,32 +103,24 @@ sub new {
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
+
+    my $databases = $options{custom}->list_databases();
 
     $self->{databases} = {};
-    
-    my $databases = $self->{custom}->list_databases();
-    
     foreach my $database (sort @{$databases}) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' 
             && $database !~ /$self->{option_results}->{filter_database}/);
 
-        my $collections = $self->{custom}->list_collections(database => $database);
+        my $collections = $options{custom}->list_collections(database => $database);
 
         $self->{databases}->{$database}->{display} = $database;
 
         foreach my $collection (sort @{$collections}) {
-            my $cl_stats = $self->{custom}->run_command(
+            my $cl_stats = $options{custom}->run_command(
                 database => $database,
-                command => $self->{custom}->ordered_hash(collStats => $collection),
+                command => $options{custom}->ordered_hash(collStats => $collection),
             );
             
             $self->{databases}->{$database}->{collections}->{$collection} = {

@@ -132,8 +132,8 @@ sub manage_selection {
         my $create_time = $result->{radwllMilOduAgnLastEventsTimeT};
         $result->{radwllMilOduAgnLastEventsTimeT} = strftime("%d/%m/%Y %H:%M:%S", localtime($result->{radwllMilOduAgnLastEventsTimeT}));
         if (!defined($create_time)) {
-            $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => "Can't get date '" . $result->{radwllMilOduAgnLastEventsTimeT} . "'");
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                        short_msg => "Can't get date '" . $result->{radwllMilOduAgnLastEventsTimeT} . "'");
             next;
         }
         

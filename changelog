@@ -1,3 +1,200 @@
+2021-02-18 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Google Cloud CloudSQL MySQL
+ * Plugin added: Google Cloud Storage
+ * Plugin added: Azure Load Balancer
+ * Plugin added: Azure Firewall
+ * Plugin added: Azure Public IPs
+ * Plugin added: Azure Key Vaults
+ * Plugin added: Notification Jasmin SMS
+ * Plugin added: Athonet ePC SNMP
+ * Plugin added: Meru SNMP
+ * Plugin added: Ubiquiti Airfiber SNMP
+ * Plugin added: EMC PPMA Rest API
+ * Plugin added: DenyALL SNMP
+ * Mode added: [cisco/standard/snmp] 'aaa-servers'
+ * Break: refactoring for protocol x509
+
+2021-01-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Hitachi HCP SNMP
+ * Plugin added: Aruba AOS-CX Rest API
+ * Plugin added: Aruba AOS-CX SNMP
+ * Plugin added: Fortinet Fortiauthenticator SNMP
+ * Plugin added: Cisco DNAC Rest API
+ * Plugin added: Oracle OVM Rest API
+ * Plugin added: Cisco Firepower FMC API
+ * Plugin added: Cisco Firepower Fxos SNMP
+ * Plugin added: Rubrik Rest API
+ * Plugin added: AWS SES
+ * Plugin added: AWS TransitGateway
+ * Plugin added: Commvault Commserve Rest API
+ * Plugin added: Alyvix Rest API
+ * Plugin added: SmarterMail Rest API
+ * Plugin added: Cyberpower UPS SNMP
+ * Plugin added: Cyberpower PDU SNMP
+ * Plugin added: Cisco CTS SNMP
+ * Plugin added: Microsoft DHCP SNMP
+ * Plugin added: FiberStore SNMP
+ * Plugin added: Socomec NetVision SNMP
+ * Plugin added: HMS Ewon SNMP
+ * Plugin added: GSuite
+ * Plugin added: RRDtool
+ * Plugin added: Notification Microsoft Teams 
+ * Core: add option --insecure for backend http
+ * Core: option --list-plugin working with Par::Packer
+ * Mode added: [cisco/standard/snmp] 'vpc'
+ * Mode added: [emc/celerra/local] 'filesystems'
+ * Mode added: [emc/celerra/local] 'pools'
+ * Mode added: [synology/snmp] 'upgrade'
+ * Mode added: [mikrotik/snmp] 'firmware'
+ * Break: move microsoft applications
+
+2020-10-08 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Cisco CUCM SXML
+ * Plugin added: DRBD
+ * Plugin added: Pexip Infinity Management API
+ * Plugin added: Polycom RPRM SNMP
+ * Plugin added: Polycom DMA SNMP
+ * Plugin added: Polycom HDX SNMP
+ * Plugin added: Aws SQS
+ * Plugin added: Aws SNS
+
+2020-08-03 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Netapp Ontap Rest API
+ * Plugin added: Netdata Rest API
+ * Plugin added: Gorgone Rest API
+ * Plugin added: Nimble Rest API
+ * Plugin added: Cisco SSMS Rest API
+ * Plugin added: Loggly
+ * Plugin added: Nginx Plus Rest API
+ * Plugin added: IP-Label newtest Rest API
+ * Plugin added: Aws Health
+ * Core: add option --no-component-count (#2062)
+ * Core: can use unknown thresholds for counter modes
+ * Mode added: [cisco/standard/snmp] 'vss'
+ * Mode added: [paloalto/standard/snmp] 'signatures'
+ * Mode added: [checkpoint/snmp] 'ra-users'
+ * Break: [linux/local] refactoring
+ * Break: [iis/local] refactoring
+ * Break: [ansible/tower] refactoring
+
+2020-06-02 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: pfsense FauxAPI
+ * Plugin added: IIS Rest API
+ * Plugin added: Amazon EBS
+ * Plugin added: IP-Label datametrie API
+ * Plugin added: ActiveMQ JMX
+ * Plugin added: VerneMQ Rest API
+ * Plugin added: Ruckus SmartZone SNMP
+ * Plugin added: Ruckus ZoneDirector SNMP
+ * Plugin added: Ruckus ICX SNMP
+ * Plugin added: Dell Xseries SNMP
+ * Plugin added: Adva FSP150 SNMP
+ * Plugin added: Lenovo Iomega SNMP
+ * Plugin added: Netapp Santricity Rest API
+ * Plugin added: Timelinkmicro tms6001 SNMP
+ * Plugin added: Bluemind
+ * Plugin added: Mulesoft Rest API
+ * Plugin added: Salesforce Rest API
+ * Plugin added: Versa SNMP
+ * Break: [netapp/snmp] move directory
+ * Break: [netapp/restapi] move directory
+
+2020-04-10 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Dell OS10 SNMP
+ * Plugin added: Sirportly notification
+ * Plugin added: Mobotix Camera SNMP
+ * Plugin added: Ibm MQ MQI
+ * Plugin added: Supermicro BMC SNMP
+ * Plugin added: Eltek Enexus SNMP
+ * Plugin added: Cisco Meraki Rest API
+ * Plugin added: Aws EFS
+ * Core: add backend ssh system (plink, ssh and libssh)
+ * Mode added: [azure] 'alert'
+ * Mode added: [checkpoint/snmp] 'vsx'
+ * Mode added: [synology/snmp] 'ha'
+ * Mode added: [cisco/standard/snmp] 'wan3g'
+ * Break: [fortigate/snmp] 'cpu', 'memory', 'vdom' (merge) 
+ * Break: [supermicro/snmp] move directory
+
+2020-02-04 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Allied Telesis SNMP
+ * Plugin added: UPS HP SNMP
+ * Plugin added: HP ILO Rest API
+ * Plugin added: UPS Phoenixtec SNMP
+ * Plugin added: AWS Cloudwatch logs
+ * Plugin added: Cisco Collaboration Endpoint Rest API
+ * Plugin added: Polycom Trio Rest API
+ * Plugin added: Libraesva SNMP
+ * Plugin added: Dynatrace Rest API
+ * Plugin added: Hyperledger Exporter
+ * Plugin added: Prowl notification
+ * Mode added: [paloalto/snmp] 'gp-usage'
+ * Mode added: [centreon/local] 'centengine-stats'
+ * Mode added: [oracle] 'dataguard'
+ * Mode added: [netapp/snmp] 'failover'
+
+2019-12-19 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: CouchDB Rest API
+ * Plugin added: Maltem Insight Performance Rest API
+ * Plugin added: Hikvision camera SNMP
+ * Plugin added: Avaya CM SNMP
+ * Plugin added: Palo Alto SSH
+ * Plugin added: Rapid Recovery Quest SNMP
+ * Mode added: [linux/snmp] 'udpcon'
+ * Mode added: [cisco/standard/snmp] 'load'
+ * Mode added: [3cx/restapi] 'extensions'
+ * Mode added: [aix/local] 'cmd-return'
+ * Fix: Ctrl+F "Fix" on commits page
+
+2019-10-16 Colin Gagnaire <cgagnaire@centreon.com>
+ * Plugin added: ABB CMS700 SNMP
+ * Mode added: [linux/local] 'discovery-nmap'
+ * Mode added: [hp/procurve] 'virtual-chassis'
+ * Mode added: [azure] 'health'
+ * Enhancement: [emerson/liebert] merge plugins
+ * Enhancement: [fortigate] enhance vpn mode
+ * Enhancement: [extreme/snmp] refacto modes
+ * Enhancement: [core] add mode status in openmetrics output
+ * Enhancement: [netapp/snmp] enhance snapmirrorlag
+ * Enhancement: [linux/local] refacto diskio mode
+ * Break: [f5/bigip] use status thresholds in virtual-server-status
+ * Fix: [nrpe] fix SSL context
+ * Fix: Ctrl+F "Fix" on commits page
+
+2019-10-02 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Warp10 Sensision
+ * Plugin added: OpenMetrics
+ * Plugin added: AWS API Gateway Api
+ * Plugin added: AWS Kinesis Api
+ * Plugin added: Hanwha Camera SNMP
+ * Plugin added: Perle IDS SNMP
+ * Plugin added: Scom Rest API
+ * Plugin added: Wazuh Rest API
+ * Plugin added: Zoom Rest API
+ * Plugin added: VMWare VCSA Rest API
+ * Plugin added: EMC Unisphere Rest API
+ * Plugin added: Nitram UPS SNMP
+ * Plugin added: Quanta.io Rest API
+ * Plugin added: HP OneView
+ * Plugin added: Geist
+ * Mode added: [oracle] 'fra-usage'
+ * Mode added: [oracle] 'tablespace-usage'
+ * Mode added: [hp p2000] 'vdisks'
+ * Mode added: [windows] 'list-services'
+ * Mode added: [os] 'list-processes'
+ * Enhancement: [core] add global timeout option
+ * Enhancement: [cisco/standard/snmp] add err disable interfaces
+ * Enhancement: [oracle] add container option
+ * Enhancement: [snmp_standard] 'memory' add option for redhat
+ * Enhancement: [nsclient] handle new rest api
+ * Enhancement: [aruba/standard] enhance modes to use ap name
+ * Enhancement: [azure] allow multiple metrics in monitor getmetrics mode
+ * Enhancement: [aws/paws] add proxyurl option
+ * Break: [ucopia] modes refactoring
+ * Break: [aws] metrics forced to new format for billing, cloudfront, elb, ec2, lambda breaks thresholds
+ * Break: [oracle] merged modes temp-tablespace and undo-tablespace into tablespace-usage
+ * Fix: Ctrl+F "Fix" on commits page
+
 2019-07-04 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: RabbitMQ Rest API
  * Plugin added: VMware VeloCloud Rest API

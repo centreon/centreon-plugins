@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,8 +39,8 @@ sub set_counters {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
                 output_template => 'Incoming calls : %s',
                 perfdatas => [
-                    { label => 'in_calls', value => 'in_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'in_calls', value => 'in', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -48,8 +48,8 @@ sub set_counters {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
                 output_template => 'Outgoing calls : %s',
                 perfdatas => [
-                    { label => 'out_calls', value => 'out_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'out_calls', value => 'out', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -59,8 +59,8 @@ sub set_counters {
                 key_values => [ { name => 'active' }, { name => 'total' } ],
                 output_template => 'Current calls : %s',
                 perfdatas => [
-                    { label => 'current_calls', value => 'active_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
+                    { label => 'current_calls', value => 'active', template => '%s', 
+                      min => 0, max => 'total' },
                 ],
             }
         },
@@ -72,11 +72,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                 "filter-name:s"           => { name => 'filter_name' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
+
     return $self;
 }
 
@@ -107,12 +106,14 @@ sub manage_selection {
 
     $self->{isdn} = {};
     $self->{bearer} = { active => 0, total => 0 };
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
-                                                            { oid => $oid_isdnBearerOperStatus },
-                                                            { oid => $oid_isdnSignalingIfIndex },
-                                                            { oid => $oid_isdnSignalingStatsEntry },
-                                                         ],
-                                                         nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [ 
+            { oid => $oid_isdnBearerOperStatus },
+            { oid => $oid_isdnSignalingIfIndex },
+            { oid => $oid_isdnSignalingStatsEntry },
+        ],
+        nothing_quit => 1
+    );
 
     # Get interface name
     foreach my $oid (keys %{$snmp_result->{$oid_isdnSignalingIfIndex}}) {
@@ -132,8 +133,11 @@ sub manage_selection {
         }
         
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_isdnSignalingStatsEntry}, instance => $instance);
-        $self->{isdn}->{$instance} = { in => $result->{isdnSigStatsInCalls}, out => $result->{isdnSigStatsOutCalls}, 
-                                       display => $display };
+        $self->{isdn}->{$instance} = {
+            in => $result->{isdnSigStatsInCalls},
+            out => $result->{isdnSigStatsOutCalls}, 
+            display => $display
+        };
     }
     
     foreach my $oid (keys %{$snmp_result->{$oid_isdnBearerOperStatus}}) {

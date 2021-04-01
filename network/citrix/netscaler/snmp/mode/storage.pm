@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,20 +27,20 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All storages are ok' }
     ];
-    
+
     $self->{maps_counters}->{storage} = [
         { label => 'usage', set => {
                 key_values => [ { name => 'display' }, { name => 'used' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 }
 
@@ -110,9 +110,9 @@ sub custom_usage_calc {
     return 0;
 }
 
-sub prefix_volume_output {
+sub prefix_storage_output {
     my ($self, %options) = @_;
-    
+
     return "Storage '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -122,9 +122,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s"   => { name => 'filter_name' },
-        "units:s"         => { name => 'units', default => '%' },
-        "free"            => { name => 'free' },
+        'filter-name:s'   => { name => 'filter_name' },
+        'units:s'         => { name => 'units', default => '%' },
+        'free'            => { name => 'free' }
     });
 
     return $self;
@@ -141,9 +141,10 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $self->{storage} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_nsSysHealthDiskEntry,
-                                                nothing_quit => 1);
-
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_nsSysHealthDiskEntry,
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{sysHealthDiskName}->{oid}\.(.*)$/);
@@ -155,7 +156,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{sysHealthDiskName} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $result->{sysHealthDiskSize} *= 1024 * 1024;
         $result->{sysHealthDiskUsed} *= 1024 * 1024;
         $self->{storage}->{$instance} = { 
@@ -166,7 +167,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{storage}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No storage found.");
+        $self->{output}->add_option_msg(short_msg => 'No storage found.');
         $self->{output}->option_exit();
     }
 }

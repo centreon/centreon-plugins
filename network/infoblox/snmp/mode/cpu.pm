@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu' } ],
                 output_template => 'CPU Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_usage', value => 'cpu_absolute', template => '%.2f',
+                    { label => 'cpu_usage', value => 'cpu', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -50,10 +50,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -61,9 +60,12 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $oid_ibSystemMonitorCpuUsage = '.1.3.6.1.4.1.7779.3.1.1.2.1.8.1.1.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
             $oid_ibSystemMonitorCpuUsage
-        ], nothing_quit => 1);
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global} = { cpu => $snmp_result->{$oid_ibSystemMonitorCpuUsage} };
 }

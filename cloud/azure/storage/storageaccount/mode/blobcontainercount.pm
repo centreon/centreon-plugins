@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,8 +45,8 @@ sub set_counters {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
                                 output_template => $metric . ': %s',
                                 perfdatas => [
-                                    { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation . '_absolute', 
-                                      template => '%s', label_extra_instance => 1, instance_use => 'display_absolute',
+                                    { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation , 
+                                      template => '%s', label_extra_instance => 1, instance_use => 'display',
                                       min => 0 },
                                 ],
                             }
@@ -176,13 +176,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-containercount-$aggregation$>
+=item B<--warning-containercount-*>
 
-Thresholds warning ($aggregation$ can be: 'average', 'total').
+Thresholds warning (* can be: 'average', 'total').
 
-=item B<--critical-containercount-$aggregation$>
+=item B<--critical-containercount-*>
 
-Thresholds critical ($aggregation$ can be: 'average', 'total').
+Thresholds critical (* can be: 'average', 'total').
 
 =back
 

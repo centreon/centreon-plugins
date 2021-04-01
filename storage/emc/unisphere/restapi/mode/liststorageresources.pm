@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,7 +46,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    return $options{custom}->request_api(url_path => '/api/types/storageResource/instances');
+    return $options{custom}->request_api(url_path => '/api/types/storageResource/instances?fields=name,health');
 }
 
 sub run {

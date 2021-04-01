@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,51 +22,53 @@ package centreon::common::powershell::veeam::jobstatus;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::common::powershell::functions;
+use centreon::common::powershell::veeam::functions;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
 
     my $ps = '
+$ProgressPreference = "SilentlyContinue"
+$WarningPreference = "SilentlyContinue"
+
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
 
-If (@(Get-PSSnapin -Registered | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -gt 0) {
-    If (@(Get-PSSnapin | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -eq 0) {
-        Try {
-            Get-PSSnapin -Registered | Where-Object {$_.Name -Match "VeeamPSSnapin"} | Add-PSSnapin -ErrorAction STOP
-        } Catch {
-            Write-Host $Error[0].Exception
-            exit 1
-        }
-    }
-} else {
-    Write-Host "Snap-In Veeam no present or not registered"
-    exit 1
-}
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+    $ps .= centreon::common::powershell::veeam::functions::powershell_init();
 
-$ProgressPreference = "SilentlyContinue"
+    $ps .= '
 
 Try {
     $ErrorActionPreference = "Stop"
 
+    $items = New-Object System.Collections.Generic.List[Hashtable];
+
     $jobs = Get-VBRJob
     foreach ($job in $jobs) {
-        Write-Host "[name = " $job.Name "]" -NoNewline
-        Write-Host "[type = " $job.JobType "]" -NoNewline
-        Write-Host "[isrunning = " $job.isRunning "]" -NoNewline
+        $item = @{}
+        $item.name = $job.Name
+        $item.type = $job.JobType.value__
+        $item.isRunning = $job.isRunning
+        $item.result = -10
+        $item.creationTimeUTC = ""
+        $item.endTimeUTC = ""
+
         $lastsession = $job.findlastsession()
         if ($lastsession) {
-            Write-Host "[result = " $lastsession.Result "]" -NoNewline
-            Write-Host "[creationTimeUTC = " (get-date -date $lastsession.creationTime.ToUniversalTime() -Uformat ' . "'%s'" . ') "]" -NoNewline
-            Write-Host "[endTimeUTC = " (get-date -date $lastsession.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ') "]"
-        } else {
-            Write-Host "[result = ][creationTimeUTC = ][endTimeUTC = ]"
+            $item.result = $lastsession.Result.value__
+            $item.creationTimeUTC = (get-date -date $lastsession.creationTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $item.endTimeUTC = (get-date -date $lastsession.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
         }
+
+        $items.Add($item)
     }
+
+    $jsonString = $items | ConvertTo-JSON-20 -forceArray $true
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1
@@ -75,7 +77,7 @@ Try {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 1;

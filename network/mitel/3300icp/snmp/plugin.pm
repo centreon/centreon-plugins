@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,13 +32,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-zaps'        => 'network::mitel::3300icp::snmp::mode::listzaps',
-                         'licenses'         => 'network::mitel::3300icp::snmp::mode::licenses',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                         'zap-bandwidth'    => 'network::mitel::3300icp::snmp::mode::zapbandwidth',
-                         'zap-calls'        => 'network::mitel::3300icp::snmp::mode::zapcalls',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-zaps'        => 'network::mitel::3300icp::snmp::mode::listzaps',
+        'licenses'         => 'network::mitel::3300icp::snmp::mode::licenses',
+        'uptime'           => 'snmp_standard::mode::uptime',
+        'zap-bandwidth'    => 'network::mitel::3300icp::snmp::mode::zapbandwidth',
+        'zap-calls'        => 'network::mitel::3300icp::snmp::mode::zapcalls',
     );
 
     return $self;

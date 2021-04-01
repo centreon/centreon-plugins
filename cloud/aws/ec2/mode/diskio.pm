@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,91 +25,162 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+my %metrics_mapping = (
+    DiskReadBytes => {
+        output => 'Disk Read Bytes',
+        label => 'disk-bytes-read',
+        nlabel => {
+            absolute => 'ec2.disk.bytes.read.bytes',
+            per_second => 'ec2.disk.bytes.read.bytespersecond'
+        },
+        unit => 'B'
+    },
+    DiskWriteBytes => {
+        output => 'Disk Write Bytes',
+        label => 'disk-bytes-write',
+        nlabel => {
+            absolute => 'ec2.disk.bytes.write.bytes',
+            per_second => 'ec2.disk.bytes.write.bytespersecond'
+        },
+        unit => 'B'
+    },
+    DiskReadOps => {
+        output => 'Disk Read Ops',
+        label => 'disk-ops-read',
+        nlabel => {
+            absolute => 'ec2.disk.ops.read.count',
+            per_second => 'ec2.disk.ops.read.persecond'
+        },
+        unit => 'ops'
+    },
+    DiskWriteOps => {
+        output => 'Disk Write Ops',
+        label => 'disk-ops-write',
+        nlabel => {
+            absolute => 'ec2.disk.ops.write.count',
+            per_second => 'ec2.disk.ops.write.persecond'
+        },
+        unit => 'ops'
+    },
+    EBSReadBytes => {
+        output => 'EBS Read Bytes',
+        label => 'ebs-bytes-read',
+        nlabel => {
+            absolute => 'ec2.disk.bytes.read.bytes',
+            per_second => 'ec2.disk.bytes.read.bytespersecond'
+        },
+        unit => 'B'
+    },
+    EBSWriteBytes => {
+        output => 'EBS Write Bytes',
+        label => 'ebs-bytes-write',
+        nlabel => {
+            absolute => 'ec2.ebs.bytes.write.bytes',
+            per_second => 'ec2.ebs.bytes.write.bytespersecond'
+        },
+        unit => 'B'
+    },
+    EBSReadOps => {
+        output => 'EBS Read Ops',
+        label => 'ebs-ops-read',
+        nlabel => {
+            absolute => 'ec2.ebs.ops.read.count',
+            per_second => 'ec2.ebs.ops.read.persecond'
+        },
+        unit => 'ops'
+    },
+    EBSWriteOps => {
+        output => 'EBC Write Ops',
+        label => 'ebs-ops-write',
+        nlabel => {
+            absolute => 'ec2.ebs.ops.write.count',
+            per_second => 'ec2.ebs.ops.write.persecond'
+        },
+        unit => 'ops'
+    }
+);
+
 my %map_type = (
-    "instance" => "InstanceId",
-    "asg"      => "AutoScalingGroupName",
+    instance => "InstanceId",
+    asg      => "AutoScalingGroupName"
 );
 
 sub prefix_metric_output {
     my ($self, %options) = @_;
     
-    return ucfirst($options{instance_value}->{type}) . " '" . $options{instance_value}->{display} . "' " . $options{instance_value}->{stat} . " ";
+    return ucfirst($self->{option_results}->{type}) . " '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_statistics_output {
+    my ($self, %options) = @_;
+    
+    return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    return "Checking " . ucfirst($self->{option_results}->{type}) . " '" . $options{instance_value}->{display} . "' ";
 }
 
 sub custom_metric_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{timeframe} = $options{new_datas}->{$self->{instance} . '_timeframe'};
-    $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric} . '_' . $options{extra_options}->{stat}};
+    $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric}};
     $self->{result_values}->{value_per_sec} = $self->{result_values}->{value} / $self->{result_values}->{timeframe};
-    $self->{result_values}->{stat} = $options{extra_options}->{stat};
     $self->{result_values}->{metric} = $options{extra_options}->{metric};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
 
 sub custom_metric_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => defined($self->{instance_mode}->{option_results}->{per_sec}) ?  $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
-                                                  threshold => [ { label => 'critical-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat}), exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat}), exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
+        threshold => [
+            { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'critical' },
+            { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
-sub custom_usage_perfdata {
+sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
-    $extra_label = '_' . lc($self->{result_values}->{display}) if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-
-    $self->{output}->perfdata_add(label => lc($self->{result_values}->{metric}) . "_" . lc($self->{result_values}->{stat}) . $extra_label,
-				                  unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ? 'B/s' : 'B',
-                                  value => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value}),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat})),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat})),
-                                 );
+    $self->{output}->perfdata_add(
+        instances => $self->{instance},
+        label => $metrics_mapping{$self->{result_values}->{metric}}->{label},
+        nlabel => defined($self->{instance_mode}->{option_results}->{per_sec}) ?
+            $metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{per_second} :
+            $metrics_mapping{$self->{result_values}->{metric}}->{nlabel}->{absolute},
+        unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ?
+            $metrics_mapping{$self->{result_values}->{metric}}->{unit} . '/s' :
+            $metrics_mapping{$self->{result_values}->{metric}}->{unit},
+        value => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ?
+            $self->{result_values}->{value_per_sec} :
+            $self->{result_values}->{value}),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
+    );
 }
 
-sub custom_usage_output {
+sub custom_metric_output {
     my ($self, %options) = @_;
     my $msg = "";
 
     if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
-        my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec});
-        $msg = $self->{result_values}->{metric}  . ": " . $value . $unit . "/s"; 
+        my ($value, $unit) = ($metrics_mapping{$self->{result_values}->{metric}}->{unit} eq 'B') ? 
+            $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec}) :
+            ($self->{result_values}->{value_per_sec}, $metrics_mapping{$self->{result_values}->{metric}}->{unit});
+        $msg = sprintf("%s: %.2f %s", $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value, $unit . '/s');
     } else {
-        my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value});
-        $msg = $self->{result_values}->{metric}  . ": " . $value . $unit;
+        my ($value, $unit) = ($metrics_mapping{$self->{result_values}->{metric}}->{unit} eq 'B') ? 
+            $self->{perfdata}->change_bytes(value => $self->{result_values}->{value}) :
+            ($self->{result_values}->{value}, $metrics_mapping{$self->{result_values}->{metric}}->{unit});
+        $msg = sprintf("%s: %.2f %s", $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value, $unit);
     }
-    return $msg;
-}
-
-sub custom_ops_perfdata {
-    my ($self, %options) = @_;
-
-    my $extra_label = '';
-    $extra_label = '_' . lc($self->{result_values}->{display}) if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-
-    $self->{output}->perfdata_add(label => lc($self->{result_values}->{metric}) . "_" . lc($self->{result_values}->{stat}) . $extra_label,
-                                  unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ? 'ops/s' : 'ops',
-                                  value => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value}),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat})),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat})),
-                                 );
-}
-
-sub custom_ops_output {
-    my ($self, %options) = @_;
-
-    my $msg ="";
-
-    if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
-        $msg = sprintf("%s: %.2f ops/s", $self->{result_values}->{metric}, $self->{result_values}->{value_per_sec});
-    } else {
-        $msg = sprintf("%s: %.2f ops", $self->{result_values}->{metric}, $self->{result_values}->{value});
-    }
- 
     return $msg;
 }
 
@@ -117,47 +188,42 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All disk metrics are ok", skipped_code => { -10 => 1 } },
+        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
+          message_multiple => 'All disks metrics are ok', indent_long_output => '    ',
+            group => [
+                { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } }
+            ]
+        }
     ];
 
-    foreach my $statistic ('minimum', 'maximum', 'average', 'sum') {
-        foreach my $metric ('DiskReadBytes', 'DiskWriteBytes') {
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'stat' }, { name => 'timeframe' } ],
-                                closure_custom_calc => $self->can('custom_metric_calc'),
-                                closure_custom_calc_extra_options => { metric => $metric, stat => $statistic },
-                                closure_custom_output => $self->can('custom_usage_output'),
-                                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
-        }
-        foreach my $metric ('DiskReadOps', 'DiskWriteOps') {
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'stat' }, { name => 'timeframe' } ],
-                                closure_custom_calc => $self->can('custom_metric_calc'),
-                                closure_custom_calc_extra_options => { metric => $metric, stat => $statistic },
-                                closure_custom_output => $self->can('custom_ops_output'),
-                                closure_custom_perfdata => $self->can('custom_ops_perfdata'),
-                                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
-        }
+    foreach my $metric (keys %metrics_mapping) {
+        my $entry = {
+            label => $metrics_mapping{$metric}->{label},
+            set => {
+                key_values => [ { name => $metric }, { name => 'timeframe' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_metric_calc'),
+                closure_custom_calc_extra_options => { metric => $metric },
+                closure_custom_output => $self->can('custom_metric_output'),
+                closure_custom_perfdata => $self->can('custom_metric_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_metric_threshold')
+            }
+        };
+        push @{$self->{maps_counters}->{statistics}}, $entry;
     }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "type:s"	      => { name => 'type' },
-        "name:s@"	      => { name => 'name' },
-        "filter-metric:s" => { name => 'filter_metric' },
-        "per-sec"         => { name => 'per_sec' },
+        'type:s'	      => { name => 'type' },
+        'name:s@'	      => { name => 'name' },
+        'filter-metric:s' => { name => 'filter_metric' },
+        'per-sec'         => { name => 'per_sec' },
+        'add-ebs-metrics' => { name => 'add_ebs_metrics' }
     });
 
     return $self;
@@ -201,7 +267,8 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('DiskReadBytes', 'DiskWriteBytes', 'DiskReadOps', 'DiskWriteOps') {
+    foreach my $metric (keys %metrics_mapping) {
+        next if (!defined($self->{option_results}->{add_ebs_metrics}) && $metric =~ /EBS/);
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
 
@@ -215,7 +282,6 @@ sub manage_selection {
     my %metric_results;
     foreach my $instance (@{$self->{aws_instance}}) {
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/EC2',
             dimensions => [ { Name => $map_type{$self->{option_results}->{type}}, Value => $instance } ],
             metrics => $self->{aws_metrics},
@@ -223,21 +289,23 @@ sub manage_selection {
             timeframe => $self->{aws_timeframe},
             period => $self->{aws_period},
         );
-
+        
         foreach my $metric (@{$self->{aws_metrics}}) {
             foreach my $statistic (@{$self->{aws_statistics}}) {
-                next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) && !defined($self->{option_results}->{zeroed}));
+                next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) &&
+                    !defined($self->{option_results}->{zeroed}));
 
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{display} = $instance;
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{type} = $self->{option_results}->{type};
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{stat} = lc($statistic);
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{timeframe} = $self->{aws_timeframe};
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{$metric . "_" . lc($statistic)} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
+                $self->{metrics}->{$instance}->{display} = $instance;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = 
+                    defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? 
+                    $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
         }
     }
 
-    if (scalar(keys %{$self->{metric}}) <= 0) {
+    if (scalar(keys %{$self->{metrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
         $self->{output}->option_exit();
     }
@@ -253,7 +321,7 @@ Check EC2 instances disk IO metrics.
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::aws::ec2::plugin --custommode=paws --mode=diskio --region='eu-west-1'
---type='asg' --name='centreon-middleware' --filter-metric='Read' --statistic='sum' --critical-diskreadops-sum='10'
+--type='asg' --name='centreon-middleware' --filter-metric='Read' --statistic='sum' --critical-disk-ops-read='10'
 --verbose
 
 See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ec2-metricscollected.html' for more informations.
@@ -270,23 +338,20 @@ Set the instance type (Required) (Can be: 'asg', 'instance').
 
 Set the instance name (Required) (Can be multiple).
 
+=item B<--add-ebs-metrics>
+
+Add EBS metrics ('EBSReadOps', 'EBSWriteOps', 'EBSReadBytes', 'EBSWriteBytes').
+
 =item B<--filter-metric>
 
 Filter metrics (Can be: 'DiskReadBytes', 'DiskWriteBytes',
 'DiskReadOps', 'DiskWriteOps') 
 (Can be a regexp).
 
-=item B<--warning-$metric$-$statistic$>
+=item B<--warning-*> B<--critical-*>
 
-Thresholds warning ($metric$ can be: 'diskreadbytes', 'diskwritebytes',
-'diskreadops', 'diskwriteops', 
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
-
-=item B<--critical-$metric$-$statistic$>
-
-Thresholds critical ($metric$ can be: 'diskreadbytes', 'diskwritebytes',
-'diskreadops', 'diskwriteops',
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds (Can be 'disk-bytes-read', 'disk-bytes-write', 'disk-ops-read', 'disk-ops-write',
+'ebs-bytes-read', 'ebs-bytes-write', 'ebs-ops-read', 'ebs-ops-write').
 
 =item B<--per-sec>
 

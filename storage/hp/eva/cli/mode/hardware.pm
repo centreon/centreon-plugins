@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,9 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(fan|temperature|system|disk|diskgrp|psu|battery|iomodule)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(fan|temperature|psu)$';
     
     $self->{cb_hook2} = 'api_execute';
@@ -59,10 +57,8 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {});
 
     $self->{ssu_commands} = {};
     return $self;

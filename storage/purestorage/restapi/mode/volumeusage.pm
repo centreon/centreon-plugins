@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -104,25 +104,25 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'data-reduction', set => {
                 key_values => [ { name => 'data_reduction' }, { name => 'display' } ],
                 output_template => 'Data Reduction : %.3f',
                 perfdatas => [
-                    { label => 'data_reduction', value => 'data_reduction_absolute', template => '%.3f', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'data_reduction', template => '%.3f', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'total-reduction', set => {
                 key_values => [ { name => 'total_reduction' }, { name => 'display' } ],
                 output_template => 'Total Reduction : %.3f',
                 perfdatas => [
-                    { label => 'total_reduction', value => 'total_reduction_absolute', template => '%.3f', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'total_reduction', template => '%.3f', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'snapshots', set => {
@@ -130,11 +130,11 @@ sub set_counters {
                 output_template => 'Snapshots : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'snapshots', value => 'snapshots_absolute', template => '%s', 
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'snapshots', template => '%s', 
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,13 +22,9 @@ package centreon::common::powershell::dell::compellent::volumeusage;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
 
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
@@ -107,7 +103,7 @@ $ret = Remove-DellSavedApiConnection -Name $connName
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 1;

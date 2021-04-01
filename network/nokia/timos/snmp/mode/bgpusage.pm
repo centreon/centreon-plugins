@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -61,8 +61,8 @@ sub set_counters {
                 key_values => [ { name => 'active_prefixes' }, { name => 'display' } ],
                 output_template => 'Active Prefixes : %s',
                 perfdatas => [
-                    { label => 'active_prefixes', value => 'active_prefixes_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'active_prefixes', value => 'active_prefixes', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -70,8 +70,8 @@ sub set_counters {
                 key_values => [ { name => 'sent_prefixes', diff => 1 }, { name => 'display' } ],
                 output_template => 'Sent Prefixes : %s',
                 perfdatas => [
-                    { label => 'sent_prefixes', value => 'sent_prefixes_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'sent_prefixes', value => 'sent_prefixes', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -79,8 +79,8 @@ sub set_counters {
                 key_values => [ { name => 'received_prefixes', diff => 1 }, { name => 'display' } ],
                 output_template => 'Received Prefixes : %s',
                 perfdatas => [
-                    { label => 'received_prefixes', value => 'received_prefixes_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'received_prefixes', value => 'received_prefixes', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

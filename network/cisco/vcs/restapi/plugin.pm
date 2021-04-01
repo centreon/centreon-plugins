@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,12 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                            'calls'                 => 'network::cisco::vcs::restapi::mode::calls',
-                            'http-proxy-stats'      => 'network::cisco::vcs::restapi::mode::httpproxystats',
-                            'zones'                 => 'network::cisco::vcs::restapi::mode::zones',
-                        );
-    $self->{custom_modes}{xmlapi} = 'network::cisco::vcs::restapi::custom::xmlapi';
+    $self->{modes} = {
+        'alerts'           => 'network::cisco::vcs::restapi::mode::alerts',
+        'calls'            => 'network::cisco::vcs::restapi::mode::calls',
+        'http-proxy-stats' => 'network::cisco::vcs::restapi::mode::httpproxystats',
+        'zones'            => 'network::cisco::vcs::restapi::mode::zones'
+    };
+
+    $self->{custom_modes}->{xmlapi} = 'network::cisco::vcs::restapi::custom::xmlapi';
     return $self;
 }
 

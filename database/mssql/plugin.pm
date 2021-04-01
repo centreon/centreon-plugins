@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'backup-age'           => 'database::mssql::mode::backupage',
         'blocked-processes'    => 'database::mssql::mode::blockedprocesses',
         'cache-hitratio'       => 'database::mssql::mode::cachehitratio',
@@ -42,13 +42,14 @@ sub new {
         'failed-jobs'          => 'database::mssql::mode::failedjobs',
         'list-databases'       => 'database::mssql::mode::listdatabases',
         'locks-waits'          => 'database::mssql::mode::lockswaits',
-        'logs-size'            => 'database::mssql::mode::logssize',
+        'page-life-expectancy' => 'database::mssql::mode::pagelifeexpectancy',
         'sql'                  => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'           => 'centreon::common::protocols::sql::mode::sqlstring',
-        'transactions'         => 'database::mssql::mode::transactions',
-    );
+        'tables'               => 'database::mssql::mode::tables',
+        'transactions'         => 'database::mssql::mode::transactions'
+    };
 
-    $self->{sql_modes}{dbi} = 'database::mssql::dbi';
+    $self->{sql_modes}->{dbi} = 'database::mssql::dbi';
     return $self;
 }
 

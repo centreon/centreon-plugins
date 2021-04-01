@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_5s' } ],
                 output_template => '%.2f %% (5sec)', output_error_template => "%s (5sec)",
                 perfdatas => [
-                    { label => 'cpu_5s', value => 'usage_5s_absolute', template => '%.2f',
+                    { label => 'cpu_5s', value => 'usage_5s', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_1m' } ],
                 output_template => '%.2f %% (1m)', output_error_template => "%s (1min)",
                 perfdatas => [
-                    { label => 'cpu_1m', value => 'usage_1m_absolute', template => '%.2f',
+                    { label => 'cpu_1m', value => 'usage_1m', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_5m' } ],
                 output_template => '%.2f %% (5min)', output_error_template => "%s (5min)",
                 perfdatas => [
-                    { label => 'cpu_5m', value => 'usage_5m_absolute', template => '%.2f',
+                    { label => 'cpu_5m', value => 'usage_5m', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,14 +31,15 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'databases-stats'    => 'apps::redis::restapi::mode::databasesstats',
-                            'cluster-stats'      => 'apps::redis::restapi::mode::clusterstats',
-                            'list-databases'     => 'apps::redis::restapi::mode::listdatabases',
-                            'list-nodes'         => 'apps::redis::restapi::mode::listnodes',
-                            'list-shards'        => 'apps::redis::restapi::mode::listshards',
-                            'nodes-stats'        => 'apps::redis::restapi::mode::nodesstats',
-                            'shards-stats'       => 'apps::redis::restapi::mode::shardsstats',
-                        );
+        'databases-stats'    => 'apps::redis::restapi::mode::databasesstats',
+        'cluster-stats'      => 'apps::redis::restapi::mode::clusterstats',
+        'list-databases'     => 'apps::redis::restapi::mode::listdatabases',
+        'list-nodes'         => 'apps::redis::restapi::mode::listnodes',
+        'list-shards'        => 'apps::redis::restapi::mode::listshards',
+        'nodes-stats'        => 'apps::redis::restapi::mode::nodesstats',
+        'shards-stats'       => 'apps::redis::restapi::mode::shardsstats',
+    );
+
     $self->{custom_modes}{api} = 'apps::redis::restapi::custom::api';
     return $self;
 }

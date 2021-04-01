@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'dedup' }, ],
                 output_template => 'Deduplication ratio : %.2f',
                 perfdatas => [
-                    { value => 'dedup_absolute', template => '%.2f', min => 0 },
+                    { value => 'dedup', template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'comp' }, ],
                 output_template => 'Compression ratio : %.2f',
                 perfdatas => [
-                    { value => 'comp_absolute', template => '%.2f', min => 0 },
+                    { value => 'comp', template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'save' }, ],
                 output_template => 'Save ratio : %.2f',
                 perfdatas => [
-                    { value => 'save_absolute', template => '%.2f', min => 0 },
+                    { value => 'save', template => '%.2f', min => 0 },
                 ],
             }
         },

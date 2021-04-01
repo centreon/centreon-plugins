@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,9 +30,8 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status};
 
-    return $msg;
+    return 'status : ' . $self->{result_values}->{status};
 }
 
 sub custom_status_calc {
@@ -120,7 +119,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total devices : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', min => 0 },
+                    { label => 'total', template => '%s', min => 0 },
                 ],
             }
         },
@@ -139,8 +138,8 @@ sub set_counters {
                 key_values => [ { name => 'clients' }, { name => 'display' } ],
                 output_template => 'Clients : %s',
                 perfdatas => [
-                    { label => 'clients', value => 'clients_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'clients', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -149,7 +148,6 @@ sub set_counters {
     $self->{maps_counters}->{interface} = [
         { label => 'in', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'),
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -158,7 +156,6 @@ sub set_counters {
         },
         { label => 'out', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'),
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),

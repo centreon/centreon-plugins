@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,27 +30,27 @@ sub configure_varnish_stats {
     my ($self, %options) = @_;
 
     $self->{varnish_stats} = [
-        { entry => 'client_conn', nlabel => 'connections.client.accepted.persecond', display_ok => 1, diff => 1, per_second => 1 },
-        { entry => 'client_drop', nlabel => 'connections.client.dropped.persecond', display_ok => 1, diff => 1, per_second => 1 },
-        { entry => 'client_req', nlabel => 'connections.client.request.received.persecond', display_ok => 1, diff => 1, per_second => 1 },
-        { entry => 'client_drop_late', nlabel => 'connections.client.dropped.late.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'client_req_400', nlabel => 'connections.client.request400.received.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'client_req_411', nlabel => 'connections.client.request411.received.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'client_req_413', nlabel => 'connections.client.request413.received.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'client_req_417', nlabel => 'connections.client.request417.received.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'client_conn', nlabel => 'connections.client.accepted.persecond', display_ok => 1, per_second => 1 },
+        { entry => 'client_drop', nlabel => 'connections.client.dropped.persecond', display_ok => 1, per_second => 1 },
+        { entry => 'client_req', nlabel => 'connections.client.request.received.persecond', display_ok => 1, per_second => 1 },
+        { entry => 'client_drop_late', nlabel => 'connections.client.dropped.late.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'client_req_400', nlabel => 'connections.client.request400.received.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'client_req_411', nlabel => 'connections.client.request411.received.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'client_req_413', nlabel => 'connections.client.request413.received.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'client_req_417', nlabel => 'connections.client.request417.received.persecond', display_ok => 0, per_second => 1 },
 
-        { entry => 'backend_conn', nlabel => 'backends.connections.success.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'backend_unhealthy', nlabel => 'backends.connections.unhealthy.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'backend_busy', nlabel => 'backends.connections.busy.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'backend_fail', nlabel => 'backends.connections.fail.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'backend_reuse', nlabel => 'backends.connections.reuse.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'backend_recycle', nlabel => 'backends.connections.recycle.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'backend_retry', nlabel => 'backends.connections.retry.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'backend_req', nlabel => 'backends.requests.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'backend_conn', nlabel => 'backends.connections.success.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'backend_unhealthy', nlabel => 'backends.connections.unhealthy.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'backend_busy', nlabel => 'backends.connections.busy.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'backend_fail', nlabel => 'backends.connections.fail.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'backend_reuse', nlabel => 'backends.connections.reuse.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'backend_recycle', nlabel => 'backends.connections.recycle.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'backend_retry', nlabel => 'backends.connections.retry.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'backend_req', nlabel => 'backends.requests.persecond', display_ok => 0, per_second => 1 },
 
-        { entry => 'cache_hit', nlabel => 'cache.hit.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'cache_hitpass', nlabel => 'cache.hitpass.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'cache_miss', nlabel => 'cache.miss.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'cache_hit', nlabel => 'cache.hit.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'cache_hitpass', nlabel => 'cache.hitpass.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'cache_miss', nlabel => 'cache.miss.persecond', display_ok => 0, per_second => 1 },
         
         { entry => 'n_sess_mem', nlabel => 'structure.session.memory.count', display_ok => 0 },
         { entry => 'n_sess', nlabel => 'structure.session.count', display_ok => 0 },
@@ -66,53 +66,53 @@ sub configure_varnish_stats {
         { entry => 'n_lru_nuked', nlabel => 'object.lru.nuked.count', display_ok => 0 },
         { entry => 'n_lru_moved', nlabel => 'object.lru.moved.count', display_ok => 0 },
         
-        { entry => 'n_objsendfile', nlabel => 'object.sent.file.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'n_objwrite', nlabel => 'object.sent.write.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'n_objoverflow', nlabel => 'object.overflow.workspace.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'n_objsendfile', nlabel => 'object.sent.file.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'n_objwrite', nlabel => 'object.sent.write.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'n_objoverflow', nlabel => 'object.overflow.workspace.persecond', display_ok => 0, per_second => 1 },
         
-        { entry => 'shm_records', nlabel => 'shm.records.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'shm_writes', nlabel => 'shm.writes.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'shm_flushes', nlabel => 'shm.flushes.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'shm_cont', nlabel => 'shm.contentions.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'shm_cycles', nlabel => 'shm.cycles.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'shm_records', nlabel => 'shm.records.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'shm_writes', nlabel => 'shm.writes.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'shm_flushes', nlabel => 'shm.flushes.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'shm_cont', nlabel => 'shm.contentions.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'shm_cycles', nlabel => 'shm.cycles.persecond', display_ok => 0, per_second => 1 },
         
-        { entry => 'sms_nreq', nlabel => 'sms.allocator.requests.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'sms_nreq', nlabel => 'sms.allocator.requests.persecond', display_ok => 0, per_second => 1 },
         { entry => 'sms_nobj', nlabel => 'sms.outstanding.allocations.count', display_ok => 0 },
         { entry => 'sms_nbytes', nlabel => 'sms.outstanding.bytes', display_ok => 0, custom_output => $self->can('custom_output_scale_bytes') },
         { entry => 'sms_balloc', nlabel => 'sms.outstanding.allocated.bytes', display_ok => 0, custom_output => $self->can('custom_output_scale_bytes') },
         { entry => 'sms_bfree', nlabel => 'sms.outstanding.freed.bytes', display_ok => 0, custom_output => $self->can('custom_output_scale_bytes') },
         
-        { entry => 'fetch_head', nlabel => 'fetch.head.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_length', nlabel => 'fetch.length.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_chunked', nlabel => 'fetch.chunked.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_eof', nlabel => 'fetch.eof.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_bad', nlabel => 'fetch.badheaders.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_close', nlabel => 'fetch.close.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_oldhttp', nlabel => 'fetch.oldhttp.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_zero', nlabel => 'fetch.zero.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_failed', nlabel => 'fetch.failed.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_1xx', nlabel => 'fetch.1xx.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_204', nlabel => 'fetch.204.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'fetch_304', nlabel => 'fetch.304.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'fetch_head', nlabel => 'fetch.head.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_length', nlabel => 'fetch.length.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_chunked', nlabel => 'fetch.chunked.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_eof', nlabel => 'fetch.eof.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_bad', nlabel => 'fetch.badheaders.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_close', nlabel => 'fetch.close.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_oldhttp', nlabel => 'fetch.oldhttp.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_zero', nlabel => 'fetch.zero.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_failed', nlabel => 'fetch.failed.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_1xx', nlabel => 'fetch.1xx.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_204', nlabel => 'fetch.204.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'fetch_304', nlabel => 'fetch.304.persecond', display_ok => 0, per_second => 1 },
 
         { entry => 'n_ban', nlabel => 'ban.total.active.count', display_ok => 0 },
-        { entry => 'n_ban_add', nlabel => 'ban.new.added.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'n_ban_retire', nlabel => 'ban.old.deleted.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'n_ban_obj_test', nlabel => 'ban.object.tested.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'n_ban_re_test', nlabel => 'ban.object.tested.regexp.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'n_ban_dups', nlabel => 'ban.duplicate.removed.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'n_ban_add', nlabel => 'ban.new.added.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'n_ban_retire', nlabel => 'ban.old.deleted.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'n_ban_obj_test', nlabel => 'ban.object.tested.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'n_ban_re_test', nlabel => 'ban.object.tested.regexp.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'n_ban_dups', nlabel => 'ban.duplicate.removed.persecond', display_ok => 0, per_second => 1 },
         
-        { entry => 'dir_dns_lookups', nlabel => 'dns.director.lookups.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'dir_dns_failed', nlabel => 'dns.director.lookups.failed.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'dir_dns_hit', nlabel => 'dns.director.lookups.cachehit.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'dir_dns_cache_full', nlabel => 'dns.director.cache.full.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'dir_dns_lookups', nlabel => 'dns.director.lookups.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'dir_dns_failed', nlabel => 'dns.director.lookups.failed.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'dir_dns_hit', nlabel => 'dns.director.lookups.cachehit.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'dir_dns_cache_full', nlabel => 'dns.director.cache.full.persecond', display_ok => 0, per_second => 1 },
 
-        { entry => 'esi_errors', nlabel => 'esi.parse.errors.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'esi_warnings', nlabel => 'esi.parse.warnings.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'esi_errors', nlabel => 'esi.parse.errors.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'esi_warnings', nlabel => 'esi.parse.warnings.persecond', display_ok => 0, per_second => 1 },
 
-        { entry => 'hcb_nolock', nlabel => 'hck.lookups.nolock.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'hcb_lock', nlabel => 'hck.lookups.lock.persecond', display_ok => 0, diff => 1, per_second => 1 },
-        { entry => 'hcb_insert', nlabel => 'hck.inserts.persecond', display_ok => 0, diff => 1, per_second => 1 },
+        { entry => 'hcb_nolock', nlabel => 'hck.lookups.nolock.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'hcb_lock', nlabel => 'hck.lookups.lock.persecond', display_ok => 0, per_second => 1 },
+        { entry => 'hcb_insert', nlabel => 'hck.inserts.persecond', display_ok => 0, per_second => 1 },
 
         { entry => 'n_vcl', nlabel => 'vlc.total.count', display_ok => 0, diff => 1 },
         { entry => 'n_vcl_avail', nlabel => 'vlc.available.count', display_ok => 0, diff => 1 },
@@ -148,6 +148,8 @@ sub configure_varnish_stats {
         { entry => 'n_wrk_lqueue', nlabel => 'workers.requests.queue.length.count', display_ok => 0, diff => 1 },
         { entry => 'n_wrk_queued', nlabel => 'workers.requests.queued.count', display_ok => 0, diff => 1 },
         { entry => 'n_wrk_drop', nlabel => 'workers.requests.dropped.count', display_ok => 0, diff => 1 },
+
+        { entry => 's0.g_space', category => 'SMA', nlabel => 'storage.space.free.bytes', display_ok => 0, custom_output => $self->can('custom_output_scale_bytes') },
     ];
 }
 
@@ -156,9 +158,8 @@ sub custom_output_scale_bytes {
 
     my $label = $self->{label};
     $label =~ s/-/_/g;
-    my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{$label . '_absolute'}); 
-    my $msg = sprintf('%s: %.2f %s', $self->{result_values}->{$label . '_description_absolute'},  $value, $unit);
-    return $msg;
+    my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{$label }); 
+    return sprintf('%s: %.2f %s', $self->{result_values}->{$label . '_description'},  $value, $unit);
 }
 
 sub custom_output_second { 
@@ -166,7 +167,7 @@ sub custom_output_second {
 
     my $label = $self->{label};
     $label =~ s/-/_/g;
-    my $msg = sprintf('%s: %.2f/s', $self->{result_values}->{$label . '_description_absolute'},  $self->{result_values}->{$label . '_per_second'});
+    my $msg = sprintf('%s: %.2f/s', $self->{result_values}->{$label . '_description'},  $self->{result_values}->{$label});
     return $msg;
 }
 
@@ -175,7 +176,7 @@ sub custom_output {
 
     my $label = $self->{label};
     $label =~ s/-/_/g;
-    my $msg = sprintf('%s: %s', $self->{result_values}->{$label . '_description_absolute'},  $self->{result_values}->{$label . '_absolute'});
+    my $msg = sprintf('%s: %s', $self->{result_values}->{$label . '_description'},  $self->{result_values}->{$label });
     return $msg;
 }
 
@@ -185,7 +186,7 @@ sub set_counters {
     $self->configure_varnish_stats();
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [];
@@ -194,15 +195,14 @@ sub set_counters {
         $label =~ s/_/-/g;
         push @{$self->{maps_counters}->{global}},
             { label => $label, nlabel => $_->{nlabel}, display_ok => $_->{display_ok}, set => {
-                    key_values => [ { name => $_->{entry}, diff => $_->{diff} }, { name => $_->{entry}. '_description' } ],
+                    key_values => [ { name => $_->{entry}, diff => $_->{diff}, per_second => $_->{per_second} }, { name => $_->{entry}. '_description' } ],
                     closure_custom_output => defined($_->{custom_output}) ? $_->{custom_output} :
                         (defined($_->{per_second}) ? $self->can('custom_output_second') : $self->can('custom_output')),
-                    per_second => $_->{per_second},
                     perfdatas => [
-                        { label => $_->{entry}, value => $_->{entry} . (defined($_->{per_second}) ? '_per_second' : '_absolute'), 
+                        { label => $_->{entry}, 
                           template => defined($_->{per_second}) ? '%.2f' : '%s',
-                          min => 0 },
-                    ],
+                          min => 0 }
+                    ]
                 }
             }
         ;
@@ -215,16 +215,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'hostname:s'         => { name => 'hostname' },
-        'remote'             => { name => 'remote' },
-        'ssh-option:s@'      => { name => 'ssh_option' },
-        'ssh-path:s'         => { name => 'ssh_path' },
-        'ssh-command:s'      => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'          => { name => 'timeout', default => 30 },
-        'sudo'               => { name => 'sudo' },
-        'command:s'          => { name => 'command', default => 'varnishstat' },
-        'command-path:s'     => { name => 'command_path', default => '/usr/bin' },
-        'command-options:s'  => { name => 'command_options', default => ' -1 -j 2>&1' },
     });
 
     return $self;
@@ -234,12 +224,14 @@ sub check_varnish_old {
     my ($self, %options) = @_;
 
     return if (!defined($options{json}->{uptime}));
-     #   "cache_hit": {"value": 56320, "flag": "a", "description": "Cache hits"},
-     #   "cache_hitpass": {"value": 0, "flag": "a", "description": "Cache hits for pass"},
+    #   "cache_hit": {"value": 56320, "flag": "a", "description": "Cache hits"},
+    #   "cache_hitpass": {"value": 0, "flag": "a", "description": "Cache hits for pass"},
+    #   "SMA.s0.g_space": {"type": "SMA", "ident": "s0", "value": 2147483648, "flag": "i", "description": "Bytes available"},
     foreach (@{$self->{varnish_stats}}) {
-        next if (!defined($options{json}->{$_->{entry}}));
-        $self->{global}->{$_->{entry}} = $options{json}->{$_->{entry}}->{value};
-        $self->{global}->{$_->{entry} . '_description'} = $options{json}->{$_->{entry}}->{description};
+        my $entry = defined($_->{category}) ? $_->{category} . '.' . $_->{entry} : $_->{entry};
+        next if (!defined($options{json}->{$entry}));
+        $self->{global}->{$_->{entry}} = $options{json}->{$entry}->{value};
+        $self->{global}->{$_->{entry} . '_description'} = $options{json}->{$entry}->{description};
     }
 }
 
@@ -251,23 +243,22 @@ sub check_varnish_new {
     #   "MAIN.cache_hit": {"type": "MAIN", "value": 18437, "flag": "a", "description": "Cache hits"},
     #   "MAIN.cache_hitpass": {"type": "MAIN", "value": 3488, "flag": "a", "description": "Cache hits for pass"},
     #   "MAIN.cache_miss": {"type": "MAIN", "value": 5782, "flag": "a", "description": "Cache misses"},
+    #   "SMA.s0.g_space": { "description": "Bytes available", "flag": "g", "format": "B", "value": 4244053932 },
     foreach (@{$self->{varnish_stats}}) {
-        next if (!defined($options{json}->{'MAIN.' . $_->{entry}}));
-        $self->{global}->{$_->{entry}} = $options{json}->{'MAIN.' . $_->{entry}}->{value};
-        $self->{global}->{$_->{entry} . '_description'} = $options{json}->{'MAIN.' . $_->{entry}}->{description};
+        my $category = defined($_->{category}) ? $_->{category} : 'MAIN';
+        next if (!defined($options{json}->{$category . '.' . $_->{entry}}));
+        $self->{global}->{$_->{entry}} = $options{json}->{$category . '.' . $_->{entry}}->{value};
+        $self->{global}->{$_->{entry} . '_description'} = $options{json}->{$category . '.' . $_->{entry}}->{description};
     }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'varnishstat',
+        command_path => '/usr/bin',
+        command_options => '-1 -j 2>&1'
     );
 
     $self->{global} = {};
@@ -284,7 +275,7 @@ sub manage_selection {
     $self->check_varnish_old(json => $content);
     $self->check_varnish_new(json => $content);
 
-    $self->{cache_name} = "cache_varnish_" . $self->{mode} . '_' .
+    $self->{cache_name} = 'cache_varnish_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{hostname}) ? md5_hex($self->{option_results}->{hostname}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 };
@@ -296,33 +287,11 @@ __END__
 
 =head1 MODE
 
-Check statistics with varnishstat command
+Check statistics with varnishstat command.
+
+Command used: /usr/bin/varnishstat -1 -j 2>&1
 
 =over 8
-
-=item B<--remote>
-
-If you dont run this script locally, if you wanna use it remote, you can run it remotely with 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--command>
-
-Varnishstat Binary Filename (Default: varnishstat)
-
-=item B<--command-path>
-
-Directory Path to Varnishstat Binary File (Default: /usr/bin)
-
-=item B<--command-options>
-
-Parameter for Binary File (Default: ' -1 -j 2>&1')
 
 =item B<--warning-[countername]> B<--critical-[countername]>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,11 +29,7 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{options} = options object
-    # $options{output} = output object
-    # $options{exit_value} = integer
-    # $options{noptions} = integer
-    
+
     if (!defined($options{output})) {
         print "Class psqlcmd: Need to specify 'output' argument.\n";
         exit 3;
@@ -43,53 +39,48 @@ sub new {
         $options{output}->option_exit();
     }
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    { "psql-cmd:s"               => { name => 'psql_cmd', default => '/usr/bin/psql' },
-                      "host:s@"                  => { name => 'host' },
-                      "port:s@"                  => { name => 'port' },
-                      "username:s@"              => { name => 'username' },
-                      "password:s@"              => { name => 'password' },
-                      "dbname:s@"                => { name => 'dbname' },
-                      "sql-errors-exit:s"        => { name => 'sql_errors_exit', default => 'unknown' },
+        $options{options}->add_options(arguments => {
+            'psql-cmd:s'        => { name => 'psql_cmd', default => '/usr/bin/psql' },
+            'host:s@'           => { name => 'host' },
+            'port:s@'           => { name => 'port' },
+            'username:s@'       => { name => 'username' },
+            'password:s@'       => { name => 'password' },
+            'dbname:s@'         => { name => 'dbname' },
+            'sql-errors-exit:s' => { name => 'sql_errors_exit', default => 'unknown' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'PSQLCMD OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
+    $self->{sqlmode_name} = $options{sqlmode_name};
     $self->{args} = undef;
     $self->{stdout} = undef;
     $self->{columns} = undef;
     $self->{version} = undef;
-    
+
     $self->{host} = undef;
     $self->{port} = undef;
     $self->{username} = undef;
     $self->{password} = undef;
     $self->{dbname} = undef;
-    
-    $self->{record_separator} = '-====-';
-    $self->{field_separator} = '#====#';
-    
+
+    $self->{record_separator} = '----====----';
+    $self->{field_separator} = '-====-';
+
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
+
     foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
+        if ($_ eq $self->{sqlmode_name}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
                 foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
                     if (!defined($self->{option_results}->{$opt}[$i])) {
@@ -103,9 +94,7 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still data_source
-    # return 0 = no data_source left
-    
+
     $self->{host} = (defined($self->{option_results}->{host})) ? shift(@{$self->{option_results}->{host}}) : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
@@ -113,15 +102,15 @@ sub check_options {
     $self->{dbname} = (defined($self->{option_results}->{dbname})) ? shift(@{$self->{option_results}->{dbname}}) : undef;
     $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
     $self->{psql_cmd} = $self->{option_results}->{psql_cmd};
-    
+
     # If we want a command line: password with variable "PGPASSWORD".
-    #  psql -d template1 -A -R '-====-' -F '#====#' -c "select code from films"
+    #  psql -d template1 -A -R "----====-----" -F "-====-" -c "select code from films"
  
     if (!defined($self->{host}) || $self->{host} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify host argument.");
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
-    
+
     $self->{args} = ['-A', '-R', $self->{record_separator}, '-F', $self->{field_separator}, '--pset', 'footer=off', '-h', $self->{host}];
     if (defined($self->{port})) {
         push @{$self->{args}}, "-p", $self->{port};
@@ -145,7 +134,7 @@ sub check_options {
 sub is_version_minimum {
     my ($self, %options) = @_;
     # $options{version} = string version to check
-    
+
     my @version_src = split /\./, $self->{version};
     my @versions = split /\./, $options{version};
     for (my $i = 0; $i < scalar(@versions); $i++) {
@@ -162,7 +151,7 @@ sub is_version_minimum {
 
 sub get_id {
     my ($self, %options) = @_;
-    
+
     my $msg = $self->{host};
     if (defined($self->{port})) {
         $msg .= ":" . $self->{port};
@@ -188,23 +177,17 @@ sub quote {
 
 sub command_execution {
     my ($self, %options) = @_;
-    
-    my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $self->{psql_cmd},
-                                                 arguments =>  [@{$self->{args}}, '-c', $options{request}],
-                                                 timeout => 30,
-                                                 wait_exit => 1,
-                                                 redirect_stderr => 1
-                                                 );
-    if ($exit_code <= -1000) {
-        if ($exit_code == -1000) {
-            $self->{output}->output_add(severity => 'UNKNOWN', 
-                                        short_msg => $stdout);
-        }
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-    
+
+    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        command => $self->{psql_cmd},
+        command_options =>  join(' ', @{$self->{args}}) . ' -c "' . $options{request} . '"',
+        wait_exit => 1,
+        redirect_stderr => 1,
+        no_quit => 1,
+        options => { timeout => 30 }
+    );
+
     return ($exit_code, $stdout); 
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_now' } ],
                 output_template => '%.2f %% (current)',
                 perfdatas => [
-                    { label => 'cpu_current', value => 'usage_now_absolute', template => '%.2f',
+                    { label => 'cpu_current', value => 'usage_now', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_5s' } ],
                 output_template => '%.2f %% (5sec)',
                 perfdatas => [
-                    { label => 'cpu_5s', value => 'usage_5s_absolute', template => '%.2f',
+                    { label => 'cpu_5s', value => 'usage_5s', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_10s' } ],
                 output_template => '%.2f %% (10sec)',
                 perfdatas => [
-                    { label => 'cpu_10s', value => 'usage_10s_absolute', template => '%.2f',
+                    { label => 'cpu_10s', value => 'usage_10s', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_20s' } ],
                 output_template => '%.2f %% (5sec)',
                 perfdatas => [
-                    { label => 'cpu_20s', value => 'usage_20s_absolute', template => '%.2f',
+                    { label => 'cpu_20s', value => 'usage_20s', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -83,10 +83,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -97,8 +96,13 @@ sub manage_selection {
     my $oid_coUsInfoCpuUse5Sec = '.1.3.6.1.4.1.8744.5.21.1.1.6.0';
     my $oid_coUsInfoCpuUse10Sec = '.1.3.6.1.4.1.8744.5.21.1.1.7.0';
     my $oid_coUsInfoCpuUse20Sec = '.1.3.6.1.4.1.8744.5.21.1.1.8.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_coUsInfoCpuUseNow,
-        $oid_coUsInfoCpuUse5Sec, $oid_coUsInfoCpuUse10Sec, $oid_coUsInfoCpuUse20Sec], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_coUsInfoCpuUseNow, $oid_coUsInfoCpuUse5Sec,
+            $oid_coUsInfoCpuUse10Sec, $oid_coUsInfoCpuUse20Sec
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global} = { 
         usage_now => $snmp_result->{$oid_coUsInfoCpuUseNow},

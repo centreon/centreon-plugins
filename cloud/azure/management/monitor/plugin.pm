@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,9 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                            'discovery'         => 'cloud::azure::management::monitor::mode::discovery',
-                            'get-metrics'       => 'cloud::azure::management::monitor::mode::getmetrics',
-                        );
+        'alert'         => 'cloud::azure::management::monitor::mode::alert',
+        'discovery'     => 'cloud::azure::management::monitor::mode::discovery',
+        'get-metrics'   => 'cloud::azure::management::monitor::mode::getmetrics',
+        'health'        => 'cloud::azure::management::monitor::mode::health',
+    );
                         
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
     $self->{custom_modes}{api} = 'cloud::azure::custom::api';
@@ -43,10 +45,9 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{options}->add_options(arguments =>
-                                    {
-                                        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
-                                    });
+    $self->{options}->add_options(arguments => {
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+    });
 
     $self->SUPER::init(%options);
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,21 +22,21 @@ package apps::nginx::serverstatus::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
-	my ($class, %options) = @_;
-	my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-	bless $self, $class;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
 
-	$self->{version} = '0.1';
-	%{$self->{modes}} = (
-            'connections'   => 'apps::nginx::serverstatus::mode::connections',
-            'responsetime'  => 'apps::nginx::serverstatus::mode::responsetime',
-            'requests'      => 'apps::nginx::serverstatus::mode::requests',
-			);
+    $self->{version} = '0.1';
+    $self->{modes} = {
+        'connections' => 'apps::nginx::serverstatus::mode::connections',
+        'requests'    => 'apps::nginx::serverstatus::mode::requests'
+    };
 
-	return $self;
+    $self->{custom_modes}->{api} = 'apps::nginx::serverstatus::custom::api';
+    return $self;
 }
 
 1;

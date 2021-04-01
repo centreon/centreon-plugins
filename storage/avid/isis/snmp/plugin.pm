@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,11 +32,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'hardware'              => 'centreon::common::broadcom::megaraid::snmp::mode::hardware',
-                            'performance'           => 'storage::avid::isis::snmp::mode::performance',
-                            'status'                => 'storage::avid::isis::snmp::mode::status',
-                            'usage'                 => 'storage::avid::isis::snmp::mode::usage',
-                        );
+        'hardware'    => 'centreon::common::broadcom::megaraid::snmp::mode::hardware',
+        'performance' => 'storage::avid::isis::snmp::mode::performance',
+        'status'      => 'storage::avid::isis::snmp::mode::status',
+        'usage'       => 'storage::avid::isis::snmp::mode::usage',
+    );
 
     return $self;
 }

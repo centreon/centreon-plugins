@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,19 +45,21 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port'},
-            "proto:s"               => { name => 'proto' },
-            "api-username:s"        => { name => 'api_username' },
-            "api-password:s"        => { name => 'api_password' },
-            "timeout:s"             => { name => 'timeout', default => 30 },
+            'hostname:s'             => { name => 'hostname' },
+            'port:s'                 => { name => 'port'},
+            'proto:s'                => { name => 'proto' },
+            'api-username:s'         => { name => 'api_username' },
+            'api-password:s'         => { name => 'api_password' },
+            'timeout:s'              => { name => 'timeout', default => 30 },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
     
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
 
@@ -70,43 +72,32 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
+    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
+    if ($self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_username}) || $self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
+    if ($self->{api_username} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-username option.');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_password}) || $self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
+    if ($self->{api_password} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-password option.');
         $self->{output}->option_exit();
     }
 
@@ -130,9 +121,11 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
-    if (defined($self->{cookie}) && defined($self->{xsrf})) {
+    if (defined($self->{cookie})) {
         $self->{http}->add_header(key => 'Cookie', value => '.AspNetCore.Cookies=' . $self->{cookie});
-        $self->{http}->add_header(key => 'X-XSRF-TOKEN', value => $self->{xsrf});
+        if (defined($self->{xsrf})) {
+            $self->{http}->add_header(key => 'X-XSRF-TOKEN', value => $self->{xsrf});
+        }
     }
     $self->{http}->set_options(%{$self->{option_results}});
 }
@@ -154,23 +147,21 @@ sub authenticate {
         my $content = $self->{http}->request(
             method => 'POST', query_form_post => $post_data,
             url_path => '/api/login',
-            warning_status => '', unknown_status => '', critical_status => '%{http_code} < 200 or %{http_code} >= 300'
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
         );
 
         my $header = $self->{http}->get_header(name => 'Set-Cookie');
         if (defined ($header) && $header =~ /(?:^| ).AspNetCore.Cookies=([^;]+);.*/) {
             $cookie = $1;
         } else {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Error retrieving cookie");
             $self->{output}->option_exit();
         }
+        # 3CX 16.0.5.611 does not use XSRF-TOKEN anymore
         if (defined ($header) && $header =~ /(?:^| )XSRF-TOKEN=([^;]+);.*/) {
             $xsrf = $1;
-        } else {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Error retrieving xsrf-token");
-            $self->{output}->option_exit();
         }
 
         my $datas = { last_timestamp => time(), cookie => $cookie, xsrf => $xsrf, expires_on => time() + (3600 * 24) };
@@ -190,8 +181,11 @@ sub request_api {
 
     $self->settings();
 
-    my $content = $self->{http}->request(%options, 
-        warning_status => '', unknown_status => '', critical_status => '%{http_code} < 200 or %{http_code} >= 300'
+    my $content = $self->{http}->request(
+        %options,
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status}
     );
 
     # Some content may be strangely returned, for example :
@@ -205,20 +199,46 @@ sub request_api {
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
+        $decoded = JSON::XS->new->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
     if (!defined($decoded)) {
-        $self->{output}->output_add(long_msg => $decoded, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
         $self->{output}->option_exit();
     }
 
     return $decoded;
+}
+
+sub internal_activecalls {
+    my ($self, %options) = @_;
+    
+    my $status = $self->request_api(method => 'GET', url_path =>'/api/activeCalls');
+    return $status;
+}
+
+sub api_activecalls {
+    my ($self, %options) = @_;
+
+    my $status = $self->internal_activecalls();
+    return $status->{list};
+}
+
+sub internal_extension_list {
+    my ($self, %options) = @_;
+    
+    my $status = $self->request_api(method => 'GET', url_path =>'/api/ExtensionList');
+    return $status;
+}
+
+sub api_extension_list {
+    my ($self, %options) = @_;
+
+    my $status = $self->internal_extension_list();
+    return $status->{list};
 }
 
 sub internal_single_status {
@@ -257,7 +277,7 @@ sub internal_update_checker {
         $status = $status->{tcxUpdate};
         if (ref($status) ne 'ARRAY') {
             # See above note about strange content
-            $status = JSON::XS->new->utf8->decode($status);
+            $status = JSON::XS->new->decode($status);
         }
     }
     return $status;
@@ -292,7 +312,7 @@ Set 3CX Port (Default: '443').
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https').
+Specify http if needed (Default: 'https').
 
 =item B<--api-username>
 
@@ -305,6 +325,16 @@ Set 3CX Password.
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: '30').
+
+=item B<--unknown-http-status>
+Threshold unknown for http response code.
+(Default: '%{http_code} < 200 or %{http_code} >= 300')
+
+=item B<--warning-http-status>
+Threshold warning for http response code.
+
+=item B<--critical-http-status>
+Threshold critical for http response code.
 
 =back
 

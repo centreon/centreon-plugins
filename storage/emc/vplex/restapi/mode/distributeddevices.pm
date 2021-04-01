@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -99,9 +99,8 @@ sub run {
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All Distributed devices are OK');
-    
-    my $urlbase = '/vplex/distributed-storage/distributed-devices/';     
-    my $items = $vplex->get_items(url => $urlbase);
+
+    my $items = $vplex->get_items(url => '/vplex/distributed-storage/distributed-devices/');
     foreach my $name (sort keys %{$items}) {
         my $instance = $name;
 

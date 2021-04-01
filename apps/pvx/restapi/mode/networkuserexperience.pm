@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,11 +37,11 @@ sub set_counters {
                 key_values => [ { name => 'user_experience' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'End-User Experience: %.3f s',
                 perfdatas => [
-                    { label => 'time', value => 'user_experience_absolute', template => '%.3f',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'key_absolute' },
-                ],
+                    { label => 'time', template => '%.3f',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -55,15 +55,14 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                    "instance:s"            => { name => 'instance', default => 'layer' },
-                                    "top:s"                 => { name => 'top' },
-                                    "filter:s"              => { name => 'filter' },
-                                    "from:s"                => { name => 'from' },
-                                });
-   
+
+    $options{options}->add_options(arguments => {
+        'instance:s' => { name => 'instance', default => 'layer' },
+        'top:s'      => { name => 'top' },
+        'filter:s'   => { name => 'filter' },
+        'from:s'     => { name => 'from' }
+    });
+
     return $self;
 }
 
@@ -71,11 +70,16 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    if (!defined($self->{option_results}->{from}) || $self->{option_results}->{from} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --from option as a PVQL object.");
+        $self->{output}->option_exit();
+    }
+
     if (!defined($self->{option_results}->{instance}) || $self->{option_results}->{instance} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --instance option as a PVQL object.");
         $self->{output}->option_exit();
     }
-
+    
     $self->{pvql_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
 }
 
@@ -87,7 +91,6 @@ sub manage_selection {
     $instance_label =~ s/(\w+)/\u\L$1/g;
 
     $self->{instances} = {};
-
     my $apps;
     if ($self->{option_results}->{instance} =~ /application/) {
         my $results = $options{custom}->get_endpoint(url_path => '/get-configuration');
@@ -109,7 +112,7 @@ sub manage_selection {
         $instance = ${$result->{key}}[0]->{value} if (defined(${$result->{key}}[0]->{value}));
         $instance = ${$result->{key}}[0]->{status} if (defined(${$result->{key}}[0]->{status}));
         $self->{instances}->{$instance}->{key} = $instance;
-        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if ($self->{option_results}->{instance} =~ /application/);
+        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if (defined($apps->{$instance}->{name}) && $self->{option_results}->{instance} =~ /application/);
         $self->{instances}->{$instance}->{user_experience} = (defined(${$result->{values}}[0]->{value})) ? ${$result->{values}}[0]->{value} : 0;
         $self->{instances}->{$instance}->{instance_label} = $instance_label;
     }

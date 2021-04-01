@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,29 +34,29 @@ sub set_counters {
 
     $self->{maps_counters}->{outlet} = [
         { label => 'current', nlabel => 'outlet.current.ampere', set => {
-                key_values => [ { name => 'outletCurrent', no_value => 0 } ],
+                key_values => [ { name => 'outletCurrent', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { value => 'outletCurrent_absolute', template => '%.2f', 
-                      min => 0, unit => 'A', label_extra_instance => 1 },
+                    { value => 'outletCurrent', template => '%.2f', 
+                      min => 0, unit => 'A', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'voltage', nlabel => 'outlet.voltage.volt', set => {
-                key_values => [ { name => 'outletVoltage', no_value => 0 } ],
+                key_values => [ { name => 'outletVoltage', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { value => 'outletVoltage_absolute', template => '%.2f', 
-                      unit => 'V', label_extra_instance => 1 },
+                    { value => 'outletVoltage', template => '%.2f', 
+                      unit => 'V', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'power', nlabel => 'outlet.power.watt', set => {
-                key_values => [ { name => 'outletWatts', no_value => 0 } ],
+                key_values => [ { name => 'outletWatts', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Power : %.2f W',
                 perfdatas => [
-                    { value => 'outletWatts_absolute', template => '%.2f', 
-                      unit => 'W', label_extra_instance => 1 },
+                    { value => 'outletWatts', template => '%.2f', 
+                      unit => 'W', label_extra_instance => 1, instance_use => 'display'  },
                 ],
             }
         },
@@ -69,6 +69,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -90,7 +91,6 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{outlet} = {};
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $mapping->{outletName}->{oid} },
@@ -101,17 +101,28 @@ sub manage_selection {
         return_type => 1, nothing_quit => 1
     );
 
+    $self->{outlet} = {};
     foreach my $oid (keys %{$snmp_result}) {
-        $oid =~ /\.(\d+\.\d+)$/;
-        my $instance = $1;
-        next if (defined($self->{outlet}->{$instance}));
-        
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $oid =~ /\.(\d+)\.(\d+)$/;
+        my ($strapping_index, $outlet_index) = ($1, $2);
+
+        next if (defined($self->{outlet}->{$strapping_index . '.' . $outlet_index}));
+
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $strapping_index . '.' . $outlet_index);
         $result->{outletVoltage} *= 0.001 if (defined($result->{outletVoltage}));
         $result->{outletCurrent} *= 0.001 if (defined($result->{outletCurrent}));
-        my $display = $instance;
-        $display = $result->{outletName} if (defined($result->{outletName}) && $result->{outletName} ne '');
-        $self->{outlet}->{$display} = { display => $display, %$result };
+        my $display = $strapping_index . '.' . $outlet_index;
+        if (defined($result->{outletName}) && $result->{outletName} ne '') {
+            $display = $result->{outletName} . ' strapping ' . $strapping_index;
+        }
+
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $display !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{outlet}->{$strapping_index . '.' . $outlet_index} = { display => $display, %$result };
     }
 
     if (scalar(keys %{$self->{outlet}}) <= 0) {
@@ -129,6 +140,10 @@ __END__
 Check outlet metrics (voltage, current and power).
 
 =over 8
+
+=item B<--filter-name>
+
+Filter outlet name (can be a regexp).
 
 =item B<--warning-*>
 

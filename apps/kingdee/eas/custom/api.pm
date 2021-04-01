@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,22 +40,20 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s@"     => { name => 'hostname' },
-            "proto:s@"        => { name => 'proto' },
-            "port:s@"         => { name => 'port' },
-            "username:s@"     => { name => 'username' },
-            "password:s@"     => { name => 'password' },
-            "timeout:s@"      => { name => 'timeout' },
+            'hostname:s@' => { name => 'hostname' },
+            'proto:s@'    => { name => 'proto' },
+            'port:s@'     => { name => 'port' },
+            'username:s@' => { name => 'username' },
+            'password:s@' => { name => 'password' },
+            'timeout:s@'  => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};    
     $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
-
 }
 
 sub set_options {
@@ -64,21 +62,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -91,7 +75,7 @@ sub check_options {
     $self->{timeout}    = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
  
     if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
         $self->{output}->option_exit();
     }
 
@@ -113,6 +97,18 @@ sub build_options_for_httplib {
     $self->{option_results}->{basic} = 1;
     $self->{option_results}->{username} = $self->{username};
     $self->{option_results}->{password} = $self->{password};
+}
+
+sub get_hostname {
+    my ($self, %options) = @_;
+
+    return $self->{hostname};
+}
+
+sub get_port {
+    my ($self, %options) = @_;
+
+    return $self->{port};
 }
 
 sub settings {

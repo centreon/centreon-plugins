@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,11 +25,11 @@ use warnings;
 
 sub escape_jsonstring {
     my (%options) = @_;
-    
+
     my $ps = q{
 function Escape-JSONString($str) {
     if ($str -eq $null) {return ""}
-    $str = $str.ToString().Replace('"','\"').Replace('\','\\').Replace("`n",'\n').Replace("`r",'\r').Replace("`t",'\t')
+    $str = $str.ToString().Replace('"','\"').Replace('\\','\\\\').Replace("`n",'\n').Replace("`r",'\r').Replace("`t",'\t')
     return $str;
 }
 };
@@ -39,7 +39,7 @@ function Escape-JSONString($str) {
 
 sub convert_to_json {
     my (%options) = @_;
-        
+
     my $ps = q{
 function ConvertTo-JSON-20($maxDepth = 4,$forceArray = $false) {
     begin {
@@ -49,7 +49,7 @@ function ConvertTo-JSON-20($maxDepth = 4,$forceArray = $false) {
         $data += $_
     }
     
-    end{    
+    end{
         if ($data.length -eq 1 -and $forceArray -eq $false) {
             $value = $data[0]
         } else {    
@@ -67,7 +67,7 @@ function ConvertTo-JSON-20($maxDepth = 4,$forceArray = $false) {
                     return  "`"{0}`"" -f (Escape-JSONString $value )
                 }
                 '(System\.)?DateTime'  {return  "`"{0:yyyy-MM-dd}T{0:HH:mm:ss}`"" -f $value}
-                'Int32|Double' {return  "$value"}
+                'Int16|Int32|Double' {return  "$value"}
                 'Boolean' {return  "$value".ToLower()}
                 '(System\.)?Object\[\]' { # array
                     

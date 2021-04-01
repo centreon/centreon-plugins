@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use strict;
 use warnings;
 
 my $mapping = {
-    powerSupplyStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.9.1.1.2' },
+    powerSupplyStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.9.1.1.2' }
 };
 my $oid_powerSupplyStatus = '.1.3.6.1.4.1.2620.1.6.7.9.1.1.2';
 

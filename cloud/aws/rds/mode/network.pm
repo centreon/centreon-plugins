@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -50,8 +50,8 @@ sub set_counters {
                                 output_template => $metric . ': %.2f %s/s',
                                 output_change_bytes => 1,
                                 perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic , 
+                                      template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                                 ],
                             }
                         };
@@ -65,13 +65,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "type:s"	      => { name => 'type' },
-                                    "name:s@"	      => { name => 'name' },
-                                    "filter-metric:s" => { name => 'filter_metric' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'type:s'	      => { name => 'type' },
+        'name:s@'	      => { name => 'name' },
+        'filter-metric:s' => { name => 'filter_metric' }
+    });
+
     return $self;
 }
 
@@ -127,7 +126,6 @@ sub manage_selection {
     my %metric_results;
     foreach my $instance (@{$self->{aws_instance}}) {
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/RDS',
             dimensions => [ { Name => $map_type{$self->{option_results}->{type}}, Value => $instance } ],
             metrics => $self->{aws_metrics},
@@ -169,9 +167,9 @@ perl centreon_plugins.pl --plugin=cloud::aws::rds::plugin --custommode=paws --mo
 
 Works for the following database engines : aurora, mysql, mariadb.
 
-See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/rds-metricscollected.html' for more informations.
+See 'https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/MonitoringOverview.html' for more informations.
 
-Default statistic: 'average' / All satistics are valid.
+Default statistic: 'average' / All statistics are valid.
 
 =over 8
 

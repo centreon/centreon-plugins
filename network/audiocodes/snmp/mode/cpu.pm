@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'voip' } ],
                 output_template => 'CPU VoIp Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_voip', value => 'voip_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'cpu_voip', value => 'voip', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'data' } ],
                 output_template => 'CPU Data Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_data', value => 'data_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'cpu_data', value => 'data', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },

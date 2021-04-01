@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,122 +25,27 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'ib', type => 1, cb_prefix_output => 'prefix_ib_output', message_multiple => 'All infiniband interfaces are ok', cb_init => 'skip_empty_ib', skipped_code => { -10 => 1 } },
-        { name => 'ibgw', type => 1, cb_prefix_output => 'prefix_ibgw_output', message_multiple => 'All gateway infiniband interfaces are ok', cb_init => 'skip_empty_ibgw', skipped_code => { -10 => 1 } },
-    ];
-    
-    $self->{maps_counters}->{ib} = [
-        { label => 'ib-status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
-            }
-        },
-        { label => 'in', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'display' }, { name => 'speed_in' } ],
-                per_second => 1,
-                closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
-                closure_custom_output => $self->can('custom_ib_output'),
-                closure_custom_perfdata => $self->can('custom_ib_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_ib_threshold'),
-            }
-        },
-        { label => 'out', set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'display' }, { name => 'speed_out' } ],
-                per_second => 1,
-                closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
-                closure_custom_output => $self->can('custom_ib_output'),
-                closure_custom_perfdata => $self->can('custom_ib_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_ib_threshold'),
-            }
-        },
-    ];
-    $self->{maps_counters}->{ibgw} = [
-        { label => 'ibgw-status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
-            }
-        },
-        { label => 'in', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'display' }, { name => 'speed_in' } ],
-                per_second => 1,
-                closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
-                closure_custom_output => $self->can('custom_ib_output'),
-                closure_custom_perfdata => $self->can('custom_ib_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_ib_threshold'),
-            }
-        },
-        { label => 'out', set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'display' }, { name => 'speed_out' } ],
-                per_second => 1,
-                closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
-                closure_custom_output => $self->can('custom_ib_output'),
-                closure_custom_perfdata => $self->can('custom_ib_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_ib_threshold'),
-            }
-        },
-    ];
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_threshold {
     my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
 
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($self->{instance_mode}->{option_results}->{'critical_' . $label}) && $self->{instance_mode}->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{'critical_' . $label}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{'warning_' . $label}) && $self->{instance_mode}->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{'warning_' . $label}") {
-            $status = 'warning';
-        }
-
-        $self->{instance_mode}->{last_status} = 0;
-        if ($self->{result_values}->{status} ne 'down') {
-            $self->{instance_mode}->{last_status} = 1;
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    $self->{instance_mode}->{last_status} = 0;
+    if ($self->{result_values}->{status} ne 'down') {
+        $self->{instance_mode}->{last_status} = 1;
     }
-
-    return $status;
+    return catalog_status_threshold_ng($self, %options);
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'Status : ' . $self->{result_values}->{status};
 
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return 'Status : ' . $self->{result_values}->{status};
 }
 
 sub custom_ib_perfdata {
     my ($self, %options) = @_;
-    
+
     my ($warning, $critical);
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
@@ -149,7 +54,7 @@ sub custom_ib_perfdata {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
-    
+
     $self->{output}->perfdata_add(
         label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
@@ -162,7 +67,7 @@ sub custom_ib_perfdata {
 
 sub custom_ib_threshold {
     my ($self, %options) = @_;
-    
+
     my $exit = 'ok';
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
@@ -174,23 +79,24 @@ sub custom_ib_threshold {
 
 sub custom_ib_output {
     my ($self, %options) = @_;
-    
+
     my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic}, network => 1);
     my ($total_value, $total_unit);
     if (defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} =~ /[0-9]/) {
         ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{speed}, network => 1);
     }
-   
-    my $msg = sprintf("Traffic %s : %s/s (%s on %s)",
-                      ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
-                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
-                      defined($total_value) ? $total_value . $total_unit : '-');
-    return $msg;
+
+    return sprintf(
+        "Traffic %s : %s/s (%s on %s)",
+        ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
+        defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
+        defined($total_value) ? $total_value . $total_unit : '-'
+    );
 }
 
 sub custom_ib_calc {
     my ($self, %options) = @_;
-    
+
     return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
@@ -207,31 +113,81 @@ sub custom_ib_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'ib', type => 1, cb_prefix_output => 'prefix_ib_output', message_multiple => 'All infiniband interfaces are ok', cb_init => 'skip_empty_ib', skipped_code => { -10 => 1 } },
+        { name => 'ibgw', type => 1, cb_prefix_output => 'prefix_ibgw_output', message_multiple => 'All gateway infiniband interfaces are ok', cb_init => 'skip_empty_ibgw', skipped_code => { -10 => 1 } },
+    ];
+    
+    $self->{maps_counters}->{ib} = [
+        { label => 'ib-status', type => 2, critical_default => '%{status} !~ /active/i', set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold')
+            }
+        },
+        { label => 'in', set => {
+                key_values => [ { name => 'in', diff => 1 }, { name => 'display' }, { name => 'speed_in' } ],
+                closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_ib_output'),
+                closure_custom_perfdata => $self->can('custom_ib_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_ib_threshold')
+            }
+        },
+        { label => 'out', set => {
+                key_values => [ { name => 'out', diff => 1 }, { name => 'display' }, { name => 'speed_out' } ],
+                closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_ib_output'),
+                closure_custom_perfdata => $self->can('custom_ib_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_ib_threshold')
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{ibgw} = [
+        { label => 'ibgw-status', type => 2, critical_default => '%{status} !~ /up/i', set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold')
+            }
+        },
+        { label => 'in', set => {
+                key_values => [ { name => 'in', diff => 1 }, { name => 'display' }, { name => 'speed_in' } ],
+                closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_ib_output'),
+                closure_custom_perfdata => $self->can('custom_ib_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_ib_threshold')
+            }
+        },
+        { label => 'out', set => {
+                key_values => [ { name => 'out', diff => 1 }, { name => 'display' }, { name => 'speed_out' } ],
+                closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_ib_output'),
+                closure_custom_perfdata => $self->can('custom_ib_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_ib_threshold')
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-ib-name:s"        => { name => 'filter_ib_name' },
-        "filter-ibgw-name:s"      => { name => 'filter_ibgw_name' },
-        "warning-ib-status:s"     => { name => 'warning_ib_status', default => '' },
-        "critical-ib-status:s"    => { name => 'critical_ib_status', default => '%{status} !~ /active/i' },
-        "warning-ibgw-status:s"   => { name => 'warning_ibgw_status', default => '' },
-        "critical-ibgw-status:s"  => { name => 'critical_ibgw_status', default => '%{status} !~ /up/i' },
-        "speed-in:s"              => { name => 'speed_in' },
-        "speed-out:s"             => { name => 'speed_out' },
-        "units-traffic:s"         => { name => 'units_traffic', default => '%' },
+        'filter-ib-name:s'   => { name => 'filter_ib_name' },
+        'filter-ibgw-name:s' => { name => 'filter_ibgw_name' },
+        'speed-in:s'         => { name => 'speed_in' },
+        'speed-out:s'        => { name => 'speed_out' },
+        'units-traffic:s'    => { name => 'units_traffic', default => '%' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_ib_status', 'critical_ib_status', 'warning_ibgw_status', 'critical_ibgw_status']);
 }
 
 sub prefix_ib_output {

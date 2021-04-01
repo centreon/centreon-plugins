@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'ntp_requests', diff => 1 } ],
                 output_template => 'Number of ntp requests : %s',
                 perfdatas => [
-                    { label => 'ntp_requests', value => 'ntp_requests_absolute', template => '%s', 
+                    { label => 'ntp_requests', value => 'ntp_requests', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -143,8 +143,7 @@ sub manage_selection {
         oids => [
             $mapping->{currentSyncState}->{oid} . '.0',
             $mapping->{timeBaseState}->{oid} . '.0',
-            $mapping->{powerDownFlags}->{oid} . '.0',
-            $mapping->{ntpRequestsNumber}->{oid} . '.0',
+            $mapping->{ntpRequestsNumber}->{oid} . '.0'
         ],
         nothing_quit => 1
     );

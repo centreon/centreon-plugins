@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,31 +22,60 @@ package centreon::common::powershell::hyperv::2012::nodeintegrationservice;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
 
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
+
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
 
     $vms = Get-VM
+
+    $items = New-Object System.Collections.Generic.List[Hashtable];
     Foreach ($vm in $vms) {
+        $item = @{}
+
         $note = $vm.Notes -replace "\r",""
         $note = $note -replace "\n"," - "
-        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][IntegrationServicesState=" $vm.IntegrationServicesState "][IntegrationServicesVersion=" $vm.IntegrationServicesVersion "][note=" $note "]"
-        Foreach ($service in $VM.VMIntegrationService) {
-            Write-Host "[service=" $service.Name "][enabled=" $service.Enabled "][primaryOperationalStatus=" $service.PrimaryOperationalStatus "][secondaryOperationalStatus=" $service.SecondaryOperationalStatus "]"
+
+        $item.name = $vm.VMName
+        $item.state = $vm.State.value__
+        $item.integration_services_state = $vm.IntegrationServicesState
+        $item.integration_services_version = $null
+        if ($null -ne $vm.IntegrationServicesVersion) {
+            $item.integration_services_version = $vm.IntegrationServicesVersion.toString()
         }
+        $item.note = $note
+
+        $services = New-Object System.Collections.Generic.List[Hashtable];
+        Foreach ($service in $vm.VMIntegrationService) {
+            $item_service = @{}
+
+            $item_service.service = $service.Name
+            $item_service.enabled = $service.Enabled
+            $item_service.primary_operational_status = $service.PrimaryOperationalStatus.value__
+            $item_service.secondary_operational_status = $service.SecondaryOperationalStatus.value__
+            $services.Add($item_service)
+        }
+
+        $item.services = $services
+        $items.Add($item)
     }
+
+    $jsonString = $items | ConvertTo-JSON-20 -forceArray $true
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1
@@ -55,7 +84,7 @@ Try {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 1;

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -89,12 +89,15 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     my $vplex = $options{custom};
-        
-    my $urlbase = '/vplex/clusters/';     
-    my $items = $vplex->get_items(url => $urlbase,
-                                  parent => 'cluster',
-                                  engine => $self->{option_results}->{cluster},
-                                  obj => 'devices');
+
+    my $items = $vplex->get_items(
+        url => '/vplex/clusters/',
+        parent => 1,
+        parent_filter => $self->{option_results}->{cluster},
+        parent_filter_prefix => 'cluster-',
+        parent_select => '/clusters/(.*?)/',
+        obj => 'devices'
+    );
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All Cluster Devices are OK');

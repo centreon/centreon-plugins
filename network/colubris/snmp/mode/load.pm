@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'load1' } ],
                 output_template => '%s',
                 perfdatas => [
-                    { label => 'load1', value => 'load1_absolute', template => '%s', min => 0 },
+                    { label => 'load1', value => 'load1', template => '%s', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'load5' } ],
                 output_template => '%s',
                 perfdatas => [
-                    { label => 'load5', value => 'load5_absolute', template => '%s', min => 0 },
+                    { label => 'load5', value => 'load5', template => '%s', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'load15' } ],
                 output_template => '%s',
                 perfdatas => [
-                    { label => 'load15', value => 'load15_absolute', template => '%s', min => 0 },
+                    { label => 'load15', value => 'load15', template => '%s', min => 0 },
                 ],
             }
         },
@@ -71,9 +71,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
     
     return $self;
 }
@@ -84,8 +83,13 @@ sub manage_selection {
     my $oid_coUsInfoLoadAverage1Min = '.1.3.6.1.4.1.8744.5.21.1.1.5.0';
     my $oid_coUsInfoLoadAverage5Min = '.1.3.6.1.4.1.8744.5.21.1.1.6.0';
     my $oid_coUsInfoLoadAverage15Min = '.1.3.6.1.4.1.8744.5.21.1.1.7.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_coUsInfoLoadAverage1Min,
-        $oid_coUsInfoLoadAverage5Min, $oid_coUsInfoLoadAverage15Min], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_coUsInfoLoadAverage1Min,
+            $oid_coUsInfoLoadAverage5Min, $oid_coUsInfoLoadAverage15Min
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global} = { 
         load1 => $snmp_result->{$oid_coUsInfoLoadAverage1Min},

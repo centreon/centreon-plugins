@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,37 +28,36 @@ use centreon::plugins::misc;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|temperature|voltage|module|physical|sensor)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|sensor.*)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         fan => [
-            ['unknown', 'UNKNOWN'],
-            ['down', 'CRITICAL'],
-            ['up', 'OK'],
-            
             ['normal', 'OK'],
             ['warning', 'WARNING'],
             ['critical', 'CRITICAL'],
             ['shutdown', 'CRITICAL'],
             ['not present', 'OK'],
             ['not functioning', 'WARNING'],
+    
+            ['unknown', 'UNKNOWN'],
+            ['down', 'CRITICAL'],
+            ['up', 'OK']
         ],
-        psu => [
+        psu => [            
+            ['normal', 'OK'],
+            ['warning', 'WARNING'],
+            ['critical', 'CRITICAL'],
+            ['shutdown', 'CRITICAL'],
+            ['not present', 'OK'],
+            ['not functioning', 'WARNING'],
+
             ['^off*', 'WARNING'],
             ['failed', 'CRITICAL'],
             ['onButFanFail|onButInlinePowerFail', 'WARNING'],
-            ['on', 'OK'],
-            
-            ['normal', 'OK'],
-            ['warning', 'WARNING'],
-            ['critical', 'CRITICAL'],
-            ['shutdown', 'CRITICAL'],
-            ['not present', 'OK'],
-            ['not functioning', 'WARNING'],
+            ['on', 'OK']
         ],
         temperature => [
             ['normal', 'OK'],
@@ -66,7 +65,7 @@ sub set_system {
             ['critical', 'CRITICAL'],
             ['shutdown', 'CRITICAL'],
             ['not present', 'OK'],
-            ['not functioning', 'WARNING'],
+            ['not functioning', 'WARNING']
         ],
         voltage => [
             ['normal', 'OK'],
@@ -74,26 +73,26 @@ sub set_system {
             ['critical', 'CRITICAL'],
             ['shutdown', 'CRITICAL'],
             ['not present', 'OK'],
-            ['not functioning', 'WARNING'],
+            ['not functioning', 'WARNING']
         ],
         module => [
             ['unknown|mdr', 'UNKNOWN'],
             ['disabled|okButDiagFailed|missing|mismatchWithParent|mismatchConfig|dormant|outOfServiceAdmin|outOfServiceEnvTemp|powerCycled|okButPowerOverWarning|okButAuthFailed|fwMismatchFound|fwDownloadFailure', 'WARNING'],
             ['failed|diagFailed|poweredDown|powerDenied|okButPowerOverCritical', 'CRITICAL'],
-            ['boot|selfTest|poweredUp|syncInProgress|upgrading|fwDownloadSuccess|ok', 'OK'],
+            ['boot|selfTest|poweredUp|syncInProgress|upgrading|fwDownloadSuccess|ok', 'OK']
         ],
         physical => [
             ['other', 'UNKNOWN'],
             ['incompatible|unsupported', 'CRITICAL'],
-            ['supported', 'OK'],
+            ['supported', 'OK']
         ],
         sensor => [
             ['ok', 'OK'],
             ['unavailable', 'OK'],
-            ['nonoperational', 'CRITICAL'],
-        ],
+            ['nonoperational', 'CRITICAL']
+        ]
     };
-    
+
     $self->{components_path} = 'centreon::common::cisco::standard::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu', 'temperature', 'voltage', 'module', 'physical', 'sensor'];
 }
@@ -119,28 +118,31 @@ my %map_type_mon = (
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
-    
+
     push @{$self->{request}}, { oid => $oid_entPhysicalDescr }, { oid => $oid_ciscoEnvMonPresent };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
     while (my ($key, $value) = each %{$self->{results}->{$oid_entPhysicalDescr}}) {
         $self->{results}->{$oid_entPhysicalDescr}->{$key} = centreon::plugins::misc::trim($value);
     }
-    $self->{output}->output_add(long_msg => sprintf("Environment type: %s", 
-                                defined($self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}) && defined($map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} ) ? 
-                                $map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} : 'unknown'));
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            'Environment type: %s', 
+            defined($self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}) && defined($map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} ) ? 
+                $map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} : 'unknown'
+        )
+    );
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -163,6 +165,10 @@ Can be: 'fan', 'psu', 'temperature', 'voltage', 'module', 'physical', 'sensor'.
 
 Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
 Can also exclude specific instance: --filter=fan,1
+
+=item B<--add-name-instance>
+
+Add literal description for instance value (used in filter, absent-problem and threshold options).
 
 =item B<--absent-problem>
 

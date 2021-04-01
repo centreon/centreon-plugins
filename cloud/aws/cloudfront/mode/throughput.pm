@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -199,13 +199,12 @@ sub manage_selection {
     my %metric_results;
     foreach my $instance (@{$self->{aws_instance}}) {
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/CloudFront',
             dimensions => [ { Name => 'Region', Value => 'Global' }, { Name => 'DistributionId', Value => $instance } ],
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
-            period => $self->{aws_period},
+            period => $self->{aws_period}
         );
         
         foreach my $metric (@{$self->{aws_metrics}}) {

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'LoadedClassCount' } ],
                 output_template => 'Current : %s',
                 perfdatas => [
-                    { label => 'current', value => 'LoadedClassCount_absolute', template => '%s', min => 0 },
+                    { label => 'current', value => 'LoadedClassCount', template => '%s', min => 0 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'TotalLoadedClassCount', diff => 1 } ],
                 output_template => 'Loaded : %s',
                 perfdatas => [
-                    { label => 'loaded', value => 'TotalLoadedClassCount_absolute', template => '%s', min => 0 },
+                    { label => 'loaded', value => 'TotalLoadedClassCount', template => '%s', min => 0 },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'UnloadedClassCount', diff => 1 } ],
                 output_template => 'Unloaded : %s',
                 perfdatas => [
-                    { label => 'unloaded', value => 'UnloadedClassCount_absolute', template => '%s', min => 0 },
+                    { label => 'unloaded', value => 'UnloadedClassCount', template => '%s', min => 0 },
                 ],
             }
         },

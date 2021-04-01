@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,106 +25,110 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use storage::emc::unisphere::restapi::mode::components::resources qw($health_status);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
+    return 'status : ' . $self->{result_values}->{status};
 }
 
 sub custom_usage_output {
     my ($self, %options) = @_;
     
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space_absolute});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_space_absolute});
-    my $msg = sprintf('space usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_space});
+    return sprintf(
+        'space usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_space_absolute},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_space_absolute}
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_space},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_space}
     );
-    return $msg;
 }
 
 sub custom_subscribed_output {
     my ($self, %options) = @_;
     
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_sub_absolute});
-    $self->{result_values}->{free_sub_absolute} = 0 if ($self->{result_values}->{free_sub_absolute} < 0);
-    $self->{result_values}->{prct_free_sub_absolute} = 0 if ($self->{result_values}->{prct_free_sub_absolute} < 0);
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_sub_absolute});
-    my $msg = sprintf('subscribed usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
-           $total_size_value . " " . $total_size_unit,
-           $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_sub_absolute},
-           $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_sub_absolute}
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_sub});
+    $self->{result_values}->{free_sub} = 0 if ($self->{result_values}->{free_sub} < 0);
+    $self->{result_values}->{prct_free_sub} = 0 if ($self->{result_values}->{prct_free_sub} < 0);
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_sub});
+    return sprintf(
+        'subscribed usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_sub},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_sub}
     );
-    return $msg;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All pools are ok' },
+        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All pools are ok' }
     ];
-    
+
     $self->{maps_counters}->{pool} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2,
+            unknown_default => '%{status} =~ /unknown/i',
+            warning_default => '%{status} =~ /ok_but|degraded|minor/i',
+            critical_default => '%{status} =~ /major|critical|non_recoverable/i',
+            set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'usage', nlabel => 'pool.space.usage.bytes', set => {
                 key_values => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { value => 'used_space_absolute', template => '%d', min => 0, max => 'total_space_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'usage-free', nlabel => 'pool.space.free.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { value => 'free_space_absolute', template => '%d', min => 0, max => 'total_space_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'usage-prct', nlabel => 'pool.space.usage.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'prct_used_space' }, { name => 'display' } ],
                 output_template => 'used : %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_space_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'subscribed', nlabel => 'pool.subscribed.usage.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'used_sub' }, { name => 'free_sub' }, { name => 'prct_used_sub' }, { name => 'prct_free_sub' }, { name => 'total_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_subscribed_output'),
                 perfdatas => [
-                    { value => 'used_sub_absolute', template => '%d', min => 0, max => 'total_space_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'subscribed-prct', display_ok => 0, nlabel => 'pool.subscribed.usage.percentage', set => {
                 key_values => [ { name => 'prct_used_sub' }, { name => 'display' } ],
                 output_template => 'subcribed used : %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_sub_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -134,20 +138,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /ok_but|degraded|minor/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /major|criticalnon_recoverable/i' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 sub prefix_pool_output {
@@ -159,7 +153,7 @@ sub prefix_pool_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(url_path => '/api/types/pool/instances');
+    my $results = $options{custom}->request_api(url_path => '/api/types/pool/instances?fields=name,sizeFree,sizeSubscribed,sizeTotal,health');
 
     $self->{pool} = {};
     foreach (@{$results->{entries}}) {
@@ -185,7 +179,7 @@ sub manage_selection {
             prct_free_sub => 100 - ($_->{content}->{sizeSubscribed} * 100 / $_->{content}->{sizeTotal}),
         };
     }
-    
+
     if (scalar(keys %{$self->{pool}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No pool found");
         $self->{output}->option_exit();
@@ -223,7 +217,7 @@ Can used special variables like: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /major|criticalnon_recoverable/i').
+Set critical threshold for status (Default: '%{status} =~ /major|critical|non_recoverable/i').
 Can used special variables like: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>

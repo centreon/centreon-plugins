@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,8 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'client' } ],
                 output_template => 'Current client connections : %s',
                 perfdatas => [
-                    { label => 'Client', value => 'client_absolute', template => '%s', 
-                      min => 0, unit => 'con' },
+                    { label => 'Client', template => '%s',  min => 0, unit => 'con' },
                 ],
             }
         },
@@ -56,8 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'client_ssl' } ],
                 output_template => 'Current client SSL connections : %s',
                 perfdatas => [
-                    { label => 'ClientSSL', value => 'client_ssl_absolute', template => '%s', 
-                      min => 0, unit => 'con' },
+                    { label => 'ClientSSL', template => '%s',  min => 0, unit => 'con' },
                 ],
             }
         },
@@ -65,7 +63,6 @@ sub set_counters {
                 key_values => [ { name => 'client_ssl_tot_native', diff => 1 }, { name => 'client_ssl_tot_compat', diff => 1 } ],
                 output_template => 'TPS client SSL connections : %.2f', threshold_use => 'client_ssl_tps', output_use => 'client_ssl_tps',
                 closure_custom_calc => $self->can('custom_client_tps_calc'),
-                per_second => 1,
                 perfdatas => [
                     { label => 'ClientSSL_Tps', value => 'client_ssl_tps', template => '%.2f',
                       unit => 'tps', min => 0 },
@@ -76,8 +73,7 @@ sub set_counters {
                 key_values => [ { name => 'server' } ],
                 output_template => 'Current server connections: %s',
                 perfdatas => [
-                    { label => 'Server', value => 'server_absolute', template => '%s', 
-                      min => 0, unit => 'con' },
+                    { label => 'Server', template => '%s', min => 0, unit => 'con' },
                 ],
             }
         },
@@ -85,8 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'server_ssl' } ],
                 output_template => 'Current server SSL connections : %s',
                 perfdatas => [
-                    { label => 'ServerSSL', value => 'server_ssl_absolute', template => '%s', 
-                      min => 0, unit => 'con' },
+                    { label => 'ServerSSL', template => '%s',  min => 0, unit => 'con' },
                 ],
             }
         },
@@ -122,10 +117,14 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    my $result = $options{snmp}->get_leef(oids => [$oid_sysStatClientCurConns, $oid_sysStatServerCurConns, 
-                                                   $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns,
-                                                   $oid_sysClientsslStatTotNativeConns, $oid_sysClientsslStatTotCompatConns],
-                                         nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(
+        oids => [
+            $oid_sysStatClientCurConns, $oid_sysStatServerCurConns, 
+            $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns,
+            $oid_sysClientsslStatTotNativeConns, $oid_sysClientsslStatTotCompatConns
+        ],
+        nothing_quit => 1
+    );
     $self->{global} = { 
         client => $result->{$oid_sysStatClientCurConns},
         client_ssl => $result->{$oid_sysClientsslStatCurConns},

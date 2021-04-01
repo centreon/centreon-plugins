@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,8 +43,8 @@ sub set_counters {
                 key_values => [ { name => 'total' } , { name => 'display' }  ],
                 output_template => "Total number of items : %s",
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'display_absolute', min => 0 },
+                    { label => 'total', value => 'total', template => '%d',
+                      label_extra_instance => 1, instance_use => 'display', min => 0 },
                 ],
             }
         },
@@ -52,8 +52,8 @@ sub set_counters {
                 key_values => [ { name => 'compute' } , { name => 'display' }  ],
                 output_template => "Compute: %s",
                 perfdatas => [
-                    { label => 'compute', value => 'compute_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'display_absolute', min => 0 },
+                    { label => 'compute', value => 'compute', template => '%d',
+                      label_extra_instance => 1, instance_use => 'display', min => 0 },
                 ],
             }
         },
@@ -61,8 +61,8 @@ sub set_counters {
                 key_values => [ { name => 'storage' } , { name => 'display' }  ],
                 output_template => "Storage: %s",
                 perfdatas => [
-                    { label => 'storage', value => 'storage_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'display_absolute', min => 0 },
+                    { label => 'storage', value => 'storage', template => '%d',
+                      label_extra_instance => 1, instance_use => 'display', min => 0 },
                 ],
             }
         },
@@ -70,8 +70,8 @@ sub set_counters {
                 key_values => [ { name => 'network' } , { name => 'display' }  ],
                 output_template => "Network: %s",
                 perfdatas => [
-                    { label => 'network', value => 'network_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'display_absolute', min => 0 },
+                    { label => 'network', value => 'network', template => '%d',
+                      label_extra_instance => 1, instance_use => 'display', min => 0 },
                 ],
             }
         },

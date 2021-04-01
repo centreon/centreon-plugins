@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'connection_time' } ],
                 output_template => 'Connection established in %d ms',
                 perfdatas => [
-                    { value => 'connection_time_absolute', template => '%d', unit => 'ms', 
+                    { value => 'connection_time', template => '%d', unit => 'ms', 
                       min => 0 },
                 ],
             }
@@ -50,26 +50,19 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {});
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
 
     my $start = Time::HiRes::time();
-    $self->{custom}->connect();
+    $options{custom}->connect();
     my $end = Time::HiRes::time();
-    
+
     $self->{global}->{connection_time} = ($end - $start) * 1000;
 }
 
@@ -83,11 +76,11 @@ Check database connection time.
 
 =over 8
 
-=item B<--warning-connection-time-milliseconds>
+=item B<--warning-connection-time>
 
 Threshold warning in milliseconds.
 
-=item B<--critical-connection-time-milliseconds>>
+=item B<--critical-connection-time>
 
 Threshold critical in milliseconds.
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,7 +45,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{instances} = $options{custom}->rds_list_clusters(region => $self->{option_results}->{region});
+    $self->{instances} = $options{custom}->rds_list_clusters();
 }
 
 sub run {

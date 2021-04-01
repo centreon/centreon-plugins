@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'user' }, { name => 'display' } ],
                 output_template => 'user: %.2f %%',
                 perfdatas => [
-                    { value => 'user_absolute', template => '%.2f', unit => '%', 
-                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'user', template => '%.2f', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'system' }, { name => 'display' } ],
                 output_template => 'system: %.2f %%',
                 perfdatas => [
-                    { value => 'system_absolute', template => '%.2f', unit => '%', 
-                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'system', template => '%.2f', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

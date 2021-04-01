@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'                  => 'centreon::common::h3c::snmp::mode::cpu',
-                         'hardware'             => 'centreon::common::h3c::snmp::mode::hardware',
-                         'interfaces'           => 'snmp_standard::mode::interfaces', 
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
-                         'memory'               => 'centreon::common::h3c::snmp::mode::memory',
-                         'spanning-tree'        => 'snmp_standard::mode::spanningtree',
-                         'uptime'               => 'snmp_standard::mode::uptime',
-                         );
+        'cpu'                  => 'centreon::common::h3c::snmp::mode::cpu',
+        'hardware'             => 'centreon::common::h3c::snmp::mode::hardware',
+        'interfaces'           => 'snmp_standard::mode::interfaces', 
+        'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
+        'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
+        'memory'               => 'centreon::common::h3c::snmp::mode::memory',
+        'spanning-tree'        => 'snmp_standard::mode::spanningtree',
+        'uptime'               => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

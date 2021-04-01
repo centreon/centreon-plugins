@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -109,8 +109,8 @@ sub set_counters {
                 output_template => 'Buffer: %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'buffer', value => 'buffer_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'buffer', value => 'buffer', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -119,8 +119,8 @@ sub set_counters {
                 output_template => 'Cached: %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'cached', value => 'cached_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cached', value => 'cached', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

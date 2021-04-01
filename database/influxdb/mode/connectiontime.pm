@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'connection_time' } ],
                 output_template => 'Connection established in %d ms',
                 perfdatas => [
-                    { value => 'connection_time_absolute', template => '%d', unit => 'ms', 
+                    { value => 'connection_time', template => '%d', unit => 'ms', 
                       min => 0 },
                 ],
             }

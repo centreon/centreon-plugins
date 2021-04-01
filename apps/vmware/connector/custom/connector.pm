@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,10 +31,6 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{options} = options object
-    # $options{output} = output object
-    # $options{exit_value} = integer
-    # $options{noptions} = integer
 
     if (!defined($options{output})) {
         print "Class Custom: Need to specify 'output' argument.\n";
@@ -59,50 +55,28 @@ sub new {
             'case-insensitive'         => { name => 'case_insensitive' },
             'unknown-connector-status:s'  => { name => 'unknown_connector_status' },
             'warning-connector-status:s'  => { name => 'warning_connector_status' },
-            'critical-connector-status:s' => { name => 'critical_connector_status' },
+            'critical-connector-status:s' => { name => 'critical_connector_status' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CONNECTOR OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
 
     $self->{json_send} = {};
     $self->{result} = undef;
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
-sub set_defaults {
-    my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still hostname
-    # return 0 = no hostname left
 
     $self->{connector_hostname} = (defined($self->{option_results}->{connector_hostname})) ? shift(@{$self->{option_results}->{connector_hostname}}) : undef;
     $self->{connector_port} = (defined($self->{option_results}->{connector_port})) ? shift(@{$self->{option_results}->{connector_port}}) : 5700;
@@ -183,11 +157,11 @@ sub connector_response_status {
         $self->{output}->add_option_msg(short_msg => 'response format incorrect - need connector vmware version >= 3.x.x');
         $self->{output}->option_exit();
     }
-    
+
     foreach (('unknown_connector_status', 'warning_connector_status', 'critical_connector_status')) {
-        $self->{$_} =~ s/%\{(.*?)\}/\$self->{result}->{$1}/g;
+        $self->{$_} =~ s/%\{(.*?)\}/\$values->{$1}/g;
     }
-        
+
     # Check response
     my $status = 'ok';
     my $message;
@@ -196,13 +170,13 @@ sub connector_response_status {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
         if (defined($self->{critical_connector_status}) && $self->{critical_connector_status} ne '' &&
-            eval "$self->{critical_connector_status}") {
+            $self->{output}->test_eval(test => $self->{critical_connector_status}, values => $self->{result})) {
             $status = 'critical';
         } elsif (defined($self->{warning_connector_status}) && $self->{warning_connector_status} ne '' &&
-                 eval "$self->{warning_connector_status}") {
+                 $self->{output}->test_eval(test => $self->{warning_connector_status}, values => $self->{result})) {
             $status = 'warning';
         } elsif (defined($self->{unknown_connector_status}) && $self->{unknown_connector_status} ne '' &&
-                 eval "$self->{unknown_connector_status}") {
+                 $self->{output}->test_eval(test => $self->{unknown_connector_status}, values => $self->{result})) {
             $status = 'unknown';
         }
     };
@@ -213,8 +187,10 @@ sub connector_response_status {
 
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(long_msg => $self->{result}->{extra_message}, debug => 1);
-        $self->{output}->output_add(severity => $status,
-                                    short_msg => $self->{result}->{short_message});
+        $self->{output}->output_add(
+            severity => $status,
+            short_msg => $self->{result}->{short_message}
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,9 +26,6 @@ use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
 
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
@@ -65,15 +62,16 @@ Try {
 
     $computerTargetScope = new-object Microsoft.UpdateServices.Administration.ComputerTargetScope
     $unassignedComputersCount = $wsusObject.GetComputerTargetGroup([Microsoft.UpdateServices.Administration.ComputerTargetGroupId]::UnassignedComputers).GetComputerTargets().Count
-    
-    $returnObject = New-Object -TypeName PSObject
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputerTargetsNeedingUpdatesCount" -Value $wsusStatus.ComputerTargetsNeedingUpdatesCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputerTargetsWithUpdateErrorsCount" -Value $wsusStatus.ComputerTargetsWithUpdateErrorsCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputersUpToDateCount" -Value $wsusStatus.ComputersUpToDateCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputersNotContactedSinceCount" -Value $computersNotContactedSinceCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UnassignedComputersCount" -Value $unassignedComputersCount
-    
-    $jsonString = $returnObject | ConvertTo-JSON-20
+
+    $item = @{
+        ComputerTargetsNeedingUpdatesCount = $wsusStatus.ComputerTargetsNeedingUpdatesCount;
+        ComputerTargetsWithUpdateErrorsCount = $wsusStatus.ComputerTargetsWithUpdateErrorsCount;
+        ComputersUpToDateCount = $wsusStatus.ComputersUpToDateCount;
+        ComputersNotContactedSinceCount = $computersNotContactedSinceCount;
+        UnassignedComputersCount = $unassignedComputersCount
+    } 
+
+    $jsonString = $item | ConvertTo-JSON-20
     Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
@@ -83,7 +81,7 @@ Try {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 1;

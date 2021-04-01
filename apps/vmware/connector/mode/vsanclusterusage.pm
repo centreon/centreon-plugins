@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,7 +29,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok' },
+        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok' }
     ];
     
     $self->{maps_counters}->{cluster} = [
@@ -37,32 +37,32 @@ sub set_counters {
                 key_values => [ { name => 'iopsRead' } ],
                 output_template => 'read IOPS: %s',
                 perfdatas => [
-                    { value => 'iopsRead_absolute', template => '%s', unit => 'iops', min => 0 },
-                ],
+                    { template => '%s', unit => 'iops', min => 0 }
+                ]
             }
         },
         { label => 'backend-write-usage', nlabel => 'cluster.vsan.backend.write.usage.iops', set => {
                 key_values => [ { name => 'iopsWrite' } ],
                 output_template => 'write IOPS: %s',
                 perfdatas => [
-                    { value => 'iopsWrite_absolute', template => '%s', unit => 'iops', min => 0 },
-                ],
+                    { template => '%s', unit => 'iops', min => 0 }
+                ]
             }
         },
         { label => 'backend-congestions', nlabel => 'cluster.vsan.backend.congestions.count', set => {
                 key_values => [ { name => 'congestion' } ],
                 output_template => 'congestions: %s',
                 perfdatas => [
-                    { value => 'congestion_absolute', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'backend-outstanding-io', nlabel => 'cluster.vsan.backend.outstanding.io.count', set => {
                 key_values => [ { name => 'oio' } ],
                 output_template => 'outstanding IO: %s',
                 perfdatas => [
-                    { value => 'oio_absolute', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'backend-throughput-read', nlabel => 'cluster.vsan.backend.throughput.read.bytespersecond', display_ok => 0, set => {
@@ -70,8 +70,8 @@ sub set_counters {
                 output_template => 'read throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'throughputRead_absolute', template => '%s', unit => 'B/s', min => 0 },
-                ],
+                    { template => '%s', unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'backend-throughput-write', nlabel => 'cluster.vsan.backend.throughput.write.bytespersecond', display_ok => 0, set => {
@@ -79,26 +79,26 @@ sub set_counters {
                 output_template => 'write throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'throughputWrite_absolute', template => '%s', unit => 'B/s', min => 0 },
-                ],
+                    { template => '%s', unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'backend-latency-read', nlabel => 'cluster.vsan.backend.latency.read.milliseconds', display_ok => 0, set => {
                 key_values => [ { name => 'latencyAvgRead' } ],
                 output_template => 'read latency: %s ms',
                 perfdatas => [
-                    { value => 'latencyAvgRead_absolute', template => '%s', unit => 'ms', min => 0 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0 }
+                ]
             }
         },
         { label => 'backend-latency-write', nlabel => 'cluster.vsan.backend.latency.write.milliseconds', display_ok => 0, set => {
                 key_values => [ { name => 'latencyAvgWrite' } ],
                 output_template => 'write latency: %s ms',
                 perfdatas => [
-                    { value => 'latencyAvgWrite_absolute', template => '%s', unit => 'ms', min => 0 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -112,21 +112,14 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        'cluster-name:s'        => { name => 'cluster_name' },
-        'filter'                => { name => 'filter' },
-        'scope-datacenter:s'    => { name => 'scope_datacenter' },
-    });
-    
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+    $options{options}->add_options(arguments => { 
+        'cluster-name:s'     => { name => 'cluster_name' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' }
+    });
+
+    return $self;
 }
 
 sub manage_selection {

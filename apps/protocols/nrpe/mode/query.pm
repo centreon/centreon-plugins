@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,11 +31,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "command:s"             => { name => 'command' },
-        "arg:s@"                => { name => 'arg' },
-        "sanitize-message:s"    => { name => 'sanitize_message' },
+        'command:s'          => { name => 'command' },
+        'arg:s@'             => { name => 'arg' },
+        'sanitize-message:s' => { name => 'sanitize_message' }
     });
-                                
+
     return $self;
 }
 
@@ -44,7 +44,7 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Please set --command option");
+        $self->{output}->add_option_msg(short_msg => 'Please set --command option');
         $self->{output}->option_exit();
     }
 }
@@ -100,6 +100,7 @@ Trigger commands against NRPE/NSClient agent.
 =item B<--command>
 
 Set command.
+In nrpe use following command to get server version: --command='_NRPE_CHECK'
 
 =item B<--arg>
 

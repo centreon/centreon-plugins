@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -48,7 +48,11 @@ my $oid_pCIeDescriptionEntry = '.1.3.6.1.4.1.2011.2.235.1.1.24.50.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_pCIeDescriptionEntry };
+    push @{$self->{request}}, {
+        oid => $oid_pCIeDescriptionEntry,
+        start => $mapping->{pCIePresence}->{oid},
+        end => $mapping->{pCIeDevicename}->{oid},
+    };
 }
 
 sub check {

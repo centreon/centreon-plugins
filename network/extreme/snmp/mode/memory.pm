@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -100,11 +100,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -118,15 +117,20 @@ sub manage_selection {
 
     $self->{memory} = {};
     my $oid_extremeMemoryMonitorSystemEntry = '.1.3.6.1.4.1.1916.1.32.2.2.1';
-    $self->{results} = $options{snmp}->get_table(oid => $oid_extremeMemoryMonitorSystemEntry,
-                                                 nothing_quit => 1);
-    foreach my $oid (keys %{$self->{results}}) {
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_extremeMemoryMonitorSystemEntry,
+        nothing_quit => 1
+    );
+    foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{extremeMemoryMonitorSystemFree}->{oid}\.(\d+)/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
-        $self->{memory}->{$instance} = { display => $instance, 
-                                         free => $result->{extremeMemoryMonitorSystemFree} * 1024, total =>  $result->{extremeMemoryMonitorSystemTotal} * 1024};
+        $self->{memory}->{$instance} = {
+            display => $instance, 
+            free => $result->{extremeMemoryMonitorSystemFree} * 1024,
+            total =>  $result->{extremeMemoryMonitorSystemTotal} * 1024
+        };
     }
 }
 

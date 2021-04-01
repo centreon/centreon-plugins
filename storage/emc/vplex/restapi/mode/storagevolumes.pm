@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,12 +37,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-               {
-                   "cluster:s"               => { name => 'cluster' },
-                   "filter:s@"               => { name => 'filter' },
-                   "threshold-overload:s@"   => { name => 'threshold_overload' },
-               });
+    $options{options}->add_options(arguments => {
+        'cluster:s'               => { name => 'cluster' },
+        'filter:s@'               => { name => 'filter' },
+        'threshold-overload:s@'   => { name => 'threshold_overload' },
+    });
 
     return $self;
 }
@@ -90,11 +89,14 @@ sub run {
     my ($self, %options) = @_;
     my $vplex = $options{custom};
     
-    my $urlbase = '/vplex/clusters/';     
-    my $items = $vplex->get_items(url => $urlbase,
-                                  parent => 'cluster',
-                                  engine => $self->{option_results}->{cluster},
-                                  obj => 'storage-elements/storage-volumes');
+    my $items = $vplex->get_items(
+        url => '/vplex/clusters/',
+        parent => 1,
+        parent_filter => $self->{option_results}->{cluster},
+        parent_filter_prefix => 'cluster-',
+        parent_select => '/clusters/(.*?)/',
+        obj => 'storage-elements/storage-volumes'
+    );
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All storage volumes are OK');

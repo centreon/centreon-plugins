@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -114,8 +114,8 @@ sub set_counters {
                                     { name => $metric_perf . '_' . $aggregation . '_name' }, { name => 'stat' } ],
                                 output_template => 'P2S Connection Count: %d',
                                 perfdatas => [
-                                    { label => $metric_perf . '_' . $aggregation, value => $metric_perf . '_' . $aggregation . '_absolute', 
-                                      template => '%d', label_extra_instance => 1, instance_use => 'display_absolute',
+                                    { label => $metric_perf . '_' . $aggregation, value => $metric_perf . '_' . $aggregation , 
+                                      template => '%d', label_extra_instance => 1, instance_use => 'display',
                                       min => 0 },
                                 ],
                             }

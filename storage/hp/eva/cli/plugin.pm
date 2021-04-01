@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,7 +35,7 @@ sub new {
         'storage-usage'    => 'storage::hp::eva::cli::mode::storageusage',
     );
     $self->{custom_modes}{api} = 'storage::hp::eva::cli::custom::api';
-    
+
     return $self;
 }
 

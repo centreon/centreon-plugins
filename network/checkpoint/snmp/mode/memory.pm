@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,15 +29,16 @@ use Digest::MD5 qw(md5_hex);
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
-                      $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used_absolute});
-    return $msg;
+    return sprintf(
+        'Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used}
+    );
 }
 
 sub set_counters {
@@ -45,44 +46,45 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'memory', type => 0, cb_prefix_output => 'prefix_memory_output' },
-        { name => 'swap', type => 0, cb_prefix_output => 'prefix_swap_output' },
+        { name => 'swap', type => 0, cb_prefix_output => 'prefix_swap_output', skipped_code => { -10 => 1 } },
         { name => 'malloc', type => 0, skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'prct_used'}, { name => 'used' }, { name => 'free' }, { name => 'total' }  ],
                 closure_custom_output => $self->can('custom_usage_output'),
-                threshold_use => 'prct_used_absolute',
+                threshold_use => 'prct_used',
                 perfdatas => [
-                    { label => 'memory', value => 'used_absolute', template => '%.2f', threshold_total => 'total_absolute', cast_int => 1,
-                      min => 0, max => 'total_absolute', unit => 'B' },
-                ],
+                    { label => 'memory', value => 'used', template => '%s', threshold_total => 'total', cast_int => 1,
+                      min => 0, max => 'total', unit => 'B' }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{swap} = [
-        { label => 'swap', set => {
+        { label => 'swap', nlabel => 'swap.usage.bytes', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
-                threshold_use => 'prct_used_absolute',
+                threshold_use => 'prct_used',
                 perfdatas => [
-                    { label => 'swap', value => 'used_absolute', template => '%.2f', threshold_total => 'total_absolute', cast_int => 1,
-                      min => 0, max => 'total_absolute', unit => 'B' },
-                ],
+                    { label => 'swap', value => 'used', template => '%s', threshold_total => 'total', cast_int => 1,
+                      min => 0, max => 'total', unit => 'B' }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{malloc} = [
-        { label => 'failed-malloc', set => {
-                key_values => [ { name => 'failed_mallocs', diff => 1 } ],
-                per_second => 1,
+        { label => 'failed-malloc', nlabel => 'memory.allocations.failed.persecond', set => {
+                key_values => [ { name => 'failed_mallocs', per_second => 1 } ],
                 output_template => 'Failed memory allocations %.2f/s',
                 perfdatas => [
-                    { label => 'failed_mallocs', value => 'failed_mallocs_per_second', template => '%.2f', min => 0 },
-                ],
+                    { label => 'failed_mallocs', template => '%.2f', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -103,9 +105,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
@@ -164,17 +165,12 @@ Check memory, swap usage and failed memory allocations per sec
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^(failed-malloc)$'
+Example: --filter-counters='failed-malloc'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'memory', 'swap', 'failed-malloc'
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'memory', 'swap', 'failed-malloc'
+Thresholds.
+Can be: 'memory' (%), 'swap' (%), 'failed-malloc'
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'total_queue_cache' } ],
                 output_template => 'Total current cache queue : %s',
                 perfdatas => [
-                    { label => 'total_queue_cache', value => 'total_queue_cache_absolute', template => '%s', min => 0 },
+                    { label => 'total_queue_cache', value => 'total_queue_cache', template => '%s', min => 0 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'total_queue_lock' } ],
                 output_template => 'Total current lock queue : %s',
                 perfdatas => [
-                    { label => 'total_queue_lock', value => 'total_queue_lock_absolute', template => '%s', min => 0 },
+                    { label => 'total_queue_lock', value => 'total_queue_lock', template => '%s', min => 0 },
                 ],
             }
         },
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'num' }, { name => 'display' } ],
                 output_template => 'current cache queue : %s',
                 perfdatas => [
-                    { label => 'host_queue_cache', value => 'num_absolute', template => '%s', 
+                    { label => 'host_queue_cache', value => 'num', template => '%s', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }

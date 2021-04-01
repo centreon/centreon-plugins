@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,13 +44,14 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class DBI: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             'datasource:s@'      => { name => 'data_source' },
             'username:s@'        => { name => 'username' },
             'password:s@'        => { name => 'password' },
             'connect-options:s@' => { name => 'connect_options' },
+            'connect-query:s@'   => { name => 'connect_query' },
             'sql-errors-exit:s'  => { name => 'sql_errors_exit', default => 'unknown' },
             'timeout:s'          => { name => 'timeout' },
         });
@@ -58,23 +59,27 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'DBI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
+    $self->{sqlmode_name} = $options{sqlmode_name};
     $self->{instance} = undef;
     $self->{statement_handle} = undef;
     $self->{version} = undef;
-    
+
     $self->{data_source} = undef;
     $self->{username} = undef;
     $self->{password} = undef;
     $self->{connect_options} = undef;
     $self->{connect_options_hash} = {};
-    
+
     # Sometimes, we need to set ENV
     $self->{env} = undef;
-    
-    $self->set_signal_handlers();
-    
+
     return $self;
+}
+
+sub prepare_destroy {
+    my ($self) = @_;
+
+    %handlers = ();
 }
 
 sub set_signal_handlers {
@@ -93,29 +98,27 @@ sub class_handle_ALRM {
 sub handle_ALRM {
     my $self = shift;
 
+    $self->prepare_destroy();
     $self->disconnect();
-    $self->{output}->output_add(severity => $self->{sql_errors_exit},
-                                short_msg => 'Timeout');
+    $self->{output}->output_add(
+        severity => $self->{sql_errors_exit},
+        short_msg => 'Timeout'
+    );
     $self->{output}->display();
     $self->{output}->exit();
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
+
     foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
+        if ($_ eq $self->{sqlmode_name}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
                 foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
                     if (!defined($self->{option_results}->{$opt}[$i])) {
@@ -129,22 +132,21 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still data_source
-    # return 0 = no data_source left
-    
+
     $self->{data_source} = (defined($self->{option_results}->{data_source})) ? shift(@{$self->{option_results}->{data_source}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : undef;
     $self->{connect_options} = (defined($self->{option_results}->{connect_options})) ? shift(@{$self->{option_results}->{connect_options}}) : undef;
+    $self->{connect_query} = (defined($self->{option_results}->{connect_query})) ? shift(@{$self->{option_results}->{connect_query}}) : undef;
     $self->{env} = (defined($self->{option_results}->{env})) ? shift(@{$self->{option_results}->{env}}) : undef;
     $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
-    
+
     $self->{timeout} = 10;
     if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
         $self->{option_results}->{timeout} > 0) {
         $self->{timeout} = $self->{option_results}->{timeout};
     }
-    
+
     if (!defined($self->{data_source}) || $self->{data_source} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify data_source arguments.');
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
@@ -158,7 +160,7 @@ sub check_options {
             $self->{connect_options_hash}->{$1} = $2;
         }
     }
-    
+
     if (scalar(@{$self->{option_results}->{data_source}}) == 0) {
         return 0;
     }
@@ -188,19 +190,19 @@ sub is_version_minimum {
         return 0 if ($versions[$i] > int($1));
         return 1 if ($versions[$i] < int($1));
     }
-    
+
     return 1;
 }
 
 sub set_version {
     my ($self) = @_;
-    
+
     $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
 }
 
 sub disconnect {
     my ($self) = @_;
-    
+
     if (defined($self->{instance})) {
         $self->{statement_handle} = undef;
         $self->{instance}->disconnect();
@@ -213,14 +215,15 @@ sub connect {
     my $dontquit = (defined($options{dontquit}) && $options{dontquit} == 1) ? 1 : 0;
 
     return if (defined($self->{instance}));
-    
+
     # Set ENV
     if (defined($self->{env})) {
         foreach (keys %{$self->{env}}) {
             $ENV{$_} = $self->{env}->{$_};
         }
     }
-    
+
+    $self->set_signal_handlers();
     alarm($self->{timeout}) if (defined($self->{timeout}));
     $self->{instance} = DBI->connect(
         "DBI:". $self->{data_source},
@@ -229,6 +232,7 @@ sub connect {
         { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
     );
     alarm(0) if (defined($self->{timeout}));
+    $self->prepare_destroy();
 
     if (!defined($self->{instance})) {
         my $err_msg = sprintf('Cannot connect: %s', defined($DBI::errstr) ? $DBI::errstr : '(no error string)');
@@ -238,14 +242,17 @@ sub connect {
         }
         return (-1, $err_msg);
     }
-    
+
+    if (defined($self->{connect_query}) && $self->{connect_query} ne '') {
+        $self->query(query => $self->{connect_query});
+    }
     $self->set_version();
     return 0;
 }
 
 sub get_id {
     my ($self, %options) = @_;
-    
+
     return $self->{data_source};
 }
 
@@ -257,26 +264,26 @@ sub get_unique_id4save {
 
 sub fetchall_arrayref {
     my ($self, %options) = @_;
-    
+
     return $self->{statement_handle}->fetchall_arrayref();
 }
 
 sub fetchrow_array {
     my ($self, %options) = @_;
-    
+
     return $self->{statement_handle}->fetchrow_array();
 }
 
 sub fetchrow_hashref {
     my ($self, %options) = @_;
-    
+
     return $self->{statement_handle}->fetchrow_hashref();
 }
 
 sub query {
     my ($self, %options) = @_;
     my $continue_error = defined($options{continue_error}) && $options{continue_error} == 1 ? 1 : 0;
-    
+
     $self->{statement_handle} = $self->{instance}->prepare($options{query});
     if (!defined($self->{statement_handle})) {
         return 1 if ($continue_error == 1);
@@ -285,7 +292,7 @@ sub query {
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
 
-    my $rv = $self->{statement_handle}->execute;
+    my $rv = $self->{statement_handle}->execute();
     if (!$rv) {
         return 1 if ($continue_error == 1);
         $self->{output}->add_option_msg(short_msg => 'Cannot execute query: ' . $self->{statement_handle}->errstr);
@@ -328,6 +335,10 @@ Database password.
 
 Add options in database connect.
 Format: name=value,name2=value2,...
+
+=item B<--connect-query>
+
+Execute a query just after connection.
 
 =item B<--sql-errors-exit>
 

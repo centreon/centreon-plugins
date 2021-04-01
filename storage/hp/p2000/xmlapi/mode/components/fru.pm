@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,28 +30,45 @@ sub check {
     $self->{components}->{fru} = {name => 'frus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fru'));
     
-    my ($results) = $self->{custom}->get_infos(
+    my ($entries) = $self->{custom}->get_infos(
         cmd => 'show frus', 
         base_type => 'enclosure-fru',
-        key => 'part-number', 
-        properties_name => '^(fru-status|fru-location)$',
+        properties_name => '^fru-status|fru-location|oid$',
         no_quit => 1,
     );
-    foreach my $part_number (keys %$results) {
-        my $instance = $results->{$part_number}->{'fru-location'};
-    
+
+    my ($results, $duplicated) = ({}, {});
+    foreach (@$entries) {
+        my $name = $_->{'fru-location'};
+        $name = $_->{'fru-location'} . ':' . $_->{oid} if (defined($duplicated->{$name}));
+        if (defined($results->{$name})) {
+            $duplicated->{$name} = 1;
+            my $instance = $results->{$name}->{'fru-location'} . ':' . $results->{$name}->{oid};
+            $results->{$instance} = $results->{$name};
+            delete $results->{$name};
+            $name = $_->{'fru-location'} . ':' . $_->{oid};
+        }
+        $results->{$name} = $_;
+    }
+
+    foreach my $instance (keys %$results) {    
         next if ($self->check_filter(section => 'fru', instance => $instance));
         $self->{components}->{fru}->{total}++;
         
-        my $state = $results->{$part_number}->{'fru-status'};
+        my $state = $results->{$instance}->{'fru-status'};
         
-        $self->{output}->output_add(long_msg => sprintf("fru '%s' status is %s [instance: %s]",
-                                                        $instance, $state, $instance)
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fru '%s' status is %s [instance: %s]",
+                $instance, $state, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'fru', value => $state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fru '%s' status is '%s'", $instance, $state));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fru '%s' status is '%s'", $instance, $state)
+            );
         }
     }
 }

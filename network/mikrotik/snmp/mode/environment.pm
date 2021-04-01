@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,38 +28,38 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan|current|psu)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:current|fan|power|temperature|voltage)$';
     
     $self->{cb_hook2} = 'snmp_execute';
      $self->{thresholds} = {
-        'psu.primary' => [
-            ['true', 'OK'],
-            ['false', 'CRITICAL'],
-        ],
-        'psu.backup' => [
-            ['true', 'OK'],
-            ['false', 'CRITICAL'],
-        ],
+        'status' => [
+            ['not ok', 'CRITICAL'],
+            ['ok', 'OK']
+        ]
     };
 
     $self->{components_path} = 'network::mikrotik::snmp::mode::components';
-    $self->{components_module} = ['current', 'fan', 'psu', 'temperature', 'voltage'];
+    $self->{components_module} = ['current', 'fan', 'power', 'status', 'temperature', 'voltage'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
     
-    my $oid_mtxrHealth = '.1.3.6.1.4.1.14988.1.1.3';
+    my $oid_mtxrHealth = '.1.3.6.1.4.1.14988.1.1.3.100.1';
+    if (defined($self->{option_results}->{legacy})) {
+        $oid_mtxrHealth = '.1.3.6.1.4.1.14988.1.1.3';
+    }
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_table(oid => $oid_mtxrHealth);
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
+        'legacy' => { name => 'legacy' }
     });
 
     return $self;
@@ -75,20 +75,19 @@ Check hardware.
 
 =over 8
 
+=item B<--legacy>
+
+Look for legacy (prior to RouterOS 6.47) OIDs.
+
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'current', 'fan', 'psu', 'temperature', 'voltage'.
+Can be: 'current', 'fan', 'power', 'status', 'temperature', 'voltage'.
 
 =item B<--filter>
 
 Exclude some parts (comma seperated list) (Example: --filter=fan --filter=voltage)
-Can also exclude specific instance: --filter=fan,1.1
-
-=item B<--absent-problem>
-
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
-Can be specific or global: --absent-problem=fan,1
+Can also exclude specific instance: --filter=fan,fan2
 
 =item B<--no-component>
 
@@ -103,7 +102,7 @@ Example: --warning='temperature,.*,40'
 =item B<--critical>
 
 Set critical threshold for 'temperature', 'fan', 'voltage' (syntax: type,regexp,threshold)
-Example: --critical='temperature,.*,50'
+Example: --critical='temperature,cpu,50'
 
 =back
 

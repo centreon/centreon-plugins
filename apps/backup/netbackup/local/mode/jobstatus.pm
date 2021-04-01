@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,95 +26,38 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        # To exclude some OK
-        if (defined($self->{instance_mode}->{option_results}->{ok_status}) && $self->{instance_mode}->{option_results}->{ok_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{ok_status}") {
-            $status = 'ok';
-        } elsif (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'Status : ' . $self->{result_values}->{status};
 
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    return 0;
+    return 'Status : ' . $self->{result_values}->{status};
 }
 
 sub custom_long_output {
     my ($self, %options) = @_;
-    my $msg = 'Started Since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
 
-    return $msg;
+    return 'Started Since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
 }
 
 sub custom_long_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    
+
     return -11 if ($self->{result_values}->{state} !~ /queued|active/);
 
     return 0;
 }
 
 sub custom_frozen_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($self->{instance_mode}->{option_results}->{critical_frozen}) && $self->{instance_mode}->{option_results}->{critical_frozen} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_frozen}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_frozen}) && $self->{instance_mode}->{option_results}->{warning_frozen} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_frozen}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-       $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
+    my ($self, %options) = @_;
 
+    my $status = catalog_status_threshold_ng($self, %options);
     $self->{instance_mode}->{last_status_frozen} = $status;
     return $status;
 }
@@ -131,7 +74,7 @@ sub custom_frozen_output {
 
 sub custom_frozen_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
@@ -147,7 +90,7 @@ sub custom_frozen_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'policy', type => 2, cb_prefix_output => 'prefix_policy_output', cb_long_output => 'policy_long_output',
@@ -155,46 +98,51 @@ sub set_counters {
           group => [ { name => 'job', cb_prefix_output => 'prefix_job_output', skipped_code => { -11 => 1 } } ] 
         }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'total', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Jobs : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', min => 0 },
+                    { label => 'total', value => 'total', template => '%s', min => 0 },
                 ],
             }
         },
     ];
-    
+
     $self->{maps_counters}->{job} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'type' }, { name => 'state' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                key_values => [
+                    { name => 'status' }, { name => 'display' }, { name => 'type' }, { name => 'state' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
-        { label => 'long', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' },
-                    { name => 'state' } ],
+        { label => 'long', type => 2, set => {
+                key_values => [
+                    { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' },
+                    { name => 'state' }
+                ],
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'frozen', threshold => 0, set => {
-                key_values => [ { name => 'kb', diff => 1 }, { name => 'status' }, 
+        { label => 'frozen', type => 2, critical_default => '%{state} =~ /active|queue/ && %{kb} == 0', set => {
+                key_values => [
+                    { name => 'kb', diff => 1 }, { name => 'status' }, 
                     { name => 'display' }, { name => 'elapsed' }, { name => 'type' }, { name => 'state' },
-                    { name => 'parentid' }, { name => 'schedule' }, { name => 'jobid' } ],
+                    { name => 'parentid' }, { name => 'schedule' }, { name => 'jobid' }
+                ],
                 closure_custom_calc => $self->can('custom_frozen_calc'),
                 closure_custom_output => $self->can('custom_frozen_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_frozen_threshold'),
+                closure_custom_threshold_check => $self->can('custom_frozen_threshold')
             }
-        },
+        }
     ];
 }
 
@@ -202,7 +150,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
         'hostname:s'              => { name => 'hostname' },
         'remote'                  => { name => 'remote' },
@@ -221,11 +169,7 @@ sub new {
         'filter-start-time:s'     => { name => 'filter_start_time' },
         'ok-status:s'             => { name => 'ok_status', default => '%{status} == 0' },
         'warning-status:s'        => { name => 'warning_status', default => '%{status} == 1' },
-        'critical-status:s'       => { name => 'critical_status', default => '%{status} > 1' },
-        'warning-long:s'          => { name => 'warning_long' },
-        'critical-long:s'         => { name => 'critical_long' },
-        'warning-frozen:s'        => { name => 'warning_frozen' },
-        'critical-frozen:s'       => { name => 'critical_frozen', default => '%{state} =~ /active|queue/ && %{kb} == 0' },
+        'critical-status:s'       => { name => 'critical_status', default => '%{status} > 1' }
     });
     
     return $self;
@@ -235,21 +179,18 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => [
-        'ok_status', 'warning_status', 'critical_status', 'warning_long', 
-        'critical_long', 'warning_frozen', 'critical_frozen']
-    );
+    $self->change_macros(macros => ['ok_status', 'warning_status', 'critical_status']);
 }
 
 sub policy_long_output {
     my ($self, %options) = @_;
-    
+
     return "Checking policy '" . $options{instance_value}->{display} . "'";
 }
 
 sub prefix_policy_output {
     my ($self, %options) = @_;
-    
+
     return "Policy '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -287,16 +228,20 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_start_time}) ? md5_hex($self->{option_results}->{filter_start_time}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{job_end_time}) ? md5_hex($self->{option_results}->{job_end_time}) : md5_hex('all'));
     
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    sudo => $self->{option_results}->{sudo},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
-    
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
+
     if (defined($self->{option_results}->{exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
@@ -308,9 +253,11 @@ sub manage_selection {
         my @values = split /,/, $line;
         my ($job_id, $job_type, $job_state, $job_status, $job_pname, $job_schedule, $job_start_time, $job_end_time, $job_kb, $job_parentid) = 
             ($values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[8], $values[10], $values[14], $values[33]);
-        
+
         $job_pname = defined($job_pname) && $job_pname ne '' ? $job_pname : 'unknown';
         $job_status = defined($job_status) && $job_status =~ /[0-9]/ ? $job_status : -1;
+        # when the job is running, end_time = 000000
+        $job_end_time = undef if (defined($job_end_time) && int($job_end_time) == 0);
         if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
             $job_pname !~ /$self->{option_results}->{filter_policy_name}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': no matching filter.", debug => 1);
@@ -331,7 +278,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': start time too old.", debug => 1);
             next;
         }
-        
+
         $self->{policy}->{$job_pname} = { job => {}, display => $job_pname } if (!defined($self->{policy}->{$job_pname}));
         my $elapsed_time = $current_time - $job_start_time;
         $self->{policy}->{$job_pname}->{job}->{$job_id} = {

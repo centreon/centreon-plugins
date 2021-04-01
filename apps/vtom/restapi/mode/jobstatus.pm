@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,8 +108,8 @@ sub set_counters {
                 key_values => [ { name => 'error' }, { name => 'total' } ],
                 output_template => 'Error : %s',
                 perfdatas => [
-                    { label => 'total_error', value => 'error_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
+                    { label => 'total_error', value => 'error', template => '%s',
+                      min => 0, max => 'total' },
                 ],
             }
         },
@@ -117,8 +117,8 @@ sub set_counters {
                 key_values => [ { name => 'running' }, { name => 'total' } ],
                 output_template => 'Running : %s',
                 perfdatas => [
-                    { label => 'total_running', value => 'running_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
+                    { label => 'total_running', value => 'running', template => '%s',
+                      min => 0, max => 'total' },
                 ],
             }
         },
@@ -126,8 +126,8 @@ sub set_counters {
                 key_values => [ { name => 'unplanned' }, { name => 'total' } ],
                 output_template => 'Unplanned : %s',
                 perfdatas => [
-                    { label => 'total_unplanned', value => 'unplanned_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
+                    { label => 'total_unplanned', value => 'unplanned', template => '%s',
+                      min => 0, max => 'total' },
                 ],
             }
         },
@@ -135,8 +135,8 @@ sub set_counters {
                 key_values => [ { name => 'finished' }, { name => 'total' } ],
                 output_template => 'Finished : %s',
                 perfdatas => [
-                    { label => 'total_finished', value => 'finished_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
+                    { label => 'total_finished', value => 'finished', template => '%s',
+                      min => 0, max => 'total' },
                 ],
             }
         },
@@ -144,8 +144,8 @@ sub set_counters {
                 key_values => [ { name => 'coming' }, { name => 'total' } ],
                 output_template => 'Coming : %s',
                 perfdatas => [
-                    { label => 'total_coming', value => 'coming_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
+                    { label => 'total_coming', value => 'coming', template => '%s',
+                      min => 0, max => 'total' },
                 ],
             }
         },

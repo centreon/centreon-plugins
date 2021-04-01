@@ -28,14 +28,14 @@ use warnings;
 sub custom_usage_output {
     my ($self, %options) = @_;
     
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     
     my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
                       $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
-                      $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used_absolute});
+                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+                      $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used});
     return $msg;
 }
 
@@ -51,10 +51,10 @@ sub set_counters {
         { label => 'memory', set => {
                 key_values => [ { name => 'prct_used'}, { name => 'used' }, { name => 'free' }, { name => 'total' }  ],
                 closure_custom_output => $self->can('custom_usage_output'),
-                threshold_use => 'prct_used_absolute',
+                threshold_use => 'prct_used',
                 perfdatas => [
-                    { label => 'memory', value => 'used_absolute', template => '%.2f', threshold_total => 'total_absolute', cast_int => 1,
-                      min => 0, max => 'total_absolute', unit => 'B' },
+                    { label => 'memory', value => 'used', template => '%.2f', threshold_total => 'total', cast_int => 1,
+                      min => 0, max => 'total', unit => 'B' },
                 ],
             }
         },
@@ -63,10 +63,10 @@ sub set_counters {
         { label => 'flash', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
-                threshold_use => 'prct_used_absolute',
+                threshold_use => 'prct_used',
                 perfdatas => [
-                    { label => 'flash', value => 'used_absolute', template => '%.2f', threshold_total => 'total_absolute', cast_int => 1,
-                      min => 0, max => 'total_absolute', unit => 'B' },
+                    { label => 'flash', value => 'used', template => '%.2f', threshold_total => 'total', cast_int => 1,
+                      min => 0, max => 'total', unit => 'B' },
                 ],
             }
         },

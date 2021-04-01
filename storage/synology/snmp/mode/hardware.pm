@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,23 +27,21 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|disk|system|raid)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
         # system, fan, psu
         default => [
             ['Normal', 'OK'],
-            ['Failed', 'CRITICAL'],
+            ['Failed', 'CRITICAL']
         ],
         disk => [
             ['Normal', 'OK'],
             ['Initialized', 'OK'],
             ['NotInitialized', 'OK'],
             ['SystemPartitionFailed', 'CRITICAL'],
-            ['Crashed', 'CRITICAL'],
+            ['Crashed', 'CRITICAL']
         ],
         raid => [
             ['Normal', 'OK'],
@@ -58,29 +56,43 @@ sub set_system {
             ['Canceling', 'OK'],
             ['Degrade', 'WARNING'],
             ['Crashed', 'CRITICAL'],
-        ],
+            ['DataScrubbing', 'OK'],
+            ['RaidDeploying', 'OK'],
+            ['RaidUnDeploying', 'OK'],
+            ['RaidMountCache', 'OK'],
+            ['RaidUnmountCache', 'OK'],
+            ['RaidExpandingUnfinishedSHR', 'OK'],
+            ['RaidConvertSHRToPool', 'OK'],
+            ['RaidMigrateSHR1ToSHR2', 'OK'],
+            ['RaidUnknownStatus', 'UNKNOWN']
+        ]
     };
     
     $self->{components_path} = 'storage::synology::snmp::mode::components';
     $self->{components_module} = ['psu', 'fan', 'disk', 'raid', 'system'];
+
+    $self->{request_leef} = [];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
     
     $self->{snmp} = $options{snmp};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+    if (scalar(@{$self->{request}}) > 0) {
+        $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+    }
+    if (scalar(@{$self->{request_leef}}) > 0) {
+        $self->{results_leef} = $self->{snmp}->get_leef(oids => $self->{request_leef});
+    }
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

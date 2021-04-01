@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,22 +35,20 @@ sub set_counters {
     
     $self->{maps_counters}->{vs} = [
         { label => 'in', set => {
-                key_values => [ { name => 'vsInOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'vsInOctets', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'vsInOctets_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'out', set => {
-                key_values => [ { name => 'vsOutOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'vsOutOctets', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'vsOutOctets_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         }
@@ -67,9 +65,8 @@ sub set_counters {
                 key_values => [ { name => $map[$i + 2], diff => 1 }, { name => 'display' } ],
                 output_template => $map[$i + 1],
                 perfdatas => [
-                    { label => $map[$i + 3], value => $map[$i + 2] . '_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => $map[$i + 3], template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         };
     }
@@ -80,11 +77,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
     return $self;
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,17 +22,20 @@ package centreon::common::powershell::hyperv::2012::scvmmsnapshot;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
 
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
+
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $ProgressPreference = "SilentlyContinue"
 
 Try {
@@ -46,19 +49,32 @@ Try {
     $connection = Get-VMMServer -ComputerName "' . $options{scvmm_hostname} . '" -TCPPort ' . $options{scvmm_port} . ' -Credential $UserCredential
     $vms = Get-SCVirtualMachine -VMMServer $connection
 
+    $items = New-Object System.Collections.Generic.List[Hashtable];
     Foreach ($vm in $vms) {
-        $i = 0
+        $item = @{}
+
         $checkpoints = Get-SCVMCheckpoint -VMMServer $connection -Vm $vm
         $desc = $vm.description -replace "\r",""
         $desc = $desc -replace "\n"," - "
+        $item.name = $vm.Name
+        $item.description = $desc
+        $item.status = $vm.Status.value__
+        $item.host_group_path = $vm.HostGroupPath
+
+        $chkpt_list = New-Object System.Collections.Generic.List[Hashtable];
         foreach ($checkpoint in $checkpoints) {
-            if ($i -eq 0) {
-                Write-Host "[name=" $vm.Name "][description=" $desc "][status=" $vm.Status "][cloud=" $vm.Cloud "][hostgrouppath=" $vm.HostGroupPath "]"
-            }
-            Write-Host "[checkpointAddedTime=" (get-date -date $checkpoint.AddedTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "]"
-            $i = 1
+            $chkpt = @{}
+            $chkpt.type = "backing"
+            $chkpt.added_time = (get-date -date $checkpoint.AddedTime.ToUniversalTime() -UFormat ' . "'%s'" . ')
+            $chkpt_list.Add($chkpt)
         }
+
+        $item.checkpoints = $chkpt_list
+        $items.Add($item)
     }
+
+    $jsonString = $items | ConvertTo-JSON-20 -forceArray $true
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1
@@ -67,7 +83,7 @@ Try {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 1;

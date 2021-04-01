@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -42,59 +42,63 @@ sub custom_data_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
         { name => 'global_http', type => 0, cb_prefix_output => 'prefix_http_output', skipped_code => { -10 => 1 } },
         { name => 'global_icp', type => 0, cb_prefix_output => 'prefix_icp_output', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{global_http} = [
          { label => 'client-http-hits-rate', nlabel => 'client.http.hits.percentage', set => {
                 key_values => [ { name => 'cacheClientRequests', diff => 1 }, { name => 'cacheClientHits', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'),
                 closure_custom_calc_extra_options => { hit_ref => 'cacheClientHits', total_ref => 'cacheClientRequests' },
-                output_template => 'client hits rate : %.2f %%', output_use => 'hits_prct', threshold_use => 'hits_prct',
+                output_template => 'client hits rate: %.2f %%', output_use => 'hits_prct', threshold_use => 'hits_prct',
                 perfdatas => [
-                    { label => 'client_http_hits_rate', value => 'hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { value => 'hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
         { label => 'client-http-errors', display_ok => 0, nlabel => 'client.http.errors.count', set => {
                 key_values => [ { name => 'cacheClientErrors', diff => 1 } ],
-                output_template => 'client errors : %s',
+                output_template => 'client errors: %s',
                 perfdatas => [
-                    { label => 'client_http_errors', value => 'cacheClientErrors_absolute', template => '%s',
-                      min => 0 },
+                    { template => '%s', min => 0 },
                 ],
             }
         },
         { label => 'client-http-traffic-in', display_ok => 0, nlabel => 'client.http.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'cacheClientInKb', diff => 1 } ],
-                output_template => 'client traffic in : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'cacheClientInKb', per_second => 1 } ],
+                output_template => 'client traffic in: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'client_http_traffic_in', value => 'cacheClientInKb_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'client-http-traffic-out', display_ok => 0, nlabel => 'client.http.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'cacheClientOutKb', diff => 1 } ],
-                output_template => 'client traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'cacheClientOutKb', per_second => 1 } ],
+                output_template => 'client traffic out: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'client_http_traffic_out', value => 'cacheClientOutKb_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'total-con-clients', nlabel => 'client.http.total.connections.count', set => {
                 key_values => [ { name => 'cacheClientTotalConns' } ],
-                output_template => 'total number of clients : %s',
+                output_template => 'total number of clients: %s',
                 perfdatas => [
-                    { label => 'total_con_clients', value => 'cacheClientTotalConns_absolute', template => '%s',
-                      min => 0 },
+                    { template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'client-http-requests', display_ok => 0, nlabel => 'client.http.requests.persecond', set => {
+                key_values => [ { name => 'cacheClientRequests', per_second => 1 } ],
+                output_template => 'client requests: %.2f/s',
+                perfdatas => [
+                    { template => '%.2f', min => 0, unit => '/s' },
                 ],
             }
         },
@@ -105,9 +109,9 @@ sub set_counters {
                 key_values => [ { name => 'cacheClientICPRequests', diff => 1 }, { name => 'cacheClientICPHits', diff => 1 } ],
                 closure_custom_calc_extra_options => { hit_ref => 'cacheClientICPHits', total_ref => 'cacheClientICPRequests' },
                 closure_custom_calc => $self->can('custom_data_calc'),
-                output_template => 'client hits rate : %.2f %%', output_use => 'hits_prct', threshold_use => 'hits_prct',
+                output_template => 'client hits rate: %.2f %%', output_use => 'hits_prct', threshold_use => 'hits_prct',
                 perfdatas => [
-                    { label => 'client_icp_hits_rate', value => 'hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { value => 'hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -116,30 +120,27 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'http-mean-time', nlabel => 'http.response.mean.time.milliseconds', set => {
                 key_values => [ { name => 'cacheMeanRespTime' } ],
-                output_template => 'http mean response time : %s ms',
+                output_template => 'http mean response time: %s ms',
                 perfdatas => [
-                    { label => 'http_mean_time', value => 'cacheMeanRespTime_absolute', template => '%s',
-                      min => 0, unit => 'ms' },
+                    { template => '%s', min => 0, unit => 'ms' },
                 ],
             }
         },
         { label => 'server-traffic-in', display_ok => 0, nlabel => 'server.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'cacheServerInKb', diff => 1 } ],
-                output_template => 'server traffic in : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'cacheServerInKb', per_second => 1 } ],
+                output_template => 'server traffic in: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'server_traffic_in', value => 'cacheServerInKb_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'server-traffic-out', display_ok => 0, nlabel => 'server.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'cacheServerOutKb', diff => 1 } ],
-                output_template => 'server traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'cacheServerOutKb', per_second => 1 } ],
+                output_template => 'server traffic out: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'server_traffic_out', value => 'cacheServerOutKb_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
@@ -149,20 +150,20 @@ sub set_counters {
 sub prefix_http_output {
     my ($self, %options) = @_;
 
-    return "http ";
+    return 'http ';
 }
 
 sub prefix_icp_output {
     my ($self, %options) = @_;
 
-    return "icp ";
+    return 'icp ';
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
     });
     
@@ -187,7 +188,9 @@ sub manage_selection {
     );
     my $snmp_result = $options{snmp}->get_leef(oids => [
             values %oids
-        ], nothing_quit => 1);
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global_http} = {
         cacheClientRequests => $snmp_result->{$oids{cacheClientRequests}},
@@ -228,9 +231,9 @@ Example: --filter-counters='http'
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Thresholds.
 Can be: 'client-http-hits-rate', 'client-http-errors', 'client-http-traffic-in',
-'client-http-traffic-out', 'total-con-clients', 'client-icp-hits-rate', 
+'client-http-traffic-out', 'client-http-requests', 'total-con-clients', 'client-icp-hits-rate', 
 'server-traffic-in', 'server-traffic-out', 'http-mean-time'.
 
 =back

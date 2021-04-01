@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -61,8 +61,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'CPU Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu_absolute', template => '%.2f', 
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu', value => 'cpu', template => '%.2f', 
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -71,8 +71,8 @@ sub set_counters {
                 output_template => 'Memory Usage : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'memory', value => 'memory_absolute', template => '%s', 
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'memory', value => 'memory', template => '%s', 
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -80,8 +80,8 @@ sub set_counters {
                 key_values => [ { name => 'nbchilds' }, { name => 'display' } ],
                 output_template => 'Num childs : %s',
                 perfdatas => [
-                    { label => 'nbchilds', value => 'nbchilds_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'nbchilds', value => 'nbchilds', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

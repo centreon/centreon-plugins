@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'active_1m_average' } ],
                 output_template => '%.2f (1m)',
                 perfdatas => [
-                    { value => 'active_1m_average_absolute', template => '%.2f', min => 0 },
+                    { value => 'active_1m_average', template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'active_5m_average' } ],
                 output_template => '%.2f (5m)',
                 perfdatas => [
-                    { value => 'active_5m_average_absolute', template => '%.2f', min => 0 },
+                    { value => 'active_5m_average', template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'active_15m_average' } ],
                 output_template => '%.2f (15m)',
                 perfdatas => [
-                    { value => 'active_15m_average_absolute', template => '%.2f', min => 0 },
+                    { value => 'active_15m_average', template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -65,7 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'active_calls' }, { name => 'display' } ],
                 output_template => 'active calls %s',
                 perfdatas => [
-                    { value => 'active_calls_absolute', template => '%s',
+                    { value => 'active_calls', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }

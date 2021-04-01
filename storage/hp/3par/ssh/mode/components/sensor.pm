@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -91,7 +91,7 @@ sub check {
                     threshold => [ { label => 'critical-sensor-instance-' . $instance, exit_litteral => 'critical' },
                                    { label => 'warning-sensor-instance-' . $instance, exit_litteral => 'warning' } ]);
                 $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-sensor-instance-' . $instance);
-                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-sensor-instance-' . $instance)
+                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-sensor-instance-' . $instance);
             }
 
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

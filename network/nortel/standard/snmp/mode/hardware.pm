@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,9 +27,8 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|card|entity)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan.temperature)$';
+
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature|fan.temperature)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -66,10 +65,19 @@ sub set_system {
             ['notConfig', 'OK'],
             ['obsoleted', 'WARNING'],
         ],
+        led => [
+            ['unknown', 'UNKNOWN'],
+            ['greenSteady', 'OK'],
+            ['greenBlinking', 'OK'],
+            ['amberSteady', 'WARNING'],
+            ['amberBlinking', 'WARNING'],
+            ['greenamberBlinking', 'WARNING'],
+            ['off', 'OK']
+        ]
     };
     
     $self->{components_path} = 'network::nortel::standard::snmp::mode::components';
-    $self->{components_module} = ['fan', 'psu', 'card', 'entity'];
+    $self->{components_module} = ['card', 'entity', 'fan', 'led', 'psu'];
 }
 
 sub snmp_execute {
@@ -83,11 +91,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -104,7 +110,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'psu', 'card', 'entity'.
+Can be: 'fan', 'psu', 'card', 'entity', 'led'.
 
 =item B<--filter>
 

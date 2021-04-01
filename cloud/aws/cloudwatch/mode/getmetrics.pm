@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,20 +28,24 @@ use warnings;
 sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
-    $self->{output}->perfdata_add(label => $self->{result_values}->{perf_label},
-                                  value => $self->{result_values}->{value},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-metric'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric'),
-                                 );
-
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{perf_label},
+        value => $self->{result_values}->{value},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-metric'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric'),
+    );
 }
 
 sub custom_metric_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{value},
-                                                  threshold => [ { label => 'critical-metric', exit_litteral => 'critical' },
-                                                                 { label => 'warning-metric', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{value},
+        threshold => [
+            { label => 'critical-metric', exit_litteral => 'critical' },
+            { label => 'warning-metric', exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -86,14 +90,13 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                    "namespace:s"   => { name => 'namespace' },
-                                    "dimension:s%"  => { name => 'dimension' },
-                                    "metric:s@"     => { name => 'metric' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'namespace:s'  => { name => 'namespace' },
+        'dimension:s%' => { name => 'dimension' },
+        'metric:s@'    => { name => 'metric' },
+    });
+
     return $self;
 }
 
@@ -105,7 +108,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --namespace option.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{aws_metrics} = [];
     if (defined($self->{option_results}->{metric})) {
         $self->{aws_metrics} = [@{$self->{option_results}->{metric}}];
@@ -114,7 +117,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --metric option.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{dimension_name} = '';
     my $append = '';
     $self->{aws_dimensions} = [];
@@ -132,7 +135,7 @@ sub check_options {
 
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
-    
+
     $self->{aws_statistics} = ['Average'];
     if (defined($self->{option_results}->{statistic})) {
         $self->{aws_statistics} = [];
@@ -142,15 +145,15 @@ sub check_options {
             }
         }
     }
-    
+
     foreach my $metric_name ($self->{aws_metrics}) {
         foreach my $statistic ($self->{aws_statistics}) {
             my $entry = { label => lc($metric_name) . '-' . $statistic, set => {
                     key_values => [ { name => $metric_name . '_' . $statistic }, { name => 'display' } ],
                     output_template => $metric_name . ' ' . ucfirst($statistic) . ' : %s',
                     perfdatas => [
-                        { label => lc($metric_name) . '_' . $statistic, value => $metric_name . '_' . $statistic . '_absolute', template => '%s', 
-                          label_extra_instance => 1, instance_use => 'display_absolute' },
+                        { label => lc($metric_name) . '_' . $statistic, value => $metric_name . '_' . $statistic , template => '%s', 
+                          label_extra_instance => 1, instance_use => 'display' },
                     ],
                 }
             };
@@ -161,9 +164,8 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $metric_results = $options{custom}->cloudwatch_get_metrics(
-        region => $self->{option_results}->{region},
         namespace => $self->{option_results}->{namespace},
         dimensions => $self->{aws_dimensions},
         metrics => $self->{aws_metrics},
@@ -171,7 +173,7 @@ sub manage_selection {
         timeframe => $self->{aws_timeframe},
         period => $self->{aws_period},
     );
-    
+
     $self->{metrics} = {};
     foreach my $label (keys %{$metric_results}) {
         foreach my $stat (('minimum', 'maximum', 'average', 'sum')) {

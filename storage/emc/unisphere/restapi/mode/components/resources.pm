@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,9 +25,10 @@ use warnings;
 use Exporter;
 
 our $health_status;
+our $replication_status;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw($health_status);
+our @EXPORT_OK = qw($health_status $replication_status);
 
 $health_status = {
     0 => 'unknown',
@@ -38,6 +39,18 @@ $health_status = {
     20 => 'major',
     25 => 'critical',
     30 => 'non_recoverable'
+};
+
+$replication_status = {
+    0 => 'manual_syncing',
+    1 => 'auto_syncing',
+    2 => 'idle',
+    100 => 'unknown',
+    101 => 'out_of_sync',
+    102 => 'in_sync',
+    103 => 'consistent',
+    104 => 'syncing',
+    105 => 'inconsistent'
 };
 
 1;

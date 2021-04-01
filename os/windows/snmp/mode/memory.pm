@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,12 +41,14 @@ sub custom_usage_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label,
-                                  nlabel => $self->{nlabel},
-                                  value => $value_perf, unit => 'B',
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label,
+        nlabel => $self->{nlabel},
+        value => $value_perf, unit => 'B',
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -116,8 +118,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "units:s"   => { name => 'units', default => '%' },
-        "free"      => { name => 'free' },
+        'units:s'   => { name => 'units', default => '%' },
+        'free'      => { name => 'free' },
     });
 
     return $self;

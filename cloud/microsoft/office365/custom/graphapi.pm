@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,18 +47,17 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "tenant:s"                  => { name => 'tenant' },
-            "client-id:s"               => { name => 'client_id' },
-            "client-secret:s"           => { name => 'client_secret' },
-            "login-endpoint:s"          => { name => 'login_endpoint' },
-            "graph-endpoint:s"          => { name => 'graph_endpoint' },
-            "timeout:s"                 => { name => 'timeout' },
+            'tenant:s'         => { name => 'tenant' },
+            'client-id:s'      => { name => 'client_id' },
+            'client-secret:s'  => { name => 'client_secret' },
+            'login-endpoint:s' => { name => 'login_endpoint' },
+            'graph-endpoint:s' => { name => 'graph_endpoint' },
+            'timeout:s'        => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
     
@@ -71,21 +70,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -233,7 +218,6 @@ sub request_api_csv {
     }
 
     $self->settings();
-
     $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
 
     my $content = $self->{http}->request(%options);
@@ -254,17 +238,11 @@ sub request_api_csv {
             $self->{output}->option_exit();
         }
     }    
-    
-    my $decoded;
-    eval {
-        $decoded = decode('UTF-8', $content);
-    };
-    if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response: $@");
-        $self->{output}->option_exit();
+
+    if (!centreon::plugins::misc::minimal_version(Text::CSV->VERSION, '1.31')) {
+        $content =~ s/^\x{feff}//; # patched in Test-CSV 1.31
     }
-    $decoded =~ s/^\x{feff}//;
+    my $decoded = encode('UTF-8', $content);
 
     my @rows;
     eval {
@@ -276,7 +254,6 @@ sub request_api_csv {
         }
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot parse csv response: $@");
         $self->{output}->option_exit();
     }
@@ -287,7 +264,7 @@ sub request_api_csv {
 sub office_get_sharepoint_site_usage_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSharePointSiteUsageDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSharePointSiteUsageDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -304,7 +281,7 @@ sub office_get_sharepoint_site_usage {
 sub office_get_sharepoint_activity_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSharePointActivityUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSharePointActivityUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -321,7 +298,7 @@ sub office_get_sharepoint_activity {
 sub office_get_onedrive_usage_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getOneDriveUsageAccountDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getOneDriveUsageAccountDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -331,6 +308,23 @@ sub office_get_onedrive_usage {
 
     my $full_url = $self->office_get_onedrive_usage_set_url(%options);
     my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
+sub office_get_onedrive_activity_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getOneDriveActivityUserDetail(" . $options{param} . ")";
+
+    return $url;
+}
+
+sub office_get_onedrive_activity {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_onedrive_activity_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
     
     return $response;
 }
@@ -338,7 +332,7 @@ sub office_get_onedrive_usage {
 sub office_get_exchange_activity_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getEmailActivityUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getEmailActivityUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -355,7 +349,7 @@ sub office_get_exchange_activity {
 sub office_get_exchange_mailbox_usage_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getMailboxUsageDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getMailboxUsageDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -372,7 +366,7 @@ sub office_get_exchange_mailbox_usage {
 sub office_get_teams_activity_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsUserActivityUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsUserActivityUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -389,7 +383,7 @@ sub office_get_teams_activity {
 sub office_get_teams_device_usage_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsDeviceUsageUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsDeviceUsageUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -406,7 +400,7 @@ sub office_get_teams_device_usage {
 sub office_get_skype_activity_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSkypeForBusinessActivityUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSkypeForBusinessActivityUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -423,7 +417,7 @@ sub office_get_skype_activity {
 sub office_get_skype_device_usage_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSkypeForBusinessDeviceUsageUserDetail(period='D7')";
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSkypeForBusinessDeviceUsageUserDetail(" . $options{param} . ")";
 
     return $url;
 }
@@ -434,6 +428,24 @@ sub office_get_skype_device_usage {
     my $full_url = $self->office_get_skype_device_usage_set_url(%options);
     my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
     
+    return $response;
+}
+
+sub teams_post_notification_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/teams/" . $options{team_id} . "/channels/" . $options{channel_id} . "/messages";
+
+    return $url;
+}
+
+sub teams_post_notification {
+    my ($self, %options) = @_;
+
+    my $encoded_data = JSON::XS->new->utf8->encode($options{json_request});
+    my $full_url = $self->teams_post_notification_set_url(%options);
+    my $response = $self->request_api_json(method => 'POST', full_url => $full_url, hostname => '', query_form_post => $encoded_data);
+
     return $response;
 }
 

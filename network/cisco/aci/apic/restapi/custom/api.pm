@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,18 +44,17 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'username:s'    => { name => 'username' },
-            'password:s'    => { name => 'password' },
-            'hostname:s'    => { name => 'hostname' },
-            'timeout:s'     => { name => 'timeout' },
-            'port:s'        => { name => 'port'},
-            'proto:s'       => { name => 'proto'}
+            'username:s' => { name => 'username' },
+            'password:s' => { name => 'password' },
+            'hostname:s' => { name => 'hostname' },
+            'timeout:s'  => { name => 'timeout' },
+            'port:s'     => { name => 'port'},
+            'proto:s'    => { name => 'proto'}
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
     
@@ -68,21 +67,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -129,10 +114,16 @@ sub settings {
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-    if (defined($self->{access_token})) {
-        $self->{http}->add_header(key => 'Cookie', value => 'APIC-Cookie=' . $self->{access_token});
-    }
     $self->{http}->set_options(%{$self->{option_results}});
+}
+
+sub clean_access_token {
+    my ($self, %options) = @_;
+
+    my $datas = { last_timestamp => time() };
+    $options{statefile}->write(data => $datas);
+    $self->{access_token} = undef;
+    $self->{http}->add_header(key => 'Cookie', value => undef);
 }
 
 sub get_access_token {
@@ -173,35 +164,42 @@ sub get_access_token {
         $access_token = $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{token};
         my $datas = {
             last_timestamp => time(),
-            access_token => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{token}, 
+            access_token => $access_token, 
             expires_on => time() + $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{refreshTimeoutSeconds}
         };
         $options{statefile}->write(data => $datas);
     }
 
-    return $access_token;
+    $self->{access_token} = $access_token;
+    $self->{http}->add_header(key => 'Cookie', value => 'APIC-Cookie=' . $self->{access_token});
 }
 
 sub request_api {
     my ($self, %options) = @_;
 
+    $self->settings();
     if (!defined($self->{access_token})) {
         $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
     }
 
-    $self->settings();
-    my $content = $self->{http}->request(%options);
+    my $content = $self->{http}->request(%options, warning_status => '', unknown_status => '', critical_status => '');
+
+    # Maybe there is an issue with the access_token. So we retry.
+    if ($self->{http}->get_code() != 200) {
+        $self->clean_access_token(statefile => $self->{cache});
+        $self->get_access_token(statefile => $self->{cache});
+        $content = $self->{http}->request(%options);
+    }
     
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
-    if (defined($decoded->{imdata}->[0]->{error}->{attributes})) {
+    if (defined($decoded->{imdata}->[0]) && defined($decoded->{imdata}->[0]->{error}->{attributes})) {
         $self->{output}->add_option_msg(short_msg => "Error '" . uc($decoded->{imdata}->[0]->{error}->{attributes}->{code}) . " " . $decoded->{imdata}->[0]->{error}->{attributes}->{text} . "'");
         $self->{output}->option_exit();
     }

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,23 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return "options are '" . $self->{result_values}->{options} . "' [type: " . $self->{result_values}->{type} . "]";
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
-    $self->{result_values}->{options} = $options{new_datas}->{$self->{instance} . '_options'};
-
-    return 0;
 }
 
 sub prefix_output {
@@ -57,14 +46,17 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{mountpoints} = [
-        { label => 'status', set => {
+        {
+            label => 'status',
+            type => 2,
+            critical_default => '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i',
+            set => {
                 key_values => [ { name => 'display' }, { name => 'options' }, { name => 'type' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -73,45 +65,21 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "hostname:s"            => { name => 'hostname' },
-                                    "remote"                => { name => 'remote' },
-                                    "ssh-option:s@"         => { name => 'ssh_option' },
-                                    "ssh-path:s"            => { name => 'ssh_path' },
-                                    "ssh-command:s"         => { name => 'ssh_command', default => 'ssh' },
-                                    "timeout:s"             => { name => 'timeout', default => 30 },
-                                    "sudo"                  => { name => 'sudo' },
-                                    "command:s"             => { name => 'command', default => 'mount' },
-                                    "command-path:s"        => { name => 'command_path' },
-                                    "command-options:s"     => { name => 'command_options', default => ' 2>&1' },
-                                    "filter-device:s"       => { name => 'filter_device' },
-                                    "filter-mountpoint:s"   => { name => 'filter_mountpoint' },
-                                    "filter-type:s"         => { name => 'filter_type' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{options} !~ /^rw/i && %{type} !~ /tmpfs/i' },
-                                });
-    $self->{result} = {};
+    $options{options}->add_options(arguments => {
+        'filter-device:s'       => { name => 'filter_device' },
+        'filter-mountpoint:s'   => { name => 'filter_mountpoint' },
+        'filter-type:s'         => { name => 'filter_type' }
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options},
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'mount',
+        command_options => '2>&1',
         no_quit => 1
     );
 
@@ -119,8 +87,8 @@ sub manage_selection {
     
     my @lines = split /\n/, $stdout;
     foreach my $line (@lines) {
-        next if ($line !~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+\((.*)\)/);
-        my ($device, $mountpoint, $type, $options) = ($1, $3, $5, $6);
+        next if ($line !~ /^\s*(.*?)\s+on\s+(.*?)\s+type\s+(\S+)\s+\((.*)\)/);
+        my ($device, $mountpoint, $type, $options) = ($1, $2, $3, $4);
         
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $type !~ /$self->{option_results}->{filter_type}/) {
@@ -141,12 +109,12 @@ sub manage_selection {
         $self->{mountpoints}->{$mountpoint} = {
             display => $mountpoint,
             type => $type,
-            options => $options,
+            options => $options
         };
     }
     
     if (scalar(keys %{$self->{mountpoints}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No mount points found");
+        $self->{output}->add_option_msg(short_msg => 'No mount points found');
         $self->{output}->option_exit();
     }
 }
@@ -159,47 +127,9 @@ __END__
 
 Check mount points options.
 
+Command used: mount 2>&1
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'mount').
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: ' 2>&1').
 
 =item B<--filter-mountpoint>
 
@@ -220,7 +150,7 @@ Threshold warning.
 =item B<--critical-status>
 
 Threshold critical
-(Default: '%{options} !~ /^rw/i && %{type} !~ /tmpfs/i').
+(Default: '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i').
 
 =back
 

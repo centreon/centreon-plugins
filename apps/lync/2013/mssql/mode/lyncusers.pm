@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,32 +25,38 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_user_output {
+    my ($self, %options) = @_;
+
+    return "'Frontend' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'users', type => 1, cb_prefix_output => 'prefix_user_output', message_multiple => 'User counts are OK' },
+        { name => 'users', type => 0, cb_prefix_output => 'prefix_user_output' }
     ];
 
     $self->{maps_counters}->{users} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'users.total.count', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => '%d Total users',
+                output_template => '%d total users',
                 perfdatas => [
-                    { label => 'total_users', value => 'total_absolute', template => '%d',
-                      unit => 'users', min => 0, label_extra_instance => 0 },
-                ],
+                    { label => 'total_users', template => '%d',
+                      unit => 'users', min => 0 }
+                ]
             }
         },
-        { label => 'unique', set => {
+        { label => 'unique', nlabel => 'users.unique.count', set => {
                 key_values => [ { name => 'unique' } ],
-                output_template => '%d Unique users',
+                output_template => '%d unique users',
                 perfdatas => [
-                    { label => 'unique_users', value => 'unique_absolute', template => '%d',
-                      unit => 'users', min => 0, label_extra_instance => 0 },
-                ],
+                    { label => 'unique_users', template => '%d',
+                      unit => 'users', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -59,34 +65,29 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
-}
-
-sub prefix_user_output {
-    my ($self, %options) = @_;
-
-    return "'" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-    $self->{sql}->connect();
 
-    $self->{sql}->query(query => q{Select count(*) as totalonline,
-                                          count(distinct UserAtHost) as totalunique
-                                        From rtcdyn.dbo.RegistrarEndpoint RE
-                                        Inner Join
-                                        rtc.dbo.Resource R on R.ResourceId = RE.OwnerId
-                                        Inner Join
-                                        rtcdyn.dbo.Registrar Reg on Reg.RegistrarId = RE.PrimaryRegistrarClusterId});
+    $options{sql}->connect();
+    $options{sql}->query(query => q{
+        Select
+            count(*) as totalonline,
+            count(distinct UserAtHost) as totalunique
+        From rtcdyn.dbo.RegistrarEndpoint RE
+        Inner Join
+        rtc.dbo.Resource R on R.ResourceId = RE.OwnerId
+        Inner Join
+        rtcdyn.dbo.Registrar Reg on Reg.RegistrarId = RE.PrimaryRegistrarClusterId
+    });
 
-    my ($total_online, $total_unique) = $self->{sql}->fetchrow_array();
-    $self->{users}{total} = { total => $total_online, unique => $total_unique, display => 'Frontend' };
+    my ($total_online, $total_unique) = $options{sql}->fetchrow_array();
+    $self->{users} = { total => $total_online, unique => $total_unique };
 
 }
 

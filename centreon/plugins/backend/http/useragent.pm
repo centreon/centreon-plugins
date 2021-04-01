@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,7 +43,7 @@ sub get_basic_credentials {
     my($self, $realm, $uri, $proxy) = @_;
     return if $proxy;
     return $self->{username}, $self->{password} if $self->{credentials} and wantarray;
-    return $self->{username}.":".$self->{password} if $self->{credentials};
+    return $self->{username} . ':' . $self->{password} if $self->{credentials};
     return undef;
 }
 

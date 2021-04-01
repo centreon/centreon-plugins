@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,79 +26,67 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use Time::HiRes qw(gettimeofday tv_interval);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_content_threshold {
     my ($self, %options) = @_;
 
-    $self->{instance_mode}->{content_status} = catalog_status_threshold($self, %options);
+    $self->{instance_mode}->{content_status} = catalog_status_threshold_ng($self, %options);
     return $self->{instance_mode}->{content_status};
 }
-
 
 sub custom_content_output {
     my ($self, %options) = @_;
 
     my $msg = 'HTTP test(s)';
     if (!$self->{output}->is_status(value => $self->{instance_mode}->{content_status}, compare => 'ok', litteral => 1)) {
-        my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '_content'};
-        $filter =~ s/\$self->\{result_values\}->/%/g;
+        my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '-content'};
+        $filter =~ s/\$values->/%/g;
         $msg = sprintf("Content test [filter: '%s']", $filter);
     }
     
     return $msg;
 }
 
-sub custom_content_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{content} = $options{new_datas}->{$self->{instance} . '_content'};
-    $self->{result_values}->{code} = $options{new_datas}->{$self->{instance} . '_code'};
-    $self->{result_values}->{header} = $options{new_datas}->{$self->{instance} . '_header'};
-    $self->{result_values}->{first_header} = $options{new_datas}->{$self->{instance} . '_first_header'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'content', threshold => 0, set => {
+        { label => 'content', type => 2, set => {
                 key_values => [ { name => 'content' }, { name => 'code' }, { name => 'first_header' }, { name => 'header' } ],
                 closure_custom_output => $self->can('custom_content_output'),
-                closure_custom_calc => $self->can('custom_content_calc'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check =>  $self->can('custom_content_threshold'),
+                closure_custom_threshold_check =>  $self->can('custom_content_threshold')
             }
         },
-        { label => 'size', display_ok => 0, set => {
+        { label => 'size', nlabel => 'http.content.size.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'size' } ],
                 output_template => 'Content size : %s',
                 perfdatas => [
-                    { label => 'size', value => 'size_absolute', template => '%s', min => 0, unit => 'B' },
-                ],
+                    { label => 'size', template => '%s', min => 0, unit => 'B' }
+                ]
             }
         },
-        { label => 'time', display_ok => 0, set => {
+        { label => 'time', nlabel => 'http.response.time.seconds', display_ok => 0, set => {
                 key_values => [ { name => 'time' } ],
                 output_template => 'Response time : %.3fs',
                 perfdatas => [
-                    { label => 'time', value => 'time_absolute', template => '%.3f', min => 0, unit => 's' },
-                ],
+                    { label => 'time', template => '%.3f', min => 0, unit => 's' }
+                ]
             }
         },
-        { label => 'extracted', display_ok => 0, set => {
+        { label => 'extracted', nlabel => 'http.extracted.value.count', display_ok => 0, set => {
                 key_values => [ { name => 'extracted' } ],
                 output_template => 'Extracted value : %s',
                 perfdatas => [
-                    { label => 'value', value => 'extracted_absolute', template => '%s' },
-                ],
+                    { label => 'value', template => '%s' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -108,61 +96,85 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "hostname:s"            => { name => 'hostname' },
-        "port:s"                => { name => 'port', },
-        "method:s"              => { name => 'method' },
-        "proto:s"               => { name => 'proto' },
-        "urlpath:s"             => { name => 'url_path' },
-        "credentials"           => { name => 'credentials' },
-        "basic"                 => { name => 'basic' },
-        "ntlmv2"                => { name => 'ntlmv2' },
-        "username:s"            => { name => 'username' },
-        "password:s"            => { name => 'password' },
-        "expected-string:s"     => { name => 'expected_string' },
-        "extracted-pattern:s"   => { name => 'extracted_pattern' },
-        "timeout:s"             => { name => 'timeout' },
-        "no-follow"             => { name => 'no_follow', },
-        "cert-file:s"           => { name => 'cert_file' },
-        "key-file:s"            => { name => 'key_file' },
-        "cacert-file:s"         => { name => 'cacert_file' },
-        "cert-pwd:s"            => { name => 'cert_pwd' },
-        "cert-pkcs12"           => { name => 'cert_pkcs12' },
-        "header:s@"             => { name => 'header' },
-        "get-param:s@"          => { name => 'get_param' },
-        "post-param:s@"         => { name => 'post_param' },
-        "cookies-file:s"        => { name => 'cookies_file' },
-        "unknown-status:s"      => { name => 'unknown_status' },
-        "warning-status:s"      => { name => 'warning_status' },
-        "critical-status:s"     => { name => 'critical_status' },
-        "unknown-content:s"     => { name => 'unknown_content', default => '' },
-        "warning-content:s"     => { name => 'warning_content', default => '' },
-        "critical-content:s"    => { name => 'critical_content', default => '' },
+        'hostname:s'            => { name => 'hostname' },
+        'port:s'                => { name => 'port', },
+        'method:s'              => { name => 'method' },
+        'proto:s'               => { name => 'proto' },
+        'urlpath:s'             => { name => 'url_path' },
+        'credentials'           => { name => 'credentials' },
+        'basic'                 => { name => 'basic' },
+        'ntlmv2'                => { name => 'ntlmv2' },
+        'username:s'            => { name => 'username' },
+        'password:s'            => { name => 'password' },
+        'expected-string:s'     => { name => 'expected_string' },
+        'extracted-pattern:s'   => { name => 'extracted_pattern' },
+        'timeout:s'             => { name => 'timeout' },
+        'no-follow'             => { name => 'no_follow', },
+        'cert-file:s'           => { name => 'cert_file' },
+        'key-file:s'            => { name => 'key_file' },
+        'cacert-file:s'         => { name => 'cacert_file' },
+        'cert-pwd:s'            => { name => 'cert_pwd' },
+        'cert-pkcs12'           => { name => 'cert_pkcs12' },
+        'data:s'                => { name => 'data' },
+        'header:s@'             => { name => 'header' },
+        'get-param:s@'          => { name => 'get_param' },
+        'post-param:s@'         => { name => 'post_param' },
+        'cookies-file:s'        => { name => 'cookies_file' },
+        'unknown-status:s'      => { name => 'unknown_status' },
+        'warning-status:s'      => { name => 'warning_status' },
+        'critical-status:s'     => { name => 'critical_status' }
     });
-    
+
     $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
+sub load_request {
+    my ($self, %options) = @_;
+
+    $self->{options_request} = {};
+    if (defined($self->{option_results}->{data}) && $self->{option_results}->{data} ne '') {
+        $self->{option_results}->{method} = defined($self->{option_results}->{method}) && $self->{option_results}->{method} ne '' ?
+            $self->{option_results}->{method} : 'POST';
+        if (-f $self->{option_results}->{data} and -r $self->{option_results}->{data}) {
+            local $/ = undef;
+            my $fh;
+            if (!open($fh, "<", $self->{option_results}->{data})) {
+                $self->{output}->output_add(
+                    severity => 'UNKNOWN',
+                    short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!)
+                );
+                $self->{output}->display();
+                $self->{output}->exit();
+            }
+            $self->{options_request}->{query_form_post} = <$fh>;
+            close $fh;
+        } else {
+            $self->{options_request}->{query_form_post} = $self->{option_results}->{data};
+        }
+    }
+}
+
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 
     # Legacy compat
-    if (defined($self->{option_results}->{expected_string}) && $self->{option_results}->{expected_string} ne '') {
-        $self->{option_results}->{critical_content} = "%{content} !~ /$self->{option_results}->{expected_string}/mi";
+    if (defined($options{option_results}->{expected_string}) && $options{option_results}->{expected_string} ne '') {
+        $options{option_results}->{'critical-content'} = "%{content} !~ /$options{option_results}->{expected_string}/mi";
     }
+    $self->SUPER::check_options(%options);
+    $self->load_request();
 
     $self->{http}->set_options(%{$self->{option_results}});
-    $self->change_macros(macros => ['warning_content', 'critical_content', 'unknown_content']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $timing0 = [gettimeofday];
-    my $webcontent = $self->{http}->request();
+    my $webcontent = $self->{http}->request(%{$self->{options_request}});
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
-        
+
     $self->{global} = { 
         time => $timeelapsed, 
         content => $webcontent,
@@ -272,6 +284,10 @@ Specify certificate's password
 
 Specify type of certificate (PKCS12)
 
+=item B<--data>
+
+Set POST data request (For a JSON data, add following option: --header='Content-Type: application/json')
+
 =item B<--header>
 
 Set HTTP headers (Multiple option)
@@ -291,6 +307,11 @@ Save cookies in a file (Example: '/tmp/lwp_cookies.dat')
 =item B<--extracted-pattern>
 
 Set pattern to extracted a number (used --warning-extracted and --critical-extracted option).
+
+=item B<--expected-string>
+
+--expected-string='toto' is a shortcut for --critical-content='%{content} !~ /toto/mi'
+Recommend to use directly --critical-content.
 
 =item B<--unknown-status>
 

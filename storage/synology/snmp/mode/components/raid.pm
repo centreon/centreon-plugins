@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,7 +23,7 @@ package storage::synology::snmp::mode::components::raid;
 use strict;
 use warnings;
 
-my %map_raid_status = (
+my $map_raid_status = {
     1 => 'Normal',
     2 => 'Repairing',
     3 => 'Migrating',
@@ -36,18 +36,31 @@ my %map_raid_status = (
     10 => 'Canceling',
     11 => 'Degrade',
     12 => 'Crashed',
-);
+    13 => 'DataScrubbing',
+    14 => 'RaidDeploying',
+    15 => 'RaidUnDeploying',
+    16 => 'RaidMountCache',
+    17 => 'RaidUnmountCache',
+    18 => 'RaidExpandingUnfinishedSHR',
+    19 => 'RaidConvertSHRToPool',
+    20 => 'RaidMigrateSHR1ToSHR2',
+    21 => 'RaidUnknownStatus'
+};
 
 my $mapping = {
     synoRaidraidName    => { oid => '.1.3.6.1.4.1.6574.3.1.1.2' },
-    synoRaidraidStatus  => { oid => '.1.3.6.1.4.1.6574.3.1.1.3', map => \%map_raid_status },
+    synoRaidraidStatus  => { oid => '.1.3.6.1.4.1.6574.3.1.1.3', map => $map_raid_status }
 };
 my $oid_synoRaid = '.1.3.6.1.4.1.6574.3.1.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_synoRaid };
+    push @{$self->{request}}, {
+        oid => $oid_synoRaid,
+        start => $mapping->{synoRaidraidName}->{oid},
+        end => $mapping->{synoRaidraidStatus}->{oid}
+    };
 }
 
 sub check {
@@ -65,13 +78,22 @@ sub check {
         next if ($self->check_filter(section => 'raid', instance => $instance));
         $self->{components}->{raid}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("raid '%s' status is %s [instance: %s]",
-                                    $result->{synoRaidraidName}, $result->{synoRaidraidStatus}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "raid '%s' status is %s [instance: %s]",
+                $result->{synoRaidraidName}, $result->{synoRaidraidStatus}, $instance
+            )
+        );
+
         my $exit = $self->get_severity(section => 'raid', value => $result->{synoRaidraidStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Raid '%s' status is %s", 
-                                                             $result->{synoRaidraidName}, $result->{synoRaidraidStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Raid '%s' status is %s", 
+                    $result->{synoRaidraidName}, $result->{synoRaidraidStatus}
+                )
+            );
         }
     }
 }

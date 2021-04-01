@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,10 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'backup-items-status'       => 'cloud::azure::management::recovery::mode::backupitemsstatus',
-        'backup-jobs-status'        => 'cloud::azure::management::recovery::mode::backupjobsstatus',
-        'list-backup-jobs'          => 'cloud::azure::management::recovery::mode::listbackupjobs',
-        'list-vaults'               => 'cloud::azure::management::recovery::mode::listvaults',
+        'backup-items-status'   => 'cloud::azure::management::recovery::mode::backupitemsstatus',
+        'backup-jobs-status'    => 'cloud::azure::management::recovery::mode::backupjobsstatus',
+        'discovery'             => 'cloud::azure::management::recovery::mode::discovery',
+        'list-backup-jobs'      => 'cloud::azure::management::recovery::mode::listbackupjobs',
+        'list-vaults'           => 'cloud::azure::management::recovery::mode::listvaults',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
@@ -45,10 +46,9 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{options}->add_options(arguments =>
-                                    {
-                                        'api-version:s'  => { name => 'api_version', default => '2018-07-10' },
-                                    });
+    $self->{options}->add_options(arguments => {
+        'api-version:s'  => { name => 'api_version', default => '2018-07-10' },
+    });
 
     $self->SUPER::init(%options);
 }

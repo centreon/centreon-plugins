@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'stratum_level' } ],
                 output_template => 'Stratum level : %d',
                 perfdatas => [
-                    { label => 'stratum_level', value => 'stratum_level_absolute', template => '%d',
+                    { label => 'stratum_level', value => 'stratum_level', template => '%d',
                       min => 0, max => 16 },
                 ],
             }
@@ -72,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'precision' } ],
                 output_template => 'Precision : %s seconds',
                 perfdatas => [
-                    { label => 'precision', value => 'precision_absolute', template => '%s',
+                    { label => 'precision', value => 'precision', template => '%s',
                       min => 0, unit => "seconds" },
                 ],
             }
@@ -81,7 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'poll_interval' } ],
                 output_template => 'Poll interval : %d seconds',
                 perfdatas => [
-                    { label => 'poll_interval', value => 'poll_interval_absolute', template => '%d',
+                    { label => 'poll_interval', value => 'poll_interval', template => '%d',
                       min => 0, unit => "seconds"  },
                 ],
             }

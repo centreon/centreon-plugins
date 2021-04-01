@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -60,8 +60,8 @@ sub set_counters {
                 key_values => [ { name => 'arrayVDiskCount' }, { name => 'arrayId' } ],
                 output_template => 'VDisk count: %s',
                 perfdatas => [
-                    { label => 'vdisk_count', value => 'arrayVDiskCount_absolute', template => '%s', label_extra_instance => 1,
-                      instance_use => 'arrayId_absolute', min => 0 },
+                    { label => 'vdisk_count', value => 'arrayVDiskCount', template => '%s', label_extra_instance => 1,
+                      instance_use => 'arrayId', min => 0 },
                 ],
             }
         },

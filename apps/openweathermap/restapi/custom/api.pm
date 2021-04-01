@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,18 +41,17 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s"        => { name => 'hostname' },
-            "url-path:s"        => { name => 'url_path' },
-            "port:s"            => { name => 'port' },
-            "proto:s"           => { name => 'proto' },
-            "api-token:s"       => { name => 'api_token' },
-            "timeout:s"         => { name => 'timeout' },
+            'hostname:s'  => { name => 'hostname' },
+            'url-path:s'  => { name => 'url_path' },
+            'port:s'      => { name => 'port' },
+            'proto:s'     => { name => 'proto' },
+            'api-token:s' => { name => 'api_token' },
+            'timeout:s'   => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
@@ -64,21 +63,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -146,7 +131,7 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
-    if (!defined($decoded->{code}) || $decoded->{code} != 200) {
+    if (!defined($decoded->{cod}) || $decoded->{cod} != 200) {
         $self->{output}->output_add(long_msg => "Error message : " . $decoded->{errorDetails}, debug => 1);
         $self->{output}->add_option_msg(short_msg => "API return error code '" . $decoded->{result} . "' (add --debug option for detailed message)");
         $self->{output}->option_exit();

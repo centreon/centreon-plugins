@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -59,7 +59,7 @@ sub GetOptions {
     my $search_str = ',' . join(',', keys %opts) . ',';
     my $num_args = scalar(@ARGV);
     for (my $i = 0; $i < $num_args;) {
-        if (defined($ARGV[$i]) && $ARGV[$i] =~ /^--(.*?)(?:=|$)(.*)/) {
+        if (defined($ARGV[$i]) && $ARGV[$i] =~ /^--(.*?)(?:=|$)((?s).*)/) {
             my ($option, $value) = ($1, $2);
             
             # find type of option

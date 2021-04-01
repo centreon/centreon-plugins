@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,34 +24,33 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'clients', set => {
+        { label => 'clients', nlabel => 'clients.connected.count', set => {
                 key_values => [ { name => 'stClientCount' } ],
                 output_template => 'Connected clients: %d',
                 perfdatas => [
-                    { label => 'connected_clients', value => 'stClientCount_absolute', template => '%d',
-                      min => 0, unit => 'clients' },
-                ],
+                    { label => 'connected_clients', template => '%d',
+                      min => 0, unit => 'clients' }
+                ]
             }
         },
-        { label => 'sockets', set => {
+        { label => 'sockets', nlabel => 'sockets.connected.count', set => {
                 key_values => [ { name => 'stConnectedSockets' } ],
                 output_template => 'Open network sockets: %d',
                 perfdatas => [
-                    { label => 'open_sockets', value => 'stConnectedSockets_absolute', template => '%d',
-                      min => 0, unit => 'sockets' },
-                ],
+                    { label => 'open_sockets', template => '%d',
+                      min => 0, unit => 'sockets' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -60,16 +59,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-counters:s" => { name => 'filter_counters', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 }
 
 my $oid_stClientCount = '.1.3.6.1.4.1.1230.2.7.2.5.2.0';
@@ -78,10 +70,10 @@ my $oid_stConnectedSockets = '.1.3.6.1.4.1.1230.2.7.2.5.3.0';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{snmp}->get_leef(oids => [ $oid_stClientCount, $oid_stConnectedSockets ], 
-                                           nothing_quit => 1);
-    
-    $self->{global} = {};
+    my $results = $options{snmp}->get_leef(
+        oids => [ $oid_stClientCount, $oid_stConnectedSockets ], 
+        nothing_quit => 1
+    );
 
     $self->{global} = {
         stClientCount => $results->{$oid_stClientCount},

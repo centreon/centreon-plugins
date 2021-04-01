@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -94,14 +94,17 @@ sub run {
     my ($self, %options) = @_;
     my $vplex = $options{custom};
     
-    my $urlbase = '/vplex/engines/';
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All Fans are OK');
 
-    my $items = $vplex->get_items(url => $urlbase,
-                                  parent => 'engine',
-                                  engine => $self->{option_results}->{engine},
-                                  obj => 'fans');
+    my $items = $vplex->get_items(
+        url => '/vplex/engines/',
+        parent => 1,
+        parent_filter => $self->{option_results}->{engine},
+        parent_filter_prefix => 'engine-',
+        parent_select => '/engines/(.*?)/',
+        obj => 'fans'
+    );
     foreach my $engine_name (sort keys %{$items}) {
         foreach my $fan_name (sort keys %{$items->{$engine_name}}) {
             my $instance = $engine_name . '_' . $fan_name;

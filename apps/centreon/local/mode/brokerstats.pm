@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -72,8 +72,8 @@ sub set_counters {
                 key_values => [ { name => 'speed_events' }, { name => 'display' } ],
                 output_template => 'Speed Events: %s/s',
                 perfdatas => [
-                    { label => 'speed_events', value => 'speed_events_absolute', template => '%s', 
-                      unit => 'events/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'speed_events', value => 'speed_events', template => '%s', 
+                      unit => 'events/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -81,8 +81,8 @@ sub set_counters {
                 key_values => [ { name => 'queued_events' }, { name => 'display' } ],
                 output_template => 'Queued Events: %s',
                 perfdatas => [
-                    { label => 'queued_events', value => 'queued_events_absolute', template => '%s', 
-                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'queued_events', value => 'queued_events', template => '%s', 
+                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -90,8 +90,8 @@ sub set_counters {
                 key_values => [ { name => 'unacknowledged_events' }, { name => 'display' } ],
                 output_template => 'Unacknowledged Events: %s',
                 perfdatas => [
-                    { label => 'unacknowledged_events', value => 'unacknowledged_events_absolute', template => '%s', 
-                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'unacknowledged_events', value => 'unacknowledged_events', template => '%s', 
+                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -102,22 +102,21 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "broker-stats-file:s@"    => { name => 'broker_stats_file' },
-                                  "hostname:s"              => { name => 'hostname' },
-                                  "remote"                  => { name => 'remote' },
-                                  "ssh-option:s@"           => { name => 'ssh_option' },
-                                  "ssh-path:s"              => { name => 'ssh_path' },
-                                  "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"               => { name => 'timeout', default => 30 },
-                                  "sudo"                    => { name => 'sudo' },
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i' },
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+        'broker-stats-file:s@' => { name => 'broker_stats_file' },
+        'hostname:s'           => { name => 'hostname' },
+        'remote'               => { name => 'remote' },
+        'ssh-option:s@'        => { name => 'ssh_option' },
+        'ssh-path:s'           => { name => 'ssh_path' },
+        'ssh-command:s'        => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'            => { name => 'timeout', default => 30 },
+        'sudo'                 => { name => 'sudo' },
+        'filter-name:s'        => { name => 'filter_name' },
+        'warning-status:s'     => { name => 'warning_status', default => '' },
+        'critical-status:s'    => { name => 'critical_status', default => '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i' },
+    });
+
     return $self;
 }
 
@@ -134,7 +133,7 @@ sub check_options {
 
 sub prefix_endpoint_output {
     my ($self, %options) = @_;
-    
+
     return "Endpoint $options{instance_value}->{type} '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -143,11 +142,13 @@ sub manage_selection {
 
     $self->{endpoint} = {};
     foreach my $config (@{$self->{option_results}->{broker_stats_file}}) {
-        my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                        options => $self->{option_results},
-                                                        sudo => $self->{option_results}->{sudo},
-                                                        command => 'cat',
-                                                        command_options => $config);
+        my ($stdout) = centreon::plugins::misc::execute(
+            output => $self->{output},
+            options => $self->{option_results},
+            sudo => $self->{option_results}->{sudo},
+            command => 'cat',
+            command_options => $config
+        );
         my $json;
         eval {
             $json = decode_json($stdout);
@@ -156,7 +157,7 @@ sub manage_selection {
             $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
             $self->{output}->option_exit();
         }
-        
+
         foreach my $entry (keys %$json) {
             next if ($entry !~ /^endpoint/);
 
@@ -172,7 +173,7 @@ sub manage_selection {
             my $state = $json->{$entry}->{state};
             my $type = 'output';
             $type = 'input' if (!defined($json->{$entry}->{status}));
-            
+
             $self->{endpoint}->{$endpoint} = {
                 display => $endpoint,
                 state => $state,
@@ -185,7 +186,7 @@ sub manage_selection {
             };
         }
     }
-    
+
     if (scalar(keys %{$self->{endpoint}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No endpoint found.");
         $self->{output}->option_exit();

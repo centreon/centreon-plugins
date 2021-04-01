@@ -33,13 +33,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'             => 'storage::netgear::readynas::snmp::mode::hardware',
-                         'cpu'                  => 'snmp_standard::mode::cpu',
-                         'interfaces'           => 'snmp_standard::mode::interfaces',
-                         'memory'               => 'snmp_standard::mode::memory',
-                         'load'                 => 'snmp_standard::mode::loadaverage',
-                         'storage'              => 'snmp_standard::mode::storage',
-                         );
+        'cpu'        => 'snmp_standard::mode::cpu',
+        'hardware'   => 'storage::netgear::readynas::snmp::mode::hardware',
+        'interfaces' => 'snmp_standard::mode::interfaces',
+        'load'       => 'snmp_standard::mode::loadaverage',
+        'memory'     => 'snmp_standard::mode::memory',
+        'storage'    => 'snmp_standard::mode::storage',
+    );
 
     return $self;
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -56,9 +56,13 @@ sub check {
         $result->{tempDescr} = centreon::plugins::misc::trim($result->{tempDescr});
         $self->{components}->{temperature}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("temperature '%s' value is %s C [instance: %s].",
-                                    $result->{tempDescr}, $result->{tempReading}, $instance));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' value is %s C [instance: %s].",
+                $result->{tempDescr}, $result->{tempReading}, $instance
+            )
+        );
+
         if (defined($result->{tempReading})) {
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{tempReading});
             if ($checked == 0) {
@@ -75,11 +79,13 @@ sub check {
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);    
             }
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Temperature '%s' is %s C", $result->{tempDescr}, $result->{tempReading}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Temperature '%s' is %s C", $result->{tempDescr}, $result->{tempReading})
+                );
             }
             $self->{output}->perfdata_add(
-                label => "temp", unit => 'C',
+                unit => 'C',
                 nlabel => 'hardware.temperature.celsius',
                 instances => $result->{tempDescr},
                 value => $result->{tempReading},

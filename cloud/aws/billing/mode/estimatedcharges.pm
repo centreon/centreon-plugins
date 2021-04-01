@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'estimated_charges' }, { name => 'display' } ],
                 output_template => 'Estimated Charges: %.2f USD',
                 perfdatas => [
-                    { value => 'estimated_charges_absolute', template => '%.2f', unit => 'USD',
+                    { value => 'estimated_charges', template => '%.2f', unit => 'USD',
                       label_extra_instance => 1 },
                 ],
             }
@@ -88,7 +88,6 @@ sub manage_selection {
 
     foreach my $service (@{$self->{option_results}->{service}}) {
         my $metric_results = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/Billing',
             dimensions => [
                 { Name => 'ServiceName', Value => $service },

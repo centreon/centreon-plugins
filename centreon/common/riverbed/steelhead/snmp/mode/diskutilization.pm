@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -38,31 +38,26 @@ sub set_counters {
                 key_values => [ { name => 'dsAveDiskUtilization' } ],
                 output_template => 'Datastore Usage: %.2f%%',
                 perfdatas => [
-                    { label => 'used', value => 'dsAveDiskUtilization_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'used', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'hits', set => {
-                key_values => [ { name => 'dsHitsTotal', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'dsHitsTotal', per_second => 1 } ],
                 output_template => 'Hits: %s/s',
                 perfdatas => [
-                    { label => 'hits', value => 'dsHitsTotal_per_second', template => '%.2f',
-                      min => 0, unit => 'hits/s' },
-                ],
+                    { label => 'hits', template => '%.2f', min => 0, unit => 'hits/s' }
+                ]
             }
         },
         { label => 'misses', set => {
-                key_values => [ { name => 'dsMissTotal', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'dsMissTotal', per_second => 1 } ],
                 output_template => 'Misses: %s/s',
                 perfdatas => [
-                    { label => 'misses', value => 'dsMissTotal_per_second', template => '%.2f',
-                      min => 0, unit => 'misses/s' },
-                ],
+                    { label => 'misses', template => '%.2f', min => 0, unit => 'misses/s' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -73,6 +68,7 @@ sub new {
 
     $options{options}->add_options(arguments =>{
     });
+
     return $self;
 }
 
@@ -81,14 +77,14 @@ my $mappings = {
         dsHitsTotal => { oid => '.1.3.6.1.4.1.17163.1.1.5.4.1' },
         dsMissTotal => { oid => '.1.3.6.1.4.1.17163.1.1.5.4.2' },
         dsCostPerSegment => { oid => '.1.3.6.1.4.1.17163.1.1.5.4.3' },
-        dsAveDiskUtilization => { oid => '.1.3.6.1.4.1.17163.1.1.5.4.4' },
+        dsAveDiskUtilization => { oid => '.1.3.6.1.4.1.17163.1.1.5.4.4' }
     },
     ex => {
         dsHitsTotal => { oid => '.1.3.6.1.4.1.17163.1.51.5.4.1' },
         dsMissTotal => { oid => '.1.3.6.1.4.1.17163.1.51.5.4.2' },
         dsCostPerSegment => { oid => '.1.3.6.1.4.1.17163.1.51.5.4.3' },
-        dsAveDiskUtilization => { oid => '.1.3.6.1.4.1.17163.1.51.5.4.4' },
-    },
+        dsAveDiskUtilization => { oid => '.1.3.6.1.4.1.17163.1.51.5.4.4' }
+    }
 };
 
 my $oids = {
@@ -101,29 +97,24 @@ sub manage_selection {
 
     my $results = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oids->{common},
-              start => $mappings->{common}->{dsHitsTotal}->{oid},
-              end => $mappings->{common}->{dsAveDiskUtilization}->{oid} },
-            { oid => $oids->{ex},
-              start => $mappings->{ex}->{dsHitsTotal}->{oid},
-              end => $mappings->{ex}->{dsAveDiskUtilization}->{oid} }
+            { oid => $oids->{common}, start => $mappings->{common}->{dsHitsTotal}->{oid}, end => $mappings->{common}->{dsAveDiskUtilization}->{oid} },
+            { oid => $oids->{ex}, start => $mappings->{ex}->{dsHitsTotal}->{oid}, end => $mappings->{ex}->{dsAveDiskUtilization}->{oid} }
         ]
     );
 
     foreach my $equipment (keys %{$oids}) {
         next if (!%{$results->{$oids->{$equipment}}});
 
-        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment},
-            results => $results->{$oids->{$equipment}}, instance => 0);
-        
+        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment}, results => $results->{$oids->{$equipment}}, instance => 0);
+
         $self->{global} = {
             dsHitsTotal => $result->{dsHitsTotal},
             dsMissTotal => $result->{dsMissTotal},
-            dsAveDiskUtilization => $result->{dsAveDiskUtilization},
+            dsAveDiskUtilization => $result->{dsAveDiskUtilization}
         };
     }
 
-    $self->{cache_name} = "riverbed_steelhead_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() .
+    $self->{cache_name} = 'riverbed_steelhead_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() .
         '_' . $self->{mode} . '_' . md5_hex('all');
 }
 

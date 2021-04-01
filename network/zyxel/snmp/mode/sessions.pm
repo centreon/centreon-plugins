@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions' } ],
                 output_template => 'Current active sessions : %s',
                 perfdatas => [
-                    { label => 'sessions', value => 'sessions_absolute', template => '%s', min => 0 },
+                    { label => 'sessions', value => 'sessions', template => '%s', min => 0 },
                 ],
             }
         },

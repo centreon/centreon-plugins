@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,14 +31,6 @@ sub custom_status_output {
     
     my $msg = 'status : ' . $self->{result_values}->{health};
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-     
-    $self->{result_values}->{health} = $options{new_datas}->{$self->{instance} . '_health'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
 }
 
 sub custom_usage_perfdata {
@@ -117,7 +109,6 @@ sub set_counters {
     $self->{maps_counters}->{cluster} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'health' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
@@ -135,8 +126,8 @@ sub set_counters {
                 key_values => [ { name => 'dedup' }, { name => 'display' } ],
                 output_template => 'Dedup Ratio : %.2f',
                 perfdatas => [
-                    { label => 'dedup_ratio', value => 'dedup_absolute', template => '%.2f', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'dedup_ratio', value => 'dedup', template => '%.2f', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

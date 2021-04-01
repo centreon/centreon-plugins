@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,49 +30,45 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'iline', type => 1, cb_prefix_output => 'prefix_iline_output', message_multiple => 'All input lines are ok', skipped_code => { -10 => 1 } },
+        { name => 'iline', type => 1, cb_prefix_output => 'prefix_iline_output', message_multiple => 'All input lines are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'frequence', nlabel => 'lines.input.frequence.hertz', set => {
                 key_values => [ { name => 'xupsInputFrequency', no_value => 0 } ],
-                output_template => 'Frequence : %.2f Hz',
+                output_template => 'frequence: %.2f Hz',
                 perfdatas => [
-                    { value => 'xupsInputFrequency_absolute', template => '%.2f', 
-                      unit => 'Hz' },
-                ],
+                    { template => '%.2f', unit => 'Hz' }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{iline} = [
         { label => 'current', nlabel => 'line.input.current.ampere', set => {
                 key_values => [ { name => 'xupsInputCurrent', no_value => 0 } ],
-                output_template => 'Current : %.2f A',
+                output_template => 'current: %.2f A',
                 perfdatas => [
-                    { value => 'xupsInputCurrent_absolute', template => '%.2f', 
-                      min => 0, unit => 'A', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', min => 0, unit => 'A', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'voltage', nlabel => 'line.input.voltage.volt', set => {
                 key_values => [ { name => 'xupsInputVoltage', no_value => 0 } ],
-                output_template => 'Voltage : %.2f V',
+                output_template => 'voltage: %.2f V',
                 perfdatas => [
-                    { value => 'xupsInputVoltage_absolute', template => '%.2f', 
-                      unit => 'V', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => 'V', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'power', nlabel => 'line.input.power.watt', set => {
                 key_values => [ { name => 'xupsInputWatts', no_value => 0 } ],
-                output_template => 'Power: %.2f W',
+                output_template => 'power: %.2f W',
                 perfdatas => [
-                    { value => 'xupsInputWatts_absolute', template => '%.2f', 
-                      unit => 'W', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => 'W', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -82,6 +78,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'filter-iline:s' => { name => 'filter_iline' }
     });
 
     return $self;
@@ -96,32 +93,47 @@ sub prefix_iline_output {
 my $mapping = {
     xupsInputVoltage   => { oid => '.1.3.6.1.4.1.534.1.3.4.1.2' }, # in V
     xupsInputCurrent   => { oid => '.1.3.6.1.4.1.534.1.3.4.1.3' }, # in A
-    xupsInputWatts     => { oid => '.1.3.6.1.4.1.534.1.3.4.1.4' }, # in W
+    xupsInputWatts     => { oid => '.1.3.6.1.4.1.534.1.3.4.1.4' }  # in W
 };
 my $mapping2 = {
-    xupsInputFrequency => { oid => '.1.3.6.1.4.1.534.1.3.1' }, # in dHZ
+    xupsInputFrequency => { oid => '.1.3.6.1.4.1.534.1.3.1' } # in dHZ
+};
+my $mapping3 = {
+    upsConfigLowVoltageTransferPoint  => { oid => '.1.3.6.1.2.1.33.1.9.9' },
+    upsConfigHighVoltageTransferPoint => { oid => '.1.3.6.1.2.1.33.1.9.10' }
 };
 
 my $oid_xupsInputEntry = '.1.3.6.1.4.1.534.1.3.4.1';
+my $oid_upsConfig = '.1.3.6.1.2.1.33.1.9';
 
 sub manage_selection {
     my ($self, %options) = @_;
- 
+
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $mapping2->{xupsInputFrequency}->{oid} },
             { oid => $oid_xupsInputEntry },
+            { oid => $oid_upsConfig, start => $mapping3->{upsConfigLowVoltageTransferPoint}->{oid}, end => $mapping3->{upsConfigHighVoltageTransferPoint}->{oid} },
         ],
-        return_type => 1, nothing_quit => 1
+        return_type => 1,
+        nothing_quit => 1
     );
 
     $self->{iline} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$oid_xupsInputEntry\.\d+\.(.*)$/);
         my $instance = $1;
+
+        if (defined($self->{option_results}->{filter_iline}) && $self->{option_results}->{filter_iline} ne '' &&
+            $instance !~ /$self->{option_results}->{filter_iline}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $instance . "': no matching 'iline' filter.", debug => 1);
+            next;
+        }
+
         next if (defined($self->{iline}->{$instance}));
-        
+
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $result->{xupsInputCurrent} = 0 if (defined($result->{xupsInputCurrent}) && $result->{xupsInputCurrent} eq '');
         $self->{iline}->{$instance} = { display => $instance, %$result };
     }
     
@@ -131,9 +143,19 @@ sub manage_selection {
     }
 
     my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => '0');
-    
+
     $result->{xupsInputFrequency} = defined($result->{xupsInputFrequency}) ? ($result->{xupsInputFrequency} * 0.1) : 0;
     $self->{global} = { %$result };
+
+    $result = $options{snmp}->map_instance(mapping => $mapping3, results => $snmp_result, instance => '0');
+    if ((!defined($self->{option_results}->{'warning-voltage'}) || $self->{option_results}->{'warning-voltage'} eq '') &&
+        (!defined($self->{option_results}->{'critical-voltage'}) || $self->{option_results}->{'critical-voltage'} eq '')
+    ) {
+        my $th = '';
+        $th .= $result->{upsConfigHighVoltageTransferPoint} if (defined($result->{upsConfigHighVoltageTransferPoint}) && $result->{upsConfigHighVoltageTransferPoint} =~ /\d+/);
+        $th = $result->{upsConfigLowVoltageTransferPoint} . ':' . $th if (defined($result->{upsConfigLowVoltageTransferPoint}) && $result->{upsConfigLowVoltageTransferPoint} =~ /\d+/);
+        $self->{perfdata}->threshold_validate(label => 'critical-voltage', value => $th) if ($th ne '');
+    }
 }
 
 1;
@@ -142,18 +164,17 @@ __END__
 
 =head1 MODE
 
-Check Input lines metrics (frequence, voltage, current and true power) (XUPS-MIB).
+Check input lines metrics (frequence, voltage, current and true power) (XUPS-MIB).
 
 =over 8
 
-=item B<--warning-*>
+=item B<--filter-iline>
 
-Threshold warning.
-Can be: 'frequence', 'voltage', 'current', 'power'.
+Filter input lines that match the regexp
 
-=item B<--critical-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold critical.
+Thresholds.
 Can be: 'frequence', 'voltage', 'current', 'power'.
 
 =back

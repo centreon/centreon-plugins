@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,8 +38,8 @@ sub set_counters {
                 output_template => 'Load 1 minute: %.2f',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'load1', value => 'load1_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'load1', value => 'load1', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -48,8 +48,8 @@ sub set_counters {
                 output_template => 'Load 5 minutes: %.2f',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'load5', value => 'load5_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'load5', value => 'load5', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -58,8 +58,8 @@ sub set_counters {
                 output_template => 'Load 15 minutes: %.2f',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'load15', value => 'load15_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'load15', value => 'load15', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

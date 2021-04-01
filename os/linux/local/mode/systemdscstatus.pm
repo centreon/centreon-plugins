@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,23 +25,18 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{load} . '/' . $self->{result_values}->{active} . '/' . $self->{result_values}->{sub};
 
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{load} = $options{new_datas}->{$self->{instance} . '_load'};
-    $self->{result_values}->{active} = $options{new_datas}->{$self->{instance} . '_active'};
-    $self->{result_values}->{sub} = $options{new_datas}->{$self->{instance} . '_sub'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return sprintf(
+        'status : %s/%s/%s [boot: %s]',
+        $self->{result_values}->{load},
+        $self->{result_values}->{active},
+        $self->{result_values}->{sub},
+        $self->{result_values}->{boot}
+    );
 }
 
 sub set_counters {
@@ -53,52 +48,47 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-running', set => {
+        { label => 'total-running', nlabel => 'systemd.services.running.count', set => {
                 key_values => [ { name => 'running' }, { name => 'total' } ],
                 output_template => 'Total Running: %s',
                 perfdatas => [
-                    { label => 'total_running', value => 'running_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
-                ],
+                    { label => 'total_running', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-failed', set => {
+        { label => 'total-failed', nlabel => 'systemd.services.failed.count', set => {
                 key_values => [ { name => 'failed' }, { name => 'total' } ],
                 output_template => 'Total Failed: %s',
                 perfdatas => [
-                    { label => 'total_failed', value => 'failed_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
-                ],
+                    { label => 'total_failed', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-dead', set => {
+        { label => 'total-dead', nlabel => 'systemd.services.dead.count', set => {
                 key_values => [ { name => 'dead' }, { name => 'total' } ],
                 output_template => 'Total Dead: %s',
                 perfdatas => [
-                    { label => 'total_dead', value => 'dead_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
-                ],
+                    { label => 'total_dead', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-exited', set => {
+        { label => 'total-exited', nlabel => 'systemd.services.exited.count', set => {
                 key_values => [ { name => 'exited' }, { name => 'total' } ],
                 output_template => 'Total Exited: %s',
                 perfdatas => [
-                    { label => 'total_exited', value => 'exited_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
-                ],
+                    { label => 'total_exited', template => '%s', min => 0, max => 'total' }
+                ]
             }
-        },
+        }
     ];
     $self->{maps_counters}->{sc} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'load' }, { name => 'active' },  { name => 'sub' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+        { label => 'status', type => 2, critical_default => '%{active} =~ /failed/i', set => {
+                key_values => [ { name => 'load' }, { name => 'active' },  { name => 'sub' }, { name => 'boot' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -106,50 +96,28 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'systemctl' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-a --no-pager --no-legend' },
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{active} =~ /failed/i' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub prefix_sc_output {
     my ($self, %options) = @_;
-    
+
     return "Service '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    sudo => $self->{option_results}->{sudo},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
-    
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'systemctl',
+        command_options => '-a --no-pager --no-legend'
+    );
+
     $self->{global} = { running => 0, exited => 0, failed => 0, dead => 0, total => 0 };
     $self->{sc} = {};
     #auditd.service                                                        loaded    active   running Security Auditing Service
@@ -164,14 +132,27 @@ sub manage_selection {
             next;
         }
         
-        $self->{sc}->{$name} = { display => $name, load => $load, active => $active, sub => $sub };
+        $self->{sc}->{$name} = { display => $name, load => $load, active => $active, sub => $sub, boot => '-' };
         $self->{global}->{$sub} += 1 if (defined($self->{global}->{$sub}));
         $self->{global}->{total} += 1;
     }
-    
+
     if (scalar(keys %{$self->{sc}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No service found.");
         $self->{output}->option_exit();
+    }
+
+    ($stdout) = $options{custom}->execute_command(
+        command => 'systemctl',
+        command_options => 'list-unit-files --no-pager --no-legend'
+    );
+    #runlevel4.target                              enabled 
+    #runlevel5.target                              static  
+    #runlevel6.target                              disabled
+    while ($stdout =~ /^(.*?)\s+(\S+)\s*$/msig) {
+        my ($name, $boot) = ($1, $2);
+        next if (!defined($self->{sc}->{$name}));
+        $self->{sc}->{$name}->{boot} = $boot;
     }
 }
 
@@ -183,75 +164,29 @@ __END__
 
 Check systemd services status.
 
+Command used: 'systemctl -a --no-pager --no-legend' and 'systemctl list-unit-files --no-pager --no-legend'
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'systemctl').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-a --no-pager --no-legend').
 
 =item B<--filter-name>
 
 Filter service name (can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'total-running', 'total-dead', 'total-exited',
-'total-failed'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'total-running', 'total-dead', 'total-exited',
 'total-failed'.
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{display}, %{active}, %{sub}, %{load}
-
+Can used special variables like: %{display}, %{active}, %{sub}, %{load}, %{boot}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{active} =~ /failed/i').
-Can used special variables like: %{display}, %{active}, %{sub}, %{load}
+Can used special variables like: %{display}, %{active}, %{sub}, %{load}, %{boot}
 
 =back
 

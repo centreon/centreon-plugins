@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,14 +30,15 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                            'apps-state'            => 'cloud::cloudfoundry::restapi::mode::appsstate',
-                            'instances-state'       => 'cloud::cloudfoundry::restapi::mode::instancesstate',
-                            'list-apps'             => 'cloud::cloudfoundry::restapi::mode::listapps',
-                            'list-organizations'    => 'cloud::cloudfoundry::restapi::mode::listorganizations',
-                            'list-spaces'           => 'cloud::cloudfoundry::restapi::mode::listspaces',
-                        );
-    $self->{custom_modes}{restapi} = 'cloud::cloudfoundry::restapi::custom::api';
+    $self->{modes} = {
+        'apps-state'            => 'cloud::cloudfoundry::restapi::mode::appsstate',
+        'instances-state'       => 'cloud::cloudfoundry::restapi::mode::instancesstate',
+        'list-apps'             => 'cloud::cloudfoundry::restapi::mode::listapps',
+        'list-organizations'    => 'cloud::cloudfoundry::restapi::mode::listorganizations',
+        'list-spaces'           => 'cloud::cloudfoundry::restapi::mode::listspaces'
+    };
+
+    $self->{custom_modes}->{restapi} = 'cloud::cloudfoundry::restapi::custom::api';
     return $self;
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,14 +32,18 @@ my $mapping = {
     voltageProbeUpperCriticalThreshold      => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.20.1.10' },
     voltageProbeUpperNonCriticalThreshold   => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.20.1.11' },
     voltageProbeLowerNonCriticalThreshold   => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.20.1.12' },
-    voltageProbeLowerCriticalThreshold      => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.20.1.13' },
+    voltageProbeLowerCriticalThreshold      => { oid => '.1.3.6.1.4.1.674.10892.5.4.600.20.1.13' }
 };
 my $oid_voltageProbeTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.20.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_voltageProbeTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_voltageProbeTableEntry,
+        start => $mapping->{voltageProbeStateSettings}->{oid},
+        end => $mapping->{voltageProbeLowerCriticalThreshold}->{oid}
+    };
 }
 
 sub check {
@@ -53,26 +57,38 @@ sub check {
         next if ($oid !~ /^$mapping->{voltageProbeStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_voltageProbeTableEntry}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'voltage', instance => $instance));
         $self->{components}->{voltage}->{total}++;
 
         $result->{voltageProbeReading} = (defined($result->{voltageProbeReading})) ? $result->{voltageProbeReading} / 1000 : 'unknown';
-        $self->{output}->output_add(long_msg => sprintf("voltage '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
-                                    $result->{voltageProbeLocationName}, $result->{voltageProbeStatus}, $instance, 
-                                    $result->{voltageProbeStateSettings}, $result->{voltageProbeReading}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "voltage '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
+                $result->{voltageProbeLocationName}, $result->{voltageProbeStatus}, $instance, 
+                $result->{voltageProbeStateSettings}, $result->{voltageProbeReading}
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default.state', section => 'voltage.state', value => $result->{voltageProbeStateSettings});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' state is '%s'", $result->{voltageProbeLocationName}, $result->{voltageProbeStateSettings}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Voltage '%s' state is '%s'", $result->{voltageProbeLocationName}, $result->{voltageProbeStateSettings}
+                )
+            );
             next;
         }
 
         $exit = $self->get_severity(label => 'probe.status', section => 'voltage.status', value => $result->{voltageProbeStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' status is '%s'", $result->{voltageProbeLocationName}, $result->{voltageProbeStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Voltage '%s' status is '%s'", $result->{voltageProbeLocationName}, $result->{voltageProbeStatus}
+                )
+            );
         }
      
         if (defined($result->{voltageProbeReading}) && $result->{voltageProbeReading} =~ /[0-9]/) {
@@ -90,16 +106,25 @@ sub check {
                 my $crit_th = $result->{voltageProbeLowerCriticalThreshold} . ':' . $result->{voltageProbeUpperCriticalThreshold};
                 $self->{perfdata}->threshold_validate(label => 'warning-voltage-instance-' . $instance, value => $warn_th);
                 $self->{perfdata}->threshold_validate(label => 'critical-voltage-instance-' . $instance, value => $crit_th);
-                
-                $exit = $self->{perfdata}->threshold_check(value => $result->{voltageProbeReading}, threshold => [ { label => 'critical-voltage-instance-' . $instance, exit_litteral => 'critical' }, 
-                                                                                                                     { label => 'warning-voltage-instance-' . $instance, exit_litteral => 'warning' } ]);
+
+                $exit = $self->{perfdata}->threshold_check(
+                    value => $result->{voltageProbeReading},
+                    threshold => [
+                        { label => 'critical-voltage-instance-' . $instance, exit_litteral => 'critical' }, 
+                        { label => 'warning-voltage-instance-' . $instance, exit_litteral => 'warning' }
+                    ]
+                );
                 $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-voltage-instance-' . $instance);
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-voltage-instance-' . $instance);
             }
-            
+
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Voltage '%s' is %s V", $result->{voltageProbeLocationName}, $result->{voltageProbeReading}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf(
+                        "Voltage '%s' is %s V", $result->{voltageProbeLocationName}, $result->{voltageProbeReading}
+                    )
+                );
             }
             $self->{output}->perfdata_add(
                 label => 'voltage', unit => 'V',
@@ -107,7 +132,7 @@ sub check {
                 instances => $result->{voltageProbeLocationName},
                 value => $result->{voltageProbeReading},
                 warning => $warn,
-                critical => $crit,
+                critical => $crit
             );
         }
     }

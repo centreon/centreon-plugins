@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -48,8 +48,8 @@ sub set_counters {
                                 key_values => [ { name => $metric_perf . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
                                 output_template => $metric . ': %.2f',
                                 perfdatas => [
-                                    { label => $metric_perf . '_' . $aggregation, value => $metric_perf . '_' . $aggregation . '_absolute', 
-                                      template => '%.2f', unit => 'credits', label_extra_instance => 1, instance_use => 'display_absolute',
+                                    { label => $metric_perf . '_' . $aggregation, value => $metric_perf . '_' . $aggregation , 
+                                      template => '%.2f', unit => 'credits', label_extra_instance => 1, instance_use => 'display',
                                       min => 0 },
                                 ],
                             }
@@ -65,8 +65,8 @@ sub set_counters {
                                 key_values => [ { name => $metric_perf . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
                                 output_template => $metric . ': %.2f %%',
                                 perfdatas => [
-                                    { label => $metric_perf . '_' . $aggregation, value => $metric_perf . '_' . $aggregation . '_absolute', 
-                                      template => '%.2f', unit => '%', label_extra_instance => 1, instance_use => 'display_absolute',
+                                    { label => $metric_perf . '_' . $aggregation, value => $metric_perf . '_' . $aggregation , 
+                                      template => '%.2f', unit => '%', label_extra_instance => 1, instance_use => 'display',
                                       min => 0, max => 100 },
                                 ],
                             }
@@ -81,13 +81,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "resource:s@"           => { name => 'resource' },
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "filter-metric:s"       => { name => 'filter_metric' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'resource:s@'      => { name => 'resource' },
+        'resource-group:s' => { name => 'resource_group' },
+        'filter-metric:s'  => { name => 'filter_metric' }
+    });
+
     return $self;
 }
 
@@ -99,7 +98,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify either --resource <name> with --resource-group option or --resource <id>.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'virtualMachines';

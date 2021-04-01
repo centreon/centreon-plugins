@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -91,6 +91,7 @@ sub run {
         $ap{group} = $result->{wlanAPGroupName};
         $ap{location} = $result->{wlanAPLocation};
         $ap{status} = $result->{wlanAPStatus};
+        $ap{type} = "ap";
         
         push @disco_data, \%ap;
     }

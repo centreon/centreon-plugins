@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,8 +44,8 @@ sub set_counters {
                                 key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'stat' } ],
                                 output_template => $metric . ': %d requests',
                                 perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%d', unit => 'requests', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic , 
+                                      template => '%d', unit => 'requests', min => 0, label_extra_instance => 1, instance_use => 'display' },
                                 ],
                             }
                         };
@@ -59,23 +59,17 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "name:s@"	       => { name => 'name' },
-                                    "filter-metric:s"  => { name => 'filter_metric' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'name:s@'	      => { name => 'name' },
+        'filter-metric:s' => { name => 'filter_metric' }
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
 
     if (!defined($self->{option_results}->{name}) || $self->{option_results}->{name} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --name option.");
@@ -108,13 +102,12 @@ sub manage_selection {
     my %metric_results;
     foreach my $instance (@{$self->{aws_instance}}) {
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/S3',
             dimensions => [ { Name => 'BucketName', Value => $instance } ],
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
-            period => $self->{aws_period},
+            period => $self->{aws_period}
         );
         
         foreach my $metric (@{$self->{aws_metrics}}) {

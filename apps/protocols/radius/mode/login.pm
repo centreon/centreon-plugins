@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Authen::Radius;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -49,27 +49,30 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'radius', type => 0, message_separator => ' - ' },
+        { name => 'radius', type => 0, message_separator => ' - ' }
     ];
 
     $self->{maps_counters}->{radius} = [
-        { label => 'status', threshold => 0, set => {
+        { 
+            label => 'status', 
+            type => 2,
+            critical_default => '%{status} ne "accepted"',
+            set => {
                 key_values => [ { name => 'status' }, { name => 'error_msg' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'time', set => {
+        { label => 'time', nlabel => 'radius.response.time.seconds', set => {
                 key_values => [ { name => 'elapsed' } ],
                 output_template => 'Response time : %.3f second(s)',
                 perfdatas => [
-                    { label => 'time', value => 'elapsed_absolute', template => '%.3f',
-                      min => 0, unit => 's' },
-                ],
+                    { label => 'time', template => '%.3f', min => 0, unit => 's' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -78,22 +81,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"       => { name => 'hostname' },
-         "port:s"           => { name => 'port', default => 1812 },
-         "secret:s"         => { name => 'secret' },
-         "username:s"       => { name => 'username' },
-         "password:s"       => { name => 'password' },
-         "warning:s"        => { name => 'warning' },
-         "critical:s"       => { name => 'critical' },
-         "timeout:s"        => { name => 'timeout', default => 5 },
-         "retry:s"          => { name => 'retry', default => 0 },
-         'radius-attribute:s%'  => { name => 'radius_attribute' },
-         'radius-dictionary:s'  => { name => 'radius_dictionary' },
-         "warning-status:s"     => { name => 'warning_status', default => '' },
-         "critical-status:s"    => { name => 'critical_status', default => '%{status} ne "accepted"' },
-         });
+    $options{options}->add_options(arguments => {
+        'hostname:s'       => { name => 'hostname' },
+        'port:s'           => { name => 'port', default => 1812 },
+        'secret:s'         => { name => 'secret' },
+        'username:s'       => { name => 'username' },
+        'password:s'       => { name => 'password' },
+        'warning:s'        => { name => 'warning' },
+        'critical:s'       => { name => 'critical' },
+        'timeout:s'        => { name => 'timeout', default => 5 },
+        'retry:s'          => { name => 'retry', default => 0 },
+        'radius-attribute:s%'  => { name => 'radius_attribute' },
+        'radius-dictionary:s@' => { name => 'radius_dictionary' }
+    });
 
     return $self;
 }
@@ -110,23 +110,21 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }
-    
-    if (defined($self->{option_results}->{radius_attribute}) && 
-        (!defined($self->{option_results}->{radius_dictionary}) || $self->{option_results}->{radius_dictionary} eq '')) {
-        $self->{output}->add_option_msg(short_msg => "Please set radius-dictionary option");
-        $self->{output}->option_exit();
+
+    $self->{radius_dictionary} = [];
+    if (defined($self->{option_results}->{radius_attribute})) {
+        $self->{radius_dictionary} = $self->{option_results}->{radius_attribute};
     }
     
     $self->{option_results}->{retry} = 0 if (!defined($self->{option_results}->{retry}) || $self->{option_results}->{retry} !~ /^\d+$/);
     if (defined($self->{option_results}->{port}) && $self->{option_results}->{port} =~ /^\d+$/) {
         $self->{option_results}->{hostname} .= ':' . $self->{option_results}->{port};
     }
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub radius_simple_connection {
     my ($self, %options) = @_;
-    
+
     $self->{timing0} = [gettimeofday];
     my $retry = 0;
     while ($retry <= $self->{option_results}->{retry}) {
@@ -145,13 +143,17 @@ sub radius_simple_connection {
 
 sub radius_attr_connection {
     my ($self, %options) = @_;
-    
+
     my $message;
     eval {
         local $SIG{__WARN__} = sub { $message = join(' - ', @_); };
         local $SIG{__DIE__} = sub { $message = join(' - ', @_); };
 
-        Authen::Radius->load_dictionary($self->{option_results}->{radius_dictionary});
+        foreach my $dic (@{$self->{radius_dictionary}}) {
+            next if ($dic eq '');
+            Authen::Radius->load_dictionary($dic);
+        }
+
         foreach (keys %{$self->{option_results}->{radius_attribute}}) {
             $self->{radius_session}->add_attributes({ Name => $_, Value => $self->{option_results}->{radius_attribute}->{$_} });
         }
@@ -161,7 +163,7 @@ sub radius_attr_connection {
         $self->{output}->add_option_msg(short_msg => "Issue with dictionary and attributes");
         $self->{output}->option_exit();
     }
-    
+
     $self->{timing0} = [gettimeofday];
     my $retry = 0;
     while ($retry <= $self->{option_results}->{retry}) {
@@ -192,13 +194,17 @@ sub manage_selection {
         Secret => $self->{option_results}->{secret},
         TimeOut => $self->{option_results}->{timeout},
     );
-    
+    if (!defined($self->{radius_session})) {
+        $self->{output}->add_option_msg(short_msg => 'failure: ' . Authen::Radius::strerror());
+        $self->{output}->option_exit();
+    }
+
     if (defined($self->{option_results}->{radius_attribute})) {
         $self->radius_attr_connection();
     } else {
         $self->radius_simple_connection();
     }
-    
+
     $self->{radius}->{elapsed} = tv_interval($self->{timing0}, [gettimeofday]);
     $self->{radius_result_attributes} = {};
     foreach my $attr ($self->{radius_session}->get_attributes()) {
@@ -257,7 +263,7 @@ Example: --radius-attribute="User-Password=test"
 
 =item B<--radius-dictionary>
 
-Set radius-dictionary file (mandatory with --radius-attribute).
+Set radius-dictionary file (mandatory with --radius-attribute) (multiple option).
 
 =item B<--warning-status>
 

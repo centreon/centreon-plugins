@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,8 +66,8 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Current Bitrate : %s %s/s',
                 perfdatas => [
-                    { label => 'current_bitrate', value => 'bitrate_absolute', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'current_bitrate', value => 'bitrate', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

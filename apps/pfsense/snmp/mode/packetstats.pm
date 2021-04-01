@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,70 +30,58 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' - ' },
+        { name => 'global', type => 0, message_separator => ' - ' }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'match', set => {
-                key_values => [ { name => 'pfCounterMatch', diff => 1 } ],
-                per_second => 1,
+        { label => 'match', nlabel => 'packets.matched.persecond', set => {
+                key_values => [ { name => 'pfCounterMatch', per_second => 1 } ],
                 output_template => 'Packets Matched Filter Rule : %.2f/s',
                 perfdatas => [
-                    { label => 'match', value => 'pfCounterMatch_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
-                ],
+                    { label => 'match', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
-        { label => 'badoffset', set => {
-                key_values => [ { name => 'pfCounterBadOffset', diff => 1 } ],
-                per_second => 1,
+        { label => 'badoffset', nlabel => 'packets.badoffset.persecond', set => {
+                key_values => [ { name => 'pfCounterBadOffset', per_second => 1 } ],
                 output_template => 'Bad Offset Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'bad_offset', value => 'pfCounterBadOffset_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
-                ],
+                    { label => 'bad_offset', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
-        { label => 'fragment', set => {
-                key_values => [ { name => 'pfCounterFragment', diff => 1 } ],
-                per_second => 1,
+        { label => 'fragment', nlabel => 'packets.fragmented.persecond', set => {
+                key_values => [ { name => 'pfCounterFragment', per_second => 1 } ],
                 output_template => 'Fragmented Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'fragment', value => 'pfCounterFragment_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
-                ],
+                    { label => 'fragment', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
-        { label => 'short', set => {
-                key_values => [ { name => 'pfCounterShort', diff => 1 } ],
-                per_second => 1,
+        { label => 'short', nlabel => 'packets.short.persecond', set => {
+                key_values => [ { name => 'pfCounterShort', per_second => 1 } ],
                 output_template => 'Short Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'short', value => 'pfCounterShort_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
-                ],
+                    { label => 'short', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
-        { label => 'normalize', set => {
-                key_values => [ { name => 'pfCounterNormalize', diff => 1 } ],
-                per_second => 1,
+        { label => 'normalize', nlabel => 'packets.normalized.persecond',set => {
+                key_values => [ { name => 'pfCounterNormalize', per_second => 1 } ],
                 output_template => 'Normalized Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'normalize', value => 'pfCounterNormalize_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
+                    { label => 'normalize', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
-        { label => 'memdrop', set => {
-                key_values => [ { name => 'pfCounterMemDrop', diff => 1 } ],
-                per_second => 1,
+        { label => 'memdrop', nlabel => 'packets.memorydropped.persecond',set => {
+                key_values => [ { name => 'pfCounterMemDrop', per_second => 1 } ],
                 output_template => 'Dropped Packets Due To Memory : %.2f/s',
                 perfdatas => [
-                    { label => 'memdrop', value => 'pfCounterMemDrop_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
-                ],
+                    { label => 'memdrop', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -101,17 +89,16 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-   
+
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-                    
+
     if ($options{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
         $self->{output}->option_exit();
@@ -122,7 +109,7 @@ sub manage_selection {
         pfCounterFragment   => '.1.3.6.1.4.1.12325.1.200.1.2.3.0',
         pfCounterShort      => '.1.3.6.1.4.1.12325.1.200.1.2.4.0',
         pfCounterNormalize  => '.1.3.6.1.4.1.12325.1.200.1.2.5.0',
-        pfCounterMemDrop    => '.1.3.6.1.4.1.12325.1.200.1.2.6.0',
+        pfCounterMemDrop    => '.1.3.6.1.4.1.12325.1.200.1.2.6.0'
     );
     my $snmp_result = $options{snmp}->get_leef(oids => [values %oids], nothing_quit => 1);
     $self->{global} = {};
