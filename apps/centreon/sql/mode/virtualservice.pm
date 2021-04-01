@@ -43,7 +43,7 @@ sub get_printf_vars {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
         foreach my $var (@{$options{printf_var}}) {
-            $var =~ s/\$self->{result_values}/\$values/;
+            $var =~ s/\$self->\{result_values\}/\$values/;
             push @$vars, $self->{output}->assign_eval(eval => $var, values => $options{values});
         }
     };
