@@ -33,12 +33,12 @@ sub set_system {
 
     $self->{cb_hook1} = 'get_version'; # before the loads
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         fan => [
             ['notfound', 'OK'],
             ['ok', 'OK'],
-            ['failed', 'CRITICAL'],
+            ['failed', 'CRITICAL']
         ],
         temperature => [
             ['failed', 'CRITICAL'],
@@ -46,7 +46,7 @@ sub set_system {
             ['notfound', 'OK'],
             ['absent', 'OK'],
             ['overheatWarning', 'WARNING'],
-            ['overheatCritical', 'CRITICAL'],
+            ['overheatCritical', 'CRITICAL']
         ],
         psu => [
             ['absent', 'OK'],
@@ -54,7 +54,7 @@ sub set_system {
             ['failed', 'CRITICAL'],
             ['faulty', 'WARNING'],
             ['acnone', 'WARNING'],
-            ['unknown', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN']
         ],
         disk => [
             ['ok', 'OK'],
@@ -62,17 +62,17 @@ sub set_system {
             ['available', 'OK'],
             ['unknown', 'UNKNOWN'],
             ['absent', 'OK'],
-            ['failed', 'CRITICAL'],
+            ['failed', 'CRITICAL']
         ],
         battery => [
             ['ok', 'OK'],
             ['disabled', 'OK'],
             ['discharged', 'WARNING'],
             ['softdisabled', 'OK'],
-            ['UNKNOWN', 'UNKNOWN'],
-        ],
+            ['UNKNOWN', 'UNKNOWN']
+        ]
     };
-    
+
     $self->{components_path} = 'storage::emc::DataDomain::mode::components';
     $self->{components_module} = ['fan', 'temperature', 'psu', 'disk', 'battery'];
 }
@@ -96,7 +96,7 @@ sub new {
 
 sub get_version {
     my ($self, %options) = @_;
-    
+
     my $oid_sysDescr = '.1.3.6.1.2.1.1.1.0'; # 'Data Domain OS 5.4.1.1-411752'
     my $result = $options{snmp}->get_leef(oids => [ $oid_sysDescr ]);
     if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $result->{$oid_sysDescr}))) {
@@ -107,7 +107,7 @@ sub get_version {
         $self->{output}->display();
         $self->{output}->exit();
     }
-    
+
     $self->{output}->output_add(long_msg => 'DataDomain OS version: ' . $self->{os_version} . '.');
 }
 
