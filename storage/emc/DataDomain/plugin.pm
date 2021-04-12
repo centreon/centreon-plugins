@@ -30,11 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'hardware'         => 'storage::emc::DataDomain::mode::hardware',
         'filesystem-usage' => 'storage::emc::DataDomain::mode::filesystem',
-        'replication'      => 'storage::emc::DataDomain::mode::replication',
-    );
+        'replication'      => 'storage::emc::DataDomain::mode::replication'
+    };
 
     return $self;
 }
