@@ -237,11 +237,9 @@ sub request_api_csv {
             $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
-    }    
-
-    if (!centreon::plugins::misc::minimal_version(Text::CSV->VERSION, '1.31')) {
-        $content =~ s/^\x{feff}//; # patched in Test-CSV 1.31
     }
+
+    $content =~ s/^(?:\x{feff}|\x{ef}\x{bb}\x{bf})//;
     my $decoded = encode('UTF-8', $content);
 
     my @rows;
