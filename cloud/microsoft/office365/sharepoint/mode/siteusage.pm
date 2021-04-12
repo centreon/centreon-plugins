@@ -317,9 +317,11 @@ sub manage_selection {
     $self->{sites} = {};
 
     my $results = $options{custom}->office_get_sharepoint_site_usage(param => "period='D7'");
+    use Data::Dumper; print Data::Dumper::Dumper($results->[0]);
+    exit(1);
     my $results_daily = [];
     if (scalar(@{$results})) {
-       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       $self->{active}->{report_date} = $results->[0]->{'Report Refresh Date'};
        $results_daily = $options{custom}->office_get_sharepoint_site_usage(param => "date=" . $self->{active}->{report_date});
     }
 
