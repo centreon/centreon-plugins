@@ -59,7 +59,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'subnets', type => 1, cb_prefix_output => 'prefix_subnet_output', message_multiple => 'All subnets are ok' }
+        { name => 'subnets', type => 1, cb_prefix_output => 'prefix_subnet_output', message_multiple => 'All subnets are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{subnets} = [
