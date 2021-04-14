@@ -168,7 +168,7 @@ sub manage_selection {
 
         $self->{subnets}->{$_}->{status} = 'enabled';
         if ($result->{free} == 0 && $result->{used} == 0 && $result->{pending_offers} == 0) {
-            $result->{subnets}->{status} = 'disabled';
+            $self->{subnets}->{$_}->{status} = 'disabled';
             next;
         }
         $self->{subnets}->{$_}->{pending_offers} = $result->{pending_offers};
