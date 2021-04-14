@@ -24,6 +24,16 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'status: %s',
+        $self->{result_values}->{status}
+    );
+}
 
 sub custom_usage_output {
     my ($self, %options) = @_;
@@ -53,6 +63,16 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{subnets} = [
+        {
+            label => 'status', type => 2, set => {
+                key_values => [
+                    { name => 'status' }, { name => 'name' }
+                ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
         { label => 'addresses-usage', nlabel => 'subnet.addresses.usage.count', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -101,7 +121,7 @@ sub new {
 }
 
 my $mapping = {
-    used           => { oid => '.1.3.6.1.4.1.311.1.3.2.1.1.2' }, # noAddInUse    
+    used           => { oid => '.1.3.6.1.4.1.311.1.3.2.1.1.2' }, # noAddInUse
     free           => { oid => '.1.3.6.1.4.1.311.1.3.2.1.1.3' }, # noAddFree
     pending_offers => { oid => '.1.3.6.1.4.1.311.1.3.2.1.1.4' }  # noPendingOffers
 };
@@ -146,6 +166,11 @@ sub manage_selection {
     foreach (keys %{$self->{subnets}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
 
+        $self->{subnets}->{$_}->{status} = 'enabled';
+        if ($result->{free} == 0 && $result->{used} == 0 && $result->{pending_offers} == 0) {
+            $result->{subnets}->{status} = 'disabled';
+            next;
+        }
         $self->{subnets}->{$_}->{pending_offers} = $result->{pending_offers};
         $self->{subnets}->{$_}->{free} = $result->{free};
         $self->{subnets}->{$_}->{used} = $result->{used};
@@ -173,6 +198,21 @@ Example: --filter-counters='pending'
 =item B<--filter-subnet-address>
 
 Filter subnets by address (can be a regexp).
+
+=item B<--unknown-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{status}, %{name}
+
+=item B<--warning-status>
+
+Set warning threshold for status.
+Can used special variables like: %{status}, %{name}
+
+=item B<--critical-status>
+
+Set critical threshold for status.
+Can used special variables like: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 
