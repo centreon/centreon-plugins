@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::protocols::tcp::mode::responsetime;
+package apps::protocols::tcp::mode::connectionstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -155,7 +155,7 @@ __END__
 
 =head1 MODE
 
-Check TCP connection time
+Check TCP connection status
 
 =over 8
 
