@@ -113,13 +113,13 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=functions --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=executions --custommode=api
 --resource=<sites_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-execution-count='80' --critical-execution-count='90'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=functions --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::web::appservice::plugin --mode=executions --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
 --aggregation='total' --warning-execution-count='80' --critical-execution-count='90'
 
