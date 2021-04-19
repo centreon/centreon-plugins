@@ -38,7 +38,9 @@ sub new {
         'list-storages'    => 'snmp_standard::mode::liststorages',
         'memory'           => 'storage::qnap::snmp::mode::memory',
         'storage'          => 'snmp_standard::mode::storage',
-        'volume-usage'     => 'storage::qnap::snmp::mode::volumeusage',
+        'time'             => 'snmp_standard::mode::ntp',
+        'uptime'           => 'snmp_standard::mode::uptime',
+        'volume-usage'     => 'storage::qnap::snmp::mode::volumeusage'
     );
 
     return $self;
