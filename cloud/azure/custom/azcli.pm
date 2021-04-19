@@ -154,11 +154,12 @@ sub azure_get_metrics_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "monitor metrics list --metrics '" . join('\' \'', @{$options{metrics}}) . "' --namespace $options{metric_namespace} --start-time $options{start_time} --end-time $options{end_time} " .
+    my $cmd_options = "monitor metrics list --metrics '" . join('\' \'', @{$options{metrics}}) . "' --start-time $options{start_time} --end-time $options{end_time} " .
         "--interval $options{interval} --aggregation '" . join('\' \'', @{$options{aggregations}}) . "' --only-show-errors --output json --resource '$options{resource}' " .
         "--resource-group '$options{resource_group}' --resource-type '$options{resource_type}' --resource-namespace '$options{resource_namespace}'";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     $cmd_options .= " --filter '$options{dimension}'" if defined($options{dimension});
+    $cmd_options .= " --namespace '$options{metric_namespace}'" if defined($options{metric_namespace});
     
     return $cmd_options;
 }
