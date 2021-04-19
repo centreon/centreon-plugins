@@ -260,7 +260,7 @@ sub manage_selection {
     }
 
     $options{sql}->query(query => qq{
-        EXEC sp_MSforeachdb 'USE ?
+        EXEC sp_MSforeachdb 'USE [?]
         SELECT
             DB_NAME(),
             [name],    
