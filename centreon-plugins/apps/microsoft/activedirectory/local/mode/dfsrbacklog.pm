@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::activedirectory::local::mode::dfsrbacklog;
+package apps::microsoft::activedirectory::local::mode::dfsrbacklog;
 
 use base qw(centreon::plugins::templates::counter);
 
