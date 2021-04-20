@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'discovery'     => 'cloud::azure::management::monitor::mode::discovery',
+        'discovery' => 'cloud::azure::management::monitor::mode::discovery',
     );
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
