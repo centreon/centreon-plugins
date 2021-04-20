@@ -36,6 +36,7 @@ sub new {
 
     $self->{custom_modes}->{tcp} = 'apps::protocols::x509::custom::tcp';
     $self->{custom_modes}->{https} = 'apps::protocols::x509::custom::https';
+    $self->{custom_modes}->{file} = 'apps::protocols::x509::custom::file';
 
     return $self;
 }

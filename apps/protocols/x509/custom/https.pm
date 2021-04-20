@@ -94,10 +94,12 @@ sub pem_type {
         $self->{output}->option_exit();
     }
     if (Net::SSLeay::BIO_write($bio_cert, $options{cert}) < 0) {
+        Net::SSLeay::BIO_free($bio_cert);
         $self->{output}->add_option_msg(short_msg => "Cannot write certificate: $!");
         $self->{output}->option_exit();
     }
     my $x509 = Net::SSLeay::PEM_read_bio_X509($bio_cert);
+    Net::SSLeay::BIO_free($bio_cert);
     if (!$x509) {
         $self->{output}->add_option_msg(short_msg => "Cannot read certificate: $!");
         $self->{output}->option_exit();
