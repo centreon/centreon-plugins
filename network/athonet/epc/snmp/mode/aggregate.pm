@@ -91,8 +91,8 @@ sub new {
 }
 
 my $mapping = {
-    packets_in       => { oid => '.1.3.6.1.4.1.35805.10.2.99.5' }, # loadPktInGi
-    packets_out      => { oid => '.1.3.6.1.4.1.35805.10.2.99.6' }, # loadPktOutGi
+    traffic_in       => { oid => '.1.3.6.1.4.1.35805.10.2.99.5' }, # loadPktInGi
+    traffic_out      => { oid => '.1.3.6.1.4.1.35805.10.2.99.6' }, # loadPktOutGi
     roaming_users    => { oid => '.1.3.6.1.4.1.35805.10.2.99.8' }, # hssRoamingUsers
     auth_req         => { oid => '.1.3.6.1.4.1.35805.10.2.99.9' }, # hssAuthenticationRequests
     location_updates => { oid => '.1.3.6.1.4.1.35805.10.2.99.10' } # hssLocationUpdates
