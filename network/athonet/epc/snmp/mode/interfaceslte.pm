@@ -151,19 +151,21 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global_traffic} = [
-        { label => 'packets-in', nlabel => 'lte.interface.packets.in.count', set => {
-                key_values => [ { name => 'packets_in', diff => 1 } ],
-                output_template => 'packets in: %s',
+        { label => 'traffic-in', nlabel => 'lte.interface.traffic.in.bytespersecond', set => {
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
+                output_template => 'traffic in: %.2f %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
+                    { template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1  }
                 ]
             }
         },
-        { label => 'packets-out', nlabel => 'lte.interface.packets.out.count', set => {
-                key_values => [ { name => 'packets_out', diff => 1 } ],
-                output_template => 'packets out: %s',
+        { label => 'traffic-out', nlabel => 'lte.interface.traffic.out.bytespersecond', set => {
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
+                output_template => 'traffic out: %.2f %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
+                    { template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1  }
                 ]
             }
         }
@@ -304,8 +306,8 @@ my $map_status = { 0 => 'down', 1 => 'up' };
 my $mapping = {
     sctp_status         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.3', map => $map_status }, # iLteSCTPState
     s1ap_status         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.4', map => $map_status }, # iLteS1APState
-    packets_in          => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.5' }, # iLteLoadPktIn
-    packets_out         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.6' }, # iLteLoadPktOut
+    traffic_in          => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.5' }, # iLteLoadPktIn
+    traffic_out         => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.6' }, # iLteLoadPktOut
     users_connected     => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.7' }, # iLteConnectedUsers
     users_idle          => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.8' }, # iLteIdleUsers
     sessions_active     => { oid => '.1.3.6.1.4.1.35805.10.2.2.99.1.9' }, # iLteActiveSessions
@@ -445,7 +447,7 @@ Can used special variables like: %{sctp_status}, %{s1ap_status}, %{name}
 
 Thresholds.
 Can be: 'total', 'users-connected', 'users-idle', 'sessions-active',
-'packets-in', 'packets-out', 
+'traffic-in', 'traffic-out', 
 'requests-ue-context-release-total', 'requests-ue-context-release-radio-lost',
 'requests-attach-success', 'requests-attach-success-prct',
 'requests-pdn-context-activation', 'requests-pdn-context-activation-prct', 
