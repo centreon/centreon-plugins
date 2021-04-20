@@ -99,7 +99,7 @@ sub manage_selection {
 
     $self->{physical} = {};
     $self->{virtuallpar} = {};
-    while ($content =~ /^system:\s+(.*?)\n(.*?)(?:system:|\Z)/msg) {
+    while ($content =~ /^system:\s+(.*?)\n(.*?)(?=system:|\Z)/msg) {
         my ($system_name, $subcontent) = ($1, $2);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $system_name !~ /$self->{option_results}->{filter_name}/) {
