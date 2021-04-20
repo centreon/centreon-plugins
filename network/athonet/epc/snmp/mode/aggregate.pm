@@ -34,19 +34,21 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'packets-in', nlabel => 'aggregate.packets.in.count', set => {
-                key_values => [ { name => 'packets_in', diff => 1 } ],
-                output_template => 'packets in: %s',
+        { label => 'traffic-in', nlabel => 'aggregate.traffic.in.bytespersecond', set => {
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
+                output_template => 'traffic in: %.2f %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0 }
+                    { template => '%s', unit => 'B/s', min => 0 }
                 ]
             }
         },
-        { label => 'packets-out', nlabel => 'aggregate.packets.out.count', set => {
-                key_values => [ { name => 'packets_out', diff => 1 } ],
-                output_template => 'packets out: %s',
+        { label => 'traffic-out', nlabel => 'aggregate.traffic.out.bytespersecond', set => {
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
+                output_template => 'traffic out: %.2f %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0 }
+                    { template => '%s', unit => 'B/s', min => 0 }
                 ]
             }
         },
@@ -89,8 +91,8 @@ sub new {
 }
 
 my $mapping = {
-    packets_in       => { oid => '.1.3.6.1.4.1.35805.10.2.99.5' }, # loadPktInGi
-    packets_out      => { oid => '.1.3.6.1.4.1.35805.10.2.99.6' }, # loadPktOutGi
+    traffic_in       => { oid => '.1.3.6.1.4.1.35805.10.2.99.5' }, # loadPktInGi
+    traffic_out      => { oid => '.1.3.6.1.4.1.35805.10.2.99.6' }, # loadPktOutGi
     roaming_users    => { oid => '.1.3.6.1.4.1.35805.10.2.99.8' }, # hssRoamingUsers
     auth_req         => { oid => '.1.3.6.1.4.1.35805.10.2.99.9' }, # hssAuthenticationRequests
     location_updates => { oid => '.1.3.6.1.4.1.35805.10.2.99.10' } # hssLocationUpdates
@@ -126,7 +128,7 @@ Example: --filter-counters='roaming'
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'packets-in', 'packets-out',
+Can be: 'traffic-in', 'traffic-out',
 'users-roaming-connected', 'requests-authentication', 'location-updates'.
 
 =back
