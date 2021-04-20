@@ -35,18 +35,22 @@ sub set_system {
     
     $self->{thresholds} = {
         disk => [
+            ['Good', 'OK'],
+            ['Warning', 'WARNING'],
+            ['Abnormal', 'CRITICAL'],
+
             ['noDisk', 'OK'],
             ['ready', 'OK'],
             ['invalid', 'CRITICAL'],
             ['rwError', 'CRITICAL'],
-            ['unknown', 'UNKNOWN'],
-
-            ['abnormal', 'WARNING'],
-            ['good', 'OK'],
-            ['warning', 'WARNING'],
-            ['error', 'CRITICAL']
+            ['unknown', 'UNKNOWN']
         ],
         smartdisk => [
+            ['good', 'OK'],
+            ['warning', 'WARNING'],
+            ['abnormal', 'CRITICAL'],
+            ['error', 'CRITICAL'],
+
             ['GOOD', 'OK'],
             ['NORMAL', 'OK'],
             ['--', 'OK'],
@@ -80,7 +84,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'legacy' => { name => 'legacy' }
+    });
 
     return $self;
 }
@@ -94,6 +100,10 @@ __END__
 Check hardware (NAS.mib) (Fans, Temperatures, Disks, Raid).
 
 =over 8
+
+=item B<--legacy>
+
+Look for legacy OIDs.
 
 =item B<--component>
 

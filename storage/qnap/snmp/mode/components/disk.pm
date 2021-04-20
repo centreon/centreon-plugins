@@ -39,41 +39,45 @@ my $map_smartinfo = {
 
 # In MIB 'NAS.mib'
 my $mapping = {
-    description => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.2' }, # hdDescr
-    temperature => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.3' }, # hdTemperature
-    status      => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.4', map => $map_status_disk }, # HdStatus
-    smartinfo   => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.7' }  # HdSmartInfo
-};
-my $mapping2 = {
     description => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.2' }, # diskID
-    status      => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.5', map => $map_smartinfo }, # diskSmartInfo
+    status      => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.4' }, # diskSummary
+    smartinfo   => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.5', map => $map_smartinfo }, # diskSmartInfo
     temperature => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1.6' } # diskTemperture
 };
-my $oid_HdEntry = '.1.3.6.1.4.1.24681.1.2.11.1';
-my $oid_diskTableEntry = '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1';
+my $oid_entry = '.1.3.6.1.4.1.24681.1.4.1.1.1.1.5.2.1';
 
 sub load {
     my ($self) = @_;
-    
-    push @{$self->{request}}, { oid => $oid_HdEntry, start => $mapping->{description}->{oid} };
+
+    if (defined($self->{option_results}->{legacy})) {
+        $mapping = {
+            description => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.2' }, # hdDescr
+            temperature => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.3' }, # hdTemperature
+            status      => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.4', map => $map_status_disk }, # HdStatus
+            smartinfo   => { oid => '.1.3.6.1.4.1.24681.1.2.11.1.7' }  # HdSmartInfo
+        };
+        $oid_entry = '.1.3.6.1.4.1.24681.1.2.11.1';
+    }
+
     push @{$self->{request}}, {
-        oid => $oid_diskTableEntry,
-        start => $mapping2->{description}->{oid},
-        end => $mapping2->{temperature}->{oid}
+        oid => $oid_entry,
+        start => $mapping->{description}->{oid},
+        end => defined($self->{option_results}->{legacy}) ? $mapping->{smartinfo}->{oid} : $mapping->{temperature}->{oid}
     };
 }
 
-sub check_disk {
+sub check {
     my ($self, %options) = @_;
 
-    return if (defined($self->{disk_checked}));
+    $self->{output}->output_add(long_msg => 'Checking disks');
+    $self->{components}->{disk} = { name => 'disks', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'disk'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $options{entry} }})) {
-        next if ($oid !~ /^$options{mapping}->{description}->{oid}\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_entry}})) {
+        next if ($oid !~ /^$mapping->{description}->{oid}\.(\d+)$/);
         my $instance = $1;
-        $self->{disk_checked} = 1;
 
-        my $result = $self->{snmp}->map_instance(mapping => $options{mapping}, results => $self->{results}->{ $options{entry} }, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_entry}, instance => $instance);
 
         next if ($self->check_filter(section => 'disk', instance => $instance));
         next if ($result->{status} eq 'noDisk' && 
@@ -86,7 +90,7 @@ sub check_disk {
                 $result->{description},
                 $instance,
                 $result->{temperature}, 
-                defined($result->{smartinfo}) ? $result->{smartinfo} : '-',
+                $result->{smartinfo},
                 $result->{status}
             )
         );
@@ -100,16 +104,14 @@ sub check_disk {
             );
         }
 
-        if (defined($result->{smartinfo})) {
-            $exit = $self->get_severity(section => 'smartdisk', value => $result->{smartinfo});
-            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(
-                    severity => $exit,
-                    short_msg => sprintf(
-                        "Disk '%s' smart status is %s.", $result->{description}, $result->{smartinfo}
-                    )
-                );
-            }
+        $exit = $self->get_severity(section => 'smartdisk', value => $result->{smartinfo});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Disk '%s' smart status is %s.", $result->{description}, $result->{smartinfo}
+                )
+            );
         }
 
         next if ($result->{temperature} !~ /([0-9]+)/);
@@ -132,25 +134,6 @@ sub check_disk {
             value => $disk_temp
         );
     }
-}
-
-sub check {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => 'Checking disks');
-    $self->{components}->{disk} = { name => 'disks', total => 0, skip => 0 };
-    return if ($self->check_filter(section => 'disk'));
-
-    check_disk(
-        $self,
-        mapping => $mapping2,
-        entry => $oid_diskTableEntry
-    );
-    check_disk(
-        $self,
-        mapping => $mapping,
-        entry => $oid_HdEntry
-    );
 }
 
 1;
