@@ -56,15 +56,19 @@ sub set_system {
             ['--', 'OK'],
             ['.*', 'CRITICAL']
         ],
+        fan => [
+            ['ok', 'OK'],
+            ['fail', 'CRITICAL']
+        ],
+        psu => [
+            ['ok', 'OK'],
+            ['fail', 'CRITICAL']
+        ],
         raid => [
             ['Ready', 'OK'],
             ['Synchronizing', 'OK'],
             ['degraded', 'WARNING'],
             ['.*', 'CRITICAL']
-        ],
-        psu => [
-            ['ok', 'OK'],
-            ['fail', 'CRITICAL']
         ]
     };
 
