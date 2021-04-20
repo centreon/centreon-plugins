@@ -156,7 +156,7 @@ sub set_counters {
                 output_template => 'traffic in: %.2f %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1  }
+                    { template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
@@ -165,7 +165,7 @@ sub set_counters {
                 output_template => 'traffic out: %.2f %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1  }
+                    { template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
