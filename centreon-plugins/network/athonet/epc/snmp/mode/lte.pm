@@ -118,19 +118,21 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global_traffic} = [
-        { label => 'packets-in', nlabel => 'lte.packets.in.count', set => {
-                key_values => [ { name => 'packets_in', diff => 1 } ],
-                output_template => 'packets in: %s',
+        { label => 'traffic-in', nlabel => 'lte.traffic.in.bytespersecond', set => {
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
+                output_template => 'traffic in: %.2f %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0 }
+                    { template => '%s', unit => 'B/s', min => 0 }
                 ]
             }
         },
-        { label => 'packets-out', nlabel => 'lte.packets.out.count', set => {
-                key_values => [ { name => 'packets_out', diff => 1 } ],
-                output_template => 'packets out: %s',
+        { label => 'traffic-out', nlabel => 'lte.traffic.out.bytespersecond', set => {
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
+                output_template => 'traffic out: %.2f %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0 }
+                    { template => '%s', unit => 'B/s', min => 0 }
                 ]
             }
         }
@@ -269,8 +271,8 @@ my $mapping = {
     users_connected     => { oid => '.1.3.6.1.4.1.35805.10.2.2.1' }, # lteUsersConnected
     users_idle          => { oid => '.1.3.6.1.4.1.35805.10.2.2.2' }, # lteUsersIdle
     sessions_active     => { oid => '.1.3.6.1.4.1.35805.10.2.2.4' }, # lteActiveConnections
-    packets_in          => { oid => '.1.3.6.1.4.1.35805.10.2.2.5' }, # lteLoadPktInGi
-    packets_out         => { oid => '.1.3.6.1.4.1.35805.10.2.2.6' }, # lteLoadPktOutGi
+    traffic_in          => { oid => '.1.3.6.1.4.1.35805.10.2.2.5' }, # lteLoadPktInGi
+    traffic_out         => { oid => '.1.3.6.1.4.1.35805.10.2.2.6' }, # lteLoadPktOutGi
     attach_req_total    => { oid => '.1.3.6.1.4.1.35805.10.2.2.7' }, # lteTotalAttachReq
     attach_req_success  => { oid => '.1.3.6.1.4.1.35805.10.2.2.8' }, # lteSuccesfullAttach
     pdn_context_total   => { oid => '.1.3.6.1.4.1.35805.10.2.2.10' }, # lteTotalPDNActReq
@@ -341,7 +343,7 @@ Example: --filter-counters='users'
 
 Thresholds.
 Can be: 'users-connected', 'users-idle', 'sessions-active',
-'packets-in', 'packets-out', 
+'traffic-in', 'traffic-out', 
 'requests-ue-context-release-total', 'requests-ue-context-release-radio-lost',
 'requests-attach-success', 'requests-attach-success-prct',
 'requests-pdn-context-activation', 'requests-pdn-context-activation-prct', 
