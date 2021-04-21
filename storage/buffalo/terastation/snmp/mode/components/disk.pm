@@ -24,7 +24,7 @@ use strict;
 use warnings;
 
 my %map_disk_status = (
-    1 => 'notSupport', 1 => 'normal', 2 => 'array1', 3 => 'array2',
+    -1 => 'notSupport', 1 => 'normal', 2 => 'array1', 3 => 'array2',
     4 => 'standby', 5 => 'degrade', 6 => 'remove', 7 => 'standbyRemoved',
     8 => 'degradeRemoved', 9 => 'removeRemoved', 10 => 'array3',
     11 => 'array4', 12 => 'mediaCartridge', 13 => 'array5', 14 => 'array6',
