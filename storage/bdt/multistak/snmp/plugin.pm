@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check BT MultiStak in SNMP.
+Check BDT MultiStak in SNMP.
 
 =cut
