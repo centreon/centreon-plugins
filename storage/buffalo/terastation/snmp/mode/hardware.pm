@@ -29,7 +29,7 @@ sub set_system {
     my ($self, %options) = @_;
 
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         disk => [
             ['notSupport', 'WARNING'],
@@ -46,21 +46,21 @@ sub set_system {
             ['array4', 'OK'],
             ['mediaCartridge', 'OK'],
             ['array5', 'OK'],
-            ['array6', 'OK'],
+            ['array6', 'OK']
         ],
         iscsi => [
             ['unknown', 'WARNING'],
             ['connected', 'OK'],
-            ['standing-by', 'OK'],
+            ['standing-by', 'OK']
         ],
         psu => [
             ['unknown', 'WARNING'],
             ['fine', 'OK'],
-            ['broken', 'CRITICAL'],
-        ],
+            ['broken', 'CRITICAL']
+        ]
     };
     
-    $self->{components_path} = 'storage::buffalo::terastation::snmp::::mode::components';
+    $self->{components_path} = 'storage::buffalo::terastation::snmp::mode::components';
     $self->{components_module} = ['disk', 'psu', 'iscsi'];
 }
 
