@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::buffalo::terastation::snmp::::mode::components::disk;
+package storage::buffalo::terastation::snmp::mode::components::disk;
 
 use strict;
 use warnings;
@@ -31,7 +31,7 @@ my %map_disk_status = (
 );
 
 my $mapping = {
-    nasDiskStatus => { oid => '.1.3.6.1.4.1.5227.27.1.2.1.2', map => \%map_disk_status },
+    nasDiskStatus => { oid => '.1.3.6.1.4.1.5227.27.1.2.1.2', map => \%map_disk_status }
 };
 
 sub load {
@@ -55,14 +55,21 @@ sub check {
         next if ($self->check_filter(section => 'disk', instance => $instance));
         $self->{components}->{disk}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("disk '%s' status is '%s' [instance: %s].",
-                                    $instance, $result->{nasDiskStatus}, $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "disk '%s' status is '%s' [instance: %s].",
+                $instance, $result->{nasDiskStatus}, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'disk', value => $result->{nasDiskStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Disk '%s' status is '%s'",
-                                                             $instance, $result->{nasDiskStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Disk '%s' status is '%s'",
+                    $instance, $result->{nasDiskStatus}
+                )
+            );
         }
     }
 }
