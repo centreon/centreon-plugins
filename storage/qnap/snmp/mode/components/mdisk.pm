@@ -53,7 +53,7 @@ sub check {
     my ($self, %options) = @_;
 
     $self->{output}->output_add(long_msg => 'Checking mdisks');
-    $self->{components}->{disk} = { name => 'mdisks', total => 0, skip => 0 };
+    $self->{components}->{mdisk} = { name => 'mdisks', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'mdisk'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_entry}})) {
