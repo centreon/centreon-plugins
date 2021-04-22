@@ -137,6 +137,7 @@ my $mapping = {
     SysVolumeTotalSize  => { oid => '.1.3.6.1.4.1.24681.1.2.17.1.4' },
     SysVolumeFreeSize   => { oid => '.1.3.6.1.4.1.24681.1.2.17.1.5' },
 };
+# Could also be done with new (and better) OIDs in .1.3.6.1.4.1.24681.1.4.1.1.1.2.3
 
 sub manage_selection {
     my ($self, %options) = @_;
