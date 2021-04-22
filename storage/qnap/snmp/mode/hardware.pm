@@ -29,7 +29,7 @@ sub set_system {
     my ($self, %options) = @_;
 
     $self->{regexp_threshold_numeric_check_section_option} =
-        '^(?:temperature|disk|smartdisk|fan|psu\.fanspeed|psu\.temperature)$';
+        '^(?:temperature|disk|smartdisk|fan|mdisk|psu\.fanspeed|psu\.temperature)$';
 
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -73,7 +73,7 @@ sub set_system {
     };
 
     $self->{components_path} = 'storage::qnap::snmp::mode::components';
-    $self->{components_module} = ['disk', 'fan', 'psu', 'raid', 'temperature'];
+    $self->{components_module} = ['disk', 'fan', 'mdisk', 'psu', 'raid', 'temperature'];
 }
 
 sub snmp_execute {
@@ -112,7 +112,7 @@ Look for legacy OIDs.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'disk', 'fan', 'psu', 'raid', 'temperature'.
+Can be: 'disk', 'fan', 'mdisk', 'psu', 'raid', 'temperature'.
 
 =item B<--filter>
 
