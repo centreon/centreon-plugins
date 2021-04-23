@@ -159,8 +159,9 @@ sub manage_selection {
     }
 
     # Also we get Pending/Waiting/Running jobs with that
-    my $results = $options{custom}->request(
-        endpoint => '/Job?completedJobLookupTime=' . $lookup_time
+    my $results = $options{custom}->request_jobs(
+        endpoint => '/Job',
+        completed_job_lookup_time => $lookup_time
     );
 
     $self->{global} = { total => 0 };
@@ -214,6 +215,9 @@ sub manage_selection {
 
         $self->{policy}->{$policy_name} = { job => {}, display => $policy_name } if (!defined($self->{policy}->{$policy_name}));
         my $elapsed_time = $current_time - $job->{jobStartTime};
+        if ($options{custom}->is_use_cache()) {
+            $elapsed_time = $job->{jobElapsedTime};
+        }
         $self->{policy}->{$policy_name}->{job}->{ $job->{jobId} } = {
             display => $job->{jobId},
             elapsed => $elapsed_time, 
