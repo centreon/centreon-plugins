@@ -115,6 +115,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->request(
+        type => 'storagepool',
         endpoint => '/StoragePool'
     );
 
