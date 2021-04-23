@@ -339,7 +339,7 @@ sub request_jobs {
         get_param => ['completedJobLookupTime=' . $lookup_time]
     );
 
-    $self->create_cache_file(type => $options{type}, response => $response)
+    $self->create_cache_file(type => 'jobs', response => $response)
         if (defined($self->{cache_create}));
 
     return $response;
