@@ -186,6 +186,18 @@ sub kubernetes_list_events {
     return $response;
 }
 
+sub kubernetes_list_ingresses {
+    my ($self, %options) = @_;
+
+    my $cmd = "get ingresses --all-namespaces --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
+
+    return $response;
+}
+
 sub kubernetes_list_namespaces {
     my ($self, %options) = @_;
 
