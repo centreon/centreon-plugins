@@ -619,25 +619,24 @@ sub health_describe_affected_entities {
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
         my $health = Paws->service('Health', caller => $lwp_caller, region => $self->{option_results}->{region});
-        my $health_options = { Filter => {} };
-        if (defined($options{filter_event_arns})) {
-            $health_options->{Filter}->{EventArns} = $options{filter_event_arns};
-        }
 
-        while ((my $entities = $health->DescribeAffectedEntities(%$health_options))) {
-            foreach (@{$entities->{Entities}}) {
-                push @$entities_results, {
-                    entityArn => $_->{EntityArn},
-                    eventArn => $_->{EventArn},
-                    entityValue => $_->{EntityValue},
-                    awsAccountId => $_->{AwsAccountId},
-                    lastUpdatedTime => $_->{LastUpdatedTime},
-                    statusCode => $_->{StatusCode}
-                };
+        while (my @events = splice(@{$options{filter_event_arns}}, 0, 10)) {
+            my $health_options = { Filter => { EventArns => \@events } };
+            while ((my $entities = $health->DescribeAffectedEntities(%$health_options))) {
+                foreach (@{$entities->{Entities}}) {
+                    push @$entities_results, {
+                        entityArn => $_->{EntityArn},
+                        eventArn => $_->{EventArn},
+                        entityValue => $_->{EntityValue},
+                        awsAccountId => $_->{AwsAccountId},
+                        lastUpdatedTime => $_->{LastUpdatedTime},
+                        statusCode => $_->{StatusCode}
+                    };
+                }
+
+                last if (!defined($entities->{NextToken}));
+                $health_options->{NextToken} = $entities->{NextToken};
             }
-
-            last if (!defined($entities->{NextToken}));
-            $health_options->{NextToken} = $entities->{NextToken};
         }
     };
     if ($@) {
