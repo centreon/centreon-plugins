@@ -46,6 +46,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $policies = $options{custom}->request(
+        type => 'storagepolicy',
         endpoint => '/V2/StoragePolicy'
     );
 
