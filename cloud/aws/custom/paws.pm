@@ -582,8 +582,8 @@ sub health_describe_events {
         my $health = Paws->service('Health', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $health_options = { Filter => {} };
         foreach ((['service', 'Services'], ['region', 'Regions'], ['entity_value', 'EntityValues'], ['event_status', 'EventStatusCodes'], ['event_category', 'EventTypeCategories'])) {
-            next if (!defined($options{ $_->[0] }));
-            $health_options->{Filter}->{ $_->[1] } = $_->[0];
+            next if (!defined($options{ 'filter_' . $_->[0] }));
+            $health_options->{Filter}->{ $_->[1] } = $options{ 'filter_' . $_->[0] };
         }
 
         while ((my $events = $health->DescribeEvents(%$health_options))) {
