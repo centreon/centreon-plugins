@@ -29,7 +29,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     %{$self->{modes}} = (
         'memory-usage'      => 'apps::bind9::web::mode::memoryusage',
         'server-usage'      => 'apps::bind9::web::mode::serverusage',
