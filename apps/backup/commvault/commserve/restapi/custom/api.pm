@@ -248,6 +248,7 @@ sub request_internal {
         $content = $self->{http}->request(
             url_path => $self->{url_path} . $options{endpoint},
             get_param => $options{get_param},
+            header => $options{header}, 
             warning_status => '',
             unknown_status => '',
             critical_status => ''
@@ -356,7 +357,8 @@ sub request_paging {
     while (1) {
         my $results = $self->request_internal(
             endpoint => $options{endpoint},
-            get_param => ['pageNo=' . $page_num, 'pageCount=' . $page_count]
+            get_param => ['pageNo=' . $page_num, 'pageCount=' . $page_count],
+            header => ['Cache-Control: private']
         );
 
         push @$alerts, @{$results->{feedsList}};
