@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'alerts' => 'network::cisco::callmanager::sxml::mode::alerts'
+        'alerts'   => 'network::cisco::callmanager::sxml::mode::alerts',
+        'services' => 'network::cisco::callmanager::sxml::mode::services'
     };
 
     $self->{custom_modes}->{api} = 'network::cisco::callmanager::sxml::custom::xmlapi';
