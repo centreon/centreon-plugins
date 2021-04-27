@@ -184,6 +184,60 @@ END_FILE
     return $1;
 }
 
+sub cc_get_service_status {
+    my ($self, %options) = @_;
+
+    $self->settings();
+
+    my $data = <<END_FILE;
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://schemas.cisco.com/ast/soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soapGetServiceStatus>
+        <ServiceStatus></ServiceStatus>
+      </soapGetServiceStatus>
+   </soapenv:Body>
+</soapenv:Envelope>
+END_FILE
+
+    my $content = $self->{http}->request(
+        method => 'POST',
+        url_path => '/controlcenterservice/services/ControlCenterServicesPort',
+        header => [
+            'SOAPAction: http://schemas.cisco.com/ast/soap/action/#ControlCenterServices#soapGetServiceList',
+            'Content-type: text/xml'
+        ],
+        query_form_post => $data,
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status}
+    );
+
+    my $xml_result;
+    eval {
+        $SIG{__WARN__} = sub {};
+        $xml_result = XMLin($content, ForceArray => $options{force_array}, KeyAttr => []);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
+        $self->{output}->option_exit();
+    }
+    if (defined($xml_result->{'soapenv:Body'}->{'soapenv:Fault'})) {
+        $self->{output}->add_option_msg(short_msg => 'soap response issue');
+        $self->{output}->option_exit();
+    }
+    my $results = [];
+    foreach (@{$xml_result->{'soapenv:Body'}->{soapGetServiceStatusResponse}->{ServiceInformationResponse}->{ServiceInfoList}->{item}}) {
+        push @$results, {
+            name => $_->{ServiceName}->{content},
+            status => lc($_->{ServiceStatus}->{content}),
+            reason_code => $_->{ReasonCode}->{content}
+        };
+    }
+
+    return $results;
+}
+
 sub perfmon_collect_counter_data {
     my ($self, %options) = @_;
 
@@ -209,6 +263,7 @@ END_FILE
             'SOAPAction: http://schemas.cisco.com/ast/soap/action/#PerfmonPort#perfmonCollectCounterData',
             'Content-type: text/xml'
         ],
+        query_form_post => $data,
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
