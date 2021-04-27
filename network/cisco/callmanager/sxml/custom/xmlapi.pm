@@ -207,6 +207,7 @@ END_FILE
             'SOAPAction: http://schemas.cisco.com/ast/soap/action/#ControlCenterServices#soapGetServiceList',
             'Content-type: text/xml'
         ],
+        query_form_post => $data,
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
@@ -262,6 +263,7 @@ END_FILE
             'SOAPAction: http://schemas.cisco.com/ast/soap/action/#PerfmonPort#perfmonCollectCounterData',
             'Content-type: text/xml'
         ],
+        query_form_post => $data,
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
