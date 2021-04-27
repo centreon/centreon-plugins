@@ -169,7 +169,7 @@ __END__
 
 =head1 MODE
 
-Check storage pools.
+Check services.
 
 =over 8
 
