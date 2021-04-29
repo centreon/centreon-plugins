@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::network::appgateway::mode::traffic;
+package cloud::azure::network::appgateway::mode::clientstraffic;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -112,13 +112,13 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mode=traffic --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mode=clients-traffic --custommode=api
 --resource=<appgateway_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-lastbyte-response-time='1000' --critical-lastbyte-response-time='2000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=traffic --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=clients-traffic --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/applicationGateways/<appgateway_id>'
 --aggregation='total' --warning-lastbyte-response-time='1000' --critical-lastbyte-response-time='2000'
 

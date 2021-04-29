@@ -31,16 +31,16 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'backend-status' => 'cloud::azure::network::appgateway::mode::backendstatus',
-        'backend-time'   => 'cloud::azure::network::appgateway::mode::backendtime',
-        'connections'    => 'cloud::azure::network::appgateway::mode::connections',
-        'discovery'      => 'cloud::azure::network::appgateway::mode::discovery',
-        'gateway-time'   => 'cloud::azure::network::appgateway::mode::gatewaytime',
-        'health'         => 'cloud::azure::network::appgateway::mode::health',
-        'requests'       => 'cloud::azure::network::appgateway::mode::requests',
-        'throughput'     => 'cloud::azure::network::appgateway::mode::throughput',
-        'traffic'        => 'cloud::azure::network::appgateway::mode::traffic',
-        'units'          => 'cloud::azure::network::appgateway::mode::units'
+        'backend-status'  => 'cloud::azure::network::appgateway::mode::backendstatus',
+        'backend-time'    => 'cloud::azure::network::appgateway::mode::backendtime',
+        'clients-traffic' => 'cloud::azure::network::appgateway::mode::clientstraffic',
+        'connections'     => 'cloud::azure::network::appgateway::mode::connections',
+        'discovery'       => 'cloud::azure::network::appgateway::mode::discovery',
+        'gateway-time'    => 'cloud::azure::network::appgateway::mode::gatewaytime',
+        'health'          => 'cloud::azure::network::appgateway::mode::health',
+        'requests'        => 'cloud::azure::network::appgateway::mode::requests',
+        'throughput'      => 'cloud::azure::network::appgateway::mode::throughput',
+        'units'           => 'cloud::azure::network::appgateway::mode::units'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
@@ -64,6 +64,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Service Bus namespaces.
+Check Microsoft Azure Network Application Gateway resources.
 
 =cut

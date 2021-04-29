@@ -99,21 +99,21 @@ __END__
 
 =head1 MODE
 
-Check Azure Application Gateway backend response time.
+Check Azure Application Gateway throughput statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mode=backend-time --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mode=throughput --custommode=api
 --resource=<appgateway_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-lastbyte-response-time='1000' --critical-lastbyte-response-time='2000'
+--warning-throughput='1000' --critical-throughput='2000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=backend-time --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=throughput --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/applicationGateways/<appgateway_id>'
---aggregation='average' --warning-lastbyte-response-time='1000' --critical-lastbyte-response-time='2000'
+--aggregation='average' --warning-throughput='1000' --critical-throughput='2000'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
@@ -127,15 +127,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-throughput>
 
-Warning threshold where '*' can be:
-'connect-time', 'lastbyte-response-time', 'firstbyte-response-time'.
+Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-throughput>
 
-Critical threshold where '*' can be:
-'connect-time', 'lastbyte-response-time', 'firstbyte-response-time'.
+Critical threshold.
 
 =back
 

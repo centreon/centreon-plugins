@@ -111,7 +111,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mo
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=backend-time --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=connections --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/applicationGateways/<appgateway_id>'
 --aggregation='average' --warning-current-connections='1000' --critical-current-connections='2000'
 

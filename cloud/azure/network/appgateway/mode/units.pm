@@ -132,7 +132,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mo
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=connections --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=units --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/applicationGateways/<appgateway_id>'
 --aggregation='average' --warning-compute-units='1000' --critical-compute-units='2000'
 
