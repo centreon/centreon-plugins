@@ -120,7 +120,7 @@ sub pem_type {
     for (my $i =  0; $i < $#subject_alt_names; $i += 2) {
         my ($type, $name) = ($subject_alt_names[$i], $subject_alt_names[$i + 1]);
         if ($type == &Net::SSLeay::GEN_IPADD) {
-            $name = inet_ntoa($name);
+            $name = Socket::inet_ntop(length($name) > 4 ? Socket::AF_INET6 : Socket::AF_INET, $name);
         }
         $cert_infos->{alt_subjects} .= $append . $name;
         $append = ', ';
