@@ -315,6 +315,7 @@ sub run_instances {
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
     my $cb_init_counters = $self->get_callback(method_name => $options{config}->{cb_init_counters});
     my $display_status_lo = defined($options{display_status_long_output}) && $options{display_status_long_output} == 1 ? 1 : 0;
+    my $display_short = (!defined($options{config}->{display_short}) || $options{config}->{display_short} != 0) ? 1 : 0;
     my $resume = defined($options{resume}) && $options{resume} == 1 ? 1 : 0;
     my $no_message_multiple = 1;
     
@@ -402,12 +403,14 @@ sub run_instances {
         }
         
         if ($self->{multiple} == 0)  {
-            $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output);
+            $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output)
+                if ($display_short == 1);
         }
     }
     
     if ($no_message_multiple == 0 && $self->{multiple} == 1 && $resume == 0) {
-        $self->{output}->output_add(short_msg => $options{config}->{message_multiple});
+        $self->{output}->output_add(short_msg => $options{config}->{message_multiple})
+            if ($display_short == 1);
     }
 }
 
