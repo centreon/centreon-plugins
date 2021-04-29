@@ -235,7 +235,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{clone_resources} = [
-        { label => 'clone-resource-status', type => 2, critical_default => '%{status} =~ /stopped|failed/i', set => {
+        { label => 'clone-resource-status', type => 2, critical_default => '%{status} =~ /failed/i', set => {
                 key_values => [
                     { name => 'name' }, { name => 'status' }, { name => 'is_unmanaged' },
                     { name => 'masters_nodes_name' }, { name => 'slaves_nodes_name' }
@@ -504,7 +504,7 @@ Can used special variables like: %{name}, %{status}, %{masters_nodes_name}, %{sl
 
 =item B<--critical-clone-resource-status>
 
-Set critical threshold for status (Default: '%{status} =~ /stopped|failed/i').
+Set critical threshold for status (Default: '%{status} =~ /failed/i').
 Can used special variables like: %{name}, %{status}, %{masters_nodes_name}, %{slaves_nodes_name}, %{is_unmanaged}
 
 =item B<--ignore-failed-actions>
