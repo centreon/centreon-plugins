@@ -62,6 +62,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
+        'oid:s'          => { name => 'oid' },
         'ntp-hostname:s' => { name => 'ntp_hostname' },
         'ntp-port:s'     => { name => 'ntp_port', default => 123 },
         'timezone:s'     => { name => 'timezone' }
@@ -86,9 +87,15 @@ sub get_target_time {
     my ($self, %options) = @_;
 
     my $oid_hrSystemDate = '.1.3.6.1.2.1.25.1.2.0';
+    if (defined($self->{option_results}->{oid})) {
+        $oid_hrSystemDate = $self->{option_results}->{oid};
+    }
     my $result = $options{snmp}->get_leef(oids => [ $oid_hrSystemDate ], nothing_quit => 1);
 
-    my @remote_date = unpack 'n C6 a C2', $result->{$oid_hrSystemDate};
+    my @remote_date;
+    if ($result->{$oid_hrSystemDate} !~ /^[0-9]{10}$/) {
+        @remote_date = unpack 'n C6 a C2', $result->{$oid_hrSystemDate};
+    }
     my $timezone = 'UTC';
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $timezone = $self->{option_results}->{timezone};
@@ -97,15 +104,29 @@ sub get_target_time {
     }
 
     my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
-    my $dt = DateTime->new(
-        year       => $remote_date[0],
-        month      => $remote_date[1],
-        day        => $remote_date[2],
-        hour       => $remote_date[3],
-        minute     => $remote_date[4],
-        second     => $remote_date[5],
-        %$tz
-    );
+    my $dt;
+    if ($result->{$oid_hrSystemDate} =~ /^[0-9]{10}$/) {
+        $dt = DateTime->from_epoch(
+            epoch      => $result->{$oid_hrSystemDate},
+            %$tz
+        );
+        $remote_date[0] = $dt->year;
+        $remote_date[1] = $dt->month;
+        $remote_date[2] = $dt->day;
+        $remote_date[3] = $dt->hour;
+        $remote_date[4] = $dt->minute;
+        $remote_date[5] = $dt->second;
+    } else {
+        $dt = DateTime->new(
+            year       => $remote_date[0],
+            month      => $remote_date[1],
+            day        => $remote_date[2],
+            hour       => $remote_date[3],
+            minute     => $remote_date[4],
+            second     => $remote_date[5],
+            %$tz
+        );
+    }
 
     return ($dt->epoch, \@remote_date, $timezone);
 }
@@ -160,6 +181,10 @@ SNMP gives a date with second precision (no milliseconds). Time precision is not
 Use threshold with (+-) 2 seconds offset (minimum).
 
 =over 8
+
+=item B<-oid>
+
+Override default OID.
 
 =item B<--warning-offset>
 
