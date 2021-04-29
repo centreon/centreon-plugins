@@ -52,7 +52,7 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-        'api-version:s'  => { name => 'api_version', default => '2019-07-01' },
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
     });
 
     $self->SUPER::init(%options);
