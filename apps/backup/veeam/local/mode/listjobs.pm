@@ -82,7 +82,7 @@ sub disco_show {
     foreach (sort keys %{$self->{jobs}}) {
         $self->{output}->add_disco_entry(
             name => $_,
-            type => $self->{jobs}->{$_}->{type},
+            type => $self->{jobs}->{$_}->{type}
         );
     }
 }
@@ -137,7 +137,9 @@ sub manage_selection {
             next;
         }
 
-        $self->{jobs}->{ $job->{name} } = { type => $job_type->{ $job->{type} } };
+        $self->{jobs}->{ $job->{name} } = {
+            type => defined($job_type->{ $job->{type} }) ? $job_type->{ $job->{type} } : 'unknown'
+        };
     }
 }
 
