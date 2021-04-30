@@ -174,8 +174,9 @@ sub manage_selection {
         next if (defined($jobs_checked->{ $job->{jobId} }));
         $jobs_checked->{ $job->{jobId} } = 1;
 
-        my $policy_name = defined($job->{storagePolicy}->{storagePolicyName}) && $job->{storagePolicy}->{storagePolicyName} ne '' ? $job->{storagePolicy}->{storagePolicyName} : 'unknown'; 
-        my $policy_id = defined($job->{storagePolicy}->{storagePolicyId}) && $job->{storagePolicy}->{storagePolicyId} ne '' ? $job->{storagePolicy}->{storagePolicyId} : 'unknown'; 
+        my $policy_name = defined($job->{storagePolicy}->{storagePolicyName}) && $job->{storagePolicy}->{storagePolicyName} ne '' ? $job->{storagePolicy}->{storagePolicyName} : 'notAvailable'; 
+        my $policy_id = defined($job->{storagePolicy}->{storagePolicyId}) && $job->{storagePolicy}->{storagePolicyId} ne '' ? $job->{storagePolicy}->{storagePolicyId} : 'notAvailable'; 
+        my $dest_client_name = defined($job->{destClientName}) ? $job->{destClientName} : 'notAvailable';
         # when the job is running, end_time = 0
 
         if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
@@ -194,7 +195,7 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_client_name}) && $self->{option_results}->{filter_client_name} ne '' &&
-            $job->{destClientName} !~ /$self->{option_results}->{filter_client_name}/) {
+            $dest_client_name !~ /$self->{option_results}->{filter_client_name}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $policy_name . "/" . $job->{jobId} . "': no matching filter type.", debug => 1);
             next;
         }
