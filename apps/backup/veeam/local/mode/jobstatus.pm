@@ -190,13 +190,14 @@ sub manage_selection {
         $job->{creationTimeUTC} =~ s/,/\./;
         $job->{endTimeUTC} =~ s/,/\./;
 
+        my $job_type = defined($job_type->{ $job->{type} }) ? $job_type->{ $job->{type} } : 'unknown';
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $job->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $job_type->{ $job->{type} } !~ /$self->{option_results}->{filter_type}/) {
+            $job_type !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter type.", debug => 1);
             next;
         }
@@ -218,7 +219,7 @@ sub manage_selection {
         $self->{job}->{ $job->{name} } = {
             display => $job->{name},
             elapsed => $elapsed_time,
-            type => $job_type->{ $job->{type} },
+            type => $job_type,
             is_running => $job->{isRunning} =~ /True|1/ ? 1 : ($job->{creationTimeUTC} !~ /[0-9]/ ? 2 : 0),
             status => defined($job_result->{ $job->{result} }) && $job_result->{ $job->{result} } ne '' ?
                 $job_result->{ $job->{result} } : '-'
