@@ -36,7 +36,8 @@ sub new {
          'hardware'         => 'storage::dell::equallogic::snmp::mode::hardware',
          'interfaces'       => 'snmp_standard::mode::interfaces',
          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-         'pool-usage'       => 'storage::dell::equallogic::snmp::mode::poolusage'
+         'pool-usage'       => 'storage::dell::equallogic::snmp::mode::poolusage',
+         'uptime'           => 'snmp_standard::mode::uptime'
     };
 
     return $self;
