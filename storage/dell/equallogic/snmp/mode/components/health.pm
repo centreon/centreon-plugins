@@ -31,15 +31,33 @@ my %map_health_status = (
 );
 
 # In MIB 'eqlcontroller.mib'
-my $mapping = {
-    eqlMemberHealthStatus => { oid => '.1.3.6.1.4.1.12740.2.1.5.1.1', map => \%map_health_status },
+my $mapping_eqlMemberHealthStatus = {
+    eqlMemberHealthStatus => { oid => '.1.3.6.1.4.1.12740.2.1.5.1.1', map => \%map_health_status }
 };
 my $oid_eqlMemberHealthStatus = '.1.3.6.1.4.1.12740.2.1.5.1.1';
+
+my $mapping_eqlMemberProductFamily = {
+    eqlMemberProductFamily => { oid => '.1.3.6.1.4.1.12740.2.1.11.1.9' }
+};
+my $oid_eqlMemberProductFamily = '.1.3.6.1.4.1.12740.2.1.11.1.9';
+
+my $mapping_eqlMemberControllerVersion = {
+    eqlMemberControllerMajorVersion       => { oid => '.1.3.6.1.4.1.12740.2.1.1.1.21' },
+    eqlMemberControllerMinorVersion       => { oid => '.1.3.6.1.4.1.12740.2.1.1.1.22' },
+    eqlMemberControllerMaintenanceVersion => { oid => '.1.3.6.1.4.1.12740.2.1.1.1.23' }
+};
+my $oid_eqlMemberControllerVersion = '.1.3.6.1.4.1.12740.2.1.1.1';
 
 sub load {
     my ($self) = @_;
     
     push @{$self->{request}}, { oid => $oid_eqlMemberHealthStatus };
+    push @{$self->{request}}, { oid => $oid_eqlMemberProductFamily };
+    push @{$self->{request}}, {
+        oid   => $oid_eqlMemberControllerVersion,
+        start => $mapping_eqlMemberControllerVersion->{eqlMemberControllerMajorVersion}->{oid},
+        end   => $mapping_eqlMemberControllerVersion->{eqlMemberControllerMaintenanceVersion}->{oid}
+    };
 }
 
 sub check {
@@ -50,22 +68,28 @@ sub check {
     return if ($self->check_filter(section => 'health'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_eqlMemberHealthStatus}})) {
-        next if ($oid !~ /^$mapping->{eqlMemberHealthStatus}->{oid}\.(\d+\.\d+)$/);
+        next if ($oid !~ /^$mapping_eqlMemberHealthStatus->{eqlMemberHealthStatus}->{oid}\.(\d+\.\d+)$/);
         my ($member_instance) = ($1);
         my $member_name = $self->get_member_name(instance => $member_instance);
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_eqlMemberHealthStatus}, instance => $member_instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_eqlMemberHealthStatus, results => $self->{results}->{$oid_eqlMemberHealthStatus}, instance => $member_instance);
 
         next if ($self->check_filter(section => 'health', instance => $member_instance));
         $self->{components}->{health}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Health '%s' status is %s [instance: %s].",
-                                    $member_name, $result->{eqlMemberHealthStatus},
-                                    $member_instance
+        my $member_product = $self->{results}->{$oid_eqlMemberProductFamily}->{$oid_eqlMemberProductFamily . '.' . $member_instance};
+        my $member_version = $self->{results}->{$oid_eqlMemberControllerVersion}->{$oid_eqlMemberControllerVersion . '.21.' . $member_instance} . '.' .
+                             $self->{results}->{$oid_eqlMemberControllerVersion}->{$oid_eqlMemberControllerVersion . '.22.' . $member_instance} . '.' .
+                             $self->{results}->{$oid_eqlMemberControllerVersion}->{$oid_eqlMemberControllerVersion . '.23.' . $member_instance};
+
+        $self->{output}->output_add(long_msg => sprintf("%s.%s '%s' health status is %s [instance: %s].",
+                                    $member_product, $member_version, $member_name,
+                                    $result->{eqlMemberHealthStatus}, $member_instance
                                     ));
         my $exit = $self->get_severity(section => 'health', value => $result->{eqlMemberHealthStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Health '%s' status is %s",
+                                        short_msg => sprintf("%s.%s '%s' health status is %s",
+                                                             $member_product, $member_version, $member_name,
                                                              $member_name, $result->{eqlMemberHealthStatus}));
         }
     }
