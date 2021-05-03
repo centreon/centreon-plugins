@@ -34,7 +34,7 @@ sub new {
         'cpu'             => 'cloud::azure::management::applicationinsights::mode::cpu',
         'health'          => 'cloud::azure::management::applicationinsights::mode::health',
         'memory'          => 'cloud::azure::management::applicationinsights::mode::memory',
-        'requests'        => 'cloud::azure::management::applicationinsights::mode::prequests',
+        'requests'        => 'cloud::azure::management::applicationinsights::mode::requests',
         'discovery'       => 'cloud::azure::management::applicationinsights::mode::discovery',
         'exceptions'      => 'cloud::azure::management::applicationinsights::mode::exceptions',
         'page-views'      => 'cloud::azure::management::applicationinsights::mode::pageviews',

@@ -66,7 +66,7 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/Components\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/components\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }

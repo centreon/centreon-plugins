@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::applicationinsights::mode::httprequests;
+package cloud::azure::management::applicationinsights::mode::requests;
 
 use base qw(cloud::azure::custom::mode);
 
