@@ -33,15 +33,14 @@ sub new {
     $self->{modes} = {
         'cpu'             => 'cloud::azure::management::applicationinsights::mode::cpu',
         'health'          => 'cloud::azure::management::applicationinsights::mode::health',
-        'memory'          => 'cloud::azure::management::applicationinsights::mode::discovery',
-        'requests'        => 'cloud::azure::management::applicationinsights::mode::httprequests',
+        'memory'          => 'cloud::azure::management::applicationinsights::mode::memory',
         'discovery'       => 'cloud::azure::management::applicationinsights::mode::discovery',
         'exceptions'      => 'cloud::azure::management::applicationinsights::mode::exceptions',
         'page-views'      => 'cloud::azure::management::applicationinsights::mode::pageviews',
         'availability'    => 'cloud::azure::management::applicationinsights::mode::availability',
-        'dependencies'    => 'cloud::azure::management::applicationinsights::mode::dependencies',
         'http-requests'   => 'cloud::azure::management::applicationinsights::mode::httprequests',
         'io-operations'   => 'cloud::azure::management::applicationinsights::mode::iooperations',
+        'external-calls'    => 'cloud::azure::management::applicationinsights::mode::externalcalls',
         'browser-timings' => 'cloud::azure::management::applicationinsights::mode::browsertimings',
     };
 

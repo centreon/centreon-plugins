@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'processiobytespersecond' => {
+        'performanceCounters/processiobytespersecond' => {
             'output' => 'Process IO rate',
             'label'  => 'total-bytes-operations',
             'nlabel' => 'appinsights.bytes.total.operations.bytesperseconds',

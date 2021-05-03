@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::applicationinsights::mode::dependencies;
+package cloud::azure::management::applicationinsights::mode::externalcalls;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'count' => {
+        'dependencies/count' => {
             'output' => 'Dependency calls',
             'label'  => 'calls-count',
             'nlabel' => 'appinsights.calls.count',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'duration' => {
+        'dependencies/duration' => {
             'output' => 'Dependency duration',
             'label'  => 'calls-duration',
             'nlabel' => 'appinsights.calls.duration.milliseconds',
@@ -45,7 +45,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'failed' => {
+        'dependencies/failed' => {
             'output' => 'Dependency call failures',
             'label'  => 'calls-failure',
             'nlabel' => 'appinsights.calls.failure.count',
@@ -82,7 +82,7 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/Components\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/components\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }
@@ -122,13 +122,13 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=dependencies --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=externalcalls --custommode=api
 --resource=<component_id> --resource-group=<resourcegroup_id> --aggregation='total'
 --warning-calls-count='800' --critical-calls-count='900'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=dependencies --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=externalcalls --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Insights/Components/<component_id>'
 --aggregation='total' --warning-calls-count='800' --critical-calls-count='900'
 

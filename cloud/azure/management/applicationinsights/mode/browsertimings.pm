@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'networkduration' => {
+        'browserTimings/networkduration' => {
             'output' => 'Page load network connect time',
             'label'  => 'network-duration',
             'nlabel' => 'appinsights.processing.duration.milliseconds',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'processingduration' => {
+        'browserTimings/processingduration' => {
             'output' => 'Client processing time',
             'label'  => 'processing-duration',
             'nlabel' => 'appinsights.processing.duration.milliseconds',
@@ -45,7 +45,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'receiveduration' => {
+        'browserTimings/receiveduration' => {
             'output' => 'Receiving response time',
             'label'  => 'receive-duration',
             'nlabel' => 'appinsights.receive.duration.milliseconds',
@@ -53,7 +53,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'sendduration' => {
+        'browserTimings/sendduration' => {
             'output' => 'Send request time',
             'label'  => 'send-duration',
             'nlabel' => 'appinsights.send.duration.milliseconds',
@@ -61,7 +61,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'totalduration' => {
+        'browserTimings/totalduration' => {
             'output' => 'Browser page load time',
             'label'  => 'total-duration',
             'nlabel' => 'appinsights.total.duration.milliseconds',
@@ -98,7 +98,7 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/Components\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/components\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }

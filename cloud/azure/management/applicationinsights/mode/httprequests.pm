@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'count' => {
+        'requests/count' => {
             'output' => 'Server requests',
             'label'  => 'requests-count',
             'nlabel' => 'appinsights.requests.total.count',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'duration' => {
+        'requests/duration' => {
             'output' => 'Server response time',
             'label'  => 'requests-duration',
             'nlabel' => 'appinsights.requests.duration.milliseconds',
@@ -45,19 +45,43 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'failed' => {
+        'requests/failed' => {
             'output' => 'Failed requests',
             'label'  => 'requests-failed',
-            'nlabel' => 'appinsights.requests.requestsperseconds',
+            'nlabel' => 'appinsights.requests.failed.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'requests/rate' => {
+            'output' => 'Server request rate',
+            'label'  => 'requests-server-rate',
+            'nlabel' => 'appinsights.requests.server.perseconds',
             'unit'   => 'requests/s',
             'min'    => '0',
             'max'    => ''
         },
-        'rate' => {
-            'output' => 'Server request rate',
-            'label'  => 'requests-rate',
-            'nlabel' => 'appinsights.pageviews.load.milliseconds',
+        'performanceCounters/requestExecutionTime' => {
+            'output' => 'HTTP request execution time',
+            'label'  => 'requests-execution-time',
+            'nlabel' => 'appinsights.requests.execution.time.milliseconds',
             'unit'   => 'ms',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'performanceCounters/requestsInQueue' => {
+            'output' => 'HTTP requests in application queue',
+            'label'  => 'requests-queue',
+            'nlabel' => 'appinsights.requests.failed.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'performanceCounters/requestsPerSecond' => {
+            'output' => 'HTTP request rate',
+            'label'  => 'requests-http-rate',
+            'nlabel' => 'appinsights.requests.http.perseconds',
+            'unit'   => 'requests/s',
             'min'    => '0',
             'max'    => ''
         }
@@ -90,7 +114,7 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/Components\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/components\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }
@@ -155,12 +179,14 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be: 
-'requests-count', 'requests-duration', 'requests-failed', 'requests-rate'.
+'requests-count', 'requests-duration', 'requests-failed', 'requests-server-rate',
+'requests-execution-time', 'requests-queue', 'requests-http-rate'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'requests-count', 'requests-duration', 'requests-failed', 'requests-rate'.
+'requests-count', 'requests-duration', 'requests-failed', 'requests-server-rate',
+'requests-execution-time', 'requests-queue', 'requests-http-rate'.
 
 =back
 

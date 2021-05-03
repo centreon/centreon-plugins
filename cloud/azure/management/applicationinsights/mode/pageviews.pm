@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'count' => {
+        'pageViews/count' => {
             'output' => 'Page views',
             'label'  => 'views-count',
             'nlabel' => 'appinsights.pageviews.total.count',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'duration' => {
+        'pageViews/duration' => {
             'output' => 'Page view load time',
             'label'  => 'load-time',
             'nlabel' => 'appinsights.pageviews.load.milliseconds',
@@ -74,7 +74,7 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/Components\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/components\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }

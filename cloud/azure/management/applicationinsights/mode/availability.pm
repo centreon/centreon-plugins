@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'availabilitypercentage' => {
+        'availabilityResults/availabilityPercentage' => {
             'output' => 'Availability',
             'label'  => 'availability',
             'nlabel' => 'appinsights.availability.percentage',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => '100'
         },
-        'count' => {
+        'availabilityResults/count' => {
             'output' => 'Availability tests',
             'label'  => 'tests-count',
             'nlabel' => 'appinsights.availability.tests.count',
@@ -45,7 +45,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'duration' => {
+        'availabilityResults/duration' => {
             'output' => 'Availability test duration',
             'label'  => 'tests-duration',
             'nlabel' => 'appinsights.availability.tests.duration.milliseconds',
@@ -82,7 +82,7 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/Components\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/components\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }

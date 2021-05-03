@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'browser' => {
+        'exceptions/browser' => {
             'output' => 'Browser exceptions',
             'label'  => 'browser-exceptions-count',
             'nlabel' => 'appinsights.exceptions.browser.count',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'count' => {
+        'exceptions/count' => {
             'output' => 'Exceptions',
             'label'  => 'total-exeptions-count',
             'nlabel' => 'appinsights.exceptions.total.count',
@@ -45,7 +45,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'server' => {
+        'exceptions/server' => {
             'output' => 'Server exceptions',
             'label'  => 'server-exceptions-count',
             'nlabel' => 'appinsights.exceptions.server.count',
@@ -82,7 +82,7 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/Components\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Insights\/components\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }
