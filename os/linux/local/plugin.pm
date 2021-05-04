@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'check-plugin'      => 'os::linux::local::mode::checkplugin',
         'cpu'               => 'os::linux::local::mode::cpu',
         'cpu-detailed'      => 'os::linux::local::mode::cpudetailed',
         'cmd-return'        => 'os::linux::local::mode::cmdreturn',
