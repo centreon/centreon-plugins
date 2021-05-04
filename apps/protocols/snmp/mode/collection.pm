@@ -719,16 +719,112 @@ sub exec_func_map {
         $self->{output}->add_option_msg(short_msg => "$self->{current_section} unknown map attribute: $options{map_name}");
         $self->{output}->option_exit();
     }
-    my $dst = $result;
-    if (defined($options{dst}) && $options{dst}) {
-        $dst = $self->parse_special_variable(chars => [split //, $options{dst}], start => 0);
-        if ($dst->{type} !~ /^(?:0|1|4)$/) {
+    my $save = $result;
+    if (defined($options{save}) && $options{save} ne '') {
+        $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        if ($save->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
+            $self->{output}->option_exit();
+        }
+    } elsif (defined($options{dst}) && $options{dst} ne '') {
+        $save = $self->parse_special_variable(chars => [split //, $options{dst}], start => 0);
+        if ($save->{type} !~ /^(?:0|1|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in dst attribute");
             $self->{output}->option_exit();
         }
     }
 
-    $self->set_special_variable_value(value => $value, %$dst);
+    $self->set_special_variable_value(value => $value, %$save);
+}
+
+sub scale {
+    my ($self, %options) = @_;
+
+    my ($src_quantity, $src_unit) = (undef, 'B');
+    if ($options{src_unit} =~ /([kmgtpe])?(b)/i) {
+        $src_quantity = $1;
+        $src_unit = $2;
+    }
+    my ($dst_quantity, $dst_unit) = ('auto', $src_unit);
+    if ($options{dst_unit} =~ /([kmgtpe])?(b)/i) {
+        $dst_quantity = $1;
+        $dst_unit = $2;
+    }
+
+    my $base = 1024;
+    $options{value} *= 8 if ($dst_unit eq 'b' && $src_unit eq 'B');
+    $options{value} /= 8 if ($dst_unit eq 'B' && $src_unit eq 'b');
+    $base = 1000 if ($dst_unit eq 'b');
+
+    my %expo = (k => 1, m => 2, g => 3, t => 4, p => 5, e => 6);
+    my $src_expo = 0;
+    $src_expo = $expo{ lc($src_quantity) } if (defined($src_quantity));
+
+    if (defined($dst_quantity) && $dst_quantity eq 'auto') {
+        my @auto = ('', 'k', 'm', 'g', 't', 'p', 'e');
+        for (; $src_expo < scalar(@auto); $src_expo++) {
+            last if ($options{value} < $base);
+            $options{value} = $options{value} / $base;
+        }
+
+        return ($options{value}, uc($auto[$src_expo]) . $dst_unit);
+    }
+
+    my $dst_expo = 0;
+    $dst_expo = $expo{ lc($dst_quantity) } if (defined($dst_quantity));
+    if ($dst_expo - $src_expo > 0) {
+        $options{value} = $options{value} / ($base ** ($dst_expo - $src_expo));
+    } elsif ($dst_expo - $src_expo < 0) {
+        $options{value} = $options{value} * ($base ** (($dst_expo - $src_expo) * -1));
+    }
+
+    return ($options{value}, $options{dst_unit});
+}
+
+sub exec_func_scale {
+    my ($self, %options) = @_;
+
+    #{
+    #    "type": "scale",
+    #    "src": "%(memoryUsed)",
+    #    "src_unit": "KB", (default: 'B')
+    #    "dst_unit": "auto", (default: 'auto')
+    #    "save_value": "%(memoryUsedScaled)",
+    #    "save_unit": "%(memoryUsedUnit)"
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|1|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+    my $data = $self->get_special_variable_value(%$result);
+    my ($save_value, $save_unit) = $self->scale(
+        value => $data,
+        src_unit => $options{src_unit},
+        dst_unit => $options{dst_unit}
+    );
+
+    if (defined($options{save_value}) && $options{save_value} ne '') {
+        my $var_save_value = $self->parse_special_variable(chars => [split //, $options{save_value}], start => 0);
+        if ($var_save_value->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $save_value, %$var_save_value);
+    }
+    if (defined($options{save_unit}) && $options{save_unit} ne '') {
+        my $var_save_unit = $self->parse_special_variable(chars => [split //, $options{save_unit}], start => 0);
+        if ($var_save_unit->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $save_unit, %$var_save_unit);
+    }
 }
 
 sub set_functions {
@@ -746,6 +842,8 @@ sub set_functions {
 
         if ($_->{type} eq 'map') {
             $self->exec_func_map(%$_);
+        } elsif ($_->{type} eq 'scale') {
+            $self->exec_func_scale(%$_);
         }
     }
 }
