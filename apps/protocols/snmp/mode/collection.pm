@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use JSON::XS;
+use Safe;
 use centreon::plugins::statefile;
 
 sub custom_select_threshold {
@@ -38,13 +39,13 @@ sub custom_select_threshold {
 
         our $expand = $self->{result_values}->{expand};
         if (defined($self->{result_values}->{config}->{critical}) && $self->{result_values}->{config}->{critical} &&
-            $self->{safe}->reval($self->{result_values}->{config}->{critical})) {
+            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{critical})) {
             $status = 'critical';
         } elsif (defined($self->{result_values}->{config}->{warning}) && $self->{result_values}->{config}->{warning} ne '' &&
-            $self->{safe}->reval($self->{result_values}->{config}->{warning})) {
+            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{warning})) {
             $status = 'warning';
         } elsif (defined($self->{result_values}->{config}->{unknown}) && $self->{result_values}->{config}->{unknown} &&
-            $self->{safe}->reval($self->{result_values}->{config}->{unknown})) {
+            $self->{instance_mode}->reval($self->{result_values}->{config}->{unknown})) {
             $status = 'unknown';
         }
         if ($@) {
@@ -95,6 +96,7 @@ sub custom_select_output {
     # without formatting: [name: xxxxxx][test: xxxx][test2: xxx][mytable.plcRead: xxx][mytable.plcWrite: xxx]
     my $output = '';
     foreach (sort keys %{$self->{result_values}->{expand}}) {
+        next if (/^constants\./);
         $output .= '[' . $_ . ': ' . $self->{result_values}->{expand}->{$_} . ']';
     }
 
@@ -650,6 +652,19 @@ sub substitute_string {
     return $str;
 }
 
+sub set_constants {
+    my ($self, %options) = @_;
+
+    my $constants = {};
+    return $constants if (!defined($self->{config}->{constants}));
+
+    foreach (keys %{$self->{config}->{constants}}) {
+        $constants->{'constants.' . $_} = $self->{config}->{constants}->{$_};
+    }
+
+    return $constants;
+}
+
 sub set_expand_table {
     my ($self, %options) = @_;
 
@@ -704,16 +719,112 @@ sub exec_func_map {
         $self->{output}->add_option_msg(short_msg => "$self->{current_section} unknown map attribute: $options{map_name}");
         $self->{output}->option_exit();
     }
-    my $dst = $result;
-    if (defined($options{dst}) && $options{dst}) {
-        $dst = $self->parse_special_variable(chars => [split //, $options{dst}], start => 0);
-        if ($dst->{type} !~ /^(?:0|1|4)$/) {
+    my $save = $result;
+    if (defined($options{save}) && $options{save} ne '') {
+        $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        if ($save->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
+            $self->{output}->option_exit();
+        }
+    } elsif (defined($options{dst}) && $options{dst} ne '') {
+        $save = $self->parse_special_variable(chars => [split //, $options{dst}], start => 0);
+        if ($save->{type} !~ /^(?:0|1|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in dst attribute");
             $self->{output}->option_exit();
         }
     }
 
-    $self->set_special_variable_value(value => $value, %$dst);
+    $self->set_special_variable_value(value => $value, %$save);
+}
+
+sub scale {
+    my ($self, %options) = @_;
+
+    my ($src_quantity, $src_unit) = (undef, 'B');
+    if ($options{src_unit} =~ /([kmgtpe])?(b)/i) {
+        $src_quantity = $1;
+        $src_unit = $2;
+    }
+    my ($dst_quantity, $dst_unit) = ('auto', $src_unit);
+    if ($options{dst_unit} =~ /([kmgtpe])?(b)/i) {
+        $dst_quantity = $1;
+        $dst_unit = $2;
+    }
+
+    my $base = 1024;
+    $options{value} *= 8 if ($dst_unit eq 'b' && $src_unit eq 'B');
+    $options{value} /= 8 if ($dst_unit eq 'B' && $src_unit eq 'b');
+    $base = 1000 if ($dst_unit eq 'b');
+
+    my %expo = (k => 1, m => 2, g => 3, t => 4, p => 5, e => 6);
+    my $src_expo = 0;
+    $src_expo = $expo{ lc($src_quantity) } if (defined($src_quantity));
+
+    if (defined($dst_quantity) && $dst_quantity eq 'auto') {
+        my @auto = ('', 'k', 'm', 'g', 't', 'p', 'e');
+        for (; $src_expo < scalar(@auto); $src_expo++) {
+            last if ($options{value} < $base);
+            $options{value} = $options{value} / $base;
+        }
+
+        return ($options{value}, uc($auto[$src_expo]) . $dst_unit);
+    }
+
+    my $dst_expo = 0;
+    $dst_expo = $expo{ lc($dst_quantity) } if (defined($dst_quantity));
+    if ($dst_expo - $src_expo > 0) {
+        $options{value} = $options{value} / ($base ** ($dst_expo - $src_expo));
+    } elsif ($dst_expo - $src_expo < 0) {
+        $options{value} = $options{value} * ($base ** (($dst_expo - $src_expo) * -1));
+    }
+
+    return ($options{value}, $options{dst_unit});
+}
+
+sub exec_func_scale {
+    my ($self, %options) = @_;
+
+    #{
+    #    "type": "scale",
+    #    "src": "%(memoryUsed)",
+    #    "src_unit": "KB", (default: 'B')
+    #    "dst_unit": "auto", (default: 'auto')
+    #    "save_value": "%(memoryUsedScaled)",
+    #    "save_unit": "%(memoryUsedUnit)"
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|1|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+    my $data = $self->get_special_variable_value(%$result);
+    my ($save_value, $save_unit) = $self->scale(
+        value => $data,
+        src_unit => $options{src_unit},
+        dst_unit => $options{dst_unit}
+    );
+
+    if (defined($options{save_value}) && $options{save_value} ne '') {
+        my $var_save_value = $self->parse_special_variable(chars => [split //, $options{save_value}], start => 0);
+        if ($var_save_value->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $save_value, %$var_save_value);
+    }
+    if (defined($options{save_unit}) && $options{save_unit} ne '') {
+        my $var_save_unit = $self->parse_special_variable(chars => [split //, $options{save_unit}], start => 0);
+        if ($var_save_unit->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $save_unit, %$var_save_unit);
+    }
 }
 
 sub set_functions {
@@ -724,9 +835,15 @@ sub set_functions {
     foreach (@{$options{functions}}) {
         $i++;
         $self->{current_section} = '[' . $options{section} . ' > ' . $i . ']';
+        next if (defined($_->{position}) && $options{position} ne $_->{position});
+        next if (!defined($_->{position}) && !(defined($options{default}) && $options{default} == 1));
+        
         next if (!defined($_->{type}));
+
         if ($_->{type} eq 'map') {
             $self->exec_func_map(%$_);
+        } elsif ($_->{type} eq 'scale') {
+            $self->exec_func_scale(%$_);
         }
     }
 }
@@ -820,11 +937,12 @@ sub add_selection {
     foreach (@{$self->{config}->{selection}}) {
         $i++;
         my $config = {};
-        $self->{expand} = {};
+        $self->{expand} = $self->set_constants();
         $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
+        $self->set_functions(section => "selection > $i > functions", functions => $_->{functions}, position => 'before_expand');
         $self->set_expand_table(section => "selection > $i > expand_table", expand => $_->{expand_table});
         $self->set_expand(section => "selection > $i > expand", expand => $_->{expand});
-        $self->set_functions(section => "selection > $i > functions", functions => $_->{functions});
+        $self->set_functions(section => "selection > $i > functions", functions => $_->{functions}, position => 'after_expand', default => 1);
         next if ($self->check_filter(filter => $_->{filter}));
         next if ($self->check_filter_option());
         $config->{unknown} = $self->prepare_variables(section => "selection > $i > unknown", value => $_->{unknown});
@@ -857,7 +975,7 @@ sub add_selection_loop {
         next if (!defined($self->{snmp_collected}->{tables}->{ $result->{table} }));
 
         foreach my $instance (keys %{$self->{snmp_collected}->{tables}->{ $result->{table} }}) {
-            $self->{expand} = {};
+            $self->{expand} = $self->set_constants();
             $self->{expand}->{ $result->{table} . '.instance' } = $instance;
             foreach my $label (keys %{$self->{snmp_collected}->{tables}->{ $result->{table} }->{$instance}}) {
                 $self->{expand}->{ $result->{table} . '.' . $label } =
@@ -865,9 +983,10 @@ sub add_selection_loop {
             }
             my $config = {};
             $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
+            $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions}, position => 'before_expand');
             $self->set_expand_table(section => "selection_loop > $i > expand_table", expand => $_->{expand_table});
             $self->set_expand(section => "selection_loop > $i > expand", expand => $_->{expand});
-            $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions});
+            $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions}, position => 'after_expand', default => 1);
             next if ($self->check_filter(filter => $_->{filter}));
             next if ($self->check_filter_option());
             $config->{unknown} = $self->prepare_variables(section => "selection_loop > $i > unknown", value => $_->{unknown});
@@ -914,6 +1033,7 @@ sub disco_show {
     foreach (values %{$self->{selections}}) {
         my $entry = {};
         foreach my $label (keys %{$_->{expand}}) {
+            next if ($label =~ /^constants\./);
             my $name = $label;
             $name =~ s/\./_/g;
             $entry->{$name} = $_->{expand}->{$label};
