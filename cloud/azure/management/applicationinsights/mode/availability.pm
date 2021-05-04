@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'availabilityResults/availabilityPercentage' => {
+        'availabilityresults/availabilitypercentage' => {
             'output' => 'Availability',
             'label'  => 'availability',
             'nlabel' => 'appinsights.availability.percentage',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => '100'
         },
-        'availabilityResults/count' => {
+        'availabilityresults/count' => {
             'output' => 'Availability tests',
             'label'  => 'tests-count',
             'nlabel' => 'appinsights.availability.tests.count',
@@ -45,7 +45,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'availabilityResults/duration' => {
+        'availabilityresults/duration' => {
             'output' => 'Availability test duration',
             'label'  => 'tests-duration',
             'nlabel' => 'appinsights.availability.tests.duration.milliseconds',

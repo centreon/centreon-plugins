@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'browserTimings/networkduration' => {
+        'browsertimings/networkduration' => {
             'output' => 'Page load network connect time',
             'label'  => 'network-duration',
             'nlabel' => 'appinsights.processing.duration.milliseconds',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'browserTimings/processingduration' => {
+        'browsertimings/processingduration' => {
             'output' => 'Client processing time',
             'label'  => 'processing-duration',
             'nlabel' => 'appinsights.processing.duration.milliseconds',
@@ -45,7 +45,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'browserTimings/receiveduration' => {
+        'browsertimings/receiveduration' => {
             'output' => 'Receiving response time',
             'label'  => 'receive-duration',
             'nlabel' => 'appinsights.receive.duration.milliseconds',
@@ -53,7 +53,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'browserTimings/sendduration' => {
+        'browsertimings/sendduration' => {
             'output' => 'Send request time',
             'label'  => 'send-duration',
             'nlabel' => 'appinsights.send.duration.milliseconds',
@@ -61,7 +61,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'browserTimings/totalduration' => {
+        'browsertimings/totalduration' => {
             'output' => 'Browser page load time',
             'label'  => 'total-duration',
             'nlabel' => 'appinsights.total.duration.milliseconds',

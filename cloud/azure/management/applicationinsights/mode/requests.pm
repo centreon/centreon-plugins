@@ -61,7 +61,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'performanceCounters/requestExecutionTime' => {
+        'performancecounters/requestExecutionTime' => {
             'output' => 'HTTP request execution time',
             'label'  => 'requests-execution-time',
             'nlabel' => 'appinsights.requests.execution.time.milliseconds',
@@ -69,7 +69,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'performanceCounters/requestsInQueue' => {
+        'performancecounters/requestsInQueue' => {
             'output' => 'HTTP requests in application queue',
             'label'  => 'requests-queue',
             'nlabel' => 'appinsights.requests.failed.count',
@@ -77,7 +77,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'performanceCounters/requestsPerSecond' => {
+        'performancecounters/requestsPerSecond' => {
             'output' => 'HTTP request rate',
             'label'  => 'requests-http-rate',
             'nlabel' => 'appinsights.requests.http.perseconds',

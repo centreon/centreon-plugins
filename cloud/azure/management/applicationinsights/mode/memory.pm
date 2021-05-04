@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'performanceCounters/memoryAvailableBytes' => {
+        'performancecounters/memoryAvailableBytes' => {
             'output' => 'Available memory',
             'label'  => 'memory-available',
             'nlabel' => 'appinsights.memory.available.bytes',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'performanceCounters/processPrivateBytes' => {
+        'performancecounters/processPrivateBytes' => {
             'output' => 'Process private bytes',
             'label'  => 'memory-private',
             'nlabel' => 'appinsights.memory.private.bytes',
