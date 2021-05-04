@@ -83,7 +83,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.ApiManagement';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Total'];
+    $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -113,16 +113,16 @@ Example:
 Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::apimanagement::plugin --mode=duration --custommode=api
---resource=<busnamespace_id> --resource-group=<resourcegroup_id> --aggregation='average'
+--resource=<management_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-requests-duration='1000' --critical-requests-duration='2000'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::apimanagement::plugin --mode=requests --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ServiceBus/namespaces/<busnamespace_id>'
+--resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ApiManagement/service/<management_id>'
 --aggregation='average' --warning-requests-duration='1000' --critical-requests-duration='2000'
 
-Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.
+Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
 =over 8
 
