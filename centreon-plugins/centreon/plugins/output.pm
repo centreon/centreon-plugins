@@ -153,6 +153,12 @@ sub add_option_msg {
     $self->output_add(%options);
 }
 
+sub set_ignore_label {
+    my ($self, %options) = @_;
+
+    $self->{option_results}->{output_ignore_label} = 1; 
+}
+
 sub set_status {
     my ($self, %options) = @_;
     # $options{exit_litteral} = string litteral exit

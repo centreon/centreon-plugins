@@ -316,6 +316,7 @@ sub run_instances {
     my $cb_init_counters = $self->get_callback(method_name => $options{config}->{cb_init_counters});
     my $display_status_lo = defined($options{display_status_long_output}) && $options{display_status_long_output} == 1 ? 1 : 0;
     my $display_short = (!defined($options{config}->{display_short}) || $options{config}->{display_short} != 0) ? 1 : 0;
+    my $display_long = (!defined($options{config}->{display_long}) || $options{config}->{display_long} != 0) ? 1 : 0;
     my $resume = defined($options{resume}) && $options{resume} == 1 ? 1 : 0;
     my $no_message_multiple = 1;
     
@@ -388,7 +389,8 @@ sub run_instances {
         my $debug = 0;
         $debug = 1 if ($display_status_lo == 1 && $self->{output}->is_status(value => $exit, compare => 'OK', litteral => 1));
         if (scalar @{$self->{maps_counters}->{$options{config}->{name}}} > 0 && $long_msg ne '') {
-            $self->{output}->output_add(long_msg => ($display_status_lo == 1 ? lc($exit) . ': ' : '') . $prefix_output . $long_msg . $suffix_output, debug => $debug);
+            $self->{output}->output_add(long_msg => ($display_status_lo == 1 ? lc($exit) . ': ' : '') . $prefix_output . $long_msg . $suffix_output, debug => $debug)
+                if ($display_long == 1);
         }
         if ($resume == 1) {
             $self->{most_critical_instance} = $self->{output}->get_most_critical(status => [ $self->{most_critical_instance},  $exit ]);  
@@ -698,7 +700,7 @@ sub run {
             $self->run_multiple(config => $entry);
         }
     }
-        
+
     if (defined($self->{statefile_value})) {
         $self->{statefile_value}->write(data => $self->{new_datas});
     }
