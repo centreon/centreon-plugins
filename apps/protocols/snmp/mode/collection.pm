@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use JSON::XS;
+use Safe;
 use centreon::plugins::statefile;
 
 sub custom_select_threshold {
@@ -38,13 +39,13 @@ sub custom_select_threshold {
 
         our $expand = $self->{result_values}->{expand};
         if (defined($self->{result_values}->{config}->{critical}) && $self->{result_values}->{config}->{critical} &&
-            $self->{safe}->reval($self->{result_values}->{config}->{critical})) {
+            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{critical})) {
             $status = 'critical';
         } elsif (defined($self->{result_values}->{config}->{warning}) && $self->{result_values}->{config}->{warning} ne '' &&
-            $self->{safe}->reval($self->{result_values}->{config}->{warning})) {
+            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{warning})) {
             $status = 'warning';
         } elsif (defined($self->{result_values}->{config}->{unknown}) && $self->{result_values}->{config}->{unknown} &&
-            $self->{safe}->reval($self->{result_values}->{config}->{unknown})) {
+            $self->{instance_mode}->reval($self->{result_values}->{config}->{unknown})) {
             $status = 'unknown';
         }
         if ($@) {
@@ -95,6 +96,7 @@ sub custom_select_output {
     # without formatting: [name: xxxxxx][test: xxxx][test2: xxx][mytable.plcRead: xxx][mytable.plcWrite: xxx]
     my $output = '';
     foreach (sort keys %{$self->{result_values}->{expand}}) {
+        next if (/^constants\./);
         $output .= '[' . $_ . ': ' . $self->{result_values}->{expand}->{$_} . ']';
     }
 
@@ -650,6 +652,19 @@ sub substitute_string {
     return $str;
 }
 
+sub set_constants {
+    my ($self, %options) = @_;
+
+    my $constants = {};
+    return $constants if (!defined($self->{config}->{constants}));
+
+    foreach (keys %{$self->{config}->{constants}}) {
+        $constants->{'constants.' . $_} = $self->{config}->{constants}->{$_};
+    }
+
+    return $constants;
+}
+
 sub set_expand_table {
     my ($self, %options) = @_;
 
@@ -820,7 +835,7 @@ sub add_selection {
     foreach (@{$self->{config}->{selection}}) {
         $i++;
         my $config = {};
-        $self->{expand} = {};
+        $self->{expand} = $self->set_constants();
         $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
         $self->set_expand_table(section => "selection > $i > expand_table", expand => $_->{expand_table});
         $self->set_expand(section => "selection > $i > expand", expand => $_->{expand});
@@ -857,7 +872,7 @@ sub add_selection_loop {
         next if (!defined($self->{snmp_collected}->{tables}->{ $result->{table} }));
 
         foreach my $instance (keys %{$self->{snmp_collected}->{tables}->{ $result->{table} }}) {
-            $self->{expand} = {};
+            $self->{expand} = $self->set_constants();
             $self->{expand}->{ $result->{table} . '.instance' } = $instance;
             foreach my $label (keys %{$self->{snmp_collected}->{tables}->{ $result->{table} }->{$instance}}) {
                 $self->{expand}->{ $result->{table} . '.' . $label } =
@@ -914,6 +929,7 @@ sub disco_show {
     foreach (values %{$self->{selections}}) {
         my $entry = {};
         foreach my $label (keys %{$_->{expand}}) {
+            next if ($label =~ /^constants\./);
             my $name = $label;
             $name =~ s/\./_/g;
             $entry->{$name} = $_->{expand}->{$label};
