@@ -739,7 +739,11 @@ sub set_functions {
     foreach (@{$options{functions}}) {
         $i++;
         $self->{current_section} = '[' . $options{section} . ' > ' . $i . ']';
+        next if (defined($_->{position}) && $options{position} ne $_->{position});
+        next if (!defined($_->{position}) && !(defined($options{default}) && $options{default} == 1));
+        
         next if (!defined($_->{type}));
+
         if ($_->{type} eq 'map') {
             $self->exec_func_map(%$_);
         }
@@ -837,9 +841,10 @@ sub add_selection {
         my $config = {};
         $self->{expand} = $self->set_constants();
         $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
+        $self->set_functions(section => "selection > $i > functions", functions => $_->{functions}, position => 'before_expand');
         $self->set_expand_table(section => "selection > $i > expand_table", expand => $_->{expand_table});
         $self->set_expand(section => "selection > $i > expand", expand => $_->{expand});
-        $self->set_functions(section => "selection > $i > functions", functions => $_->{functions});
+        $self->set_functions(section => "selection > $i > functions", functions => $_->{functions}, position => 'after_expand', default => 1);
         next if ($self->check_filter(filter => $_->{filter}));
         next if ($self->check_filter_option());
         $config->{unknown} = $self->prepare_variables(section => "selection > $i > unknown", value => $_->{unknown});
@@ -880,9 +885,10 @@ sub add_selection_loop {
             }
             my $config = {};
             $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
+            $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions}, position => 'before_expand');
             $self->set_expand_table(section => "selection_loop > $i > expand_table", expand => $_->{expand_table});
             $self->set_expand(section => "selection_loop > $i > expand", expand => $_->{expand});
-            $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions});
+            $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions}, position => 'after_expand', default => 1);
             next if ($self->check_filter(filter => $_->{filter}));
             next if ($self->check_filter_option());
             $config->{unknown} = $self->prepare_variables(section => "selection_loop > $i > unknown", value => $_->{unknown});
