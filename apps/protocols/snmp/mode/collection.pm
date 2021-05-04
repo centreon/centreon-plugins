@@ -1046,8 +1046,10 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     # TODO:
-    #   add some functions types (percent, scale)
-    #   choose functions position: before_expand, after_expand
+    #   add some functions types:
+    #       eval_equal (concatenate, math operation)
+    #       regexp (regexp substitution, extract a pattern)
+    #   can add: Diff, PerSecond, PerMinute for snmp values (use statefile)
     #   can cache only some parts of snmp requests
     $self->read_config();
     $self->collect_snmp(snmp => $options{snmp});
