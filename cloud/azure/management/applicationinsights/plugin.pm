@@ -32,7 +32,6 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         'cpu'             => 'cloud::azure::management::applicationinsights::mode::cpu',
-        'health'          => 'cloud::azure::management::applicationinsights::mode::health',
         'memory'          => 'cloud::azure::management::applicationinsights::mode::memory',
         'requests'        => 'cloud::azure::management::applicationinsights::mode::requests',
         'discovery'       => 'cloud::azure::management::applicationinsights::mode::discovery',
