@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::database::cosmosdb::mode::document;
+package cloud::azure::database::cosmosdb::mode::units;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,18 +29,11 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'documentcount' => {
-            'output' => 'Document Count',
-            'label'  => 'document-count',
-            'nlabel' => 'cosmosdb.account.document.count',
+        'totalrequestunits' => {
+            'output' => 'Total Request Units',
+            'label'  => 'total-request-units',
+            'nlabel' => 'cosmosdb.account.requestunits.total.count',
             'unit'   => '',
-            'min'    => '0'
-        },
-        'documentquota' => {
-            'output' => 'Document Quota',
-            'label'  => 'document-quota',
-            'nlabel' => 'cosmosdb.account.document.quota.bytes',
-            'unit'   => 'B',
             'min'    => '0'
         }
     };
@@ -106,21 +99,21 @@ __END__
 
 =head1 MODE
 
-Check Azure Cosmos DB Accounts document statistics.
+Check Azure Cosmos DB Accounts request units statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=document --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=units --custommode=api
 --resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='total'
---warning-document-count='80000' --critical-document-count='90000'
+--warning-total-request-units='8000' --critical-total-request-units='9000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=document --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=units --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DocumentDB/databaseAccounts/<cosmosdbaccount_id>'
---aggregation='total' --warning-document-count='80000' --critical-document-count='90000'
+--aggregation='total' --warning-total-request-units='8000' --critical-total-request-units='9000'
 
 Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
@@ -134,15 +127,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-total-request-units>
 
-Warning threshold where '*' can be:
-'document-count', 'document-quota'.
+Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-total-request-units>
 
-Critical threshold where '*' can be:
-'document-count', 'document-quota'.
+Critical threshold.
 
 =back
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::database::cosmosdb::mode::datausage;
+package cloud::azure::database::cosmosdb::mode::integratedcache;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,11 +29,33 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'datausage' => {
-            'output' => 'Data Usage',
-            'label'  => 'data-usage',
-            'nlabel' => 'cosmosdb.account.data.usage.bytes',
+        'integratedcacheevictedentriessize' => {
+            'output' => 'Integrated Cache Evicted Entries Size',
+            'label'  => 'cache-evicted-size',
+            'nlabel' => 'cosmosdb.account.integratedcache.evicted.size.bytes',
             'unit'   => 'B',
+            'min'    => '0'
+        },
+       'integratedcachehitrate' => {
+            'output' => 'Integrated Cache Hit Rate',
+            'label'  => 'cache-hitrate-percentage',
+            'nlabel' => 'cosmosdb.account.integratedcache.hitrate.percentage',
+            'unit'   => '%',
+            'min'    => '0',
+            'max'    => '100'
+        },
+        'integratedcachesize' => {
+            'output' => 'Integrated Cache Size',
+            'label'  => 'cache-size',
+            'nlabel' => 'cosmosdb.account.integratedcache.size.bytes',
+            'unit'   => 'B',
+            'min'    => '0'
+        },
+        'integratedcachettlexpirationcount' => {
+            'output' => 'Integrated Cache TTL Expiration Count',
+            'label'  => 'cache-ttl-expiration',
+            'nlabel' => 'cosmosdb.account.integratedcache.ttlexpiration.count',
+            'unit'   => '',
             'min'    => '0'
         }
     };
@@ -76,7 +98,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.DocumentDB';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Total'];
+    $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -99,23 +121,23 @@ __END__
 
 =head1 MODE
 
-Check Azure Cosmos DB Accounts data usage statistics.
+Check Azure Cosmos DB Accounts integrated cache statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=data-usage --custommode=api
---resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='total'
---warning-data-usage='80000' --critical-data-usage='90000'
+perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=integrated-cache --custommode=api
+--resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='average'
+--warning-cache-hitrate-percentage='90:' --critical-cache-hitrate-percentage='80:'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=errors --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=integrated-cache --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DocumentDB/databaseAccounts/<cosmosdbaccount_id>'
---aggregation='total' --warning-data-usage='80000' --critical-data-usage='90000'
+--aggregation='average' --warning-cache-hitrate-percentage='90:' --critical-cache-hitrate-percentage='80:'
 
-Default aggregation: 'maximum' / 'minimum', 'total' and 'average' are valid.
+Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
 =over 8
 
@@ -130,12 +152,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'system-errors', 'user-errors'.
+'cache-hitrate-percentage', 'cache-size', 'cache-ttl-expiration', 'cache-evicted-size'.
 
-=item B<--critical-*>
+=item B<--critical-data-usage>
 
 Critical threshold where '*' can be:
-'system-errors', 'user-errors'.
+'cache-hitrate-percentage', 'cache-size', 'cache-ttl-expiration', 'cache-evicted-size'.
 
 =back
 

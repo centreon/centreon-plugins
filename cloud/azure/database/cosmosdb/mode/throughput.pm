@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::database::cosmosdb::mode::document;
+package cloud::azure::database::cosmosdb::mode::throughput;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,18 +29,18 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'documentcount' => {
-            'output' => 'Document Count',
-            'label'  => 'document-count',
-            'nlabel' => 'cosmosdb.account.document.count',
+        'autoscalemaxthroughput' => {
+            'output' => 'Autoscale Max Throughput',
+            'label'  => 'autoscale-max-throughput',
+            'nlabel' => 'cosmosdb.account.troughput.autoscale.count',
             'unit'   => '',
             'min'    => '0'
         },
-        'documentquota' => {
-            'output' => 'Document Quota',
-            'label'  => 'document-quota',
-            'nlabel' => 'cosmosdb.account.document.quota.bytes',
-            'unit'   => 'B',
+       'provisionedthroughput' => {
+            'output' => 'Provisioned Throughput',
+            'label'  => 'provisioned-throughput',
+            'nlabel' => 'cosmosdb.account.troughput.provisioned.count',
+            'unit'   => '',
             'min'    => '0'
         }
     };
@@ -83,7 +83,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.DocumentDB';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Total'];
+    $self->{az_aggregations} = ['Maximum'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -106,23 +106,23 @@ __END__
 
 =head1 MODE
 
-Check Azure Cosmos DB Accounts document statistics.
+Check Azure Cosmos DB Accounts throughput statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=document --custommode=api
---resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='total'
---warning-document-count='80000' --critical-document-count='90000'
+perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=throughput --custommode=api
+--resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
+--warning-provisioned-throughput='800' --critical-provisioned-throughput='900'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=document --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=throughput --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DocumentDB/databaseAccounts/<cosmosdbaccount_id>'
---aggregation='total' --warning-document-count='80000' --critical-document-count='90000'
+--aggregation='maximum' --warning-provisioned-throughput='800' --critical-provisioned-throughput='900'
 
-Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
+Default aggregation: 'maximum' / 'total', 'minimum' and 'average' are valid.
 
 =over 8
 
@@ -137,12 +137,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'document-count', 'document-quota'.
+'provisioned-throughput', 'autoscale-max-throughput'.
 
-=item B<--critical-*>
+=item B<--critical-data-usage>
 
 Critical threshold where '*' can be:
-'document-count', 'document-quota'.
+'provisioned-throughput', 'autoscale-max-throughput'.
 
 =back
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::database::cosmosdb::mode::document;
+package cloud::azure::database::cosmosdb::mode::availability;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,19 +29,13 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'documentcount' => {
-            'output' => 'Document Count',
-            'label'  => 'document-count',
-            'nlabel' => 'cosmosdb.account.document.count',
-            'unit'   => '',
-            'min'    => '0'
-        },
-        'documentquota' => {
-            'output' => 'Document Quota',
-            'label'  => 'document-quota',
-            'nlabel' => 'cosmosdb.account.document.quota.bytes',
-            'unit'   => 'B',
-            'min'    => '0'
+        'serviceavailability' => {
+            'output' => 'Service Availability',
+            'label'  => 'service-availability-percentage',
+            'nlabel' => 'cosmosdb.account.service.availbaility.percentage',
+            'unit'   => '%',
+            'min'    => '0',
+            'max'    => '100'
         }
     };
 
@@ -81,9 +75,9 @@ sub check_options {
     $self->{az_resource_group} = $resource_group;
     $self->{az_resource_type} = 'databaseAccounts';
     $self->{az_resource_namespace} = 'Microsoft.DocumentDB';
-    $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Total'];
+    $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 3600;
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT1H';
+    $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -106,23 +100,23 @@ __END__
 
 =head1 MODE
 
-Check Azure Cosmos DB Accounts document statistics.
+Check Azure Cosmos DB Accounts availability statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=document --custommode=api
---resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='total'
---warning-document-count='80000' --critical-document-count='90000'
+perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=availability --custommode=api
+--resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='average'
+--warning-service-availability-percentage='90:' --critical-service-availability-percentage='80:'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=document --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=availability --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DocumentDB/databaseAccounts/<cosmosdbaccount_id>'
---aggregation='total' --warning-document-count='80000' --critical-document-count='90000'
+--aggregation='average' --warning-service-availability-percentage='90:' --critical-service-availability-percentage='80:'
 
-Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
+Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
 =over 8
 
@@ -134,15 +128,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-service-availability-percentage>
 
-Warning threshold where '*' can be:
-'document-count', 'document-quota'.
+Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-service-availability-percentage>
 
-Critical threshold where '*' can be:
-'document-count', 'document-quota'.
+Critical threshold.
 
 =back
 
