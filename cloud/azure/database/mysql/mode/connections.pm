@@ -51,7 +51,7 @@ sub get_metrics_mapping {
             'min'    => '0'
         },
         'total_connections' => {
-            'output' => '	Total Connections',
+            'output' => 'Total Connections',
             'label'  => 'connections-total',
             'nlabel' => 'azmysql.connections.total.count',
             'unit'   => '',
