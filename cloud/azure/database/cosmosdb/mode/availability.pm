@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'serviceavailability' => {
             'output' => 'Service Availability',
             'label'  => 'service-availability-percentage',
-            'nlabel' => 'cosmosdb.account.service.availbaility.percentage',
+            'nlabel' => 'cosmosdb.account.service.availability.percentage',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
