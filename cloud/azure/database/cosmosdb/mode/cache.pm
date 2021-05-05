@@ -127,13 +127,13 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=integrated-cache --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=cache --custommode=api
 --resource=<cosmosdbaccount_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-cache-hitrate-percentage='90:' --critical-cache-hitrate-percentage='80:'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=integrated-cache --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::cosmosdb::plugin --mode=cache --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DocumentDB/databaseAccounts/<cosmosdbaccount_id>'
 --aggregation='average' --warning-cache-hitrate-percentage='90:' --critical-cache-hitrate-percentage='80:'
 
