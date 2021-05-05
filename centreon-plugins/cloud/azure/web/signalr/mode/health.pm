@@ -39,7 +39,7 @@ __END__
 
 =head1 MODE
 
-Check SignalR health status.
+Check Azure Web SignalR health status.
 
 =over 8
 
