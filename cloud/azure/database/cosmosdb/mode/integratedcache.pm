@@ -154,7 +154,7 @@ Set resource group (Required if resource's name is used).
 Warning threshold where '*' can be:
 'cache-hitrate-percentage', 'cache-size', 'cache-ttl-expiration', 'cache-evicted-size'.
 
-=item B<--critical-data-usage>
+=item B<--critical-*>
 
 Critical threshold where '*' can be:
 'cache-hitrate-percentage', 'cache-size', 'cache-ttl-expiration', 'cache-evicted-size'.

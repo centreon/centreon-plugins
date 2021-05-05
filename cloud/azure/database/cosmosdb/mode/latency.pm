@@ -139,7 +139,7 @@ Set resource group (Required if resource's name is used).
 Warning threshold where '*' can be:
 'serverside-latency', 'replication-latency'.
 
-=item B<--critical-data-usage>
+=item B<--critical-*>
 
 Critical threshold where '*' can be:
 'serverside-latency', 'replication-latency'.

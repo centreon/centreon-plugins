@@ -139,7 +139,7 @@ Set resource group (Required if resource's name is used).
 Warning threshold where '*' can be:
 'provisioned-throughput', 'autoscale-max-throughput'.
 
-=item B<--critical-data-usage>
+=item B<--critical-*>
 
 Critical threshold where '*' can be:
 'provisioned-throughput', 'autoscale-max-throughput'.

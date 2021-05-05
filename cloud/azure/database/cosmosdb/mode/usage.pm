@@ -107,7 +107,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Cosmos DB Accounts data usage statistics.
+Check Azure Cosmos DB Accounts usage statistics.
 
 Example:
 
@@ -140,7 +140,7 @@ Set resource group (Required if resource's name is used).
 Warning threshold where '*' can be:
 'data-usage', 'index-usage'.
 
-=item B<--critical-data-usage>
+=item B<--critical-*>
 
 Critical threshold where '*' can be:
 'data-usage', 'index-usage'.
