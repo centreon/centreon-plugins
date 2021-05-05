@@ -51,7 +51,7 @@ sub get_metrics_mapping {
             'min'    => '0'
         },
         'total_connections' => {
-            'output' => '	Total Connections',
+            'output' => 'Total Connections',
             'label'  => 'connections-total',
             'nlabel' => 'azmysql.connections.total.count',
             'unit'   => '',
@@ -71,7 +71,7 @@ sub new {
         'filter-metric:s'  => { name => 'filter_metric' },
         'resource:s'       => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' },
-        'resource-type:s'  => { name => 'resource_type', default => 'servers' }
+        'resource-type:s'  => { name => 'resource_type' }
     });
 
     return $self;
@@ -85,6 +85,12 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
         $self->{output}->option_exit();
     }
+
+    if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --resource-type option');
+        $self->{output}->option_exit();
+    }
+
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
     my $resource_type = $self->{option_results}->{resource_type};

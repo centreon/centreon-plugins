@@ -132,7 +132,6 @@ Set resource group (Required if resource's name is used).
 
 Set warning threshold for queries count.
 
-
 =item B<--critical-queries>
 
 Set critical threshold for queries count.

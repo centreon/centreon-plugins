@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::database::mysqlserver::plugin;
+package cloud::azure::database::mysql::plugin;
 
 use strict;
 use warnings;
@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'cpu'            => 'cloud::azure::database::mysqlserver::mode::cpu',
-        'memory'         => 'cloud::azure::database::mysqlserver::mode::memory',
-        'queries'        => 'cloud::azure::database::mysqlserver::mode::queries',
-        'traffic'        => 'cloud::azure::database::mysqlserver::mode::traffic',
-        'storage'        => 'cloud::azure::database::mysqlserver::mode::storage',
-        'discovery'      => 'cloud::azure::database::mysqlserver::mode::discovery',
-        'connections'    => 'cloud::azure::database::mysqlserver::mode::connections',
-        'replication'    => 'cloud::azure::database::mysqlserver::mode::replication',
-        'io-consumption' => 'cloud::azure::database::mysqlserver::mode::ioconsumption',
+        'connections'    => 'cloud::azure::database::mysql::mode::connections',
+        'cpu'            => 'cloud::azure::database::mysql::mode::cpu',
+        'discovery'      => 'cloud::azure::database::mysql::mode::discovery',
+        'io-consumption' => 'cloud::azure::database::mysql::mode::ioconsumption',
+        'memory'         => 'cloud::azure::database::mysql::mode::memory',
+        'queries'        => 'cloud::azure::database::mysql::mode::queries',
+        'replication'    => 'cloud::azure::database::mysql::mode::replication',
+        'storage'        => 'cloud::azure::database::mysql::mode::storage',
+        'traffic'        => 'cloud::azure::database::mysql::mode::traffic'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
