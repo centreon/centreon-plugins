@@ -77,7 +77,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.Web';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Total'];
+    $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -107,16 +107,16 @@ Example:
 Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appserviceplan::plugin --mode=cpu --custommode=api
---resource=<appsvcplan_id> --resource-group=<resourcegroup_id> --aggregation='total'
+--resource=<appsvcplan_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-cpu-usage-percentage='80' --critical-cpu-usage-percentage='90'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::appserviceplan::plugin --mode=cpu --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/serverFarms/<appsvcplan_id>'
---aggregation='total' --warning-cpu-usage-percentage='80' --critical-cpu-usage-percentage='90'
+--aggregation='average' --warning-cpu-usage-percentage='80' --critical-cpu-usage-percentage='90'
 
-Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.
+Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
 =over 8
 
