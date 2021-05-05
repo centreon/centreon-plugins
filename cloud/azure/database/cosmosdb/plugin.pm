@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'availability'     => 'cloud::azure::database::cosmosdb::mode::availability',
-        'discovery'        => 'cloud::azure::database::cosmosdb::mode::discovery',
-        'document'         => 'cloud::azure::database::cosmosdb::mode::document',
-        'health'           => 'cloud::azure::database::cosmosdb::mode::health',
-        'integrated-cache' => 'cloud::azure::database::cosmosdb::mode::integratedcache',
-        'latency'          => 'cloud::azure::database::cosmosdb::mode::latency',
-        'throughput'       => 'cloud::azure::database::cosmosdb::mode::throughput',
-        'units'            => 'cloud::azure::database::cosmosdb::mode::units',
-        'usage'            => 'cloud::azure::database::cosmosdb::mode::usage'
+        'availability' => 'cloud::azure::database::cosmosdb::mode::availability',
+        'cache'        => 'cloud::azure::database::cosmosdb::mode::cache',
+        'discovery'    => 'cloud::azure::database::cosmosdb::mode::discovery',
+        'document'     => 'cloud::azure::database::cosmosdb::mode::document',
+        'health'       => 'cloud::azure::database::cosmosdb::mode::health',
+        'latency'      => 'cloud::azure::database::cosmosdb::mode::latency',
+        'throughput'   => 'cloud::azure::database::cosmosdb::mode::throughput',
+        'units'        => 'cloud::azure::database::cosmosdb::mode::units',
+        'usage'        => 'cloud::azure::database::cosmosdb::mode::usage'
     );
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';

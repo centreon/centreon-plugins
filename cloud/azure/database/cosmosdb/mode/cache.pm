@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::database::cosmosdb::mode::integratedcache;
+package cloud::azure::database::cosmosdb::mode::cache;
 
 use base qw(cloud::azure::custom::mode);
 
