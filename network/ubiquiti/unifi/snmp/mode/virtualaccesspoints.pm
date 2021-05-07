@@ -128,7 +128,7 @@ sub new {
     return $self;
 }
 
-my $map_status = { 0 => 'down', 1 => 'up' };
+my $map_status = { 1 => 'up', 2 => 'down' };
 
 my $mapping = {
     filters => {

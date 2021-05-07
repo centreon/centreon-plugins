@@ -31,15 +31,16 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'cpu'                   => 'snmp_standard::mode::cpudetailed',
-        'disks'                 => 'snmp_standard::mode::diskusage',
-        'load'                  => 'snmp_standard::mode::loadaverage',
-        'interfaces'            => 'snmp_standard::mode::interfaces',
-        'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
-        'memory'                => 'snmp_standard::mode::memory',
-        'swap'                  => 'snmp_standard::mode::swap',
-        'uptime'                => 'snmp_standard::mode::uptime',
-        'virtual-access-points' => 'network::ubiquiti::unifi::snmp::mode::virtualaccesspoints'
+        'cpu'                        => 'snmp_standard::mode::cpudetailed',
+        'disks'                      => 'snmp_standard::mode::diskusage',
+        'load'                       => 'snmp_standard::mode::loadaverage',
+        'interfaces'                 => 'snmp_standard::mode::interfaces',
+        'list-virtual-access-points' => 'network::ubiquiti::unifi::snmp::mode::listvirtualaccesspoints',
+        'list-interfaces'            => 'snmp_standard::mode::listinterfaces',
+        'memory'                     => 'snmp_standard::mode::memory',
+        'swap'                       => 'snmp_standard::mode::swap',
+        'uptime'                     => 'snmp_standard::mode::uptime',
+        'virtual-access-points'      => 'network::ubiquiti::unifi::snmp::mode::virtualaccesspoints'
     };
 
     return $self;
