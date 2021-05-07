@@ -30,14 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cover-status'              => 'hardware::printers::standard::rfc3805::mode::coverstatus',
         'hardware-device'           => 'snmp_standard::mode::hardwaredevice',
         'markersupply-usage'        => 'hardware::printers::standard::rfc3805::mode::markersupply',
         'marker-impression'         => 'hardware::printers::standard::rfc3805::mode::markerimpression',
         'papertray-usage'           => 'hardware::printers::standard::rfc3805::mode::papertray',
-        'printer-error'             => 'snmp_standard::mode::printererror',
-    );
+        'printer-error'             => 'snmp_standard::mode::printererror'
+    };
 
     return $self;
 }
