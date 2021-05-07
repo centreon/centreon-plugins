@@ -25,7 +25,6 @@ use warnings;
 use centreon::plugins::output;
 use centreon::plugins::misc;
 use Pod::Usage;
-use Pod::Find qw(pod_where);
 
 my %handlers = (DIE => {}, ALRM => {});
 
@@ -162,9 +161,9 @@ sub display_local_help {
     if ($self->{help}) {
         local *STDOUT;
         open STDOUT, '>', \$stdout;
-        
+
         if ($alternative_fatpacker == 0) {
-            pod2usage(-exitval => 'NOEXIT', -input => pod_where({-inc => 1}, __PACKAGE__));
+            pod2usage(-exitval => 'NOEXIT', -input => $self->{options}->pod_where(package => __PACKAGE__));
         } else {
             my $pp = __PACKAGE__ . '.pm';
             $pp =~ s{::}{/}g;
@@ -418,8 +417,10 @@ sub run {
     $self->check_relaunch();
 
     (undef, $self->{plugin}) = 
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
-                                               error_msg => 'Cannot load module --plugin.');
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => $self->{plugin}, 
+            error_msg => 'Cannot load module --plugin.'
+        );
     my $plugin = $self->{plugin}->new(options => $self->{options}, output => $self->{output});
     $plugin->init(
         help => $self->{help},
