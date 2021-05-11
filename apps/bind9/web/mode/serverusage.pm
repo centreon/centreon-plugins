@@ -30,10 +30,14 @@ my $default_filter_counters = "opcode-query|opcode-iquery|opcode-status|opcode-n
 $default_filter_counters .= "|qtype-a|qtype-aaaa|qtype-cname|qtype-mx|qtype-txt|qtype-soa|qtype-ptr";
 $default_filter_counters .= "|nsstat-requestv4|nsstat-requestv6";
 
-# opcode = complete
-# qtype = partial
-# nsstat = complete
-# zonestat = empty
+# From Bind 9.11.5 counter list
+# opcode = completed
+# rcode = not started
+# qtype = completed
+# nsstat = completed
+# zonestat = completed
+# resstat = not started
+
 # Counter name, message, nlabel
 my @map = (
     ['opcode-query', 'opcode query : %s', 'opcode.query.count'],
@@ -42,17 +46,32 @@ my @map = (
     ['opcode-notify', 'opcode notify : %s', 'opcode.notify.count'],
     ['opcode-update', 'opcode update : %s', 'opcode.update.count'],
     ['qtype-a', 'qtype A : %s', 'qtype.a.count'],
-    ['qtype-aaaa', 'qtype AAAA : %s', 'qtype.aaaa.count'],
+    ['qtype-ns', 'qtype NS : %s', 'qtype.ns.count'],
     ['qtype-cname', 'qtype CNAME : %s', 'qtype.cname.count'],
+    ['qtype-soa', 'qtype SOA : %s', 'qtype.soa.count'],
+    ['qtype-null', 'qtype NULL : %s', 'qtype.null.count'],
+    ['qtype-wks', 'qtype WKS : %s', 'qtype.wks.count'],
+    ['qtype-ptr', 'qtype PTR : %s', 'qtype.ptr.count'],
+    ['qtype-hinfo', 'qtype HINFO : %s', 'qtype.hinfo.count'],
     ['qtype-mx', 'qtype MX : %s', 'qtype.mx.count'],
     ['qtype-txt', 'qtype TXT : %s', 'qtype.txt.count'],
-    ['qtype-soa', 'qtype SOA : %s', 'qtype.soa.count'],
-    ['qtype-ptr', 'qtype PTR : %s', 'qtype.ptr.count'],
-    ['qtype-ns', 'qtype NS : %s', 'qtype.ns.count'],
+    ['qtype-aaaa', 'qtype AAAA : %s', 'qtype.aaaa.count'],
+    ['qtype-srv', 'qtype SRV : %s', 'qtype.srv.count'],
+    ['qtype-naptr', 'qtype NAPTR : %s', 'qtype.naptr.count'],
+    ['qtype-a6', 'qtype A6 : %s', 'qtype.a6.count'],
+    ['qtype-ds', 'qtype DS : %s', 'qtype.ds.count'],
+    ['qtype-rrsig', 'qtype RRSIG : %s', 'qtype.rrsig.count'],
+    ['qtype-nsec', 'qtype NSEC : %s', 'qtype.nsec.count'],
     ['qtype-dnskey', 'qtype DNSKEY : %s', 'qtype.dnskey.count'],
+    ['qtype-tlsa', 'qtype TLSA : %s', 'qtype.tlsa.count'],
+    ['qtype-cds', 'qtype CDS : %s', 'qtype.cds.count'],
+    ['qtype-type65', 'qtype TYPE65 : %s', 'qtype.type65.count'],
+    ['qtype-spf', 'qtype SPF : %s', 'qtype.spf.count'],
+    ['qtype-axfr', 'qtype AXFR : %s', 'qtype.axfr.count'],
+    ['qtype-any', 'qtype ANY : %s', 'qtype.any.count'],
+    ['qtype-others', 'qtype Others : %s', 'qtype.others.count'],
     ['nsstat-requestv4', 'nsstat Request v4 : %s', 'nsstat.requestv4.count'],
     ['nsstat-requestv6', 'nsstat Request v6 : %s', 'nsstat.requestv6.count'],
-# Extra counters
     ['nsstat-reqedns0', 'nsstat ReqEdns0 : %s', 'nsstat.reqedns0.count'],
     ['nsstat-reqbadednsver', 'nsstat ReqBadEDNSVer : %s', 'nsstat.reqbadednsver.count'],
     ['nsstat-reqtsig', 'nsstat ReqTSIG : %s', 'nsstat.reqtsig.count'],
@@ -97,12 +116,30 @@ my @map = (
     ['nsstat-nsidopt', 'nsstat NSIDOpt : %s', 'nsstat.nsidopt.count'],
     ['nsstat-expireopt', 'nsstat ExpireOpt : %s', 'nsstat.expireopt.count'],
     ['nsstat-otheropt', 'nsstat OtherOpt : %s', 'nsstat.otheropt.count'],
-    ['nsstat-sitopt', 'nsstat SitOpt : %s', 'nsstat.sitopt.count'],
-    ['nsstat-sitnew', 'nsstat SitNew : %s', 'nsstat.sitnew.count'],
-    ['nsstat-sitbadsize', 'nsstat SitBadSize : %s', 'nsstat.sitbadsize.count'],
-    ['nsstat-sitbadtime', 'nsstat SitBadTime : %s', 'nsstat.sitbadtime.count'],
-    ['nsstat-sitnomatch', 'nsstat SitNoMatch : %s', 'nsstat.sitnomatch.count'],
-    ['nsstat-sitmatch', 'nsstat SitMatch : %s', 'nsstat.sitmatch.count'],
+    ['nsstat-cookiein', 'nsstat CookieIn : %s', 'nsstat.cookiein.count'],
+    ['nsstat-cookienew ', 'nsstat CookieNew  : %s', 'nsstat.cookienew .count'],
+    ['nsstat-cookiebadsize', 'nsstat CookieBadSize : %s', 'nsstat.cookiebadsize.count'],
+    ['nsstat-cookiebadtime', 'nsstat CookieBadTime : %s', 'nsstat.cookiebadtime.count'],
+    ['nsstat-cookienomatch', 'nsstat CookieNoMatch : %s', 'nsstat.cookienomatch.count'],
+    ['nsstat-cookiematch', 'nsstat CookieMatch : %s', 'nsstat.cookiematch.count'],
+    ['nsstat-ecsopt', 'nsstat ECSOpt : %s', 'nsstat.ecsopt.count'],
+    ['nsstat-qrynxredir', 'nsstat QryNXRedir : %s', 'nsstat.qrynxredir.count'],
+    ['nsstat-qrynxredirrlookup', 'nsstat QryNXRedirRLookup : %s', 'nsstat.qrynxredirrlookup.count'],
+    ['nsstat-qrybadcookie', 'nsstat QryBADCOOKIE : %s', 'nsstat.qrybadcookie.count'],
+    ['nsstat-keytagopt', 'nsstat KeyTagOpt : %s', 'nsstat.keytagopt.count'],
+    ['zonestat-keytagopt', 'zonestat NotifyOutv4 : %s', 'zonestat.notifyoutv4.count'],
+    ['zonestat-notifyoutv6', 'zonestat NotifyOutv6 : %s', 'zonestat.notifyoutv6.count'],
+    ['zonestat-notifyinv4', 'zonestat NotifyInv4 : %s', 'zonestat.notifyinv4.count'],
+    ['zonestat-notifyinv6', 'zonestat NotifyInv6 : %s', 'zonestat.notifyinv6.count'],
+    ['zonestat-notifyrej', 'zonestat NotifyRej : %s', 'zonestat.notifyrej.count'],
+    ['zonestat-soaoutv4', 'zonestat SOAOutv4 : %s', 'zonestat.soaoutv4.count'],
+    ['zonestat-soaoutv6', 'zonestat SOAOutv6 : %s', 'zonestat.soaoutv6.count'],
+    ['zonestat-axfrreqv4', 'zonestat AXFRReqv4 : %s', 'zonestat.axfrreqv4.count'],
+    ['zonestat-axfrreqv6', 'zonestat AXFRReqv6 : %s', 'zonestat.axfrreqv6.count'],
+    ['zonestat-ixfrreqv4', 'zonestat IXFRReqv4 : %s', 'zonestat.ixfrreqv4.count'],
+    ['zonestat-ixfrreqv6', 'zonestat IXFRReqv6 : %s', 'zonestat.ixfrreqv6.count'],
+    ['zonestat-xfrsuccess', 'zonestat XfrSuccess : %s', 'zonestat.xfrsuccess.count'],
+    ['zonestat-xfrfail', 'zonestat XfrFail : %s', 'zonestat.xfrfail.count'],
 );
 
 sub set_counters {
@@ -182,21 +219,21 @@ __END__
 
 =head1 MODE
 
-Check bind global server usage.
+Check Bind global server usage.
 
 =over 8
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='request'
+Example: --filter-counters='nsstat-requestv6'
+
+Show the full list with --list-counters.
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'opcode-query', 'opcode-iquery', 'opcode-status', 'opcode-notify', 'opcode-update',
-'qtype-a', 'qtype-aaaa', 'qtype-cname', 'qtype-mx', 'qtype-txt', 'qtype-soa', 'qtype-ptr', 'qtype-ns', 'qtype-dnskey',
-'nsstat-requestv4', 'nsstat-requestv6'.
+Can be any of the selected counters.
 
 =back
 
