@@ -108,13 +108,13 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=vault-capacity --custommode=api
 --resource=<keyvault_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-vault-saturation='80' --critical-vault-saturation='90'
+--warning-vault-saturation-percentage='80' --critical-vault-saturation-percentage='90'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::security::keyvault::plugin --mode=vault-capacity --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.KeyVault/vaults/<keyvault_id>'
---aggregation='average' --warning-vault-saturation='80' --critical-vault-saturation='90'
+--aggregation='average' --warning-vault-saturation-percentage='80' --critical-vault-saturation-percentage='90'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
