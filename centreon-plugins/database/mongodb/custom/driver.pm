@@ -174,7 +174,7 @@ sub list_collections {
     }
 
     my $db = $self->{client}->get_database($options{database});
-    my @cls = $db->collection_names;
+    my @cls = $db->collection_names({ type => 'collection' });
 
     return \@cls;
 }
