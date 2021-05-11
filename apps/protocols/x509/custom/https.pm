@@ -25,6 +25,7 @@ use warnings;
 use centreon::plugins::http;
 use Net::SSLeay 1.42;
 use DateTime;
+use Socket;
 
 sub new {
     my ($class, %options) = @_;
@@ -94,10 +95,12 @@ sub pem_type {
         $self->{output}->option_exit();
     }
     if (Net::SSLeay::BIO_write($bio_cert, $options{cert}) < 0) {
+        Net::SSLeay::BIO_free($bio_cert);
         $self->{output}->add_option_msg(short_msg => "Cannot write certificate: $!");
         $self->{output}->option_exit();
     }
     my $x509 = Net::SSLeay::PEM_read_bio_X509($bio_cert);
+    Net::SSLeay::BIO_free($bio_cert);
     if (!$x509) {
         $self->{output}->add_option_msg(short_msg => "Cannot read certificate: $!");
         $self->{output}->option_exit();
@@ -117,7 +120,7 @@ sub pem_type {
     for (my $i =  0; $i < $#subject_alt_names; $i += 2) {
         my ($type, $name) = ($subject_alt_names[$i], $subject_alt_names[$i + 1]);
         if ($type == &Net::SSLeay::GEN_IPADD) {
-            $name = inet_ntoa($name);
+            $name = Socket::inet_ntop(length($name) > 4 ? Socket::AF_INET6 : Socket::AF_INET, $name);
         }
         $cert_infos->{alt_subjects} .= $append . $name;
         $append = ', ';
@@ -143,7 +146,7 @@ sub socket_type {
     for (my $i =  0; $i < $#subject_alt_names; $i += 2) {
         my ($type, $name) = ($subject_alt_names[$i], $subject_alt_names[$i + 1]);
         if ($type == &Net::SSLeay::GEN_IPADD) {
-            $name = inet_ntoa($name);
+            $name = Socket::inet_ntop(length($name) > 4 ? Socket::AF_INET6 : Socket::AF_INET, $name);
         }
         $cert_infos->{alt_subjects} .= $append . $name;
         $append = ', ';

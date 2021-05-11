@@ -36,13 +36,13 @@ sub set_system {
             ['initializedWithError', 'CRITICAL'],
             ['notInitialized', 'WARNING'],
             ['notInstalled', 'OK'],
-            ['notInserted', 'OK'],
+            ['notInserted', 'OK']
         ],
         library => [
             ['initializing', 'OK'],
             ['online', 'OK'],
-            ['offline', 'CRITICAL'],
-        ],
+            ['offline', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'storage::overland::neo::snmp::mode::components';

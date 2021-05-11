@@ -49,7 +49,7 @@ sub prefix_traffic_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         {
             name => 'apns', type => 3, cb_prefix_output => 'prefix_apn_output', cb_long_output => 'apn_long_output', 
@@ -63,7 +63,7 @@ sub set_counters {
 
     $self->{maps_counters}->{traffic} = [
         { label => 'traffic-in', nlabel => 'apn.traffic.in.bytespersecond', set => {
-                key_values => [ { name => 'traffic_in' } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
                 output_template => 'in: %.2f %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
@@ -72,7 +72,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-out', nlabel => 'apn.traffic.out.bytespersecond', set => {
-                key_values => [ { name => 'traffic_out' } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
                 output_template => 'out: %.2f %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
@@ -84,7 +84,7 @@ sub set_counters {
 
     $self->{maps_counters}->{pdp} = [
         { label => 'pdp-contexts', nlabel => 'apn.pdp_contexts.count', set => {
-                key_values => [ { name => 'contexts', diff => 1 } ],
+                key_values => [ { name => 'contexts' } ],
                 output_template => 'pdp contexts: %s',
                 perfdatas => [
                     { template => '%s', min => 0, label_extra_instance => 1  }

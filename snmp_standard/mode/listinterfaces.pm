@@ -177,7 +177,12 @@ sub run {
             $extra_display .= '[' . $name . ' = ' . $extra_values->{$name} . ']';
         }
         if (defined($self->{oid_iftype})) {
-            $extra_display .= '[type = ' . $map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } } . ']';
+            $extra_display .= sprintf(
+                '[type = %s]',
+                defined($result->{ $self->{oid_iftype} . '.' . $_}) && defined($map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } }) ?
+                    $map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } } :
+                    'unknown' 
+            );
         }
 
         $self->{output}->output_add(
@@ -210,15 +215,15 @@ sub get_additional_information {
     push @$oids, $self->{oid_iftype} if (defined($self->{oid_iftype}));
     push @$oids, $oid_speed32 if ($self->{no_speed} == 0);
     push @$oids, $oid_speed64 if (!$self->{snmp}->is_snmpv1() && $self->{no_speed} == 0);
-    
+
     $self->{snmp}->load(oids => $oids, instances => $self->{interface_id_selected});
     return $self->{snmp}->get_leef();
 }
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $options{id}};
 
+    my $value = $self->{datas}->{$self->{option_results}->{oid_display} . '_' . $options{id}};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
         eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
@@ -238,7 +243,7 @@ sub manage_selection {
             push @$oids, { oid => $self->{extra_oids}->{$_}->{oid} };
         }
     }
-    
+
     $self->{datas} = {};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $oids);
     $self->{datas}->{all_ids} = [];
@@ -247,7 +252,7 @@ sub manage_selection {
         $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->decode($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_filter}} }->{$key});
         push @{$self->{datas}->{all_ids}}, $1;
     }
-    
+
     if (scalar(@{$self->{datas}->{all_ids}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Can't get interfaces...");
         $self->{output}->option_exit();
@@ -259,7 +264,7 @@ sub manage_selection {
             $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->decode($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_display}} }->{$key});
         }
     }
-    
+
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface})) {
         foreach (@{$self->{datas}->{all_ids}}) {
             if ($self->{option_results}->{interface} =~ /(^|\s|,)$_(\s*,|$)/) {
@@ -270,7 +275,7 @@ sub manage_selection {
         foreach (@{$self->{datas}->{all_ids}}) {
             my $filter_name = $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $_};
             next if (!defined($filter_name));
-            
+
             if (!defined($self->{option_results}->{interface})) {
                 push @{$self->{interface_id_selected}}, $_;
                 next;
@@ -332,14 +337,14 @@ sub disco_format {
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
+    $self->{snmp} = $options{snmp};
     $self->manage_selection(disco => 1);
     return if (scalar(@{$self->{interface_id_selected}}) == 0);
     my $result = $self->get_additional_information();
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
-        
+
         my $interface_speed = 0;
         if ($self->{no_speed} == 0) {
             $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0) ? 
@@ -357,7 +362,8 @@ sub disco_show {
 
         my $extra_values = $self->get_extra_values_by_instance(result => $result, instance => $_);
         if (defined($self->{oid_iftype})) {
-            $extra_values->{type} = $map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } };
+            $extra_values->{type} = defined($result->{ $self->{oid_iftype} . '.' . $_ }) && defined($map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } }) ? 
+                $map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } } : 'unknown';
         }
         $self->{output}->add_disco_entry(
             name => $display_value,

@@ -116,13 +116,13 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=errors --custommode=api
 --resource=<signalr_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
---warning-connection-count='800' --warning-connection-count='900'
+--warning-user-errors='800' --critical-user-errors='900'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::web::signalr::plugin --mode=errors --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.SignalRService/SignalR/<signalr_id>'
---aggregation='maximum' --warning-connection-count='800' --warning-connection-count='900'
+--aggregation='maximum' --warning-user-errors='800' --warning-user-errors='900'
 
 Default aggregation: 'maximum' / 'minimum', 'total' and 'average' are valid.
 

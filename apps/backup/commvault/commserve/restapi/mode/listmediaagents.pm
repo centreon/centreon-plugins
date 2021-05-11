@@ -46,6 +46,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $agents = $options{custom}->request(
+        type => 'mediaagent',
         endpoint => '/v2/MediaAgents'
     );
 

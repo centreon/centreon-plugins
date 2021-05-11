@@ -52,7 +52,9 @@ sub new {
             'api-username:s' => { name => 'api_username' },
             'api-password:s' => { name => 'api_password' },
             'user-domain:s'  => { name => 'user_domain' },
-            'timeout:s'      => { name => 'timeout' }
+            'timeout:s'      => { name => 'timeout' },
+            'cache-create'   => { name => 'cache_create' },
+            'cache-use'      => { name => 'cache_use' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -83,6 +85,8 @@ sub check_options {
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{user_domain} = (defined($self->{option_results}->{user_domain})) ? $self->{option_results}->{user_domain} : '';
+    $self->{cache_create} = $self->{option_results}->{cache_create};
+    $self->{cache_use} = $self->{option_results}->{cache_use};
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
@@ -117,6 +121,12 @@ sub get_port {
     my ($self, %options) = @_;
 
     return $self->{port};
+}
+
+sub is_use_cache {
+    my ($self, %options) = @_;
+
+    return defined($self->{cache_use}) ? 1 : 0;
 }
 
 sub json_decode {
@@ -238,6 +248,7 @@ sub request_internal {
         $content = $self->{http}->request(
             url_path => $self->{url_path} . $options{endpoint},
             get_param => $options{get_param},
+            header => $options{header}, 
             warning_status => '',
             unknown_status => '',
             critical_status => ''
@@ -259,29 +270,104 @@ sub request_internal {
     return $decoded;
 }
 
+sub get_cache_file_response {
+    my ($self, %options) = @_;
+
+    $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
+    my $response = $self->{cache}->get(name => 'response');
+    my $update_time = $self->{cache}->get(name => 'update_time');
+    if (!defined($response)) {
+        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
+        $self->{output}->option_exit();
+    }
+    return $response;
+}
+
+sub get_cache_file_update {
+    my ($self, %options) = @_;
+
+    $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
+    my $update_time = $self->{cache}->get(name => 'update_time');
+    return $update_time;
+}
+
+sub create_cache_file {
+    my ($self, %options) = @_;
+
+    $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
+    $self->{cache}->write(data => { response => $options{response}, update_time => time() });
+    $self->{output}->output_add(
+        severity => 'ok',
+        short_msg => 'Cache file created successfully'
+    );
+    $self->{output}->display();
+    $self->{output}->exit();
+}
+
 sub request {
     my ($self, %options) = @_;
 
-    return $self->request_internal(
+    return $self->get_cache_file_response(type => $options{type})
+        if (defined($self->{cache_use}));
+
+    my $response = $self->request_internal(
         endpoint => $options{endpoint}
     );
+
+    $self->create_cache_file(type => $options{type}, response => $response)
+        if (defined($self->{cache_create}));
+
+    return $response;
+}
+
+sub request_jobs {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(type => 'jobs')
+        if (defined($self->{cache_use}));
+
+    my $lookup_time = $options{completed_job_lookup_time};
+    if (defined($self->{cache_create})) {
+        my $update_time = $self->get_cache_file_update(type => 'jobs');
+        $lookup_time = 3600;
+        if (defined($update_time)) {
+            $lookup_time = time() - $update_time;
+        }
+    }
+
+    my $response = $self->request_internal(
+        endpoint => $options{endpoint},
+        get_param => ['completedJobLookupTime=' . $lookup_time]
+    );
+
+    $self->create_cache_file(type => 'jobs', response => $response)
+        if (defined($self->{cache_create}));
+
+    return $response;
 }
 
 sub request_paging {
     my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(type => $options{type})
+        if (defined($self->{cache_use}));
 
     my ($page_num, $page_count) = (1, 200);
     my $alerts = [];
     while (1) {
         my $results = $self->request_internal(
             endpoint => $options{endpoint},
-            get_param => ['pageNo=' . $page_num, 'pageCount=' . $page_count]
+            get_param => ['pageNo=' . $page_num, 'pageCount=' . $page_count],
+            header => ['Cache-Control: private']
         );
 
         push @$alerts, @{$results->{feedsList}};
         last if ($results->{totalNoOfAlerts} < ($page_num * $page_count));
         $page_num++;
     }
+
+    $self->create_cache_file(type => $options{type}, response => $alerts)
+        if (defined($self->{cache_create}));
 
     return $alerts;
 }
@@ -329,6 +415,14 @@ Set API password
 =item B<--timeout>
 
 Set HTTP timeout
+
+=item B<--cache-create>
+
+Create a cache file and quit.
+
+=item B<--cache-use>
+
+Use the cache file (created with --cache-create). 
 
 =back
 

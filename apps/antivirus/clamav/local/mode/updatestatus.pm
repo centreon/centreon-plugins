@@ -57,7 +57,7 @@ sub custom_dailydb_status_output {
 
     return sprintf(
         "daily.cvd version '%s/%s', last update %s",
-        $self->{result_values}->{current_dailydb_version};
+        $self->{result_values}->{current_dailydb_version},
         $self->{result_values}->{last_dailydb_version},
         centreon::plugins::misc::change_seconds(
             value => $self->{result_values}->{current_dailydb_timediff}
