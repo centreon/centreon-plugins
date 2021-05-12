@@ -129,7 +129,7 @@ Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::common::appservice::plugin --mode=memory --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Web/sites/<sites_id>'
---aggregation='average' --warning-app-memory='80'' --critical-app-memory='90'
+--aggregation='average' --warning-app-memory='80' --critical-app-memory='90'
 
 Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
