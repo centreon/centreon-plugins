@@ -33,7 +33,6 @@ sub new {
     $self->{modes} = {
         'events'    => 'cloud::azure::management::apimanagement::mode::events',
         'discovery' => 'cloud::azure::management::apimanagement::mode::discovery',
-        'health'    => 'cloud::azure::management::apimanagement::mode::health',
         'requests'  => 'cloud::azure::management::apimanagement::mode::requests',
         'duration'  => 'cloud::azure::management::apimanagement::mode::duration'
     };
