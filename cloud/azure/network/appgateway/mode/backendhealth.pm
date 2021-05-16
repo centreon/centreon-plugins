@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::network::appgateway::mode::backendunhealthyhost;
+package cloud::azure::network::appgateway::mode::backendhealth;
 
 use base qw(cloud::azure::custom::mode);
 
