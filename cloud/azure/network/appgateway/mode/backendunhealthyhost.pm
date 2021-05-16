@@ -35,7 +35,15 @@ sub get_metrics_mapping {
             'nlabel' => 'appgateway.backend.unhealthy.host.count',
             'unit'   => '',
             'min'    => '0'
+        },
+        'healthyhostcount' => {
+            'output' => 'Healthy Host Count',
+            'label'  => 'healthy-host-count',
+            'nlabel' => 'appgateway.backend.healthy.host.count',
+            'unit'   => '',
+            'min'    => '0'
         }
+
     };
 
     return $metrics_mapping;
