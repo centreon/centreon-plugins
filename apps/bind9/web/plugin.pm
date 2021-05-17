@@ -36,7 +36,7 @@ sub new {
         'zone-usage'   => 'apps::bind9::web::mode::zoneusage'
     };
 
-    $self->{custom_modes}{api} = 'apps::bind9::web::custom::api';
+    $self->{custom_modes}->{api} = 'apps::bind9::web::custom::api';
     return $self;
 }
 
