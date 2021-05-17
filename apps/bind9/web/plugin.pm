@@ -30,11 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.1';
-    %{$self->{modes}} = (
-        'memory-usage'      => 'apps::bind9::web::mode::memoryusage',
-        'server-usage'      => 'apps::bind9::web::mode::serverusage',
-        'zone-usage'        => 'apps::bind9::web::mode::zoneusage',
-    );
+    $self->{modes} = {
+        'memory-usage' => 'apps::bind9::web::mode::memoryusage',
+        'server-usage' => 'apps::bind9::web::mode::serverusage',
+        'zone-usage'   => 'apps::bind9::web::mode::zoneusage'
+    };
 
     $self->{custom_modes}{api} = 'apps::bind9::web::custom::api';
     return $self;
