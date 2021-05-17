@@ -38,6 +38,7 @@ sub new {
         'explode-perfdata-max:s@' => { name => 'explode_perfdata_max' },
         'range-perfdata:s'        => { name => 'range_perfdata' },
         'filter-perfdata:s'       => { name => 'filter_perfdata' },
+        'filter-perfdata-adv:s'   => { name => 'filter_perfdata_adv' },
         'change-perfdata:s@'      => { name => 'change_perfdata' },
         'extend-perfdata:s@'      => { name => 'extend_perfdata' },
         'extend-perfdata-group:s@'=> { name => 'extend_perfdata_group' },
@@ -137,6 +138,11 @@ sub check_options {
         }
     }
 
+    if (defined($self->{option_results}->{filter_perfdata_adv}) && $self->{option_results}->{filter_perfdata_adv} ne '') {
+        $self->{option_results}->{filter_perfdata_adv} =~ s/%\{(.*?)\}/\$values->{$1}/g;
+        $self->{option_results}->{filter_perfdata_adv} =~ s/%\((.*?)\)/\$values->{$1}/g;
+    }
+
     $self->load_perfdata_extend_args();
     $self->{option_results}->{use_new_perfdata} = 1 if (defined($self->{option_results}->{output_openmetrics}));
 
@@ -201,6 +207,7 @@ sub output_add {
 
 sub perfdata_add {
     my ($self, %options) = @_;
+
     my $perfdata = {
         label => '', value => '', unit => '', warning => '', critical => '', min => '', max => '', mode => $self->{mode}
     };
@@ -225,6 +232,23 @@ sub perfdata_add {
 
     $perfdata->{label} =~ s/'/''/g;
     push @{$self->{perfdatas}}, $perfdata;
+}
+
+sub filter_perfdata {
+    my ($self, %options) = @_;
+
+    return 1 if (
+        defined($self->{option_results}->{filter_perfdata}) &&
+        $options{perf}->{label} !~ /$self->{option_results}->{filter_perfdata}/
+    );
+
+    return 1 if (
+        defined($self->{option_results}->{filter_perfdata_adv}) &&
+        $self->{option_results}->{filter_perfdata_adv} ne '' &&
+        !$self->test_eval(test => $self->{option_results}->{filter_perfdata_adv}, values => $options{perf})
+    );
+
+    return 0;
 }
 
 sub range_perfdata {
@@ -281,8 +305,7 @@ sub output_json {
     if ($options{force_ignore_perfdata} == 0) {
         $self->change_perfdata();
         foreach my $perf (@{$self->{perfdatas}}) {
-            next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            next if ($self->filter_perfdata(perf => $perf));
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
 
             my %values = ();
@@ -371,8 +394,7 @@ sub output_xml {
     if ($options{force_ignore_perfdata} == 0) {
         $self->change_perfdata();
         foreach my $perf (@{$self->{perfdatas}}) {
-            next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            next if ($self->filter_perfdata(perf => $perf));
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
         
             my ($child_perfdata);
@@ -403,10 +425,12 @@ sub output_openmetrics {
     $self->change_perfdata();
 
     foreach my $perf (@{$self->{perfdatas}}) {
-        next if (defined($self->{option_results}->{filter_perfdata}) &&
-                 $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
-        $perf->{unit} = '' if (defined($self->{option_results}->{filter_uom}) &&
-            $perf->{unit} !~ /$self->{option_results}->{filter_uom}/);
+        next if ($self->filter_perfdata(perf => $perf));
+
+        $perf->{unit} = '' if (
+            defined($self->{option_results}->{filter_uom}) &&
+            $perf->{unit} !~ /$self->{option_results}->{filter_uom}/
+        );
         $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
         my $label = $perf->{label};
         my $instance;
@@ -486,8 +510,7 @@ sub output_txt {
         print '|';
         $self->change_perfdata();
         foreach my $perf (@{$self->{perfdatas}}) {
-            next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            next if ($self->filter_perfdata(perf => $perf));
             $perf->{unit} = '' if (defined($self->{option_results}->{filter_uom}) &&
                 $perf->{unit} !~ /$self->{option_results}->{filter_uom}/);
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
@@ -1417,6 +1440,12 @@ Display also debug messages.
 =item B<--filter-perfdata>
 
 Filter perfdata that match the regexp.
+
+=item B<--filter-perfdata-adv>
+
+Advanced perfdata filter.
+
+Eg: --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")'
 
 =item B<--explode-perfdata-max>
 
