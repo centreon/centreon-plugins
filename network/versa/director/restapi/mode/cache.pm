@@ -41,6 +41,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $devices_done = {};
     my $orgs = $options{custom}->cache_organizations();
     foreach my $org (values %{$orgs->{entries}}) {
         if (defined($self->{option_results}->{filter_org_name}) && $self->{option_results}->{filter_org_name} ne '' &&
@@ -57,10 +58,12 @@ sub manage_selection {
                 next;
             }
 
+            # we check all paths from the root org
             $options{custom}->cache_device_paths(
                 org_name => $org->{name},
-                device_name => $device->{name},
+                device_name => $device->{name}
             );
+            $devices_done->{ $device->{name} } = 1;
         }
     }
 

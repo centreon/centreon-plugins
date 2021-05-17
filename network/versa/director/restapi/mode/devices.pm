@@ -67,6 +67,48 @@ sub custom_disk_output {
     );
 }
 
+sub device_long_output {
+    my ($self, %options) = @_;
+
+    return "checking device '" . $options{instance_value}->{display} . "' [type: " . $options{instance_value}->{type} . ']';
+}
+
+sub prefix_device_output {
+    my ($self, %options) = @_;
+
+    return "Device '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Devices ';
+}
+
+sub prefix_alarm_output {
+    my ($self, %options) = @_;
+
+    return 'alarms ';
+}
+
+sub prefix_path_output {
+    my ($self, %options) = @_;
+
+    return 'paths ';
+}
+
+sub prefix_policy_output {
+    my ($self, %options) = @_;
+
+    return 'policy violation ';
+}
+
+sub prefix_health_output {
+    my ($self, %options) = @_;
+
+    return "health monitor '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -78,6 +120,7 @@ sub set_counters {
                 { name => 'device_memory', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_disk', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_alarms', type => 0, cb_prefix_output => 'prefix_alarm_output', skipped_code => { -10 => 1 } },
+                { name => 'device_paths', type => 0, cb_prefix_output => 'prefix_path_output', skipped_code => { -10 => 1 } },
                 { name => 'device_policy', type => 0, cb_prefix_output => 'prefix_policy_output', skipped_code => { -10 => 1 } },
                 { name => 'device_bgp_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_config_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
@@ -184,6 +227,25 @@ sub set_counters {
         };
     }
 
+    $self->{maps_counters}->{device_paths} = [
+        { label => 'paths-up', nlabel => 'paths.up.count', set => {
+                key_values => [ { name => 'up' },  { name => 'display' } ],
+                output_template => 'up: %s',
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'paths-down', nlabel => 'paths.down.count', set => {
+                key_values => [ { name => 'down' },  { name => 'display' } ],
+                output_template => 'down: %s',
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
     $self->{maps_counters}->{device_policy} = [
         { label => 'packets-dropped-novalidlink', nlabel => 'policy.violation.packets.dropped.novalidlink.count', set => {
                 key_values => [ { name => 'dropped_novalidlink', diff => 1 },  { name => 'display' } ],
@@ -219,42 +281,6 @@ sub set_counters {
     }
 }
 
-sub device_long_output {
-    my ($self, %options) = @_;
-
-    return "checking device '" . $options{instance_value}->{display} . "' [type: " . $options{instance_value}->{type} . ']';
-}
-
-sub prefix_device_output {
-    my ($self, %options) = @_;
-
-    return "Device '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Devices ';
-}
-
-sub prefix_alarm_output {
-    my ($self, %options) = @_;
-
-    return 'alarms ';
-}
-
-sub prefix_policy_output {
-    my ($self, %options) = @_;
-
-    return 'policy violation ';
-}
-
-sub prefix_health_output {
-    my ($self, %options) = @_;
-
-    return "health monitor '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
@@ -273,12 +299,14 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $orgs = $options{custom}->get_organizations();
+    my $root_org_name = $options{custom}->find_root_organization_name(orgs => $orgs);
+
     my $devices = {};
     if (defined($self->{option_results}->{organization}) && $self->{option_results}->{organization} ne '') {
         my $result = $options{custom}->get_devices(org_name => $self->{option_results}->{organization});
         $devices = $result->{entries};
     } else {
-        my $orgs = $options{custom}->get_organizations();
         foreach my $org (values %{$orgs->{entries}}) {
             if (defined($self->{option_results}->{filter_org_name}) && $self->{option_results}->{filter_org_name} ne '' &&
                 $org->{name} !~ /$self->{option_results}->{filter_org_name}/) {
@@ -322,6 +350,11 @@ sub manage_selection {
         $self->{devices}->{ $device->{name} } = {
             display => $device->{name},
             type => $device->{type},
+            device_paths => {
+               display => $device->{name},
+               up => 0,
+               down => 0 
+            },
             device_status => {
                 display => $device->{name},
                 ping_status => lc($device->{pingStatus}),
@@ -404,6 +437,16 @@ sub manage_selection {
                 total => $_->{columnValues}->[0] + $_->{columnValues}->[1] + $_->{columnValues}->[2]
             };
         }
+
+        # we want all paths. So we check from root org
+        my $paths = $options{custom}->get_device_paths(
+            org_name => $root_org_name,
+            device_name => $device->{name}
+        );
+        foreach (@{$paths->{entries}}) {
+            $self->{devices}->{ $device->{name} }->{device_paths}->{ $_->{connState} }++;
+        }
+
         $self->{global}->{total}++;
     }
 
@@ -470,7 +513,8 @@ Can be: 'total','memory-usage', 'memory-usage-free', 'memory-usage-prct',
 'interface-health-up' 'interface-health-down' 'interface-health-disabled' 
 'ike-health-up' 'ike-health-down' 'ike-health-disabled'
 'config-health-up' 'config-health-down' 'config-health-disabled'
-'packets-dropped-novalidlink', 'packets dropped by sla action'.
+'packets-dropped-novalidlink', 'packets dropped by sla action',
+'paths-up', 'paths-down'.
 
 =back
 

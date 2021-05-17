@@ -329,7 +329,7 @@ sub cache_device_paths {
 
     my $paths = $self->call_device_paths(%options);
     $self->write_cache_file(
-        statefile => 'device_paths_' . $options{device_name},
+        statefile => 'device_paths_' . $options{org_name} . '_' . $options{device_name},
         response => $paths
     );
 
@@ -380,6 +380,17 @@ sub get_devices {
     return $self->get_cache_file_response(statefile => 'devices_' . $options{org_name})
         if (defined($self->{option_results}->{cache_use}));
     return $self->call_devices(org_name => $options{org_name});
+}
+
+sub get_device_paths {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(statefile => 'device_paths_' . $options{org_name} . '_' . $options{device_name})
+        if (defined($self->{option_results}->{cache_use}));
+    return $self->call_device_paths(
+        org_name => $options{org_name},
+        device_name => $options{device_name}
+    );
 }
 
 1;
