@@ -38,7 +38,7 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             'hostname:s' => { name => 'hostname' },
@@ -79,7 +79,7 @@ sub check_options {
     $self->{unknown_status} = (defined($self->{option_results}->{unknown_status})) ? $self->{option_results}->{unknown_status} : undef;
     $self->{warning_status} = (defined($self->{option_results}->{warning_status})) ? $self->{option_results}->{warning_status} : undef;
     $self->{critical_status} = (defined($self->{option_results}->{critical_status})) ? $self->{option_results}->{critical_status} : undef;
- 
+
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
@@ -116,7 +116,7 @@ sub settings {
 
 sub load_response {
     my ($self, %options) = @_;
-    
+
     if ($self->{response_type} eq 'xml') {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output}, module => 'XML::XPath',
@@ -137,7 +137,7 @@ sub request {
 
     $self->settings();
     my $response = $self->{http}->request();
-    
+
     my ($content_type) = $self->{http}->get_header(name => 'Content-Type');
     if (!defined($content_type) || $content_type !~ /(xml|json)/i) {
         $self->{output}->add_option_msg(short_msg => "content-type not set");
@@ -149,7 +149,7 @@ sub request {
         $self->{output}->add_option_msg(short_msg => "json format unsupported");
         $self->{output}->option_exit();
     }
-    
+
     $self->load_response(response => $response);
     my $method = $self->can("get_api_version_$self->{response_type}");
     if (!defined($method)) {
@@ -161,13 +161,13 @@ sub request {
         $self->{output}->add_option_msg(short_msg => "cannot get api version");
         $self->{output}->option_exit();
     }
-    
+
     $self->{api_version} = $1;
 }
 
 sub get_api_version_xml {
     my ($self, %options) = @_;
-    
+
     eval {
         my $nodesets = $self->{xpath_response}->find('//statistics/@version');
         my $node = $nodesets->get_node(1);
@@ -176,14 +176,14 @@ sub get_api_version_xml {
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot lookup: $@");
         $self->{output}->option_exit();
-    }    
+    }
 }
 
 sub load_memory_xml_v3 {
     my ($self, %options) = @_;
-    
+
     my $memory = {};
-    
+
     my $nodesets = $self->{xpath_response}->find('//memory/summary');
     my $node_memory = $nodesets->get_node(1);
     foreach my $node ($node_memory->getChildNodes()) {
@@ -196,13 +196,13 @@ sub load_memory_xml_v3 {
             $memory->{in_use} = $node->string_value;
         }
     }
-    
+
     return $memory;
 }
 
 sub load_memory_xml_v2 {
     my ($self, %options) = @_;
-    
+
     return $self->load_memory_xml_v3();
 }
 
@@ -224,13 +224,13 @@ sub load_zones_xml_v3 {
             }
         }
     }
-    
+
     return $zones;
 }
 
 sub load_zones_xml_v2 {
     my ($self, %options) = @_;
-    
+
     my $zones = {};
     my $nodesets = $self->{xpath_response}->find('//views//zones/zone');
     foreach my $node ($nodesets->get_nodelist()) {
@@ -248,7 +248,7 @@ sub load_zones_xml_v2 {
                 }
             }
         }
-        
+
         if (defined($name)) {
             $zones->{$name}->{counters}->{rcode} = $counters;
         }
@@ -259,7 +259,7 @@ sub load_zones_xml_v2 {
 
 sub load_server_xml_v3 {
     my ($self, %options) = @_;
-    
+
     my $server = { counters => { } };
     my $nodesets = $self->{xpath_response}->find('//server//counters');
     foreach my $node ($nodesets->get_nodelist()) {
@@ -272,63 +272,63 @@ sub load_server_xml_v3 {
             $server->{counters}->{$type}->{$counter_name} = $counter_node->string_value;
         }
     }
-    
+
     return $server;
 }
 
 sub load_server_xml_v2 {
     my ($self, %options) = @_;
-    
+
     my $server = { counters => { opcode => {}, nsstat => {}, qtype => {} } };
-    
+
     my $nodesets = $self->{xpath_response}->find('//server//opcode');
     foreach my $node ($nodesets->get_nodelist()) {
         my ($name, $value);
         foreach my $counter_node ($node->getChildNodes()) {
             my $tag_name = $counter_node->getLocalName();
             next if (!defined($tag_name));
-            
+
             $name = $counter_node->string_value if ($tag_name eq 'name');
             $value = $counter_node->string_value if ($tag_name eq 'counter');
         }
-        
+
         if (defined($name) && defined($value)) {
             $server->{counters}->{opcode}->{$name} = $value;
         }
     }
-    
+
     $nodesets = $self->{xpath_response}->find('//server//rdtype');
     foreach my $node ($nodesets->get_nodelist()) {
         my ($name, $value);
         foreach my $counter_node ($node->getChildNodes()) {
             my $tag_name = $counter_node->getLocalName();
             next if (!defined($tag_name));
-            
+
             $name = $counter_node->string_value if ($tag_name eq 'name');
             $value = $counter_node->string_value if ($tag_name eq 'counter');
         }
-        
+
         if (defined($name) && defined($value)) {
             $server->{counters}->{qtype}->{$name} = $value;
         }
     }
-    
+
     $nodesets = $self->{xpath_response}->find('//server//nsstat');
     foreach my $node ($nodesets->get_nodelist()) {
         my ($name, $value);
         foreach my $counter_node ($node->getChildNodes()) {
             my $tag_name = $counter_node->getLocalName();
             next if (!defined($tag_name));
-            
+
             $name = $counter_node->string_value if ($tag_name eq 'name');
             $value = $counter_node->string_value if ($tag_name eq 'counter');
         }
-        
+
         if (defined($name) && defined($value)) {
             $server->{counters}->{nsstat}->{$name} = $value;
         }
     }
-    
+
     return $server;
 }
 
@@ -341,7 +341,7 @@ sub get_memory {
         $self->{output}->add_option_msg(short_msg => "method 'load_memory_$self->{response_type}_v$self->{api_version}' unsupported");
         $self->{output}->option_exit();
     }
-    
+
     my $memory = $self->$method();
     if (!defined($memory->{in_use})) {
         $self->{output}->add_option_msg(short_msg => "cannot find memory information");
@@ -360,7 +360,7 @@ sub get_zones {
         $self->{output}->add_option_msg(short_msg => "method 'load_zones_$self->{response_type}_v$self->{api_version}' unsupported");
         $self->{output}->option_exit();
     }
-    
+
     my $zones = $self->$method();
     if (scalar(keys %{$zones}) == 0) {
         $self->{output}->add_option_msg(short_msg => "cannot find zones information");
@@ -379,7 +379,7 @@ sub get_server {
         $self->{output}->add_option_msg(short_msg => "method 'load_server_$self->{response_type}_v$self->{api_version}' unsupported");
         $self->{output}->option_exit();
     }
-    
+
     my $server = $self->$method();
     if (scalar(keys %{$server->{counters}}) == 0) {
         $self->{output}->add_option_msg(short_msg => "cannot find server information");
