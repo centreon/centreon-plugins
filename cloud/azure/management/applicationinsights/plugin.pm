@@ -31,17 +31,17 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'availability'    => 'cloud::azure::management::applicationinsights::mode::availability',
+        'browser-timings' => 'cloud::azure::management::applicationinsights::mode::browsertimings',
         'cpu'             => 'cloud::azure::management::applicationinsights::mode::cpu',
-        'health'          => 'cloud::azure::management::applicationinsights::mode::health',
-        'memory'          => 'cloud::azure::management::applicationinsights::mode::memory',
-        'requests'        => 'cloud::azure::management::applicationinsights::mode::requests',
         'discovery'       => 'cloud::azure::management::applicationinsights::mode::discovery',
         'exceptions'      => 'cloud::azure::management::applicationinsights::mode::exceptions',
-        'page-views'      => 'cloud::azure::management::applicationinsights::mode::pageviews',
-        'availability'    => 'cloud::azure::management::applicationinsights::mode::availability',
+        'external-calls'  => 'cloud::azure::management::applicationinsights::mode::externalcalls',
         'io-operations'   => 'cloud::azure::management::applicationinsights::mode::iooperations',
-        'external-calls'    => 'cloud::azure::management::applicationinsights::mode::externalcalls',
-        'browser-timings' => 'cloud::azure::management::applicationinsights::mode::browsertimings',
+        'health'          => 'cloud::azure::management::applicationinsights::mode::health',
+        'memory'          => 'cloud::azure::management::applicationinsights::mode::memory',
+        'page-views'      => 'cloud::azure::management::applicationinsights::mode::pageviews',
+        'requests'        => 'cloud::azure::management::applicationinsights::mode::requests',
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';

@@ -31,8 +31,8 @@ sub get_metrics_mapping {
     my $metrics_mapping = {
         'performancecounters/processiobytespersecond' => {
             'output' => 'Process IO rate',
-            'label'  => 'total-bytes-operations',
-            'nlabel' => 'appinsights.bytes.total.operations.bytesperseconds',
+            'label'  => 'process-bytes-operations',
+            'nlabel' => 'appinsights.process.bytes.operations.bytesperseconds',
             'unit'   => 'B/s',
             'min'    => '0',
             'max'    => ''
@@ -108,13 +108,13 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=io-operations --custommode=api
 --resource=<component_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-total-bytes-operations='8000' --critical-total-bytes-operations='9000'
+--warning-process-bytes-operations='8000' --critical-process-bytes-operations='9000'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=io-operations --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Insights/Components/<component_id>'
---aggregation='average' --warning-total-bytes-operations='8000' --critical-total-bytes-operations='9000'
+--aggregation='average' --warning-process-bytes-operations='8000' --critical-process-bytes-operations='9000'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
@@ -128,13 +128,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-total-bytes-operations>
+=item B<--warning-process-bytes-operations>
 
-Total bytes operations warning threshold.
+Bytes operations per second warning threshold.
 
-=item B<--critical-total-bytes-operations>
+=item B<--critical-process-bytes-operations>
 
-Total bytes operations critical threshold.
+Bytes operations per second critical threshold.
 
 =back
 

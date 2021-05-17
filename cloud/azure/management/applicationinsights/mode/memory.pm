@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'performancecounters/memoryAvailableBytes' => {
+        'performancecounters/memoryavailablebytes' => {
             'output' => 'Available memory',
             'label'  => 'memory-available',
             'nlabel' => 'appinsights.memory.available.bytes',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'performancecounters/processPrivateBytes' => {
+        'performancecounters/processprivatebytes' => {
             'output' => 'Process private bytes',
             'label'  => 'memory-private',
             'nlabel' => 'appinsights.memory.private.bytes',
@@ -108,7 +108,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Application Insights cpu status.
+Check Azure Application Insights memory usage.
 
 Example:
 

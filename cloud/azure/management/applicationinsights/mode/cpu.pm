@@ -29,18 +29,18 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'performanceCounters/processCpuPercentage' => {
+        'performancecounters/processcpupercentage' => {
             'output' => 'Process CPU',
-            'label'  => 'process',
+            'label'  => 'w3wp-utilization-percentage',
             'nlabel' => 'appinsights.cpu.w3wp.utilization.percentage',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
         },
-        'performanceCounters/processorCpuPercentage' => {
+        'performancecounters/processorcpupercentage' => {
             'output' => 'Processor time',
-            'label'  => 'processor-time',
-            'nlabel' => 'appinsights.cpu.utilization.percentage',
+            'label'  => 'nonidle-time-percentage',
+            'nlabel' => 'appinsights.cpu.nonidle.time.percentage',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
@@ -108,7 +108,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Application Insights cpu status.
+Check Azure Application Insights CPU utilization.
 
 Example:
 
@@ -116,13 +116,13 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::management::applicationinsights::plugin --mode=cpu --custommode=api
 --resource=<component_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-process='80' --critical-process='90'
+--warning-nonidle-time-percentage='80' --critical-process='90'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=cpu --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Insights/Components/<component_id>'
---aggregation='average' --warning-process='80' --critical-process='90'
+--aggregation='average' --warning-nonidle-time-percentage='80' --critical-process='90'
 
 Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
@@ -139,12 +139,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be: 
-'process', 'processor-time'.
+'w3wp-utilization-percentage', 'nonidle-time-percentage'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'process', 'processor-time'.
+'w3wp-utilization-percentage', 'nonidle-time-percentage'.
 
 =back
 

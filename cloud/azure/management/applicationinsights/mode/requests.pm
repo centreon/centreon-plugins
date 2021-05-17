@@ -55,13 +55,13 @@ sub get_metrics_mapping {
         },
         'requests/rate' => {
             'output' => 'Server request rate',
-            'label'  => 'requests-server-rate',
-            'nlabel' => 'appinsights.requests.server.perseconds',
+            'label'  => 'requests-rate',
+            'nlabel' => 'appinsights.requests.perseconds',
             'unit'   => 'requests/s',
             'min'    => '0',
             'max'    => ''
         },
-        'performancecounters/requestExecutionTime' => {
+        'performancecounters/requestexecutiontime' => {
             'output' => 'HTTP request execution time',
             'label'  => 'requests-execution-time',
             'nlabel' => 'appinsights.requests.execution.time.milliseconds',
@@ -69,15 +69,15 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'performancecounters/requestsInQueue' => {
+        'performancecounters/requestsinqueue' => {
             'output' => 'HTTP requests in application queue',
-            'label'  => 'requests-queue',
+            'label'  => 'requests-queued',
             'nlabel' => 'appinsights.requests.failed.count',
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
         },
-        'performancecounters/requestsPerSecond' => {
+        'performancecounters/requestspersecond' => {
             'output' => 'HTTP request rate',
             'label'  => 'requests-http-rate',
             'nlabel' => 'appinsights.requests.http.perseconds',
@@ -148,7 +148,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Application Insights calls made by the application to external resources.
+Check Azure Application Insights HTTP request statistics.
 
 Example:
 
@@ -179,14 +179,14 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be: 
-'requests-count', 'requests-duration', 'requests-failed', 'requests-server-rate',
-'requests-execution-time', 'requests-queue', 'requests-http-rate'.
+'requests-count', 'requests-duration', 'requests-failed', 'requests-rate',
+'requests-execution-time', 'requests-queued', 'requests-http-rate'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'requests-count', 'requests-duration', 'requests-failed', 'requests-server-rate',
-'requests-execution-time', 'requests-queue', 'requests-http-rate'.
+'requests-count', 'requests-duration', 'requests-failed', 'requests-rate',
+'requests-execution-time', 'requests-queued', 'requests-http-rate'.
 
 =back
 

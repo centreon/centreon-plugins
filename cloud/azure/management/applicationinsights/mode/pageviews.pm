@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'pageViews/count' => {
+        'pageviews/count' => {
             'output' => 'Page views',
             'label'  => 'views-count',
             'nlabel' => 'appinsights.pageviews.total.count',
@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-        'pageViews/duration' => {
+        'pageviews/duration' => {
             'output' => 'Page view load time',
             'label'  => 'load-time',
             'nlabel' => 'appinsights.pageviews.load.milliseconds',
@@ -108,7 +108,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Application Insights calls made by the application to external resources.
+Check Azure Application Insights page views statistics.
 
 Example:
 
