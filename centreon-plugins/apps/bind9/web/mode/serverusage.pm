@@ -26,10 +26,6 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-my $default_filter_counters = "opcode-query|opcode-iquery|opcode-status|opcode-notify|opcode-update";
-$default_filter_counters .= "|qtype-a|qtype-aaaa|qtype-cname|qtype-mx|qtype-txt|qtype-soa|qtype-ptr";
-$default_filter_counters .= "|nsstat-requestv4|nsstat-requestv6";
-
 # From Bind 9.11.5 counter list
 # opcode = completed
 # rcode = not started
@@ -139,38 +135,34 @@ my @map = (
     ['zonestat-ixfrreqv4', 'zonestat IXFRReqv4 : %s', 'zonestat.ixfrreqv4.count'],
     ['zonestat-ixfrreqv6', 'zonestat IXFRReqv6 : %s', 'zonestat.ixfrreqv6.count'],
     ['zonestat-xfrsuccess', 'zonestat XfrSuccess : %s', 'zonestat.xfrsuccess.count'],
-    ['zonestat-xfrfail', 'zonestat XfrFail : %s', 'zonestat.xfrfail.count'],
+    ['zonestat-xfrfail', 'zonestat XfrFail : %s', 'zonestat.xfrfail.count']
 );
 
 sub set_counters {
-  my ($self, %options) = @_;
+    my ($self, %options) = @_;
 
-  $self->{maps_counters_type} = [
-    { name => 'server', type => 0, skipped_code => { -1 => 1, -10 => 1, 11 => -1 } }
-  ];
+    $self->{maps_counters_type} = [
+        { name => 'server', type => 0, skipped_code => { -1 => 1, -10 => 1, 11 => -1 } }
+    ];
 
-  $self->{maps_counters}->{server} = [];
-
-  for (my $i = 0; $i < scalar(@map); $i++) {
-    my $perf_label = $map[$i]->[0];
-    $perf_label =~ s/-/_/g;
-
-    push @{$self->{maps_counters}->{server}}, {
-      label => $map[$i]->[0], nlabel => => $map[$i]->[2], display_ok => 0,
-      set => {
-        key_values => [ { name => $perf_label, diff => 1 } ],
-        output_template => $map[$i]->[1],
-        perfdatas => [
-          { label => $perf_label, value => $perf_label , template => '%s', min => 0 },
-        ],
-      }
-    };
-  }
+    $self->{maps_counters}->{server} = [];
+    for (my $i = 0; $i < scalar(@map); $i++) {
+        push @{$self->{maps_counters}->{server}}, {
+            label => $map[$i]->[0], nlabel => => $map[$i]->[2], display_ok => 0,
+            set => {
+                key_values => [ { name => $map[$i]->[0], diff => 1 } ],
+                output_template => $map[$i]->[1],
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        };
+    }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -180,12 +172,14 @@ sub new {
 }
 
 sub check_options {
-  my ($self, %options) = @_;
-  $self->SUPER::check_options(%options);
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
 
-  if ( ! defined($self->{option_results}->{filter_counters}) ) {
-      $self->{option_results}->{filter_counters} = $default_filter_counters;
-  }
+    if (!defined($self->{option_results}->{filter_counters})) {
+        $self->{option_results}->{filter_counters} = 'opcode-query|opcode-iquery|opcode-status|opcode-notify|opcode-update|' .
+            'qtype-a|qtype-aaaa|qtype-cname|qtype-mx|qtype-txt|qtype-soa|qtype-ptr|' .
+            'nsstat-requestv4|nsstat-requestv6';
+    }
 }
 
 sub manage_selection {
@@ -195,21 +189,21 @@ sub manage_selection {
 
     # Init for all vars, some are not present in response if no request on the server
     for (my $i = 0; $i < scalar(@map); $i++) {
-      my $perf_label = $map[$i]->[0];
-      $perf_label =~ s/-/_/g;
-      $self->{server}->{$perf_label} = 0;
+      $self->{server}->{ $map[$i]->[0] } = 0;
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All Bind 9 counters are ok');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'All Bind 9 counters are ok'
+    );
 
     foreach my $type (keys %{$result->{counters}}) {
         foreach my $counter (keys %{$result->{counters}->{$type}}) {
-            $self->{server}->{lc($type) . '_' . lc($counter)} = $result->{counters}->{$type}->{$counter};
+            $self->{server}->{lc($type) . '-' . lc($counter)} = $result->{counters}->{$type}->{$counter};
         }
     }
 
-    $self->{cache_name} = "bind9_" . $self->{mode} . '_' . $options{custom}->get_uniq_id()  . '_' .
+    $self->{cache_name} = 'bind9_' . $self->{mode} . '_' . $options{custom}->get_uniq_id()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
