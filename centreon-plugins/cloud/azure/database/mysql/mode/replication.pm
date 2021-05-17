@@ -109,7 +109,7 @@ sub check_options {
 
     my $metrics_mapping_transformed;
     foreach my $metric_type (@{$resource_mapping->{$resource_type}}) {
-        $metrics_mapping_transformed->{$metric_type} = $self->{metrics_mapping}->{$metric_type};
+        $metrics_mapping_transformed->{$metric_type} = $self->{resource_mapping}->{$metric_type};
     }
 
     foreach my $metric (keys %{$self->{metrics_mapping_transformed}}) {
