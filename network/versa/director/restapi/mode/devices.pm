@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
 
@@ -103,7 +103,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{device_status} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{ping_status} ne "reachable" or %{services_status} ne "good"', set => {
                 key_values => [
                     { name => 'ping_status' }, { name => 'sync_status' },
                     { name => 'services_status' }, { name => 'path_status' },
@@ -111,7 +111,7 @@ sub set_counters {
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -262,39 +262,39 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'organization:s'       => { name => 'organization' },
+        'filter-org-name:s'    => { name => 'filter_org_name' },
         'filter-device-name:s' => { name => 'filter_device_name' },
-        'filter-device-type:s' => { name => 'filter_device_type' },
-        'unknown-status:s'     => { name => 'unknown_status', default => '' },
-        'warning-status:s'     => { name => 'warning_status', default => '' },
-        'critical-status:s'    => { name => 'critical_status', default => '%{ping_status} ne "reachable" or %{services_status} ne "good"' }
+        'filter-device-type:s' => { name => 'filter_device_type' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{organization}) || $self->{option_results}->{organization} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --organization option");
-        $self->{output}->option_exit();
-    }
-
-    $self->change_macros(macros => [
-        'unknown_status', 'warning_status', 'critical_status'
-    ]);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $devices = $options{custom}->get_appliances_status_under_organization(organization => $self->{option_results}->{organization});
+    my $devices = {};
+    if (defined($self->{option_results}->{organization}) && $self->{option_results}->{organization} ne '') {
+        my $result = $options{custom}->get_devices(org_name => $self->{option_results}->{organization});
+        $devices = $result->{entries};
+    } else {
+        my $orgs = $options{custom}->get_organizations();
+        foreach my $org (values %{$orgs->{entries}}) {
+            if (defined($self->{option_results}->{filter_org_name}) && $self->{option_results}->{filter_org_name} ne '' &&
+                $org->{name} !~ /$self->{option_results}->{filter_org_name}/) {
+                $self->{output}->output_add(long_msg => "skipping org '" . $org->{name} . "': no matching filter name.", debug => 1);
+                next;
+            }
+
+            my $result = $options{custom}->get_devices(org_name => $org->{name});
+            $devices = { %$devices, %{$result->{entries}} };
+        }
+    }
 
     $self->{global} = { total => 0 };
     $self->{devices} = {};
 
-    foreach my $device (@$devices) {
+    foreach my $device (values %$devices) {
         if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
             $device->{name} !~ /$self->{option_results}->{filter_device_name}/) {
             $self->{output}->output_add(long_msg => "skipping device '" . $device->{name} . "': no matching filter name.", debug => 1);
@@ -306,13 +306,13 @@ sub manage_selection {
             next;
         }
 
-        #"ping-status": "REACHABLE",
-        #"sync-status": "OUT_OF_SYNC",
-        #"services-status": "GOOD",
-        #"overall-status": "POWERED_ON",
-        #"controller-status": "Unavailable",
-        #"path-status": "Unavailable",
-        #"Hardware": {
+        #"pingStatus": "REACHABLE",
+        #"syncStatus": "OUT_OF_SYNC",
+        #"servicesStatus": "GOOD",
+        #"overallStatus": "POWERED_ON",
+        #"controllerStatus": "Unavailable",
+        #"pathStatus": "Unavailable",
+        #"hardware": {
         #     "memory": "7.80GiB",
 	    #     "freeMemory": "1.19GiB",
 	    #     "diskSize": "80G",
@@ -324,11 +324,11 @@ sub manage_selection {
             type => $device->{type},
             device_status => {
                 display => $device->{name},
-                ping_status => lc($device->{'ping-status'}),
-                sync_status => lc($device->{'sync-status'}),
-                services_status => lc($device->{'services-status'}),
-                path_status => lc($device->{'path-status'}),
-                controller_status => defined($device->{'controller-status'}) ? lc($device->{'controller-status'}) : '-'
+                ping_status => lc($device->{pingStatus}),
+                sync_status => lc($device->{syncStatus}),
+                services_status => lc($device->{servicesStatus}),
+                path_status => lc($device->{pathStatus}),
+                controller_status => defined($device->{controllerStatus}) ? lc($device->{controllerStatus}) : '-'
             },
             device_alarms => {
                 display => $device->{name}
@@ -342,13 +342,13 @@ sub manage_selection {
         };
 
         my ($total, $free);
-        if (defined($device->{Hardware}->{memory})) {
+        if (defined($device->{hardware}->{memory})) {
             $total = centreon::plugins::misc::convert_bytes(
-                value => $device->{Hardware}->{memory},
+                value => $device->{hardware}->{memory},
                 pattern => '([0-9\.]+)(.*)$'
             );
             $free = centreon::plugins::misc::convert_bytes(
-                value => $device->{Hardware}->{freeMemory},
+                value => $device->{hardware}->{freeMemory},
                 pattern => '([0-9\.]+)(.*)$'
             );
             $self->{devices}->{ $device->{name} }->{device_memory} = {
@@ -361,13 +361,13 @@ sub manage_selection {
             };
         }
 
-        if (defined($device->{Hardware}->{diskSize})) {
+        if (defined($device->{hardware}->{diskSize})) {
             $total = centreon::plugins::misc::convert_bytes(
-                value => $device->{Hardware}->{diskSize},
+                value => $device->{hardware}->{diskSize},
                 pattern => '([0-9\.]+)(.*)$'
             );
             $free = centreon::plugins::misc::convert_bytes(
-                value => $device->{Hardware}->{freeDisk},
+                value => $device->{hardware}->{freeDisk},
                 pattern => '([0-9\.]+)(.*)$'
             );
             $self->{devices}->{ $device->{name} }->{device_disk} = {
@@ -407,8 +407,10 @@ sub manage_selection {
         $self->{global}->{total}++;
     }
 
-    $self->{cache_name} = 'versa_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $self->{option_results}->{organization} . '_' .
+    $self->{cache_name} = 'versa_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{organization}) ? md5_hex($self->{option_results}->{organization}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_org_name}) ? md5_hex($self->{option_results}->{filter_org_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_device_name}) ? md5_hex($self->{option_results}->{filter_device_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_device_type}) ? md5_hex($self->{option_results}->{filter_device_type}) : md5_hex('all'))
 }
@@ -425,7 +427,11 @@ Check devices.
 
 =item B<--organization>
 
-Check device under a organization (Required).
+Check device under an organization name.
+
+=item B<--filter-org-name>
+
+Filter organizations by name (Can be a regexp).
 
 =item B<--filter-device-name>
 

@@ -257,7 +257,8 @@ sub call_devices {
             pathStatus => $_->{'path-status'},
             controllerStatus => $_->{'controll-status'},
             alarmSummary => $_->{alarmSummary},
-            cpeHealth => $_->{cpeHealth}
+            cpeHealth => $_->{cpeHealth},
+            policyViolation => $_->{policyViolation}
         };
         if (defined($_->{Hardware})) {
             $devices->{entries}->{ $_->{uuid} }->{hardware} = {
