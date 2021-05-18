@@ -290,7 +290,8 @@ sub new {
         'organization:s'       => { name => 'organization' },
         'filter-org-name:s'    => { name => 'filter_org_name' },
         'filter-device-name:s' => { name => 'filter_device_name' },
-        'filter-device-type:s' => { name => 'filter_device_type' }
+        'filter-device-type:s' => { name => 'filter_device_type' },
+        'add-paths'            => { name => 'add_paths' }
     });
 
     return $self;
@@ -299,14 +300,14 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $orgs = $options{custom}->get_organizations();
-    my $root_org_name = $options{custom}->find_root_organization_name(orgs => $orgs);
-
+    my ($orgs, $root_org_name);
     my $devices = {};
     if (defined($self->{option_results}->{organization}) && $self->{option_results}->{organization} ne '') {
         my $result = $options{custom}->get_devices(org_name => $self->{option_results}->{organization});
         $devices = $result->{entries};
     } else {
+        $orgs = $options{custom}->get_organizations();
+        $root_org_name = $options{custom}->find_root_organization_name(orgs => $orgs);
         foreach my $org (values %{$orgs->{entries}}) {
             if (defined($self->{option_results}->{filter_org_name}) && $self->{option_results}->{filter_org_name} ne '' &&
                 $org->{name} !~ /$self->{option_results}->{filter_org_name}/) {
@@ -317,6 +318,10 @@ sub manage_selection {
             my $result = $options{custom}->get_devices(org_name => $org->{name});
             $devices = { %$devices, %{$result->{entries}} };
         }
+    }
+    if (defined($self->{option_results}->{add_paths}) && !defined($root_org_name)) {
+        $orgs = $options{custom}->get_organizations();
+        $root_org_name = $options{custom}->find_root_organization_name(orgs => $orgs);
     }
 
     $self->{global} = { total => 0 };
@@ -350,11 +355,6 @@ sub manage_selection {
         $self->{devices}->{ $device->{name} } = {
             display => $device->{name},
             type => $device->{type},
-            device_paths => {
-               display => $device->{name},
-               up => 0,
-               down => 0 
-            },
             device_status => {
                 display => $device->{name},
                 ping_status => lc($device->{pingStatus}),
@@ -438,13 +438,20 @@ sub manage_selection {
             };
         }
 
-        # we want all paths. So we check from root org
-        my $paths = $options{custom}->get_device_paths(
-            org_name => $root_org_name,
-            device_name => $device->{name}
-        );
-        foreach (@{$paths->{entries}}) {
-            $self->{devices}->{ $device->{name} }->{device_paths}->{ $_->{connState} }++;
+        if (defined($self->{option_results}->{add_paths})) {
+            $self->{devices}->{ $device->{name} }->{device_paths} = {
+                display => $device->{name},
+                up => 0,
+                down => 0
+            };
+            # we want all paths. So we check from root org
+            my $paths = $options{custom}->get_device_paths(
+                org_name => $root_org_name,
+                device_name => $device->{name}
+            );
+            foreach (@{$paths->{entries}}) {
+                $self->{devices}->{ $device->{name} }->{device_paths}->{ $_->{connState} }++;
+            }
         }
 
         $self->{global}->{total}++;
@@ -483,6 +490,10 @@ Filter device by name (Can be a regexp).
 =item B<--filter-device-type>
 
 Filter device by type (Can be a regexp).
+
+=item B<--add-paths>
+
+Add path statuses count.
 
 =item B<--unknown-status>
 
