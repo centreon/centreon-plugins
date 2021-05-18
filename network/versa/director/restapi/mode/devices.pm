@@ -129,7 +129,7 @@ sub set_counters {
                 { name => 'device_port_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_path_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_reachability_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'device_service_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'device_service_health', cb_prefix_output => 'prefix_health_output', type => 0, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -462,7 +462,7 @@ sub manage_selection {
         (defined($self->{option_results}->{organization}) ? md5_hex($self->{option_results}->{organization}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_org_name}) ? md5_hex($self->{option_results}->{filter_org_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_device_name}) ? md5_hex($self->{option_results}->{filter_device_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_device_type}) ? md5_hex($self->{option_results}->{filter_device_type}) : md5_hex('all'))
+        (defined($self->{option_results}->{filter_device_type}) ? md5_hex($self->{option_results}->{filter_device_type}) : md5_hex('all'));
 }
 
 1;
