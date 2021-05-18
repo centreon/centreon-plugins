@@ -131,10 +131,9 @@ Set resource group (Required if resource's name is used).
 
 Set warning threshold for capacity.
 
-=item B<--critical-*>
+=item B<--critical-capacity-percentage>
 
-Critical threshold where '*' can be:
-'capacity-percentage'.
+Set critical threshold for capacity.
 
 =back
 
