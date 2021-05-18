@@ -35,6 +35,7 @@ sub new {
         'devices'      => 'network::versa::director::restapi::mode::devices',
         'discovery'    => 'network::versa::director::restapi::mode::discovery',
         'list-devices' => 'network::versa::director::restapi::mode::listdevices',
+        'list-paths'   => 'network::versa::director::restapi::mode::listpaths',
         'paths'        => 'network::versa::director::restapi::mode::paths'
     };
 
