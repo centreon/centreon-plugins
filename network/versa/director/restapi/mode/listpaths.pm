@@ -90,7 +90,7 @@ sub run {
     foreach (values %$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[device_name: %s][device_type: %s][remote_site_name: %s][local_wan_link: %s][local_wan_link: %s]',
+                '[device_name: %s][device_type: %s][remote_site_name: %s][local_wan_link: %s][remote_wan_link: %s]',
                 $_->{device_name},
                 $_->{device_type},
                 $_->{remote_site_name},
