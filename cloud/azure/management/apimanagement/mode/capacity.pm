@@ -115,7 +115,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::apimanagement::plugi
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ApiManagement/service/<management_id>'
 --aggregation='average' --warning-capacity-percentage='80' --critical-capacity-percentage='90'
 
-Default aggregation: 'total' / 'average', 'minimum' and 'maximum' are valid.
+Default aggregation: 'average' / 'total', 'minimum' and 'maximum' are valid.
 
 =over 8
 
