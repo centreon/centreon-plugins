@@ -213,11 +213,11 @@ sub request_api {
 sub call_organizations {
     my ($self, %options) = @_;
 
-    my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_organization_orgs.txt');
-    #my $datas = $self->request_api(
-    #    endpoint => '/vnms/organization/orgs',
-    #    get_param => ['primary=true', 'offset=0', 'limit=200']
-    #);
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_organization_orgs.txt');
+    my $datas = $self->request_api(
+         endpoint => '/vnms/organization/orgs',
+        get_param => ['primary=true', 'offset=0', 'limit=200']
+    );
 
     my $orgs = { entries => {}, names => {} };
     foreach (@{$datas->{organizations}}) {
@@ -236,11 +236,11 @@ sub call_organizations {
 sub call_devices {
     my ($self, %options) = @_;
 
-    my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_appliance_filter.txt');
-    #my $datas = $self->request_api(
-    #    endpoint => '/vnms/appliance/filter/' . $options{org_name},
-    #    get_param => ['offset=0', 'limit=5000']
-    #);
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_appliance_filter.txt');
+    my $datas = $self->request_api(
+        endpoint => '/vnms/appliance/filter/' . $options{org_name},
+        get_param => ['offset=0', 'limit=5000']
+    );
 
     my $devices = { entries => {}, names => {}, types => {} };
     foreach (@{$datas->{appliances}}) {
@@ -279,11 +279,11 @@ sub call_devices {
 sub call_device_paths {
     my ($self, %options) = @_;
 
-    my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_dashboard_health_path.txt');
-    #my $datas = $self->request_api(
-    #    endpoint => '/vnms/dashboard/health/path?deviceName=BIAPVCT301&tenantName=PROVIDER&offset=0&limit=5000' . $options{org_name},
-    #    get_param => ['deviceName=' .  $options{device_name}, 'tenantName=' . $options{org_name}, 'offset=0', 'limit=5000']
-    #);
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_dashboard_health_path.txt');
+    my $datas = $self->request_api(
+        endpoint => '/vnms/dashboard/health/path' . $options{org_name},
+        get_param => ['deviceName=' .  $options{device_name}, 'tenantName=' . $options{org_name}, 'offset=0', 'limit=5000']
+    );
 
     my $paths = { org_name => $options{org_name}, device_name => $options{device_name}, entries => []};
     if (defined($datas->[0])) {
