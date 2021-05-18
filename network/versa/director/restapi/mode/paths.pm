@@ -128,17 +128,45 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'organization:s'       => { name => 'organization' },
-        'filter-org-name:s'    => { name => 'filter_org_name' },
-        'filter-device-name:s' => { name => 'filter_device_name' },
-        'filter-device-type:s' => { name => 'filter_device_type' }
+        'group:s'                   => { name => 'group' },
+        'organization:s'            => { name => 'organization' },
+        'filter-org-name:s'         => { name => 'filter_org_name' },
+        'filter-device-name:s'      => { name => 'filter_device_name' },
+        'filter-device-type:s'      => { name => 'filter_device_type' },
+        'filter-local-wan-link:s'   => { name => 'filter_local_wan_link' },
+        'filter-remote-site-name:s' => { name => 'filter_remote_site_name' },
+        'filter-remote-wan-link:s'  => { name => 'filter_remote_wan_link' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{group}) || $self->{option_results}->{group} eq '') {
+        $self->{option_results}->{group} = 'remoteSiteName,remoteWanLink';
+    }
+    
+    my $dimensions = { localsitename => 'localSiteName', localwanlink => 'localWanLink', remotesitename => 'remoteSiteName', remotewanlink => 'remoteWanLink' };
+    my ($grp, $subgrp) = split(/,/, $self->{option_results}->{group});
+    if (!defined($dimensions->{ lc($grp) })) {
+        $self->{output}->add_option_msg(short_msg => "Unknown --group name: $grp.");
+        $self->{output}->option_exit();
+    }
+    $self->{grp_name} = $dimensions->{ lc($grp) };
+    if (defined($subgrp)) {
+        if (!defined($dimensions->{ lc($subgrp) })) {
+            $self->{output}->add_option_msg(short_msg => "Unknown --group name: $subgrp.");
+            $self->{output}->option_exit();
+        }
+        $self->{subgrp_name} = $dimensions->{ lc($subgrp) };
+    }
 }
 
 sub manage_selection {
@@ -164,8 +192,8 @@ sub manage_selection {
         }
     }
 
-    $self->{global} = { total => 0 };
-    $self->{devices} = {};
+    $self->{global} = { up => 0, down => 0 };
+    $self->{grp1} = {};
 
     foreach my $device (values %$devices) {
         if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
@@ -179,20 +207,49 @@ sub manage_selection {
             next;
         }
 
-        $self->{devices}->{ $device->{name} } = {
-            display => $device->{name}
-        };
-
-        # we want all paths. So we check from root org
         my $paths = $options{custom}->get_device_paths(
             org_name => $root_org_name,
             device_name => $device->{name}
         );
-        foreach (@{$paths->{entries}}) {
-            $self->{devices}->{ $device->{name} }->{device_paths}->{ $_->{connState} }++;
-        }
+        foreach my $path (@{$paths->{entries}}) {
+            $path->{localSiteName} = $device->{name};
+            next if (
+                defined($self->{option_results}->{filter_local_wan_link}) && $self->{option_results}->{filter_local_wan_link} ne '' &&
+                $path->{localWanLink} !~ /$self->{option_results}->{filter_local_wan_link}/
+            );
+            next if (
+                defined($self->{option_results}->{filter_remote_site_name}) && $self->{option_results}->{filter_remote_site_name} ne '' &&
+                $path->{remoteSiteName} !~ /$self->{option_results}->{filter_remote_site_name}/
+            );
+            next if (
+                defined($self->{option_results}->{filter_remote_wan_link}) && $self->{option_results}->{filter_remote_wan_link} ne '' &&
+                $path->{remoteWanLink} !~ /$self->{option_results}->{filter_remote_wan_link}/
+            );
 
-        $self->{global}->{total}++;
+            if (!defined($self->{grp1}->{ $path->{$self->{grp_name}} })) {
+                $self->{grp1}->{ $path->{$self->{grp_name}} } = {
+                    name => $path->{ $self->{grp_name} },
+                    grp1_paths => {
+                        up => 0,
+                        down => 0
+                    },
+                    grp2 => {}
+                };
+            }
+
+            $self->{global}->{ $path->{connState} }++;
+            $self->{grp1}->{ $path->{$self->{grp_name}} }->{grp1_paths}->{ $path->{connState} }++;
+            next if (!defined($self->{subgrp_name}));
+
+            if (!defined($self->{grp1}->{ $path->{$self->{grp_name}} }->{grp2}->{ $path->{$self->{subgrp_name}} })) {
+                $self->{grp1}->{ $path->{$self->{grp_name}} }->{grp2}->{ $path->{$self->{subgrp_name}} } = {
+                    name => $path->{$self->{subgrp_name}},
+                    up => 0,
+                    down => 0
+                };
+            }
+            $self->{grp1}->{ $path->{$self->{grp_name}} }->{grp2}->{ $path->{$self->{subgrp_name}} }->{ $path->{connState} }++;
+        }
     }
 }
 
@@ -206,6 +263,11 @@ Check paths.
 
 =over 8
 
+=item B<--group>
+
+Choose dimensions to group paths up/down.
+Default: --group='remoteSiteName,remoteWanLink'
+
 =item B<--organization>
 
 Check device under an organization name.
@@ -216,43 +278,30 @@ Filter organizations by name (Can be a regexp).
 
 =item B<--filter-device-name>
 
-Filter device by name (Can be a regexp).
+Filter devices by name (Can be a regexp).
 
 =item B<--filter-device-type>
 
-Filter device by type (Can be a regexp).
+Filter devices by type (Can be a regexp).
 
-=item B<--unknown-status>
+=item B<--filter-local-wan-link>
 
-Set unknown threshold for status.
-Can used special variables like: %{ping_status}, %{services_status}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
+Filter paths by localWanLink (Can be a regexp).
 
-=item B<--warning-status>
+=item B<--filter-remote-site-name>
 
-Set warning threshold for status.
-Can used special variables like: %{ping_status}, %{service_sstatus}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
+Filter paths by remoteSiteName (Can be a regexp).
 
-=item B<--critical-status>
+=item B<--filter-remote-wan-link>
 
-Set critical threshold for status (Default: '%{ping_status} ne "reachable" or %{services_status} ne "good"').
-Can used special variables like: %{ping_status}, %{services_status}, %{sync_status}, %{controller_status}, %{path_status}, %{display}
+Filter paths by remoteWanLink (Can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total','memory-usage', 'memory-usage-free', 'memory-usage-prct',
-'disk-usage', 'disk-usage-free', 'disk-usage-prct',
-'alarms-critical', 'alarms-major', 'alarms-minor', 'alarms-warning', 'alarms-indeterminate',
-'bgp-health-up' 'bgp-health-down' 'bgp-health-disabled' 
-'path-health-up' 'path-health-down' 'path-health-disabled'
-'service-health-up' 'service-health-down' 'service-health-disabled' 
-'port-health-up' 'port-health-down' 'port-health-disabled'
-'reachability-health-up' 'reachability-health-down' 'reachability-health-disabled'
-'interface-health-up' 'interface-health-down' 'interface-health-disabled' 
-'ike-health-up' 'ike-health-down' 'ike-health-disabled'
-'config-health-up' 'config-health-down' 'config-health-disabled'
-'packets-dropped-novalidlink', 'packets dropped by sla action',
-'paths-up', 'paths-down'.
+Can be: 'total-paths-up', 'total-paths-down',
+'group-paths-up', 'group-paths-down', 
+'subgroup-paths-up', 'subgroup-paths-down'.
 
 =back
 
