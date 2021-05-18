@@ -127,10 +127,9 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-capacity-percentage>
 
-Warning threshold where '*' can be:
-'capacity-percentage'.
+Set warning threshold for capacity.
 
 =item B<--critical-*>
 
