@@ -126,7 +126,7 @@ sub check_options {
     $self->{az_resource_type} = $resource_type;
     $self->{az_resource_namespace} = 'Microsoft.DBforMySQL';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT15M';
     $self->{az_aggregations} = ['Maximum'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
