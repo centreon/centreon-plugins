@@ -34,7 +34,8 @@ sub get_metrics_mapping {
             'label'  => 'capacity-percentage',
             'nlabel' => 'apimanagement.capacity.percentage',
             'unit'   => '%',
-            'min'    => '0'
+            'min'    => '0',
+            'max'    => '100',
         },
     };
 
