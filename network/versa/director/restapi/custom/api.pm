@@ -26,6 +26,7 @@ use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -49,11 +50,11 @@ sub new {
             'api-username:s'         => { name => 'api_username' },
             'api-password:s'         => { name => 'api_password' },
             'timeout:s'              => { name => 'timeout' },
-            'reload-cache-time:s'    => { name => 'reload_cache_time' },
             'ignore-unknown-errors'  => { name => 'ignore_unknown_errors' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' }
+            'critical-http-status:s' => { name => 'critical_http_status' },
+            'cache-use'              => { name => 'cache_use' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -61,7 +62,6 @@ sub new {
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
-    $self->{cache_checked} = 0;
 
     return $self;
 }
@@ -80,12 +80,11 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 9182;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 50;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 180;
     $self->{ignore_unknown_errors} = (defined($self->{option_results}->{ignore_unknown_errors})) ? 1 : 0;
-    
+
     my $default_unknown = '(%{http_code} < 200 or %{http_code} >= 300)';
     if ($self->{ignore_unknown_errors} == 1) {
         $default_unknown = '(%{http_code} < 200 or %{http_code} >= 300) and %{http_code} != 404';
@@ -107,6 +106,8 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    # we force to use storable module
+    $self->{option_results}->{statefile_storable} = 1;
     $self->{cache}->check_options(option_results => $self->{option_results});
     return 0;
 }
@@ -165,7 +166,7 @@ sub bouchon {
 
     my $content = do {
         local $/ = undef;
-        if (!open my $fh, "<", $options{file}) {
+        if (!open my $fh, '<', $options{file}) {
             $self->{output}->add_option_msg(short_msg => "Could not open file $options{file} : $!");
             $self->{output}->option_exit();
         }
@@ -189,6 +190,7 @@ sub request_api {
     $self->settings();
     my $response = $self->{http}->request(
         url_path => $options{endpoint},
+        get_param => $options{get_param},
         critical_status => $self->{critical_http_status},
         warning_status => $self->{warning_http_status},
         unknown_status => $self->{unknown_http_status}
@@ -209,95 +211,189 @@ sub request_api {
     return ($content);
 }
 
-sub cache_versa_entities {
+sub call_organizations {
     my ($self, %options) = @_;
 
-    return if ($self->{cache_checked} == 1);
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_organization_orgs.txt');
+    my $datas = $self->request_api(
+        endpoint => '/vnms/organization/orgs',
+        get_param => ['primary=true', 'offset=0', 'limit=200']
+    );
 
-    $self->{cache_checked} = 1;
-    my $has_cache_file = $self->{cache}->read(statefile => 'cache_versa_' . $self->get_hostname());
-    my $timestamp_cache = $self->{cache}->get(name => 'last_timestamp');
-    $self->{cache_organizations} = $self->{cache}->get(name => 'organizations');
-    $self->{cache_appliances} = $self->{cache}->get(name => 'appliances');
+    my $orgs = { entries => {}, names => {} };
+    foreach (@{$datas->{organizations}}) {
+        $orgs->{entries}->{ $_->{uuid} } = {
+            uuid => $_->{uuid},
+            depth => $_->{depth},
+            name => $_->{name},
+            globalOrgId => $_->{globalOrgId}
+        };
+        $orgs->{names}->{ $_->{name} } = $_->{uuid};
+    }
 
-    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{reload_cache_time}) * 60))) {
-        $self->{cache_organizations} = $self->get_organizations(
-            disable_cache => 1
-        );
-        $self->{cache_appliances} = $self->get_appliances(
-            disable_cache => 1
-        );
+    return $orgs;
+}
 
-        $self->{cache}->write(data => {
-            last_timestamp => time(),
-            organizations => $self->{cache_organizations},
-            appliances => $self->{cache_appliances}
-        });
+sub call_devices {
+    my ($self, %options) = @_;
+
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_appliance_filter.txt');
+    my $datas = $self->request_api(
+        endpoint => '/vnms/appliance/filter/' . $options{org_name},
+        get_param => ['offset=0', 'limit=5000']
+    );
+
+    my $devices = { entries => {}, names => {}, types => {} };
+    foreach (@{$datas->{appliances}}) {
+        $devices->{entries}->{ $_->{uuid} } = {
+            uuid => $_->{uuid},
+            name => $_->{name},
+            ipAddress => $_->{ipAddress},
+            type => $_->{type},
+            location => $_->{location},
+            orgs => $_->{orgs},
+            pingStatus => $_->{'ping-status'},
+            syncStatus => $_->{'sync-status'},
+            servicesStatus => $_->{'services-status'},
+            pathStatus => $_->{'path-status'},
+            controllerStatus => $_->{'controll-status'},
+            alarmSummary => $_->{alarmSummary},
+            cpeHealth => $_->{cpeHealth},
+            policyViolation => $_->{policyViolation}
+        };
+        if (defined($_->{Hardware})) {
+            $devices->{entries}->{ $_->{uuid} }->{hardware} = {
+                memory => $_->{Hardware}->{memory},
+                freeMemory => $_->{Hardware}->{freeMemory},
+                diskSize => $_->{Hardware}->{diskSize},
+                freeDisk => $_->{Hardware}->{freeDisk}
+            };
+        }
+        $devices->{names}->{ $_->{name} } = $_->{uuid};
+        $devices->{types}->{ $_->{type} } = {} if (!defined($devices->{types}->{ $_->{type} }));
+        $devices->{types}->{ $_->{type} }->{ $_->{name} } = $_->{uuid};
+    }
+
+    return $devices;
+}
+
+sub call_device_paths {
+    my ($self, %options) = @_;
+
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_dashboard_health_path.txt');
+    my $datas = $self->request_api(
+        endpoint => '/vnms/dashboard/health/path',
+        get_param => ['deviceName=' .  $options{device_name}, 'tenantName=' . $options{org_name}, 'offset=0', 'limit=5000']
+    );
+
+    my $paths = { org_name => $options{org_name}, device_name => $options{device_name}, entries => []};
+    if (defined($datas->[0])) {
+        foreach (@{$datas->[0]->{details}}) {
+            my $remote_wan_link = centreon::plugins::misc::trim($_->{remoteWanLink});
+            my $local_wan_link = centreon::plugins::misc::trim($_->{localWanLink});
+            push @{$paths->{entries}}, {
+                remoteSiteName => $_->{remoteSiteName},
+                localWanLink => $local_wan_link ne '' ? $local_wan_link : 'unknown',
+                remoteWanLink => $remote_wan_link ne '' ? $remote_wan_link : 'unknown',
+                connState => $_->{connState}
+            };
+        }
+    }
+
+    return $paths;
+}
+
+sub cache_organizations {
+    my ($self, %options) = @_;
+
+    my $orgs = $self->call_organizations();
+    $self->write_cache_file(
+        statefile => 'orgs',
+        response => $orgs
+    );
+
+    return $orgs;
+}
+
+sub cache_devices {
+    my ($self, %options) = @_;
+
+    my $devices = $self->call_devices(%options);
+    $self->write_cache_file(
+        statefile => 'devices_' . $options{org_name},
+        response => $devices
+    );
+
+    return $devices;
+}
+
+sub cache_device_paths {
+    my ($self, %options) = @_;
+
+    my $paths = $self->call_device_paths(%options);
+    $self->write_cache_file(
+        statefile => 'device_paths_' . $options{org_name} . '_' . $options{device_name},
+        response => $paths
+    );
+
+    return $paths;
+}
+
+sub write_cache_file {
+    my ($self, %options) = @_;
+
+    $self->{cache}->read(statefile => 'cache_versa_' . $self->get_hostname() . '_' . $options{statefile});
+    $self->{cache}->write(data => {
+        update_time => time(),
+        response => $options{response}
+    });
+}
+
+sub get_cache_file_response {
+    my ($self, %options) = @_;
+
+    $self->{cache}->read(statefile => 'cache_versa_' . $self->get_hostname() . '_' . $options{statefile});
+    my $response = $self->{cache}->get(name => 'response');
+    if (!defined($response)) {
+        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
+        $self->{output}->option_exit();
+    }
+    return $response;
+}
+
+sub find_root_organization_name {
+    my ($self, %options) = @_;
+
+    foreach (values %{$options{orgs}->{entries}}) {
+        return $_->{name} if ($_->{depth} == 1);
     }
 }
 
 sub get_organizations {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/organizations.json');
-
-    $self->cache_versa_entities();
-    return $self->{cache_organizations} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
-    my $datas = $self->request_api(endpoint => '/api/config/nms/provider/organizations/organization');
-
-    my $results = { entries => {}, names => { } };
-
-    if (defined($datas->{organization})) {
-        foreach (@{$datas->{organization}}) {
-            $results->{entries}->{ $_->{uuid} } = $_;
-            $results->{names}->{ $_->{name} } = $_->{uuid};
-        }
-    }
-
-    return $results;
+    return $self->get_cache_file_response(statefile => 'orgs')
+        if (defined($self->{option_results}->{cache_use}));
+    return $self->call_organizations();
 }
 
-sub get_appliances {
+sub get_devices {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/appliances.json');
-
-    $self->cache_versa_entities();
-    return $self->{cache_appliances} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
-    my $datas = $self->request_api(endpoint => '/api/config/nms/provider/appliances/appliance');
-
-    my $results = { entries => {}, names => { }, types => { } };
-
-    if (defined($datas->{appliance})) {
-        foreach (@{$datas->{appliance}}) {
-            $results->{entries}->{ $_->{uuid} } = $_;
-            $results->{names}->{ $_->{name} } = $_->{uuid};
-            $results->{types}->{ $_->{type} } = {} if (!defined($results->{types}->{ $_->{type} }));
-            $results->{types}->{ $_->{type} }->{ $_->{name} } = $_->{uuid};
-        }
-    }
-
-    return $results;
+    return $self->get_cache_file_response(statefile => 'devices_' . $options{org_name})
+        if (defined($self->{option_results}->{cache_use}));
+    return $self->call_devices(org_name => $options{org_name});
 }
 
-sub get_appliances_status_under_organization {
+sub get_device_paths {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/tutu.txt.pretty');
-
-    my $datas = $self->request_api(endpoint => '/vnms/dashboard/tenantDetailAppliances/' . $options{organization});
-    return $datas;
-}
-
-sub execute {
-    my ($self, %options) = @_;
-
-    $self->cache_versa_entities();
-    my $results = $self->request_api(
-        endpoint => $options{endpoint},
+    return $self->get_cache_file_response(statefile => 'device_paths_' . $options{org_name} . '_' . $options{device_name})
+        if (defined($self->{option_results}->{cache_use}));
+    return $self->call_device_paths(
+        org_name => $options{org_name},
+        device_name => $options{device_name}
     );
-
-    return $results;
 }
 
 1;
@@ -340,13 +436,13 @@ Versa Director API password.
 
 Set HTTP timeout
 
-=item B<--reload-cache-time>
-
-Time in minutes before reloading cache file (default: 180).
-
 =item B<--ignore-unknown-errors>
 
 Ignore unknown errors (404 status code).
+
+=item B<--cache-use>
+
+Use the cache file (created with cache mode). 
 
 =back
 
