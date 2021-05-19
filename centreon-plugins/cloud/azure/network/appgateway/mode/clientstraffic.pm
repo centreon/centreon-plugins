@@ -29,14 +29,14 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'BytesReceived' => {
+        'bytesreceived' => {
             'output' => 'Clients Bytes Received',
             'label'  => 'clients-bytes-received',
             'nlabel' => 'appgateway.traffic.clients.received.bytes',
             'unit'   => 'B',
             'min'    => '0'
         },
-        'BytesSent' => {
+        'bytessent' => {
             'output' => 'Clients Bytes Sent',
             'label'  => 'clients-bytes-sent',
             'nlabel' => 'appgateway.traffic.clients.sent.bytes',

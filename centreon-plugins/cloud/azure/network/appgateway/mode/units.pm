@@ -50,7 +50,7 @@ sub get_metrics_mapping {
             'unit'   => '',
             'min'    => '0'
         },
-        'FixedBillableCapacityUnits' => {
+        'fixedbillablecapacityunits' => {
             'output' => 'Fixed Billable Capacity Units',
             'label'  => 'fixed-billable-units',
             'nlabel' => 'appgateway.billable.units.fixed.count',
