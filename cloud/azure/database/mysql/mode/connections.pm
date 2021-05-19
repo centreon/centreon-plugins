@@ -126,7 +126,7 @@ sub check_options {
         $metrics_mapping_transformed->{$metric_type} = $self->{metrics_mapping}->{$metric_type};
     }
 
-    foreach my $metric (keys %{$self->{metrics_mapping_transformed}}) {
+    foreach my $metric (keys %{$metrics_mapping_transformed}) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
         push @{$self->{az_metrics}}, $metric;
