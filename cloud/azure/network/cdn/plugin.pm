@@ -59,6 +59,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure CDP profile service.
+Check Microsoft Azure CDN profile service.
 
 =cut
