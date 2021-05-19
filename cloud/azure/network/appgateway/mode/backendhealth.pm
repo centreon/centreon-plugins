@@ -115,7 +115,7 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::appgateway::plugin --mode=backend-health --custommode=api
 --resource=<appgateway_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-unhealthy-host-count=':0' --critical-unhealthy-host-count=':1'
+--warning-unhealthy-host-count='1' --critical-unhealthy-host-count='2'
 
 Using resource id :
 
