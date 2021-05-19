@@ -26,6 +26,7 @@ use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -165,7 +166,7 @@ sub bouchon {
 
     my $content = do {
         local $/ = undef;
-        if (!open my $fh, "<", $options{file}) {
+        if (!open my $fh, '<', $options{file}) {
             $self->{output}->add_option_msg(short_msg => "Could not open file $options{file} : $!");
             $self->{output}->option_exit();
         }
@@ -288,10 +289,12 @@ sub call_device_paths {
     my $paths = { org_name => $options{org_name}, device_name => $options{device_name}, entries => []};
     if (defined($datas->[0])) {
         foreach (@{$datas->[0]->{details}}) {
+            my $remote_wan_link = centreon::plugins::misc::trim($_->{remoteWanLink});
+            my $local_wan_link = centreon::plugins::misc::trim($_->{localWanLink});
             push @{$paths->{entries}}, {
                 remoteSiteName => $_->{remoteSiteName},
-                localWanLink => $_->{localWanLink},
-                remoteWanLink => $_->{remoteWanLink},
+                localWanLink => $local_wan_link ne '' ? $local_wan_link : 'unknown',
+                remoteWanLink => $remote_wan_link ne '' ? $remote_wan_link : 'unknown',
                 connState => $_->{connState}
             };
         }

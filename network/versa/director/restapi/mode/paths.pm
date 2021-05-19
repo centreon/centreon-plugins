@@ -150,7 +150,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{group}) || $self->{option_results}->{group} eq '') {
-        $self->{option_results}->{group} = 'remoteSiteName,remoteWanLink';
+        $self->{option_results}->{group} = 'remoteSiteName';
     }
     
     my $dimensions = { localsitename => 'localSiteName', localwanlink => 'localWanLink', remotesitename => 'remoteSiteName', remotewanlink => 'remoteWanLink' };
@@ -266,7 +266,7 @@ Check paths.
 =item B<--group>
 
 Choose dimensions to group paths up/down.
-Default: --group='remoteSiteName,remoteWanLink'
+Default: --group='remoteSiteName'
 
 =item B<--organization>
 
