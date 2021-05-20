@@ -43,7 +43,6 @@ sub get_metrics_mapping {
             'unit'   => '',
             'min'    => '0'
         }
-
     };
 
     return $metrics_mapping;
@@ -135,13 +134,15 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-current-connections>
+=item B<--warning-*>
 
-Warning threshold.
+Warning threshold where '*' can be:
+'healthyhostcount', 'unhealthyhostcount'.
 
-=item B<--critical-current-connections>
+=item B<--critical-*>
 
-Critical threshold.
+Critical threshold where '*' can be:
+'healthyhostcount', 'unhealthyhostcount'.
 
 =back
 
