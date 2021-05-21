@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'backend-health'  => 'cloud::azure::network::appgateway::mode::backendhealth',
         'backend-status'  => 'cloud::azure::network::appgateway::mode::backendstatus',
         'backend-time'    => 'cloud::azure::network::appgateway::mode::backendtime',
         'clients-traffic' => 'cloud::azure::network::appgateway::mode::clientstraffic',
