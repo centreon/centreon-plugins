@@ -37,7 +37,8 @@ sub new {
         'health'          => 'cloud::azure::web::appserviceplan::mode::health',
         'memory'          => 'cloud::azure::web::appserviceplan::mode::memory',
         'socket'          => 'cloud::azure::web::appserviceplan::mode::socket',
-        'tcp-connections' => 'cloud::azure::web::appserviceplan::mode::tcpconnections'
+        'tcp-connections' => 'cloud::azure::web::appserviceplan::mode::tcpconnections',
+        'queue'           => 'cloud::azure::web::appserviceplan::mode::queue'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
