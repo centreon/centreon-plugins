@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         'events'    => 'cloud::azure::management::apimanagement::mode::events',
+        'capacity'    => 'cloud::azure::management::apimanagement::mode::capacity',
         'discovery' => 'cloud::azure::management::apimanagement::mode::discovery',
         'requests'  => 'cloud::azure::management::apimanagement::mode::requests',
         'duration'  => 'cloud::azure::management::apimanagement::mode::duration'
