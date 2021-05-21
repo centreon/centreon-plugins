@@ -76,24 +76,7 @@ sub get_metrics_mapping {
             'unit'     => '',
             'min'      => '0',
             'template' => '%d'
-        },
-        'tcpsynsent ' => {
-            'output'   => 'TCP Syn Sent',
-            'label'    => 'tcp-syn-sent',
-            'nlabel'   => 'appserviceplan.connections.tcp.synsent.count',
-            'unit'     => '',
-            'min'      => '0',
-            'template' => '%d'
-        },
-        'tcptimewait ' => {
-            'output'   => 'TCP Time Wait',
-            'label'    => 'tcp-timewait',
-            'nlabel'   => 'appserviceplan.connections.tcp.timewait.count',
-            'unit'     => '',
-            'min'      => '0',
-            'template' => '%d'
-        },
-
+        }
     };
 
     return $metrics_mapping;
@@ -188,13 +171,13 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'tcp-timewait', 'tcp-syn-sent', 'tcp-syn-received', 'tcp-ack-last', 'tcp-fin-wait2', 'tcp-fin-wait1',
+'tcp-syn-received', 'tcp-ack-last', 'tcp-fin-wait2', 'tcp-fin-wait1',
 'tcp-closewait', 'tcp-closing'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'tcp-timewait', 'tcp-syn-sent', 'tcp-syn-received', 'tcp-ack-last', 'tcp-fin-wait2', 'tcp-fin-wait1',
+'tcp-syn-received', 'tcp-ack-last', 'tcp-fin-wait2', 'tcp-fin-wait1',
 'tcp-closewait', 'tcp-closing'.
 
 =back
