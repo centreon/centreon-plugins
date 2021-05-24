@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-traffic', set => {
+        { label => 'total-traffic', nlabel => 'traffic.total.bitspersecond', set => {
                 key_values => [ { name => 'total_traffic' } ],
                 output_template => 'Total Traffic: %.2f %s/s',
                 output_change_bytes => 2,
@@ -43,7 +43,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-server-traffic', set => {
+        { label => 'total-server-traffic', nlabel => 'traffic.server.total.bitspersecond', set => {
                 key_values => [ { name => 'total_server_traffic' } ],
                 output_template => 'Total Server Traffic: %.2f %s/s',
                 output_change_bytes => 2,
@@ -52,7 +52,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-client-traffic', set => {
+        { label => 'total-client-traffic', nlabel => 'traffic.client.total.bitspersecond', set => {
                 key_values => [ { name => 'total_client_traffic' } ],
                 output_template => 'Total Client Traffic: %.2f %s/s',
                 output_change_bytes => 2,
@@ -64,7 +64,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{instances} = [
-        { label => 'traffic', set => {
+        { label => 'traffic', nlabel => 'traffic.bitspersecond', set => {
                 key_values => [ { name => 'traffic' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Traffic: %.2f %s/s',
                 output_change_bytes => 2,
@@ -74,7 +74,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'server-traffic', set => {
+        { label => 'server-traffic', nlabel => 'traffic.server.bitspersecond', set => {
                 key_values => [ { name => 'server_traffic' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Server Traffic: %.2f %s/s',
                 output_change_bytes => 2,
@@ -84,7 +84,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'client-traffic', set => {
+        { label => 'client-traffic', nlabel => 'traffic.client.bitspersecond', set => {
                 key_values => [ { name => 'client_traffic' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Client Traffic: %.2f %s/s',
                 output_change_bytes => 2,
