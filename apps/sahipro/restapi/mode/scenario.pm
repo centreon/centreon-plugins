@@ -95,7 +95,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-steps', nlabel => 'scenario.steps.total.count', set => {
+        { label => 'total-steps', nlabel => 'scenario.steps.count', set => {
                 key_values => [ { name => 'total_steps' } ],
                 output_template => 'total steps : %s',
                 perfdatas => [
