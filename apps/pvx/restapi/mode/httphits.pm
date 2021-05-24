@@ -48,7 +48,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'hits-error', nlabel => 'http.hits.error.count', set => {
+        { label => 'hits-error', nlabel => 'http.hits.error.hitspersecond', set => {
                 key_values => [ { name => 'error_hits' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Hits Error: %.3f hits/s',
                 perfdatas => [
@@ -57,7 +57,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'hits', nlabel => 'http.hits.total.count', set => {
+        { label => 'hits', nlabel => 'http.hits.hitspersecond', set => {
                 key_values => [ { name => 'hits' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Hits: %.3f hits/s',
                 perfdatas => [
