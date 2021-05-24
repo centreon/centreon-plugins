@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::http;
 use Time::HiRes;
 use POSIX qw(strftime);
@@ -53,72 +53,6 @@ sub custom_status_calc {
     return 0;
 }
 
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-        { name => 'steps', type => 1, cb_prefix_output => 'prefix_step_output', message_multiple => 'All steps are ok', sort_method => 'num' },
-    ];
-
-    $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [],
-                manual_keys => 1,
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-        { label => 'total-time', display_ok => 0, set => {
-                key_values => [ { name => 'time_taken' } ],
-                output_template => 'execution time : %s ms',
-                perfdatas => [
-                    { label => 'total_time', value => 'time_taken', template => '%s', min => 0, unit => 'ms' },
-                ],
-            }
-        },
-        { label => 'total-steps', display_ok => 0, set => {
-                key_values => [ { name => 'total_steps' } ],
-                output_template => 'total steps : %s',
-                perfdatas => [
-                    { label => 'total_steps', value => 'total_steps', template => '%s', min => 0 },
-                ],
-            }
-        },
-        { label => 'failures', display_ok => 0, set => {
-                key_values => [ { name => 'failures' } ],
-                output_template => 'failures : %s',
-                perfdatas => [
-                    { label => 'failures', value => 'failures', template => '%s', min => 0 },
-                ],
-            }
-        },
-        { label => 'errors', display_ok => 0, set => {
-                key_values => [ { name => 'errors' } ],
-                output_template => 'errors : %s',
-                perfdatas => [
-                    { label => 'errors', value => 'errors', template => '%s', min => 0 },
-                ],
-            }
-        },
-    ];
-    
-    $self->{maps_counters}->{steps} = [
-        { label => 'step-time', set => {
-                key_values => [ { name => 'time_taken' }, { name => 'step' } ],
-                output_template => 'execution time : %s ms',
-                perfdatas => [
-                    { label => 'step_time', value => 'time_taken', template => '%s',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'step' },
-                ],
-            }
-        },
-
-    ];
-}
-
 sub prefix_global_output {
     my ($self, %options) = @_;
 
@@ -131,30 +65,98 @@ sub prefix_step_output {
     return "Step '" . $options{instance_value}->{step} . "' [" . $options{instance_value}->{display}  . "] ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+        { name => 'steps', type => 1, cb_prefix_output => 'prefix_step_output', message_multiple => 'All steps are ok', sort_method => 'num' },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { 
+            label => 'status', 
+            type => 2,
+            critical_default => '%{status} ne "SUCCESS"',
+            set => {
+                key_values => [],
+                manual_keys => 1,
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'total-time', nlabel => 'scenario.execution.time.second', set => {
+                key_values => [ { name => 'time_taken' } ],
+                output_template => 'execution time : %s ms',
+                perfdatas => [
+                    { label => 'total_time', template => '%s', min => 0, unit => 'ms' }
+                ]
+            }
+        },
+        { label => 'total-steps', nlabel => 'scenario.steps.total.count', set => {
+                key_values => [ { name => 'total_steps' } ],
+                output_template => 'total steps : %s',
+                perfdatas => [
+                    { label => 'total_steps', template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'failures', nlabel => 'scenario.failures.count', set => {
+                key_values => [ { name => 'failures' } ],
+                output_template => 'failures : %s',
+                perfdatas => [
+                    { label => 'failures', value => 'failures', template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'errors', nlabel => 'scenario.errors.count', set => {
+                key_values => [ { name => 'errors' } ],
+                output_template => 'errors : %s',
+                perfdatas => [
+                    { label => 'errors', value => 'errors', template => '%s', min => 0 }
+                ]
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{steps} = [
+        { label => 'step-time', nlabel => 'step.execution.time.second', set => {
+                key_values => [ { name => 'time_taken' }, { name => 'step' } ],
+                output_template => 'execution time : %s ms',
+                perfdatas => [
+                    { label => 'step_time', value => 'time_taken', template => '%s',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'step' }
+                ]
+            }
+        }
+
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-         'sahi-hostname:s'      => { name => 'sahi_hostname' },
-         'sahi-port:s'          => { name => 'sahi_port', default => 9999 },
-         'sahi-proto:s'         => { name => 'sahi_proto', default => 'http' },
-         'sahi-http-timeout:s'  => { name => 'sahi_http_timeout', default => 5 },
-         'sahi-endpoint:s'      => { name => 'sahi_endpoint', default => '/_s_/dyn/' },
-         'sahi-suite:s'         => { name => 'sahi_suite' },
-         'sahi-threads:s'       => { name => 'sahi_threads', default => 1 },
-         'sahi-startwith:s'     => { name => 'sahi_startwith', default => 'BROWSER' },
-         'sahi-browsertype:s'   => { name => 'sahi_browsertype', default => 'chrome' },
-         'sahi-baseurl:s'       => { name => 'sahi_baseurl' },
-         'timeout:s'            => { name => 'timeout' },
-         'retries-scenario-status:s'    => { name => 'retries_scenario_status' },
-         'interval-scenario-status:s'   => { name => 'interval_scenario_status', default => 10 },
-         'unknown-run-status:s'     => { name => 'unknown_run_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
-         'warning-run-status:s'     => { name => 'warning_run_status' },
-         'critical-run-status:s'    => { name => 'critical_run_status', default => '' },
-         'warning-status:s'         => { name => 'warning_status', default => '' },
-         'critical-status:s'        => { name => 'critical_status', default => '%{status} ne "SUCCESS"' },
+        'sahi-hostname:s'            => { name => 'sahi_hostname' },
+        'sahi-port:s'                => { name => 'sahi_port', default => 9999 },
+        'sahi-proto:s'               => { name => 'sahi_proto', default => 'http' },
+        'sahi-http-timeout:s'        => { name => 'sahi_http_timeout', default => 5 },
+        'sahi-endpoint:s'            => { name => 'sahi_endpoint', default => '/_s_/dyn/' },
+        'sahi-suite:s'               => { name => 'sahi_suite' },
+        'sahi-threads:s'             => { name => 'sahi_threads', default => 1 },
+        'sahi-startwith:s'           => { name => 'sahi_startwith', default => 'BROWSER' },
+        'sahi-browsertype:s'         => { name => 'sahi_browsertype', default => 'chrome' },
+        'sahi-baseurl:s'             => { name => 'sahi_baseurl' },
+        'timeout:s'                  => { name => 'timeout' },
+        'retries-scenario-status:s'  => { name => 'retries_scenario_status' },
+        'interval-scenario-status:s' => { name => 'interval_scenario_status', default => 10 },
+        'unknown-run-status:s'       => { name => 'unknown_run_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+        'warning-run-status:s'       => { name => 'warning_run_status' },
+        'critical-run-status:s'      => { name => 'critical_run_status', default => '' }
     });
     
     $self->{http} = centreon::plugins::http->new(%options);
@@ -209,7 +211,6 @@ sub check_options {
         alarm($self->{option_results}->{timeout});
     }
     
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
     $self->{http}->set_options(port => $self->{option_results}->{sahi_port}, proto => $self->{option_results}->{sahi_proto});
 }
 
