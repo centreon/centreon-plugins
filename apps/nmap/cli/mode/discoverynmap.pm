@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::nmap::cli::discoverynmap;
+package apps::nmap::cli::mode::discoverynmap;
 
 use base qw(centreon::plugins::mode);
 
