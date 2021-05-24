@@ -31,43 +31,12 @@ sub prefix_output {
     return "Channel '" . $options{instance_value}->{name} . "' ";
 }
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'channels', type => 1, cb_prefix_output => 'prefix_output' },
-    ];
-
-    $self->{maps_counters}->{global} = [
-        { label => 'count', set => {
-                key_values => [ { name => 'count' } ],
-                output_template => 'Number of channels : %d',
-                perfdatas => [
-                    { label => 'count', value => 'count', template => '%d',
-                      min => 0 },
-                ],
-            }
-        },
-    ];
-
-    $self->{maps_counters}->{channels} = [
-        { label => 'members', set => {
-                key_values => [ { name => 'id' }, { name => 'name' }, { name => 'num_members' } ],
-                closure_custom_calc => $self->can('custom_info_calc'),
-                closure_custom_output => $self->can('custom_info_output'),
-                closure_custom_perfdata => $self->can('custom_info_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_info_threshold'),
-            }
-        },
-    ];
-}
-
 sub custom_info_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
         label => 'members',
+        nlabel => 'channels.members.count',
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
         value => $self->{result_values}->{num_members},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
@@ -100,6 +69,37 @@ sub custom_info_calc {
     $self->{result_values}->{num_members} = $options{new_datas}->{$self->{instance} . '_num_members'};
 
     return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+        { name => 'channels', type => 1, cb_prefix_output => 'prefix_output' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'count', nlabel => 'channels.count', set => {
+                key_values => [ { name => 'count' } ],
+                output_template => 'Number of channels : %d',
+                perfdatas => [
+                    { label => 'count', template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{channels} = [
+        { label => 'members', set => {
+                key_values => [ { name => 'id' }, { name => 'name' }, { name => 'num_members' } ],
+                closure_custom_calc => $self->can('custom_info_calc'),
+                closure_custom_output => $self->can('custom_info_output'),
+                closure_custom_perfdata => $self->can('custom_info_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_info_threshold')
+            }
+        }
+    ];
 }
 
 sub new {
