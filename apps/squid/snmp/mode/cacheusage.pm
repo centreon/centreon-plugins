@@ -33,43 +33,39 @@ sub set_counters {
     ];
         
     $self->{maps_counters}->{global} = [
-        { label => 'cpu', set => {
+        { label => 'cpu', nlabel => 'cpu.cache.utilization.percentage', set => {
                 key_values => [ { name => 'cacheCpuUsage' } ],
                 output_template => 'Cpu usage : %s %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cacheCpuUsage', template => '%s',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'cpu', template => '%s', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'memory.cache.usage.bytes', set => {
                 key_values => [ { name => 'cacheMemUsage' } ],
                 output_template => 'Memory usage : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'memory', value => 'cacheMemUsage', template => '%s',
-                      min => 0, unit => 'B' },
-                ],
+                    { label => 'memory', template => '%s', min => 0, unit => 'B' }
+                ]
             }
         },
-        { label => 'fd', set => {
+        { label => 'fd', nlabel => 'filedescriptors.cache.counts.', set => {
                 key_values => [ { name => 'cacheCurrentFileDescrCnt' } ],
                 output_template => 'Number of file descriptors : %s',
                 perfdatas => [
-                    { label => 'fd', value => 'cacheCurrentFileDescrCnt', template => '%s',
-                      min => 0 },
-                ],
+                    { label => 'fd', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'object', set => {
+        { label => 'object', nlabel => 'objects.cache.count', set => {
                 key_values => [ { name => 'cacheNumObjCount' } ],
                 output_template => 'Number of object stored : %s',
                 perfdatas => [
-                    { label => 'objects', value => 'cacheNumObjCount', template => '%s',
-                      min => 0 },
-                ],
+                    { label => 'objects', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
