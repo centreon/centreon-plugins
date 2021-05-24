@@ -50,7 +50,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'fd', nlabel => 'filedescriptors.cache.counts.', set => {
+        { label => 'fd', nlabel => 'cache.filedescriptors.count', set => {
                 key_values => [ { name => 'cacheCurrentFileDescrCnt' } ],
                 output_template => 'Number of file descriptors : %s',
                 perfdatas => [
@@ -58,7 +58,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'object', nlabel => 'objects.cache.count', set => {
+        { label => 'object', nlabel => 'cache.objects.count', set => {
                 key_values => [ { name => 'cacheNumObjCount' } ],
                 output_template => 'Number of object stored : %s',
                 perfdatas => [
