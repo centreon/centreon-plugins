@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_instances_output {
+    my ($self, %options) = @_;
+
+    return $options{instance_value}->{instance_label} . " '" . $options{instance_value}->{key} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -33,7 +39,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{instances} = [
-        { label => 'time', set => {
+        { label => 'time', nlabel => 'enduser.experience.second', set => {
                 key_values => [ { name => 'user_experience' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'End-User Experience: %.3f s',
                 perfdatas => [
@@ -43,12 +49,6 @@ sub set_counters {
             }
         }
     ];
-}
-
-sub prefix_instances_output {
-    my ($self, %options) = @_;
-
-    return $options{instance_value}->{instance_label} . " '" . $options{instance_value}->{key} . "' ";
 }
 
 sub new {
