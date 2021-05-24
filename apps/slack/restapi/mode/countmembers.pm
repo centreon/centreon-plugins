@@ -36,19 +36,18 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'members', type => 1, cb_prefix_output => 'prefix_output' },
+        { name => 'members', type => 1, cb_prefix_output => 'prefix_output' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'count', set => {
+        { label => 'count', nlabel => 'members.count', set => {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Number of members : %d',
                 perfdatas => [
-                    { label => 'count', value => 'count', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'count', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{members} = [
@@ -56,9 +55,9 @@ sub set_counters {
                 key_values => [ { name => 'id' }, { name => 'real_name' }, { name => 'display_name' } ],
                 closure_custom_calc => $self->can('custom_info_calc'),
                 closure_custom_output => $self->can('custom_info_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub { return 0; }
             }
-        },
+        }
     ];
 }
 sub custom_info_output {
