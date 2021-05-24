@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'discovery-nmap'    => 'apps::nmap::cli::mode::discoverynmap',
+        'discovery-nmap'    => 'apps::nmap::cli::mode::discovery',
     };
 
     $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
