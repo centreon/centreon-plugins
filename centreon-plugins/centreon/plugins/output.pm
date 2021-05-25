@@ -933,6 +933,16 @@ sub test_eval {
     return $result;
 }
 
+sub open_eval {
+    my ($self, %options) = @_;
+
+    $self->load_eval() if ($self->{safe_test} == 0);
+    our $values = $options{values};
+    $self->{safe}->reval("$options{eval}", 1);
+
+    return $values;
+}
+
 sub assign_eval {
     my ($self, %options) = @_;
 
@@ -1007,6 +1017,16 @@ sub parse_pfdata_math {
     return (0, $args);
 }
 
+sub parse_pfdata_eval {
+    my ($self, %options) = @_;
+
+    # --extend-perfdata=perfx,,eval(%(label) =~ s/a/A/g)
+    my $args = { expr => $options{args} };
+    $args->{expr} =~ s/%\{(.*?)\}/\$values->{$1}/g;
+    $args->{expr} =~ s/%\((.*?)\)/\$values->{$1}/g;
+    return (0, $args);
+}
+
 sub parse_group_pfdata {
     my ($self, %options) = @_;
 
@@ -1050,9 +1070,11 @@ sub apply_pfdata_scale {
     return if (${$options{perf}}->{unit} !~ /^([KMGTPEkmgtpe])?(B|b|bps|Bps|b\/s)$/);
 
     my ($src_quantity, $src_unit) = ($1, $2);
-    my ($value, $dst_quantity, $dst_unit) = centreon::plugins::misc::scale_bytesbit(value => ${$options{perf}}->{value},
-        src_quantity => $src_quantity, src_unit => $src_unit, dst_quantity => $options{args}->{quantity}, dst_unit => $options{args}->{unit});
-    ${$options{perf}}->{value} = sprintf("%.2f", $value);
+    my ($value, $dst_quantity, $dst_unit) = centreon::plugins::misc::scale_bytesbit(
+        value => ${$options{perf}}->{value},
+        src_quantity => $src_quantity, src_unit => $src_unit, dst_quantity => $options{args}->{quantity}, dst_unit => $options{args}->{unit}
+    );
+    ${$options{perf}}->{value} = sprintf('%.2f', $value);
     if (defined($dst_unit)) {
        ${$options{perf}}->{unit} = $dst_quantity . $dst_unit;
     } else {
@@ -1138,6 +1160,12 @@ sub apply_pfdata_percent {
     }
 
     ${$options{perf}}->{max} = 100; 
+}
+
+sub apply_pfdata_eval {
+    my ($self, %options) = @_;
+
+    ${$options{perf}} = $self->open_eval(eval => $options{args}->{expr}, values => ${$options{perf}});
 }
 
 sub apply_pfdata_math {
@@ -1296,7 +1324,7 @@ sub parse_perfdata_extend_args {
     };
 
     if (defined($method) && $method ne '') {
-        if ($method !~ /^\s*(invert|percent|scale|math|min|max|average|sum)\s*\(\s*(.*?)\s*\)\s*$/) {
+        if ($method !~ /^\s*(invert|percent|scale|math|min|max|average|sum|eval)\s*\(\s*(.*?)\s*\)\s*$/) {
             $self->output_add(long_msg => "method in argument '$options{arg}' is unknown", debug => 1);
             return ;
         }
@@ -1312,7 +1340,7 @@ sub parse_perfdata_extend_args {
         }
     }
 
-    push  @{$self->{pfdata_extends}}, $pfdata_extends;
+    push @{$self->{pfdata_extends}}, $pfdata_extends;
 }
 
 sub apply_perfdata_explode {
