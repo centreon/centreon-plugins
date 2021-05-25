@@ -41,25 +41,25 @@ sub set_counters {
     $self->{maps_counters}->{instances} = [
         { label => 'ratio', nlabel => 'http.hits.percentage', set => {
                 key_values => [ { name => 'ratio' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'Ratio: %.2f',
+                output_template => 'ratio: %.2f',
                 perfdatas => [
                     { label => 'ratio', template => '%.2f',
                       min => 0, label_extra_instance => 1, instance_use => 'key' }
                 ]
             }
         },
-        { label => 'hits-error', nlabel => 'http.hits.error.hitspersecond', set => {
+        { label => 'hits-error', nlabel => 'http.hits.error.persecond', set => {
                 key_values => [ { name => 'error_hits' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'Hits Error: %.3f hits/s',
+                output_template => 'hits error: %.3f hits/s',
                 perfdatas => [
                     { label => 'hits_error', template => '%.3f',
                       min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' }
                 ]
             }
         },
-        { label => 'hits', nlabel => 'http.hits.hitspersecond', set => {
+        { label => 'hits', nlabel => 'http.hits.persecond', set => {
                 key_values => [ { name => 'hits' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'Hits: %.3f hits/s',
+                output_template => 'hits: %.3f hits/s',
                 perfdatas => [
                     { label => 'hits', template => '%.3f',
                       min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' }

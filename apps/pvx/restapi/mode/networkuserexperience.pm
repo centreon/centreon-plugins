@@ -39,9 +39,9 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{instances} = [
-        { label => 'time', nlabel => 'enduser.experience.second', set => {
+        { label => 'time', nlabel => 'enduser.experience.seconds', set => {
                 key_values => [ { name => 'user_experience' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'End-User Experience: %.3f s',
+                output_template => 'end-user experience: %.3fs',
                 perfdatas => [
                     { label => 'time', template => '%.3f',
                       min => 0, unit => 's', label_extra_instance => 1, instance_use => 'key' }

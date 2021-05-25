@@ -36,8 +36,7 @@ my %handlers = (ALRM => {});
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf('status is %s', $self->{result_values}->{status});
-    return $msg;
+    return sprintf('status is %s', $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -70,7 +69,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-        { name => 'steps', type => 1, cb_prefix_output => 'prefix_step_output', message_multiple => 'All steps are ok', sort_method => 'num' },
+        { name => 'steps', type => 1, cb_prefix_output => 'prefix_step_output', message_multiple => 'All steps are ok', sort_method => 'num' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -87,9 +86,9 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'total-time', nlabel => 'scenario.execution.time.second', set => {
+        { label => 'total-time', nlabel => 'scenario.execution.time.seconds', set => {
                 key_values => [ { name => 'time_taken' } ],
-                output_template => 'execution time : %s ms',
+                output_template => 'execution time: %s ms',
                 perfdatas => [
                     { label => 'total_time', template => '%s', min => 0, unit => 'ms' }
                 ]
@@ -97,7 +96,7 @@ sub set_counters {
         },
         { label => 'total-steps', nlabel => 'scenario.steps.count', set => {
                 key_values => [ { name => 'total_steps' } ],
-                output_template => 'total steps : %s',
+                output_template => 'total steps: %s',
                 perfdatas => [
                     { label => 'total_steps', template => '%s', min => 0 }
                 ]
@@ -105,17 +104,17 @@ sub set_counters {
         },
         { label => 'failures', nlabel => 'scenario.failures.count', set => {
                 key_values => [ { name => 'failures' } ],
-                output_template => 'failures : %s',
+                output_template => 'failures: %s',
                 perfdatas => [
-                    { label => 'failures', value => 'failures', template => '%s', min => 0 }
+                    { label => 'failures', template => '%s', min => 0 }
                 ]
             }
         },
         { label => 'errors', nlabel => 'scenario.errors.count', set => {
                 key_values => [ { name => 'errors' } ],
-                output_template => 'errors : %s',
+                output_template => 'errors: %s',
                 perfdatas => [
-                    { label => 'errors', value => 'errors', template => '%s', min => 0 }
+                    { label => 'errors', template => '%s', min => 0 }
                 ]
             }
         },
@@ -124,14 +123,13 @@ sub set_counters {
     $self->{maps_counters}->{steps} = [
         { label => 'step-time', nlabel => 'step.execution.time.second', set => {
                 key_values => [ { name => 'time_taken' }, { name => 'step' } ],
-                output_template => 'execution time : %s ms',
+                output_template => 'execution time: %s ms',
                 perfdatas => [
-                    { label => 'step_time', value => 'time_taken', template => '%s',
+                    { label => 'step_time', template => '%s',
                       min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'step' }
                 ]
             }
         }
-
     ];
 }
 
@@ -225,7 +223,7 @@ sub decode_xml_response {
         $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
         $self->{output}->option_exit();
     }
-    
+
     return $content;
 }
 
@@ -250,7 +248,7 @@ sub time2ms {
 
 sub killed_scenario {
     my ($self, %options) = @_;
-    
+
     return if (!defined($self->{user_defined_id}));
     $self->{http}->request(
         proto => $self->{option_results}->{sahi_proto},
@@ -265,7 +263,7 @@ sub killed_scenario {
 
 sub cleanup_scenario {
     my ($self, %options) = @_;
-    
+
     return if (!defined($self->{user_defined_id}));
     $self->{http}->request(
         proto => $self->{option_results}->{sahi_proto},
@@ -280,7 +278,7 @@ sub cleanup_scenario {
 
 sub run_scenario {
     my ($self, %options) = @_;
-    
+
     my $user_defined_id = $self->generate_user_defined_id();
     my ($content) = $self->{http}->request(
         proto => $self->{option_results}->{sahi_proto},
@@ -300,18 +298,18 @@ sub run_scenario {
             'userDefinedId=' . $user_defined_id,
         ]
     );
-    
+
     if ($self->{http}->get_code() != 200) {
         $self->{output}->add_option_msg(short_msg => 'run scenario issue:' . $content);
         $self->{output}->option_exit();
     }
-    
+
     $self->{user_defined_id} = $user_defined_id;
 }
 
 sub check_scenario_status {
     my ($self, %options) = @_;
-    
+
     my $content;
     my $retries = 0;
     while (1) {
@@ -339,16 +337,16 @@ sub check_scenario_status {
         
         sleep($self->{option_results}->{interval_scenario_status});
     }
-    
+
     my $status = 'UNKNOWN';
     $status = $1 if ($content =~ /(SUCCESS|FAILURE|ABORTED|SKIPPED|USER_ABORTED)/);
-    
+
     $self->{global}->{status} = $status;
 }
 
 sub get_suite_report {
     my ($self, %options) = @_;
-    
+
     my ($content) = $self->{http}->request(
         proto => $self->{option_results}->{sahi_proto},
         port => $self->{option_results}->{sahi_port},
