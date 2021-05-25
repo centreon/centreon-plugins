@@ -30,12 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (        
-        'stats' => 'apps::varnish::local::mode::stats',
-    );
+    $self->{modes} = {
+        'stats' => 'apps::varnish::local::mode::stats'
+    };
 
     $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
-
     return $self;
 }
 
