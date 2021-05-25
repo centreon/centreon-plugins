@@ -48,9 +48,13 @@ sub custom_info_perfdata {
 sub custom_info_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{num_members},
-                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{num_members},
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -82,7 +86,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'count', nlabel => 'channels.count', set => {
                 key_values => [ { name => 'count' } ],
-                output_template => 'Number of channels : %d',
+                output_template => 'Number of channels: %d',
                 perfdatas => [
                     { label => 'count', template => '%d', min => 0 }
                 ]
@@ -108,7 +112,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-channel:s"      => { name => 'filter_channel' },
+        'filter-channel:s' => { name => 'filter_channel' }
     });
    
     return $self;

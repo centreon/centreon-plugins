@@ -42,7 +42,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'count', nlabel => 'members.count', set => {
                 key_values => [ { name => 'count' } ],
-                output_template => 'Number of members : %d',
+                output_template => 'Number of members: %d',
                 perfdatas => [
                     { label => 'count', template => '%d', min => 0 }
                 ]
@@ -60,6 +60,7 @@ sub set_counters {
         }
     ];
 }
+
 sub custom_info_output {
     my ($self, %options) = @_;
 
@@ -82,9 +83,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
    
     return $self;
 }
