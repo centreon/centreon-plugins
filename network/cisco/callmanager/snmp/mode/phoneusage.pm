@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status : ' . $self->{result_values}->{status};
+    my $msg = 'status: ' . $self->{result_values}->{status};
     $msg .= ' [description: ' . $self->{result_values}->{description} . ']' if (defined($self->{result_values}->{description}) && $self->{result_values}->{description} ne '');
     return $msg;
 }
@@ -43,7 +43,7 @@ sub prefix_phone_output {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return "Total ";
+    return 'Total ';
 }
 
 sub set_counters {
@@ -65,18 +65,19 @@ sub set_counters {
     ];
     
     my @map = (
-        ['total-registered', 'registered: %s', 'registered'],
-        ['total-unregistered', 'unregistered: %s', 'unregistered'],
-        ['total-rejected', 'rejected: %s', 'rejected'],
-        ['total-unknown', 'unknown: %s', 'unknown'],
-        ['total-partiallyregistered', 'partially registered: %s', 'partiallyregistered']
+        ['total-registered', 'registered: %s', 'registered', 'phones.registered.count'],
+        ['total-unregistered', 'unregistered: %s', 'unregistered', 'phones.unregistered.count'],
+        ['total-rejected', 'rejected: %s', 'rejected', 'phones.rejected.count'],
+        ['total-unknown', 'unknown: %s', 'unknown', 'phones.unknown.count'],
+        ['total-partiallyregistered', 'partially registered: %s', 'partiallyregistered', 'phones.partially_registered.count']
     );
     
     $self->{maps_counters}->{global} = [];
     foreach (@map) {
         my $label = $_->[0];
         $label =~ tr/-/_/;
-        push @{$self->{maps_counters}->{global}}, { label => $_->[0], set => {
+        push @{$self->{maps_counters}->{global}}, {
+            label => $_->[0], nlabel => $_->[3], set => {
                 key_values => [ { name => $_->[2] } ],
                 output_template => $_->[1],
                 perfdatas => [

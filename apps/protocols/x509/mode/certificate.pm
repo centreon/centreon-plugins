@@ -95,8 +95,8 @@ sub manage_selection {
     my $cert = $options{custom}->get_certificate_informations();
 
     $self->{global} = {
-        subject => $cert->{subject},
-        issuer => $cert->{issuer},
+        subject => defined($cert->{subject}) ? $cert->{subject} : '-',
+        issuer => defined($cert->{issuer}) ? $cert->{issuer} : '-',
         expiration => $cert->{expiration},
         date => $cert->{expiration_date},
         alt_subjects => $cert->{alt_subjects}

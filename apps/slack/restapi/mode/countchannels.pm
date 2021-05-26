@@ -31,43 +31,12 @@ sub prefix_output {
     return "Channel '" . $options{instance_value}->{name} . "' ";
 }
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'channels', type => 1, cb_prefix_output => 'prefix_output' },
-    ];
-
-    $self->{maps_counters}->{global} = [
-        { label => 'count', set => {
-                key_values => [ { name => 'count' } ],
-                output_template => 'Number of channels : %d',
-                perfdatas => [
-                    { label => 'count', value => 'count', template => '%d',
-                      min => 0 },
-                ],
-            }
-        },
-    ];
-
-    $self->{maps_counters}->{channels} = [
-        { label => 'members', set => {
-                key_values => [ { name => 'id' }, { name => 'name' }, { name => 'num_members' } ],
-                closure_custom_calc => $self->can('custom_info_calc'),
-                closure_custom_output => $self->can('custom_info_output'),
-                closure_custom_perfdata => $self->can('custom_info_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_info_threshold'),
-            }
-        },
-    ];
-}
-
 sub custom_info_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
         label => 'members',
+        nlabel => 'channels.members.count',
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
         value => $self->{result_values}->{num_members},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
@@ -79,9 +48,13 @@ sub custom_info_perfdata {
 sub custom_info_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{num_members},
-                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{num_members},
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -102,13 +75,44 @@ sub custom_info_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+        { name => 'channels', type => 1, cb_prefix_output => 'prefix_output' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'count', nlabel => 'channels.count', set => {
+                key_values => [ { name => 'count' } ],
+                output_template => 'Number of channels: %d',
+                perfdatas => [
+                    { label => 'count', template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{channels} = [
+        { label => 'members', set => {
+                key_values => [ { name => 'id' }, { name => 'name' }, { name => 'num_members' } ],
+                closure_custom_calc => $self->can('custom_info_calc'),
+                closure_custom_output => $self->can('custom_info_output'),
+                closure_custom_perfdata => $self->can('custom_info_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_info_threshold')
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-channel:s"      => { name => 'filter_channel' },
+        'filter-channel:s' => { name => 'filter_channel' }
     });
    
     return $self;

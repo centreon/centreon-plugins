@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'hardware'         => 'network::acmepacket::snmp::mode::hardware',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
@@ -38,8 +38,8 @@ sub new {
         'list-sip'         => 'network::acmepacket::snmp::mode::listsip',
         'realm-usage'      => 'network::acmepacket::snmp::mode::realmusage',
         'sip-usage'        => 'network::acmepacket::snmp::mode::sipusage',
-        'system-usage'     => 'network::acmepacket::snmp::mode::systemusage',
-    );
+        'system-usage'     => 'network::acmepacket::snmp::mode::systemusage'
+    };
 
     return $self;
 }

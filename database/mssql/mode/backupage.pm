@@ -90,6 +90,7 @@ sub run {
                     WHERE BS.type = 'D'
                     GROUP BY BS.[database_name]
                 ) BS1 ON D.name = BS1.[database_name]
+                WHERE D.source_database_id IS NULL
                 ORDER BY D.[name]";
     }
 

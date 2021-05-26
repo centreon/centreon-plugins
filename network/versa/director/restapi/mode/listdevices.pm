@@ -44,7 +44,10 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->get_appliances(disable_cache => 1);
+    my $orgs = $options{custom}->get_organizations();
+    # find top level org with depth attribute
+    my $root_org_name = $options{custom}->find_root_organization_name(orgs => $orgs);
+    return $options{custom}->get_devices(org_name => $root_org_name);
 }
 
 sub run {
@@ -54,11 +57,11 @@ sub run {
     foreach (values %{$results->{entries}}) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[uuid = %s][name = %s][type = %s][ip address = %s]',
+                '[uuid = %s][name = %s][type = %s][ip_address = %s]',
                 $_->{uuid},
                 $_->{name},
                 $_->{type},
-                $_->{'ip-address'}
+                $_->{ipAddress}
             )
         );
     }
@@ -74,7 +77,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['uuid', 'name', 'type', 'ipaddress']);
+    $self->{output}->add_disco_format(elements => ['uuid', 'name', 'type', 'ip_address']);
 }
 
 sub disco_show {
@@ -86,7 +89,7 @@ sub disco_show {
             uuid => $_->{uuid},
             name => $_->{name},
             type => $_->{type},
-            ipaddress => $_->{'ip-address'}
+            ip_address => $_->{ipAddress}
         );
     }
 }

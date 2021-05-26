@@ -1,3 +1,27 @@
+2021-05-20 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Azure MySQL
+ * Plugin added: Azure EventGrid
+ * Plugin added: Azure ServiceBus
+ * Plugin added: Azure AutomationAccount
+ * Plugin added: Azure SignalR
+ * Plugin added: Azure FrontDoor
+ * Plugin added: Azure App Service
+ * Plugin added: Azure EventHub
+ * Plugin added: Azure Functions
+ * Plugin added: Azure Application Gateway
+ * Plugin added: Azure Application Insights
+ * Plugin added: Azure Cosmos DB
+ * Plugin added: Azure App Service Plan
+ * Plugin added: Cisco WAP SNMP
+ * Plugin added: Huawei OceanStor SNMP
+ * Plugin added: Proxmox MG API
+ * Plugin added: Ubiquiti Unifi SNMP
+ * Core: secure plugins options
+ * Core: use package Pod::Simple::Search
+ * Mode added: [linux/local] 'check-plugin'
+ * Mode added: [protocol/snmp] 'collection'
+ * Mode added: [veeam] 'licenses'
+
 2021-02-18 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Google Cloud CloudSQL MySQL
  * Plugin added: Google Cloud Storage

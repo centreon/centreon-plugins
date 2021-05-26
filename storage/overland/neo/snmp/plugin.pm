@@ -30,10 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'hardware' => 'storage::overland::neo::snmp::mode::hardware',
+    $self->{modes} = {
         'eventlog' => 'storage::overland::neo::snmp::mode::eventlog',
-    );
+        'hardware' => 'storage::overland::neo::snmp::mode::hardware'
+    };
 
     return $self;
 }

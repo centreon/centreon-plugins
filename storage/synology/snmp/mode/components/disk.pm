@@ -32,13 +32,19 @@ my $map_disk_status = {
 };
 
 my $mapping = {
+    synoDiskdiskName   => { oid => '.1.3.6.1.4.1.6574.2.1.1.2' },
     synoDiskdiskStatus => { oid => '.1.3.6.1.4.1.6574.2.1.1.5', map => $map_disk_status }
 };
+my $oid_synoDisk = '.1.3.6.1.4.1.6574.2.1.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $mapping->{synoDiskdiskStatus}->{oid} };
+    push @{$self->{request}}, {
+        oid => $oid_synoDisk,
+        start => $mapping->{synoDiskdiskName}->{oid},
+        end => $mapping->{synoDiskdiskStatus}->{oid}
+    };
 }
 
 sub check {
@@ -48,25 +54,25 @@ sub check {
     $self->{components}->{disk} = {name => 'disk', total => 0, skip => 0};
     return if ($self->check_filter(section => 'disk'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $mapping->{synoDiskdiskStatus}->{oid} }})) {
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_synoDisk}})) {
         next if ($oid !~ /^$mapping->{synoDiskdiskStatus}->{oid}\.(\d+)/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{synoDiskdiskStatus}->{oid} }, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_synoDisk}, instance => $instance);
 
         next if ($self->check_filter(section => 'disk', instance => $instance));
         $self->{components}->{disk}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "disk '%s' status is %s.",
-                $instance, $result->{synoDiskdiskStatus}
+                "disk '%s' status is %s [instance: %s]",
+                $result->{synoDiskdiskName}, $result->{synoDiskdiskStatus}, $instance
             )
         );
         my $exit = $self->get_severity(section => 'disk', value => $result->{synoDiskdiskStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("Disk '%s' status is %s", $instance, $result->{synoDiskdiskStatus})
+                short_msg => sprintf("Disk '%s' status is %s", $result->{synoDiskdiskName}, $result->{synoDiskdiskStatus})
             );
         }
     }

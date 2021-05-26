@@ -26,7 +26,37 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use DateTime;
+use POSIX;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
+my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
+my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
+
+sub custom_expires_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
+        unit => $self->{instance_mode}->{option_results}->{unit},
+        value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_expires_threshold {
+    my ($self, %options) = @_;
+
+    return $self->{perfdata}->threshold_check(
+        value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
+}
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -111,13 +141,12 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'expires-seconds', nlabel => 'license.expires.seconds', set => {
+        { label => 'expires', nlabel => 'license.expires', set => {
                 key_values      => [ { name => 'expires_seconds' }, { name => 'expires_human' } ],
                 output_template => 'expires in %s',
                 output_use => 'expires_human',
-                perfdatas => [
-                    { template => '%d', min => 0, unit => 's' }
-                ]
+                closure_custom_perfdata => $self->can('custom_expires_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_expires_threshold')
             }
         }
     ];
@@ -210,9 +239,19 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'unit:s' => { name => 'unit', default => 'd' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
+        $self->{option_results}->{unit} = 'd';
+    }
 }
 
 my $map_status = { 0 => 'ok', 1 => 'expired', 2 => 'invalid' };
@@ -247,16 +286,20 @@ sub manage_selection {
             usim => {}
         }
     };
-    #2035-3-30,7:43:58.0,+0:0
-    if ($result->{expire_time} =~ /^\s*(\d+)-(\d+)-(\d+),(\d+):(\d+):(\d+)\.(\d+),(.*)/) {
+    if (defined($result->{expire_time})) {
+        my @date = unpack('n C6 a C2', $result->{expire_time});
+        my $tz;
+        if (defined($date[7])) {
+            $tz = sprintf("%s%02d%02d", $date[7], $date[8], $date[9]);
+        }
         my $dt = DateTime->new(
-            year      => $1,
-            month     => $2,
-            day       => $3,
-            hour      => $4,
-            minute    => $5,
-            second    => $6,
-            time_zone => $7
+            year => $date[0],
+            month => $date[1],
+            day => $date[2],
+            hour => $date[3],
+            minute => $date[4],
+            second => $date[5],
+            time_zone => $tz
         );
         $self->{license}->{global}->{expire}->{expires_seconds} = $dt->epoch() - time();
         $self->{license}->{global}->{expire}->{expires_human} = centreon::plugins::misc::change_seconds(
@@ -308,10 +351,15 @@ Can use special variables like: %{status}
 Set critical threshold for status (Default: '%{status} =~ /expired|invalid/i').
 Can use special variables like: %{status}
 
+=item B<--unit>
+
+Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
+'h' for hours, 'd' for days, 'w' for weeks. Default is days.
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'expires-seconds', 'license-users-usage', 'license-users-free', 'license-users-usage-prct',
+Can be: 'expires', 'license-users-usage', 'license-users-free', 'license-users-usage-prct',
 'license-sessions-usage', 'license-sessions-free', 'license-sessions-usage-prct',
 'license-usim-usage', 'license-usim-free', 'license-usim-usage-prct'.
 
