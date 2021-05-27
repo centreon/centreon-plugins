@@ -36,9 +36,9 @@ sub new {
         'discovery'       => 'cloud::azure::web::appserviceplan::mode::discovery',
         'health'          => 'cloud::azure::web::appserviceplan::mode::health',
         'memory'          => 'cloud::azure::web::appserviceplan::mode::memory',
+        'queue'           => 'cloud::azure::web::appserviceplan::mode::queue',
         'socket'          => 'cloud::azure::web::appserviceplan::mode::socket',
-        'tcp-connections' => 'cloud::azure::web::appserviceplan::mode::tcpconnections',
-        'queue'           => 'cloud::azure::web::appserviceplan::mode::queue'
+        'tcp-connections' => 'cloud::azure::web::appserviceplan::mode::tcpconnections'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
