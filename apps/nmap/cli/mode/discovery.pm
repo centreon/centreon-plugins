@@ -18,13 +18,12 @@
 # limitations under the License.
 #
 
-package os::linux::local::mode::discoverynmap;
+package apps::nmap::cli::mode::discovery;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::snmp;
 use JSON::XS;
 use XML::Simple;
 
@@ -34,8 +33,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'subnet:s'              => { name => 'subnet' },
-        'prettify'              => { name => 'prettify' }
+        'subnet:s' => { name => 'subnet' },
+        'prettify' => { name => 'prettify' }
     });
                                     
     return $self;
