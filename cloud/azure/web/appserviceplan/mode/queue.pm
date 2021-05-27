@@ -108,7 +108,7 @@ __END__
 
 =head1 MODE
 
-Check Azure App Service Plan socket statistics.
+Check Azure App Service Plan queue statistics.
 
 Example:
 
