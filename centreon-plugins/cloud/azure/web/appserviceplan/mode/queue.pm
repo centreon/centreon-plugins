@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'diskqueuelength' => {
             'output'   => 'Disk Queue Length',
             'label'    => 'disk-queue-length',
-            'nlabel'   => 'appserviceplan.disk.queue.length',
+            'nlabel'   => 'appserviceplan.disk.queue.length.count',
             'unit'     => '',
             'min'      => '0',
             'template' => '%d'
@@ -40,7 +40,7 @@ sub get_metrics_mapping {
         'httpqueuelength' => {
             'output'   => 'Http Queue Length',
             'label'    => 'http-queue-length',
-            'nlabel'   => 'appserviceplan.http.queue.length',
+            'nlabel'   => 'appserviceplan.http.queue.length.count',
             'unit'     => '',
             'min'      => '0',
             'template' => '%d'
