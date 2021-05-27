@@ -33,8 +33,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'subnet:s'              => { name => 'subnet' },
-        'prettify'              => { name => 'prettify' }
+        'subnet:s' => { name => 'subnet' },
+        'prettify' => { name => 'prettify' }
     });
                                     
     return $self;
