@@ -106,7 +106,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Redis Cache hits/misses.
+Check Azure Redis cache usage statistics.
 
 Example:
 
