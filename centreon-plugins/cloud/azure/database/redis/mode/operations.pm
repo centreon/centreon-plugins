@@ -127,15 +127,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-operations-per-second>
 
-Warning threshold where '*' can be:
-'operations-per-second'.
+Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-operations-per-second>
 
-Critical threshold where '*' can be:
-'operations-per-second'.
+Critical threshold.
 
 =back
 
