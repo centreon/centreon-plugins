@@ -100,7 +100,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Redis Cache memory usage.
+Check Azure Redis memory statistics.
 
 Example:
 
