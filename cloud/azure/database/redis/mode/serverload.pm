@@ -100,7 +100,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Redis Cache server load.
+Check Azure Redis server load statistics.
 
 Example:
 
