@@ -99,7 +99,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Redis Cache operations per second.
+Check Azure Redis operations statistics.
 
 Example:
 
