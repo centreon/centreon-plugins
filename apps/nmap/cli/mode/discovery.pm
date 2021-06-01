@@ -34,6 +34,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'subnet:s' => { name => 'subnet' },
+        'nmap-options:s' => { name => 'nmap_options', default => '-sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - ' },
         'prettify' => { name => 'prettify' }
     });
                                     
@@ -109,7 +110,7 @@ sub run {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'nmap',
-        command_options => '-sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - ',
+        command_options => $self->{option_results}->{command_options},
         command_options_suffix => $self->{option_results}->{subnet},
         timeout => 120
     );
@@ -180,7 +181,7 @@ __END__
 =head1 MODE
 
 Resources discovery.
-Command used: nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__
+Default command used: nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__
 
 Timeout defaults to 120 seconds.
 
@@ -190,6 +191,12 @@ Timeout defaults to 120 seconds.
 
 Specify subnet from which discover
 resources (Must be <ip>/<cidr> format) (Mandatory).
+
+=item B<--nmap-options>
+
+Specify the options to use with Nmap.
+Default value: -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__
+Note that -oX - are mandatory when using the Plugin in Centreon Host Discovery
 
 =item B<--prettify>
 
