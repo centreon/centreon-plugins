@@ -34,8 +34,7 @@ sub get_metrics_mapping {
             'label'  => 'cache-latency',
             'nlabel' => 'redis.cache.latency.microseconds',
             'unit'   => 'μs',
-            'min'    => '0',
-            'max'    => ''
+            'min'    => '0'
         }
     };
 
