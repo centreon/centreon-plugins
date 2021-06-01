@@ -110,7 +110,7 @@ sub run {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'nmap',
-        command_options => $self->{option_results}->{command_options},
+        command_options => $self->{option_results}->{nmap_options},
         command_options_suffix => $self->{option_results}->{subnet},
         timeout => 120
     );
