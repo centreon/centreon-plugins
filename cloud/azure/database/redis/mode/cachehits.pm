@@ -41,8 +41,7 @@ sub get_metrics_mapping {
             'label'  => 'cache-misses',
             'nlabel' => 'redis.cache.misses.count',
             'unit'   => '',
-            'min'    => '0',
-            'max'    => ''
+            'min'    => '0'
         }
     };
 
