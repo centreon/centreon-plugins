@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'connectedclients' => {
             'output' => 'Connected Clients',
             'label'  => 'connected-clients',
-            'nlabel' => 'redis.cache.connected.clients.count',
+            'nlabel' => 'redis.cache.clients.connected.count',
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
