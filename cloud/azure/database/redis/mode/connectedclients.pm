@@ -34,8 +34,7 @@ sub get_metrics_mapping {
             'label'  => 'connected-clients',
             'nlabel' => 'redis.cache.clients.connected.count',
             'unit'   => '',
-            'min'    => '0',
-            'max'    => ''
+            'min'    => '0'
         }
     };
 
