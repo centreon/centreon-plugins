@@ -128,15 +128,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-cache-latency>
 
-Warning threshold where '*' can be:
-'cache-latency'.
+Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-cache-latency>
 
-Critical threshold where '*' can be:
-'cache-latency'.
+Critical threshold.
 
 =back
 
