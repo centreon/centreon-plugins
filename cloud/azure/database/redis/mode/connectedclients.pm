@@ -100,7 +100,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Redis Cache connected clients.
+Check Azure Redis clients statistics.
 
 Example:
 
