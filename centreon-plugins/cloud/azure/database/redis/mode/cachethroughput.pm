@@ -41,8 +41,7 @@ sub get_metrics_mapping {
             'label'  => 'cache-read-throughput',
             'nlabel' => 'redis.cache.read.throughput.bytespersecond',
             'unit'   => 'B/s',
-            'min'    => '0',
-            'max'    => ''
+            'min'    => '0'
 	    }
     };
 
