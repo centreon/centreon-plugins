@@ -34,8 +34,7 @@ sub get_metrics_mapping {
             'label'  => 'operations-per-second',
             'nlabel' => 'redis.cache.operations.persecond',
             'unit'   => 'op/s',
-            'min'    => '0',
-            'max'    => ''
+            'min'    => '0'
         }
     };
 
