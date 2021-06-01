@@ -99,7 +99,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Redis Cache latency.
+Check Azure Redis cache latency statistics.
 
 Example:
 
