@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'serverload' => {
             'output' => 'Server Load',
             'label'  => 'server-load-percentage',
-            'nlabel' => 'redis.cache.server-load',
+            'nlabel' => 'redis.cache.server.load.percentage',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
