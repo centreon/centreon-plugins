@@ -128,15 +128,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-server-load-percentage>
 
-Warning threshold where '*' can be:
-'server-load-percentage'.
+Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-server-load-percentage>
 
-Critical threshold where '*' can be:
-'server-load-percentage'.
+Critical threshold.
 
 =back
 
