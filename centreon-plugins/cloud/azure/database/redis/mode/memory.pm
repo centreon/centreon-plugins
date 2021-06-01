@@ -128,15 +128,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-memory-usage-percentage>
 
-Warning threshold where '*' can be:
-'memory-usage-percentage'.
+Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-memory-usage-percentage>
 
-Critical threshold where '*' can be:
-'memory-usage-percentage'.
+Critical threshold.
 
 =back
 
