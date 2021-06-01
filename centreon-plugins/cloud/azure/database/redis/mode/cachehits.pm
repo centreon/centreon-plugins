@@ -34,8 +34,7 @@ sub get_metrics_mapping {
             'label'  => 'cache-hits',
             'nlabel' => 'redis.cache.hits.count',
             'unit'   => '',
-            'min'    => '0',
-            'max'    => ''
+            'min'    => '0'
         },
         'cachemisses' => {
             'output' => 'Cache Misses',
