@@ -106,7 +106,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Redis Cache read/write throughput.
+Check Azure Redis cache throughput statistics.
 
 Example:
 
