@@ -34,8 +34,7 @@ sub get_metrics_mapping {
             'label'  => 'errors.count',
             'nlabel' => 'redis.cache.errors.count',
             'unit'   => '',
-            'min'    => '0',
-            'max'    => ''
+            'min'    => '0'
         }
     };
 
