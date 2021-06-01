@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'cachewrite' => {
             'output' => 'Cache Write Throughput',
             'label'  => 'cache-write-throughput',
-            'nlabel' => 'redis.cache.write.throughput',
+            'nlabel' => 'redis.cache.write.throughput.bytespersecond',
             'unit'   => 'B/s',
             'min'    => '0',
             'max'    => ''
