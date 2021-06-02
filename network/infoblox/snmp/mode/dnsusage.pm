@@ -206,7 +206,7 @@ Check dns usage.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^success-coun$'
+Example: --filter-counters='success'
 
 =item B<--filter-name>
 
