@@ -46,7 +46,7 @@ sub set_system {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -101,7 +101,7 @@ use warnings;
 
 my %map_service_status = (
     1 => 'working', 2 => 'warning',
-    3 => 'failed', 4 => 'inactive', 5 => 'unknown',
+    3 => 'failed', 4 => 'inactive', 5 => 'unknown'
 );
 my %map_service_name = (
     1 => 'dhcp', 2 => 'dns', 3 => 'ntp', 4 => 'tftp', 5 => 'http-file-dist',
@@ -118,18 +118,18 @@ my %map_service_name = (
     49 => 'reporting', 50 => 'dns-cache-acceleration', 51 => 'ospf6',
     52 => 'swap-usage', 53 => 'discovery-consolidator', 54 => 'discovery-collector',
     55 => 'discovery-capacity', 56 => 'threat-protection', 57 => 'cloud-api',
-    58 => 'threat-analytics', 59 => 'taxii', 60 => 'bfd', 61 => 'outbound',
+    58 => 'threat-analytics', 59 => 'taxii', 60 => 'bfd', 61 => 'outbound'
 );
 
 my $mapping = {
     ibNodeServiceName   => { oid => '.1.3.6.1.4.1.7779.3.1.1.2.1.10.1.1', map => \%map_service_name },
-    ibNodeServiceStatus => { oid => '.1.3.6.1.4.1.7779.3.1.1.2.1.10.1.2', map => \%map_service_status },
+    ibNodeServiceStatus => { oid => '.1.3.6.1.4.1.7779.3.1.1.2.1.10.1.2', map => \%map_service_status }
 };
 my $oid_ibMemberNodeServiceStatusEntry = '.1.3.6.1.4.1.7779.3.1.1.2.1.10.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_ibMemberNodeServiceStatusEntry, end => $mapping->{ibNodeServiceStatus}->{oid} };
 }
 

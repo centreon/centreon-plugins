@@ -30,15 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cpu'              => 'network::infoblox::snmp::mode::cpu',
+    $self->{modes} = {
         'dhcp-usage'       => 'network::infoblox::snmp::mode::dhcpusage',
         'dns-usage'        => 'network::infoblox::snmp::mode::dnsusage',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::infoblox::snmp::mode::memory',
         'services'         => 'network::infoblox::snmp::mode::services',
-    );
+        'system'           => 'network::infoblox::snmp::mode::system'
+    };
 
     return $self;
 }
