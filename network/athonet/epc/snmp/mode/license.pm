@@ -307,23 +307,29 @@ sub manage_selection {
         );
     }
 
-    $self->{license}->{global}->{users}->{used} = $result->{users_connected};
-    $self->{license}->{global}->{users}->{total} = $result->{max_active_users};
-    $self->{license}->{global}->{users}->{free} = $result->{max_active_users} - $result->{users_connected};
-    $self->{license}->{global}->{users}->{prct_used} = $result->{users_connected} * 100 / $result->{max_active_users};
-    $self->{license}->{global}->{users}->{prct_free} = 100 - $self->{license}->{global}->{users}->{prct_used};
+    if ($result->{max_active_users} > 0) {
+        $self->{license}->{global}->{users}->{used} = $result->{users_connected};
+        $self->{license}->{global}->{users}->{total} = $result->{max_active_users};
+        $self->{license}->{global}->{users}->{free} = $result->{max_active_users} - $result->{users_connected};
+        $self->{license}->{global}->{users}->{prct_used} = $result->{users_connected} * 100 / $result->{max_active_users};
+        $self->{license}->{global}->{users}->{prct_free} = 100 - $self->{license}->{global}->{users}->{prct_used};
+    }
 
-    $self->{license}->{global}->{sessions}->{used} = $result->{active_connections};
-    $self->{license}->{global}->{sessions}->{total} = $result->{max_active_sessions};
-    $self->{license}->{global}->{sessions}->{free} = $result->{max_active_sessions} - $result->{active_connections};
-    $self->{license}->{global}->{sessions}->{prct_used} = $result->{active_connections} * 100 / $result->{max_active_sessions};
-    $self->{license}->{global}->{sessions}->{prct_free} = 100 - $self->{license}->{global}->{sessions}->{prct_used};
+    if ($result->{max_active_sessions} > 0) {
+        $self->{license}->{global}->{sessions}->{used} = $result->{active_connections};
+        $self->{license}->{global}->{sessions}->{total} = $result->{max_active_sessions};
+        $self->{license}->{global}->{sessions}->{free} = $result->{max_active_sessions} - $result->{active_connections};
+        $self->{license}->{global}->{sessions}->{prct_used} = $result->{active_connections} * 100 / $result->{max_active_sessions};
+        $self->{license}->{global}->{sessions}->{prct_free} = 100 - $self->{license}->{global}->{sessions}->{prct_used};
+    }
 
-    $self->{license}->{global}->{usim}->{used} = $result->{hss_provisioned_users};
-    $self->{license}->{global}->{usim}->{total} = $result->{max_provisioned_usim};
-    $self->{license}->{global}->{usim}->{free} = $result->{max_provisioned_usim} - $result->{hss_provisioned_users};
-    $self->{license}->{global}->{usim}->{prct_used} = $result->{hss_provisioned_users} * 100 / $result->{max_provisioned_usim};
-    $self->{license}->{global}->{usim}->{prct_free} = 100 - $self->{license}->{global}->{users}->{prct_used};
+    if ($result->{max_provisioned_usim} > 0) {
+        $self->{license}->{global}->{usim}->{used} = $result->{hss_provisioned_users};
+        $self->{license}->{global}->{usim}->{total} = $result->{max_provisioned_usim};
+        $self->{license}->{global}->{usim}->{free} = $result->{max_provisioned_usim} - $result->{hss_provisioned_users};
+        $self->{license}->{global}->{usim}->{prct_used} = $result->{hss_provisioned_users} * 100 / $result->{max_provisioned_usim};
+        $self->{license}->{global}->{usim}->{prct_free} = 100 - $self->{license}->{global}->{users}->{prct_used};
+    }
 }
 
 1;
