@@ -156,7 +156,7 @@ sub read_config {
     if (-f $self->{option_results}->{config}) {
         $content = do {
             local $/ = undef;
-            if (!open my $fh, "<", $self->{option_results}->{config}) {
+            if (!open my $fh, '<', $self->{option_results}->{config}) {
                 $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{config} : $!");
                 $self->{output}->option_exit();
             }
@@ -912,6 +912,151 @@ sub exec_func_scale {
     }
 }
 
+sub exec_func_date2epoch {
+    my ($self, %options) = @_;
+
+    if (!defined($self->{module_datetime_loaded})) {
+        centreon::plugins::misc::mymodule_load(
+            module => 'DateTime',
+            error_msg => "Cannot load module 'DatTime'."
+        );
+        $self->{module_datetime_loaded} = 1;
+    }
+
+    #{
+    #   "type": "date2epoch",
+    #   "src": "%(dateTest)",
+    #   "format": "DateAndTime",
+    #   "timezone": "Europe/Paris",
+    #   "save_epoch": "%(plopDateEpoch)",
+    #   "save_diff1": "%(plopDateDiff1)",
+    #   "save_diff2": "%(plopDateDiff2)"
+    #},
+    #{
+    #   "type": "date2epoch",
+    #   "src": "%(dateTest2)",
+    #   "format_custom": "(\\d+)-(\\d+)-(\\d+)",
+    #   "year": 1,
+    #   "month": 2,
+    #   "day": 3,
+    #   "timezone": "Europe/Paris"
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|1|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+    my $data = $self->get_special_variable_value(%$result);
+
+    my $tz = {};
+    $tz->{time_zone} = $options{timezone} if (defined($options{timezone}) && $options{timezone} ne '');
+    my $dt;
+    if (defined($options{format}) && lc($options{format}) eq 'dateandtime') {
+        my @date = unpack('n C6 a C2', $data);
+        my $timezone;
+        if (defined($date[7]) && !defined($tz->{time_zone})) {
+            $tz->{time_zone} = sprintf('%s%02d%02d', $date[7], $date[8], $date[9]);
+        }
+        $dt = DateTime->new(
+            year => $date[0],
+            month => $date[1],
+            day => $date[2],
+            hour => $date[3],
+            minute => $date[4],
+            second => $date[5],
+            %$tz
+        );
+    } elsif (defined($options{format_custom}) && $options{format_custom} ne '') {
+        my @matches = ($data =~ /$options{format_custom}/);
+        my $date = {};
+        foreach (('year', 'month', 'day', 'hour', 'minute', 'second')) {
+            $date->{$_} = $matches[ $options{$_} -1 ]
+                if (defined($options{$_}) && $options{$_} =~ /^\d+$/ && defined($matches[ $options{$_} -1 ]));
+        }
+
+        foreach (('year', 'month', 'day')) {
+            if (!defined($date->{$_})) {
+                $self->{output}->add_option_msg(short_msg => "$self->{current_section} cannot find $_ attribute");
+                $self->{output}->option_exit();
+            }
+        }
+        $dt = DateTime->new(%$date, %$tz);
+    } else {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set format or format_custom attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $results = {
+        epoch => $dt->epoch(),
+        diff1 => time() - $dt->epoch(),
+        diff2 => $dt->epoch() - time()
+    };
+    foreach (keys %$results) {
+        my $attr = '%(' . $result->{label} . ucfirst($_) . ')';
+        $attr = $options{'save_' . $_}
+            if (defined($options{'save_' . $_}) && $options{'save_' . $_} ne '');
+        my $var_save_value = $self->parse_special_variable(chars => [split //, $attr], start => 0);
+        if ($var_save_value->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_$_ attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $results->{$_}, %$var_save_value);
+    }
+}
+
+sub exec_func_epoch2date {
+    my ($self, %options) = @_;
+
+    if (!defined($self->{module_datetime_loaded})) {
+        centreon::plugins::misc::mymodule_load(
+            module => 'DateTime',
+            error_msg => "Cannot load module 'DatTime'."
+        );
+        $self->{module_datetime_loaded} = 1;
+    }
+
+    #{
+    #   "type": "epoch2date",
+    #   "src": "%(dateTestEpoch)",
+    #   "format": "%a %b %e %H:%M:%S %Y",
+    #   "timezone": "Asia/Tokyo",
+    #   "locale": "fr",
+    #   "save": "%(dateTestReformat)"
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|1|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+    my $data = $self->get_special_variable_value(%$result);
+
+    my $extras = {};
+    $extras->{time_zone} = $options{timezone} if (defined($options{timezone}) && $options{timezone} ne '');
+    $extras->{locale} = $options{locale} if (defined($options{locale}) && $options{locale} ne '');
+    my $dt = DateTime->from_epoch(
+        epoch => $data,
+        %$extras
+    );
+    my $time_value = $dt->strftime($options{format});
+
+    if (defined($options{save}) && $options{save} ne '') {
+        my $var_save_value = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        if ($var_save_value->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $time_value, %$var_save_value);
+    }
+}
+
 sub set_functions {
     my ($self, %options) = @_;
 
@@ -929,6 +1074,10 @@ sub set_functions {
             $self->exec_func_map(%$_);
         } elsif ($_->{type} eq 'scale') {
             $self->exec_func_scale(%$_);
+        } elsif (lc($_->{type}) eq 'date2epoch') {
+            $self->exec_func_date2epoch(%$_);
+        } elsif (lc($_->{type}) eq 'epoch2date') {
+            $self->exec_func_epoch2date(%$_);
         }
     }
 }
@@ -1134,7 +1283,7 @@ sub manage_selection {
     #   add some functions types:
     #       eval_equal (concatenate, math operation)
     #       regexp (regexp substitution, extract a pattern)
-    #       decode snmp type: ipAddress, DateTime (seconds, strftime)
+    #       decode snmp type: ipAddress
     #   can cache only some parts of snmp requests:
     #       use an array for "snmp" ?
     $self->read_config();
