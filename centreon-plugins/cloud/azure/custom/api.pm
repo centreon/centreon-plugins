@@ -632,6 +632,7 @@ sub azure_get_log_analytics_set_url {
     my $encoded_timespan = $uri->encode($options{timespan});
     my $url = $self->{management_endpoint} . '/v1/workspaces/' . $options{workspace_id} . '/query?query=' . $encoded_query;
     $url .= '&timespan=' . $encoded_timespan if (defined($encoded_timespan));
+    $url .= '?api-version=' . $self->{api_version};
 
     return $url;
 }
