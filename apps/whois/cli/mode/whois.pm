@@ -20,11 +20,11 @@
 # Authors : Pedro Manuel Santos Delgado - lunik
 #
 
-package apps::whois::mode::whois;
+package apps::whois::cli::mode::whois;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 use DateTime;
 
 sub new {
@@ -37,17 +37,15 @@ sub new {
         "domain:s"            => { name => 'domain'},
         "whois_binary:s"      => { name => 'command', default => '/usr/bin/whois'},
         "timeout:s"           => { name => 'timeout', default => 3},
-        "warning-days:s"      => { name => 'warning', default => "30:"},
-        "critical-days:s"     => { name => 'critical', default => "10:"},
         "custom-date-regex:s" => { name => 'custom_date_regex', default => 'Expiry Date:\s+(\d{2})-(\d{2})-(\d{4})'}, # Regex for whois outcom
         "custom-date-map:s"   => { name => 'custom_date_map', default => "DMY"}, # day month year
     });
-    # This method will execute the command, but will not let me parse the outcome
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
+    #$self->SUPER::check_options(%options);
     $self->SUPER::init(%options);
     # Check domain has only two levels
     my $domain_levels = split('\.', $self->{option_results}->{domain});
@@ -57,9 +55,9 @@ sub check_options {
         $self->{output}->option_exit();
     }
     # Check custom date regex has at least 3 groups 
-    my $MinGroupCount = 3;
+    my $minimun_regex_groups_count = 3;
     my $opening_groups = ($self->{option_results}->{custom_date_regex} =~ tr/\(//);
-    if ($opening_groups < $MinGroupCount) {
+    if ($opening_groups < $minimun_regex_groups_count) {
         $self->{output}->add_option_msg(short_msg => "Error. At least 3 groups needed on regex. found: " . $opening_groups);
         $self->{output}->option_exit();
     }
@@ -77,30 +75,52 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "custom-date-map expects more groups than the count defined in custom-date-regex");
         $self->{output}->option_exit();
     }
-
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
 }
 
-sub run {
+# method to configure the counter.
+sub set_counters {
+	my ($self, %options) = @_;
+	$self->{maps_counters_type} = [
+      { name => 'global', type => 0 },
+  	];
+  	
+  	$self->{maps_counters}->{global} = [
+      { 
+      	   label => 'days_to_expiration',
+      	   set => {
+               key_values => [ { name => 'days' } ],
+               output_template => 'Days to domain expiration : %s',
+               perfdatas => [
+                   {
+                   	    label => 'days_to_expiration', template => '%s', min => 0
+                   },
+              ]
+          }
+      }
+  ];
+}
+
+# method to get the information.
+sub manage_selection {
     my ($self, %options) = @_;
     my $catch_error_message = '';
     # Extracts expiry date
-    my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $self->{option_results}->{command},
-                                                 arguments => [$self->{option_results}->{domain}],
-                                                 timeout => $self->{option_results}->{timeout},
-                                                 wait_exit => 1,
-                                                 redirect_stderr => 1
-                                                 ); 
+#    my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
+#                                                 command => $self->{option_results}->{command},
+#                                                 arguments => [$self->{option_results}->{domain}],
+#                                                 timeout => $self->{option_results}->{timeout},
+#                                                 wait_exit => 1,
+#                                                 redirect_stderr => 1
+#                                                 ); 
+
+    my $stdout = $options{custom}->execute_command(
+        command => $self->{option_results}->{command},
+        command_options =>  $self->{option_results}->{domain} . ' 2>&1',
+        timeout => $self->{option_results}->{timeout}
+    );
+    
     my $long_error_message = $stdout; # $lerror . "\n" . $stdout;
+    # Try known errors
     if ($stdout =~ /invalid_query_error/i ) {
         $catch_error_message = "Not supported by whois";
         $self->{output}->output_add(
@@ -115,7 +135,9 @@ sub run {
                 short_msg => 'Domain: ' . $self->{option_results}->{domain} . ': ' . $catch_error_message,
                 long_msg => $long_error_message
                 );
-    } elsif (int($exit_code) <= 1){  # Bug. whois might exit 1, and yet provide an answer. i.e. outdated info
+    } else {
+    	# Try known and custom patterns for the expire date.
+        # Bug. whois might exit 1, and yet provide an answer. i.e. outdated info
         # Known Expiry date forms
         if ($stdout =~ /Registry Expiry Date:\s+(\d{4})\-(\d{2})\-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z/){
             my $expire_datetime = DateTime->new(
@@ -134,22 +156,13 @@ sub run {
                 $self->custom_expiry_date($stdout));
         # Exit error unable to get timestamp.  
         } else {
-            $catch_error_message = 'Whois response did not match known Expire Regex'; 
+            $catch_error_message = 'Whois ended in error or response did not match known Expire Regex'; 
             $self->{output}->output_add(
                 severity => 'Unknown',
                 short_msg => $catch_error_message,
                 long_msg => $long_error_message
                 );
         }
-    }else{
-        # Error calling binary 
-        $catch_error_message = "Uncaught error calling binary";
-        $self->{output}->output_add(
-                severity => 'Unknown',
-                short_msg => $catch_error_message,
-                long_msg => $long_error_message
-                );
-    
     }
     
     $self->{output}->display();
@@ -165,23 +178,27 @@ sub get_expire_days {
     # Calculate days to expire:
     my $seconds_to_expire = ($expire_datetime->epoch - $now_epoch_seconds);
     my $remaining_days = int($seconds_to_expire / $SECONDS_PER_DAY);
+    # Adds to results:
+    $self -> {expire_days} = {
+    	days_to_expire => $remaining_days
+    }
     # Compares against thresholds:
-    my $exit = $self->{perfdata}->threshold_check(
-        value => $remaining_days,
-        threshold => [ 
-            { label => 'critical', 'exit_litteral' => 'critical' },
-            { label => 'warning', 'exit_litteral' => 'warning' }
-            ]
-        );
-    $self->{output}->output_add(severity => $exit,
-                        short_msg => sprintf("Expire date for %s is %s.", $self->{option_results}->{domain}, $expire_datetime->datetime)
-                        ); 
-
-    $self->{output}->perfdata_add(label => 'remaining_days', unit => undef,
-                        value => $remaining_days,
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                        min => 0, max => undef);
+#    my $exit = $self->{perfdata}->threshold_check(
+#        value => $remaining_days,
+#        threshold => [ 
+#            { label => 'critical', 'exit_litteral' => 'critical' },
+#            { label => 'warning', 'exit_litteral' => 'warning' }
+#            ]
+#        );
+#    $self->{output}->output_add(severity => $exit,
+#                        short_msg => sprintf("Expire date for %s is %s.", $self->{option_results}->{domain}, $expire_datetime->datetime)
+#                        ); 
+#
+#    $self->{output}->perfdata_add(label => 'remaining_days', unit => undef,
+#                        value => $remaining_days,
+#                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+#                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+#                        min => 0, max => undef);
 }
 
 sub custom_expiry_date {
@@ -229,7 +246,7 @@ sub custom_expiry_date {
     if ($map_fields{'s'} <= scalar @regex_groups) {
         $second = $regex_groups[$map_fields{'s'}];
     }
-    my $dateObject = DateTime->new(
+    my $date_object = DateTime->new(
         year      => $year,
         month     => $month,
         day       => $day,
@@ -239,7 +256,7 @@ sub custom_expiry_date {
         time_zone => 'UTC' # Forced. Can't create datetime::timezone object from string
         # Not tested with streams of the type: +0300, -0400. This induces inaccuracy in the check 
     );
-    return $dateObject
+    return $date_object;
 }
 
 1;
@@ -268,13 +285,17 @@ Binary to check the domain (Default: '/usr/bin/whois')
 
 Threshold whois timeout (Default: 3)
 
-=item B<--warning-days>
+=item B<--warning-*>
 
-days to expire threshold (Default: '30:')
+days_to_expiration: days left for registry expiration. Example:
+ --warning-days_to_expiration '30:'
+(Default: '30:')
 
-=item B<--critical-days>
+=item B<--critical-*>
 
-days to expire threshold (Default: '10:')
+days_to_expiration: days left for registry expiration. Example:
+ --critical-days_to_expiration '10:'
+(Default: '10:')
 
 =item B<--custom-date-regex>
 

@@ -33,7 +33,7 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'whois'               => 'apps::whois::mode::whois'
+        'whois'               => 'apps::whois::cli::mode::whois'
     };
 
     return $self;
@@ -48,4 +48,8 @@ __END__
 
 Check Domain expiration date using vendor API or local whois tool
 
+
+whois mode tested with:
+- perl-DateTime.x86_64 : Date and time object
+- whois-5.1.1-2.el7.x86_64  : /usr/bin/whois binary
 =cut
