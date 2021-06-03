@@ -481,6 +481,30 @@ sub get_certificate {
     return ('pem', $certs->[0]->{Cert});
 }
 
+sub get_times {
+    my ($self, %options) = @_;
+
+    # TIME_T = 7.61.0
+    my $resolve = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_NAMELOOKUP_TIME'));
+    my $connect = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_CONNECT_TIME'));
+    my $appconnect = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_APPCONNECT_TIME'));
+    my $start = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_STARTTRANSFER_TIME'));
+    my $total = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_TOTAL_TIME'));
+    my $times = {
+        resolve => $resolve * 1000,
+        connect => ($connect - $resolve) * 1000,
+        transfer => ($total - $start) * 1000
+    };
+    if ($appconnect > 0) {
+        $times->{tls} = ($appconnect - $connect) * 1000;
+        $times->{processing} = ($start - $appconnect) * 1000;
+    } else {
+        $times->{processing} = ($start - $connect) * 1000;
+    }
+
+    return $times;
+}
+
 1;
 
 __END__
