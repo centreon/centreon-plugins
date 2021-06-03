@@ -184,6 +184,10 @@ sub manage_selection {
 
     if (defined($self->{option_results}->{extra_stats})) {
         my $times = $self->{http}->get_times();
+        if (!defined($times)) {
+            $self->{output}->add_option_msg(short_msg => 'Unsupported --extra-stats option for current http backend. Please try with curl backend.');
+            $self->{output}->option_exit();
+        }
         $self->{global} = { %$times, %{$self->{global}} };
     }
 }
