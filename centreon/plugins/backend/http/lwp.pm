@@ -348,6 +348,12 @@ sub get_certificate {
     return ('socket', $con);
 }
 
+sub get_time {
+    my ($self, %options) = @_;
+
+    return undef;
+}
+
 1;
 
 __END__
