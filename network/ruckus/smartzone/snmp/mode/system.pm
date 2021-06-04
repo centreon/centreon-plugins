@@ -76,7 +76,7 @@ sub set_counters {
         },
         { label => 'traffic-out', nlabel => 'system.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out', per_second => 1 } ],
-                output_template => 'traffic in: %s%s/s',
+                output_template => 'traffic out: %s%s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'b/s' }
