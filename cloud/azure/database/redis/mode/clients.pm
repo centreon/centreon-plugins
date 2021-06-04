@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::database::redis::mode::cachemissrate;
+package cloud::azure::database::redis::mode::clients;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,13 +29,12 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'cachemissrate' => {
-            'output' => 'Cache Miss Rate',
-            'label'  => 'cache-miss-rate',
-            'nlabel' => 'redis.cache.miss.rate',
-            'unit'   => '%',
-            'min'    => '0',
-            'max'    => '100'
+        'connectedclients' => {
+            'output' => 'Connected Clients',
+            'label'  => 'connected-clients',
+            'nlabel' => 'redis.cache.clients.connected.count',
+            'unit'   => '',
+            'min'    => '0'
         }
     };
 
@@ -100,22 +99,21 @@ __END__
 
 =head1 MODE
 
-Check Azure Redis Cache miss rate.
+Check Azure Redis clients statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=cache-miss-rate --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=clients --custommode=api
 --resource=<redis_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-cache-miss-rate='40' --critical-cache-miss-rate='50'
+--warning-connected-clients='800' --critical-connected-clients='900'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=cache-miss-rate --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=clients --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cache/Redis/<redis_id>'
---aggregation='average' --warning-cache-miss-rate='40' --critical-cache-miss-rate='50'
-
+--aggregation='average' --warning-connected-clients='800' --critical-connected-clients='900'
 
 Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
 
@@ -132,12 +130,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'cache-miss-rate'.
+'connected-clients'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'cache-miss-rate'.
+'connected-clients'.
 
 =back
 

@@ -31,17 +31,17 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'discovery' => 'cloud::azure::database::redis::mode::discovery',
-        'cache-hits'   => 'cloud::azure::database::redis::mode::cachehits',
-        'cache-latency'   => 'cloud::azure::database::redis::mode::cachelatency',
-        'cache-miss-rate'   => 'cloud::azure::database::redis::mode::cachemissrate',
-        'connected-clients'   => 'cloud::azure::database::redis::mode::connectedclients',
-        'server-load'   => 'cloud::azure::database::redis::mode::serverload',
-        'operations'   => 'cloud::azure::database::redis::mode::operations',
-        'cpu'   => 'cloud::azure::database::redis::mode::cpu',
-        'memory'   => 'cloud::azure::database::redis::mode::memory',
-        'errors'   => 'cloud::azure::database::redis::mode::errors',
-        'cache-throughput'   => 'cloud::azure::database::redis::mode::cachethroughput'
+        'cache-latency'    => 'cloud::azure::database::redis::mode::cachelatency',
+        'cache-throughput' => 'cloud::azure::database::redis::mode::cachethroughput',
+        'cache-usage'      => 'cloud::azure::database::redis::mode::cacheusage',
+        'clients'          => 'cloud::azure::database::redis::mode::clients',
+        'cpu'              => 'cloud::azure::database::redis::mode::cpu',
+        'discovery'        => 'cloud::azure::database::redis::mode::discovery',
+        'errors'           => 'cloud::azure::database::redis::mode::errors',
+        'health'           => 'cloud::azure::database::redis::mode::health',
+        'load'             => 'cloud::azure::database::redis::mode::load',
+        'memory'           => 'cloud::azure::database::redis::mode::memory',
+        'operations'       => 'cloud::azure::database::redis::mode::operations',
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
