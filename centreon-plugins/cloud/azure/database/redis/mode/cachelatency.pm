@@ -105,13 +105,13 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=latency --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=cache-latency --custommode=api
 --resource=<redis_id> --resource-group=<resourcegroup_id> --aggregation='average'
 --warning-cache-latency='8000' --critical-cache-latency='9000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=latency --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=cache-latency --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cache/Redis/<redis_id>'
 --aggregation='average' --warning-total-latency='50' --critical-total-latency='100'
 

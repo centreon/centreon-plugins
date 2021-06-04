@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::database::redis::mode::serverload;
+package cloud::azure::database::redis::mode::cacheusage;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,13 +29,19 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'serverload' => {
-            'output' => 'Server Load',
-            'label'  => 'server-load-percentage',
-            'nlabel' => 'redis.cache.server.load.percentage',
-            'unit'   => '%',
-            'min'    => '0',
-            'max'    => '100'
+        'cachehits' => {
+            'output' => 'Cache Hits',
+            'label'  => 'cache-hits',
+            'nlabel' => 'redis.cache.hits.count',
+            'unit'   => '',
+            'min'    => '0'
+        },
+        'cachemisses' => {
+            'output' => 'Cache Misses',
+            'label'  => 'cache-misses',
+            'nlabel' => 'redis.cache.misses.count',
+            'unit'   => '',
+            'min'    => '0'
         }
     };
 
@@ -77,7 +83,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.Cache';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Maximum'];
+    $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -100,23 +106,24 @@ __END__
 
 =head1 MODE
 
-Check Azure Redis server load statistics.
+Check Azure Redis cache usage statistics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=server-load --custommode=api
---resource=<redis_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
---warning-server-load-percentage='80' --critical-server-load-percentage='90'
+perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=cache-usage --custommode=api
+--resource=<redis_id> --resource-group=<resourcegroup_id> --aggregation='total'
+--warning-cache-misses='800' --critical-cache-misses='900'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=server-load  --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::redis::plugin --mode=cache-usage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cache/Redis/<redis_id>'
---aggregation='maximum' --warning-server-load-percentage='80' --critical-server-load-percentage='90'
+--aggregation='total' --warning-cache-misses='800' --critical-cache-misses='900'
 
-Default aggregation: 'maximum' / 'minimum', 'maximum' and 'average' are valid.
+
+Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
 =over 8
 
@@ -128,13 +135,15 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-server-load-percentage>
+=item B<--warning-*>
 
-Warning threshold.
+Warning threshold where '*' can be:
+'cache-misses', 'cache-hits'.
 
-=item B<--critical-server-load-percentage>
+=item B<--critical-*>
 
-Critical threshold.
+Critical threshold where '*' can be:
+'cache-misses', 'cache-hits'.
 
 =back
 
