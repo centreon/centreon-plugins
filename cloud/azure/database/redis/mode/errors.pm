@@ -31,7 +31,7 @@ sub get_metrics_mapping {
     my $metrics_mapping = {
         'errors' => {
             'output' => 'Errors',
-            'label'  => 'errors.count',
+            'label'  => 'errors-count',
             'nlabel' => 'redis.cache.errors.count',
             'unit'   => '',
             'min'    => '0'
