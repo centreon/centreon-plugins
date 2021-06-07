@@ -46,7 +46,7 @@ sub new {
             'hostname:s@'   => { name => 'hostname' },
             'port:s'        => { name => 'port', default => 8080 },
             'proto:s'       => { name => 'proto', default => 'http' },
-            'path:s'        => { name => 'path', default => '/containers/docker/' },
+            'api-path:s'    => { name => 'api_path', default => '/containers/docker/' },
             'credentials'   => { name => 'credentials' },
             'username:s'    => { name => 'username' },
             'password:s'    => { name => 'password' },
@@ -114,7 +114,7 @@ sub internal_api_list_nodes {
     
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{path},
+        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path},
         unknown_status => '', critical_status => '', warning_status => '');
     my $nodes;
     eval {
@@ -156,7 +156,7 @@ sub internal_api_list_containers {
     
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{path},
+        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path},
         unknown_status => '', critical_status => '', warning_status => '');
     my $containers = [];
     my $containers_ids;
@@ -212,7 +212,7 @@ sub internal_api_get_container_stats {
     my ($self, %options) = @_;
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{path} . '/' . $options{container_id},
+        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path} . '/' . $options{container_id},
         unknown_status => '', critical_status => '', warning_status => '');
     my $container_stats;
     my $full_container_stats;
@@ -337,7 +337,7 @@ Port used (Default: 8080)
 
 Specify https if needed (Default: 'http')
 
-=item B<--path>
+=item B<--api-path>
 
 Path used (Default: '/containers/docker')
 

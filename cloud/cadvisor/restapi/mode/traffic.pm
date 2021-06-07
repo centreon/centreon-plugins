@@ -66,7 +66,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -118,7 +118,7 @@ sub manage_selection {
             name                => $name,
         };
 
-        my $name = defined($self->{option_results}->{use_name}) ? $name : $container_id;
+        $name = defined($self->{option_results}->{use_name}) ? $name : $container_id;
         if (defined($first_stat->{network}->{interfaces})) {
             foreach my $interface_index (0..(scalar(@{$first_stat->{network}->{interfaces}}) - 1)) {
                 $self->{containers_traffic}->{$name} = {
