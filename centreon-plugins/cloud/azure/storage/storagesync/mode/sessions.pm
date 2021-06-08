@@ -29,7 +29,7 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'StorageSyncSyncSessionAppliedFilesCount' => {
+        'storagesyncsyncsessionappliedfilescount' => {
             'output' => 'Files Synced',
             'label'  => 'files-synced',
             'nlabel' => 'storagesync.files.synced.count',
