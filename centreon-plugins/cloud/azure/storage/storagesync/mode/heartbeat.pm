@@ -116,7 +116,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --m
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/microsoft.storagesync/storageSyncServices/<syncservice_id>'
 --aggregation='maximum' --critical-heartbeat='1:'
 
-Default aggregation: 'maximum' / 'minimum', 'maximum' and 'total' are valid.
+Default aggregation: 'maximum' / 'minimum', 'average' and 'total' are valid.
 
 =over 8
 
