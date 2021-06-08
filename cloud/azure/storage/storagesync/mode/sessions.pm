@@ -152,7 +152,7 @@ Warning threshold where '*' can be:
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'item-errors', 'files-synced'.
+'item-errors', 'files-synced', 'bytes-synced'.
 
 =back
 
