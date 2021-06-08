@@ -44,7 +44,7 @@ sub check_temp_result {
     my ($self, %options) = @_;
 
     $options{result}->{cpu_temp} = defined($options{result}->{cpu_temp}) ? $options{result}->{cpu_temp} : 'unknown';
-    if ($options{result}->{cpu_temp} =~ /([0-9]+)\s*C/ && !$self->check_filter(section => 'temperature', instance => 'cpu')) {
+    if ($options{result}->{cpu_temp} =~ /([0-9]+)\s*C?/ && !$self->check_filter(section => 'temperature', instance => 'cpu')) {
         my $value = $1;
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(
@@ -71,7 +71,7 @@ sub check_temp_result {
     }
 
     $options{result}->{system_temp} = defined($options{result}->{system_temp}) ? $options{result}->{system_temp} : 'unknown';
-    if ($options{result}->{system_temp} =~ /([0-9]+)\s*C/ && !$self->check_filter(section => 'temperature', instance => 'system')) {
+    if ($options{result}->{system_temp} =~ /([0-9]+)\s*C?/ && !$self->check_filter(section => 'temperature', instance => 'system')) {
         my $value = $1;
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(
