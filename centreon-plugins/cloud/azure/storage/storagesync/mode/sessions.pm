@@ -147,7 +147,7 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'item-errors', 'files-synced'.
+'item-errors', 'files-synced', 'bytes-synced'.
 
 =item B<--critical-*>
 
