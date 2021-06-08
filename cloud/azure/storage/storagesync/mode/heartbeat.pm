@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'storagesyncserverheartbeat' => {
             'output' => 'Heartbeat',
             'label'  => 'heartbeat',
-            'nlabel' => 'storage.storagesync.heartbeat',
+            'nlabel' => 'storagesync.heartbeat.count',
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
