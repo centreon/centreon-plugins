@@ -126,15 +126,20 @@ sub check_memory {
     my $result = $options{snmp}->map_instance(mapping => $mapping->{ $options{type} }, results => $options{snmp_result}, instance => 0);
     return 0 if (!defined($result->{ram_free}));
 
-    $result->{ram_total} = $self->convert_bytes(value => $result->{ram_total});
-    $result->{ram_free} = $self->convert_bytes(value => $result->{ram_free});
-    $self->{ram} = {
-        total => $result->{ram_total},
-        used => $result->{ram_total} - $result->{ram_free},
-        free => $result->{ram_free},
-        prct_used => 100 - ($result->{ram_free} * 100 / $result->{ram_total}),
-        prct_free => $result->{ram_free} * 100 / $result->{ram_total}
-    };
+    if (defined($options{convert})) {
+        $result->{ram_total} = $self->convert_bytes(value => $result->{ram_total});
+        $result->{ram_free} = $self->convert_bytes(value => $result->{ram_free});
+    }
+
+    if (defined($result->{ram_total}) && $result->{ram_total} > 0) {
+        $self->{ram} = {
+            total => $result->{ram_total},
+            used => $result->{ram_total} - $result->{ram_free},
+            free => $result->{ram_free},
+            prct_used => 100 - ($result->{ram_free} * 100 / $result->{ram_total}),
+            prct_free => $result->{ram_free} * 100 / $result->{ram_total}
+        };
+    }
 }
 
 sub manage_selection {
@@ -145,8 +150,8 @@ sub manage_selection {
         nothing_quit => 1
     );
     $self->check_memory(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result);
-    $self->check_memory(snmp => $options{snmp}, type => 'es', snmp_result => $snmp_result);
-    $self->check_memory(snmp => $options{snmp}, type => 'legacy', snmp_result => $snmp_result);
+    $self->check_memory(snmp => $options{snmp}, type => 'es', snmp_result => $snmp_result, convert => 1);
+    $self->check_memory(snmp => $options{snmp}, type => 'legacy', snmp_result => $snmp_result, convert => 1);
 }
 
 1;

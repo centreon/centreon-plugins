@@ -117,7 +117,7 @@ sub check_fan_ex {
 
     my $snmp_result = $self->{snmp}->get_table(
         oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.2.2', # systemFan2Table
-        start => $mapping->{ex}->{status}->{oid}
+        start => $mapping->{ex}->{description}->{oid}
     );
     check_fan_result($self, type => 'ex', snmp_result => $snmp_result);
 }
