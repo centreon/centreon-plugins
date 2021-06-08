@@ -112,6 +112,24 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'other', nlabel => 'volume.io.other.usage.bytespersecond', display_ok => 0, set => {
+                key_values => [ { name => 'other' } ],
+                output_template => 'other: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'total', nlabel => 'volume.io.total.usage.bytespersecond', display_ok => 0, set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'total: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
         { label => 'read-iops', nlabel => 'volume.io.read.usage.iops', set => {
                 key_values => [ { name => 'read_iops' } ],
                 output_template => 'read iops: %s',
@@ -128,6 +146,22 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'other-iops', nlabel => 'volume.io.other.usage.iops', set => {
+                key_values => [ { name => 'other_iops' } ],
+                output_template => 'other iops: %s',
+                perfdatas => [
+                    { template => '%s', unit => 'iops', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'total-iops', nlabel => 'volume.io.total.usage.iops', set => {
+                key_values => [ { name => 'total_iops' } ],
+                output_template => 'total iops: %s',
+                perfdatas => [
+                    { template => '%s', unit => 'iops', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
         { label => 'read-latency', nlabel => 'volume.io.read.latency.milliseconds', set => {
                 key_values => [ { name => 'read_latency' } ],
                 output_template => 'read latency: %s ms',
@@ -139,6 +173,22 @@ sub set_counters {
         { label => 'write-latency', nlabel => 'volume.io.write.latency.milliseconds', set => {
                 key_values => [ { name => 'write_latency' } ],
                 output_template => 'write latency: %s ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'other-latency', nlabel => 'volume.io.other.latency.milliseconds', set => {
+                key_values => [ { name => 'other_latency' } ],
+                output_template => 'other latency: %s ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'total-latency', nlabel => 'volume.io.total.latency.milliseconds', set => {
+                key_values => [ { name => 'total_latency' } ],
+                output_template => 'total latency: %s ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
@@ -193,10 +243,16 @@ sub manage_selection {
 
             read          => $_->{metric}->{throughput}->{read},
             write         => $_->{metric}->{throughput}->{write},
+            other         => $_->{metric}->{throughput}->{other},
+            total         => $_->{metric}->{throughput}->{total},
             read_iops     => $_->{metric}->{iops}->{read},
             write_iops    => $_->{metric}->{iops}->{write},
+            other_iops    => $_->{metric}->{iops}->{other},
+            total_iops    => $_->{metric}->{iops}->{total},
             read_latency  => $_->{metric}->{latency}->{read},
-            write_latency => $_->{metric}->{latency}->{write}
+            write_latency => $_->{metric}->{latency}->{write},
+            other_latency => $_->{metric}->{latency}->{other},
+            total_latency => $_->{metric}->{latency}->{total}
         };
     }
 
@@ -249,7 +305,9 @@ Can used special variables like: %{state}, %{display}
 Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%),
 'read' (B/s), 'read-iops', 'write' (B/s), 'write-iops',
-'read-latency' (ms), 'write-latency' (ms).
+'read-latency' (ms), 'write-latency' (ms), 'total-latency' (ms),
+'other-latency' (ms), 'other' (B/s), 'total' (B/s),
+'other-iops', 'total-iops'.
 
 =back
 
