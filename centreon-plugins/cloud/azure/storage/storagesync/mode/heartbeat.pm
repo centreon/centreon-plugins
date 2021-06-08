@@ -106,9 +106,9 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=heartbeat --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=server-status --custommode=api
 --resource=<syncservice_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
---critical-heartbeat='1:'
+--critical-heartbeat='1:1'
 
 Using resource id :
 
