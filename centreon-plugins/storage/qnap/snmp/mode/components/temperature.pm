@@ -23,40 +23,33 @@ package storage::qnap::snmp::mode::components::temperature;
 use strict;
 use warnings;
 
-# In MIB 'NAS.mib'
 my $oid_CPU_Temperature_entry = '.1.3.6.1.4.1.24681.1.2.5';
 my $oid_CPU_Temperature = '.1.3.6.1.4.1.24681.1.2.5.0';
 my $oid_SystemTemperature_entry = '.1.3.6.1.4.1.24681.1.2.6';
 my $oid_SystemTemperature = '.1.3.6.1.4.1.24681.1.2.6.0';
 
 my $mapping = {
-    cpu_temp    => { oid => '.1.3.6.1.4.1.24681.1.2.5' }, # cpu-Temperature
-    system_temp => { oid => '.1.3.6.1.4.1.24681.1.2.6' }, # systemTemperature
+    legacy => {
+        cpu_temp    => { oid => '.1.3.6.1.4.1.24681.1.2.5' }, # cpu-Temperature
+        system_temp => { oid => '.1.3.6.1.4.1.24681.1.2.6' }  # systemTemperature
+    },
+    ex => {
+        cpu_temp    => { oid => '.1.3.6.1.4.1.24681.1.3.5' }, # cpu-TemperatureEX
+        system_temp => { oid => '.1.3.6.1.4.1.24681.1.3.6' }  # systemTemperatureEX
+    },
+    es => {
+        cpu_temp    => { oid => '.1.3.6.1.4.1.24681.2.2.5' }, # es-CPU-Temperature
+        system_temp => { oid => '.1.3.6.1.4.1.24681.2.2.6' }  # es-SystemTemperature1
+    }
 };
 
-my $oid_systemInfo = '.1.3.6.1.4.1.24681.1.2';
+sub load {}
 
-sub load {
-    my ($self) = @_;
-    
-    push @{$self->{request}}, {
-        oid => $oid_systemInfo,
-        start => $mapping->{cpu_temp}->{oid},
-        end => $mapping->{system_temp}->{oid}
-    };
-}
+sub check_temp_result {
+    my ($self, %options) = @_;
 
-sub check {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'temperature'));
-
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_systemInfo}, instance => 0);
-
-    $result->{cpu_temp} = defined($result->{cpu_temp}) ? $result->{cpu_temp} : 'unknown';
-    if ($result->{cpu_temp} =~ /([0-9]+)\s*C/ && !$self->check_filter(section => 'temperature', instance => 'cpu')) {
+    $options{result}->{cpu_temp} = defined($options{result}->{cpu_temp}) ? $options{result}->{cpu_temp} : 'unknown';
+    if ($options{result}->{cpu_temp} =~ /([0-9]+)\s*C/ && !$self->check_filter(section => 'temperature', instance => 'cpu')) {
         my $value = $1;
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(
@@ -70,7 +63,7 @@ sub check {
             $self->{output}->output_add(
                 severity => $exit,
                 short_msg => sprintf(
-                    "CPU Temperature is '%s' degree centigrade", $value
+                    "CPU temperature is '%s' degree centigrade", $value
                 )
             );
         }
@@ -82,13 +75,13 @@ sub check {
         );
     }
 
-    $result->{system_temp} = defined($result->{system_temp}) ? $result->{system_temp} : 'unknown';
-    if ($result->{system_temp} =~ /([0-9]+)\s*C/ && !$self->check_filter(section => 'temperature', instance => 'system')) {
+    $options{result}->{system_temp} = defined($options{result}->{system_temp}) ? $options{result}->{system_temp} : 'unknown';
+    if ($options{result}->{system_temp} =~ /([0-9]+)\s*C/ && !$self->check_filter(section => 'temperature', instance => 'system')) {
         my $value = $1;
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "system Temperature is '%s' degree centigrade",
+                "system temperature is '%s' degree centigrade",
                 $value
             )
         );
@@ -97,7 +90,7 @@ sub check {
             $self->{output}->output_add(
                 severity => $exit,
                 short_msg => sprintf(
-                    "System Temperature is '%s' degree centigrade", $value
+                    "System temperature is '%s' degree centigrade", $value
                 )
             );
         }
@@ -107,6 +100,45 @@ sub check {
             instances => 'system',
             value => $value
         );
+    }
+}
+
+sub check_temp_es {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $self->{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%{$mapping->{es}})) ]
+    );
+    my $result = $self->{snmp}->map_instance(mapping => $mapping->{es}, results => $snmp_result, instance => 0);
+    check_temp_result($self, result => $result);
+}
+
+sub check_temp {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $self->{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%{$mapping->{ex}}), values(%{$mapping->{legacy}})) ],
+    );
+    my $result = $self->{snmp}->map_instance(mapping => $mapping->{ex}, results => $snmp_result, instance => 0);
+    if (defined($result->{cpu_tem})) {
+        check_temp_result($self, result => $result);
+    } else {
+        $result = $self->{snmp}->map_instance(mapping => $mapping->{legacy}, results => $snmp_result, instance => 0);
+        check_temp_result($self, result => $result);
+    }
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking temperatures");
+    $self->{components}->{temperature} = { name => 'temperatures', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'temperature'));
+
+    if ($self->{is_es} == 1) {
+        check_temp_es($self);
+    } else {
+        check_temp($self);
     }
 }
 

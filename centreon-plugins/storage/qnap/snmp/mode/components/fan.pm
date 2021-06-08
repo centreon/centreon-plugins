@@ -23,44 +23,48 @@ package storage::qnap::snmp::mode::components::fan;
 use strict;
 use warnings;
 
-# In MIB 'NAS.mib'
-my $mapping = {
-    description => { oid => '.1.3.6.1.4.1.24681.1.2.15.1.2' }, # sysFanDescr
-    speed       => { oid => '.1.3.6.1.4.1.24681.1.2.15.1.3' } # sysFanSpeed
+my $map_status = {
+    0 => 'ok', -1 => 'fail'
 };
-my $oid_systemFanTable = '.1.3.6.1.4.1.24681.1.2.15';
 
-sub load {
-    my ($self) = @_;
+my $mapping = {
+    legacy => {
+        description => { oid => '.1.3.6.1.4.1.24681.1.2.15.1.2' }, # sysFanDescr
+        speed       => { oid => '.1.3.6.1.4.1.24681.1.2.15.1.3' }  # sysFanSpeed
+    },
+    ex => {
+        description => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.2.2.1.2' }, # systemFanID
+        status      => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.2.2.1.4', map => $map_status }, # systemFanStatus
+        speed       => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.2.2.1.5' }, # systemFanSpeed
+    },
+    es => {
+        description => { oid => '.1.3.6.1.4.1.24681.2.2.15.1.2' }, # es-SysFanDescr
+        speed       => { oid => '.1.3.6.1.4.1.24681.2.2.15.1.3' }  # es-SysFanSpeed
+    }
+};
+
+sub load {}
+
+sub check_fan_result {
+    my ($self, %options) = @_;
     
-    push @{$self->{request}}, {
-        oid => $oid_systemFanTable,
-        start => $mapping->{description}->{oid},
-        end => $mapping->{speed}->{oid}
-    };
-}
-
-sub check {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking fans");
-    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'fan'));
-    
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_systemFanTable}})) {
-        next if ($oid !~ /^$mapping->{description}->{oid}\.(.*)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$options{snmp_result}})) {
+        next if ($oid !~ /^$mapping->{ $options{type} }->{description}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_systemFanTable}, instance => $instance);
+        $self->{fan_checked} = 1;
+
+        my $result = $self->{snmp}->map_instance(mapping => $mapping->{ $options{type} }, results => $options{snmp_result}, instance => $instance);
+
+        next if ($self->check_filter(section => 'fan', instance => $instance));        
+        $self->{components}->{fan}->{total}++;
 
         $result->{speed} = defined($result->{speed}) ? $result->{speed} : 'unknown';
-
-        next if ($self->check_filter(section => 'fan', instance => $instance));
-        
-        $self->{components}->{fan}->{total}++;
+        $result->{status} = defined($result->{status}) ? $result->{status} : 'n/a';
         $self->{output}->output_add(
             long_msg => sprintf(
-                "fan '%s' speed is '%s' [instance: %s]",
-                $result->{description}, $result->{speed}, $instance
+                "fan '%s' speed is %s [instance: %s, status: %s]",
+                $result->{description}, $result->{speed}, $instance, 
+                $result->{status}
             )
         );
 
@@ -83,6 +87,53 @@ sub check {
                 min => 0
             );
         }
+    }
+}
+
+sub check_fan_es {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $self->{snmp}->get_table(
+        oid => '.1.3.6.1.4.1.24681.2.2.15', # es-SystemFanTable
+        start => $mapping->{es}->{description}->{oid}
+    );
+    check_fan_result($self, type => 'es', snmp_result => $snmp_result);
+}
+
+sub check_fan_legacy {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{fan_checked}));
+
+    my $snmp_result = $self->{snmp}->get_table(
+        oid => '.1.3.6.1.4.1.24681.1.2.15', # systemFanTable
+        start => $mapping->{legacy}->{description}->{oid}
+    );
+    check_fan_result($self, type => 'legacy', snmp_result => $snmp_result);
+}
+
+sub check_fan_ex {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $self->{snmp}->get_table(
+        oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.2.2', # systemFan2Table
+        start => $mapping->{ex}->{status}->{oid}
+    );
+    check_fan_result($self, type => 'ex', snmp_result => $snmp_result);
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking fans");
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'fan'));
+
+    if ($self->{is_es} == 1) {
+        check_fan_es($self);
+    } else {
+        check_fan_ex($self);
+        check_fan_legacy($self);
     }
 }
 

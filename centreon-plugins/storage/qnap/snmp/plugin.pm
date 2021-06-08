@@ -30,18 +30,19 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'cpu'              => 'snmp_standard::mode::cpu',
-        'hardware'         => 'storage::qnap::snmp::mode::hardware',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'list-storages'    => 'snmp_standard::mode::liststorages',
-        'memory'           => 'storage::qnap::snmp::mode::memory',
-        'storage'          => 'snmp_standard::mode::storage',
-        'time'             => 'snmp_standard::mode::ntp',
-        'uptime'           => 'snmp_standard::mode::uptime',
-        'volume-usage'     => 'storage::qnap::snmp::mode::volumeusage'
-    );
+    $self->{modes} = {
+        'cpu'             => 'snmp_standard::mode::cpu',
+        'hardware'        => 'storage::qnap::snmp::mode::hardware',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-storages'   => 'snmp_standard::mode::liststorages',
+        'memory'          => 'storage::qnap::snmp::mode::memory',
+        'pools'           => 'storage::qnap::snmp::mode::pools',
+        'storage'         => 'snmp_standard::mode::storage',
+        'time'            => 'snmp_standard::mode::ntp',
+        'uptime'          => 'snmp_standard::mode::uptime',
+        'volumes'         => 'storage::qnap::snmp::mode::volumes'
+    };
 
     return $self;
 }
