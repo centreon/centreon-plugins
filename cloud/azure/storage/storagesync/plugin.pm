@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'discovery' => 'cloud::azure::storage::storagesync::mode::discovery',
-        'heartbeat'   => 'cloud::azure::storage::storagesync::mode::heartbeat',
-        'sessions'   => 'cloud::azure::storage::storagesync::mode::sessions'
+        'discovery'     => 'cloud::azure::storage::storagesync::mode::discovery',
+        'files-synced'  => 'cloud::azure::storage::storagesync::mode::filessync',
+        'server-status' => 'cloud::azure::storage::storagesync::mode::serverstatus'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
