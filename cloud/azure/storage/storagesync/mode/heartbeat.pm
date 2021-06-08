@@ -100,7 +100,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Storage Sync Service Heartbeat.
+Check Azure Storage Sync server online status.
 
 Example:
 
