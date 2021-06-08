@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storagesync::mode::sessions;
+package cloud::azure::storage::storagesync::mode::filessync;
 
 use base qw(cloud::azure::custom::mode);
 
