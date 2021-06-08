@@ -112,9 +112,9 @@ perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --m
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=heartbeat --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storagesync::plugin --mode=server-status --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/microsoft.storagesync/storageSyncServices/<syncservice_id>'
---aggregation='maximum' --critical-heartbeat='1:'
+--aggregation='maximum' --critical-heartbeat='1:1'
 
 Default aggregation: 'maximum' / 'minimum', 'average' and 'total' are valid.
 
