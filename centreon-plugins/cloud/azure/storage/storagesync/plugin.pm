@@ -57,6 +57,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Redis Cache service.
+Check Microsoft Azure Storage Sync service.
 
 =cut
