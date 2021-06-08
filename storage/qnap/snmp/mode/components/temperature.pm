@@ -23,11 +23,6 @@ package storage::qnap::snmp::mode::components::temperature;
 use strict;
 use warnings;
 
-my $oid_CPU_Temperature_entry = '.1.3.6.1.4.1.24681.1.2.5';
-my $oid_CPU_Temperature = '.1.3.6.1.4.1.24681.1.2.5.0';
-my $oid_SystemTemperature_entry = '.1.3.6.1.4.1.24681.1.2.6';
-my $oid_SystemTemperature = '.1.3.6.1.4.1.24681.1.2.6.0';
-
 my $mapping = {
     legacy => {
         cpu_temp    => { oid => '.1.3.6.1.4.1.24681.1.2.5' }, # cpu-Temperature
@@ -120,7 +115,7 @@ sub check_temp {
         oids => [ map($_->{oid} . '.0', values(%{$mapping->{ex}}), values(%{$mapping->{legacy}})) ],
     );
     my $result = $self->{snmp}->map_instance(mapping => $mapping->{ex}, results => $snmp_result, instance => 0);
-    if (defined($result->{cpu_tem})) {
+    if (defined($result->{cpu_temp})) {
         check_temp_result($self, result => $result);
     } else {
         $result = $self->{snmp}->map_instance(mapping => $mapping->{legacy}, results => $snmp_result, instance => 0);
