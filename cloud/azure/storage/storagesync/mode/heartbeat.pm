@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storagesync::mode::heartbeat;
+package cloud::azure::storage::storagesync::mode::serverstatus;
 
 use base qw(cloud::azure::custom::mode);
 
