@@ -37,7 +37,7 @@ sub get_metrics_mapping {
             'min'    => '0',
             'max'    => ''
         },
-	'StorageSyncSyncSessionPerItemErrorsCount' => {
+	'storagesyncsyncsessionperitemerrorscount' => {
             'output' => 'Item errors',
             'label'  => 'item-errors',
             'nlabel' => 'storage.storagesync.item.errors',
