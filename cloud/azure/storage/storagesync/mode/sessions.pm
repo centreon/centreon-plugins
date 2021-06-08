@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'StorageSyncSyncSessionAppliedFilesCount' => {
             'output' => 'Files Synced',
             'label'  => 'files-synced',
-            'nlabel' => 'storage.storagesync.files.synced',
+            'nlabel' => 'storagesync.files.synced.count',
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
