@@ -132,10 +132,9 @@ Set resource group (Required if resource's name is used).
 
 Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-heartbeat>
 
-Critical threshold where '*' can be:
-'heartbeat'.
+Critical threshold.
 
 =back
 
