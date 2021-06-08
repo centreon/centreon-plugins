@@ -28,33 +28,27 @@ my $map_status = {
 };
 
 my $mapping = {
-    status      => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.3.2.1.4', map => $map_status }, # systemPowerStatus
-    speed       => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.3.2.1.5' }, # systemPowerFanSpeed
-    temperature => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.3.2.1.6' }  # systemPowerTemp
+    ex => {
+        status      => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.3.2.1.4', map => $map_status }, # systemPowerStatus
+        speed       => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.3.2.1.5' }, # systemPowerFanSpeed
+        temperature => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.3.2.1.6' }  # systemPowerTemp
+    },
+    es => {
+        status      => { oid => '.1.3.6.1.4.1.24681.2.2.21.1.4' }, # es-SysPowerStatus
+        speed       => { oid => '.1.3.6.1.4.1.24681.2.2.21.1.5' }, # es-SysPowerFanSpeed
+        temperature => { oid => '.1.3.6.1.4.1.24681.2.2.21.1.6' }  # es-SysPowerTemp
+    }
 };
-my $oid_systemPowerTable = '.1.3.6.1.4.1.24681.1.4.1.1.1.1.3.2';
 
-sub load {
-    my ($self) = @_;
-    
-    push @{$self->{request}}, {
-        oid => $oid_systemPowerTable,
-        start => $mapping->{status}->{oid},
-        end => $mapping->{temperature}->{oid}
-    };
-}
+sub load {}
 
-sub check {
-    my ($self) = @_;
+sub check_psu_result {
+    my ($self, %options) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking power supplies");
-    $self->{components}->{psu} = { name => 'psu', total => 0, skip => 0 };
-    return if ($self->check_filter(section => 'psu'));
-
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_systemPowerTable}})) {
-        next if ($oid !~ /^$mapping->{status}->{oid}\.(.*)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$options{snmp_result}})) {
+        next if ($oid !~ /^$mapping->{ $options{type} }->{status}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_systemPowerTable}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping->{ $options{type} }, results => $options{snmp_result}, instance => $instance);
 
         next if ($self->check_filter(section => 'psu', instance => $instance));
 
@@ -76,7 +70,7 @@ sub check {
             );
         }
 
-        if ($result->{speed} =~ /[0-9]/) {
+        if ($result->{speed} !~ /[0-9]/) {
             my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'psu.fanspeed', instance => $instance, value => $result->{speed});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
@@ -114,6 +108,40 @@ sub check {
                 value => $result->{temperature}
             );
         }
+    }
+}
+
+sub check_psu_es {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $self->{snmp}->get_table(
+        oid => '.1.3.6.1.4.1.24681.2.2.21', # es-SystemPowerTable
+        start => $mapping->{es}->{status}->{oid}
+    );
+    check_psu_result($self, type => 'es', snmp_result => $snmp_result);
+}
+
+sub check_psu_ex {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $self->{snmp}->get_table(
+        oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.3.2', # systemPowerTable
+        start => $mapping->{ex}->{status}->{oid}
+    );
+    check_psu_result($self, type => 'ex', snmp_result => $snmp_result);
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking power supplies");
+    $self->{components}->{psu} = { name => 'psu', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'psu'));
+
+    if ($self->{is_es} == 1) {
+        check_psu_es($self);
+    } else {
+        check_psu_ex($self);
     }
 }
 
