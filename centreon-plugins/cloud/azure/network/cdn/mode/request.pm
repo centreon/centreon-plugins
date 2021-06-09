@@ -122,7 +122,7 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=request --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=requests --custommode=api
 --resource=<cdn_id> --resource-group=<resourcegroup_id> --aggregation='count'
 --warning-request-count='2000' --critical-request-count='3000'
 
