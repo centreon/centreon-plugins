@@ -128,10 +128,9 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-total-latency>
 
-Warning threshold where '*' can be:
-'total-latency'.
+Warning threshold.
 
 =item B<--critical-*>
 
