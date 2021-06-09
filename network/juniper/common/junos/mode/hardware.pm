@@ -46,7 +46,7 @@ sub set_system {
             ['offline', 'CRITICAL'],
             ['diagnostic', 'WARNING'],
             ['standby', 'WARNING'],
-            ['empty', 'OK'],
+            ['empty', 'OK']
         ],
         operating => [
             ['runningAtFullSpeed', 'WARNING'],
@@ -55,13 +55,13 @@ sub set_system {
             ['ready', 'OK'], 
             ['reset', 'WARNING'],
             ['down', 'CRITICAL'],
-            ['standby', 'OK'],
+            ['standby', 'OK']
         ],
         alarm => [
             ['other', 'OK'],
             ['off', 'OK'],
-            ['on', 'CRITICAL'],
-        ],
+            ['on', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'network::juniper::common::junos::mode::components';
@@ -174,8 +174,9 @@ sub load_components {
     foreach (@{$self->{components_module}}) {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = $self->{components_path} . "::$_";
-            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
-                                                   error_msg => "Cannot load module '$mod_name'.") if ($self->{load_components} == 1);
+            centreon::plugins::misc::mymodule_load(
+                output => $self->{output}, module => $mod_name,
+                error_msg => "Cannot load module '$mod_name'.") if ($self->{load_components} == 1);
             $self->{loaded} = 1;
         }
     }
@@ -235,13 +236,13 @@ Example: --threshold-overload='operating,CRITICAL,^(?!(running)$)'
 
 =item B<--warning>
 
-Set warning threshold for fru temperatures (syntax: type,regexp,threshold)
-Example: --warning='fru-temperature,.*,30'
+Set warning threshold  (syntax: type,regexp,threshold)
+Example: --warning='operating-temperature,.*,30'
 
 =item B<--critical>
 
-Set critical threshold for fru temperatures (syntax: type,regexp,threshold)
-Example: --critical='fru-temperature,.*,40'
+Set critical threshold (syntax: type,regexp,threshold)
+Example: --critical='operating-temperature,.*,40'
 
 =item B<--reload-cache-time>
 
