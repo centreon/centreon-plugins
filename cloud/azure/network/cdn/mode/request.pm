@@ -152,7 +152,7 @@ Warning threshold where '*' can be:
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'request-count'.
+'requests-count', '4xx-requests-percentage',, '5xx-requests-percentage', 'firewall-requests-count'.
 
 =back
 
