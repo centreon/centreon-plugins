@@ -33,9 +33,9 @@ sub new {
     $self->{modes} = {
         'discovery' => 'cloud::azure::network::cdn::mode::discovery',
         'hit-ratio' => 'cloud::azure::network::cdn::mode::hitratio',
-        'request'   => 'cloud::azure::network::cdn::mode::request',
+        'latency'   => 'cloud::azure::network::cdn::mode::latency',
+        'requests'   => 'cloud::azure::network::cdn::mode::requests',
         'response'  => 'cloud::azure::network::cdn::mode::response',
-        'latency'   => 'cloud::azure::network::cdn::mode::latency'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
