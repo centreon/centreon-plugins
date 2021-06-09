@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'responsesize' => {
             'output' => 'Response Size',
             'label'  => 'response-size',
-            'nlabel' => 'cdn.response.size',
+            'nlabel' => 'cdn.response.size.bytes',
             'unit'   => 'Bytes',
             'min'    => '0',
             'max'    => ''
