@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::network::cdn::mode::request;
+package cloud::azure::network::cdn::mode::requests;
 
 use base qw(cloud::azure::custom::mode);
 
