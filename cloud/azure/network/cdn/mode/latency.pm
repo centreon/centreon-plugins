@@ -132,10 +132,9 @@ Set resource group (Required if resource's name is used).
 
 Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-total-latency>
 
-Critical threshold where '*' can be:
-'total-latency'.
+Critical threshold.
 
 =back
 
