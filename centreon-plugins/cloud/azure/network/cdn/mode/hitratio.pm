@@ -128,10 +128,9 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-byte-hit-percentage>
 
-Warning threshold where '*' can be:
-'byte-hit-percentage'.
+Warning threshold.
 
 =item B<--critical-byte-hit-percentage>
 
