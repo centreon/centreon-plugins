@@ -48,7 +48,7 @@ sub get_metrics_mapping {
 	'storagesyncbatchtransferredfilebytes' => {
             'output' => 'Bytes synced',
             'label'  => 'bytes-synced',
-            'nlabel' => 'storage.storagesync.bytes.synced.bytes',
+            'nlabel' => 'storagesync.bytes.synced.bytes',
             'unit'   => 'B',
             'min'    => '0',
             'max'    => ''

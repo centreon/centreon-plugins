@@ -33,6 +33,8 @@ sub new {
     $self->{modes} = {
         'discovery'     => 'cloud::azure::storage::storagesync::mode::discovery',
         'files-synced'  => 'cloud::azure::storage::storagesync::mode::filessync',
+        'health'        => 'cloud::azure::storage::storagesync::mode::health',
+        'recalls'       => 'cloud::azure::storage::storagesync::mode::recalls',
         'server-status' => 'cloud::azure::storage::storagesync::mode::serverstatus'
     };
 
