@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'requestcount' => {
             'output' => 'Request count',
             'label'  => 'request-count',
-            'nlabel' => 'cdn.request.count',
+            'nlabel' => 'cdn.requests.count',
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
