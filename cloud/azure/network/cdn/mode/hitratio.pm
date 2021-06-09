@@ -133,10 +133,9 @@ Set resource group (Required if resource's name is used).
 Warning threshold where '*' can be:
 'byte-hit-percentage'.
 
-=item B<--critical-*>
+=item B<--critical-byte-hit-percentage>
 
-Critical threshold where '*' can be:
-'byte-hit-percentage'.
+Critical threshold.
 
 =back
 
