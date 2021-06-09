@@ -147,7 +147,7 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'request-count'.
+'requests-count', '4xx-requests-percentage',, '5xx-requests-percentage', 'firewall-requests-count'.
 
 =item B<--critical-*>
 
