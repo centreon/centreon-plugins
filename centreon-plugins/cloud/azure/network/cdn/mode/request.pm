@@ -128,7 +128,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=requ
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=request --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cdn/profiles/<cdn_id>'
 --aggregation='count' --warning-request-count='800' --critical-request-count='900'
 
