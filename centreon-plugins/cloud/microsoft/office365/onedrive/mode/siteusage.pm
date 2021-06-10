@@ -38,11 +38,13 @@ sub custom_active_perfdata {
     $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
     $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
 
-    $self->{output}->perfdata_add(label => 'active_sites', nlabel => 'onedrive.sites.active.count',
-                                  value => $self->{result_values}->{active},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  unit => 'sites', min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'active_sites', nlabel => 'onedrive.sites.active.count',
+        value => $self->{result_values}->{active},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        unit => 'sites', min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_active_threshold {
@@ -52,9 +54,13 @@ sub custom_active_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_active};
     }
-    my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 
 }
@@ -62,12 +68,13 @@ sub custom_active_threshold {
 sub custom_active_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Active sites on %s : %d/%d (%.2f%%)",
-                        $self->{result_values}->{report_date},
-                        $self->{result_values}->{active},
-                        $self->{result_values}->{total},
-                        $self->{result_values}->{prct_active});
-    return $msg;
+    return sprintf(
+        "Active sites on %s : %d/%d (%.2f%%)",
+        $self->{result_values}->{report_date},
+        $self->{result_values}->{active},
+        $self->{result_values}->{total},
+        $self->{result_values}->{prct_active}
+    );
 }
 
 sub custom_active_calc {
@@ -87,12 +94,15 @@ sub custom_usage_perfdata {
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     
-    $self->{output}->perfdata_add(label => 'used' . $extra_label, nlabel => $self->{result_values}->{display} . '#onedrive.sites.usage.bytes',
-                                  unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'used' . $extra_label,
+        nlabel => $self->{result_values}->{display} . '#onedrive.sites.usage.bytes',
+        unit => 'B',
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -105,9 +115,13 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_used};
         $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -118,11 +132,12 @@ sub custom_usage_output {
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", 
-            $total_value . " " . $total_unit, 
-            $used_value . " " . $used_unit, $self->{result_values}->{prct_used}, 
-            $free_value . " " . $free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", 
+        $total_value . " " . $total_unit, 
+        $used_value . " " . $used_unit, $self->{result_values}->{prct_used}, 
+        $free_value . " " . $free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -163,7 +178,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'active', type => 0 },
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'sites', type => 1, cb_prefix_output => 'prefix_site_output', message_multiple => 'All sites usage are ok' },
+        { name => 'sites', type => 1, cb_prefix_output => 'prefix_site_output', message_multiple => 'All sites usage are ok' }
     ];
     
     $self->{maps_counters}->{active} = [
@@ -174,17 +189,18 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_active_threshold'),
                 closure_custom_perfdata => $self->can('custom_active_perfdata')
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'total-usage-active', nlabel => 'onedrive.sites.active.usage.total.bytes', set => {
                 key_values => [ { name => 'storage_used_active' } ],
                 output_template => 'Usage (active sites): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_usage_active', value => 'storage_used_active', template => '%d',
-                      min => 0, unit => 'B' },
-                ],
+                    { label => 'total_usage_active', template => '%d',
+                      min => 0, unit => 'B' }
+                ]
             }
         },
         { label => 'total-usage-inactive', nlabel => 'onedrive.sites.inactive.usage.total.bytes', set => {
@@ -192,66 +208,67 @@ sub set_counters {
                 output_template => 'Usage (inactive sites): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_usage_inactive', value => 'storage_used_inactive', template => '%d',
-                      min => 0, unit => 'B' },
-                ],
+                    { label => 'total_usage_inactive', template => '%d',
+                      min => 0, unit => 'B' }
+                ]
             }
         },
         { label => 'total-file-count-active', nlabel => 'onedrive.sites.active.files.total.count', set => {
                 key_values => [ { name => 'file_count_active' } ],
                 output_template => 'File Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_file_count_active', value => 'file_count_active', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_file_count_active', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'total-file-count-inactive', nlabel => 'onedrive.sites.inactive.files.total.count', set => {
                 key_values => [ { name => 'file_count_inactive' } ],
                 output_template => 'File Count (inactive sites): %d',
                 perfdatas => [
-                    { label => 'total_file_count_inactive', value => 'file_count_inactive', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_file_count_inactive', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'total-active-file-count', nlabel => 'onedrive.sites.files.active.total.count', set => {
                 key_values => [ { name => 'active_file_count' } ],
                 output_template => 'Active File Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_active_file_count', value => 'active_file_count', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_active_file_count', template => '%d',
+                      min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{sites} = [
         { label => 'usage', set => {
                 key_values => [ { name => 'storage_used' }, { name => 'storage_allocated' }, { name => 'url' }, { name => 'owner' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'file-count', nlabel => 'onedrive.sites.files.count', set => {
                 key_values => [ { name => 'file_count' }, { name => 'url' }, { name => 'owner' } ],
                 output_template => 'File Count: %d',
                 perfdatas => [
-                    { label => 'file_count', value => 'file_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'url' },
-                ],
+                    { label => 'file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'url' }
+                ]
             }
         },
         { label => 'active-file-count', nlabel => 'onedrive.sites.files.active.count', set => {
                 key_values => [ { name => 'active_file_count' }, { name => 'url' }, { name => 'owner' } ],
                 output_template => 'Active File Count: %d',
                 perfdatas => [
-                    { label => 'active_file_count', value => 'active_file_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'url' },
-                ],
+                    { label => 'active_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'url' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -265,7 +282,7 @@ sub new {
         "filter-owner:s"        => { name => 'filter_owner' },
         "units:s"               => { name => 'units', default => '%' },
         "free"                  => { name => 'free' },
-        "filter-counters:s"     => { name => 'filter_counters', default => 'active-sites|total' },
+        "filter-counters:s"     => { name => 'filter_counters', default => 'active-sites|total' }
     });
 
     return $self;
@@ -275,8 +292,10 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $self->{active} = { active => 0, total => 0, report_date => '' };
-    $self->{global} = { storage_used_active => 0, storage_used_inactive => 0,
-                        file_count_active => 0, file_count_inactive => 0, active_file_count => 0 };
+    $self->{global} = {
+        storage_used_active => 0, storage_used_inactive => 0,
+        file_count_active => 0, file_count_inactive => 0, active_file_count => 0
+    };
     $self->{sites} = {};
 
     my $results = $options{custom}->office_get_onedrive_usage(param => "period='D7'");
