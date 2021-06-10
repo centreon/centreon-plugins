@@ -31,7 +31,7 @@ sub get_metrics_mapping {
     my $metrics_mapping = {
         'requestcount' => {
             'output' => 'Request count',
-            'label'  => 'request-count',
+            'label'  => 'requests-count',
             'nlabel' => 'cdn.requests.count',
             'unit'   => '',
             'min'    => '0',
@@ -124,13 +124,13 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=requests --custommode=api
 --resource=<cdn_id> --resource-group=<resourcegroup_id> --aggregation='count'
---warning-request-count='2000' --critical-request-count='3000'
+--warning-requests-count='2000' --critical-requests-count='3000'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=requests --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cdn/profiles/<cdn_id>'
---aggregation='count' --warning-request-count='800' --critical-request-count='900'
+--aggregation='count' --warning-requests-count='800' --critical-requests-count='900'
 
 Default aggregation: 'count' / 'minimum', 'maximum' and 'total' are valid.
 
