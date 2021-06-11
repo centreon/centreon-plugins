@@ -82,7 +82,7 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Cache\/Redis\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/microsoft\.storagesync\/storageSyncServices\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }
