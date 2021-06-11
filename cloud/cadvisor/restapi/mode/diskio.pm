@@ -112,38 +112,39 @@ sub manage_selection {
         my $read_io = {};
         my $write_io = {};
 
-
-        $self->{containers}->{$container_id} = {
-            node_name           => $result->{$container_id}->{NodeName},
-            display             => defined($self->{option_results}->{use_name}) ? $name : $container_id,
-            name                => $name,
-       };
-       # The API does not present the devices in the same order between the first and the last stats sample, so we can't just compare [0] with [0] and [1] with [1], we have to check the name of the device
-       foreach my $diskio_index (0..(scalar(@{$first_stat->{diskio}->{io_service_bytes}}) - 1)) {
-            my $name = defined($self->{option_results}->{use_name}) ? $name : $container_id;
-            my $device = $first_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{device};
-            $name .= ':' . $device;
-            $read_io->{$name} = {first => $first_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Read}};
-            $write_io->{$name} = {first => $first_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Write}};
-        }
-       foreach my $diskio_index (0..(scalar(@{$last_stat->{diskio}->{io_service_bytes}}) - 1)) {
-            my $name = defined($self->{option_results}->{use_name}) ? $name : $container_id;
-            my $device = $last_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{device};
-            $name .= ':' . $device;
-            $read_io->{$name}->{last} = $last_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Read};
-            $write_io->{$name}->{last} = $last_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Write};
-        }
-        foreach my $diskio_disk (keys %$read_io) {
-            $self->{containers_diskio}->{$diskio_disk} = {
-                display         => $diskio_disk,
-                diskio_read     => ($read_io->{$diskio_disk}->{last} - $read_io->{$diskio_disk}->{first}) / $diff_ts ,
-                diskio_write    => ($write_io->{$diskio_disk}->{last} - $write_io->{$diskio_disk}->{first}) / $diff_ts,
+        if (keys $first_stat->{diskio}) {
+            $self->{containers}->{$container_id} = {
+                node_name           => $result->{$container_id}->{NodeName},
+                display             => defined($self->{option_results}->{use_name}) ? $name : $container_id,
+                name                => $name,
             };
+            # The API does not present the devices in the same order between the first and the last stats sample, so we can't just compare [0] with [0] and [1] with [1], we have to check the name of the device
+            foreach my $diskio_index (0..(scalar(@{$first_stat->{diskio}->{io_service_bytes}}) - 1)) {
+                my $name = defined($self->{option_results}->{use_name}) ? $name : $container_id;
+                my $device = $first_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{device};
+                $name .= ':' . $device;
+                $read_io->{$name} = {first => $first_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Read}};
+                $write_io->{$name} = {first => $first_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Write}};
+            }
+            foreach my $diskio_index (0..(scalar(@{$last_stat->{diskio}->{io_service_bytes}}) - 1)) {
+                my $name = defined($self->{option_results}->{use_name}) ? $name : $container_id;
+                my $device = $last_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{device};
+                $name .= ':' . $device;
+                $read_io->{$name}->{last} = $last_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Read};
+                $write_io->{$name}->{last} = $last_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Write};
+            }
+            foreach my $diskio_disk (keys %$read_io) {
+                $self->{containers_diskio}->{$diskio_disk} = {
+                    display         => $diskio_disk,
+                    diskio_read     => ($read_io->{$diskio_disk}->{last} - $read_io->{$diskio_disk}->{first}) / $diff_ts ,
+                    diskio_write    => ($write_io->{$diskio_disk}->{last} - $write_io->{$diskio_disk}->{first}) / $diff_ts,
+                };
+            }
         }
     }
-    
+
     if (scalar(keys %{$self->{containers}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No containers found.");
+        $self->{output}->add_option_msg(short_msg => "No containers found or no data available for diskio metrics.");
         $self->{output}->option_exit();
     }
     
