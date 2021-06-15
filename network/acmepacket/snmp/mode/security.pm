@@ -95,7 +95,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'ipsec-tunnels', nlabel => 'security.ipsec.license.usage.percentage', set => {
+        { label => 'ipsec-license-usage', nlabel => 'security.ipsec.license.usage.percentage', set => {
                 key_values => [ { name => 'ipsec_tun_used' } ],
                 output_template => 'license used: %s %%',
                 perfdatas => [
@@ -279,29 +279,15 @@ Check security statistics.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^memory-usage$'
+Example: --filter-counters='registration'
 
-=item B<--warning-replication-status>
+=item B<--warning-*> B<--critical-*>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{replication_state}
-
-=item B<--critical-replication-status>
-
-Set critical threshold for status (Default: '%{replication_state} =~ /outOfService/i').
-Can used special variables like: %{replication_state}
-
-=item B<--warning-*>
-
-Threshold warning.
-Can be: 'license-usage' (%), 'memory-usage' (%), 'cpu-load' (%),
-'health-score' (%), 'current-sessions', 'current-calls'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'license-usage' (%), 'memory-usage' (%), 'cpu-load' (%),
-'health-score' (%), 'current-sessions', 'current-calls'.
+Thresholds.
+Can be: 'registrations-total', 'registrations-protected',
+'ipsec-tunnels, 'ipsec-license-usage',
+'imsaka-sa-add-requests-in', 'imsaka-sa-add-responses-succeeded', 'imsaka-sa-add-responses-failed', 'imsaka-sa-add-added',
+'imsaka-sa-del-requests-in', 'imsaka-sa-del-responses-succeeded', 'imsaka-sa-del-responses-failed', 'imsaka-sa-del-deleted'.
 
 =back
 
