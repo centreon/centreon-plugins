@@ -34,7 +34,7 @@ sub new {
         'cpu'             => 'network::tplink::snmp::mode::cpu',
         'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'memory'          => 'network::tplink::snmp::mode::::memory',
+        'memory'          => 'network::tplink::snmp::mode::memory',
         'uptime'          => 'snmp_standard::mode::uptime'
     };
 
