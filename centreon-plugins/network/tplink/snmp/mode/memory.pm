@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::tplink::snmp::mode::::memory;
+package network::tplink::snmp::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 
