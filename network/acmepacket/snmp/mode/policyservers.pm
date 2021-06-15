@@ -317,7 +317,7 @@ my $oid_name = '.1.3.6.1.4.1.9148.3.13.1.1.2.3.1.2'; # apDiamRxExtPolSvrName
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'athonet_epc_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+    $self->{cache_name} = 'acmepacket_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 
