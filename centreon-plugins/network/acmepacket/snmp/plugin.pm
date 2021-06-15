@@ -31,14 +31,18 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'hardware'         => 'network::acmepacket::snmp::mode::hardware',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'list-realm'       => 'network::acmepacket::snmp::mode::listrealm',
-        'list-sip'         => 'network::acmepacket::snmp::mode::listsip',
-        'realm-usage'      => 'network::acmepacket::snmp::mode::realmusage',
-        'sip-usage'        => 'network::acmepacket::snmp::mode::sipusage',
-        'system-usage'     => 'network::acmepacket::snmp::mode::systemusage'
+        'codec'               => 'network::acmepacket::snmp::mode::codec',
+        'hardware'            => 'network::acmepacket::snmp::mode::hardware',
+        'interfaces'          => 'snmp_standard::mode::interfaces',
+        'list-interfaces'     => 'snmp_standard::mode::listinterfaces',
+        'list-policy-servers' => 'network::acmepacket::snmp::mode::listpolicyservers',
+        'list-realm'          => 'network::acmepacket::snmp::mode::listrealm',
+        'list-sip'            => 'network::acmepacket::snmp::mode::listsip',
+        'policy-servers'      => 'network::acmepacket::snmp::mode::policyservers',
+        'realm-usage'         => 'network::acmepacket::snmp::mode::realmusage',
+        'security'            => 'network::acmepacket::snmp::mode::security',
+        'sip-usage'           => 'network::acmepacket::snmp::mode::sipusage',
+        'system-usage'        => 'network::acmepacket::snmp::mode::systemusage'
     };
 
     return $self;
