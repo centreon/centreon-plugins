@@ -258,7 +258,7 @@ my $map_status = { 0 => 'ok', 1 => 'expired', 2 => 'invalid' };
 
 my $mapping = {
     users_connected       => { oid => '.1.3.6.1.4.1.35805.10.2.99.1' }, # usersConnected
-    active_connections    => { oid => '.1.3.6.1.4.1.35805.10.2.99.4' }, # activeConnections
+    users_idle            => { oid => '.1.3.6.1.4.1.35805.10.2.99.2' }, # usersIdle
     hss_provisioned_users => { oid => '.1.3.6.1.4.1.35805.10.2.99.7' }, # hssProvisionedUsers
     max_active_users      => { oid => '.1.3.6.1.4.1.35805.10.4.1' }, # maxActiveUsers
     max_active_sessions   => { oid => '.1.3.6.1.4.1.35805.10.4.2' }, # maxActiveSessions
@@ -266,6 +266,7 @@ my $mapping = {
     max_provisioned_usim  => { oid => '.1.3.6.1.4.1.35805.10.4.6' }, # maxProvisionedUSIM
     status                => { oid => '.1.3.6.1.4.1.35805.10.4.5', map => $map_status } # licenseStatus
 };
+my $oid_session_alloc = '.1.3.6.1.4.1.35805.10.2.12.9.1.7'; # gTPcSessionAllocated
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -286,11 +287,12 @@ sub manage_selection {
             usim => {}
         }
     };
+
     if (defined($result->{expire_time})) {
         my @date = unpack('n C6 a C2', $result->{expire_time});
         my $tz;
         if (defined($date[7])) {
-            $tz = sprintf("%s%02d%02d", $date[7], $date[8], $date[9]);
+            $tz = sprintf('%s%02d%02d', $date[7], $date[8], $date[9]);
         }
         my $dt = DateTime->new(
             year => $date[0],
@@ -308,18 +310,21 @@ sub manage_selection {
     }
 
     if ($result->{max_active_users} > 0) {
-        $self->{license}->{global}->{users}->{used} = $result->{users_connected};
+        $self->{license}->{global}->{users}->{used} = $result->{users_connected} + $result->{users_idle};
         $self->{license}->{global}->{users}->{total} = $result->{max_active_users};
-        $self->{license}->{global}->{users}->{free} = $result->{max_active_users} - $result->{users_connected};
-        $self->{license}->{global}->{users}->{prct_used} = $result->{users_connected} * 100 / $result->{max_active_users};
+        $self->{license}->{global}->{users}->{free} = $result->{max_active_users} - $self->{license}->{global}->{users}->{used};
+        $self->{license}->{global}->{users}->{prct_used} = $self->{license}->{global}->{users}->{used} * 100 / $result->{max_active_users};
         $self->{license}->{global}->{users}->{prct_free} = 100 - $self->{license}->{global}->{users}->{prct_used};
     }
 
-    if ($result->{max_active_sessions} > 0) {
-        $self->{license}->{global}->{sessions}->{used} = $result->{active_connections};
+    if ($result->{max_active_sessions} > 0) {        
+        $self->{license}->{global}->{sessions}->{used} = 0;
+        $snmp_result = $options{snmp}->get_table(oid => $oid_session_alloc);
+        $self->{license}->{global}->{sessions}->{used} += $_ foreach (values %$snmp_result);
+
         $self->{license}->{global}->{sessions}->{total} = $result->{max_active_sessions};
-        $self->{license}->{global}->{sessions}->{free} = $result->{max_active_sessions} - $result->{active_connections};
-        $self->{license}->{global}->{sessions}->{prct_used} = $result->{active_connections} * 100 / $result->{max_active_sessions};
+        $self->{license}->{global}->{sessions}->{free} = $result->{max_active_sessions} - $self->{license}->{global}->{sessions}->{used};
+        $self->{license}->{global}->{sessions}->{prct_used} = $self->{license}->{global}->{sessions}->{used} * 100 / $result->{max_active_sessions};
         $self->{license}->{global}->{sessions}->{prct_free} = 100 - $self->{license}->{global}->{sessions}->{prct_used};
     }
 
