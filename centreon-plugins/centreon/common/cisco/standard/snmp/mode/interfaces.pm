@@ -88,11 +88,9 @@ sub set_oids_status {
 
 sub set_oids_errors {
     my ($self, %options) = @_;
-    
-    $self->{oid_ifInDiscards} = '.1.3.6.1.2.1.2.2.1.13';
-    $self->{oid_ifInErrors} = '.1.3.6.1.2.1.2.2.1.14';
-    $self->{oid_ifOutDiscards} = '.1.3.6.1.2.1.2.2.1.19';
-    $self->{oid_ifOutErrors} = '.1.3.6.1.2.1.2.2.1.20';
+
+    $self->SUPER::set_oids_errors(%options);
+    $self->{oid_ifInFCSError} = '.1.3.6.1.2.1.10.7.2.1.3'; # dot3StatsFCSErrors
     $self->{oid_ifInCrc} = '.1.3.6.1.4.1.9.2.2.1.1.12';
 }
 
@@ -106,6 +104,15 @@ sub set_counters_errors {
                 key_values => [ { name => 'incrc', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Crc : %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
+            }
+        },
+        { label => 'in-fcserror', filter => 'add_errors', nlabel => 'interface.packets.in.fcserror.count', set => {
+                key_values => [ { name => 'infcserror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => $self->can('custom_errors_calc'),
+                closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'fcserror' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In FCS Error : %s',
                 closure_custom_perfdata => $self->can('custom_errors_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
@@ -127,13 +134,13 @@ sub new {
 
 sub load_errors {
     my ($self, %options) = @_;
-    
+
     $self->set_oids_errors();
     $self->{snmp}->load(
         oids => [
             $self->{oid_ifInDiscards}, $self->{oid_ifInErrors},
             $self->{oid_ifOutDiscards}, $self->{oid_ifOutErrors},
-            $self->{oid_ifInCrc}
+            $self->{oid_ifInCrc}, $self->{oid_ifInFCSError}
         ],
         instances => $self->{array_interface_selected}
     );
@@ -156,6 +163,7 @@ sub add_result_errors {
     $self->{int}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{outerror} = $self->{results}->{$self->{oid_ifOutErrors} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{incrc} = $self->{results}->{$self->{oid_ifInCrc} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{infcserror} = $self->{results}->{$self->{oid_ifInFCSError} . '.' . $options{instance}};
 }
 
 sub add_result_status {
@@ -243,7 +251,7 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{e
 
 Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-crc', 'in-error', 'in-discard', 'out-error', 'out-discard',
+'in-traffic', 'out-traffic', 'in-crc', 'in-fcserror', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 
