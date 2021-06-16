@@ -40,7 +40,6 @@ sub new {
         'pools'           => 'storage::qnap::snmp::mode::pools',
         'storage'         => 'snmp_standard::mode::storage',
         'time'            => 'snmp_standard::mode::ntp',
-        'upgrade'         => 'storage::qnap::snmp::mode::upgrade',
         'uptime'          => 'snmp_standard::mode::uptime',
         'volumes'         => 'storage::qnap::snmp::mode::volumes'
     };
