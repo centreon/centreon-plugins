@@ -97,8 +97,7 @@ sub set_system {
     $self->{components_module} = ['fan', 'psu', 'temperature', 'voltage', 'module', 'physical', 'sensor'];
 }
 
-my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
-my $oid_ciscoEnvMonPresent = ".1.3.6.1.4.1.9.9.13.1.1";
+my $oid_ciscoEnvMonPresent = '.1.3.6.1.4.1.9.9.13.1.1';
 
 my %map_type_mon = (
     1 => 'oldAgs',
@@ -120,11 +119,12 @@ sub snmp_execute {
     my ($self, %options) = @_;
 
     $self->{snmp} = $options{snmp};
+    $self->{physical_name} = defined($self->{option_results}->{use_physical_name}) ? '.1.3.6.1.2.1.47.1.1.1.1.7' : '.1.3.6.1.2.1.47.1.1.1.1.2';
 
-    push @{$self->{request}}, { oid => $oid_entPhysicalDescr }, { oid => $oid_ciscoEnvMonPresent };
+    push @{$self->{request}}, { oid => $self->{physical_name} }, { oid => $oid_ciscoEnvMonPresent };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
-    while (my ($key, $value) = each %{$self->{results}->{$oid_entPhysicalDescr}}) {
-        $self->{results}->{$oid_entPhysicalDescr}->{$key} = centreon::plugins::misc::trim($value);
+    while (my ($key, $value) = each %{$self->{results}->{ $self->{physical_name} }}) {
+        $self->{results}->{ $self->{physical_name} }->{$key} = centreon::plugins::misc::trim($value);
     }
     $self->{output}->output_add(
         long_msg => sprintf(
@@ -140,7 +140,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
+        'use-physical-name' => { name => 'use_physical_name' }
     });
 
     return $self;
@@ -169,6 +170,10 @@ Can also exclude specific instance: --filter=fan,1
 =item B<--add-name-instance>
 
 Add literal description for instance value (used in filter, absent-problem and threshold options).
+
+=item B<--use-physical-name>
+
+Use entPhysicalName OID instead of entPhysicalDescr.
 
 =item B<--absent-problem>
 
