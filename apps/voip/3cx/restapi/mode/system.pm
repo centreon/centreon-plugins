@@ -87,6 +87,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-category:s' => { name => 'filter_category' }
     });
 
     return $self;
@@ -121,9 +122,18 @@ sub manage_selection {
         service => 'HasUnregisteredSystemExtensions', 
         error => $system->{HasUnregisteredSystemExtensions} ? 'true' : 'false',
     };
+    my $updates = 0;
+    foreach my $category (@$update) {
+        if (defined($self->{option_results}->{filter_category}) && $self->{option_results}->{filter_category} ne '' &&
+            $item->{Category} !~ /$self->{option_results}->{filter_category}/) {
+            $self->{output}->output_add(long_msg => "skipping update '" . $item->{Category} . "': no matching filter.", debug => 1);
+            next;
+        }
+        $updates++;
+    }
     $self->{service}->{HasUpdatesAvailable} = {
         service => 'HasUpdatesAvailable', 
-        error => scalar(@$update) ? 'true' : 'false',
+        error => $updates ? 'true' : 'false',
     };
     
     $self->{global} = {
@@ -141,6 +151,10 @@ __END__
 Check system health
 
 =over 8
+
+=item B<--filter-category>
+
+Filter updates' category.
 
 =item B<--unknown-status>
 
