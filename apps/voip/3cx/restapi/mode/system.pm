@@ -123,7 +123,7 @@ sub manage_selection {
         error => $system->{HasUnregisteredSystemExtensions} ? 'true' : 'false',
     };
     my $updates = 0;
-    foreach my $category (@$update) {
+    foreach my $item (@$update) {
         if (defined($self->{option_results}->{filter_category}) && $self->{option_results}->{filter_category} ne '' &&
             $item->{Category} !~ /$self->{option_results}->{filter_category}/) {
             $self->{output}->output_add(long_msg => "skipping update '" . $item->{Category} . "': no matching filter.", debug => 1);
