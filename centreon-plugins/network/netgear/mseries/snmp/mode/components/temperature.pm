@@ -73,7 +73,7 @@ sub check {
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{boxServicesTempSensorTemperature});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' is '%s' rpm", $instance, $result->{boxServicesTempSensorTemperature}));
+                                        short_msg => sprintf("Temperature '%s' is '%s' C", $instance, $result->{boxServicesTempSensorTemperature}));
         }
         $self->{output}->perfdata_add(
             label => 'temp', unit => 'C',
