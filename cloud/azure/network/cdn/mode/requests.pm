@@ -132,7 +132,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=requ
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cdn/profiles/<cdn_id>'
 --aggregation='count' --warning-requests-count='800' --critical-requests-count='900'
 
-Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
+Default aggregation: 'total' / 'minimum', 'maximum', 'count' and 'average' are valid.
 
 =over 8
 
