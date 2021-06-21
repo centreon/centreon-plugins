@@ -394,7 +394,7 @@ sub get_networks_connection_stats {
     $timespan = 1 if ($timespan <= 0);
 
     return $self->request_api(
-        endpoint => '/networks/' . $options{network_id} . '/connectionStats?timespan=' . $options{timespan},
+        endpoint => '/networks/' . $options{network_id},
         hostname => $self->get_shard_hostname(network_id => $options{network_id}),
         ignore_codes => { 400 => 1 }
     );
