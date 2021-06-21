@@ -93,7 +93,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.Cdn';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Count'];
+    $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -132,7 +132,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::cdn::plugin --mode=requ
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Cdn/profiles/<cdn_id>'
 --aggregation='count' --warning-requests-count='800' --critical-requests-count='900'
 
-Default aggregation: 'count' / 'minimum', 'maximum' and 'total' are valid.
+Default aggregation: 'total' / 'minimum', 'maximum', 'count' and 'average' are valid.
 
 =over 8
 
