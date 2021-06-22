@@ -60,13 +60,6 @@ sub check {
                 $result->{fanDescr}, $result->{fanSpeed}, $instance
             )
         );
-        my $exit = $self->get_severity(label => 'health', section => 'fan', value => $result->{fanHealthStatus});
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(
-                severity => $exit,
-                short_msg => sprintf("Fan '%s' is '%s'", $result->{fanDescr}, $result->{fanHealthStatus})
-            );
-        }
         
         next if ($result->{fanSpeed} !~ /(\d+)/);
         
@@ -87,6 +80,15 @@ sub check {
             unit => '%',
             min => 0, max => 100
         );
+        # HealthStatus OIDs are only available with IMM v2
+        next if !defined($result->{fanHealthStatus});
+        my $exit = $self->get_severity(label => 'health', section => 'fan', value => $result->{fanHealthStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '%s' is '%s'", $result->{fanDescr}, $result->{fanHealthStatus})
+            );
+        }
     }
 }
 
