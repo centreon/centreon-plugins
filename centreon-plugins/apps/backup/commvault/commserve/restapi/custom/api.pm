@@ -361,6 +361,7 @@ sub request_paging {
             header => ['Cache-Control: private']
         );
 
+        last if (!defined($results->{feedsList}));
         push @$alerts, @{$results->{feedsList}};
         last if ($results->{totalNoOfAlerts} < ($page_num * $page_count));
         $page_num++;
