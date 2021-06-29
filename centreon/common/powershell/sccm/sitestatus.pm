@@ -46,7 +46,7 @@ Try {
     $module = $modulePath + "\ConfigurationManager.psd1"
     Import-Module $module
 
-    New-PSDrive -Name SCCMDrive -PSProvider "AdminUI.PS.Provider\CMSite" -Root $env:COMPUTERNAME -Description "SCCM Site" | Out-Null
+    New-PSDrive -Name SCCMDrive -PSProvider "AdminUI.PS\CMSite" -Root $env:COMPUTERNAME -Description "SCCM Site" | Out-Null
     CD "SCCMDrive:\"
 
     $CMObject = Get-CMSite
