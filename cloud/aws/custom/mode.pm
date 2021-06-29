@@ -69,8 +69,8 @@ sub custom_metric_perfdata {
 
 sub custom_metric_output {
     my ($self, %options) = @_;
-    my $msg = "";
 
+    my $msg = '';
     if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
         my ($value, $unit) = ($self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{unit} eq 'B') ?
             $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec}) :
@@ -165,6 +165,8 @@ sub check_options {
             }
         }
     };
+
+    $self->{aws_metrics} = [];
     foreach my $metric (keys %{$self->{metrics_mapping}}) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);

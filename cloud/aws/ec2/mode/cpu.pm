@@ -20,54 +20,69 @@
 
 package cloud::aws::ec2::mode::cpu;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(cloud::aws::custom::mode);
 
 use strict;
 use warnings;
 
-my %metrics_mapping = (
-    'CPUUtilization' => {
-        'output' => 'CPU Utilization',
-        'label' => 'cpu-utilization',
-        'nlabel' => 'ec2.cpu.utilization.percentage',
-    },
-    'CPUCreditBalance' => {
-        'output' => 'CPU Credit Balance',
-        'label' => 'cpu-credit-balance',
-        'nlabel' => 'ec2.cpu.credit.balance.count',
-    },
-    'CPUCreditUsage' => {
-        'output' => 'CPU Credit Usage',
-        'label' => 'cpu-credit-usage',
-        'nlabel' => 'ec2.cpu.credit.usage.count',
-    },
-    'CPUSurplusCreditBalance' => {
-        'output' => 'CPU Surplus Credit Balance',
-        'label' => 'cpu-credit-surplus-balance',
-        'nlabel' => 'ec2.cpu.credit.surplus.balance.count',
-    },
-    'CPUSurplusCreditsCharged' => {
-        'output' => 'CPU Surplus Credit Charged',
-        'label' => 'cpu-credit-surplus-charged',
-        'nlabel' => 'ec2.cpu.credit.surplus.charged.count',
-    },
-);
+sub get_metrics_mapping {
+    my ($self, %options) = @_;
 
-my %map_type = (
-    "instance" => "InstanceId",
-    "asg"      => "AutoScalingGroupName",
-);
+    my $metrics_mapping = {
+        extra_params => {
+            message_multiple => 'All CPU metrics are ok'
+        },
+        metrics => {
+            CPUUtilization => {
+                output => 'CPU Utilization',
+                label => 'cpu-utilization',
+                nlabel => {
+                    absolute => 'ec2.cpu.utilization.percentage'
+                },
+                unit => ''
+            },
+            CPUCreditBalance => {
+                output => 'CPU Credit Balance',
+                label => 'cpu-credit-balance',
+                nlabel => {
+                    absolute => 'ec2.cpu.credit.balance.count'
+                },
+                unit => ''
+            },
+            CPUCreditUsage => {
+                output => 'CPU Credit Usage',
+                label => 'cpu-credit-usage',
+                nlabel => {
+                    absolute => 'ec2.cpu.credit.usage.count'
+                },
+                unit => ''
+            },
+            CPUSurplusCreditBalance => {
+                output => 'CPU Surplus Credit Balance',
+                label => 'cpu-credit-surplus-balance',
+                nlabel => {
+                    absolute => 'ec2.cpu.credit.surplus.balance.count'
+                },
+                unit => ''
+            },
+            CPUSurplusCreditsCharged => {
+                output => 'CPU Surplus Credit Charged',
+                label => 'cpu-credit-surplus-charged',
+                nlabel => {
+                    absolute => 'ec2.cpu.credit.surplus.charged.count'
+                },
+                unit => ''
+            }
+        }
+    };
+
+    return $metrics_mapping;
+}
 
 sub prefix_metric_output {
     my ($self, %options) = @_;
     
     return ucfirst($options{instance_value}->{type}) . " '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_statistics_output {
-    my ($self, %options) = @_;
-    
-    return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
 }
 
 sub long_output {
@@ -76,44 +91,14 @@ sub long_output {
     return "Checking " . ucfirst($self->{option_results}->{type}) . " '" . $options{instance_value}->{display} . "' ";
 }
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
-          message_multiple => 'All CPU metrics are ok', indent_long_output => '    ',
-            group => [
-                { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
-                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
-            ]
-        }
-    ];
-
-    foreach my $metric (keys %metrics_mapping) {
-        my $entry = {
-            label => $metrics_mapping{$metric}->{label},
-            nlabel => $metrics_mapping{$metric}->{nlabel},
-            set => {
-                key_values => [ { name => $metric }, { name => 'display' } ],
-                output_template => $metrics_mapping{$metric}->{output} . ': %.2f',
-                perfdatas => [
-                    { value => $metric , template => '%.2f', label_extra_instance => 1 }
-                ],
-            }
-        };
-        push @{$self->{maps_counters}->{statistics}}, $entry;
-    }
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "type:s"	        => { name => 'type' },
-        "name:s@"	        => { name => 'name' },
-        "filter-metric:s"   => { name => 'filter_metric' },
+        'type:s'  => { name => 'type' },
+        'name:s@' => { name => 'name' }
     });
     
     return $self;
@@ -143,27 +128,12 @@ sub check_options {
             push @{$self->{aws_instance}}, $instance;
         }
     }
-
-    $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
-    $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
-    
-    $self->{aws_statistics} = ['Average'];
-    if (defined($self->{option_results}->{statistic})) {
-        $self->{aws_statistics} = [];
-        foreach my $stat (@{$self->{option_results}->{statistic}}) {
-            if ($stat ne '') {
-                push @{$self->{aws_statistics}}, ucfirst(lc($stat));
-            }
-        }
-    }
-
-    foreach my $metric (keys %metrics_mapping) {
-        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
-            && $metric !~ /$self->{option_results}->{filter_metric}/);
-
-        push @{$self->{aws_metrics}}, $metric;
-    }
 }
+
+my %map_type = (
+    'instance' => "InstanceId",
+    'asg'      => "AutoScalingGroupName"
+);
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -176,7 +146,7 @@ sub manage_selection {
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
-            period => $self->{aws_period},
+            period => $self->{aws_period}
         );
 
         foreach my $metric (@{$self->{aws_metrics}}) {
@@ -187,6 +157,7 @@ sub manage_selection {
                 $self->{metrics}->{$instance}->{display} = $instance;
                 $self->{metrics}->{$instance}->{type} = $self->{option_results}->{type};
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = 
                     defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? 
                     $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;

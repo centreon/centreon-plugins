@@ -97,7 +97,7 @@ sub get_metrics_mapping {
                 unit => 'ops'
             },
             EBSWriteOps => {
-                output => 'EBC Write Ops',
+                output => 'EBS Write Ops',
                 label => 'ebs-ops-write',
                 nlabel => {
                     absolute => 'ec2.ebs.ops.write.count',
@@ -162,19 +162,7 @@ sub check_options {
         }
     }
 
-    $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
-    $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
-    
-    $self->{aws_statistics} = ['Average'];
-    if (defined($self->{option_results}->{statistic})) {
-        $self->{aws_statistics} = [];
-        foreach my $stat (@{$self->{option_results}->{statistic}}) {
-            if ($stat ne '') {
-                push @{$self->{aws_statistics}}, ucfirst(lc($stat));
-            }
-        }
-    }
-
+    $self->{aws_metrics} = [];
     foreach my $metric (keys %{$self->{metrics_mapping}}) {
         next if (!defined($self->{option_results}->{add_ebs_metrics}) && $metric =~ /EBS/);
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
