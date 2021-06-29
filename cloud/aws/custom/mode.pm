@@ -165,6 +165,8 @@ sub check_options {
             }
         }
     };
+
+    $self->{aws_metrics} = [];
     foreach my $metric (keys %{$self->{metrics_mapping}}) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
