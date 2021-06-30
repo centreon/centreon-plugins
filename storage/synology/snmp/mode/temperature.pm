@@ -25,6 +25,19 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub custom_temp_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => 'C',
+        instances => 'system',
+        value => $self->{result_values}->{temperature},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -33,12 +46,10 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'temperature', nlabel => 'system.temperature.celsius', set => {
+        { label => 'temperature', nlabel => 'hardware.temperature.celsius', set => {
                 key_values => [ { name => 'temperature' } ],
                 output_template => 'system temperature: %s C',
-                perfdatas => [
-                    { template => '%s', unit => 'C' }
-                ]
+                closure_custom_perfdata => $self->can('custom_temp_perfdata')
             }
         }
     ];
