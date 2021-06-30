@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub custom_usage_perfdata {
+sub custom_temp_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
