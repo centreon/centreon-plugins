@@ -135,7 +135,7 @@ sub check_options {
             module => 'Paws::Net::LWPCaller',
             error_msg => "Cannot load module 'Paws::Net::LWPCaller'."
         );
-        $config->{caller} = new Paws::Net::LWPCaller();
+        $config->{caller} = Paws::Net::LWPCaller->new();
     }
     if (defined($self->{option_results}->{aws_role_arn}) && $self->{option_results}->{aws_role_arn} ne '') {
         centreon::plugins::misc::mymodule_load(

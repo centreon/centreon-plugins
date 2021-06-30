@@ -20,108 +20,37 @@
 
 package cloud::aws::efs::mode::connections;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(cloud::aws::custom::mode);
 
 use strict;
 use warnings;
 
-my %metrics_mapping = (
-    'ClientConnections' => {
-        'output'    => 'Client Connections',
-        'label'     => 'client-connections',
-        'nlabel'    => 'efs.clients.connections.count',
-        'unit'      => ''
-    }
-);
-
-
-sub custom_metric_calc {
+sub get_metrics_mapping {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{timeframe} = $options{new_datas}->{$self->{instance} . '_timeframe'};
-    $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric}};
-    $self->{result_values}->{metric} = $options{extra_options}->{metric};
-    return 0;
-}
+    my $metrics_mapping = {
+        extra_params => {
+            message_multiple => 'All FS metrics are ok'
+        },
+        metrics => {
+            ClientConnections => {
+                output    => 'Client Connections',
+                label     => 'client-connections',
+                nlabel => {
+                    absolute => 'efs.clients.connections.count'
+                },
+                unit      => ''
+            }
+        }
+    };
 
-sub custom_metric_threshold {
-    my ($self, %options) = @_;
-
-    my $exit = $self->{perfdata}->threshold_check(
-        value => $self->{result_values}->{value},
-        threshold => [ { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'critical' },
-                       { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' } ]);
-    return $exit;
-}
-
-sub custom_metric_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        instances   => $self->{instance},
-        label       => $metrics_mapping{$self->{result_values}->{metric}}->{label},
-        nlabel      => $metrics_mapping{$self->{result_values}->{metric}}->{nlabel},
-        unit        => $metrics_mapping{$self->{result_values}->{metric}}->{unit},
-        value       => $self->{result_values}->{value},
-        warning     => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
-        critical    => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label})
-    );
-}
-
-sub custom_metric_output {
-    my ($self, %options) = @_;
-    my $msg = "";
-
-    my ($value, $unit) = ($self->{result_values}->{value}, $metrics_mapping{$self->{result_values}->{metric}}->{unit});
-    return $msg = sprintf("%s: %.2f %s", $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value, $unit);
-}
-
-
-sub prefix_metric_output {
-    my ($self, %options) = @_;
-
-    return "'" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_statistics_output {
-    my ($self, %options) = @_;
-
-    return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
+    return $metrics_mapping;
 }
 
 sub long_output {
     my ($self, %options) = @_;
 
-    return "EFS FileSystemId'" . $options{instance_value}->{display} . "' ";
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
-          message_multiple => 'All FS metrics are ok', indent_long_output => '    ',
-            group => [
-                { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
-                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
-            ]
-        }
-    ];
-
-    foreach my $metric (keys %metrics_mapping) {
-        my $entry = {
-            label => $metrics_mapping{$metric}->{label},
-            set => {
-                key_values => [ { name => $metric }, { name => 'timeframe' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_metric_calc'),
-                closure_custom_calc_extra_options => { metric => $metric },
-                closure_custom_output => $self->can('custom_metric_output'),
-                closure_custom_perfdata => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
-            }
-        };
-        push @{$self->{maps_counters}->{statistics}}, $entry;
-    }
+    return "EFS FileSystemId '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -130,7 +59,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'name:s@' => { name => 'name' },
+        'name:s@' => { name => 'name' }
     });
 
     return $self;
@@ -154,12 +83,6 @@ sub check_options {
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 172800;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 86400;
     $self->{aws_statistics} = ['Sum'];
-
-    foreach my $metric (keys %metrics_mapping) {
-        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
-            && $metric !~ /$self->{option_results}->{filter_metric}/);
-        push @{$self->{aws_metrics}}, $metric;
-    }
 }
 
 sub manage_selection {
