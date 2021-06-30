@@ -20,39 +20,53 @@
 
 package cloud::aws::cloudfront::mode::errors;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(cloud::aws::custom::mode);
 
 use strict;
 use warnings;
 
-my %metrics_mapping = (
-    'TotalErrorRate' => {
-        'output' => 'Total Error Rate',
-        'label' => 'errorrate-total',
-        'nlabel' => 'cloudfront.errorrate.total.percentage',
-    },
-    '4xxErrorRate' => {
-        'output' => '4xx Error Rate',
-        'label' => 'errorrate-4xx',
-        'nlabel' => 'cloudfront.errorrate.4xx.percentage',
-    },
-    '5xxErrorRate' => {
-        'output' => '5xx Error Rate',
-        'label' => 'errorrate-5xx',
-        'nlabel' => 'cloudfront.errorrate.5xx.percentage',
-    },
-);
+sub get_metrics_mapping {
+    my ($self, %options) = @_;
+
+    my $metrics_mapping = {
+        extra_params => {
+            message_multiple => 'All instances metrics are ok'
+        },
+        metrics => {
+            TotalErrorRate => {
+                output => 'Total Error Rate',
+                label => 'errorrate-total',
+                nlabel => {
+                    absolute => 'cloudfront.errorrate.total.percentage'
+                },
+                unit => '%'
+            },
+            '4xxErrorRate' => {
+                output => '4xx Error Rate',
+                label => 'errorrate-4xx',
+                nlabel => {
+                    absolute => 'cloudfront.errorrate.4xx.percentage'
+                },
+                unit => '%'
+            },
+            '5xxErrorRate' => {
+                output => '5xx Error Rate',
+                label => 'errorrate-5xx',
+                nlabel => {
+                    absolute => 'cloudfront.errorrate.5xx.percentage'
+                },
+                unit => '%'
+            }
+        }
+    };
+
+    return $metrics_mapping;
+}
 
 sub prefix_metric_output {
     my ($self, %options) = @_;
     
     return "Instance '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_statistics_output {
-    my ($self, %options) = @_;
-    
-    return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
 }
 
 sub long_output {
@@ -61,43 +75,13 @@ sub long_output {
     return "Checking Instance '" . $options{instance_value}->{display} . "' ";
 }
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
-          message_multiple => 'All instances metrics are ok', indent_long_output => '    ',
-            group => [
-                { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
-                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
-            ]
-        }
-    ];
-
-    foreach my $metric (keys %metrics_mapping) {
-        my $entry = {
-            label => $metrics_mapping{$metric}->{label},
-            nlabel => $metrics_mapping{$metric}->{nlabel},
-            set => {
-                key_values => [ { name => $metric }, { name => 'display' } ],
-                output_template => $metrics_mapping{$metric}->{output} . ': %.2f',
-                perfdatas => [
-                    { value => $metric , template => '%.2f', label_extra_instance => 1 }
-                ],
-            }
-        };
-        push @{$self->{maps_counters}->{statistics}}, $entry;
-    }
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "id:s@"	          => { name => 'id' },
-        "filter-metric:s" => { name => 'filter_metric' },
+        'id:s@'	=> { name => 'id' }
     });
     
     return $self;
@@ -116,26 +100,6 @@ sub check_options {
         if ($instance ne '') {
             push @{$self->{aws_instance}}, $instance;
         }
-    }
-
-    $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
-    $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
-    
-    $self->{aws_statistics} = ['Average'];
-    if (defined($self->{option_results}->{statistic})) {
-        $self->{aws_statistics} = [];
-        foreach my $stat (@{$self->{option_results}->{statistic}}) {
-            if ($stat ne '') {
-                push @{$self->{aws_statistics}}, ucfirst(lc($stat));
-            }
-        }
-    }
-
-    foreach my $metric (keys %metrics_mapping) {
-        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
-            && $metric !~ /$self->{option_results}->{filter_metric}/);
-
-        push @{$self->{aws_metrics}}, $metric;
     }
 }
 
@@ -159,6 +123,7 @@ sub manage_selection {
 
                 $self->{metrics}->{$instance}->{display} = $instance;
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{timeframe} = $self->{aws_timeframe};
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = 
                     defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? 
                     $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
