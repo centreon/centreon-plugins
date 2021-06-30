@@ -103,7 +103,7 @@ sub check_options {
                 next if ($option eq '');
 
                 $self->{filter_options}->{'filter_' . $_} = [] if (!defined($self->{filter_options}->{'filter_' . $_}));
-                push @{$self->{filter_options}->{'filter_' . $_}}, split(/,/, $options);
+                push @{$self->{filter_options}->{'filter_' . $_}}, split(/,/, $option);
             }
         }
      }
