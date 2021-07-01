@@ -54,7 +54,7 @@ sub set_counters {
     
     $self->{maps_counters}->{host} = [
         {
-            label => 'status', type => 2, unknow_default => '%{status} !~ /^connected$/i',
+            label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
             set => {
                 key_values => [ { name => 'state' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
