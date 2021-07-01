@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::dell::n4000::snmp::plugin;
+package network::dell::n1100::snmp::plugin;
 
 use strict;
 use warnings;
@@ -49,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Dell N4000 series in SNMP.
+Check Dell N1100 series in SNMP.
 
 =cut

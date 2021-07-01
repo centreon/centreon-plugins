@@ -36,6 +36,7 @@ sub new {
         'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'centreon::common::force10::snmp::mode::memory',
+        'uptime'          => 'snmp_standard::mode::uptime'
     );
 
     return $self;
