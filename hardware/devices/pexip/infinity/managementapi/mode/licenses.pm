@@ -171,14 +171,14 @@ Check licenses.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='users'
+Example: --filter-counters='audio'
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'expires', 'license-users-usage', 'license-users-free', 'license-users-usage-prct',
-'license-sessions-usage', 'license-sessions-free', 'license-sessions-usage-prct',
-'license-usim-usage', 'license-usim-free', 'license-usim-usage-prct'.
+Can be: 'license-port-usage', 'license-port-free', 'license-port-usage-prct',
+'license-vmr-usage', 'license-vmr-free', 'license-vmr-usage-prct', 
+'license-audio-usage', 'license-audio-free', 'license-audio-usage-prct'.
 
 =back
 
