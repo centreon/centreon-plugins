@@ -32,7 +32,8 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         'alarms'      => 'hardware::devices::pexip::infinity::managementapi::mode::alarms',
-        'conferences' => 'hardware::devices::pexip::infinity::managementapi::mode::conferences'
+        'conferences' => 'hardware::devices::pexip::infinity::managementapi::mode::conferences',
+        'licenses'    => 'hardware::devices::pexip::infinity::managementapi::mode::licenses'
     };
 
     $self->{custom_modes}->{api} = 'hardware::devices::pexip::infinity::managementapi::custom::api';
