@@ -40,6 +40,7 @@ sub new {
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'snmp_standard::mode::memory',
         'swap'            => 'snmp_standard::mode::swap',
+        'time'            => 'snmp_standard::mode::ntp',
         'uptime'          => 'snmp_standard::mode::uptime'
     );
 
