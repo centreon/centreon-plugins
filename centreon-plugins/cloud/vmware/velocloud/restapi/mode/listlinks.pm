@@ -40,6 +40,8 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    $self->{timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
 }
 
 sub manage_selection {
@@ -52,7 +54,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $edge->{name} . "'.", debug => 1);
             next;
         }
-        my $links = $options{custom}->list_links(edge_id => $edge->{id});
+        my $links = $options{custom}->list_links(edge_id => $edge->{id}, timeframe => $self->{timeframe});
         foreach my $link (@{$links}) {
             push @{$self->{links}}, { %{$link}, edgeName => $edge->{name} };
         }
