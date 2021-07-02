@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use DateTime;
+use Date::Parse;
 
 sub custom_usage_output {
     my ($self, %options) = @_;
@@ -138,13 +139,27 @@ sub get_target_time {
     if (defined($self->{option_results}->{oid}) && $self->{option_results}->{oid} ne '') {
         $oid_date = $self->{option_results}->{oid};
     }
-    my $result = $options{snmp}->get_leef(oids => [ $oid_date ], nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(oids => [ split(/,/, $oid_date) ], nothing_quit => 1);
 
-    if ($result->{$oid_date} =~ /^[0-9]{10}$/) {
-        return $self->get_from_epoch(date => $result->{$oid_date});
+    my $result_concat;
+    foreach (split(/,/, $oid_date)) {
+        if (!defined($result_concat)) {
+            $result_concat = $result->{$_};
+        } else {
+            $result_concat .= ' ' . $result->{$_};
+        }
     }
 
-    return $self->get_from_datetime(date => $result->{$oid_date});
+    if ($result_concat =~ /^[0-9]{10}$/) {
+        return $self->get_from_epoch(date => $result_concat);
+    }
+    if (defined($self->{option_results}->{oid}) && $self->{option_results}->{oid} ne '') {
+        my $epoch = Date::Parse::str2time($result_concat);
+        if (defined($epoch)) {
+            return $self->get_from_epoch(date => $epoch);
+        }
+    }
+    return $self->get_from_datetime(date => $result_concat);
 }
 
 sub manage_selection {
@@ -200,7 +215,7 @@ Use threshold with (+-) 2 seconds offset (minimum).
 
 =item B<--oid>
 
-Override default OID.
+Override default OID. Several OIDs can be given (, as separator) to construct the timestamp.
 
 =item B<--warning-offset>
 
