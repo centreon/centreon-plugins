@@ -122,8 +122,10 @@ sub internal_api_list_nodes {
     };
     if ($@) {
         $nodes = {};
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Node '$options{node_name}': cannot decode json list nodes response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json list nodes response: $@"
+        );
     } else {
         $nodes = {} if (ref($nodes) eq 'ARRAY'); # nodes is not in a swarm
     }
@@ -144,8 +146,10 @@ sub internal_api_info {
     };
     if ($@) {
         $nodes = [];
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Node '$options{node_name}': cannot decode json info response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json info response: $@"
+        );
     }
     
     return $nodes;
@@ -165,8 +169,10 @@ sub internal_api_list_containers {
     };
     if ($@) {
         $containers = [];
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Node '$options{node_name}': cannot decode json get containers response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json get containers response: $@"
+        );
     }
     foreach my $container (@{$containers_ids->{subcontainers}}) {
         my $json_response = JSON::XS->new->utf8->decode(
@@ -199,8 +205,10 @@ sub internal_api_get_machine_stats {
     };
     if ($@) {
         $machine_stats = {};
-        $self->output_add(severity => 'UNKNOWN',
-                          short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@"
+        );
     } else {
         $machine_stats->{num_cores} = $full_machine_stats->{num_cores};
         $machine_stats->{memory_capacity} = $full_machine_stats->{memory_capacity};
@@ -221,8 +229,10 @@ sub internal_api_get_container_stats {
     };
     if ($@) {
         $container_stats = [];
-        $self->output_add(severity => 'UNKNOWN',
-                          short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@"
+        );
     } else {
         $container_stats->[0] = $full_container_stats->{stats}[0];
         $container_stats->[1] = $full_container_stats->{stats}[scalar(@{$full_container_stats->{stats}}) - 1];
