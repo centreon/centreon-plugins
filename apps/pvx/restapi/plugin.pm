@@ -30,14 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    $self->{modes} => {
-        'http-hits'                 => 'apps::pvx::restapi::mode::httphits',
-        'network-connection'        => 'apps::pvx::restapi::mode::networkconnection',
-        'network-user-experience'   => 'apps::pvx::restapi::mode::networkuserexperience',
-        'network-traffic'           => 'apps::pvx::restapi::mode::networktraffic',
+    $self->{modes} = {
+        'http-hits'               => 'apps::pvx::restapi::mode::httphits',
+        'network-connection'      => 'apps::pvx::restapi::mode::networkconnection',
+        'network-user-experience' => 'apps::pvx::restapi::mode::networkuserexperience',
+        'network-traffic'         => 'apps::pvx::restapi::mode::networktraffic'
     };
 
-    $self->{custom_modes}{api} = 'apps::pvx::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::pvx::restapi::custom::api';
     return $self;
 }
 
