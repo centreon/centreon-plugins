@@ -72,7 +72,7 @@ sub check {
         }
         $self->{output}->perfdata_add(
             unit => 'C',
-            nlabel => 'hardware.chassis.temperature.celsius',
+            nlabel => 'hardware.temperature.celsius',
             instances => $name,
             value => $result->{os10ChassisTemp},
             warning => $warn,
