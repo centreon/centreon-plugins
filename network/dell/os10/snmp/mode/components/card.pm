@@ -34,6 +34,7 @@ my $mapping = {
 };
 my $oid_os10CardEntry = '.1.3.6.1.4.1.674.11000.5000.100.4.1.1.4.1';
 my $oid_os10ChassisPPID = '.1.3.6.1.4.1.674.11000.5000.100.4.1.1.3.1.5';
+my $oid_sysDescr = '.1.3.6.1.2.1.1.1';
 
 sub load {
     my ($self) = @_;
@@ -42,6 +43,9 @@ sub load {
         oid => $oid_os10CardEntry,
         start => $mapping->{os10CardDescription}->{oid},
         end => $mapping->{os10CardStatus}->{oid}
+    };
+    push @{$self->{request}}, {
+        oid => $oid_sysDescr
     };
 }
 
@@ -61,11 +65,20 @@ sub check {
         next if ($self->check_filter(section => 'card', instance => $instance));
         $self->{components}->{card}->{total}++;
 
+        my $version = $self->{results}->{$oid_sysDescr}->{$oid_sysDescr . '.0'};
+        if ($version =~ /.*^OS Version: ([^\r\n]+).*/sm) {
+            $version = $1;
+            $version =~ s/\.$//;
+        } else {
+            $version = '-';
+        }
+
         $self->{output}->output_add(
             long_msg => sprintf(
-                "card '%s' status is '%s' [instance: %s].",
+                "card '%s' status is '%s' [Version: %s] [instance: %s].",
                 $name,
                 $result->{os10CardStatus},
+                $version,
                 $instance
             )
         );
