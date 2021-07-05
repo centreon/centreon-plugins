@@ -54,6 +54,14 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'calls-percentage', nlabel => 'system.calls.active.percentage', set => {
+                key_values => [ { name => 'calls_percentage' } ],
+                output_template => 'calls percentage: %.2f %%',
+                perfdatas => [
+                    { label => 'calls_percentage', template => '%.2f', min => 0, max => 100 }
+                ]
+            }
+        },
         { label => 'extensions-registered', nlabel => 'system.extensions.registered.current', set => {
                 key_values => [ { name => 'extensions_registered' }, { name => 'extensions_total' } ],
                 output_template => 'extensions registered: %s',
@@ -139,6 +147,7 @@ sub manage_selection {
     $self->{global} = {
         calls_active => $system->{CallsActive},
         calls_max => $system->{MaxSimCalls},
+        calls_percentage => $system->{CallsActive} * 100 / $system->{MaxSimCalls},
         extensions_registered => $system->{ExtensionsRegistered},
         extensions_total => $system->{ExtensionsTotal}
     };
@@ -176,7 +185,7 @@ Can used special variables like: %{error}, %{service}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'calls-active', 'extensions-registered'.
+Can be: 'calls-active', 'calls-percentage', 'extensions-registered'.
 
 =back
 
