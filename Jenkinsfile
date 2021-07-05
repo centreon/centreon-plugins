@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 properties([buildDiscarder(logRotator(numToKeepStr: '50'))])
 
 stage('Source') {
