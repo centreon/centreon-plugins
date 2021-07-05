@@ -55,10 +55,10 @@ sub set_counters {
             }
         },
         { label => 'extensions-registered', nlabel => 'system.extensions.registered.current', set => {
-                key_values => [ { name => 'extensions_registered' } ],
+                key_values => [ { name => 'extensions_registered' }, { name => 'extensions_total' } ],
                 output_template => 'extensions registered: %s',
                 perfdatas => [
-                    { label => 'extensions_registered', template => '%s', min => 0 }
+                    { label => 'extensions_registered', template => '%s', min => 0, max => 'extensions_total' }
                 ]
             }
         }
@@ -140,6 +140,7 @@ sub manage_selection {
         calls_active => $system->{CallsActive},
         calls_max => $system->{MaxSimCalls},
         extensions_registered => $system->{ExtensionsRegistered},
+        extensions_total => $system->{ExtensionsTotal}
     };
 }
 
