@@ -47,10 +47,10 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'calls-active', nlabel => 'system.calls.active.current', set => {
-                key_values => [ { name => 'calls_active' } ],
+                key_values => [ { name => 'calls_active' }, { name => 'calls_max' } ],
                 output_template => 'calls active: %s',
                 perfdatas => [
-                    { label => 'calls_active', template => '%s', min => 0 }
+                    { label => 'calls_active', template => '%s', min => 0, max => 'calls_max' }
                 ]
             }
         },
@@ -138,6 +138,7 @@ sub manage_selection {
     
     $self->{global} = {
         calls_active => $system->{CallsActive},
+        calls_max => $system->{MaxSimCalls},
         extensions_registered => $system->{ExtensionsRegistered},
     };
 }
