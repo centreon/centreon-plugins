@@ -30,9 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes} => {
-        'cache-usage'       => 'apps::squid::snmp::mode::cacheusage',
-        'protocol-stats'    => 'apps::squid::snmp::mode::protocolstats',
+    $self->{modes} = {
+        'cache-usage'    => 'apps::squid::snmp::mode::cacheusage',
+        'protocol-stats' => 'apps::squid::snmp::mode::protocolstats'
     };
 
     return $self;
