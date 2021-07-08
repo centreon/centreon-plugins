@@ -392,7 +392,7 @@ sub manage_selection {
             };
         }
 
-        $self->{metrics}->{$metric} = {
+        $self->{metrics->{$metric} = {
             display => $self->{metrics}->{$metric}->{display_name},
             type => 'unique',
             unit => $self->{metrics}->{$metric}->{unit},
@@ -402,7 +402,7 @@ sub manage_selection {
         } if ($self->{metrics}->{$metric}->{display} == 1);
     }
 
-    if (scalar(keys %{$self->{metrics}}) <= 0 && scalar(keys %{$self->{vmetrics}}) <= 0) {
+    if (scalar(keys %{$self->{metric}}) <= 0 && scalar(keys %{$self->{vmetrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No metrics returned - are your selection/filters correct ?');
         $self->{output}->option_exit();
     }
