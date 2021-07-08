@@ -392,7 +392,7 @@ sub manage_selection {
             };
         }
 
-        $self->{metrics->{$metric} = {
+        $self->{metric}->{$metric} = {
             display => $self->{metrics}->{$metric}->{display_name},
             type => 'unique',
             unit => $self->{metrics}->{$metric}->{unit},
