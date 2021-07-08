@@ -342,7 +342,7 @@ sub manage_selection {
         foreach my $vcurve (keys %{$config_data->{virtualcurve}}) {
             $self->{vmetrics}->{$vcurve}->{values} = [] if (!defined($self->{vmetrics}->{$vcurve}->{values}));
             if (defined($config_data->{virtualcurve}->{$vcurve}->{pattern}) && $config_data->{virtualcurve}->{$vcurve}->{pattern} ne '') {
-                push (@{$self->{vmetrics}->{$vcurve}->{values}}, $self->{metrics}->{$metric}->{current}) if $self->{metrics}->{$metric}->{name} =~ /$config_data->{virtualcurve}{$vcurve}->{pattern}/;
+                push (@{$self->{vmetrics}->{$vcurve}->{values}}, $self->{metrics}->{$metric}->{current}) if $self->{metrics}->{$metric}->{name} =~ /$config_data->{virtualcurve}->{$vcurve}->{pattern}/;
             } else {
                 push (@{$self->{vmetrics}->{$vcurve}->{values}}, $self->{metrics}->{$metric}->{current});
             }
