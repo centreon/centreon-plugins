@@ -160,9 +160,6 @@ sub manage_selection {
             $mount !~ /$self->{option_results}->{filter_mountpoint}/);
 
         $size *= 1024;
-        if (defined($self->{option_results}->{space_reservation})) {
-            $size = int($size - ($self->{option_results}->{space_reservation} * $size / 100));
-        }
         $self->{disks}->{$mount} = { display => $mount, fs => $fs, type => $type, total => $size, used => $used * 1024 };
     }
 
@@ -214,11 +211,6 @@ Filter filesystem type (regexp can be used).
 =item B<--filter-fs>
 
 Filter filesystem (regexp can be used).
-
-=item B<--space-reservation>
-
-Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none).
 
 =back
 
