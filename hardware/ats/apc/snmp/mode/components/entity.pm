@@ -45,6 +45,10 @@ my $mapping = {
     atsStatusPhaseSyncStatus        => { oid => '.1.3.6.1.4.1.318.1.1.8.5.1.14', map => \%map_sync, label => 'PhaseSyncStatus' },
     atsStatusVoltageOutStatus       => { oid => '.1.3.6.1.4.1.318.1.1.8.5.1.15', map => \%map_fail, label => 'VoltageOutStatus' },
     atsStatusHardwareStatus         => { oid => '.1.3.6.1.4.1.318.1.1.8.5.1.16', map => \%map_fail, label => 'HardwareStatus' },
+    atsStatus3dot3VPowerSupply      => { oid => '.1.3.6.1.4.1.318.1.1.8.5.1.17', map => \%map_power, label => '3dot3VPowerSupply' },
+    atsStatus1Dot0VPowerSupply      => { oid => '.1.3.6.1.4.1.318.1.1.8.5.1.18', map => \%map_power, label => '1Dot0VPowerSupply' },
+    atsStatusVBoostSourceA          => { oid => '.1.3.6.1.4.1.318.1.1.8.5.1.19', map => \%map_power, label => 'VBoostSourceA' },
+    atsStatusVBoostSourceB          => { oid => '.1.3.6.1.4.1.318.1.1.8.5.1.20', map => \%map_power, label => 'VBoostSourceB' }
 };
 
 my $oid_atsStatusDeviceStatus = '.1.3.6.1.4.1.318.1.1.8.5.1';
