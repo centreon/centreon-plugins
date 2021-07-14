@@ -18,34 +18,43 @@
 # limitations under the License.
 #
 
-package hardware::pdu::apc::snmp::plugin;
+package network::dell::nseries::snmp::mode::ntp;
+
+use base qw(snmp_standard::mode::ntp);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use Date::Parse;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'load'             => 'hardware::pdu::apc::snmp::mode::load',
-        'hardware'         => 'hardware::pdu::apc::snmp::mode::hardware',
-        'outlet'           => 'hardware::pdu::apc::snmp::mode::outlet',
-        'time'             => 'hardware::pdu::apc::snmp::mode::ntp'
-    );
+
+    $options{options}->add_options(arguments => {
+        'oid:s'  => { name => 'oid', default => '.1.3.6.1.4.1.318.2.1.6.1.0,.1.3.6.1.4.1.318.2.1.6.2.0' }
+    });
 
     return $self;
 }
 
+sub get_target_time {
+    my ($self, %options) = @_;
+
+    my $oid_date = $self->{option_results}->{oid};
+    my $result = $options{snmp}->get_leef(oids => [ split(/,/, $oid_date) ], nothing_quit => 1);
+
+    my $result_concat;
+    foreach (split(/,/, $oid_date)) {
+        if (!defined($result_concat)) {
+            $result_concat = $result->{$_};
+        } else {
+            $result_concat .= ' ' . $result->{$_};
+        }
+    }
+
+    my $epoch = Date::Parse::str2time($result_concat);
+    return $self->get_from_epoch(date => $epoch);
+}
+
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check APC PDU in SNMP (PowerNet-MIB).
-
-=cut

@@ -140,6 +140,7 @@ my $mapping = {
     atsOutputLoad           => { oid => '.1.3.6.1.4.1.318.1.1.8.5.4.3.1.7', factor => 1 },
     atsOutputPercentLoad    => { oid => '.1.3.6.1.4.1.318.1.1.8.5.4.3.1.10', factor => 1 },
     atsOutputPower          => { oid => '.1.3.6.1.4.1.318.1.1.8.5.4.3.1.13', factor => 1 },
+    atsOutputPercentPower   => { oid => '.1.3.6.1.4.1.318.1.1.8.5.4.3.1.16', factor => 1 },
     atsOutputPhaseState     => { oid => '.1.3.6.1.4.1.318.1.1.8.5.4.3.1.19', map => \%map_state },
 };
 

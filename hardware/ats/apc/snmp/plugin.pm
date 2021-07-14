@@ -34,6 +34,7 @@ sub new {
         'device-status'    => 'hardware::ats::apc::snmp::mode::devicestatus',
         'input-lines'      => 'hardware::ats::apc::snmp::mode::inputlines',
         'output-lines'     => 'hardware::ats::apc::snmp::mode::outputlines',
+        'time'             => 'hardware::ats::apc::snmp::mode::ntp'
     );
 
     return $self;
