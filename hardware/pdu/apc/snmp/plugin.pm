@@ -34,7 +34,8 @@ sub new {
         'load'             => 'hardware::pdu::apc::snmp::mode::load',
         'hardware'         => 'hardware::pdu::apc::snmp::mode::hardware',
         'outlet'           => 'hardware::pdu::apc::snmp::mode::outlet',
-        'time'             => 'hardware::pdu::apc::snmp::mode::ntp'
+        'time'             => 'hardware::pdu::apc::snmp::mode::ntp',
+        'uptime'           => 'snmp_standard::mode::uptime'
     );
 
     return $self;
