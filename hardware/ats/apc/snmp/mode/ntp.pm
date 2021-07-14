@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::dell::nseries::snmp::mode::ntp;
+package hardware::ats::apc::snmp::mode::ntp;
 
 use base qw(snmp_standard::mode::ntp);
 
