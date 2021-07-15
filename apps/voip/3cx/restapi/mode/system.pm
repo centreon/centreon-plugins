@@ -81,7 +81,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'extensions-registered', nlabel => 'system.extensions.registered.current', set => {
+        { label => 'extensions-registered', nlabel => 'system.extensions.registered.count', set => {
                 key_values => [ { name => 'extensions_registered' }, { name => 'extensions_total' } ],
                 output_template => 'extensions registered: %s',
                 perfdatas => [
