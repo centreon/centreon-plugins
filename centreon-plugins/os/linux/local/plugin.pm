@@ -38,6 +38,7 @@ sub new {
         'connections'       => 'os::linux::local::mode::connections',
         'directlvm-usage'   => 'os::linux::local::mode::directlvmusage',
         'discovery-snmp'    => 'os::linux::local::mode::discoverysnmp',
+        'discovery-snmpv3'  => 'os::linux::local::mode::discoverysnmpv3',
         'diskio'            => 'os::linux::local::mode::diskio',
         'files-size'        => 'os::linux::local::mode::filessize',
         'files-date'        => 'os::linux::local::mode::filesdate',

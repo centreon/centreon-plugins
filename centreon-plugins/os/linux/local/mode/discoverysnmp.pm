@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use os::linux::local::mode::resources::discovery qw($discovery_match);
 use centreon::plugins::snmp;
 use NetAddr::IP;
 use JSON::XS;
@@ -76,39 +77,17 @@ sub check_options {
     $self->{snmp}->set_snmp_params(snmp_errors_exit => 'unknown');
 }
 
-my $lookup_type = [
-    { type => 'cisco standard', re => qr/Cisco IOS Software/i },
-    { type => 'emc data domain', re => qr/Data Domain/i },
-    { type => 'sonicwall', re => qr/SonicWALL/i },
-    { type => 'silverpeak', re => qr/Silver Peak/i },
-    { type => 'stonesoft', re => qr/Forcepoint/i },
-    { type => 'redback', re => qr/Redback/i },
-    { type => 'palo alto', re => qr/Palo Alto/i },
-    { type => 'hp procurve', re => qr/HP.*Switch/i },
-    { type => 'hp procurve', re => qr/HP ProCurve/i },
-    { type => 'hp standard', re => qr/HPE Comware/i },
-    { type => 'hp msl', re => qr/HP MSL/i },
-    { type => 'mrv optiswitch', re => qr/OptiSwitch/i },
-    { type => 'netapp', re => qr/Netapp/i },
-    { type => 'linux', re => qr/linux/i },
-    { type => 'windows', re => qr/windows/i },
-    { type => 'macos', re => qr/Darwin/i },
-    { type => 'hp-ux', re => qr/HP-UX/i },
-    { type => 'freebsd', re => qr/FreeBSD/i },
-    { type => 'aix', re => qr/ AIX / },
-];
-
 sub define_type {
     my ($self, %options) = @_;
 
-    return "unknown" unless (defined($options{desc}) && $options{desc} ne '');
-    foreach (@$lookup_type) {
+    return 'unknown' unless (defined($options{desc}) && $options{desc} ne '');
+    foreach (@$discovery_match) {
         if ($options{desc} =~ /$_->{re}/) {
             return $_->{type};
         }
     }
 
-    return "unknown";
+    return 'unknown';
 }
 
 sub snmp_request {
@@ -118,16 +97,18 @@ sub snmp_request {
     $self->{snmp}->set_snmp_connect_params(Community => $options{community});
     $self->{snmp}->set_snmp_connect_params(Version => $options{version});
     $self->{snmp}->set_snmp_connect_params(RemotePort => $options{port});
-    $self->{snmp}->connect();
-    return $self->{snmp}->get_leef(oids => [ $self->{oid_sysDescr}, $self->{oid_sysName} ],
-        nothing_quit => 0, dont_quit => 1);
+    return undef if ($self->{snmp}->connect(dont_quit => 1) != 0);
+    return $self->{snmp}->get_leef(
+        oids => [ $self->{oid_sysDescr}, $self->{oid_sysName} ],
+        nothing_quit => 0, dont_quit => 1
+    );
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->{oid_sysDescr} = ".1.3.6.1.2.1.1.1.0";
-    $self->{oid_sysName} = ".1.3.6.1.2.1.1.5.0";
+    $self->{oid_sysDescr} = '.1.3.6.1.2.1.1.1.0';
+    $self->{oid_sysName} = '.1.3.6.1.2.1.1.5.0';
 
     my @disco_data;
     my $disco_stats;
@@ -142,8 +123,12 @@ sub run {
         my $result;
         foreach my $community (@{$self->{option_results}->{snmp_community}}) {
             foreach my $version (@{$self->{option_results}->{snmp_version}}) {
-                $result = $self->snmp_request(ip => $ip->addr, community => $community, version => $version,
-                    port => $self->{option_results}->{snmp_port});
+                $result = $self->snmp_request(
+                    ip => $ip->addr,
+                    community => $community,
+                    version => $version,
+                    port => $self->{option_results}->{snmp_port}
+                );
                 $last_version = $version;
                 $last_community = $community;
                 last if (defined($result));
