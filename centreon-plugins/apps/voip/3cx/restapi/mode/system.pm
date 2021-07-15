@@ -37,6 +37,17 @@ sub custom_status_output {
     return $msg;
 }
 
+sub custom_calls_usage_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'active calls usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+        $self->{result_values}->{calls_max},
+        $self->{result_values}->{calls_used}, $self->{result_values}->{calls_prct_used},
+        $self->{result_values}->{calls_free}, 100 - $self->{result_values}->{calls_prct_used}
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -46,15 +57,31 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'calls-active', nlabel => 'system.calls.active.current', set => {
-                key_values => [ { name => 'calls_active' }, { name => 'calls_max' } ],
-                output_template => 'calls active: %s',
+        { label => 'calls-active-usage', nlabel => 'system.calls.active.usage.count', set => {
+                key_values => [ { name => 'calls_used' }, { name => 'calls_free' }, { name => 'calls_prct_used' }, { name => 'calls_max' } ],
+                closure_custom_output => $self->can('custom_calls_usage_output'),
                 perfdatas => [
-                    { label => 'calls_active', template => '%s', min => 0, max => 'calls_max' }
+                    { template => '%d', min => 0, max => 'calls_max' }
                 ]
             }
         },
-        { label => 'extensions-registered', nlabel => 'system.extensions.registered.current', set => {
+        { label => 'calls-active-free', nlabel => 'system.calls.active.free.count', display_ok => 0, set => {
+                key_values => [ { name => 'calls_free' }, { name => 'calls_used' }, { name => 'calls_prct_used' }, { name => 'calls_max' } ],
+                closure_custom_output => $self->can('custom_calls_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'calls_max' }
+                ]
+            }
+        },
+        { label => 'calls-active-usage-prct', nlabel => 'system.calls.active.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'calls_prct_used' }, { name => 'calls_free' }, { name => 'calls_used' }, { name => 'calls_max' } ],
+                closure_custom_output => $self->can('custom_calls_usage_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 'calls_max' }
+                ]
+            }
+        },
+        { label => 'extensions-registered', nlabel => 'system.extensions.registered.count', set => {
                 key_values => [ { name => 'extensions_registered' }, { name => 'extensions_total' } ],
                 output_template => 'extensions registered: %s',
                 perfdatas => [
@@ -133,12 +160,14 @@ sub manage_selection {
     }
     $self->{service}->{HasUpdatesAvailable} = {
         service => 'HasUpdatesAvailable', 
-        error => $updates ? 'true' : 'false',
+        error => $updates ? 'true' : 'false'
     };
     
     $self->{global} = {
-        calls_active => $system->{CallsActive},
+        calls_used => $system->{CallsActive},
+        calls_free => $system->{MaxSimCalls} - $system->{CallsActive},
         calls_max => $system->{MaxSimCalls},
+        calls_prct_used => $system->{CallsActive} * 100 / $system->{MaxSimCalls},
         extensions_registered => $system->{ExtensionsRegistered},
         extensions_total => $system->{ExtensionsTotal}
     };
@@ -176,7 +205,8 @@ Can used special variables like: %{error}, %{service}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'calls-active', 'extensions-registered'.
+Can be: 'calls-active-usage', 'calls-active-free', 'calls-active-usage-prct',
+'extensions-registered'.
 
 =back
 
