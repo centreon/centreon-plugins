@@ -1,4 +1,6 @@
 #
+# Copyright 2021 Centreon (http://www.centreon.com/)
+#
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
 # service performance.
@@ -16,36 +18,43 @@
 # limitations under the License.
 #
 
-package hardware::ups::apc::snmp::plugin;
+package hardware::ups::apc::snmp::mode::ntp;
+
+use base qw(snmp_standard::mode::ntp);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use Date::Parse;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'battery-status'    => 'hardware::ups::apc::snmp::mode::batterystatus',
-        'input-lines'       => 'hardware::ups::apc::snmp::mode::inputlines',
-        'output-lines'      => 'hardware::ups::apc::snmp::mode::outputlines',
-        'sensors'           => 'hardware::ups::apc::snmp::mode::sensors',
-        'time'              => 'hardware::ups::apc::snmp::mode::ntp',
-        'uptime'            => 'snmp_standard::mode::uptime'
-    );
+
+    $options{options}->add_options(arguments => {
+        'oid:s'  => { name => 'oid', default => '.1.3.6.1.4.1.318.2.1.6.1.0,.1.3.6.1.4.1.318.2.1.6.2.0' }
+    });
 
     return $self;
 }
 
+sub get_target_time {
+    my ($self, %options) = @_;
+
+    my $oid_date = $self->{option_results}->{oid};
+    my $result = $options{snmp}->get_leef(oids => [ split(/,/, $oid_date) ], nothing_quit => 1);
+
+    my $result_concat;
+    foreach (split(/,/, $oid_date)) {
+        if (!defined($result_concat)) {
+            $result_concat = $result->{$_};
+        } else {
+            $result_concat .= ' ' . $result->{$_};
+        }
+    }
+
+    my $epoch = Date::Parse::str2time($result_concat);
+    return $self->get_from_epoch(date => $epoch);
+}
+
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check UPS APC through SNMP (POWERNET-MIB)
-
-=cut
