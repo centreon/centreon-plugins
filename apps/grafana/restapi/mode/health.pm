@@ -24,46 +24,31 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = "Database state is: '" . $self->{result_values}->{state} . "'";
-    return $msg;
-}
-
-sub custom_version_output{
-    my ($self, %options) = @_;
-
-    my $msg = "Grafana version is: '" . $self->{result_values}->{version} . "'";
-    return $msg;
-
+    return sprintf(
+        "database state is '%s' [grafana version: %s]", 
+        $self->{result_values}->{state},
+        $self->{result_values}->{version}
+    );
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'health', type => 0, cb_prefix_output => 'prefix_version_output', skipped_code => { -10 => 1 } },
+        { name => 'health', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{health} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' } ],
-                closure_custom_calc => \&catalog_status_calc,
+        { label => 'status', type => 2, critical_default => '%{state} ne "ok"', set => {
+                key_values => [ { name => 'state' }, { name => 'version' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-	{ label => 'version', threshold => 0, set => {
-                key_values => [ { name => 'version' } ],
-		closure_custom_calc => \&catalog_status_calc,
-		closure_custom_output => $self->can('custom_version_output'),
-		closure_custom_perfdata => sub { return 0; },
-		closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -75,36 +60,19 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{state} ne "ok"' },
     });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $result = $options{custom}->query(url_path => '/api/health');
-
-    $self->{health} = {};
-    my $state = $result->{database};
-
     $self->{health} = {
-        state => $state,
-	version => $result->{version}
-     };
-
-    if (scalar(keys %{$self->{health}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No state found');
-        $self->{output}->option_exit();
-    }
+        state => $result->{database},
+        version => $result->{version}
+    };
 }
 
 1;
@@ -113,19 +81,19 @@ __END__
 
 =head1 MODE
 
-Check health state.
+Check health.
 
 =over 8
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{state}
+Set warning threshold for status.
+Can used special variables like: %{state}, %{version}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} ne "ok"').
-Can used special variables like: %{state}
+Can used special variables like: %{state}, %{version}
 
 =back
 
