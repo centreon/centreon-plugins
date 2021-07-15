@@ -30,11 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'health'    => 'apps::grafana::restapi::mode::health',
-    );
-                        
-    $self->{custom_modes}{api} = 'apps::grafana::restapi::custom::api';
+    $self->{modes} = {
+        'health' => 'apps::grafana::restapi::mode::health'
+    };
+
+    $self->{custom_modes}->{api} = 'apps::grafana::restapi::custom::api';
     return $self;
 }
 

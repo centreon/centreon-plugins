@@ -71,16 +71,17 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 15672;
+    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 3000;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
-    
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
         $self->{output}->option_exit();
     }
+
     return 0;
 }
 
@@ -124,27 +125,22 @@ sub request {
     my ($self, %options) = @_;
 
     $self->settings();
-    
-    $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':'  . $self->{port} . $options{url_path} . "'", debug => 1);
-    $self->{output}->output_add(long_msg => "Parameters: '" . join(', ', @{$options{post_param}}) . "'", debug => 1) if (defined($options{post_param}));
-    
     my $content = $self->{http}->request(
         %options,
         unknown_status => '%{http_code} < 200 or %{http_code} >= 300',
-        critical_status => '',
+        critical_status => ''
     );
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
-    
+
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
@@ -164,7 +160,7 @@ __END__
 
 =head1 NAME
 
-Grfana Rest API
+Grafana Rest API
 
 =head1 CUSTOM MODE OPTIONS
 
@@ -178,7 +174,7 @@ Remote hostname or IP address.
 
 =item B<--port>
 
-Port used (Default: 15672)
+Port used (Default: 3000)
 
 =item B<--proto>
 
