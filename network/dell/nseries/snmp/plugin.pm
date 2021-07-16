@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::dell::n4000::snmp::plugin;
+package network::dell::nseries::snmp::plugin;
 
 use strict;
 use warnings;
@@ -37,6 +37,8 @@ sub new {
         'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'centreon::common::dell::fastpath::snmp::mode::memory',
+        'time'            => 'snmp_standard::mode::ntp',
+        'uptime'          => 'snmp_standard::mode::uptime'
     );
 
     return $self;
@@ -48,6 +50,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Dell N4000 series in SNMP.
+Check Dell N-Series in SNMP.
 
 =cut
