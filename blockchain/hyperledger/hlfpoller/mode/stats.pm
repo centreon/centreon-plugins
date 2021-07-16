@@ -1,5 +1,5 @@
 #
-# Copyright 2021 Centreon (http://www.centreon.com/)
+# Copyright 2020 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package blockchain::parity::ethpoller::mode::stats;
+package blockchain::hyperledger::hlfpoller::mode::stats;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -37,7 +37,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{block} = [
-       { label => 'block-frequency', nlabel => 'parity.stats.block.perminute', set => {
+       { label => 'block-frequency', nlabel => 'hyperledger.stats.block.perminute', set => {
                 key_values => [ { name => 'block_count', per_minute => 1 }, { name => 'last_block' }, { name => 'last_block_ts' } ],
                 closure_custom_output => $self->can('custom_block_output'),
                 perfdatas => [
@@ -48,7 +48,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{transaction} = [
-       { label => 'transaction-frequency', nlabel => 'parity.stats.transaction.perminute', set => {
+       { label => 'transaction-frequency', nlabel => 'hyperledger.stats.transaction.perminute', set => {
                 key_values => [ { name => 'transaction_count', per_minute => 1 }, { name => 'last_transaction' }, { name => 'last_transaction_ts' } ],
                 closure_custom_output => $self->can('custom_transaction_output'),
                 perfdatas => [
@@ -59,7 +59,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{fork} = [
-       { label => 'fork-frequency', nlabel => 'parity.stats.fork.perminute', set => {
+       { label => 'fork-frequency', nlabel => 'hyperledger.stats.fork.perminute', set => {
                 key_values => [ { name => 'fork_count', per_minute => 1 }, { name => 'last_fork' }, { name => 'last_fork_ts' } ],
                 closure_custom_output => $self->can('custom_fork_output'),
                 perfdatas => [
@@ -148,7 +148,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "parity_ethpoller_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
+    $self->{cache_name} = "hlf_poller_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
            (defined($self->{option_results}->{port}) ? $self->{option_results}->{port} : 'default') . '_' .
            (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
@@ -183,6 +183,6 @@ __END__
 
 =head1 MODE
 
-Check Parity eth-poller for statsitics about blocks, transactions and forks
+Check hyperledger fabirc poller for statsitics about blocks, transactions and forks
 
 =cut

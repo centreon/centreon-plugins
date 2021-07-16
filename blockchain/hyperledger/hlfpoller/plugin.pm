@@ -1,5 +1,5 @@
 #
-# Copyright 2021 Centreon (http://www.centreon.com/)
+# Copyright 2020 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package blockchain::hyperledger::exporter::plugin;
+package blockchain::hyperledger::hlfpoller::plugin;
 
 use strict;
 use warnings;
@@ -31,15 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = ( 
-        'channels' => 'blockchain::hyperledger::exporter::mode::channels',
-        'health' => 'blockchain::hyperledger::exporter::mode::health',
-        'logspec' => 'blockchain::hyperledger::exporter::mode::logspec',
-        'version' => 'blockchain::hyperledger::exporter::mode::version',
-        'metrics' => 'blockchain::hyperledger::exporter::mode::metrics',
+        'stats'     => 'blockchain::hyperledger::hlfpoller::mode::stats',
+        'disk'      => 'blockchain::hyperledger::hlfpoller::mode::disk',
+        'tracking'  => 'blockchain::hyperledger::hlfpoller::mode::tracking'
     );
-    $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';
-    $self->{custom_modes}{api} = 'blockchain::hyperledger::exporter::custom::api';
-    $self->{custom_modes}{file} = 'centreon::common::monitoring::openmetrics::custom::file';
+    $self->{custom_modes}{api} = 'blockchain::hyperledger::hlfpoller::custom::api';
     return $self;
 }
 
@@ -49,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Hyperledger blockchain with prometheus exporter.
+Check hyperledger blockchain accounts, contracts and forks from hlf-poller with HTTP GET requests
 
 =cut
