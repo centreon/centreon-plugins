@@ -761,6 +761,7 @@ sub change_macros {
     foreach (@{$options{macros}}) {
         if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$values->{$1}/g;
+            $self->{output}->test_eval(test => $self->{option_results}->{$_});
         }
     }
 }
