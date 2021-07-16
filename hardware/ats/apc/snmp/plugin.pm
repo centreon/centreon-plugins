@@ -28,13 +28,15 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'device-status'    => 'hardware::ats::apc::snmp::mode::devicestatus',
-        'input-lines'      => 'hardware::ats::apc::snmp::mode::inputlines',
-        'output-lines'     => 'hardware::ats::apc::snmp::mode::outputlines',
-    );
+    $self->{modes} = {
+        'device-status' => 'hardware::ats::apc::snmp::mode::devicestatus',
+        'input-lines'   => 'hardware::ats::apc::snmp::mode::inputlines',
+        'output-lines'  => 'hardware::ats::apc::snmp::mode::outputlines',
+        'time'          => 'hardware::ats::apc::snmp::mode::ntp',
+        'uptime'        => 'snmp_standard::mode::uptime'
+    };
 
     return $self;
 }
