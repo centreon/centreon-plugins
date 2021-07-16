@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_perfdata {
     my ($self, %options) = @_;
@@ -60,6 +60,7 @@ sub custom_status_calc {
     foreach my $key (@{$self->{instance_mode}->{custom_keys}}) {
         $self->{result_values}->{$key} = $options{new_datas}->{$self->{instance} . '_' . $key};
     }
+    $self->{result_values}->{time} = time();
     
     return 0;
 }
@@ -69,18 +70,18 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'queries_results', type => 1, 
-            message_multiple => 'All queries results are ok', skipped_code => { -11 => 1 } },
+            message_multiple => 'All queries results are ok', skipped_code => { -11 => 1 } }
     ];
 
     $self->{maps_counters}->{queries_results} = [
-        { label => 'status', set => {
+        { label => 'status', type => 2, set => {
                 key_values => [ { name => 'instance' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => $self->can('custom_status_perfdata'),
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -94,9 +95,7 @@ sub new {
         'instance:s'        => { name => 'instance' },
         'aggregation:s'     => { name => 'aggregation', default => 'average' },
         'output:s'          => { name => 'output' },
-        'multiple-output:s' => { name => 'multiple_output' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
+        'multiple-output:s' => { name => 'multiple_output' }
     });
    
     return $self;
@@ -131,8 +130,6 @@ sub check_options {
     }
 
     $self->{maps_counters_type}[0]->{message_multiple} = $self->{option_results}->{multiple_output} if (defined($self->{option_results}->{multiple_output}));
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
