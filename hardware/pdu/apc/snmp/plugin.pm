@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '0.1';
-    $self->{modes} = (
+    $self->{modes} = {
         'load'     => 'hardware::pdu::apc::snmp::mode::load',
         'hardware' => 'hardware::pdu::apc::snmp::mode::hardware',
         'outlet'   => 'hardware::pdu::apc::snmp::mode::outlet',
