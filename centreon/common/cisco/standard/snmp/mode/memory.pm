@@ -235,11 +235,6 @@ sub check_memory_enhanced_pool {
         my $result = $self->{snmp}->map_instance(mapping => $mapping_enh_memory_pool, results => $snmp_result, instance => $physical_index . '.' . $mem_index);
 
         $self->{checked_memory} = 1;
-        if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
-            $result->{cempMemPoolName} !~ /$self->{option_results}->{filter_pool}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{cempMemPoolName} . "': no matching filter.", debug => 1);
-            next;
-        }
 
         my $used = defined($result->{cempMemPoolHCUsed}) ? $result->{cempMemPoolHCUsed} : $result->{cempMemPoolUsed};
         my $free = defined($result->{cempMemPoolHCFree}) ? $result->{cempMemPoolHCFree} : $result->{cempMemPoolFree};
@@ -268,8 +263,20 @@ sub check_memory_enhanced_pool {
         $snmp_result = $self->{snmp}->get_leef();
         foreach (keys %{$self->{memory}}) {
             if (defined($snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physical_index} })) {
-                $self->{memory}->{$_}->{display} = 
-                    $snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physical_index} } . '_' . $self->{memory}->{$_}->{display};
+                my $display = $snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physical_index} } . '_' . $self->{memory}->{$_}->{display};
+                if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
+                    $display !~ /$self->{option_results}->{filter_pool}/) {
+                    $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
+                    delete $self->{memory}->{$_};
+                    next;
+                }
+                $self->{memory}->{$_}->{display} = $display;
+            } else {
+                 if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
+                    $self->{memory}->{$_}->{display} !~ /$self->{option_results}->{filter_pool}/) {
+                    $self->{output}->output_add(long_msg => "skipping '" . $self->{memory}->{$_}->{display} . "': no matching filter.", debug => 1);
+                    delete $self->{memory}->{$_};
+                }
             }
         }
     }
