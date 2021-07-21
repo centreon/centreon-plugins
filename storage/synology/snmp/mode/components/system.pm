@@ -29,6 +29,11 @@ my $mapping = {
     synoSystemsystemStatus => { oid => '.1.3.6.1.4.1.6574.1.1', map => $map_status }
 };
 
+# Synology support note :
+# OID .1.3.6.1.4.1.6574.1.1 should change integer to 2 when the partition is fully crashed
+# (i.e. md0 or md1 status in /proc/mdstat is [E___] or similar),
+# not when it is degraded (health status is [U_U_], [U_____], or [UUUU_]).
+
 sub load {
     my ($self) = @_;
 
