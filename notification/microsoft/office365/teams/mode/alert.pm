@@ -34,6 +34,8 @@ sub new {
     $options{options}->add_options(arguments => {
         'action-links'          => { name => 'action_links' },
         'bam'                   => { name => 'bam' },
+        'extra-info:s'          => { name => 'extra_info'},
+        'extra-info-format:s'   => { name => 'extra_info_format', default => 'Author: %s, Comment: %s'},
         'host-name:s'           => { name => 'host_name' },
         'host-output:s'         => { name => 'host_output', default => '' },
         'host-state:s'          => { name => 'host_state' },
@@ -84,23 +86,24 @@ sub build_payload {
 sub build_message {
     my ($self, %options) = @_;
 
-    my %teams_colors = (
-            PROBLEM => {
-                host => {
-                    up          => '42f56f',
-                    down        => 'f21616',
-                    unreachable => 'f21616'
-                },
-                service => {
-                    ok => '42f56f',
-                    warning => 'f59042',
-                    critical => 'f21616',
-                    unknown => '757575'
-                }
+    my $teams_colors = {
+        ACKNOWLEDGEMENT => 'fefc8e',
+        DOWNTIMESTART => 'f1dfff',
+        RECOVERY => '42f56f',
+        PROBLEM => {
+            host => {
+                up          => '42f56f',
+                down        => 'f21616',
+                unreachable => 'f21616'
             },
-            ACK => 'fefc8e',
-            DOWNTIME => 'f1dfff'
-    );
+            service => {
+                ok => '42f56f',
+                warning => 'f59042',
+                critical => 'f21616',
+                unknown => '757575'
+            }
+        }
+    };
 
     $self->{sections} = [];
     $self->{notif_type} = $self->{option_results}->{notif_type};
@@ -112,11 +115,10 @@ sub build_message {
         activityTitle => $self->{notif_type} . ': ' . $formatted_resource . ' "' . $self->{option_results}->{$resource_type . '_name'} . '" is ' . $self->{option_results}->{$resource_type . '_state'},
         activitySubtitle => $resource_type eq 'service' ? 'Host ' . $self->{option_results}->{host_name} : ''
     };
-    $self->{themecolor} = $teams_colors{$self->{notif_type}};
+    $self->{themecolor} = $teams_colors->{$self->{notif_type}};
     if ($self->{option_results}->{notif_type} eq 'PROBLEM') {
-        $self->{themecolor} = $teams_colors{PROBLEM}->{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
+        $self->{themecolor} = $teams_colors->{PROBLEM}->{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
     }
-    
 
     if (defined($self->{option_results}->{$resource_type . '_output'}) && $self->{option_results}->{$resource_type . '_output'} ne '') {
         push @{$self->{sections}[0]->{facts}}, { name => 'Status', 'value' => $self->{option_results}->{$resource_type . '_output'} };
@@ -124,6 +126,15 @@ sub build_message {
 
     if (defined($self->{option_results}->{date}) && $self->{option_results}->{date} ne '') {
         push @{$self->{sections}[0]->{facts}}, { name => 'Event date', 'value' => $self->{option_results}->{date} };
+    }
+
+    if (defined($self->{option_results}->{extra_info}) && $self->{option_results}->{extra_info} !~ m/^\/\/$/) {
+        if ($self->{option_results}->{extra_info} =~ m/^(.*)\/\/(.*)$/) {
+            push @{$self->{sections}[0]->{facts}}, {
+                name  => 'Additional Information',
+                value => sprintf($self->{option_results}->{extra_info_format}, $1, $2)
+            };
+        }
     }
 
     if (defined($self->{option_results}->{action_links})) {
