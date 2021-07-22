@@ -334,8 +334,7 @@ sub manage_selection {
              FROM
               DBA_TABLESPACE_USAGE_METRICS tum
              INNER JOIN
-              dba_tablespaces t on tum.tablespace_name=t.tablespace_name
-             %s
+              dba_tablespaces t on tum.tablespace_name=t.tablespace_name %s
             },
             defined($self->{option_results}->{notemp}) ? 
                 "WHERE (t.contents != 'TEMPORARY' AND t.contents != 'UNDO')" : 
@@ -436,8 +435,7 @@ sub manage_selection {
                     a.tablespace_name = c.tablespace_name (+)
                     AND a.tablespace_name = b.tablespace_name
                     AND a.tablespace_name = d.tablespace_name (+)
-                    %s
-                %s
+                    %s %s
             }, 
             defined($self->{option_results}->{notemp}) ? $tbs_sql_undo_empty : $tbs_sql_undo,
             defined($self->{option_results}->{notemp}) ? "AND (b.contents != 'TEMPORARY' AND b.contents != 'UNDO')" : '',
