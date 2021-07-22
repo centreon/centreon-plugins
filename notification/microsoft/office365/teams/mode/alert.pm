@@ -37,6 +37,7 @@ sub new {
         'host-name:s'           => { name => 'host_name' },
         'host-output:s'         => { name => 'host_output', default => '' },
         'host-state:s'          => { name => 'host_state' },
+        'notification-type:s'   => { name => 'notif_type'},
         'service-description:s' => { name => 'service_name' },
         'service-output:s'      => { name => 'service_output', default => '' },
         'service-state:s'       => { name => 'service_state' },
@@ -68,7 +69,7 @@ sub build_payload {
         '@context'      => 'https://schema.org/extensions',
         potentialAction => $message->{potentialAction},
         sections        => $message->{sections},
-        summary         => 'Centreon Alert',
+        summary         => 'Centreon ' . $message->{notif_type},
         themecolor      => $message->{themecolor}
     };
 
@@ -84,30 +85,38 @@ sub build_message {
     my ($self, %options) = @_;
 
     my %teams_colors = (
-        host => {
-            up => '42f56f',
-            down => 'f21616',
-            unreachable => 'f21616'
-        },
-        service => {
-            ok => '42f56f',
-            warning => 'f59042',
-            critical => 'f21616',
-            unknown => '757575'
-        }
+            PROBLEM => {
+                host => {
+                    up          => '42f56f',
+                    down        => 'f21616',
+                    unreachable => 'f21616'
+                },
+                service => {
+                    ok => '42f56f',
+                    warning => 'f59042',
+                    critical => 'f21616',
+                    unknown => '757575'
+                }
+            },
+            ACK => 'fefc8e',
+            DOWNTIME => 'f1dfff'
     );
 
     $self->{sections} = [];
+    $self->{notif_type} = $self->{option_results}->{notif_type};
     my $resource_type = defined($self->{option_results}->{host_state}) ? 'host' : 'service';
     my $formatted_resource = ucfirst($resource_type);
     $formatted_resource = 'BAM' if defined($self->{option_results}->{bam});
 
     push @{$self->{sections}}, {
-        activityTitle => $formatted_resource . ' "' . $self->{option_results}->{$resource_type . '_name'} . '" is ' . $self->{option_results}->{$resource_type . '_state'},
+        activityTitle => $self->{notif_type} . ': ' . $formatted_resource . ' "' . $self->{option_results}->{$resource_type . '_name'} . '" is ' . $self->{option_results}->{$resource_type . '_state'},
         activitySubtitle => $resource_type eq 'service' ? 'Host ' . $self->{option_results}->{host_name} : ''
     };
-
-    $self->{themecolor} = $teams_colors{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
+    $self->{themecolor} = $teams_colors{$self->{notif_type}};
+    if ($self->{option_results}->{notif_type} eq 'PROBLEM') {
+        $self->{themecolor} = $teams_colors{PROBLEM}->{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
+    }
+    
 
     if (defined($self->{option_results}->{$resource_type . '_output'}) && $self->{option_results}->{$resource_type . '_output'} ne '') {
         push @{$self->{sections}[0]->{facts}}, { name => 'Status', 'value' => $self->{option_results}->{$resource_type . '_output'} };
