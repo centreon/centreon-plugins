@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,8 +34,11 @@ sub new {
     $options{options}->add_options(arguments => {
         'action-links'          => { name => 'action_links' },
         'bam'                   => { name => 'bam' },
-        'extra-info:s'          => { name => 'extra_info'},
+        'centreon-url:s'        => { name => 'centreon_url' },
+        'channel-id:s'          => { name => 'channel_id' },
+        'date:s'                => { name => 'date' },
         'extra-info-format:s'   => { name => 'extra_info_format', default => 'Author: %s, Comment: %s'},
+        'extra-info:s'          => { name => 'extra_info'},
         'host-name:s'           => { name => 'host_name' },
         'host-output:s'         => { name => 'host_output', default => '' },
         'host-state:s'          => { name => 'host_state' },
@@ -43,10 +46,7 @@ sub new {
         'service-description:s' => { name => 'service_name' },
         'service-output:s'      => { name => 'service_output', default => '' },
         'service-state:s'       => { name => 'service_state' },
-        'centreon-url:s'        => { name => 'centreon_url' },
-        'channel-id:s'          => { name => 'channel_id' },
-        'team-id:s'             => { name => 'team_id' },
-        'date:s'                => { name => 'date' }
+        'team-id:s'             => { name => 'team_id' }
     });
 
     return $self;
@@ -60,6 +60,11 @@ sub check_options {
         $self->{option_results}->{channel_id} : undef;
     $self->{teams}->{team_id} = defined($self->{option_results}->{team_id}) && $self->{option_results}->{channel_id} ne ''
         ? $self->{option_results}->{team_id} : undef;
+
+    if (!defined($self->{option_results}->{notif_type}) || $self->{option_results}->{notif_type} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --notification-type option.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub build_payload {
@@ -88,6 +93,7 @@ sub build_message {
 
     my $teams_colors = {
         ACKNOWLEDGEMENT => 'fefc8e',
+        DOWNTIMEEND => 'f1dfff',
         DOWNTIMESTART => 'f1dfff',
         RECOVERY => '42f56f',
         PROBLEM => {
@@ -205,6 +211,10 @@ centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin -
 
 =over 8
 
+=item B<--notification-type>
+
+Specify the notification type (Required).
+
 =item B<--host-name>
 
 Specify Host server name for the alert (Required).
@@ -245,6 +255,14 @@ Compatibility with Centreon BAM notifications.
 =item B<--date>
 
 Specify the date & time of the event.
+
+=item B<--extra-info>
+
+Specify extra information about author and comment (only for ACK and DOWNTIME types).
+
+=item B<--extra-info-format>
+
+Specify the extra info display format (Default: 'Author: %s, Comment: %s').
 
 =back
 
