@@ -111,6 +111,40 @@ sub check_psu_result {
     }
 }
 
+sub check_psu_qts {
+    my ($self, %options) = @_;
+
+    my $oid_sysPowerStatus = '.1.3.6.1.4.1.55062.1.12.19.0';
+    my $snmp_result = $self->{snmp}->get_leef(
+        oids => [$oid_sysPowerStatus]
+    );
+
+    return if (!defined($snmp_result->{$oid_sysPowerStatus}));
+
+    my $instance = 1;
+    my $status = $map_status->{ $snmp_result->{$oid_sysPowerStatus} };
+
+    return if ($self->check_filter(section => 'psu', instance => $instance));
+
+    $self->{components}->{psu}->{total}++;
+
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "system power supply status is '%s' [instance: %s]",
+            $status, $instance
+        )
+    );
+    my $exit = $self->get_severity(section => 'psu', value => $status);
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf(
+                "Sytem power supply status is '%s'", $status
+            )
+        );
+    }
+}
+
 sub check_psu_es {
     my ($self, %options) = @_;
 
@@ -138,7 +172,9 @@ sub check {
     $self->{components}->{psu} = { name => 'psu', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'psu'));
 
-    if ($self->{is_es} == 1) {
+    if ($self->{is_qts} == 1) {
+        check_psu_qts($self);
+    } elsif ($self->{is_es} == 1) {
         check_psu_es($self);
     } else {
         check_psu_ex($self);

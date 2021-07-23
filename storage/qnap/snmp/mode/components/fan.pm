@@ -32,6 +32,10 @@ my $mapping = {
         description => { oid => '.1.3.6.1.4.1.24681.1.2.15.1.2' }, # sysFanDescr
         speed       => { oid => '.1.3.6.1.4.1.24681.1.2.15.1.3' }  # sysFanSpeed
     },
+    qts => {
+        description => { oid => '.1.3.6.1.4.1.55062.1.12.9.1.2' }, # sysFanDescr
+        speed       => { oid => '.1.3.6.1.4.1.55062.1.12.9.1.3' }  # sysFanSpeed
+    },
     ex => {
         description => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.2.2.1.2' }, # systemFanID
         status      => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.1.2.2.1.4', map => $map_status }, # systemFanStatus
@@ -100,6 +104,18 @@ sub check_fan_es {
     check_fan_result($self, type => 'es', snmp_result => $snmp_result);
 }
 
+sub check_fan_qts {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{fan_checked}));
+
+    my $snmp_result = $self->{snmp}->get_table(
+        oid => '.1.3.6.1.4.1.55062.1.12.9', # systemFanTable
+        start => $mapping->{qts}->{description}->{oid}
+    );
+    check_fan_result($self, type => 'qts', snmp_result => $snmp_result);
+}
+
 sub check_fan_legacy {
     my ($self, %options) = @_;
 
@@ -129,7 +145,9 @@ sub check {
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fan'));
 
-    if ($self->{is_es} == 1) {
+    if ($self->{is_qts} == 1) {
+        check_fan_qts($self);
+    } elsif ($self->{is_es} == 1) {
         check_fan_es($self);
     } else {
         check_fan_ex($self);
