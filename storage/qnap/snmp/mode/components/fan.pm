@@ -72,7 +72,7 @@ sub check_fan_result {
             )
         );
 
-        if ($result->{speed} =~ /([0-9]+)\s*rpm/i) {
+        if ($result->{speed} =~ /([0-9]+)/i) {
             my $fan_speed_value = $1;
             my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $fan_speed_value);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
