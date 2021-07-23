@@ -119,6 +119,10 @@ my $mapping = {
     es => {
         ram_total => { oid => '.1.3.6.1.4.1.24681.2.2.2' }, # es-SystemTotalMem
         ram_free  => { oid => '.1.3.6.1.4.1.24681.2.2.3' }  # es-SystemFreeMem
+    },
+    qts => {
+        ram_total => { oid => '.1.3.6.1.4.1.55062.1.12.13' }, # systemTotalMem
+        ram_free  => { oid => '.1.3.6.1.4.1.55062.1.12.15' }  # systemAvailableMem
     }
 };
 
@@ -150,10 +154,19 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $snmp_result = $options{snmp}->get_leef(
-        oids => [ map($_->{oid} . '.0', values(%{$mapping->{legacy}}), values(%{$mapping->{ex}}), values(%{$mapping->{es}})) ],
+        oids => [
+            map(
+                $_->{oid} . '.0',
+                values(%{$mapping->{legacy}}),
+                values(%{$mapping->{ex}}),
+                values(%{$mapping->{es}}),
+                values(%{$mapping->{qts}})
+            )
+        ],
         nothing_quit => 1
     );
     if (!defined($self->{option_results}->{force_counters_legacy})) {
+        $self->check_memory(snmp => $options{snmp}, type => 'qts', snmp_result => $snmp_result);
         $self->check_memory(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result);
         $self->check_memory(snmp => $options{snmp}, type => 'es', snmp_result => $snmp_result, convert => 1);
     }
@@ -172,7 +185,7 @@ Check memory.
 
 =item B<--force-counters-legacy>
 
-Force to use legacy counters. Should be used when EX/ES counters are buggy.
+Force to use legacy counters. Should be used when EX/ES/QTS counters are buggy.
 
 =item B<--warning-*> B<--critical-*>
 

@@ -171,6 +171,12 @@ my $mapping = {
         free   => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.2.3.2.1.4' }, # volumeFreeSize
         status => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.2.3.2.1.5' }, # volumeStatus
         name   => { oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.2.3.2.1.8' }  # volumeName
+    },
+    qts => {
+        total  => { oid => '.1.3.6.1.4.1.55062.1.10.9.1.3' }, # volumeCapacity
+        free   => { oid => '.1.3.6.1.4.1.55062.1.10.9.1.4' }, # volumeFreeSize
+        status => { oid => '.1.3.6.1.4.1.55062.1.10.9.1.5' }, # volumeStatus
+        name   => { oid => '.1.3.6.1.4.1.55062.1.10.9.1.8' }  # volumeName
     }
 };
 
@@ -223,6 +229,11 @@ sub manage_selection {
     $self->{volumes} = {};
 
     my $snmp_result = $options{snmp}->get_table(
+        oid => '.1.3.6.1.4.1.55062.1.10.9' # volumeTable
+    );
+    return if ($self->check_volumes(snmp => $options{snmp}, type => 'qts', snmp_result => $snmp_result));
+
+    $snmp_result = $options{snmp}->get_table(
         oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.2.3.2' # volumeTable
     );
     return if ($self->check_volumes(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result));
