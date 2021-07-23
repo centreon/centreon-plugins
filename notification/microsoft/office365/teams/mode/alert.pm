@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,16 +34,19 @@ sub new {
     $options{options}->add_options(arguments => {
         'action-links'          => { name => 'action_links' },
         'bam'                   => { name => 'bam' },
+        'centreon-url:s'        => { name => 'centreon_url' },
+        'channel-id:s'          => { name => 'channel_id' },
+        'date:s'                => { name => 'date' },
+        'extra-info-format:s'   => { name => 'extra_info_format', default => 'Author: %s, Comment: %s'},
+        'extra-info:s'          => { name => 'extra_info'},
         'host-name:s'           => { name => 'host_name' },
         'host-output:s'         => { name => 'host_output', default => '' },
         'host-state:s'          => { name => 'host_state' },
+        'notification-type:s'   => { name => 'notif_type'},
         'service-description:s' => { name => 'service_name' },
         'service-output:s'      => { name => 'service_output', default => '' },
         'service-state:s'       => { name => 'service_state' },
-        'centreon-url:s'        => { name => 'centreon_url' },
-        'channel-id:s'          => { name => 'channel_id' },
-        'team-id:s'             => { name => 'team_id' },
-        'date:s'                => { name => 'date' }
+        'team-id:s'             => { name => 'team_id' }
     });
 
     return $self;
@@ -57,6 +60,11 @@ sub check_options {
         $self->{option_results}->{channel_id} : undef;
     $self->{teams}->{team_id} = defined($self->{option_results}->{team_id}) && $self->{option_results}->{channel_id} ne ''
         ? $self->{option_results}->{team_id} : undef;
+
+    if (!defined($self->{option_results}->{notif_type}) || $self->{option_results}->{notif_type} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify the --notification-type option.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub build_payload {
@@ -68,7 +76,7 @@ sub build_payload {
         '@context'      => 'https://schema.org/extensions',
         potentialAction => $message->{potentialAction},
         sections        => $message->{sections},
-        summary         => 'Centreon Alert',
+        summary         => 'Centreon ' . $message->{notif_type},
         themecolor      => $message->{themecolor}
     };
 
@@ -83,31 +91,40 @@ sub build_payload {
 sub build_message {
     my ($self, %options) = @_;
 
-    my %teams_colors = (
-        host => {
-            up => '42f56f',
-            down => 'f21616',
-            unreachable => 'f21616'
-        },
-        service => {
-            ok => '42f56f',
-            warning => 'f59042',
-            critical => 'f21616',
-            unknown => '757575'
+    my $teams_colors = {
+        ACKNOWLEDGEMENT => 'fefc8e',
+        DOWNTIMEEND => 'f1dfff',
+        DOWNTIMESTART => 'f1dfff',
+        RECOVERY => '42f56f',
+        PROBLEM => {
+            host => {
+                up          => '42f56f',
+                down        => 'f21616',
+                unreachable => 'f21616'
+            },
+            service => {
+                ok => '42f56f',
+                warning => 'f59042',
+                critical => 'f21616',
+                unknown => '757575'
+            }
         }
-    );
+    };
 
     $self->{sections} = [];
+    $self->{notif_type} = $self->{option_results}->{notif_type};
     my $resource_type = defined($self->{option_results}->{host_state}) ? 'host' : 'service';
     my $formatted_resource = ucfirst($resource_type);
     $formatted_resource = 'BAM' if defined($self->{option_results}->{bam});
 
     push @{$self->{sections}}, {
-        activityTitle => $formatted_resource . ' "' . $self->{option_results}->{$resource_type . '_name'} . '" is ' . $self->{option_results}->{$resource_type . '_state'},
+        activityTitle => $self->{notif_type} . ': ' . $formatted_resource . ' "' . $self->{option_results}->{$resource_type . '_name'} . '" is ' . $self->{option_results}->{$resource_type . '_state'},
         activitySubtitle => $resource_type eq 'service' ? 'Host ' . $self->{option_results}->{host_name} : ''
     };
-
-    $self->{themecolor} = $teams_colors{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
+    $self->{themecolor} = $teams_colors->{$self->{notif_type}};
+    if ($self->{option_results}->{notif_type} eq 'PROBLEM') {
+        $self->{themecolor} = $teams_colors->{PROBLEM}->{$resource_type}->{lc($self->{option_results}->{$resource_type . '_state'})};
+    }
 
     if (defined($self->{option_results}->{$resource_type . '_output'}) && $self->{option_results}->{$resource_type . '_output'} ne '') {
         push @{$self->{sections}[0]->{facts}}, { name => 'Status', 'value' => $self->{option_results}->{$resource_type . '_output'} };
@@ -115,6 +132,15 @@ sub build_message {
 
     if (defined($self->{option_results}->{date}) && $self->{option_results}->{date} ne '') {
         push @{$self->{sections}[0]->{facts}}, { name => 'Event date', 'value' => $self->{option_results}->{date} };
+    }
+
+    if (defined($self->{option_results}->{extra_info}) && $self->{option_results}->{extra_info} !~ m/^\/\/$/) {
+        if ($self->{option_results}->{extra_info} =~ m/^(.*)\/\/(.*)$/) {
+            push @{$self->{sections}[0]->{facts}}, {
+                name  => 'Additional Information',
+                value => sprintf($self->{option_results}->{extra_info_format}, $1, $2)
+            };
+        }
     }
 
     if (defined($self->{option_results}->{action_links})) {
@@ -185,6 +211,10 @@ centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin -
 
 =over 8
 
+=item B<--notification-type>
+
+Specify the notification type (Required).
+
 =item B<--host-name>
 
 Specify Host server name for the alert (Required).
@@ -225,6 +255,14 @@ Compatibility with Centreon BAM notifications.
 =item B<--date>
 
 Specify the date & time of the event.
+
+=item B<--extra-info>
+
+Specify extra information about author and comment (only for ACK and DOWNTIME types).
+
+=item B<--extra-info-format>
+
+Specify the extra info display format (Default: 'Author: %s, Comment: %s').
 
 =back
 
