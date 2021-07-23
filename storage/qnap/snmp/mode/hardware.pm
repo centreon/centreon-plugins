@@ -85,10 +85,17 @@ sub snmp_execute {
     $self->{snmp} = $options{snmp};
 
     $self->{is_es} = 0;
-    my $oid_es_uptime = '.1.3.6.1.4.1.24681.2.2.4.0';
-    my $snmp_result = $self->{snmp}->get_leef(oids => [$oid_es_uptime]); # es-SystemUptime
+    $self->{is_qts} = 0;
+    my $oid_es_uptime = '.1.3.6.1.4.1.24681.2.2.4.0'; # es-SystemUptime
+    my $oid_qts_model = '.1.3.6.1.4.1.55062.1.12.3.0'; # systemModel
+    my $snmp_result = $self->{snmp}->get_leef(
+        oids => [$oid_es_uptime, $oid_qts_model]
+    ); 
     if (defined($snmp_result->{$oid_es_uptime})) {
         $self->{is_es} = 1;
+    }
+    if (defined($snmp_result->{$oid_qts_model})) {
+        $self->{is_qts} = 1;
     }
 }
 
