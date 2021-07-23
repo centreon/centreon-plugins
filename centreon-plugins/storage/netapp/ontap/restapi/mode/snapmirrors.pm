@@ -91,7 +91,7 @@ sub manage_selection {
             display => $name,
             healthy => $_->{healthy} =~ /true|1/i ? 'true' : 'false',
             state => $_->{state},
-            transfer_state => $_->{transfer}->{state}
+            transfer_state => defined($_->{transfer}->{state}) ? $_->{transfer}->{state} : 'n/a'
         };
     }
     
