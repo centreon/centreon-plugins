@@ -26,13 +26,13 @@ use warnings;
 my %map_states_voltage = (
     0 => 'false',
     1 => 'true',
-    2 => 'reading error',
+    2 => 'reading error'
 );
 
 my $mapping = {
     voltageSensorName => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.3.1.2' },
     voltageSensorValue => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.3.1.3' },
-    voltageSensorStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.3.1.6', map => \%map_states_voltage },
+    voltageSensorStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.3.1.6', map => \%map_states_voltage }
 };
 my $oid_voltageSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.3.1';
 
@@ -53,27 +53,50 @@ sub check {
         next if ($oid !~ /^$mapping->{voltageSensorStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_voltageSensorEntry}, instance => $instance);
-    
-        next if ($self->check_filter(section => 'voltage', instance => $instance));
+
+        next if ($self->check_filter(section => 'voltage', instance => $instance, name => $result->{voltageSensorName}));
         next if ($result->{voltageSensorName} !~ /^[0-9a-zA-Z ]+$/); # sometimes there is some wrong values in hex 
-     
+
         $self->{components}->{voltage}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Voltage '%s' sensor out of range status is '%s' [instance: %s]",
-                                        $result->{voltageSensorName}, $result->{voltageSensorStatus}, $instance));
-        my $exit = $self->get_severity(section => 'voltage', value => $result->{voltageSensorStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "voltage '%s' sensor out of range status is '%s' [instance: %s]",
+                $result->{voltageSensorName},
+                $result->{voltageSensorStatus},
+                $instance
+            )
+        );
+        my $exit = $self->get_severity(section => 'voltage', instance => $instance, value => $result->{voltageSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s/%s' sensor out of range status is '%s'", $result->{voltageSensorName}, $instance, $result->{voltageSensorStatus}));
-        }
-        
-        if (defined($result->{voltageSensorValue}) && $result->{voltageSensorValue} =~ /^[0-9\.]+$/) {
-            $self->{output}->perfdata_add(
-                label => 'volt', unit => 'V',
-                nlabel => 'hardware.voltage.volt',
-                instances => [$result->{voltageSensorName}, $instance],
-                value => sprintf("%.2f", $result->{voltageSensorValue})
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Voltage '%s/%s' sensor out of range status is '%s'",
+                    $result->{voltageSensorName},
+                    $instance,
+                    $result->{voltageSensorStatus}
+                )
             );
         }
+
+        next if (defined($result->{voltageSensorValue}) && $result->{voltageSensorValue} !~ /^[0-9\.]+$/);
+        
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, name => $result->{voltageSensorName}, value => $result->{voltageSensorValue});
+        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Voltage '%s/%s' sensor is %.2f V", $result->{voltageSensorName}, $instance, $result->{voltageSensorValue})
+            );
+        }
+
+        $self->{output}->perfdata_add(
+            label => 'volt', unit => 'V',
+            nlabel => 'hardware.voltage.volt',
+            instances => [$result->{voltageSensorName}, $instance],
+            value => sprintf('%.2f', $result->{voltageSensorValue}),
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 
