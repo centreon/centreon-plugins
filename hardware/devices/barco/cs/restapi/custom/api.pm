@@ -130,25 +130,7 @@ sub get_hostname {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /status/i) {
-        $file = '/home/qgarnier/clients/plugins/barco/status.txt';
-    } elsif ($options{endpoint} =~ /sensor/i) {
-        $file = '/home/qgarnier/clients/plugins/barco/sensor.txt';
-    } elsif ($options{endpoint} =~ /process/i) {
-        $file = '/home/qgarnier/clients/plugins/barco/process.txt';
-    }
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
     $self->settings();
-=pod
     my $content = $self->{http}->request(
         url_path => $options{endpoint},
         unknown_status => $self->{unknown_http_status},
@@ -156,7 +138,6 @@ sub request_api {
         critical_status => $self->{critical_http_status},
         cookies_file => '' # in memory
     );
-=cut
     
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
