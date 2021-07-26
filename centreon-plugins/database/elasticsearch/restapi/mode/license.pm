@@ -80,7 +80,7 @@ sub manage_selection {
         status => $result->{license}->{status},
         issued_to => $result->{license}->{issued_to},
         issue_date => $result->{license}->{issue_date},
-        expiry_date_in_seconds => int($result->{license}->{expiry_date_in_millis} / 1000)
+        expiry_date_in_seconds => defined($result->{license}->{expiry_date_in_millis}) ? int($result->{license}->{expiry_date_in_millis} / 1000) : "n/a"
     };
 }
 
