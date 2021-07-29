@@ -34,22 +34,22 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-         "hostname:s"           => { name => 'hostname' },
-         "port:s"               => { name => 'port', default => 8443 },
-         "proto:s"              => { name => 'proto', default => 'https' },
-         "credentials"          => { name => 'credentials' },
-         "basic"                => { name => 'basic' },
-         "username:s"           => { name => 'username' },
-         "password:s"           => { name => 'password' },
-         "legacy-password:s"    => { name => 'legacy_password' },
-         "timeout:s"            => { name => 'timeout' },
-         "command:s"            => { name => 'command' },
-         "arg:s@"               => { name => 'arg' },
-         "unknown-status:s"     => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
-         "warning-status:s"     => { name => 'warning_status' },
-         "critical-status:s"    => { name => 'critical_status', default => '' },
+         'hostname:s'           => { name => 'hostname' },
+         'port:s'               => { name => 'port', default => 8443 },
+         'proto:s'              => { name => 'proto', default => 'https' },
+         'credentials'          => { name => 'credentials' },
+         'basic'                => { name => 'basic' },
+         'username:s'           => { name => 'username' },
+         'password:s'           => { name => 'password' },
+         'legacy-password:s'    => { name => 'legacy_password' },
+         'timeout:s'            => { name => 'timeout' },
+         'command:s'            => { name => 'command' },
+         'arg:s@'               => { name => 'arg' },
+         'unknown-status:s'     => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+         'warning-status:s'     => { name => 'warning_status' },
+         'critical-status:s'    => { name => 'critical_status', default => '' }
     });
-    
+
     $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
@@ -59,7 +59,7 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Please set command option");
+        $self->{output}->add_option_msg(short_msg => 'Please set command option');
         $self->{output}->option_exit();
     }
     if (defined($self->{option_results}->{legacy_password}) &&  $self->{option_results}->{legacy_password} ne '') {
@@ -68,15 +68,33 @@ sub check_options {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-# Two kind of outputs.
+# Three kind of outputs.
 # 1-
-#    {"header":{"source_id":""},"payload":[{"command":"check_centreon_plugins","lines":[{"message":"OK: Reboot Pending : False | 'value1'=10;;;; 'value2'=10;;;;\r\nlong1\r\nlong2"}],"result":"OK"}]}
-# 2- Can be also "int_value".
-#    { "header":{"source_id":""},
+#    {
+#        "header":{"source_id":""},
+#        "payload":[
+#            {
+#                "command":"check_centreon_plugins","lines":[{"message":"OK: Reboot Pending : False | 'value1'=10;;;; 'value2'=10;;;;\r\nlong1\r\nlong2"}],
+#                "result":"OK"
+#            }
+#        ]
+#    }
+# 2-
+#    {
+#        "header":{"max_supported_version":"VERSION_1","version":"VERSION_1"},
+#        "payload":[
+#            {"command":"check_centreon_plugin","message":"Unknown command(s): check_centreon_plugin","result":"UNKNOWN"}
+#        ]
+#    }
+# 3- Can be also "int_value".
+#    {
+#      "header":{"source_id":""},
 #      "payload": [
-#         {"command":"check_drivesize",
+#         {
+#          "command":"check_drivesize",
 #          "lines": [
-#              {"message":"OK All 1 drive(s) are ok",
+#              {
+#                "message":"OK All 1 drive(s) are ok",
 #                "perf":[
 #                  {"alias":"C:\\ used",
 #                   "float_value": {
@@ -87,34 +105,45 @@ sub check_options {
 #                   "value":21.684593200683594,
 #                   "warning":39.724996947683394}
 #                   },
-#                   {"alias":"C:\\ used %","float_value":{"critical":90.000000000000000,"maximum":100.00000000000000,"minimum":0.00000000000000000,"unit":"%","value":44.000000000000000,"warning":80.000000000000000}}]}],
-#       "result":"OK"}]}
+#                   {"alias":"C:\\ used %","float_value":{"critical":90.000000000000000,"maximum":100.00000000000000,"minimum":0.00000000000000000,"unit":"%","value":44.000000000000000,"warning":80.000000000000000}}
+#                ]
+#              }
+#          ],
+#          "result":"OK"
+#         }
+#      ]
+#    }
 
 sub nscp_output_perf {
     my ($self, %options) = @_;
 
-    $self->{output}->output_add(severity => $options{result},
-                                short_msg => $options{data}->{message});
+    $self->{output}->output_add(
+        severity => $options{result},
+        short_msg => $options{data}->{message}
+    );
     foreach (@{$options{data}->{perf}}) {
         my $perf = defined($_->{float_value}) ? $_->{float_value} : $_->{int_value};
         my $printf_format = '%d';
         $printf_format = '%.3f' if (defined($_->{float_value}));
         
-        $self->{output}->perfdata_add(label => $_->{alias}, unit => $perf->{unit},
-                                      value => sprintf($printf_format, $perf->{value}),
-                                      warning => defined($perf->{warning}) ? sprintf($printf_format, $perf->{warning}) : undef,
-                                      critical => defined($perf->{critical}) ? sprintf($printf_format, $perf->{critical}) : undef,
-                                      min => defined($perf->{minimum}) ? sprintf($printf_format, $perf->{minimum}) : undef,
-                                      max => defined($perf->{maximum}) ? sprintf($printf_format, $perf->{maximum}) : undef,
-                                      );
+        $self->{output}->perfdata_add(
+            label => $_->{alias}, unit => $perf->{unit},
+            value => sprintf($printf_format, $perf->{value}),
+            warning => defined($perf->{warning}) ? sprintf($printf_format, $perf->{warning}) : undef,
+            critical => defined($perf->{critical}) ? sprintf($printf_format, $perf->{critical}) : undef,
+            min => defined($perf->{minimum}) ? sprintf($printf_format, $perf->{minimum}) : undef,
+            max => defined($perf->{maximum}) ? sprintf($printf_format, $perf->{maximum}) : undef
+        );
     }
 }
 
 sub nscp_output_noperf {
     my ($self, %options) = @_;
     
-    $self->{output}->output_add(severity => $options{result},
-                                short_msg => $options{data}->{message});
+    $self->{output}->output_add(
+        severity => $options{result},
+        short_msg => $options{data}->{message}
+    );
 }
 
 sub check_nscp_result {
@@ -130,12 +159,19 @@ sub check_nscp_result {
     }
 
     my $entry = $decoded->{payload}->[0];
-    $entry->{lines}->[0]->{message} =~ s/\r//msg;
+    my $data = $entry;
+    if (defined($entry->{lines})) {
+        $data = $entry->{lines}->[0];
+        $entry->{lines}->[0]->{message} =~ s/\r//msg;
+    } elsif (defined($entry->{message})) {
+        $entry->{message} =~ s/\r//msg;
+    }
+
     if (defined($entry->{lines}->[0]->{perf})) {
-        $self->nscp_output_perf(result => $entry->{result}, data => $entry->{lines}->[0]);
+        $self->nscp_output_perf(result => $entry->{result}, data => $data);
         $self->{output}->display(nolabel => 1);
     } else {
-        $self->nscp_output_noperf(result => $entry->{result}, data => $entry->{lines}->[0]);
+        $self->nscp_output_noperf(result => $entry->{result}, data => $data);
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     }
 }
@@ -151,9 +187,8 @@ sub run {
             $append = '&';
         }
     }
-    
+
     my ($content) = $self->{http}->request(url_path => '/query/' . $self->{option_results}->{command} . '?' . $encoded_args);
-    $self->{output}->output_add(long_msg => "nsclient return = " . $content, debug => 1);
     $self->check_nscp_result(content => $content);
                                   
     $self->{output}->exit();
