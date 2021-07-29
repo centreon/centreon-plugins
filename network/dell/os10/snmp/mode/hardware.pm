@@ -65,7 +65,7 @@ sub get_system_information {
     my $result = $options{snmp}->get_leef(oids => [$oid_sysdescr]);
 
     my $version = 'unknown';
-    if (defined($result->{$oid_sysdescr}) && $result->{$oid_sysdescr} =~ /.*^OS Version: ([^\r\n]+).*/sm) {
+    if (defined($result->{$oid_sysdescr}) && $result->{$oid_sysdescr} =~ /OS Version: ([0-9\.]+)/msi) {
         $version = $1;
         $version =~ s/\.$//;
     }
