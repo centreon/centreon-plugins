@@ -77,6 +77,19 @@ sub custom_sio_temp_perfdata {
     );
 }
 
+sub custom_cpu_fan_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => 'rpm',
+        instances => 'cpu',
+        value => $self->{result_values}->{cpu},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
+    );
+}
+
 sub device_long_output {
     my ($self, %options) = @_;
 
@@ -103,6 +116,7 @@ sub set_counters {
             group => [
                 { name => 'status', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
                 { name => 'temperature', type => 0, cb_prefix_output => 'prefix_temperature_output', display_short => 0, skipped_code => { -10 => 1 } },
+                { name => 'fan', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
                 { name => 'processes', type => 1, display_long => 1, display_short => 0, cb_prefix_output => 'prefix_process_output', skipped_code => { -10 => 1 } }
             ]
         }
@@ -144,6 +158,15 @@ sub set_counters {
         }
     ];
 
+    $self->{maps_counters}->{fan} = [
+        { label => 'cpu-fanspeed', nlabel => 'hardware.fan.speed.rpm', set => {
+                key_values => [ { name => 'cpu' } ],
+                output_template => 'cpu fan speed %s rpm',
+                closure_custom_perfdata => $self->can('custom_cpu_fan_perfdata')
+            }
+        }
+    ];
+
     $self->{maps_counters}->{processes} = [
         {
             label => 'process-status', type => 2,
@@ -174,8 +197,14 @@ sub manage_selection {
     my $map_status = {
         0 => 'ok', 1 => 'warning', 2 => 'error'
     };
+    my $versions = $options{custom}->request_api(endpoint => '/SupportedVersions');
+    my $version = 'v1.0';
+    foreach (@{$versions->{data}->{value}}) {
+        $version = 'v1.11' if ($_ eq 'v1.11');
+    }
+
     my $device_status = $options{custom}->request_api(endpoint => '/v1.0/DeviceInfo/Status');
-    my $sensors = $options{custom}->request_api(endpoint => '/v1.0/DeviceInfo/Sensors');
+    my $sensors = $options{custom}->request_api(endpoint => '/' . $version . '/DeviceInfo/Sensors');
     my $processes = $options{custom}->request_api(endpoint => '/v1.0/DeviceInfo/Processes/ProcessTable');
 
     $self->{output}->output_add(short_msg => 'device is ok');
@@ -190,6 +219,10 @@ sub manage_selection {
                     $sensors->{data}->{value}->{PcieTemperature} : undef,
                 sio => (defined($sensors->{data}->{value}->{SioTemperature}) && $sensors->{data}->{value}->{SioTemperature} != 0) ?
                     $sensors->{data}->{value}->{SioTemperature} : undef
+            },
+            fan => {
+                cpu => (defined($sensors->{data}->{value}->{CpuFanSpeed}) && $sensors->{data}->{value}->{CpuFanSpeed} != 0) ?
+                    $sensors->{data}->{value}->{CpuFanSpeed} : undef
             },
             processes => {}
         }
@@ -241,7 +274,8 @@ Can used special variables like: %{name}, %{status}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'cpu-temperature', 'pcie-temperature', 'sio-temperature'.
+Can be: 'cpu-temperature', 'pcie-temperature', 'sio-temperature',
+'cpu-fanspeed'.
 
 =back
 
