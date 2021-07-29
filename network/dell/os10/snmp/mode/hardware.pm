@@ -58,7 +58,6 @@ sub set_system {
     $self->{components_module} = ['card', 'temperature', 'fan', 'fantray', 'psu'];
 }
 
-
 sub get_system_information {
     my ($self, %options) = @_;
 
