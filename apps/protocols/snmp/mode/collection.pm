@@ -153,7 +153,9 @@ sub read_config {
     my ($self, %options) = @_;
 
     my $content;
-    if (-f $self->{option_results}->{config}) {
+    if ($self->{option_results}->{config} =~ /\n/m || ! -f "$self->{option_results}->{config}") {
+        $content = $self->{option_results}->{config};
+    } else {
         $content = do {
             local $/ = undef;
             if (!open my $fh, '<', $self->{option_results}->{config}) {
@@ -162,8 +164,6 @@ sub read_config {
             }
             <$fh>;
         };
-    } else {
-        $content = $self->{option_results}->{config};
     }
 
     eval {
