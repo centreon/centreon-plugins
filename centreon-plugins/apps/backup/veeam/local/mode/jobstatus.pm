@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::common::powershell::veeam::jobstatus;
 use apps::backup::veeam::local::mode::resources::types qw($job_type $job_result);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::plugins::misc;
 use JSON::XS;
 
@@ -65,7 +65,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'jobs.total.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Jobs : %s',
                 perfdatas => [
@@ -78,7 +78,6 @@ sub set_counters {
     $self->{maps_counters}->{job} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' }, { name => 'type' }, { name => 'is_running' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
