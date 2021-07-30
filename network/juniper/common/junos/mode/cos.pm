@@ -217,8 +217,7 @@ Filter class of services (can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'host-links-up', 'host-links-down', 'host-links-downstar',
-'keepalive-messages-sent', 'keepalive-messages-received'. 
+Can be: 'queued', 'traffic-out', 'dropped'. 
 
 =back
 
