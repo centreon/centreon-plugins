@@ -59,30 +59,30 @@ sub set_counters {
         { label => 'queued', nlabel => 'interface.cos.queued.bytespersecond', set => {
                 key_values => [ { name => 'queued_bytes', per_second => 1 }, { name => 'name' } ],
                 output_template => 'queued: %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { template => '%s',
-                      unit => 'B/s', min => 0, cast_int => 1, label_extra_instance => 1 }
+                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'traffic-out', nlabel => 'interface.cos.traffic.out.bytespersecond', set => {
                 key_values => [ { name => 'traffic_out_bytes', per_second => 1 }, { name => 'name' } ],
                 output_template => 'traffic out: %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { template => '%s',
-                      unit => 'B/s', min => 0, cast_int => 1, label_extra_instance => 1 }
+                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'dropped', nlabel => 'interface.cos.dropped.bytespersecond', set => {
                 key_values => [ { name => 'drop_bytes', per_second => 1 }, { name => 'name' } ],
                 output_template => 'dropped: %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { template => '%s',
-                      unit => 'B/s', min => 0, cast_int => 1, label_extra_instance => 1 }
+                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
@@ -154,7 +154,7 @@ sub manage_selection {
         $self->{interfaces}->{$ifindex}->{cos}->{ $queues->{$queue_num} } = {
             name => $queues->{$queue_num},
             instance => $queue_num,
-            queued_bytes => $snmp_result->{$oid_jnxCosQstatQedBytes}->{$_}
+            queued_bytes => $snmp_result->{$oid_jnxCosQstatQedBytes}->{$_} * 8
         };
     }
 
@@ -185,8 +185,10 @@ sub manage_selection {
         foreach my $queue_name (keys %{$self->{interfaces}->{$int_name}->{cos}}) {
             my $queue_num = $self->{interfaces}->{$int_name}->{cos}->{$queue_name}->{instance};
             my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $ifindex . '.' . $queue_num);
-            $self->{interfaces}->{$int_name}->{cos}->{$queue_name}->{traffic_out_bytes} = $result->{traffic_out_bytes};
-            $self->{interfaces}->{$int_name}->{cos}->{$queue_name}->{drop_bytes} = $result->{drop_bytes};
+            $self->{interfaces}->{$int_name}->{cos}->{$queue_name}->{traffic_out_bytes} = $result->{traffic_out_bytes} * 8
+                if (defined($result->{traffic_out_bytes}));
+            $self->{interfaces}->{$int_name}->{cos}->{$queue_name}->{drop_bytes} = $result->{drop_bytes} * 8
+                if (defined($result->{drop_bytes}));
         }
     }
 
