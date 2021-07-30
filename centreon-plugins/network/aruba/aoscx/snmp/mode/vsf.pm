@@ -128,7 +128,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'memory-usage-prct', display_ok => 0, nlabel => 'member.memory.usage.percentage', set => {
+        { label => 'memory-usage-prct', nlabel => 'member.memory.usage.percentage', set => {
                 key_values => [ { name => 'mem_used' } ],
                 output_template => 'memory used: %.2f %%',
                 perfdatas => [
