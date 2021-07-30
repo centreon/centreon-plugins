@@ -62,7 +62,9 @@ sub set_system {
             ['available', 'OK'],
             ['unknown', 'UNKNOWN'],
             ['absent', 'OK'],
-            ['failed', 'CRITICAL']
+            ['failed', 'CRITICAL'],
+            ['reconstruction', 'WARNING'],
+            ['system', 'OK']
         ],
         battery => [
             ['ok', 'OK'],
