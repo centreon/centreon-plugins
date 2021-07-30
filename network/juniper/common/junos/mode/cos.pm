@@ -56,7 +56,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cos} = [
-        { label => 'queued', nlabel => 'interface.cos.queued.bytespersecond', set => {
+        { label => 'queued', nlabel => 'interface.cos.queued.bitspersecond', set => {
                 key_values => [ { name => 'queued_bytes', per_second => 1 }, { name => 'name' } ],
                 output_template => 'queued: %s %s/s',
                 output_change_bytes => 2,
@@ -66,7 +66,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'traffic-out', nlabel => 'interface.cos.traffic.out.bytespersecond', set => {
+        { label => 'traffic-out', nlabel => 'interface.cos.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out_bytes', per_second => 1 }, { name => 'name' } ],
                 output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
@@ -76,7 +76,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'dropped', nlabel => 'interface.cos.dropped.bytespersecond', set => {
+        { label => 'dropped', nlabel => 'interface.cos.dropped.bitspersecond', set => {
                 key_values => [ { name => 'drop_bytes', per_second => 1 }, { name => 'name' } ],
                 output_template => 'dropped: %s %s/s',
                 output_change_bytes => 2,
