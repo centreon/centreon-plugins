@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::google::gsuite::plugin;
+package apps::google::workspace::plugin;
 
 use strict;
 use warnings;
@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'applications'      => 'apps::google::gsuite::mode::applications',
-        'list-applications' => 'apps::google::gsuite::mode::listapplications'
+        'services'      => 'apps::google::workspace::mode::services',
+        'list-services' => 'apps::google::workspace::mode::listservices'
     };
 
-    $self->{custom_modes}->{api} = 'apps::google::gsuite::custom::api';
+    $self->{custom_modes}->{api} = 'apps::google::workspace::custom::api';
     return $self;
 }
 
@@ -45,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Google GApps status.
+Check Google Workspace status.
 
 =cut

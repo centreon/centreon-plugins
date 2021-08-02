@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::google::gsuite::mode::listapplications;
+package apps::google::workspace::mode::listservices;
 
 use base qw(centreon::plugins::mode);
 
@@ -45,28 +45,28 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api();
-    my $applications = {};
-    foreach my $application (@{$results->{services}}) {
+    my $results = $options{custom}->get_services();
+    my $services = {};
+    foreach my $name (keys %$results) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $application->{name} !~ /$self->{option_results}->{filter_name}/);
-        $applications->{ $application->{id} } = $application->{name};
+            && $name !~ /$self->{option_results}->{filter_name}/);
+        $services->{$name} = $name;
     }
 
-    return $applications;
+    return $services;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $applications = $self->manage_selection(%options);
-    foreach (keys %$applications) {
+    my $services = $self->manage_selection(%options);
+    foreach (sort keys %$services) {
         $self->{output}->output_add(
-            long_msg => sprintf("[name = %s]", $applications->{$_})
+            long_msg => sprintf("[name = %s]", $services->{$_})
         );
     }
 
-    $self->{output}->output_add(severity => 'OK', short_msg => 'Google Gsuite Applications:');
+    $self->{output}->output_add(severity => 'OK', short_msg => 'Google workspace service:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -80,10 +80,10 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $applications = $self->manage_selection(%options);
-    foreach (keys %$applications) {
+    my $services = $self->manage_selection(%options);
+    foreach (sort keys %$services) {
         $self->{output}->add_disco_entry(
-            name => $applications->{$_}
+            name => $services->{$_}
         );
     }
 }
