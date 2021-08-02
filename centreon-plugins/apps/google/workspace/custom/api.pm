@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::google::gsuite::custom::api;
+package apps::google::workspace::custom::api;
 
 use strict;
 use warnings;
@@ -45,7 +45,6 @@ sub new {
             'port:s'            => { name => 'port' },
             'proto:s'           => { name => 'proto' },
             'timeout:s'         => { name => 'timeout' },
-            'language:s'        => { name => 'language' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' }
@@ -74,7 +73,6 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
-    $self->{language} = (defined($self->{option_results}->{language}) && $self->{option_results}->{language} ne '') ? $self->{option_results}->{language} : 'en';
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
@@ -103,7 +101,6 @@ sub settings {
     return if (defined($self->{settings_done}));
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{settings_done} = 1;
 }
@@ -114,17 +111,45 @@ sub get_hostname {
     return $self->{hostname};
 }
 
+sub get_services {
+    my ($self, %options) = @_;
+
+    my $services = {
+        'Admin Console' => 1,
+        'Classic Hangouts' => 1,
+        'Classroom' => 1,
+        'Currents' => 1,
+        'Gmail' => 1,
+        'Google Calendar' => 1,
+        'Google Chat' => 1,
+        'Google Cloud Search' => 1,
+        'Google Docs' => 1,
+        'Google Drive' => 1,
+        'Google Forms' => 1,
+        'Google Groups' => 1,
+        'Google Keep' => 1,
+        'Google Meet' => 1,
+        'Google Sheets' => 1,
+        'Google Sites' => 1,
+        'Google Slides' => 1,
+        'Google Tasks' => 1,
+        'Google Vault' => 1,
+        'Google Voice' => 1,
+        'Google Workspace Support' => 1
+    };
+    return $services;
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-    my $content = $self->{http}->request(
-        url_path => '/appsstatus/json/' . $self->{language},
+    my ($content) = $self->{http}->request(
+        url_path => '/appsstatus/dashboard/incidents.json',
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
     );
-    $content =~ s/dashboard.jsonp\((.+)\)\;$/$1/g;
     
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
@@ -139,10 +164,6 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
-    if (defined($decoded->{error_code})) {
-        $self->{output}->add_option_msg(short_msg => "Error message : " . $decoded->{error});
-        $self->{output}->option_exit();
-    }
 
     return $decoded;
 }
@@ -153,11 +174,11 @@ __END__
 
 =head1 NAME
 
-Gsuite Rest API
+Google Workspace Rest API
 
 =head1 REST API OPTIONS
 
-Gsuite Rest API
+Google Workspace Rest API
 
 =over 8
 
@@ -172,10 +193,6 @@ Port used (Default: 443)
 =item B<--proto>
 
 Specify https if needed (Default: 'https')
-
-=item B<--language>
-
-Language (Default: 'en')
 
 =item B<--timeout>
 
