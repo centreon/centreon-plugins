@@ -214,21 +214,22 @@ sub manage_selection {
             next if ($filtered == 0);
         }
 
-        if ($response->{data}->{$ds_id}->{size} <= 0) {
+        $self->{datastore}->{$ds_name} = { 
+            display => $ds_name, 
+            accessible => $response->{data}->{$ds_id}->{accessible}
+        };
+
+        if (!defined($response->{data}->{$ds_id}->{size}) || $response->{data}->{$ds_id}->{size} <= 0) {
             $self->{output}->output_add(long_msg => "skipping datastore '" . $ds_name . "': no total size");
             next;
         }
 
-        $self->{datastore}->{$ds_name} = { 
-            display => $ds_name, 
-            accessible => $response->{data}->{$ds_id}->{accessible},
-            used_space => $response->{data}->{$ds_id}->{size} - $response->{data}->{$ds_id}->{free}, 
-            free_space => $response->{data}->{$ds_id}->{free},
-            total_space => $response->{data}->{$ds_id}->{size},
-            prct_used_space => ($response->{data}->{$ds_id}->{size} - $response->{data}->{$ds_id}->{free}) * 100 / $response->{data}->{$ds_id}->{size},
-            prct_free_space => $response->{data}->{$ds_id}->{free} * 100 / $response->{data}->{$ds_id}->{size},
-            uncommitted => $response->{data}->{$ds_id}->{uncommitted},
-        };        
+        $self->{datastore}->{$ds_name}->{used_space} = $response->{data}->{$ds_id}->{size} - $response->{data}->{$ds_id}->{free};
+        $self->{datastore}->{$ds_name}->{free_space} = $response->{data}->{$ds_id}->{free};
+        $self->{datastore}->{$ds_name}->{total_space} = $response->{data}->{$ds_id}->{size};
+        $self->{datastore}->{$ds_name}->{prct_used_space} = ($response->{data}->{$ds_id}->{size} - $response->{data}->{$ds_id}->{free}) * 100 / $response->{data}->{$ds_id}->{size};
+        $self->{datastore}->{$ds_name}->{prct_free_space} = $response->{data}->{$ds_id}->{free} * 100 / $response->{data}->{$ds_id}->{size};
+        $self->{datastore}->{$ds_name}->{uncommitted} = $response->{data}->{$ds_id}->{uncommitted};
     }    
 }
 
