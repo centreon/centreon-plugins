@@ -48,7 +48,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'loaded', nlabel => 'class.loaded.total.count', set => {
+        { label => 'loaded', nlabel => 'class.loaded.count', set => {
                 key_values => [ { name => 'TotalLoadedClassCount', diff => 1 } ],
                 output_template => 'loaded: %s',
                 perfdatas => [
@@ -56,7 +56,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'unloaded', nlabel => 'class.unloaded.total.count', set => {
+        { label => 'unloaded', nlabel => 'class.unloaded.count', set => {
                 key_values => [ { name => 'UnloadedClassCount', diff => 1 } ],
                 output_template => 'unloaded: %s',
                 perfdatas => [
