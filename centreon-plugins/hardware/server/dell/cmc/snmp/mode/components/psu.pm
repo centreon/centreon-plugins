@@ -26,7 +26,7 @@ use warnings;
 my %map_psu_capable = (
     1 => 'absent', 
     2 => 'none', 
-    3 => 'basic', 
+    3 => 'basic'
 );
 
 # In MIB 'DELL-RAC-MIB'
@@ -35,7 +35,7 @@ my $mapping = {
     drsPSUMonitoringCapable => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.4', map => \%map_psu_capable },
     drsPSUVoltsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.5', section => 'voltage', label => 'voltage', unit => 'volt' },
     drsPSUAmpsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.6', section => 'current', label => 'current', unit => 'ampere' },
-    drsPSUWattsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.7', section => 'power', label => 'power', unit => 'watt' },
+    drsPSUWattsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.7', section => 'power', label => 'power', unit => 'watt' }
 };
 my $oid_drsCMCPSUTableEntry = '.1.3.6.1.4.1.674.10892.2.4.2.1';
 
@@ -61,17 +61,29 @@ sub check {
         next if ($result->{drsPSUMonitoringCapable} !~ /basic/i);
         $self->{components}->{psu}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Power supply '%s': power %s W, current %s A, voltage %s V [instance: %s].",
-                                    $result->{drsPSULocation}, $result->{drsPSUWattsReading}, $result->{drsPSUAmpsReading}, $result->{drsPSUVoltsReading},
-                                    $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s': power %s W, current %s A, voltage %s V [instance: %s].",
+                $result->{drsPSULocation},
+                $result->{drsPSUWattsReading},
+                $result->{drsPSUAmpsReading},
+                $result->{drsPSUVoltsReading},
+                $instance
+            )
+        );
         foreach my $probe (('drsPSUVoltsReading', 'drsPSUAmpsReading', 'drsPSUWattsReading')) {
             next if (!defined($result->{$probe}));
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu.' . $mapping->{$probe}->{section}, instance => $instance, value => $result->{$probe});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Power supply '%s' %s is %s%s", $result->{drsPSULocation}, 
-                                                                 $mapping->{$probe}->{section}, $result->{$probe}, $mapping->{$probe}->{unit}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf(
+                        "Power supply '%s' %s is %s%s",
+                        $result->{drsPSULocation}, 
+                        $mapping->{$probe}->{section},
+                        $result->{$probe}, $mapping->{$probe}->{unit}
+                    )
+                );
             }
             $self->{output}->perfdata_add(
                 label => 'psu_' . $mapping->{$probe}->{label}, unit => $mapping->{$probe}->{unit},

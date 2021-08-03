@@ -27,7 +27,7 @@ use warnings;
 my $mapping = {
     drsChassisFrontPanelAmbientTemperature => { oid => '.1.3.6.1.4.1.674.10892.2.3.1.10', instance => 'chassis', descr => 'Chassis Ambient temperature' },
     drsCMCAmbientTemperature => { oid => '.1.3.6.1.4.1.674.10892.2.3.1.11', instance => 'ambient', descr => 'CMC Ambient temperarture' },
-    drsCMCProcessorTemperature => { oid => '.1.3.6.1.4.1.674.10892.2.3.1.12', instance => 'processor', descr => 'Processor temperature' },
+    drsCMCProcessorTemperature => { oid => '.1.3.6.1.4.1.674.10892.2.3.1.12', instance => 'processor', descr => 'Processor temperature' }
 };
 my $oid_drsChassisStatusGroup = '.1.3.6.1.4.1.674.10892.2.3';
 
@@ -43,23 +43,30 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
     return if ($self->check_filter(section => 'temperature'));
-    
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_drsChassisStatusGroup}, instance => '0');
-    
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_drsChassisStatusGroup}, instance => 0);
+
     foreach my $probe (keys %{$mapping}) {
         next if (!defined($result->{$probe}));
 
         next if ($self->check_filter(section => 'temperature', instance => $mapping->{$probe}->{instance}));    
         $self->{components}->{temperature}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("%s is %dC [instance: %s].", 
-                                    $mapping->{$probe}->{descr}, $result->{$probe},
-                                    $mapping->{$probe}->{instance}));
-     
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "%s is %dC [instance: %s].", 
+                $mapping->{$probe}->{descr},
+                $result->{$probe},
+                $mapping->{$probe}->{instance}
+            )
+        );
+
         my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $mapping->{$probe}->{instance}, value => $result->{$probe});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("%s is %sC", $mapping->{$probe}->{descr}, $result->{$probe}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("%s is %sC", $mapping->{$probe}->{descr}, $result->{$probe})
+            );
         }
         $self->{output}->perfdata_add(
             label => 'temp', unit => 'C',
