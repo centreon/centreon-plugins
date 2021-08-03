@@ -26,50 +26,48 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'gc', type => 1, cb_prefix_output => 'prefix_gc_output', message_multiple => 'All garbage collectors are ok' }
-    ];
-    
-    $self->{maps_counters}->{gc} = [
-        { label => 'time', set => {
-                key_values => [ { name => 'time', diff => 1 }, { name => 'display' } ],
-                output_template => 'Collection Time : %s ms',
-                perfdatas => [
-                    { label => 'time', value => 'time', template => '%s',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'count', set => {
-                key_values => [ { name => 'count', diff => 1 }, { name => 'display' } ],
-                output_template => 'Collection Count : %s',
-                perfdatas => [
-                    { label => 'count', value => 'count', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-    ];
-}
-
 sub prefix_gc_output {
     my ($self, %options) = @_;
     
     return "Garbage collector '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'gc', type => 1, cb_prefix_output => 'prefix_gc_output', message_multiple => 'All garbage collectors are ok' }
+    ];
+
+    $self->{maps_counters}->{gc} = [
+        { label => 'time', nlabel => 'gc.collection.elapsed_time.milliseconds', set => {
+                key_values => [ { name => 'time', diff => 1 }, { name => 'display' } ],
+                output_template => 'collection time: %s ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'count', nlabel => 'gc.collection.count', set => {
+                key_values => [ { name => 'count', diff => 1 }, { name => 'display' } ],
+                output_template => 'collection count: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-name:s"           => { name => 'filter_name' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
     return $self;
 }
 
@@ -95,11 +93,11 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{gc}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No garbage collector found.");
+        $self->{output}->add_option_msg(short_msg => 'No garbage collector found.');
         $self->{output}->option_exit();
     }
     
-    $self->{cache_name} = "jvm_standard_" . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
+    $self->{cache_name} = 'jvm_standard_' . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
