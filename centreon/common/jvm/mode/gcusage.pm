@@ -40,7 +40,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{gc} = [
-        { label => 'time', nlabel => 'gc.collection.elapsed_time.milliseconds', set => {
+        { label => 'time', nlabel => 'gc.collection.time.elapsed.milliseconds', set => {
                 key_values => [ { name => 'time', diff => 1 }, { name => 'display' } ],
                 output_template => 'collection time: %s ms',
                 perfdatas => [
