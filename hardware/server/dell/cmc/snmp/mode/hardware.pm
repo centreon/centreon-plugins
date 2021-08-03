@@ -34,18 +34,24 @@ sub set_system {
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {        
-        health => [
+        default => [
             ['other', 'UNKNOWN'],
             ['unknown', 'UNKNOWN'],
             ['ok', 'OK'],
             ['nonCritical', 'WARNING'],
             ['critical', 'CRITICAL'],
             ['nonRecoverable', 'CRITICAL']
+        ],
+        vdisk => [
+            ['online', 'OK'],
+            ['degraded', 'WARNING'],
+            ['failed', 'CRITICAL'],
+            ['unknown', 'UNKNOWN']
         ]
     };
     
     $self->{components_path} = 'hardware::server::dell::cmc::snmp::mode::components';
-    $self->{components_module} = ['health', 'chassis', 'temperature', 'psu'];
+    $self->{components_module} = ['chassis', 'disk', 'health', 'psu', 'temperature', 'vdisk'];
 }
 
 sub snmp_execute {
@@ -89,14 +95,14 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Health, Temperatures, Power supplies metrics and chassis metrics).
+Check hardware.
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'health', 'temperature', 'chassis', 'psu'.
+Can be: 'chassis', 'disk', 'health', 'psu', 'temperature', 'vdisk'.
 
 =item B<--filter>
 
