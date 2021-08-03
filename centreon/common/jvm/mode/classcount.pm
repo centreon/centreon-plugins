@@ -26,56 +26,54 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return 'Class ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'current', set => {
+        { label => 'current', nlabel => 'class.loaded.current.count', set => {
                 key_values => [ { name => 'LoadedClassCount' } ],
-                output_template => 'Current : %s',
+                output_template => 'current: %s',
                 perfdatas => [
-                    { label => 'current', value => 'LoadedClassCount', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'loaded', set => {
+        { label => 'loaded', nlabel => 'class.loaded.total.count', set => {
                 key_values => [ { name => 'TotalLoadedClassCount', diff => 1 } ],
-                output_template => 'Loaded : %s',
+                output_template => 'loaded: %s',
                 perfdatas => [
-                    { label => 'loaded', value => 'TotalLoadedClassCount', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'unloaded', set => {
+        { label => 'unloaded', nlabel => 'class.unloaded.total.count', set => {
                 key_values => [ { name => 'UnloadedClassCount', diff => 1 } ],
-                output_template => 'Unloaded : %s',
+                output_template => 'unloaded: %s',
                 perfdatas => [
-                    { label => 'unloaded', value => 'UnloadedClassCount', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-    
-    return "Class ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -88,9 +86,9 @@ sub manage_selection {
     ];
     my $result = $options{custom}->get_attributes(request => $request, nothing_quit => 1);
 
-    $self->{global} = { %{$result->{$mbean}} };
-    
-    $self->{cache_name} = "jvm_standard_" . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
+    $self->{global} = $result->{$mbean};
+
+    $self->{cache_name} = 'jvm_standard_' . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
@@ -109,14 +107,9 @@ Check Java Class Loading Mbean.
 Only display some counters (regexp can be used).
 Example: --filter-counters='current'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'unloaded', 'loaded', 'current'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'unloaded', 'loaded', 'current'.
 
 =back

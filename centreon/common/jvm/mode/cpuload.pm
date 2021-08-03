@@ -20,84 +20,62 @@
 
 package centreon::common::jvm::mode::cpuload;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'system', nlabel => 'system.cpu.load.percentage', set => {
+                key_values => [ { name => 'system_load' } ],
+                output_template => 'system cpu load: %.2f%%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        },
+        { label => 'process', nlabel => 'process.cpu.load.percentage', set => {
+                key_values => [ { name => 'process_load' } ],
+                output_template => 'process cpu load: %.2f%%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        }
+    ];
+}
+
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning-system:s"  => { name => 'warning_system' },
-                                  "critical-system:s" => { name => 'critical_system' },
-                                  "warning-process:s" => { name => 'warning_process' },
-                                  "critical-process:s" => { name => 'critical_process' }
-                                });
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-system', value => $self->{option_results}->{warning_system})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-system threshold '" . $self->{option_results}->{warning_system} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-system', value => $self->{option_results}->{critical_system})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-system threshold '" . $self->{option_results}->{critical_system} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-process', value => $self->{option_results}->{warning_process})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-process threshold '" . $self->{option_results}->{warning_process} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-process', value => $self->{option_results}->{critical_process})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-process threshold '" . $self->{option_results}->{critical_process} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
     $self->{request} = [
-         { mbean => "java.lang:type=OperatingSystem", attributes => [ { name => 'SystemCpuLoad' }, { name => 'ProcessCpuLoad' } ] }
+         { mbean => 'java.lang:type=OperatingSystem', attributes => [ { name => 'SystemCpuLoad' }, { name => 'ProcessCpuLoad' } ] }
     ];
 
-    my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{"java.lang:type=OperatingSystem"}->{SystemCpuLoad} * 100,
-                                                  threshold => [ { label => 'critical-system', exit_litteral => 'critical' }, { label => 'warning-system', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("SystemCpuLoad: %.2f%%",
-                                                      $result->{"java.lang:type=OperatingSystem"}->{SystemCpuLoad} * 100));
+    my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
-    $exit = $self->{perfdata}->threshold_check(value => $result->{"java.lang:type=OperatingSystem"}->{ProcessCpuLoad} * 100,
-                                               threshold => [ { label => 'critical-process', exit_litteral => 'critical' }, { label => 'warning-process', exit_litteral => 'warning'} ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("ProcessCpuLoad: %.2f%%",
-                                                      $result->{"java.lang:type=OperatingSystem"}->{ProcessCpuLoad} * 100));
-
-    $self->{output}->perfdata_add(label => 'SystemCpuLoad', unit => '%',
-                                  value => sprintf("%.2f", $result->{"java.lang:type=OperatingSystem"}->{SystemCpuLoad} * 100),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-system'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-system'),
-                                  min => 0, max => 100);
-
-    $self->{output}->perfdata_add(label => 'ProcessCpuLoad', unit => '%',
-                                  value => sprintf("%.2f", $result->{"java.lang:type=OperatingSystem"}->{ProcessCpuLoad} * 100),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-process'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-process'),
-                                  min => 0, max => 100);
-
-    $self->{output}->display();
-    $self->{output}->exit();
-
+    $self->{global} = {
+        system_load => $result->{'java.lang:type=OperatingSystem'}->{SystemCpuLoad} * 100,
+        process_load => $result->{'java.lang:type=OperatingSystem'}->{ProcessCpuLoad} * 100
+    };
 }
 
 1;
@@ -133,4 +111,3 @@ Threshold critical of Process cpuload
 =back
 
 =cut
-
