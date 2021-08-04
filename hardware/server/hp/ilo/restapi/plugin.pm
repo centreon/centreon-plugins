@@ -30,11 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'hardware'  => 'centreon::common::redfish::restapi::mode::hardware',
-    );
+    $self->{modes} = {
+        'hardware'  => 'centreon::common::redfish::restapi::mode::hardware'
+    };
 
-    $self->{custom_modes}{api} = 'hardware::server::hp::ilo::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'hardware::server::hp::ilo::restapi::custom::api';
     return $self;
 }
 

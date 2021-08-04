@@ -45,7 +45,7 @@ sub check {
             $temp->{Status}->{Health} = defined($temp->{Status}->{Health}) ? $temp->{Status}->{Health} : 'n/a';
             next if ($self->check_filter(section => 'temperature', instance => $instance));
             $self->{components}->{temperature}->{total}++;
-            
+
             $self->{output}->output_add(
                 long_msg => sprintf(
                     "temperature '%s/%s' status is '%s' [instance: %s, state: %s, value: %s]",
@@ -78,9 +78,10 @@ sub check {
                 my $crit_th = defined($temp->{UpperThresholdFatal}) ? ':' . $temp->{UpperThresholdFatal} : '';
                 $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
                 $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
+                $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
             }
-            
+
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
                     severity => $exit2,
@@ -96,7 +97,7 @@ sub check {
                 instances => [$chassis_name, $temp_name],
                 value => $temp->{ReadingCelsius},
                 warning => $warn,
-                critical => $crit,
+                critical => $crit
             );
         }
     }
