@@ -32,6 +32,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+	"filter-admin-down" => { name => 'filter_admin_down' },
         "prettify" => { name => 'prettify' },
     });
 
@@ -52,24 +53,14 @@ my $map_operation_status = {
     2 => 'disassociating',
     3 => 'downloading'
 };
-my $map_radio_operation_status = {
-    1 => 'down',
-    2 => 'up'
-};
 
 my $mapping = {
     ap_name    => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' }, # bsnAPName
     ap_ipaddr  => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.19' }, #bsnApIpAddress
-    group_name => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.30' } # bsnAPGroupVlanName
 };
 my $mapping2 = {
     opstatus  => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.6', map => $map_operation_status }, # bsnAPOperationStatus
     admstatus => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.37', map => $map_admin_status } # bsnAPAdminStatus
-};
-my $mapping3 = {
-    opstatus      => { oid => '.1.3.6.1.4.1.14179.2.2.2.1.12', map => $map_radio_operation_status }, # bsnAPIfOperStatus
-    admstatus     => { oid => '.1.3.6.1.4.1.14179.2.2.2.1.34', map => $map_admin_status }, # bsnAPIfAdminStatus
-    channels_util => { oid => '.1.3.6.1.4.1.14179.2.2.13.1.3' } # bsnAPIfLoadChannelUtilization
 };
 
 my $oid_agentInventoryMachineModel = '.1.3.6.1.4.1.14179.1.1.1.3';
@@ -85,8 +76,7 @@ sub run {
 
     my $request = [ { oid => $oid_agentInventoryMachineModel },
                     { oid => $mapping->{ap_name}->{oid} },
-                    { oid => $mapping->{ap_ipaddr}->{oid} },
-                    { oid => $mapping->{group_name}->{oid} ];
+                    { oid => $mapping->{ap_ipaddr}->{oid} } ];
     
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => $request,
@@ -102,12 +92,13 @@ sub run {
             mapping => $mapping, 
             results => $snmp_result, 
             instance => $instance);
-        
-        $ap{name} = $result->{ap_name};
-        $ap{ip} = $result->{ap_ipaddr};
-        $ap{group} = $result->{group_name};
-        $ap{type} = "ap";
-        
+
+        $self->{ap}->{ $result->{ap_name} } = {
+            name => $result->{ap_name},
+            instance => $instance,
+            ip => $result->{ap_ipaddr},
+            model => (defined($snmp_result->{$oid_agentInventoryMachineModel . '.0'}) ? $snmp_result->{$oid_agentInventoryMachineModel . '.0'} : 'unknown') 
+        };
     }
 
     $options{snmp}->load(
@@ -115,14 +106,18 @@ sub run {
         instances => [ map($_->{instance}, values %{$self->{ap}}) ],
         instance_regexp => '^(.*)$'
     );
+
     $snmp_result = $options{snmp}->get_leef();
 
-    foreach (%{$ap->{name}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $ap->{$_}->{instance});
-        use Data::Dumper; print Dumper($result);
+    foreach my $ap_name (keys %{$self->{ap}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $self->{ap}->{ $ap_name }->{instance});
+        $self->{ap}->{ $ap_name }->{admstatus} = $result->{admstatus};
+        $self->{ap}->{ $ap_name }->{opstatus} = $result->{opstatus};
+
+        next if (defined($self->{option_results}->{filter_admin_down}) && $result->{admstatus} eq 'disable');
+        push @disco_data, $self->{ap}->{ $ap_name };
     }
 
-    push @disco_data, \%ap;
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
     $disco_stats->{discovered_items} = @disco_data;
@@ -151,13 +146,20 @@ __END__
 
 =head1 MODE
 
-Cisco Airespace WLC AP discovery.
+Cisco WLC/Airspace AP discovery.
+
+Note: When the IP Address is 0, that means the switch is operating in layer2 mode
+Ref: https://cric.grenoble.cnrs.fr/Administrateurs/Outils/MIBS/?oid=1.3.6.1.4.1.14179.2.2.1.1.19
 
 =over 8
 
 =item B<--prettify>
 
 Prettify JSON output.
+
+=item B<--filter-admin-down>
+
+Exclude administratively down AP from the results 
 
 =back
 
