@@ -36,6 +36,7 @@ sub new {
         'ap-status'                => 'centreon::common::airespace::snmp::mode::apstatus',
         'ap-users'                 => 'centreon::common::airespace::snmp::mode::apusers',
         'cpu'                      => 'centreon::common::airespace::snmp::mode::cpu',
+        'discovery'                => 'centreon::common::airespace::snmp::mode::discovery',
         'hardware'                 => 'centreon::common::airespace::snmp::mode::hardware',
         'interfaces'               => 'snmp_standard::mode::interfaces', 
         'list-groups'              => 'centreon::common::airespace::snmp::mode::listgroups',
