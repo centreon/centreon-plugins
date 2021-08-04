@@ -32,7 +32,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-	"filter-admin-down" => { name => 'filter_admin_down' },
+        "filter-admin-down" => { name => 'filter_admin_down' },
         "prettify" => { name => 'prettify' },
     });
 
@@ -97,7 +97,9 @@ sub run {
             name => $result->{ap_name},
             instance => $instance,
             ip => $result->{ap_ipaddr},
-            model => (defined($snmp_result->{$oid_agentInventoryMachineModel . '.0'}) ? $snmp_result->{$oid_agentInventoryMachineModel . '.0'} : 'unknown') 
+            model => (defined($snmp_result->{$oid_agentInventoryMachineModel . '.0'}) ? 
+                          $snmp_result->{$oid_agentInventoryMachineModel . '.0'} :
+                          'unknown') 
         };
     }
 
@@ -110,7 +112,11 @@ sub run {
     $snmp_result = $options{snmp}->get_leef();
 
     foreach my $ap_name (keys %{$self->{ap}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $self->{ap}->{ $ap_name }->{instance});
+        my $result = $options{snmp}->map_instance(
+            mapping => $mapping2,
+            results => $snmp_result,
+            instance => $self->{ap}->{ $ap_name }->{instance});
+
         $self->{ap}->{ $ap_name }->{admstatus} = $result->{admstatus};
         $self->{ap}->{ $ap_name }->{opstatus} = $result->{opstatus};
 
@@ -159,7 +165,7 @@ Prettify JSON output.
 
 =item B<--filter-admin-down>
 
-Exclude administratively down AP from the results 
+Exclude administratively down access points from the discovery result
 
 =back
 
