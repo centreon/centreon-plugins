@@ -30,10 +30,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "filter-admin-down" => { name => 'filter_admin_down' },
-        "prettify" => { name => 'prettify' },
+        'filter-admin-down' => { name => 'filter_admin_down' },
+        'prettify'          => { name => 'prettify' }
     });
 
     return $self;
@@ -55,14 +55,13 @@ my $map_operation_status = {
 };
 
 my $mapping = {
-    ap_name    => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' }, # bsnAPName
-    ap_ipaddr  => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.19' }, #bsnApIpAddress
+    ap_name   => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' }, # bsnAPName
+    ap_ipaddr => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.19' } # bsnApIpAddress
 };
 my $mapping2 = {
     opstatus  => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.6', map => $map_operation_status }, # bsnAPOperationStatus
     admstatus => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.37', map => $map_admin_status } # bsnAPAdminStatus
 };
-
 my $oid_agentInventoryMachineModel = '.1.3.6.1.4.1.14179.1.1.1.3';
 
 sub run {
@@ -71,19 +70,20 @@ sub run {
     my %ap;
     my @disco_data;
     my $disco_stats;
-    
+
     $disco_stats->{start_time} = time();
 
-    my $request = [ { oid => $oid_agentInventoryMachineModel },
-                    { oid => $mapping->{ap_name}->{oid} },
-                    { oid => $mapping->{ap_ipaddr}->{oid} } ];
-    
+    my $request = [
+        { oid => $oid_agentInventoryMachineModel },
+        { oid => $mapping->{ap_name}->{oid} },
+        { oid => $mapping->{ap_ipaddr}->{oid} }
+    ];
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => $request,
         return_type => 1,
         nothing_quit => 1
     );
-    
+
     foreach (keys %$snmp_result) {
         next if (! /^$mapping->{ap_name}->{oid}\.(.*)/);
         my $instance = $1;
@@ -97,9 +97,8 @@ sub run {
             name => $result->{ap_name},
             instance => $instance,
             ip => $result->{ap_ipaddr},
-            model => (defined($snmp_result->{$oid_agentInventoryMachineModel . '.0'}) ? 
-                          $snmp_result->{$oid_agentInventoryMachineModel . '.0'} :
-                          'unknown') 
+            model => defined($snmp_result->{$oid_agentInventoryMachineModel . '.0'}) ? 
+                $snmp_result->{$oid_agentInventoryMachineModel . '.0'} : 'unknown'
         };
     }
 
@@ -115,7 +114,8 @@ sub run {
         my $result = $options{snmp}->map_instance(
             mapping => $mapping2,
             results => $snmp_result,
-            instance => $self->{ap}->{ $ap_name }->{instance});
+            instance => $self->{ap}->{ $ap_name }->{instance}
+        );
 
         $self->{ap}->{ $ap_name }->{admstatus} = $result->{admstatus};
         $self->{ap}->{ $ap_name }->{opstatus} = $result->{opstatus};
@@ -140,7 +140,7 @@ sub run {
     if ($@) {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
     }
-    
+
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();
