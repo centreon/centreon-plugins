@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::protocols::actuator::custom::api;
+package centreon::common::protocols::actuator::custom::standard;
 
 use strict;
 use warnings;
@@ -49,7 +49,8 @@ sub new {
             'timeout:s'         => { name => 'timeout' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' }
+            'critical-http-status:s' => { name => 'critical_http_status' },
+            'url-path:s'             => { name => 'url_path' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -80,6 +81,7 @@ sub check_options {
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/actuator';
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
@@ -115,6 +117,12 @@ sub settings {
     $self->{settings_done} = 1;
 }
 
+sub get_connection_infos {
+    my ($self, %options) = @_;
+
+    return $self->{hostname} . '_' . $self->{http}->get_port();
+}
+
 sub get_hostname {
     my ($self, %options) = @_;
 
@@ -126,7 +134,8 @@ sub request_api {
 
     $self->settings();
     my $content = $self->{http}->request(
-        url_path => $options{endpoint},
+        url_path => $self->{url_path} . $options{endpoint},
+        get_param => $options{get_param},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status},
@@ -186,7 +195,11 @@ Specify password for authentication (basic auth)
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 30).
+Set timeout in seconds (Default: 30)
+
+=item B<--url-path>
+
+API url path (Default: '/actuator')
 
 =back
 
