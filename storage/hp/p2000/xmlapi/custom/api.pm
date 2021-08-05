@@ -168,21 +168,6 @@ sub get_infos {
     my ($self, %options) = @_;
     my ($xpath, $nodeset);
 
-    my $file;
-    if ($options{cmd} =~ /controller-statistics/) {
-        $file = '/home/qgarnier/Downloads/hp_msa/controllers/controller-statistics_probe1.xml';
-    } elsif ($options{cmd} =~ /controller/) {
-        $file = '/home/qgarnier/Downloads/hp_msa/controllers/controllers.xml';
-    }
-    my $response = do {
-        local $/ = undef;
-        if (!open my $fh, "<", '/home/qgarnier/Downloads/hp_msa/power-supplies.xml') {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-=pod
     $self->login();
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
@@ -201,7 +186,6 @@ sub get_infos {
         warning_status => $warning_status,
         critical_status => $critical_status
     );
-=cut
 
     my $xml;
     eval {

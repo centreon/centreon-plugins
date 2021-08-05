@@ -35,6 +35,7 @@ sub new {
         'controllers'    => 'storage::hp::p2000::xmlapi::mode::controllers',
         'health'         => 'storage::hp::p2000::xmlapi::mode::health',
         'list-volumes'   => 'storage::hp::p2000::xmlapi::mode::listvolumes',
+        'ntp'            => 'storage::hp::p2000::xmlapi::mode::ntp',
         'vdisks'         => 'storage::hp::p2000::xmlapi::mode::vdisks',
         'volume-stats'   => 'storage::hp::p2000::xmlapi::mode::volumesstats'
     };
