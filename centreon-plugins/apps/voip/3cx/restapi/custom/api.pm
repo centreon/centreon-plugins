@@ -122,7 +122,7 @@ sub settings {
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
     if (defined($self->{cookie})) {
-        $self->{http}->add_header(key => 'Cookie', value => '.AspNetCore.Cookies=' . $self->{cookie});
+        $self->{http}->add_header(key => 'Cookie', value => $self->{cookie});
         if (defined($self->{xsrf})) {
             $self->{http}->add_header(key => 'X-XSRF-TOKEN', value => $self->{xsrf});
         }
@@ -153,7 +153,9 @@ sub authenticate {
         );
 
         my $header = $self->{http}->get_header(name => 'Set-Cookie');
-        if (defined ($header) && $header =~ /(?:^| ).AspNetCore.Cookies=([^;]+);.*/) {
+        # 3CX v16 cookie name is .AspNetCore.Cookies
+        # 3CX v18 cookie name is .AspNetCore.CookiesA
+        if (defined ($header) && $header =~ /(?:^| )(.AspNetCore.Cookies[A]?=[^;]+);.*/) {
             $cookie = $1;
         } else {
             $self->{output}->add_option_msg(short_msg => "Error retrieving cookie");
