@@ -18,55 +18,63 @@
 # limitations under the License.
 #
 
-package storage::hp::p2000::xmlapi::mode::components::fru;
+package storage::hp::p2000::xmlapi::mode::components::psu;
 
 use strict;
 use warnings;
 
+my %health = (
+    0 => 'ok',
+    1 => 'degraded',
+    2 => 'fault',
+    3 => 'unknown',
+    4 => 'not available'
+);
+
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking frus");
-    $self->{components}->{fru} = {name => 'frus', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'fru'));
+    $self->{output}->output_add(long_msg => "Checking power supplies");
+    $self->{components}->{psu} = { name => 'psu', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'psu'));
 
     my ($entries) = $self->{custom}->get_infos(
-        cmd => 'show frus', 
-        base_type => 'enclosure-fru',
-        properties_name => '^fru-status|fru-location|oid$',
-        no_quit => 1,
+        cmd => 'show power-supplies', 
+        base_type => 'power-supplies',
+        properties_name => '^durable-id|health-numeric|name$',
+        no_quit => 1
     );
 
     my ($results, $duplicated) = ({}, {});
     foreach (@$entries) {
-        my $name = $_->{'fru-location'};
-        $name = $_->{'fru-location'} . ':' . $_->{oid} if (defined($duplicated->{$name}));
+        my $name = $_->{name};
+        $name = $_->{name} . ':' . $_->{'durable-id'} if (defined($duplicated->{$name}));
         if (defined($results->{$name})) {
             $duplicated->{$name} = 1;
-            my $instance = $results->{$name}->{'fru-location'} . ':' . $results->{$name}->{oid};
+            my $instance = $results->{$name}->{name} . ':' . $results->{$name}->{'durable-id'};
             $results->{$instance} = delete $results->{$name};
-            $name = $_->{'fru-location'} . ':' . $_->{oid};
+            $name = $_->{name} . ':' . $_->{'durable-id'};
         }
         $results->{$name} = $_;
     }
 
-    foreach my $instance (sort keys %$results) {    
-        next if ($self->check_filter(section => 'fru', instance => $instance));
-        $self->{components}->{fru}->{total}++;
-        
-        my $state = $results->{$instance}->{'fru-status'};
-        
+    foreach my $psu_id (sort keys %$results) {
+        next if ($self->check_filter(section => 'psu', instance => $results->{$psu_id}->{'durable-id'}));
+        $self->{components}->{psu}->{total}++;
+
+        my $state = $health{$results->{$psu_id}->{'health-numeric'}};
+
         $self->{output}->output_add(
             long_msg => sprintf(
-                "fru '%s' status is %s [instance: %s]",
-                $instance, $state, $instance
+                "power supply '%s' status is %s [instance: %s]",
+                $psu_id, $state, $results->{$psu_id}->{'durable-id'}
             )
         );
-        my $exit = $self->get_severity(section => 'fru', value => $state);
+        my $exit = $self->get_severity(label => 'default', section => 'psu', value => $state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("Fru '%s' status is '%s'", $instance, $state)
+                short_msg => sprintf("Power supply '%s' status is '%s'", $psu_id, $state)
             );
         }
     }

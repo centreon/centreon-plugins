@@ -29,7 +29,7 @@ sub set_system {
     my ($self, %options) = @_;
 
     $self->{regexp_threshold_numeric_check_section_option} = 
-        '^(sensor)$';
+        '^(?:sensor)$';
     
     $self->{cb_hook1} = 'init_health';
     
@@ -52,12 +52,12 @@ sub set_system {
             ['warning|not installed|unavailable', 'WARNING'],
             ['error|unrecoverable', 'CRITICAL'],
             ['unknown|unsupported', 'UNKNOWN']
-        ],
+        ]
     };
 
     $self->{components_exec_load} = 0;
     $self->{components_path} = 'storage::hp::p2000::xmlapi::mode::components';
-    $self->{components_module} = ['disk', 'enclosure', 'fru', 'sensor', 'vdisk'];
+    $self->{components_module} = ['disk', 'enclosure', 'fru', 'psu', 'sensor', 'vdisk'];
 }
 
 sub init_health {
@@ -90,7 +90,7 @@ Check health status of storage.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'disk', 'enclosure', 'fru', 'sensor', 'vdisk'.
+Can be: 'disk', 'enclosure', 'fru', 'psu', 'sensor', 'vdisk'.
 
 =item B<--filter>
 
