@@ -218,6 +218,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{controller_stats} = [
+        { label => 'cpu-utilization', nlabel => 'cpu.utilization.percentage', set => {
+                key_values => [ { name => 'cpu-load' } ],
+                output_template => 'cpu utilization: %.2f%%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        },
         { label => 'read', nlabel => 'controller.io.read.usage.bytespersecond', set => {
                 key_values => [ { name => 'data-read-numeric', per_second => 1 } ],
                 output_template => 'read i/o: %s %s/s',
@@ -353,7 +361,7 @@ sub manage_selection {
     my ($stats) = $options{custom}->get_infos(
         cmd => 'show controller-statistics', 
         base_type => 'controller-statistics',
-        properties_name => '^durable-id|data-read-numeric|data-written-numeric|write-cache-hits|write-cache-misses|read-cache-hits|read-cache-misses|iops$'
+        properties_name => '^durable-id|cpu-load|data-read-numeric|data-written-numeric|write-cache-hits|write-cache-misses|read-cache-hits|read-cache-misses|iops$'
     );
 
     foreach (@$stats) {
@@ -459,7 +467,7 @@ Can used special variables like: %{status}, %{name}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'read', 'write', 'iops', 'write-cache-hits', 'read-cache-hits'.
+Can be: 'cpu-utilization', 'read', 'write', 'iops', 'write-cache-hits', 'read-cache-hits'.
 
 =back
 
