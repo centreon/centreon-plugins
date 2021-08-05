@@ -24,11 +24,14 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::exchange::powershell;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
     
     my $ps = centreon::common::powershell::exchange::powershell::powershell_init(%options);
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
     
     $ps .= '
 # Check to make sure all databases are mounted
@@ -51,55 +54,26 @@ try {
     Write-Host $Error[0].Exception
     exit 1
 }
+
+$items = New-Object System.Collections.Generic.List[Hashtable];
 Foreach ($DB in $MountedDB) {
-    Write-Host "[name=" $DB.Name "][server=" $DB.Server "][mounted=" $DB.Mounted "][size=" $DB.DatabaseSize "][asize=" $DB.AvailableNewMailboxSpace "]" -NoNewline
-    
+    $item = @{}
+    $item.name = $DB.Name
+    $item.server = $DB.Server.Name
+    $item.mounted = $DB.Mounted
+    $item.size = $DB.DatabaseSize.ToBytes().ToString()
+    $item.asize = $DB.AvailableNewMailboxSpace.ToBytes().ToString()
+    $items.Add($item)
 ';
     $ps .= '
 }
 
+$jsonString = $items | ConvertTo-JSON-20 -forceArray $true
+Write-Host $jsonString
 exit 0
 ';
 
     return $ps;
-}
-
-sub list {
-    my ($self, %options) = @_;
-    
-    # Following output:
-    #[name= Mailbox Database 0975194476 ][server= SRVI-WIN-TEST ][mounted= True ][size= 136.1 MB (142,671,872 bytes) ][asize= 124.4 MB (130,482,176 bytes) ][mapi= Success ][mailflow= Success ][latency= 50,00 ]
-    #...
-    
-    foreach my $line (split /\n/, $options{stdout}) {
-        next if ($line !~ /^\[name=(.*?)\]\[server=(.*?)\]\[mounted=(.*?)\]\[size=(.*?)\]\[asize=(.*?)\]/);
-        my ($database, $server, $mounted, $size, $asize) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
-                                             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
-
-        $self->{output}->output_add(long_msg => "'" . $database . "' [server = $server, mounted = " . $mounted .  ']');
-    }
-}
-
-sub disco_show {
-    my ($self, %options) = @_;
-    
-    # Following output:
-    #[name= Mailbox Database 0975194476 ][server= SRVI-WIN-TEST ][mounted= True ][size= 136.1 MB (142,671,872 bytes) ][asize= 124.4 MB (130,482,176 bytes) ][mapi= Success ][mailflow= Success ][latency= 50,00 ]
-    #...
-    
-    foreach my $line (split /\n/, $options{stdout}) {
-        next if ($line !~ /^\[name=(.*?)\]\[server=(.*?)\]\[mounted=(.*?)\]\[size=(.*?)\]\[asize=(.*?)\]/);
-        my ($database, $server, $mounted, $size, $asize) = (
-            centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
-            centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5)
-        );
-
-        $self->{output}->add_disco_entry(
-            name => $database,
-            server => $server,
-            mounted => $mounted
-        );
-    }
 }
 
 1;
