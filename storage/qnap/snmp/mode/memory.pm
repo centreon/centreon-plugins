@@ -78,10 +78,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'force-counters-legacy' => { name => 'force_counters_legacy' }
-    });
-
     return $self;
 }
 
@@ -106,6 +102,11 @@ sub convert_bytes {
 
     return $bytes;
 }
+
+# From QTS GUI (4.5.4.1741) :
+# Used memory is "total usable memory" minus "available memory".
+# (Available memory is the sum of free, buffer, cache, and other reclaimable memory.)
+# Cache memory used by file systems and processes are not included in "used memory".
 
 my $mapping = {
     legacy => {
@@ -165,11 +166,9 @@ sub manage_selection {
         ],
         nothing_quit => 1
     );
-    if (!defined($self->{option_results}->{force_counters_legacy})) {
-        $self->check_memory(snmp => $options{snmp}, type => 'qts', snmp_result => $snmp_result);
-        $self->check_memory(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result);
-        $self->check_memory(snmp => $options{snmp}, type => 'es', snmp_result => $snmp_result, convert => 1);
-    }
+    $self->check_memory(snmp => $options{snmp}, type => 'qts', snmp_result => $snmp_result);
+    $self->check_memory(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result);
+    $self->check_memory(snmp => $options{snmp}, type => 'es', snmp_result => $snmp_result, convert => 1);
     $self->check_memory(snmp => $options{snmp}, type => 'legacy', snmp_result => $snmp_result, convert => 1);
 }
 
@@ -182,10 +181,6 @@ __END__
 Check memory.
 
 =over 8
-
-=item B<--force-counters-legacy>
-
-Force to use legacy counters. Should be used when EX/ES/QTS counters are buggy.
 
 =item B<--warning-*> B<--critical-*>
 
