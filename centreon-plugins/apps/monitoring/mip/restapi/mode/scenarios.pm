@@ -262,8 +262,8 @@ sub manage_selection {
         $self->{scenario}->{$scenario_name}->{global}->{status} = $entry->{results}->{$last_time}->{state}->{type};
 
         foreach (keys %{$entry->{metricInfo}}) {
-            $self->{scenario}->{$scenario_name}->{metric}->{ $entry->{metricInfo}->{$_}->{label} } = {
-                display => $entry->{metricInfo}->{$_}->{label},
+            $self->{scenario}->{$scenario_name}->{metric}->{ $entry->{metricInfo}->{$_}->{alias} } = {
+                display => $entry->{metricInfo}->{$_}->{alias},
                 unit => $entry->{metricInfo}->{$_}->{unit},
                 value => $entry->{results}->{$last_time}->{metrics}->{$_}
             };
