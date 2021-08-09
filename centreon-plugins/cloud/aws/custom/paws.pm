@@ -371,6 +371,33 @@ sub ec2_get_instances_status {
     return $instance_results;
 }
 
+sub ec2_get_instances {
+    my ($self, %options) = @_;
+
+    my $instance_results = {};
+    eval {
+        my $ec2 = $self->{paws}->service('EC2', region => $self->{option_results}->{region});
+        my $list_instances = $ec2->DescribeInstances(DryRun => 0);
+
+        foreach my $reservation (@{$list_instances->{Reservations}}) {
+            foreach my $instance (@{$reservation->{Instances}}) {
+                $instance_results->{ $instance->{InstanceId} } = { 
+                    Name => $instance->{InstanceId},
+                    InstanceType => $instance->{InstanceType},
+                    State => $instance->{State}->{Name},
+                    LaunchTime => $instance->{LaunchTime}
+                };
+            }
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $instance_results;
+}
+
 sub ec2spot_get_active_instances {
     my ($self, %options) = @_;
 
