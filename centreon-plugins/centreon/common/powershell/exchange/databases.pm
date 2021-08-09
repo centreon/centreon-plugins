@@ -95,7 +95,7 @@ Foreach ($DB in $MountedDB) {
         $ps .= '
             # Test Mapi Connectivity
             $MapiResult = test-mapiconnectivity -Database $DB.Name
-            $item.mapi_result = $MapiResult.Result
+            $item.mapi_result = $MapiResult.Result.Value.value__
 ';
     }
     
