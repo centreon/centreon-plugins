@@ -66,7 +66,7 @@ sub check_options {
     my ($self, %options) = @_;
     
     $options{option_results}->{nrpe_version} =~ s/^v//;
-    if ($options{option_results}->{nrpe_version} !~ /2|3/) {
+    if ($options{option_results}->{nrpe_version} !~ /2|3|4/) {
         $self->{output}->add_option_msg(short_msg => "Unknown NRPE version.");
         $self->{output}->option_exit();
     }
@@ -126,9 +126,56 @@ sub assemble {
     my $packed;
     if ($options{version} eq 2) {
         $packed = $self->assemble_v2(%options);
+    } elsif ($options{version} eq 4) {
+        $packed = $self->assemble_v4(%options);
     } else {
         $packed = $self->assemble_v3(%options);
     }
+    return $packed;
+}
+
+sub assemble_v4 {
+    my ($self, %options) = @_;
+
+    my $buffer = $options{check};
+    my $len = length($buffer);
+
+    # In order for crc32 calculation to be correct we need to pad the buffer with \0
+    # It seems that the buffer must be in multiples of 1024 so to achive this we use
+    # some integer arithmetic to find the next multiple of 1024 that can hold our message
+    my $pack_len;
+    {
+        use integer;
+        $pack_len = (($len / 1024) * 1024) + 1024;
+    }
+    $buffer = pack("Z$pack_len", $buffer);
+    $len = length($buffer) + 4;
+
+    my $unpacked;
+    $unpacked->{alignment} = 0;
+    $unpacked->{buffer_length} = $len;
+    $unpacked->{buffer} = $buffer;
+    $unpacked->{crc32_value} = "\x00\x00\x00\x00";
+    $unpacked->{packet_type} = defined($options{type}) ? $options{type} : 1;
+    $unpacked->{packet_version} = 4;
+    $unpacked->{result_code} = defined($options{result_code}) ? $options{result_code} : 2324;
+
+    $self->{c}->parse(<<PACKET_STRUCT);
+struct Packet{
+  unsigned short   packet_version;
+  unsigned short   packet_type;
+  unsigned int     crc32_value;
+  unsigned short   result_code;
+  unsigned short   alignment;
+  int              buffer_length;
+  char             buffer[$len];
+};
+PACKET_STRUCT
+    $self->{c}->tag('Packet.buffer', Format => 'String');
+    my $packed = $self->{c}->pack('Packet', $unpacked);
+
+    $unpacked->{crc32_value} = crc32($packed);
+    $packed = $self->{c}->pack('Packet', $unpacked);
     return $packed;
 }
 
@@ -379,7 +426,7 @@ NRPE class
 
 =item B<--nrpe-version>
 
-Version: 2 for NRPE v2 (Default), 3 for NRPE v3.
+Version: 2 for NRPE v2 (Default), 3 for NRPE v3, 4 for NRPE v4.
 
 =item B<--nrpe-port>
 
