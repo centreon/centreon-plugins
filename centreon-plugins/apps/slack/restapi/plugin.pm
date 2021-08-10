@@ -32,7 +32,9 @@ sub new {
     $self->{version} = '1.0';
     $self->{modes} = {
         'count-channels' => 'apps::slack::restapi::mode::countchannels',
-        'count-members'  => 'apps::slack::restapi::mode::countmembers'
+        'count-members'  => 'apps::slack::restapi::mode::countmembers',
+        'list-services'  => 'apps::slack::restapi::mode::listservices',
+        'services'       => 'apps::slack::restapi::mode::services'
     };
 
     $self->{custom_modes}->{restapi} = 'apps::slack::restapi::custom::api';

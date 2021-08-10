@@ -28,51 +28,11 @@ use warnings;
 sub prefix_output {
     my ($self, %options) = @_;
 
-    return "Channel '" . $options{instance_value}->{name} . "' ";
-}
-
-sub custom_info_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        label => 'members',
-        nlabel => 'channels.members.count',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
-        value => $self->{result_values}->{num_members},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min => 0
+    return sprintf(
+        "Channel '%s' [id: %s] ",
+        $options{instance_value}->{name},
+        $options{instance_value}->{id}
     );
-}
-
-sub custom_info_threshold {
-    my ($self, %options) = @_;
-    
-    my $exit = $self->{perfdata}->threshold_check(
-        value => $self->{result_values}->{num_members},
-        threshold => [
-            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
-        ]
-    );
-    return $exit;
-}
-
-sub custom_info_output {
-    my ($self, %options) = @_;
-
-    my $msg = sprintf("[id: %s] [members: %s]", $self->{result_values}->{id}, $self->{result_values}->{num_members});
-    return $msg;
-}
-
-sub custom_info_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{num_members} = $options{new_datas}->{$self->{instance} . '_num_members'};
-
-    return 0;
 }
 
 sub set_counters {
@@ -84,23 +44,23 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'count', nlabel => 'channels.count', set => {
+        { label => 'count', nlabel => 'channels.total.count', set => {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Number of channels: %d',
                 perfdatas => [
-                    { label => 'count', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         }
     ];
 
     $self->{maps_counters}->{channels} = [
-        { label => 'members', set => {
-                key_values => [ { name => 'id' }, { name => 'name' }, { name => 'num_members' } ],
-                closure_custom_calc => $self->can('custom_info_calc'),
-                closure_custom_output => $self->can('custom_info_output'),
-                closure_custom_perfdata => $self->can('custom_info_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_info_threshold')
+        { label => 'members', nlabel => 'channel.members.count', set => {
+                key_values => [ { name => 'num_members' }, { name => 'id' }, { name => 'name' } ],
+                output_template => 'members: %s',
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
         }
     ];
@@ -108,28 +68,22 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
         'filter-channel:s' => { name => 'filter_channel' }
     });
-   
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
+    return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get_object(url_path => '/channels.list');
+    my $result = $options{custom}->request_web_api(endpoint => '/conversations.list');
 
     $self->{global}->{count} = 0;
-
     foreach my $channel (@{$result->{channels}}) {
         if (defined($self->{option_results}->{filter_channel}) && $self->{option_results}->{filter_channel} ne '' &&
             $channel->{name_normalized} !~ /$self->{option_results}->{filter_channel}/) {
@@ -137,7 +91,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{channels}->{$channel->{id}} = {
+        $self->{channels}->{ $channel->{id} } = {
             id => $channel->{id},
             name => $channel->{name_normalized},
             num_members => $channel->{num_members},
@@ -145,7 +99,7 @@ sub manage_selection {
 
         $self->{global}->{count}++;
     }
-    
+
     if (scalar(keys %{$self->{channels}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No channels found.");
         $self->{output}->option_exit();
@@ -158,9 +112,15 @@ __END__
 
 =head1 MODE
 
-Check channels count.
+Check channels.
+
+Scope: 'channels.read'.
 
 =over 8
+
+=item B<--filter-channel>
+
+Filter channels by channel name (can be a regexp).
 
 =item B<--warning-count>
 
