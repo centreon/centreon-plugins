@@ -32,7 +32,7 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'modes-exec:s'   => { name => 'modes_exec' },
-        'option-mode:s@' => { name => 'option_mode' },
+        'option-mode:s@' => { name => 'option_mode' }
     });
     $self->{options} = $options{options};
 
@@ -77,7 +77,7 @@ sub run {
             );
             @ARGV = (@{$self->{options_mode_extra}->{$_}}) if (defined($self->{options_mode_extra}->{$_}));
             $self->{output}->mode(name => $_);
-            
+
             my $mode = $self->{modes}->{$_}->new(options => $self->{options}, output => $self->{output}, mode => $_);
             $self->{options}->parse_options();
             my $option_results = $self->{options}->get_options();
@@ -102,7 +102,7 @@ __END__
 
 =head1 MODE
 
-Check multiple modes at once. You cannot set specific thresholds or filter options for modes.
+Check multiple modes at once.
 
 =over 8
 
