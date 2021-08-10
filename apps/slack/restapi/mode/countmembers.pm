@@ -31,6 +31,12 @@ sub prefix_output {
     return "User '" . $options{instance_value}->{real_name} . "' ";
 }
 
+sub custom_info_output {
+    my ($self, %options) = @_;
+
+    return sprintf("[id: %s] [display name: %s]", $self->{result_values}->{id}, $self->{result_values}->{display_name});
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -40,20 +46,19 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'count', nlabel => 'members.count', set => {
+        { label => 'count', nlabel => 'members.total.count', set => {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Number of members: %d',
                 perfdatas => [
-                    { label => 'count', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         }
     ];
 
     $self->{maps_counters}->{members} = [
-        { label => 'info', set => {
+        { label => 'info', display_ok => 0, threshold => 0, set => {
                 key_values => [ { name => 'id' }, { name => 'real_name' }, { name => 'display_name' } ],
-                closure_custom_calc => $self->can('custom_info_calc'),
                 closure_custom_output => $self->can('custom_info_output'),
                 closure_custom_perfdata => sub { return 0; }
             }
@@ -61,55 +66,33 @@ sub set_counters {
     ];
 }
 
-sub custom_info_output {
-    my ($self, %options) = @_;
-
-    my $msg = sprintf("[id: %s] [display name: %s]", $self->{result_values}->{id}, $self->{result_values}->{display_name});
-    return $msg;
-}
-
-sub custom_info_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
-    $self->{result_values}->{real_name} = $options{new_datas}->{$self->{instance} . '_real_name'};
-    $self->{result_values}->{display_name} = $options{new_datas}->{$self->{instance} . '_display_name'};
-
-    return 0;
-}
-
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => {});
-   
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
+    $options{options}->add_options(arguments => {});
+
+    return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get_object(url_path => '/users.list');
+    my $result = $options{custom}->request_web_api(endpoint => '/users.list');
 
     $self->{global}->{count} = 0;
 
     foreach my $member (@{$result->{members}}) {
-        $self->{members}->{$member->{id}} = {
+        $self->{members}->{ $member->{id} } = {
             id => $member->{id},
             real_name => $member->{profile}->{real_name_normalized},
-            display_name => $member->{profile}->{display_name_normalized},
+            display_name => $member->{profile}->{display_name_normalized}
         };
 
         $self->{global}->{count}++;
     }
-    
+
     if (scalar(keys %{$self->{members}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No members found.");
         $self->{output}->option_exit();
@@ -123,6 +106,8 @@ __END__
 =head1 MODE
 
 Check members count.
+
+Scope: 'users.read'
 
 =over 8
 
