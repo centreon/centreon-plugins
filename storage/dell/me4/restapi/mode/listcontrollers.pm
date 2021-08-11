@@ -56,20 +56,25 @@ sub run {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $controller->{'durable-id'} !~ /$self->{option_results}->{filter_name}/);
         
-        $self->{output}->output_add(long_msg => sprintf("[name = %s]",
-            $controller->{'durable-id'},
-        ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "[name = %s]",
+                $controller->{'durable-id'}
+            )
+        );
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List controllers:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List controllers:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['name']);
 }
 
