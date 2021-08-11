@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -37,6 +37,24 @@ sub custom_status_output {
     );
 }
 
+sub port_long_output {
+    my ($self, %options) = @_;
+
+    return "checking port '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_port_output {
+    my ($self, %options) = @_;
+
+    return "port '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_interface_output {
+    my ($self, %options) = @_;
+
+    return "interface '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -44,18 +62,23 @@ sub set_counters {
         { name => 'ports', type => 3, cb_prefix_output => 'prefix_port_output', cb_long_output => 'port_long_output', indent_long_output => '    ', message_multiple => 'All interfaces are ok',
             group => [
                 { name => 'port_global', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'interfaces', display_long => 1, cb_prefix_output => 'prefix_interface_output',  message_multiple => 'All interfaces are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'interfaces', display_long => 1, cb_prefix_output => 'prefix_interface_output',  message_multiple => 'All interfaces are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
     $self->{maps_counters}->{port_global} = [
-         { label => 'port-status', threshold => 0, set => {
+         {
+             label => 'port-status',
+             type => 2,
+             unknown_default => '%{health} =~ /unknown/i',
+             warning_default => '%{health} =~ /degraded/i',
+             critical_default => '%{health} =~ /fault/i',
+             set => {
                 key_values => [ { name => 'status' }, { name => 'health'}, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'read-iops', nlabel => 'port.io.read.usage.iops', set => {
@@ -122,44 +145,16 @@ sub set_counters {
     ];
 }
 
-sub port_long_output {
-    my ($self, %options) = @_;
-
-    return "checking port '" . $options{instance_value}->{display} . "'";
-}
-
-sub prefix_port_output {
-    my ($self, %options) = @_;
-
-    return "port '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_interface_output {
-    my ($self, %options) = @_;
-
-    return "interface '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-port-name:s'     => { name => 'filter_port_name' },
-        'unknown-port-status:s'  => { name => 'unknown_port_status', default => '%{health} =~ /unknown/i' },
-        'warning-port-status:s'  => { name => 'warning_port_status', default => '%{health} =~ /degraded/i' },
-        'critical-port-status:s' => { name => 'critical_port_status', default => '%{health} =~ /fault/i' }
+        'filter-port-name:s' => { name => 'filter_port_name' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_port_status', 'critical_port_status', 'unknown_port_status']);
 }
 
 my $mapping_status = {
