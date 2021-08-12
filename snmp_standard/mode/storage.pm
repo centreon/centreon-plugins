@@ -335,8 +335,18 @@ sub manage_selection {
             next;
         }
         
+        my $size = $result->{$oid_hrStorageSize . "." . $_};
+        my $used = $result->{$oid_hrStorageUsed . "." . $_};
+        
+        if ($size <= 0) {
+            $size += 2**32;
+        }
+        if ($used <= 0) {
+            $used += 2**32;
+        }
+        
         # in bytes hrStorageAllocationUnits
-        my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
+        my $total_size = $size * $result->{$oid_hrStorageAllocationUnits . "." . $_};
         if ($total_size <= 0) {
             $self->{output}->output_add(
                 long_msg => sprintf(
@@ -353,8 +363,8 @@ sub manage_selection {
             my $duplicate = 0;
             foreach my $entry (values %{$self->{storage}}) {
                 if (($entry->{allocation_units} == $result->{$oid_hrStorageAllocationUnits . '.' . $_}) &&
-                    ($entry->{size} == $result->{$oid_hrStorageSize . "." . $_}) &&
-                    ($entry->{used} == $result->{$oid_hrStorageUsed . "." . $_})) {
+                    ($entry->{size} == $size) &&
+                    ($entry->{used} == $used)) {
                     $duplicate = 1;
                     last;
                 }
@@ -365,8 +375,8 @@ sub manage_selection {
         $self->{storage}->{$_} = {
             display => $name_storage,
             allocation_units => $result->{$oid_hrStorageAllocationUnits . '.' . $_},
-            size => $result->{$oid_hrStorageSize . '.' . $_},
-            used => $result->{$oid_hrStorageUsed . '.' . $_},
+            size => $size,
+            used => $used,
             access => defined($access_result->{$_}) ? $access_result->{$_} : undef,
         };
         $self->{global}->{count}++;
