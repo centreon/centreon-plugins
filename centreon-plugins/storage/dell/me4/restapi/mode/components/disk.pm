@@ -46,7 +46,7 @@ sub check {
         
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Disk '%s' status is '%s', health is '%s', state is '%s' [instance = %s] [temperature = %s C]",
+                "disk '%s' status is '%s', health is '%s', state is '%s' [instance = %s] [temperature = %s C]",
                 $result->{'serial-number'}, $result->{status}, $result->{health}, $result->{state}, $instance,
                 $result->{'temperature-numeric'}
             )
@@ -99,8 +99,8 @@ sub check {
             );
         }
         $self->{output}->perfdata_add(
-            label => 'temperature', unit => 'C',
             nlabel => 'hardware.disk.temperature.celsius',
+            unit => 'C',
             instances => $instance,
             value => $result->{'temperature-numeric'},
             warning => $warn,

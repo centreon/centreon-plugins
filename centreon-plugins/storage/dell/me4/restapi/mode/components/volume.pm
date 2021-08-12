@@ -36,21 +36,27 @@ sub check {
     $self->{components}->{volume} = {name => 'volumes', total => 0, skip => 0};
     return if ($self->check_filter(section => 'volume'));
     return if (!defined($self->{json_results}->{volumes}));
-    
+
     foreach my $result (@{$self->{json_results}->{volumes}->{volumes}}) {
         my $instance = $result->{'durable-id'};
-        
+
         next if ($self->check_filter(section => 'volume', instance => $instance));
 
         $self->{components}->{volume}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("Volume '%s' health is '%s' [instance = %s]",
-                                    $result->{'volume-name'}, $result->{health}, $instance));
-        
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "volume '%s' health is '%s' [instance = %s]",
+                $result->{'volume-name'}, $result->{health}, $instance
+            )
+        );
+
         my $exit1 = $self->get_severity(section => 'volume', value => $result->{health});
         if (!$self->{output}->is_status(value => $exit1, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit1,
-                                        short_msg => sprintf("Volume '%s' health is '%s'", $result->{'volume-name'}, $result->{health}));
+            $self->{output}->output_add(
+                severity => $exit1,
+                short_msg => sprintf("Volume '%s' health is '%s'", $result->{'volume-name'}, $result->{health})
+            );
         }
     }
 }
