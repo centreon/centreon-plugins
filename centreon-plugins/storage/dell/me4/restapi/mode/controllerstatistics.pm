@@ -41,109 +41,109 @@ sub set_counters {
 
     $self->{maps_counters}->{controllers} = [
         { label => 'data-read', nlabel => 'controller.data.read.bytespersecond', set => {
-                key_values => [ { name => 'data-read-numeric', per_second => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'data-read-numeric', per_second => 1 } ],
                 output_template => 'data read: %s%s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'data-written', nlabel => 'controller.data.written.bytespersecond', set => {
-                key_values => [ { name => 'data-written-numeric', per_second => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'data-written-numeric', per_second => 1 } ],
                 output_template => 'data written: %s%s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'reads', nlabel => 'controller.reads.count', set => {
-                key_values => [ { name => 'number-of-reads', per_second => 1 }, { name => 'display' } ],
+        { label => 'reads', nlabel => 'controller.reads.persecond', set => {
+                key_values => [ { name => 'number-of-reads', per_second => 1 } ],
                 output_template => 'reads: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'writes', nlabel => 'controller.writes.count', set => {
-                key_values => [ { name => 'number-of-writes', per_second => 1 }, { name => 'display' } ],
+        { label => 'writes', nlabel => 'controller.writes.persecond', set => {
+                key_values => [ { name => 'number-of-writes', per_second => 1 } ],
                 output_template => 'writes: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'data-transfer', nlabel => 'controller.data.transfer.bytespersecond', set => {
-                key_values => [ { name => 'bytes-per-second-numeric'}, { name => 'display' } ],
+                key_values => [ { name => 'bytes-per-second-numeric' } ],
                 output_template => 'data transfer: %s%s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'iops', nlabel => 'controller.iops.ops', set => {
-                key_values => [ { name => 'iops'}, { name => 'display' } ],
+        { label => 'iops', nlabel => 'controller.iops.count', set => {
+                key_values => [ { name => 'iops' } ],
                 output_template => 'iops: %d ops',
                 perfdatas => [
-                    { template => '%d', min => 0, unit => 'ops', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, unit => 'ops', label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'forwarded-cmds', nlabel => 'controller.commands.forwarded.count', set => {
-                key_values => [ { name => 'num-forwarded-cmds'}, { name => 'display' } ],
+                key_values => [ { name => 'num-forwarded-cmds' } ],
                 output_template => 'forwarded commands: %d',
                 perfdatas => [
-                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'write-cache-used', nlabel => 'controller.cache.write.usage.percentage', set => {
-                key_values => [ { name => 'write-cache-used'}, { name => 'display' } ],
+                key_values => [ { name => 'write-cache-used' } ],
                 output_template => 'cache write usage: %s%%',
                 perfdatas => [
-                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'write-cache-hits', nlabel => 'controller.cache.write.hits.count', set => {
-                key_values => [ { name => 'write-cache-hits', per_second => 1 }, { name => 'display' } ],
+        { label => 'write-cache-hits', nlabel => 'controller.cache.write.hits.persecond', set => {
+                key_values => [ { name => 'write-cache-hits', per_second => 1 } ],
                 output_template => 'cache write hits: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'write-cache-misses', nlabel => 'controller.cache.write.misses.count', set => {
-                key_values => [ { name => 'write-cache-misses', per_second => 1 }, { name => 'display' } ],
+        { label => 'write-cache-misses', nlabel => 'controller.cache.write.misses.persecond', set => {
+                key_values => [ { name => 'write-cache-misses', per_second => 1 } ],
                 output_template => 'cache write misses: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'read-cache-hits', nlabel => 'controller.cache.read.hits.count', set => {
-                key_values => [ { name => 'read-cache-hits', per_second => 1 }, { name => 'display' } ],
+        { label => 'read-cache-hits', nlabel => 'controller.cache.read.hits.persecond', set => {
+                key_values => [ { name => 'read-cache-hits', per_second => 1 } ],
                 output_template => 'cache read hits: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'read-cache-misses', nlabel => 'controller.cache.read.misses.count', set => {
-                key_values => [ { name => 'read-cache-misses', per_second => 1 }, { name => 'display' } ],
+        { label => 'read-cache-misses', nlabel => 'controller.cache.read.misses.persecond', set => {
+                key_values => [ { name => 'read-cache-misses', per_second => 1 } ],
                 output_template => 'cache read misses: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'cpu-utilization', nlabel => 'controller.cpu.utilization.percentage', set => {
-                key_values => [ { name => 'cpu-load'}, { name => 'display' } ],
+                key_values => [ { name => 'cpu-load' } ],
                 output_template => 'cpu utilization: %.2f%%',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
