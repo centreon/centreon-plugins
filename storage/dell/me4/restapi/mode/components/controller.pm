@@ -36,31 +36,41 @@ sub check {
     $self->{components}->{controller} = {name => 'controllers', total => 0, skip => 0};
     return if ($self->check_filter(section => 'controller'));
     return if (!defined($self->{json_results}->{controllers}));
-    
+
     foreach my $result (@{$self->{json_results}->{controllers}->{controllers}}) {
         my $instance = $result->{'durable-id'};
-        
+
         next if ($self->check_filter(section => 'controller', instance => $instance));
 
         $self->{components}->{controller}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("Controller '%s' status is '%s', health is '%s', redundancy status is '%s'",
-                                    $result->{'durable-id'}, $result->{status}, $result->{health}, $result->{'redundancy-status'}));
-        
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "controller '%s' status is '%s', health is '%s', redundancy status is '%s'",
+                $result->{'durable-id'}, $result->{status}, $result->{health}, $result->{'redundancy-status'}
+            )
+        );
+
         my $exit1 = $self->get_severity(section => 'controller', value => $result->{status});
         if (!$self->{output}->is_status(value => $exit1, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit1,
-                                        short_msg => sprintf("Controller '%s' status is '%s'", $result->{'durable-id'}, $result->{status}));
+            $self->{output}->output_add(
+                severity => $exit1,
+                short_msg => sprintf("Controller '%s' status is '%s'", $result->{'durable-id'}, $result->{status})
+            );
         }
         my $exit2 = $self->get_severity(section => 'controller', value => $result->{health});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Controller '%s' health is '%s'", $result->{'durable-id'}, $result->{health}));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Controller '%s' health is '%s'", $result->{'durable-id'}, $result->{health})
+            );
         }
-        my $exit3 = $self->get_severity(section => 'controller', value => $result->{health});
+        my $exit3 = $self->get_severity(section => 'controller', value => $result->{'redundancy-status'});
         if (!$self->{output}->is_status(value => $exit3, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit3,
-                                        short_msg => sprintf("Controller '%s' redundancy status is '%s'", $result->{'redundancy-status'}, $result->{health}));
+            $self->{output}->output_add(
+                severity => $exit3,
+                short_msg => sprintf("Controller '%s' redundancy status is '%s'", $result->{'durable-id'}, $result->{'redundancy-status'})
+            );
         }
     }
 }

@@ -70,15 +70,21 @@ sub check {
         next if ($self->check_filter(section => 'sensor', instance => $instance));
 
         $self->{components}->{sensor}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("Sensor '%s' status is '%s' [instance = %s] [value = %s]",
-                                    $result->{'sensor-name'}, $result->{status}, $instance,
-                                    $result->{value}));
-        
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "sensor '%s' status is '%s' [instance = %s] [value = %s]",
+                $result->{'sensor-name'}, $result->{status}, $instance,
+                $result->{value}
+            )
+        );
+
         my $exit1 = $self->get_severity(section => 'sensor', value => $result->{status});
         if (!$self->{output}->is_status(value => $exit1, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit1,
-                                        short_msg => sprintf("sensor '%s' status is '%s'", $result->{'sensor-name'}, $result->{status}));
+            $self->{output}->output_add(
+                severity => $exit1,
+                short_msg => sprintf("sensor '%s' status is '%s'", $result->{'sensor-name'}, $result->{status})
+            );
         }
         
         next if (!defined($mapping{$result->{'sensor-type'}}));
@@ -86,11 +92,12 @@ sub check {
         my $value = $1;
         my ($exit3, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensor', instance => $instance, value => $value);        
         if (!$self->{output}->is_status(value => $exit3, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit3,
-                                        short_msg => sprintf("Sensor '%s' value is %s %s", $result->{'sensor-name'}, $value, $mapping{$result->{'sensor-type'}}->{nunit}));
+            $self->{output}->output_add(
+                severity => $exit3,
+                short_msg => sprintf("Sensor '%s' value is %s %s", $result->{'sensor-name'}, $value, $mapping{$result->{'sensor-type'}}->{nunit})
+            );
         }
         $self->{output}->perfdata_add(
-            label => 'sensor', unit => $mapping{$result->{'sensor-type'}}->{unit},
             nlabel => 'hardware.sensor.' . $mapping{$result->{'sensor-type'}}->{nlabel} . '.' . $mapping{$result->{'sensor-type'}}->{nunit},
             instances => $instance,
             value => $value,
