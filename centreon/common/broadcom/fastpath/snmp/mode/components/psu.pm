@@ -50,7 +50,7 @@ sub check {
         next if ($oid !~ /^$mapping->{boxServicesPowSupplyItemState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{boxServicesPowSupplyItemState}->{oid}}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'psu', instance => $instance));
         if ($result->{boxServicesPowSupplyItemState} =~ /notpresent/i) {
             $self->absent_problem(section => 'psu', instance => $instance);
@@ -58,12 +58,18 @@ sub check {
         }
 
         $self->{components}->{psu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is '%s' [instance = %s]",
-                                                        $instance, $result->{boxServicesPowSupplyItemState}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' status is '%s' [instance = %s]",
+                $instance, $result->{boxServicesPowSupplyItemState}, $instance
+            )
+        );
         $exit = $self->get_severity(label => 'default', section => 'psu', value => $result->{boxServicesPowSupplyItemState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power supply '%s' status is '%s'", $instance, $result->{boxServicesPowSupplyItemState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Power supply '%s' status is '%s'", $instance, $result->{boxServicesPowSupplyItemState})
+            );
         }
     }
 }
