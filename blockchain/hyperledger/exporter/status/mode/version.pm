@@ -18,10 +18,9 @@
 # limitations under the License.
 #
 
-package blockchain::hyperledger::exporter::mode::logspec;
+package blockchain::hyperledger::exporter::status::mode::version;
 
 use base qw(centreon::plugins::templates::counter);
-
 use strict;
 use warnings;
 
@@ -36,15 +35,11 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->request_api(url_path => '/logspec');
+    my $result = $options{custom}->request_api(url_path => '/version');
 
-    if ($result->{spec}) {    
-        $self->{output}->output_add(severity  => 'OK', short_msg => 'Peer/Orderer active logging spec: [' . $result->{spec} . ']');
-    }
-
-    if ($result->{error}) {    
-        $self->{output}->output_add(severity  => 'OK', short_msg => 'Peer/Orderer active logging spec error: [' . $result->{error} . ']');
-    }
+    $self->{output}->output_add(severity  => 'OK', short_msg => 'Peer/Orderer version: [' . $result->{Version} . ']');
+ 
+    $self->{output}->output_add(severity  => 'OK', long_msg => 'Peer/Orderer commit SHA: [' . $result->{CommitSHA} . ']');
 
 }
 

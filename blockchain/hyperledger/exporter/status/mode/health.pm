@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package blockchain::hyperledger::exporter::mode::health;
+package blockchain::hyperledger::exporter::status::mode::health;
 
 use base qw(centreon::plugins::templates::counter);
 

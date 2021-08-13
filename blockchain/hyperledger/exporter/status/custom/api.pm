@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package blockchain::hyperledger::exporter::custom::api;
+package blockchain::hyperledger::exporter::status::custom::api;
 
 use strict;
 use warnings;
