@@ -33,10 +33,10 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'general', cb_prefix_output => 'prefix_output_ledger', type => 0 }
+        { name => 'global', cb_prefix_output => 'prefix_output_ledger', type => 0 }
     ];
 
-    $self->{maps_counters}->{general} = [
+    $self->{maps_counters}->{global} = [
         { label => 'ledger-block-processing-time-avg', nlabel => 'ledger.block.processing.time.avg', set => {
                 key_values => [ { name => 'ledger_block_processing_time_avg' }, 
                                 { name => 'ledger_blockchain_height' },  { name => 'ledger_transaction_count' } ],
@@ -98,7 +98,7 @@ sub search_metric {
     my ($self, %options) = @_;
 
     if (!defined($options{metrics}->{$options{label}})) {
-        $self->{$options{store}}->{$options{key}} = 'no value';
+        $self->{global}->{$options{key}} = 'no value';
         return;
     }
 
@@ -119,16 +119,16 @@ sub search_metric {
   
         $value = !defined($value) ? $data->{value} : $value + $data->{value};
     }
-    $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
+    $self->{global} = {} if (!defined($self->{global}));
 
-    $self->{$options{store}}->{$options{key}} = $value;
+    $self->{global}->{$options{key}} = $value;
 }
 
 sub search_calc_avg_metric {
     my ($self, %options) = @_;
 
     if (!defined($options{metrics}->{$options{numerator}}) || !defined($options{metrics}->{$options{denominator}})) {
-        $self->{$options{store}}->{$options{key}} = 'no value';
+        $self->{global}->{$options{key}} = 'no value';
         return;
     }
 
@@ -170,9 +170,9 @@ sub search_calc_avg_metric {
     }
     return if (!defined($denominator_value));
 
-    $self->{$options{store}} = {} if (!defined($self->{$options{store}}));
+    $self->{global} = {} if (!defined($self->{global}));
 
-    $self->{$options{store}}->{$options{key}} = $numerator_value / $denominator_value;
+    $self->{global}->{$options{key}} = $numerator_value / $denominator_value;
 }
 
 sub manage_selection {
@@ -187,16 +187,14 @@ sub manage_selection {
         metrics => $metrics,
         label => 'ledger_transaction_count',
         dimensions =>  \@chaincode_channel_transaction_type_validation_code,
-        key => 'ledger_transaction_count',
-        store => 'ledger'
+        key => 'ledger_transaction_count' 
     );
 
     $self->search_metric(
         metrics => $metrics,
         label => 'ledger_blockchain_height',
         dimensions =>  \@channel,
-        key => 'ledger_blockchain_height',
-        store => 'ledger'
+        key => 'ledger_blockchain_height'
     ); 
 
     $self->search_calc_avg_metric(
@@ -204,8 +202,7 @@ sub manage_selection {
         dimensions =>  \@channel,
         numerator => 'ledger_block_processing_time_sum',
         denominator => 'ledger_block_processing_time_count',
-        key => 'ledger_block_processing_time_avg',
-        store => 'ledger'
+        key => 'ledger_block_processing_time_avg'
     );
 
     $self->{cache_name} = 'hyperledger_' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' . 

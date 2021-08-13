@@ -33,10 +33,11 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'general', cb_prefix_output => 'prefix_output_orderer', type => 0 }
+        { name => 'duration', cb_prefix_output => 'prefix_output_orderer', type => 0 },
+        { name => 'raft', cb_prefix_output => 'prefix_output_orderer', type => 0 }
     ];
 
-    $self->{maps_counters}->{general} = [
+    $self->{maps_counters}->{duration} = [
         { label => 'orderer-validation-duration-avg', nlabel => 'broadcast.validate.duration.avg', set => {
                 key_values => [ { name => 'broadcast_validate_duration_avg' },  { name => 'consensus_etcdraft_is_leader' }, { name => 'consensus_etcdraft_leader_changes' },
                  { name => 'broadcast_processed_count' } ],
@@ -56,6 +57,8 @@ sub set_counters {
                 ],
             }
         },
+    ];
+    $self->{maps_counters}->{raft} = [
         { label => 'raft-orderers-active', nlabel => 'consensus.etcdraft.active.nodes', set => {
                 key_values => [ { name => 'consensus_etcdraft_active_nodes' } ],
                 output_template => 'Active orderers: %s',
@@ -216,7 +219,7 @@ sub manage_selection {
         label => 'consensus_etcdraft_active_nodes',
         dimensions =>  \@channel,
         key => 'consensus_etcdraft_active_nodes',
-        store => 'orderers'
+        store => 'raft'
     );
 
     $self->search_metric(
@@ -224,7 +227,7 @@ sub manage_selection {
         label => 'consensus_etcdraft_cluster_size',
         dimensions =>  \@channel,
         key => 'consensus_etcdraft_cluster_size',
-        store => 'orderers'
+        store => 'raft'
     );
     
     $self->search_metric(
@@ -232,7 +235,7 @@ sub manage_selection {
         label => 'consensus_etcdraft_is_leader',
         dimensions =>  \@channel,
         key => 'consensus_etcdraft_is_leader',
-        store => 'orderers'
+        store => 'duration'
     );
     
     $self->search_metric(
@@ -240,7 +243,7 @@ sub manage_selection {
         label => 'consensus_etcdraft_leader_changes',
         dimensions =>  \@channel,
         key => 'consensus_etcdraft_leader_changes',
-        store => 'orderers'
+        store => 'duration'
     );
     
     $self->search_metric(
@@ -248,7 +251,7 @@ sub manage_selection {
         label => 'broadcast_processed_count',
         dimensions =>  \@channel_status_type,
         key => 'broadcast_processed_count',
-        store => 'orderers'
+        store => 'duration'
     ); 
 
     $self->search_calc_avg_metric(
@@ -257,7 +260,7 @@ sub manage_selection {
         numerator => 'broadcast_validate_duration_sum',
         denominator => 'broadcast_validate_duration_count',
         key => 'broadcast_validate_duration_avg',
-        store => 'orderers'
+        store => 'duration'
     );
 
     $self->search_calc_avg_metric(
@@ -266,7 +269,7 @@ sub manage_selection {
         numerator => 'broadcast_enqueue_duration_sum',
         denominator => 'broadcast_enqueue_duration_count',
         key => 'broadcast_enqueue_duration_avg',
-        store => 'orderers'
+        store => 'duration'
     );
 
     $self->{cache_name} = 'hyperledger_' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' .
