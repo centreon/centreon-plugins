@@ -179,7 +179,6 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     my $metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
-    #$self->{channel} = {};
     my @channel = ("channel");
     my @chaincode_channel_transaction_type_validation_code = ('chaincode','channel','transaction_type','validation_code');
 

@@ -209,7 +209,6 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     my $metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
-    #$self->{channel} = {};
     my @channel = ("channel"); 
     my @channel_status_type = ('channel', 'status', 'type');
     my @no_dimension = ();
