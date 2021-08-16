@@ -129,6 +129,8 @@ sub new {
                                     "storage-name:s"                => { name => 'storage_name' },
                                     "filter-name:s"                 => { name => 'filter_name' },
                                     "use-name"                      => { name => 'use_name' },
+                                    "node-id:s"                     => { name => 'node_id' },
+                                    "node-name:s"                   => { name => 'node_name' },
                                     "warning-storage-status:s"      => { name => 'warning_storage_status', default => '' },
                                     "critical-storage-status:s"     => { name => 'critical_storage_status', default => '' },
                                 });
@@ -159,6 +161,8 @@ sub manage_selection {
     my $result = $options{custom}->api_get_storages(
         storage_id => $self->{option_results}->{storage_id},
         storage_name => $self->{option_results}->{storage_name},
+        node_id => $self->{option_results}->{node_id},
+        node_name => $self->{option_results}->{node_name},
         statefile => $self->{statefile_cache_storages}
     );
 
@@ -218,6 +222,14 @@ Use storage name for perfdata and display.
 =item B<--filter-name>
 
 Filter by storage name (can be a regexp).
+
+=item B<--node-id>
+
+Exact node ID.
+
+=item B<--node-name>
+
+Exact node name.
 
 =item B<--filter-counters>
 
