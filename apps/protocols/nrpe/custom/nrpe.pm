@@ -78,15 +78,65 @@ sub check_options {
     return 0;
 }
 
-sub format_result {
+sub output_perf {
     my ($self, %options) = @_;
 
     my %result = (
-        code => ($options{content}->{result_code} =~ /^[0-3]$/) ? $errors_num{$options{content}->{result_code}} : $options{content}->{result_code},
-        message => $options{content}->{buffer},
+        code => $options{result},
+        message => $options{message},
+        long_msg => $options{long_msg}
+    );
+    my @perf=(split /\s/m, $options{buffer});
+
+    foreach (@perf) {
+        
+        my ($label, $value, $unit, $warning, $critical, $min, $max) = $_ =~ m/^([^=]*)=(\d*)([^;]*);?(\d*);?(\d*);?(\d*);?(\d*)/;
+        $label =~ s/'//g;
+        
+        push @{$result{perf}}, {
+            label => $label,
+            unit => $unit,
+            value => $value,
+            warning => defined($warning) ? $warning : undef,
+            critical => defined($critical) ? $critical : undef,
+            min => defined($min) ? $min : undef,
+            max => defined($max) ? $max : undef,
+        };
+    }
+    return \%result;
+}
+
+sub output_noperf {
+    my ($self, %options) = @_;
+    
+    my %result = (
+        code => $options{result},
+        message => $options{message},
+        long_msg => $options{long_msg},
         perf => []
     );
     return \%result;
+}
+
+sub format_result {
+    my ($self, %options) = @_;
+    
+    my ( $message ) = ($options{content}->{buffer} =~ m/\|/) ? $options{content}->{buffer} =~ m/(.*)\|.*$/m : $options{content}->{buffer};
+    my ( $perf ) = ($options{content}->{buffer} =~ m/\|/) ? $options{content}->{buffer} =~ m/.*\|\s*(.*)$/m : undef;
+    my ( $verbose ) = ($options{content}->{buffer} =~ m/\n/s) ? $options{content}->{buffer} =~ m/[^\n]*(.*)/s : undef;
+    my ( $long_msg ) = defined($verbose) ? $verbose =~ m/\s*([^\|]*)/s : undef;
+    my ( $long_perf ) = defined($verbose) ? $verbose =~ m/[^\|]*\|\s*(.*)/s : undef;
+    $perf = "$perf $long_perf" if (defined($long_perf));
+    $perf =~ s/'[^']+'/$&=~s! !_!gr/ge;
+
+    if ($options{content}->{buffer} =~ m/\|/) {
+        my $code = ($options{content}->{result_code} =~ /^[0-3]$/) ? $errors_num{$options{content}->{result_code}} : $options{content}->{result_code};
+        return $self->output_perf(result => $code, message => $message, buffer => $perf, long_msg => $long_msg );
+    } else {
+        my $code = ($options{content}->{result_code} =~ /^[0-3]$/) ? $errors_num{$options{content}->{result_code}} : $options{content}->{result_code};
+        return $self->output_noperf(result => $code, message => $message, long_msg => $long_msg);
+    }
+
 }
 
 sub request {
