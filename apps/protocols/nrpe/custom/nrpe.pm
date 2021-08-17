@@ -121,13 +121,13 @@ sub output_noperf {
 sub format_result {
     my ($self, %options) = @_;
     
-    my ( $message ) = ($options{content}->{buffer} =~ m/\|/) ? $options{content}->{buffer} =~ m/(.*)\|.*$/m : $options{content}->{buffer};
+    my ( $message ) = ($options{content}->{buffer} =~ m/\|/) ? $options{content}->{buffer} =~ m/(.*)\|.*$/m : $options{content}->{buffer} =~ m/(.*$/m;
     my ( $perf ) = ($options{content}->{buffer} =~ m/\|/) ? $options{content}->{buffer} =~ m/.*\|\s*(.*)$/m : undef;
     my ( $verbose ) = ($options{content}->{buffer} =~ m/\n/s) ? $options{content}->{buffer} =~ m/[^\n]*(.*)/s : undef;
     my ( $long_msg ) = defined($verbose) ? $verbose =~ m/\s*([^\|]*)/s : undef;
     my ( $long_perf ) = defined($verbose) ? $verbose =~ m/[^\|]*\|\s*(.*)/s : undef;
     $perf = "$perf $long_perf" if (defined($long_perf));
-    $perf =~ s/'[^']+'/$&=~s! !_!gr/ge;
+    $perf =~ s/'[^']+'/$&=~s! !_!gr/ge if (defined($perf));
 
     if ($options{content}->{buffer} =~ m/\|/) {
         my $code = ($options{content}->{result_code} =~ /^[0-3]$/) ? $errors_num{$options{content}->{result_code}} : $options{content}->{result_code};
