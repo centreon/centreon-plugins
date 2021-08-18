@@ -43,18 +43,16 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class PasswordMgr: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    print Dumper(${options);
+
     $options{options}->add_options(arguments => {
-        'authent-method:s' => { name => 'auth_method', default => 'token' },
-        'engine-version:s' => { name => 'engine_version', default => 'v1'},
+        'auth-method:s'    => { name => 'auth_method', default => 'token' },
+        'auth-settings:s%' => { name => 'auth_settings' },
         'map-option:s@'    => { name => 'map_option' },
-        'secret-path:s'    => { name => 'secret_path' },
-        'vault-address:s'  => { name => 'vault_address' },
-        'vault-password:s' => { name => 'vault_password'},
+        'secret-path:s@'   => { name => 'secret_path' },
+        'vault-address:s'  => { name => 'vault_address'},
         'vault-port:s'     => { name => 'vault_port', default => '8200' },
         'vault-protocol:s' => { name => 'vault_protocol', default => 'http'},
-        'vault-token:s'    => { name => 'vault_token'},
-        'vault-username:s' => { name => 'vault_username'}
+        'vault-token:s'    => { name => 'vault_token'}
     });
     $options{options}->add_help(package => __PACKAGE__, sections => 'VAULT OPTIONS');
 
@@ -67,67 +65,105 @@ sub new {
 sub get_access_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{option_results}->read(statefile => 'vault_' . md5_hex($self->{vault_address}) . '_' . md5_hex($self->{vault_username}));
-    my $expires_on = $options{statefile}->get(name => 'expires_on');
-    my $access_token = $options{statefile}->get(name => 'access_token');
-    if ( $has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10) ) {
-        my $login = { username => $self->{vault_username}, password => $self->{vault_password} };
-        my $post_json = JSON::XS->new->utf8->encode($login);
+    my $login = $self->parse_auth_method(method => $self->{auth_method}, settings => $self->{auth_settings});
+    my $post_json = JSON::XS->new->utf8->encode($login);
+    my $url_path = '/v1/auth/'. $self->{auth_method} . '/login/';
+    $url_path .= $self->{auth_settings}->{username} if (defined($self->{auth_settings}->{username}) && $self->{auth_method} =~ 'userpass|login') ;
 
-        my $content = $self->{http}->request(
-            hostname => $self->{vault_address},
-            port => $self->{vault_port},
-            proto => $self->{vault_protocol},
-            method => 'POST',
-            header => ['Content-type: application/json'],
-            query_form_post => $post_json,
-            url_path => $self->{vault_address} . '/v1/auth/userpass/login' . $self->{vault_username}
-        );
+    my $content = $self->{http}->request(
+        hostname => $self->{vault_address},
+        port => $self->{vault_port},
+        proto => $self->{vault_protocol},
+        method => 'POST',
+        header => ['Content-type: application/json'],
+        query_form_post => $post_json,
+        url_path => $url_path
+    );
 
-        if (!defined($content) || $content eq '') {
-            $self->{output}->add_option_msg(short_msg => "Authentication endpoint returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-            $self->{output}->option_exit();
-        }
-
-        my $decoded;
-        eval {
-            $decoded = JSON::XS->new->utf8->decode($content);
-        };
-        if ($@) {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-            $self->{output}->option_exit();
-        }
-        if (defined($decoded->{error_code})) {
-            $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Authentication endpoint returns error code '" . $decoded->{error_code} . "' (add --debug option for detailed message)");
-            $self->{output}->option_exit();
-        }
-
-        $access_token = $decoded->{access_token};
-        my $datas = { last_timestamp => time(), access_token => $decoded->{access_token}, expires_on => time() + 3600 };
-        $options{statefile}->write(data => $datas);
+    if (!defined($content) || $content eq '') {
+        $self->{output}->add_option_msg(short_msg => "Authentication endpoint returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+        $self->{output}->option_exit();
     }
 
+    my $decoded;
+
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($content);
+    };
+    if ($@) {
+        $self->{output}->output_add(long_msg => $content, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+        $self->{output}->option_exit();
+    }
+    if (defined($decoded->{errors}[0])) {
+        $self->{output}->output_add(long_msg => "Error message : " . $decoded->{errors}[0], debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Authentication endpoint returns error code '" . $decoded->{errors}[0] . "' (add --debug option for detailed message)");
+        $self->{output}->option_exit();
+    }
+
+    my $access_token = $decoded->{auth}->{client_token};
     return $access_token;
+}
+
+sub parse_auth_method {
+    my ($self, %options) = @_;
+    my $login_settings;
+
+    if ($options{method} =~ 'userpass|ldap') {
+        $login_settings = {
+            username => $self->{auth_settings}->{username},
+            password => $self->{auth_settings}->{password}
+        };
+    }
+
+    if ($options{method} eq 'aws') {
+        $login_settings = {
+            role => $self->{auth_settings}->{role},
+            jwt => $self->{auth_settings}->{jwt}
+        };
+    }
+
+    return $login_settings;
+
 }
 
 sub settings {
     my ($self, %options) = @_;
 
-    $self->{request_endpoint} = '/v1/' . $options{option_results}->{secret_path};
+    if (!defined($options{option_results}->{vault_address}) || $options{option_results}->{vault_address} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Please set the --vault-address option");
+        $self->{output}->option_exit();
+    }
+
+    if ($options{option_results}->{auth_method} eq 'token' && (!defined($options{option_results}->{vault_token}) || $options{option_results}->{vault_token} eq '')) {
+        $self->{output}->add_option_msg(short_msg => "Please set the --vault-token option");
+        $self->{output}->option_exit();
+    }
+
+    if (!defined($options{option_results}->{secret_path}) || $options{option_results}->{secret_path} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Please set the --secret-path option");
+        $self->{output}->option_exit();
+    }
+
+    $self->{auth_method} = lc($options{option_results}->{auth_method});
+    $self->{auth_settings} = defined($options{option_results}->{auth_settings}) && $options{option_results}->{auth_settings} ne '' ? $options{option_results}->{auth_settings} : {};
     $self->{vault_address} = $options{option_results}->{vault_address};
     $self->{vault_port} = $options{option_results}->{vault_port};
     $self->{vault_protocol} = $options{option_results}->{vault_protocol};
-    $self->{vault_username} = defined($options{option_results}->{vault_username}) && $options{option_results}->{vault_username} ne '' ? $options{option_results}->{vault_username} : undef;
-    $self->{secret_path} = $options{option_results}->{secret_path};
     $self->{vault_token} = $options{option_results}->{vault_token};
-    $self->{auth_method} = $options{option_results}->{auth_method};
-    $self->{engine_version} = $options{option_results}->{engine_version};
 
-    if (defined($options{option_results}->{auth_method}) && $options{option_results}->{auth_method} eq 'password') {
+    if ($self->{auth_method} !~ m/aws|ldap|userpass|token/ ) {
+        $self->{output}->add_option_msg(short_msg => "Incorrect or unsupported authentication method");
+        $self->{output}->option_exit();
+    }
+    foreach (@{$options{option_results}->{secret_path}}) {
+        $self->{request_endpoint}->{$_} = '/v1/' . $_;
+    }
+
+    if (defined($options{option_results}->{auth_method}) && $options{option_results}->{auth_method} ne 'token') {
             $self->{vault_token} = $self->get_access_token(%options);
     };
+
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     if (defined($self->{vault_token})) {
         $self->{http}->add_header(key => 'X-Vault-Token', value => $self->{vault_token});
@@ -138,36 +174,40 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings(%options);
+    my ($raw_data, $raw_response);
+    foreach my $endpoint (keys %{$self->{request_endpoint}}) {
+        my $json;
+        my $response = $self->{http}->request(
+            hostname => $self->{vault_address},
+            port => $self->{vault_port},
+            proto => $self->{vault_protocol},
+            method => 'GET',
+            url_path => $self->{request_endpoint}->{$endpoint}
+        );
+        $self->{output}->output_add(long_msg => $response, debug => 1);
 
-    my $response = $self->{http}->request(
-        hostname => $self->{vault_address},
-        port => $self->{vault_port},
-        proto => $self->{vault_protocol},
-        method => 'GET',
-        url_path => $self->{request_endpoint}
-    );
-    $self->{output}->output_add(long_msg => $response, debug => 1);
-    my $json;
-    eval {
-        $json = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode Vault JSON response: $@");
-        $self->{output}->option_exit();
+        eval {
+            $json = JSON::XS->new->utf8->decode($response);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode Vault JSON response: $@");
+            $self->{output}->option_exit();
+        }
+
+        if ((defined($json->{data}->{metadata}->{deletion_time}) && $json->{data}->{metadata}->{deletion_time} ne '') || $json->{data}->{metadata}->{destroyed} eq 'true') {
+            $self->{output}->add_option_msg(short_msg => "This token is not valid anymore");
+            $self->{output}->option_exit();
+        }
+
+        foreach (keys %{$json->{data}->{data}}) {
+            $self->{lookup_values}->{'key_' . $endpoint} = $_;
+            $self->{lookup_values}->{'value_' . $endpoint} = $json->{data}->{data}->{$_};
+        }
+        push(@{$raw_data}, $json);
+        push(@{$raw_response}, $response);
     }
 
-    if ((defined($json->{data}->{metadata}->{deletion_time}) && $json->{data}->{metadata}->{deletion_time} ne '') || $json->{data}->{metadata}->{destroyed} eq 'true') {
-        $self->{output}->add_option_msg(short_msg => "This token is not valid anymore");
-        $self->{output}->option_exit();
-    }
-
-    foreach (keys %{$json->{data}->{data}}) {
-        $self->{lookup_values}->{key} = $_;
-        $self->{lookup_values}->{value} = $json->{data}->{data}->{$_};
-    }
-
-    return ($json, $response);
-
+    return ($raw_data, $raw_response);
 }
 
 sub do_map {
@@ -176,7 +216,6 @@ sub do_map {
     return if (!defined($options{option_results}->{map_option}));
     foreach (@{$options{option_results}->{map_option}}) {
         next if (! /^(.+?)=(.+)$/);
-        print ref($options{option_results}->{$1}) . "\n";
 
         my ($option, $map) = ($1, $2);
 
@@ -209,46 +248,65 @@ __END__
 
 =head1 NAME
 
-Keepass global
+HashiCorp Vault global
 
 =head1 SYNOPSIS
 
-keepass class
+HashiCorp Vault class
 
-=head1 KEEPASS OPTIONS
+=head1 VAULT OPTIONS
 
 =over 8
 
-=item B<--keepass-endpoint>
+=item B<--vault-address>
 
-Connection information to be used in keepass file.
+IP address of the HashiCorp Vault server (Mandatory).
 
-=item B<--keepass-endpoint-file>
+=item B<--vault-port>
 
-File with keepass connection informations.
+Port of the HashiCorp Vault server (Default: '8200').
 
-=item B<--keepass-file>
+=item B<--vault-protocol>
 
-Keepass file.
+HTTP of the HashiCorp Vault server.
+Can be: 'http', 'https' (Default: http).
 
-=item B<--keepass-password>
+=item B<--auth-method>
 
-Keepass master password.
+Authentication method to log in against the Vault server.
+Can be: 'token', 'userpass', 'ldap', 'aws' (Default: 'token');
 
-=item B<--keepass-search-value>
+=item B<--vault-token>
 
-Looking for a value in the JSON keepass. Can use JSON Path and other option values.
-Example: 
---keepass-search-value='password=$..entries.[?($_->{title} =~ /serveurx/i)].password'
---keepass-search-value='username=$..entries.[?($_->{title} =~ /serveurx/i)].username'
---keepass-search-value='password=$..entries.[?($_->{title} =~ /%{hostname}/i)].password'
+Directly specify a valid token to log in (only for --auth-method='token').
 
-=item B<--keepass-map-option>
+=item B<--auth-settings>
 
-Overload plugin option.
+Required information to log in according to the selected method.
+Examples:
+for 'userpass': --auth-settings='username=user1' --auth-settings='password=my_password'
+for 'aws': --auth-settings='role=my_aws_role' --auth-settings='jwt=my_aws_token'
+
+More information here: https://www.vaultproject.io/api-docs/auth
+
+=item B<--secret-path>
+
+Location of the secret in the Vault K/V engine (Mandatory / Can be multiple).
+Examples:
+for v1 engine: --secret-path='mysecrets/servicecredentials'
+for v2 engine: --secret-path='mysecrets/data/servicecredentials?version=12'
+
+More information here: https://www.vaultproject.io/api-docs/secret/kv
+
+=item B<--map-option>
+
+Overload Plugin option with K/V values.
+Use the following syntax:
+key_$secret_path$=%{$the_option_to_overload$} or
+value_$secret_path$=%{$the_option_to_overload$}
 Example:
---keepass-map-option="password=%{password}"
---keepass-map-option="username=%{username}"
+--map-option="key_mysecrets/servicecredentials=%{username}"
+--map-option="value_mysecrets/servicecredentials=%{password}"
 
 =back
 
