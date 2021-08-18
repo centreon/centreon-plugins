@@ -113,7 +113,7 @@ sub parse_auth_method {
         ldap     => [ 'username', 'password' ],
         okta     => [ 'username', 'password', 'totp' ],
         radius   => [ 'username', 'password' ],
-        userpass => [ 'username', 'password ']
+        userpass => [ 'username', 'password' ]
     };
 
     foreach (@{$settings_mapping->{$options{method}}}) {
