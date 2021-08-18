@@ -104,23 +104,23 @@ sub get_access_token {
 
 sub parse_auth_method {
     my ($self, %options) = @_;
+
     my $login_settings;
+    my $settings_mapping = {
+        userpass => [ 'username', 'password'],
+        ldap => [ 'username', 'password'],
+        aws => [ 'role', 'jwt']
+    };
 
-    if ($options{method} =~ 'userpass|ldap') {
-        $login_settings = {
-            username => $self->{auth_settings}->{username},
-            password => $self->{auth_settings}->{password}
-        };
-    }
+    foreach (@{$settings_mapping->{$options{method}}}) {
+        if (!defined($options{settings}->{$_})) {
+            $self->{output}->add_option_msg(short_msg => 'Missing auth-setting: ' . $_);
+            $self->{output}->option_exit();
+        }
+        $login_settings->{$_} = $options{settings}->{$_};
+    };
 
-    if ($options{method} eq 'aws') {
-        $login_settings = {
-            role => $self->{auth_settings}->{role},
-            jwt => $self->{auth_settings}->{jwt}
-        };
-    }
     return $login_settings;
-
 }
 
 sub settings {
