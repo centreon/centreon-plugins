@@ -24,7 +24,6 @@ use strict;
 use warnings;
 use Data::Dumper;
 use centreon::plugins::http;
-use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use JSON::XS;
 
@@ -58,13 +57,13 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options, noptions => 1);
-    $self->{cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
 sub get_access_token {
     my ($self, %options) = @_;
 
+    my $decoded;
     my $login = $self->parse_auth_method(method => $self->{auth_method}, settings => $self->{auth_settings});
     my $post_json = JSON::XS->new->utf8->encode($login);
     my $url_path = '/v1/auth/'. $self->{auth_method} . '/login/';
@@ -84,8 +83,6 @@ sub get_access_token {
         $self->{output}->add_option_msg(short_msg => "Authentication endpoint returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
-
-    my $decoded;
 
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
@@ -122,7 +119,6 @@ sub parse_auth_method {
             jwt => $self->{auth_settings}->{jwt}
         };
     }
-
     return $login_settings;
 
 }
@@ -161,7 +157,7 @@ sub settings {
     }
 
     if (defined($options{option_results}->{auth_method}) && $options{option_results}->{auth_method} ne 'token') {
-            $self->{vault_token} = $self->get_access_token(%options);
+        $self->{vault_token} = $self->get_access_token(%options);
     };
 
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
