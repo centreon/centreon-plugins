@@ -118,7 +118,7 @@ sub parse_auth_method {
 
     foreach (@{$settings_mapping->{$options{method}}}) {
         if (!defined($options{settings}->{$_})) {
-            $self->{output}->add_option_msg(short_msg => 'Missing auth-setting: ' . $_);
+            $self->{output}->add_option_msg(short_msg => 'Missing authentication setting: ' . $_);
             $self->{output}->option_exit();
         }
         $login_settings->{$_} = $options{settings}->{$_};
