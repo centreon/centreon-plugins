@@ -107,9 +107,13 @@ sub parse_auth_method {
 
     my $login_settings;
     my $settings_mapping = {
-        userpass => [ 'username', 'password'],
-        ldap => [ 'username', 'password'],
-        aws => [ 'role', 'jwt']
+        azure    => [ 'role', 'jwt' ],
+        cert     => [ 'name' ],
+        github   => [ 'token' ],
+        ldap     => [ 'username', 'password' ],
+        okta     => [ 'username', 'password', 'totp' ],
+        radius   => [ 'username', 'password' ],
+        userpass => [ 'username', 'password ']
     };
 
     foreach (@{$settings_mapping->{$options{method}}}) {
@@ -249,6 +253,7 @@ HashiCorp Vault global
 =head1 SYNOPSIS
 
 HashiCorp Vault class
+To be used with K/V engines
 
 =head1 VAULT OPTIONS
 
@@ -270,7 +275,7 @@ Can be: 'http', 'https' (Default: http).
 =item B<--auth-method>
 
 Authentication method to log in against the Vault server.
-Can be: 'token', 'userpass', 'ldap', 'aws' (Default: 'token');
+Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass' (Default: 'token');
 
 =item B<--vault-token>
 
