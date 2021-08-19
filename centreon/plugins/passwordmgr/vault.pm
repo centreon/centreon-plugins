@@ -286,13 +286,13 @@ Directly specify a valid token to log in (only for --auth-method='token').
 Required information to log in according to the selected method.
 Examples:
 for 'userpass': --auth-settings='username=user1' --auth-settings='password=my_password'
-for 'aws': --auth-settings='role=my_aws_role' --auth-settings='jwt=my_aws_token'
+for 'azure': --auth-settings='role=my_azure_role' --auth-settings='jwt=my_azure_token'
 
 More information here: https://www.vaultproject.io/api-docs/auth
 
 =item B<--secret-path>
 
-Location of the secret in the Vault K/V engine (Mandatory / Can be multiple).
+Location of the secret in the Vault K/V engine (Mandatory - Can be multiple).
 Examples:
 for v1 engine: --secret-path='mysecrets/servicecredentials'
 for v2 engine: --secret-path='mysecrets/data/servicecredentials?version=12'
@@ -313,6 +313,6 @@ Example:
 
 =head1 DESCRIPTION
 
-B<keepass>.
+B<vault>.
 
 =cut
