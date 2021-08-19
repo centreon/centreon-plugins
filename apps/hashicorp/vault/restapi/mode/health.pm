@@ -26,12 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-# sub custom_status_output {
-#     my ($self, %options) = @_;
-
-#     return sprintf('Id: %s, Status: %s', $self->{result_values}->{id}, $self->{result_values}->{status});
-# }
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -40,9 +34,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{vault_cluster} = [
-        { label => 'sealed-status', type => 2, critical_default => '%{sealed} eq "sealed"', set => {
+        { label => 'seal-status', type => 2, critical_default => '%{sealed} ne "unsealed"', set => {
                 key_values => [ { name => 'sealed' } ],
-                output_template => "sealed status : %s",
+                output_template => "seal status : %s",
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -60,7 +54,7 @@ sub set_counters {
 sub custom_prefix_output {
     my ($self, %options) = @_;
 
-    return 'Server ' . $self->{option_results}->{hostname} . ': ';
+    return 'Server ' . $options{instance_value}->{cluster_name} . ' ';
 }
 
 sub new {
@@ -81,18 +75,15 @@ sub set_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    # API will return 503 when the vault is sealed
-    my $custom_status = '%{http_code} < 200 or (%{http_code} >= 300 and %{http_code} !=503)';
-    
-    my $result = $options{custom}->request_api(
-        url_path => '/health',
-        overload_status => 1,
-        overload_status_type => 'unknown',
-        custom_status => $custom_status
-    );
 
-    $self->{vault_cluster}->{$self->{option_results}->{hostname}} = {
+    my $code_param = '?sealedcode=200&uninitcode=200'; # By default API will return error codes if sealed or uninit
+    my $result = $options{custom}->request_api(
+        url_path => 'health' . $code_param
+    );
+    my $cluster_name = defined($result->{cluster_name}) ? $result->{cluster_name} : $self->{option_results}->{hostname};
+
+    $self->{vault_cluster}->{$cluster_name} = {
+        cluster_name => $cluster_name,
         sealed => $result->{sealed} ? 'sealed' : 'unsealed',
         init => $result->{initialized} ? 'initialized' : 'not initialized',
     };
@@ -114,22 +105,21 @@ More information on'https://www.vaultproject.io/api-docs/system/health'.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--warning-seal-status>
 
-Filter by application name (Regexp can be used).
-Example: --filter-name='^application1$'
+Set warning threshold for seal status (Default: none).
 
-=item B<--warning-status>
+=item B<--critical-seal-status>
 
-Set warning threshold for status (Default: '').
-Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
-Typical syntax: --warning-status='%{status} ne "STARTED"'
+Set critical threshold for seal status (Default: '%{sealed} ne "unsealed"').
 
-=item B<--critical-status>
+=item B<--warning-init-status>
 
-Set warning threshold for status (Default: '').
-Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
-Typical syntax: --critical-status='%{status} ~= m/FAILED/'
+Set warning threshold for initialization status (Default: none).
+
+=item B<--critical-init-status>
+
+Set critical threshold for initialization status (Default: '%{init} ne "initialized"').
 
 =back
 

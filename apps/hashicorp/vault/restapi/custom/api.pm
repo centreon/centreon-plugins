@@ -43,15 +43,16 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'            => { name => 'hostname' },
-            'port:s'                => { name => 'port' },
-            'proto:s'               => { name => 'proto' },
-        'auth-method:s'    => { name => 'auth_method', default => 'token' },
-        'auth-settings:s%' => { name => 'auth_settings' },
-        'vault-token:s'    => { name => 'vault_token'},
-        'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'api-version'            => { name => 'api_version', default => 'v1' },
+            'critical-http-status:s' => { name => 'critical_http_status' },
+            'hostname:s'             => { name => 'hostname' },
+            'port:s'                 => { name => 'port' },
+            'proto:s'                => { name => 'proto' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' }
+            'auth-method:s'          => { name => 'auth_method', default => 'token' },
+            'auth-settings:s%'       => { name => 'auth_settings' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'vault-token:s'          => { name => 'vault_token'}
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -86,6 +87,7 @@ sub check_options {
     $self->{auth_method} = lc($self->{option_results}->{auth_method});
     $self->{auth_settings} = defined($self->{option_results}->{auth_settings}) && $self->{option_results}->{auth_settings} ne '' ? $self->{option_results}->{auth_settings} : {};
     $self->{vault_token} = $self->{option_results}->{vault_token};
+    $self->{api_version} = $self->{option_results}->{api_version};
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
@@ -149,7 +151,7 @@ sub get_access_token {
         my $decoded;
         my $login = $self->parse_auth_method(method => $self->{auth_method}, settings => $self->{auth_settings});
         my $post_json = JSON::XS->new->utf8->encode($login);
-        my $url_path = '/v1/auth/'. $self->{auth_method} . '/login/';
+        my $url_path = '/' . $self->{api_version} . '/auth/'. $self->{auth_method} . '/login/';
         $url_path .= $self->{auth_settings}->{username} if (defined($self->{auth_settings}->{username}) && $self->{auth_method} =~ 'userpass|login') ;
 
         my $content = $self->{http}->request(
@@ -184,7 +186,7 @@ sub get_access_token {
         my $datas = { last_timestamp => time(), access_token => $decoded->{access_token}, expires_on => time() + 3600 };
         $options{statefile}->write(data => $datas);
     }
-    
+
     return $access_token;
 }
 
@@ -219,25 +221,9 @@ sub request_api {
     $self->settings(%options);
     my ($json, $response);
 
-    my $http_status = {
-        unknown_status => $self->{unknown_http_status},
-        warning_status => $self->{warning_http_status},
-        critical_status => $self->{critical_http_status}
-    };
-
-    if (defined($options{overload_status})) {
-        foreach ('critical', 'unknown', 'warning') {
-            if ($options{overload_status_type} =~ $_) {
-                $http_status->{ $options{overload_status_type} . '_status' } = $options{custom_status};
-            }
-        }
-    }
-
     $response = $self->{http}->request(
         method => 'GET',
-        url_path => '/v1/sys' . $options{url_path},
-        %{$http_status}
-        
+        url_path => '/' . $self->{api_version} . '/sys/' . $options{url_path}
     );
     $self->{output}->output_add(long_msg => $response, debug => 1);
 
@@ -258,25 +244,25 @@ __END__
 
 =head1 NAME
 
-Barco ClickShare Rest API
+HashiCorp Vault Rest API
 
 =head1 REST API OPTIONS
 
-Barco ClickShare Rest API
+HashiCorp Vault Rest API
 
 =over 8
 
 =item B<--hostname>
 
-Barco ClickShare hostname.
+HashiCorp Vault hostname.
 
 =item B<--port>
 
-Port used (Default: 4001)
+Port used (Default: 8200)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https')
+Specify https if needed (Default: 'http')
 
 =item B<--api-username>
 
