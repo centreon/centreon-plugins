@@ -152,8 +152,8 @@ sub settings {
     $self->{vault_protocol} = $options{option_results}->{vault_protocol};
     $self->{vault_token} = $options{option_results}->{vault_token};
 
-    if ($self->{auth_method} !~ m/aws|ldap|userpass|token/ ) {
-        $self->{output}->add_option_msg(short_msg => "Incorrect or unsupported authentication method");
+    if (lc($self->{auth_method}) !~ m/azure|cert|github|ldap|okta|radius|userpass|token/ ) {
+        $self->{output}->add_option_msg(short_msg => "Incorrect or unsupported authentication method set in --auth-method");
         $self->{output}->option_exit();
     }
     foreach (@{$options{option_results}->{secret_path}}) {
