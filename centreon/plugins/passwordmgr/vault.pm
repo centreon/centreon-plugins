@@ -195,7 +195,7 @@ sub request_api {
         }
 
         if ((defined($json->{data}->{metadata}->{deletion_time}) && $json->{data}->{metadata}->{deletion_time} ne '') || $json->{data}->{metadata}->{destroyed} eq 'true') {
-            $self->{output}->add_option_msg(short_msg => "This token is not valid anymore");
+            $self->{output}->add_option_msg(short_msg => "This secret is not valid anymore");
             $self->{output}->option_exit();
         }
 
