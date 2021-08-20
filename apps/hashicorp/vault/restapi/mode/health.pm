@@ -62,24 +62,20 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
 
 sub set_options {
     my ($self, %options) = @_;
-
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $code_param = '?sealedcode=200&uninitcode=200'; # By default API will return error codes if sealed or uninit
-    my $result = $options{custom}->request_api(
-        url_path => 'health' . $code_param
-    );
+    my $result = $options{custom}->request_api(url_path => 'health' . $code_param);
     my $cluster_name = defined($result->{cluster_name}) ? $result->{cluster_name} : $self->{option_results}->{hostname};
 
     $self->{vault_cluster}->{$cluster_name} = {

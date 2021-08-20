@@ -35,11 +35,11 @@ sub new {
     if (!defined($options{output})) {
         print "Class Custom: Need to specify 'output' argument.\n";
         exit 3;
-    }
+    };
     if (!defined($options{options})) {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
-    }
+    };
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
@@ -54,7 +54,7 @@ sub new {
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'vault-token:s'          => { name => 'vault_token'}
         });
-    }
+    };
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
@@ -78,7 +78,7 @@ sub check_options {
     if ($self->{option_results}->{auth_method} eq 'token' && (!defined($self->{option_results}->{vault_token}) || $self->{option_results}->{vault_token} eq '')) {
         $self->{output}->add_option_msg(short_msg => "Please set the --vault-token option");
         $self->{output}->option_exit();
-    }
+    };
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8200;
@@ -97,7 +97,7 @@ sub check_options {
     if (lc($self->{auth_method}) !~ m/azure|cert|github|ldap|okta|radius|userpass|token/ ) {
         $self->{output}->add_option_msg(short_msg => "Incorrect or unsupported authentication method set in --auth-method");
         $self->{output}->option_exit();
-    }
+    };
 
     return 0;
 }
@@ -126,7 +126,7 @@ sub settings {
 
     if (defined($self->{vault_token})) {
         $self->{http}->add_header(key => 'X-Vault-Token', value => $self->{vault_token});
-    }
+    };
 
     $self->{http}->set_options(%{$self->{option_results}});
 
@@ -167,7 +167,7 @@ sub get_access_token {
         if (!defined($content) || $content eq '') {
             $self->{output}->add_option_msg(short_msg => "Authentication endpoint returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
             $self->{output}->option_exit();
-        }
+        };
 
         eval {
             $decoded = JSON::XS->new->utf8->decode($content);
@@ -176,16 +176,16 @@ sub get_access_token {
             $self->{output}->output_add(long_msg => $content, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
             $self->{output}->option_exit();
-        }
+        };
         if (defined($decoded->{errors}[0])) {
             $self->{output}->output_add(long_msg => "Error message : " . $decoded->{errors}[0], debug => 1);
             $self->{output}->add_option_msg(short_msg => "Authentication endpoint returns error code '" . $decoded->{errors}[0] . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
-        }
+        };
         $access_token = $decoded->{auth}->{client_token};
         my $datas = { last_timestamp => time(), access_token => $decoded->{access_token}, expires_on => time() + 3600 };
         $options{statefile}->write(data => $datas);
-    }
+    };
 
     return $access_token;
 }
@@ -233,7 +233,7 @@ sub request_api {
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode Vault JSON response: $@");
         $self->{output}->option_exit();
-    }
+    };
 
     return $json;
 }
