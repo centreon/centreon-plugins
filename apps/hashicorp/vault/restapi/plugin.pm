@@ -42,5 +42,7 @@ sub new {
 
 __END__
 =head1 PLUGIN DESCRIPTION
-Check Symbol WiNG in SNMP.
+
+Check HashiCorp Vault using RestAPI.
+
 =cut
