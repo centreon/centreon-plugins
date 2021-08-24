@@ -30,23 +30,45 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 }
+        { name => 'global', type => 0 },
+        { name => 'boltdb', type => 1, cb_prefix_output => 'prefix_boltdb_output', message_multiple => 'All Bolt Databases are ok'  }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'commit-time', nlbalel => 'vault.raft.committime.seconds', set => {
+        { label => 'commit-time', nlbalel => 'vault.raftstorage.committime.seconds', set => {
                 key_values => [ { name => 'commit_time' } ],
                 output_template => "commit time : %.2fs",
-                perfdatas       => [ { template => '%.2f', unit => 's', min => 0 } ]
+                perfdatas       => [ { template => '%.2f', unit => 'ms', min => 0 } ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{boltdb} = [
+        { label => 'spill-time', nlabel => 'vault.raftstorage.spilltime.seconds', set => {
+                key_values      => [ { name => 'spill_time' }, { name => 'display' } ],
+                output_template => 'spill time: %.2fms',
+                perfdatas       => [ { template => '%d', unit => 'ms', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
+            }
+        },
+        { label => 'rebalance-time', nlabel => 'vault.raftstorage.rebalance_time.seconds', set => {
+                key_values      => [ { name => 'rebalance_time' }, { name => 'display' } ],
+                output_template => 'rebalance time: %.2fms',
+                perfdatas       => [ { template => '%d', unit => 'ms', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
+            }
+        },
+        { label => 'write-time', nlabel => 'vault.raftstorage.write_time.seconds', set => {
+                key_values      => [ { name => 'write_time' }, { name => 'display' } ],
+                output_template => 'write time: %.2fms',
+                perfdatas       => [ { template => '%d', unit => 'ms', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         }
     ];
 }
 
-sub custom_prefix_output {
+sub prefix_boltdb_output {
     my ($self, %options) = @_;
 
-    return 'Server ' . $options{instance_value}->{cluster_name} . ' ';
+    return "Database '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -66,20 +88,41 @@ sub set_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $code_param = '?sealedcode=200&uninitcode=200'; # By default API will return error codes if sealed or uninit
     my $result = $options{custom}->request_api(url_path => 'metrics');
-    #my $cluster_name = defined($result->{cluster_name}) ? $result->{cluster_name} : $self->{option_results}->{hostname};
 
     foreach (@{$result->{Samples}}) {
-        $self->{raftstorage}->{ $_->{Name} } = {
-            rate => $_->{Rate}
+        $_->{Name} =~ s/\.|\-/_/g;
+        if (defined($_->{Labels}->{database})) {
+            $_->{Name} =~ s/vault_raft_storage_bolt_//g;
+            $self->{raftstorage}->{boltdb}->{ $_->{Labels}->{database} }->{ $_->{Name} } = {
+                rate => $_->{Rate},
+                cluster => $_->{Labels}->{cluster}
+            }
+        } else {
+            $self->{raftstorage}->{global}->{ $_->{Name} } = {
+                rate => $_->{Rate},
+            }
         }
+
     };
-    use Data::Dumper;print Dumper($self->{raftstorage});
 
     $self->{global} = {
-        commit_time => defined($self->{raftstorage}->{'vault.raft.commitTime'}) ? $self->{raftstorage}->{'vault.raft.commitTime'}->{rate} : 0
+        commit_time => defined($self->{raftstorage}->{global}->{'vault.raft.commitTime'}) ? $self->{global}->{raftstorage}->{'vault.raft.commitTime'}->{rate} : 0
     };
+
+    foreach my $database (keys %{$self->{raftstorage}->{boltdb}}) {
+        $self->{boltdb}->{$database} = {
+            display => $database,
+            rebalance_time => $self->{raftstorage}->{boltdb}->{$database}->{rebalance_time},
+            spill_time => $self->{raftstorage}->{boltdb}->{$database}->{spill_time},
+            write_time => $self->{raftstorage}->{boltdb}->{$database}->{write_time}
+        }
+    }
+
+    if (scalar(keys %{$self->{boltdb}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No Bolt DB found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -88,31 +131,17 @@ __END__
 
 =head1 MODE
 
-Check Hashicorp Vault Health status.
+Check Hashicorp Vault Raft Storage status.
 
 Example:
-perl centreon_plugins.pl --plugin=apps::hashicorp::vault::restapi::plugin --mode=health
+perl centreon_plugins.pl --plugin=apps::hashicorp::vault::restapi::plugin --mode=raft-storage
 --hostname=10.0.0.1 --vault-token='s.aBCD123DEF456GHI789JKL012' --verbose
 
 More information on'https://www.vaultproject.io/api-docs/system/health'.
 
 =over 8
 
-=item B<--warning-seal-status>
-
-Set warning threshold for seal status (Default: none).
-
-=item B<--critical-seal-status>
-
-Set critical threshold for seal status (Default: '%{sealed} ne "unsealed"').
-
-=item B<--warning-init-status>
-
-Set warning threshold for initialization status (Default: none).
-
-=item B<--critical-init-status>
-
-Set critical threshold for initialization status (Default: '%{init} ne "initialized"').
+TODO
 
 =back
 
