@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'health' => 'apps::hashicorp::vault::restapi::mode::health'
+        'health'       => 'apps::hashicorp::vault::restapi::mode::health',
+        'raft-storage' => 'apps::hashicorp::vault::restapi::mode::raftstorage'
     };
 
     $self->{custom_modes}->{api} = 'apps::hashicorp::vault::restapi::custom::api';
