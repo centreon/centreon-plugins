@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -117,12 +116,12 @@ sub manage_selection {
             spill_time => $self->{raftstorage}->{boltdb}->{$database}->{spill_time},
             write_time => $self->{raftstorage}->{boltdb}->{$database}->{write_time}
         }
-    }
+    };
 
     if (scalar(keys %{$self->{boltdb}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No Bolt DB found.");
         $self->{output}->option_exit();
-    }
+    };
 }
 
 1;
@@ -141,7 +140,15 @@ More information on'https://www.vaultproject.io/api-docs/system/health'.
 
 =over 8
 
-TODO
+=item B<--warning-*>
+
+Warning threshold where '*' can be:
+'commit-time', 'spill-time', 'rebalance-time', 'write-time'
+
+=item B<--critical-*>
+
+Critical threshold where '*' can be:
+'commit-time', 'spill-time', 'rebalance-time', 'write-time'
 
 =back
 
