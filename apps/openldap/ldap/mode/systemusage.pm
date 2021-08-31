@@ -184,10 +184,15 @@ sub manage_selection {
         } 
     }
 
+    if (scalar(keys %{$self->{global}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'cannot get informations from OpenLDAP monitor backend');
+        $self->{output}->option_exit();
+    }
+
     $self->{global}->{threads_active_prct} = $self->{global}->{threads_active} * 100 / $self->{global}->{threads_max}
         if (defined($self->{global}->{threads_max}) && $self->{global}->{threads_max} > 0);
 
-    $self->{cache_name} = "openldap_" . $self->{mode} . '_' . $self->{option_results}->{hostname} . '_' .
+    $self->{cache_name} = 'openldap_' . $self->{mode} . '_' . $self->{option_results}->{hostname} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
