@@ -66,7 +66,7 @@ my %storage_types_manage = (
     '.1.3.6.1.2.1.25.3.9.20' => 'hrFSDGCFS',
     '.1.3.6.1.2.1.25.3.9.21' => 'hrFSBFS',
     '.1.3.6.1.2.1.25.3.9.22' => 'hrFSFAT32',
-    '.1.3.6.1.2.1.25.3.9.23' => 'hrFSLinuxExt2',
+    '.1.3.6.1.2.1.25.3.9.23' => 'hrFSLinuxExt2'
 );
 
 sub custom_usage_perfdata {
@@ -158,7 +158,8 @@ sub custom_usage_calc {
 sub custom_access_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Access : %s", 
+    my $msg = sprintf(
+        'Access : %s', 
         $self->{result_values}->{access} == 1 ? 'readWrite' : 'readOnly'
     );
 
@@ -239,6 +240,7 @@ sub new {
         'filter-duplicate'        => { name => 'filter_duplicate' },
         'filter-storage-type:s'   => { name => 'filter_storage_type', default => $self->default_storage_type() },
         'add-access'              => { name => 'add_access' },
+        'counters-overflow'       => { name => 'counters_overflow' }
     });
 
     $self->{storage_id_selected} = [];
@@ -334,44 +336,50 @@ sub manage_selection {
             );
             next;
         }
-        
+
         # in bytes hrStorageAllocationUnits
-        my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
-        if ($total_size <= 0) {
+        my $size = $result->{$oid_hrStorageSize . '.' . $_};
+        my $used = $result->{$oid_hrStorageUsed . '.' . $_};
+        if (defined($self->{option_results}->{counters_overflow})) {
+            $size += 2**32 if ($size <= 0);
+            $used += 2**32 if ($used <= 0);
+        }
+
+        if ($size <= 0) {
             $self->{output}->output_add(
                 long_msg => sprintf(
-                    "skipping storage '%s': total size is <= 0 (%s)", 
+                    "skipping storage '%s': total size is <= 0 (%s) (try option --counters-overflow)", 
                     $name_storage,
-                    int($total_size)
+                    $size
                 ),
                 debug => 1
             );
             next;
         }
-        
+
         if (defined($self->{option_results}->{filter_duplicate})) {
             my $duplicate = 0;
             foreach my $entry (values %{$self->{storage}}) {
                 if (($entry->{allocation_units} == $result->{$oid_hrStorageAllocationUnits . '.' . $_}) &&
-                    ($entry->{size} == $result->{$oid_hrStorageSize . "." . $_}) &&
-                    ($entry->{used} == $result->{$oid_hrStorageUsed . "." . $_})) {
+                    ($entry->{size} == $result->{$oid_hrStorageSize . '.' . $_}) &&
+                    ($entry->{used} == $result->{$oid_hrStorageUsed . '.' . $_})) {
                     $duplicate = 1;
                     last;
                 }
-            }                
+            }
             next if ($duplicate == 1);
         }
 
         $self->{storage}->{$_} = {
             display => $name_storage,
             allocation_units => $result->{$oid_hrStorageAllocationUnits . '.' . $_},
-            size => $result->{$oid_hrStorageSize . '.' . $_},
-            used => $result->{$oid_hrStorageUsed . '.' . $_},
-            access => defined($access_result->{$_}) ? $access_result->{$_} : undef,
+            size => $size,
+            used => $used,
+            access => defined($access_result->{$_}) ? $access_result->{$_} : undef
         };
         $self->{global}->{count}++;
     }
-    
+
     if (scalar(keys %{$self->{storage}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'Issue with storage information (see details)');
         $self->{output}->option_exit();
