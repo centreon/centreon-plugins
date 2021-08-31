@@ -125,18 +125,14 @@ sub cb_debug {
     if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_DATA_OUT')) {
         $msg = sprintf("=> Send data: %s", $data);
     }
-    if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_SSL_DATA_OUT')) {
-        $msg = sprintf("=> Send SSL data: %s", $data);
-    }
     if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_HEADER_IN')) {
         $msg = sprintf("=> Recv header: %s", $data);
     }
     if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_DATA_IN')) {
         $msg = sprintf("=> Recv data: %s", $data);
     }
-    if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_SSL_DATA_IN')) {
-        $msg = sprintf("=> Recv SSL data: %s", $data);
-    }
+    return 0 if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_SSL_DATA_OUT'));
+    return 0 if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_SSL_DATA_IN'));
 
     $uservar->{output}->output_add(long_msg => $msg, debug => 1);
     return 0;
