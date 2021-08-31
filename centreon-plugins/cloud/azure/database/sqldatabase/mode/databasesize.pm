@@ -43,7 +43,7 @@ sub set_counters {
             my $metric_perf = lc($metric);
             my $metric_label = lc($metric);
             $metric_perf =~ s/ /_/g;
-            $metric_label =~ s/ /-/g;
+            $metric_label =~ s/[ |_]/-/g;
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_perf . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
                                 output_template => 'Database size percentage: %.2f %%',
