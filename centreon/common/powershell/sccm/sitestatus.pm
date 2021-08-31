@@ -46,25 +46,27 @@ Try {
     $module = $modulePath + "\ConfigurationManager.psd1"
     Import-Module $module
 
-    New-PSDrive -Name SCCMDrive -PSProvider "AdminUI.PS.Provider\CMSite" -Root $env:COMPUTERNAME -Description "SCCM Site" | Out-Null
-    CD "SCCMDrive:\"
-
-    $CMObject = Get-CMSite
-
-    CD "C:\"
-    Remove-PSDrive -Name SCCMDrive
-
     $returnArray = @()
-    
-    Foreach ($site in $CMObject) {
-        $returnObject = New-Object -TypeName PSObject
-        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteCode" -Value $site.SiteCode
-        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteName" -Value $site.SiteName
-        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Type" -Value $site.Type
-        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Mode" -Value $site.Mode
-        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Status" -Value $site.Status
-        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SecondarySiteCMUpdateStatus" -Value $site.SecondarySiteCMUpdateStatus
-        $returnArray += $returnObject
+
+    $providers = Get-PSProvider | Where {$_.Name -match "CMSite" }
+    foreach ($provider in $providers) {
+        New-PSDrive -Name SCCMDrive -PSProvider $provider.Name -Root $env:COMPUTERNAME -Description "SCCM Site" | Out-Null
+        CD "SCCMDrive:\"
+        $CMObject = Get-CMSite
+        CD "C:\"
+        Remove-PSDrive -Name SCCMDrive
+
+        Foreach ($site in $CMObject) {
+            $returnObject = New-Object -TypeName PSObject
+            Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "providerName" -Value $provider.Name
+            Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteCode" -Value $site.SiteCode
+            Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteName" -Value $site.SiteName
+            Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Type" -Value $site.Type
+            Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Mode" -Value $site.Mode
+            Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Status" -Value $site.Status
+            Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SecondarySiteCMUpdateStatus" -Value $site.SecondarySiteCMUpdateStatus
+            $returnArray += $returnObject
+        }
     }
     
     $returnArray | ConvertTo-JSON-20 -forceArray $true

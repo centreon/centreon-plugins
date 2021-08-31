@@ -25,19 +25,19 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use JSON::XS;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::misc;
 use centreon::common::powershell::sccm::sitestatus;
 
 my %map_mode = (
-    0 => 'Unknown',
+    0 => '-',
     1 => 'Replication maintenance',
     2 => 'Recovery in progress',
     3 => 'Upgrade in progress',
     4 => 'Evaluation has expired',
     5 => 'Site expansion in progress',
     6 => 'Interop mode where there are primary sites, having the same version as the CAS, were not upgraded',
-    7 => 'Interop mode where there are secondary sites, having the same version as the top-level site server, were not upgraded',
+    7 => 'Interop mode where there are secondary sites, having the same version as the top-level site server, were not upgraded'
 );
 my %map_status = (
     0 => 'Unknown',
@@ -49,19 +49,19 @@ my %map_status = (
     6 => 'Failed to delete or deinstall the secondary site',
     7 => 'Failed to upgrade the secondary site',
     8 => 'Secondary site recovery is in progress',
-    9 => 'Failed to recover secondary site',
+    9 => 'Failed to recover secondary site'
 );
 my %map_type = (
     0 => 'Unknown',
     1 => 'SECONDARY',
     2 => 'PRIMARY',
-    4 => 'CAS',
+    4 => 'CAS'
 );
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("status is '%s' [Type: %s] [Mode: '%s']",
+    return sprintf("status is '%s' [type: %s] [mode: '%s']",
         $self->{result_values}->{status},
         $self->{result_values}->{type},
         $self->{result_values}->{mode}
@@ -88,7 +88,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{sites} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, set => {
                 key_values => [
                     { name => 'display' }, { name => 'SiteName' }, { name => 'Type' }, { name => 'Mode' },
                     { name => 'Status' }, { name => 'SecondarySiteCMUpdateStatus' }
@@ -96,7 +96,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -120,19 +120,10 @@ sub new {
         'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
         'no-ps'             => { name => 'no_ps' },
         'ps-exec-only'      => { name => 'ps_exec_only' },
-        'ps-display'        => { name => 'ps_display' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' }
+        'ps-display'        => { name => 'ps_display' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
