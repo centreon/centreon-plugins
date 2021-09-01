@@ -43,7 +43,7 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-version'            => { name => 'api_version', default => 'v1' },
+            'api-version:s'          => { name => 'api_version' },
             'critical-http-status:s' => { name => 'critical_http_status' },
             'hostname:s'             => { name => 'hostname' },
             'port:s'                 => { name => 'port' },
@@ -87,7 +87,7 @@ sub check_options {
     $self->{auth_method} = lc($self->{option_results}->{auth_method});
     $self->{auth_settings} = defined($self->{option_results}->{auth_settings}) && $self->{option_results}->{auth_settings} ne '' ? $self->{option_results}->{auth_settings} : {};
     $self->{vault_token} = $self->{option_results}->{vault_token};
-    $self->{api_version} = $self->{option_results}->{api_version};
+    $self->{api_version} = (defined($self->{option_results}->{api_version})) ? $self->{option_results}->{api_version} : 'v1';
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
