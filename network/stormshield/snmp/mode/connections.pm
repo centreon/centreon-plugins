@@ -32,6 +32,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'udp', set => {
                 key_values => [ { name => 'udp', per_second => 1 } ],
@@ -65,16 +66,20 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    $self->{cache_name} = "fw_stormshield_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex('all');
+
+    $self->{cache_name} = 'fw_stormshield_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex('all');
 
     my $oid_ntqASQStatsStatefulUdpConn = '.1.3.6.1.4.1.11256.1.12.1.33.0';
     my $oid_ntqASQStatsStatefulTcpConn = '.1.3.6.1.4.1.11256.1.12.1.23.0';
 
-    my $result = $options{snmp}->get_leef(oids => [ $oid_ntqASQStatsStatefulUdpConn, $oid_ntqASQStatsStatefulTcpConn ],
-                                          nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(
+        oids => [ $oid_ntqASQStatsStatefulUdpConn, $oid_ntqASQStatsStatefulTcpConn ],
+        nothing_quit => 1
+    );
+
     $self->{global} = {
         udp => $result->{$oid_ntqASQStatsStatefulUdpConn},
-        tcp => $result->{$oid_ntqASQStatsStatefulTcpConn},
+        tcp => $result->{$oid_ntqASQStatsStatefulTcpConn}
     };
 }
 

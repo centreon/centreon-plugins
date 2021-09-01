@@ -52,7 +52,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 output_template => 'status: %s', output_error_template => 'Status : %s',
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => $self->can('custom_threshold_output')
             }
         },
         { label => 'traffic', nlabel => 'vpn.traffic.bitspersecond', set => {
@@ -61,16 +61,16 @@ sub set_counters {
                 output_change_bytes => 2,
                 perfdatas => [
                      { label => 'traffic', template => '%s',
-                       unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'num' },
-                ],
+                       unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'num' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub prefix_vpn_output {
     my ($self, %options) = @_;
-    
+
     return "VPN '$options{instance_value}->{num}/$options{instance_value}->{ntqVPNIPSrc}/$options{instance_value}->{ntqVPNIPDst}' ";
 }
 
@@ -79,8 +79,8 @@ my $thresholds = {
         ['larval', 'WARNING'],
         ['mature', 'OK'],
         ['dying', 'CRITICAL'],
-        ['dead', 'CRITICAL'],
-    ],
+        ['dead', 'CRITICAL']
+    ]
 };
 
 sub new {
