@@ -143,7 +143,7 @@ sub check {
         $self->{components}->{sensor}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "sensor '%s' reading is '%s' [instance = %s]",
+                "sensor '%s' reading is '%s' [instance: %s]",
                 $result->{sensorIDString},
                 $result->{sensorReading},
                 $instance . '#' . $result->{sensorIDString}

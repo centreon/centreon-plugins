@@ -30,9 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'sensors' => 'hardware::server::supermicro::bmc::snmp::mode::hardware',
-    );
+    $self->{modes} = {
+        'sensors' => 'hardware::server::supermicro::bmc::snmp::mode::hardware'
+    };
 
     return $self;
 }
