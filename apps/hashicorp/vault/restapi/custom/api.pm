@@ -264,13 +264,25 @@ Port used (Default: 8200)
 
 Specify https if needed (Default: 'http')
 
-=item B<--api-username>
+=item B<--api-version>
 
-API username.
+Specify the Vault API version (Default: 'v1')
 
-=item B<--api-password>
+=item B<--vault-token>
 
-API password.
+Specify the Vault access token (only for the 'token' authentication method)
+
+=item B<--auth-method>
+
+Specify the Vault authentication method (Default: 'token').
+Can be: 'azure', 'cert', 'github', 'ldap', 'okta', 'radius', 'userpass', 'token'
+If different from 'token' the "--auth-settings" options must be set.
+
+=item B<--auth-settings>
+
+Specify the Vault authentication specific settings.
+Syntax: --auth-settings='<setting>=<value>'.Example for the 'userpass' method:
+--auth-method='userpass' --auth-settings='username=my_account' --auth-settings='password=my_password'
 
 =item B<--timeout>
 
