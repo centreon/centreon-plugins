@@ -30,11 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning:s'  => { name => 'warning' }
+        'critical:s' => { name => 'critical' }
+    });
 
     return $self;
 }
@@ -42,14 +41,14 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -63,10 +62,12 @@ sub run {
     my $oid_hpGlobalMemAllocBytes = '.1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.7'; # in B
     my $oid_hpGlobalMemFreeBytes = '.1.3.6.1.4.1.11.2.14.11.5.1.1.2.2.1.1.6'; # in B
     my $result = $self->{snmp}->get_table(oid => $oid_hpGlobalMemEntry, nothing_quit => 1);
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All memories are ok.');
-    
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'All memories are ok.'
+    );
+
     foreach my $oid (keys %$result) {
         next if ($oid !~ /^$oid_hpGlobalMemSlotIndex/);
         $oid =~ /\.([0-9]+)$/;
@@ -82,23 +83,33 @@ sub run {
         my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
         my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
         
-        $self->{output}->output_add(long_msg => sprintf("Memory '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $instance,
-                                            $total_value . " " . $total_unit,
-                                            $used_value . " " . $used_unit, $prct_used,
-                                            $free_value . " " . $free_unit, $prct_free));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Memory '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $instance,
+                $total_value . " " . $total_unit,
+                $used_value . " " . $used_unit, $prct_used,
+                $free_value . " " . $free_unit, $prct_free
+            )
+        );
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Memory '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $instance,
-                                            $total_value . " " . $total_unit,
-                                            $used_value . " " . $used_unit, $prct_used,
-                                            $free_value . " " . $free_unit, $prct_free));
+             $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Memory '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $instance,
+                    $total_value . " " . $total_unit,
+                    $used_value . " " . $used_unit, $prct_used,
+                    $free_value . " " . $free_unit, $prct_free
+                )
+            );
         }
         
-        $self->{output}->perfdata_add(label => "used_" . $instance, unit => 'B',
-                                      value => $memory_used,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
-                                      min => 0, max => $total_size);
+        $self->{output}->perfdata_add(
+            label => "used_" . $instance, unit => 'B',
+            value => $memory_used,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
+            min => 0, max => $total_size
+        );
     }
     
     $self->{output}->display();

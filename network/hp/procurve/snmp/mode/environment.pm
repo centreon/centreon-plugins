@@ -27,16 +27,18 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
+    $self->{regexp_threshold_numeric_check_section_option} = '^temperature$';
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         sensor => [
             ['unknown', 'UNKNOWN'],
             ['bad', 'CRITICAL'],
             ['warning', 'WARNING'],
             ['good', 'OK'],
-            ['not present', 'WARNING'],
+            ['not present', 'OK']
         ],
         psu => [
             ['psNotPresent', 'OK'],
@@ -47,7 +49,7 @@ sub set_system {
             ['psMax', 'WARNING'],
             ['psAuxFailure', 'CRITICAL'],
             ['psNotPowered', 'WARNING'],
-            ['psAuxNotPowered', 'CRITICAL'],
+            ['psAuxNotPowered', 'CRITICAL']
         ],
         fan => [
             ['failed', 'CRITICAL'],
@@ -56,24 +58,24 @@ sub set_system {
             ['underspeed', 'WARNING'],
             ['overspeed', 'WARNING'],
             ['ok', 'OK'],
-            ['maxstate', 'WARNING'],
-        ],
+            ['maxstate', 'WARNING']
+        ]
     };
-    
+
     $self->{components_path} = 'network::hp::procurve::snmp::mode::components';
-    $self->{components_module} = ['sensor', 'psu', 'fan'];
+    $self->{components_module} = ['fan', 'psu', 'sensor', 'temperature'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -95,7 +97,7 @@ Check sensors (hpicfChassis.mib).
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'sensor', 'psu', 'fan'.
+Can be: 'fan', 'psu', 'sensor', 'temperature'.
 
 =item B<--filter>
 
@@ -118,7 +120,16 @@ Set to overload default threshold values (syntax: section,[instance,]status,rege
 It used before default thresholds (order stays).
 Example: --threshold-overload='sensor,CRITICAL,^(?!(good)$)'
 
+=item B<--warning>
+
+Set warning threshold for 'temperature' (syntax: type,regexp,threshold)
+Example: --warning='temperature,.*,40'
+
+=item B<--critical>
+
+Set critical threshold for 'temperature' (syntax: type,regexp,threshold)
+Example: --critical='temperature,.*,50'
+
 =back
 
 =cut
-    
