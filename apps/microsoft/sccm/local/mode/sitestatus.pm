@@ -158,10 +158,10 @@ sub manage_selection {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
+
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($stdout);
+        $decoded = JSON::XS->new->decode($self->{output}->decode($stdout));
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
