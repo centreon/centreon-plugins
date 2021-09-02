@@ -39,6 +39,9 @@ sub custom_cpu_calc {
 
     my $delta_cpu_total = $options{new_datas}->{$self->{instance} . '_cpu_total_usage'} - $options{old_datas}->{$self->{instance} . '_cpu_total_usage'};
     my $delta_cpu_system = $options{new_datas}->{$self->{instance} . '_cpu_system_usage'} - $options{old_datas}->{$self->{instance} . '_cpu_system_usage'};
+    if($delta_cpu_system == 0){
+       $delta_cpu_system = 1;
+    }
     $self->{result_values}->{prct_cpu} = (($delta_cpu_total / $delta_cpu_system) * $options{new_datas}->{$self->{instance} . '_cpu_number'}) * 100;
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
 
@@ -94,6 +97,9 @@ sub custom_memory_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_memory_total'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_memory_usage'};
+    if($self->{result_values}->{total} == 0){
+       $self->{result_values}->{total} = 1;
+    }    
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
