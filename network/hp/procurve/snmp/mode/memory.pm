@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'warning:s'  => { name => 'warning' }
+        'warning:s'  => { name => 'warning' },
         'critical:s' => { name => 'critical' }
     });
 
