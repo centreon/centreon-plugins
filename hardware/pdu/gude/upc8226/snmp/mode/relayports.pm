@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::pdu::gude::upc8226::snmp::mode::channels;
+package hardware::pdu::gude::upc8226::snmp::mode::relayports;
 
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
@@ -31,13 +31,13 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => '0' },
-        { name => 'channels', type => 1, cb_prefix_output => 'prefix_channels_output', message_multiple => 'All channels are ok', skipped_code => { -10 => 1 } }
+        { name => 'relayports', type => 1, cb_prefix_output => 'prefix_relayports_output', message_multiple => 'All relayports are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'active-channels', nlabel => 'pdu.channels.active', set => {
-                key_values => [ { name => 'active_channels' } ],
-                output_template => '%s Active power channel(s)',
+        { label => 'active-relayports', nlabel => 'pdu.relayports.active', set => {
+                key_values => [ { name => 'active_relayports' } ],
+                output_template => '%s Active relayport(s)',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -45,10 +45,10 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{channels} = [
+    $self->{maps_counters}->{relayports} = [
         { label => 'channel-status', type => 2, critical_default => '%{channel_status} !~ /valid/i', set => {
                 key_values => [ { name => 'channel_status' }, { name => 'display' } ],
-                output_template => 'Global status : %s',
+                output_template => 'Status : %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
@@ -56,13 +56,6 @@ sub set_counters {
         { label => 'ovp-status', type => 2, critical_default => '%{ovp_status} !~ /ok/i', set => {
                 key_values => [ { name => 'ovp_status' }, { name => 'display' } ],
                 output_template => 'OVP status : %s',
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
-            }
-        },
-        { label => 'ps-status', type => 2, critical_default => '%{ps_status} !~ /up/i', set => {
-                key_values => [ { name => 'ps_status' }, { name => 'display' } ],
-                output_template => 'PS status : %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
@@ -142,7 +135,7 @@ sub set_counters {
     ];
 }
 
-sub prefix_channels_output {
+sub prefix_relayports_output {
     my ($self, %options) = @_;
 
     return "'" . $options{instance_value}->{display} . "' ";
@@ -163,96 +156,81 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $epc8226ActivePowerChan = '.1.3.6.1.4.1.28507.58.1.5.1.1.0';
-    my $epc8226PowerEntry = '.1.3.6.1.4.1.28507.58.1.5.1.2.1';
-    my $epc8226OVPEntry = '.1.3.6.1.4.1.28507.58.1.5.2.1';
-    my $epc8226PwrSupplyEntry = '.1.3.6.1.4.1.28507.58.1.5.13.1';
+    my $epc8226portNumber = '.1.3.6.1.4.1.28507.58.1.3.1.1.0';
+    my $epc8226portEntry = '.1.3.6.1.4.1.28507.58.1.3.1.2.1';
+    my $epc8226spPowerEntry = '.1.3.6.1.4.1.28507.58.1.5.5.2.1';
 
-    my $channel_status_mapping = {
+    my $port_status_mapping = {
+        0 => 'off',
+        1 => 'on'
+    };
+    my $sp_status_mapping = {
         0 => 'not active',
         1 => 'valid'
     };
-    my $ovp_status_mapping = {
-        0 => 'failure',
-        1 => 'ok',
-        2 => 'unknown'
-    };
-    my $ps_status_mapping = {
-        0 => 'down',
-        1 => 'up'
+    
+
+    my $ports_mapping = {
+        epc8226PortName  => { oid => '.1.3.6.1.4.1.28507.58.1.3.1.2.1.2', label => 'port_name' },
+        epc8226PortState => { oid => '.1.3.6.1.4.1.28507.58.1.3.1.2.1.3', label => 'port_status', map => $port_status_mapping }
     };
 
-    my $power_mapping = {
-        epc8226ChanStatus      => { oid => '.1.3.6.1.4.1.28507.58.1.5.1.2.1.2', label => 'channel_status', map => $channel_status_mapping },
-        epc8226AbsEnergyActive => { oid => '.1.3.6.1.4.1.28507.58.1.5.1.2.1.3', label => 'abs_energy_active' },
-        epc8226PowerActive     => { oid => '.1.3.6.1.4.1.28507.58.1.5.1.2.1.4', label => 'power_active' },
-        epc8226Current         => { oid => '.1.3.6.1.4.1.28507.58.1.5.1.2.1.5', label => 'current' },
-        epc8226Voltage         => { oid => '.1.3.6.1.4.1.28507.58.1.5.1.2.1.6', label => 'voltage' },
-        epc8226Frequency       => { oid => '.1.3.6.1.4.1.28507.58.1.5.1.2.1.7', label => 'frequency' },
-        epc8226PowerFactor     => { oid => '.1.3.6.1.4.1.28507.58.1.5.1.2.1.8', label => 'power_factor' },
-        epc8226Pangle          => { oid => '.1.3.6.1.4.1.28507.58.1.5.1.2.1.9', label => 'phase_angle' },
-        epc8226PowerApparent   => { oid => '.1.3.6.1.4.1.28507.58.1.5.1.2.1.10', label => 'power_apparent' },
-        epc8226PowerReactive   => { oid => '.1.3.6.1.4.1.28507.58.1.5.1.2.1.11', label => 'power_reactive' }
-    };
-    my $ovp_mapping = {
-         epc8226OVPStatus => { oid => '.1.3.6.1.4.1.28507.58.1.5.2.1.2', label => 'ovp_status', map => $ovp_status_mapping }
-    };
-    my $ps_mapping = {
-        epc8226PwrSupplyStatus => { oid => '.1.3.6.1.4.1.28507.58.1.5.13.1.2', label => 'ps_status', map => $ps_status_mapping }
+    my $singleport_mapping = {
+        epc8226spChanStatus      => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.2', label => 'sp_status', map => $sp_status_mapping },
+        epc8226spAbsEnergyActive => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.3', label => 'abs_energy_active' },
+        epc8226spPowerActive     => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.4', label => 'active_power' },
+        epc8226spCurrent         => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.5', label => 'current' },
+        epc8226spVoltage         => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.6', label => 'voltage' },
+        epc8226spFrequency       => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.7', label => 'frequency' },
+        epc8226spPowerFactor     => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.8', label => 'power_factor' },
+        epc8226spPangle          => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.9', label => 'phase_angle' },
+        epc8226spPowerApparent   => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.10', label => 'power_apparent' },
+        epc8226spPowerReactive   => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.11', label => 'power_reactive' }
     };
 
-    my $global_results = $options{snmp}->get_leef( oids => [ $epc8226ActivePowerChan ], nothing_quit => 1);
-    my $channels_results = $options{snmp}->get_multiple_table(
+    my $global_results = $options{snmp}->get_leef( oids => [ $epc8226portNumber ], nothing_quit => 1);
+    my $relayports_results = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $epc8226PowerEntry, start => $power_mapping->{epc8226ChanStatus}->{oid}, end => $power_mapping->{epc8226PowerReactive}->{oid} },
-            { oid => $epc8226OVPEntry, start => $ovp_mapping->{epc8226OVPStatus}->{oid} },
-            { oid => $epc8226PwrSupplyEntry, start => $ps_mapping->{epc8226PwrSupplyStatus}->{oid} }
+            { oid => $epc8226portEntry, start => $ports_mapping->{epc8226PortName}->{oid}, end => $ports_mapping->{epc8226PortState}->{oid} },
+            { oid => $epc8226spPowerEntry, start => $singleport_mapping->{epc8226spChanStatus}->{oid}, end => $singleport_mapping->{epc8226spPowerReactive}->{oid} }
         ],
         nothing_quit => 1
     );
 
     $self->{global} = {
-        active_channels => $global_results->{$epc8226ActivePowerChan}
+        active_relayports => $global_results->{$epc8226portNumber}
     };
 
-    my $power_result;
-    foreach my $power_oid (keys %{$channels_results->{$epc8226PowerEntry}}) {
-        next if ($power_oid !~ /^$power_mapping->{epc8226ChanStatus}->{oid}\.(.*)$/);
+    my $ports_result;
+    foreach my $port_oid (keys %{$relayports_results->{$epc8226portEntry}}) {
+        next if ($port_oid !~ /^$ports_mapping->{epc8226PortName}->{oid}\.(.*)$/);
         my $instance = $1;
-        $power_result->{$instance} = $options{snmp}->map_instance(mapping => $power_mapping, results => $channels_results->{$epc8226PowerEntry}, instance => $instance);
+        $ports_result->{$instance} = $options{snmp}->map_instance(mapping => $ports_mapping, results => $relayports_results->{$epc8226portEntry}, instance => $instance);
     };
-    my $ovp_result;
-    foreach my $ovp_oid (keys %{$channels_results->{$epc8226OVPEntry}}) {
-        next if ($ovp_oid !~ /^$ovp_mapping->{epc8226OVPStatus}->{oid}\.(.*)$/);
+    my $sp_result;
+    foreach my $singleport_oid (keys %{$relayports_results->{$epc8226spPowerEntry}}) {
+        next if ($singleport_oid !~ /^$singleport_mapping->{epc8226spChanStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        $ovp_result->{$instance} = $options{snmp}->map_instance(mapping => $ovp_mapping, results => $channels_results->{$epc8226OVPEntry}, instance => $instance);
+        $sp_result->{$instance} = $options{snmp}->map_instance(mapping => $singleport_mapping, results => $relayports_results->{$epc8226spPowerEntry}, instance => $instance);
     };
-    my $ps_result;
-    foreach my $ps_oid (keys %{$channels_results->{$epc8226PwrSupplyEntry}}) {
-        next if ($ps_oid !~ /^$ps_mapping->{epc8226PwrSupplyStatus}->{oid}\.(.*)$/);
-        my $instance = $1;
-        $ps_result->{$instance} = $options{snmp}->map_instance(mapping => $ps_mapping, results => $channels_results->{$epc8226PwrSupplyEntry}, instance => $instance);
-    };
+    use Data::Dumper; print Dumper($sp_result); exit 0;
 
-    foreach my $channel_id (keys %{$power_result}) {
-        next if (defined($self->{option_results}->{filter_channel}) && $self->{option_results}->{filter_channel} !~ /$channel_id/);
-        foreach my $stat (keys %{$power_result->{$channel_id}}) {
-            if ($stat =~ m/epc8226Current|epc8226AbsEnergyActive|epc8226PowerFactor/ && defined($power_result->{$channel_id}->{$stat})) {
-                $power_result->{$channel_id}->{$stat} *= 0.001;
-            }
-            if ($stat =~ m/epc8226Frequency|epc8226AbsEnergyActive/ && defined($power_result->{$channel_id}->{$stat})) {
-                $power_result->{$channel_id}->{$stat} *= 0.01;
-            }
-            $self->{channels}->{$channel_id}->{display} = 'channel_' . $channel_id;
-            $self->{channels}->{$channel_id}->{ $power_mapping->{$stat}->{label} } = $power_result->{$channel_id}->{$stat};
-        }
-        foreach my $stat (keys %{$ovp_result->{$channel_id}}) {
-            $self->{channels}->{$channel_id}->{ $ovp_mapping->{$stat}->{label} } = $ovp_result->{$channel_id}->{$stat};
-        }
-        foreach my $stat (keys %{$ps_result->{$channel_id}}) {
-            $self->{channels}->{$channel_id}->{ $ps_mapping->{$stat}->{label} } = $ps_result->{$channel_id}->{$stat};
-        }
-    }
+    # foreach my $singleport_id (keys %{$ports_result}) {
+    #     #next if (defined($self->{option_results}->{filter_singleport}) && $self->{option_results}->{filter_port} !~ /$singleport_id/);
+    #     foreach my $stat (keys %{$ports_result->{$singleport_id}}) {
+    #         # if ($stat =~ m/epc8226Current|epc8226AbsEnergyActive|epc8226PowerFactor/ && defined($ports_result->{$singleport_id}->{$stat})) {
+    #         #     $ports_result->{$singleport_id}->{$stat} *= 0.001;
+    #         # }
+    #         # if ($stat =~ m/epc8226Frequency|epc8226AbsEnergyActive/ && defined($ports_result->{$singleport_id}->{$stat})) {
+    #         #     $ports_result->{$singleport_id}->{$stat} *= 0.01;
+    #         # }
+    #         $self->{relayports}->{$singleport_id}->{display} = $ports_result->{$singleport_id}->{};
+    #         $self->{relayports}->{$singleport_id}->{ $singleport_mapping->{$stat}->{label} } = $ports_result->{$singleport_id}->{$stat};
+    #     }
+    #     # foreach my $stat (keys %{$ovp_result->{$singleport_id}}) {
+    #     #     $self->{relayports}->{$singleport_id}->{ $ovp_mapping->{$stat}->{label} } = $ovp_result->{$singleport_id}->{$stat};
+    #     # }
+    # }
 }
 
 1;
@@ -261,7 +239,7 @@ __END__
 
 =head1 MODE
 
-Check Gude UPC8226 Power Channels statistics.
+Check Gude UPC8226 Power relayports statistics.
 
 =over 8
 
@@ -288,12 +266,12 @@ Critical threshold for OVP (OverVoltage Protection) status (Default: '%{ovp_stat
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-channels', 'channel-status', 'ovp-status', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
+Can be: 'active-relayports', 'channel-status', 'ovp-status', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
 'power-apparent', 'power-factor', 'power-reactive', 'voltage'
 
 =item B<--critical-*>
 
-Can be: 'active-channels', 'channel-status', 'ovp-status', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
+Can be: 'active-relayports', 'channel-status', 'ovp-status', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
 'power-apparent', 'power-factor', 'power-reactive', 'voltage'
 
 =back

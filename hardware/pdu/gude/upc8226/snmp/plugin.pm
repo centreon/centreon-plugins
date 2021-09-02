@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'channels' => 'hardware::pdu::gude::upc8226::snmp::mode::channels',
-        'outlet'   => 'hardware::pdu::gude::upc8226::snmp::mode::outlet',
-        'sensors'  => 'hardware::pdu::gude::upc8226::snmp::mode::sensors',
+        'channels'    => 'hardware::pdu::gude::upc8226::snmp::mode::channels',
+        'relay-ports' => 'hardware::pdu::gude::upc8226::snmp::mode::relayports',
+        'sensors'     => 'hardware::pdu::gude::upc8226::snmp::mode::sensors',
     );
 
     return $self;
