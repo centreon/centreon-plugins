@@ -60,38 +60,6 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'energy', nlabel => 'pdu.channel.energy.active.kwh', set => {
-                key_values => [ { name => 'abs_energy_active', no_value => 0 }, { name => 'display' } ],
-                output_template => 'Absolute Energy Active : %.2f kWh',
-                perfdatas => [
-                    { template => '%.2f', min => 0, unit => 'kWh', label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
-        },
-        { label => 'power_active', nlabel => 'pdu.channel.power.active.watt', set => {
-                key_values => [ { name => 'power_active', no_value => 0 }, { name => 'display' } ],
-                output_template => 'Active power : %.2f W',
-                perfdatas => [
-                    { template => '%.2f', unit => 'W', label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
-        },
-        { label => 'power_reactive', nlabel => 'pdu.channel.power.reactive.var', set => {
-                key_values => [ { name => 'power_reactive', no_value => 0 }, { name => 'display' } ],
-                output_template => 'Reactive power : %.2f Var',
-                perfdatas => [
-                    { template => '%.2f', unit => 'Var', label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
-        },
-        { label => 'power_apparent', nlabel => 'pdu.channel.power.reactive.voltampere', set => {
-                key_values => [ { name => 'power_apparent', no_value => 0 }, { name => 'display' } ],
-                output_template => 'Apparent power : %.2f VA',
-                perfdatas => [
-                    { template => '%.2f', unit => 'VA', label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
-        },
         { label => 'current', nlabel => 'pdu.channel.current.ampere', set => {
                 key_values => [ { name => 'current', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Current : %.2f A',
@@ -100,11 +68,11 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'voltage', nlabel => 'pdu.channel.voltage.volt', set => {
-                key_values => [ { name => 'voltage', no_value => 0 }, { name => 'display' } ],
-                output_template => 'Voltage : %.2f V',
+        { label => 'energy', nlabel => 'pdu.channel.energy.active.kwh', set => {
+                key_values => [ { name => 'abs_energy_active', no_value => 0 }, { name => 'display' } ],
+                output_template => 'Absolute Energy Active : %.2f kWh',
                 perfdatas => [
-                    { template => '%.2f', min => 0, unit => 'V', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, unit => 'kWh', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -116,14 +84,6 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'power-factor', nlabel => 'pdu.channel.power.factor', set => {
-                key_values => [ { name => 'power_factor', no_value => 0 }, { name => 'display' } ],
-                output_template => 'Power factor : %.2f',
-                perfdatas => [
-                    { template => '%.2f', min => 0, unit => '', label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
-        },
         { label => 'phase-angle', nlabel => 'pdu.channel.pase.angle.degree', set => {
                 key_values => [ { name => 'phase_angle', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Phase angle : %.2f°',
@@ -132,6 +92,46 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'power-active', nlabel => 'pdu.channel.power.active.watt', set => {
+                key_values => [ { name => 'power_active', no_value => 0 }, { name => 'display' } ],
+                output_template => 'Active power : %.2f W',
+                perfdatas => [
+                    { template => '%.2f', unit => 'W', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'power-apparent', nlabel => 'pdu.channel.power.reactive.voltampere', set => {
+                key_values => [ { name => 'power_apparent', no_value => 0 }, { name => 'display' } ],
+                output_template => 'Apparent power : %.2f VA',
+                perfdatas => [
+                    { template => '%.2f', unit => 'VA', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'power-factor', nlabel => 'pdu.channel.power.factor', set => {
+                key_values => [ { name => 'power_factor', no_value => 0 }, { name => 'display' } ],
+                output_template => 'Power factor : %.2f',
+                perfdatas => [
+                    { template => '%.2f', min => 0, unit => '', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'power-reactive', nlabel => 'pdu.channel.power.reactive.var', set => {
+                key_values => [ { name => 'power_reactive', no_value => 0 }, { name => 'display' } ],
+                output_template => 'Reactive power : %.2f Var',
+                perfdatas => [
+                    { template => '%.2f', unit => 'Var', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'voltage', nlabel => 'pdu.channel.voltage.volt', set => {
+                key_values => [ { name => 'voltage', no_value => 0 }, { name => 'display' } ],
+                output_template => 'Voltage : %.2f V',
+                perfdatas => [
+                    { template => '%.2f', min => 0, unit => 'V', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
     ];
 }
 
@@ -147,19 +147,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-channel:s' => { name => 'filter_channel' }
     });
 
     return $self;
 }
-
-sub prefix_group_output {
-    my ($self, %options) = @_;
-
-    return "Channel '" . $options{instance_value}->{display} . "' ";
-}
-
-
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -221,6 +213,7 @@ sub manage_selection {
     };
 
     foreach my $channel_id (keys %{$power_result}) {
+        next if (defined($self->{option_results}->{filter_channel}) && $self->{option_results}->{filter_channel} !~ /$channel_id/);
         foreach my $stat (keys %{$power_result->{$channel_id}}) {
             if ($stat =~ m/epc8226Current|epc8226AbsEnergyActive|epc8226PowerFactor/ && defined($power_result->{$channel_id}->{$stat})) {
                 $power_result->{$channel_id}->{$stat} *= 0.001;
@@ -243,23 +236,40 @@ __END__
 
 =head1 MODE
 
-Check group metrics (voltage, current and power).
+Check Gude UPC8226 Power Channels statistics.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--filter-channel>
 
-Filter group name (can be a regexp).
+Filter channel ID (can be a regexp).
+
+=item B<--warning-channel-status>
+
+Warning threshold for channel status (Default: none)
+
+=item B<--critical-channel-status>
+
+Critical threshold for channel status (Default: '%{channel_status} !~ /valid/i')
+
+=item B<--warning-ovp-status>
+
+Warning threshold for OVP (OverVoltage Protection) status (Default: none)
+
+=item B<--critical-ovp-status>
+
+Critical threshold for OVP (OverVoltage Protection) status (Default: '%{ovp_status} !~ /ok/i')
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'voltage', 'current', 'power'.
+Can be: 'active-channels', 'channel-status', 'ovp-status', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
+'power-apparent', 'power-factor', 'power-reactive', 'voltage'
 
 =item B<--critical-*>
 
-Threshold critical.
-Can be: 'voltage', 'current', 'power'.
+Can be: 'active-channels', 'channel-status', 'ovp-status', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
+'power-apparent', 'power-factor', 'power-reactive', 'voltage'
 
 =back
 
