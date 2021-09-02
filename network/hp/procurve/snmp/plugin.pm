@@ -30,14 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'              => 'network::hp::procurve::snmp::mode::cpu',
         'environment'      => 'network::hp::procurve::snmp::mode::environment',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'network::hp::procurve::snmp::mode::memory',
-        'virtual-chassis'  => 'network::hp::procurve::snmp::mode::virtualchassis',
-    );
+        'virtual-chassis'  => 'network::hp::procurve::snmp::mode::virtualchassis'
+    };
 
     return $self;
 }
