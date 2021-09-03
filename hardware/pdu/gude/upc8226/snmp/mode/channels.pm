@@ -235,7 +235,7 @@ sub manage_selection {
     };
 
     foreach my $channel_id (keys %{$power_result}) {
-        next if (defined($self->{option_results}->{filter_channel}) && $self->{option_results}->{filter_channel} !~ /$channel_id/);
+        next if (defined($self->{option_results}->{filter_channel}) &&  $channel_id !~ /$self->{option_results}->{filter_channel}/ );
         foreach my $stat (keys %{$power_result->{$channel_id}}) {
             if ($stat =~ m/epc8226Current|epc8226AbsEnergyActive|epc8226PowerFactor/ && defined($power_result->{$channel_id}->{$stat})) {
                 $power_result->{$channel_id}->{$stat} *= 0.001;
