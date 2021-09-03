@@ -157,7 +157,6 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $epc8226portNumber = '.1.3.6.1.4.1.28507.58.1.3.1.1.0';
     my $epc8226portEntry = '.1.3.6.1.4.1.28507.58.1.3.1.2.1';
     my $epc8226spPowerEntry = '.1.3.6.1.4.1.28507.58.1.5.5.2.1';
 
@@ -188,7 +187,6 @@ sub manage_selection {
         epc8226spPowerReactive   => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.11', label => 'power_reactive' }
     };
 
-    my $global_results = $options{snmp}->get_leef( oids => [ $epc8226portNumber ], nothing_quit => 1);
     my $relayports_results = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $epc8226portEntry, start => $ports_mapping->{epc8226PortName}->{oid}, end => $ports_mapping->{epc8226PortState}->{oid} },
@@ -197,10 +195,7 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    $self->{global} = {
-        total_relayports => $global_results->{$epc8226portNumber}
-    };
-
+    $self->{global}->{total_relayports} = 0;
     my $ports_result;
     foreach my $port_oid (keys %{$relayports_results->{$epc8226portEntry}}) {
         next if ($port_oid !~ /^$ports_mapping->{epc8226PortName}->{oid}\.(.*)$/);
@@ -231,6 +226,7 @@ sub manage_selection {
             }
             $self->{relayports}->{$singleport_id}->{ $singleport_mapping->{$stat}->{label} } = $sp_result->{$singleport_id}->{$stat};
         }
+        $self->{global}->{total_relayports}++;
     }
 }
 
