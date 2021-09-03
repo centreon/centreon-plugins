@@ -285,6 +285,14 @@ Warning threshold for OVP (OverVoltage Protection) status (Default: none)
 
 Critical threshold for OVP (OverVoltage Protection) status (Default: '%{ovp_status} !~ /ok/i')
 
+=item B<--warning-ps-status>
+
+Warning threshold for Power Supply status (Default: none)
+
+=item B<--critical-ovp-status>
+
+Critical threshold for Power Supply status (Default: '%{ps_status} !~ /up/i')
+
 =item B<--warning-*>
 
 Threshold warning.
