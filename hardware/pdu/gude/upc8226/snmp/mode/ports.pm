@@ -60,7 +60,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'current', nlabel => 'pdu.channel.current.ampere', set => {
+        { label => 'current', nlabel => 'pdu.singleport.current.ampere', set => {
                 key_values => [ { name => 'current', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
@@ -68,7 +68,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'energy', nlabel => 'pdu.channel.energy.active.kwh', set => {
+        { label => 'energy', nlabel => 'pdu.singleport.energy.active.kwh', set => {
                 key_values => [ { name => 'abs_energy_active', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Absolute Energy Active : %.2f kWh',
                 perfdatas => [
@@ -76,7 +76,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'frequency', nlabel => 'pdu.channel.frequency.hertz', set => {
+        { label => 'frequency', nlabel => 'pdu.singleport.frequency.hertz', set => {
                 key_values => [ { name => 'frequency', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Frequency : %.2f Hz',
                 perfdatas => [
@@ -84,7 +84,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'phase-angle', nlabel => 'pdu.channel.pase.angle.degree', set => {
+        { label => 'phase-angle', nlabel => 'pdu.singleport.pase.angle.degree', set => {
                 key_values => [ { name => 'phase_angle', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Phase angle : %.2f°',
                 perfdatas => [
@@ -92,7 +92,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'power-active', nlabel => 'pdu.channel.power.active.watt', set => {
+        { label => 'power-active', nlabel => 'pdu.singleport.power.active.watt', set => {
                 key_values => [ { name => 'power_active', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Active power : %.2f W',
                 perfdatas => [
@@ -100,7 +100,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'power-apparent', nlabel => 'pdu.channel.power.reactive.voltampere', set => {
+        { label => 'power-apparent', nlabel => 'pdu.singleport.power.reactive.voltampere', set => {
                 key_values => [ { name => 'power_apparent', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Apparent power : %.2f VA',
                 perfdatas => [
@@ -108,7 +108,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'power-factor', nlabel => 'pdu.channel.power.factor', set => {
+        { label => 'power-factor', nlabel => 'pdu.singleport.power.factor', set => {
                 key_values => [ { name => 'power_factor', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Power factor : %.2f',
                 perfdatas => [
@@ -116,7 +116,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'power-reactive', nlabel => 'pdu.channel.power.reactive.var', set => {
+        { label => 'power-reactive', nlabel => 'pdu.singleport.power.reactive.var', set => {
                 key_values => [ { name => 'power_reactive', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Reactive power : %.2f Var',
                 perfdatas => [
@@ -124,7 +124,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'voltage', nlabel => 'pdu.channel.voltage.volt', set => {
+        { label => 'voltage', nlabel => 'pdu.singleport.voltage.volt', set => {
                 key_values => [ { name => 'voltage', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
