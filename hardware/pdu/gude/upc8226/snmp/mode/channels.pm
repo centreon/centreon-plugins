@@ -261,7 +261,7 @@ __END__
 
 =head1 MODE
 
-Check Gude UPC8226 Power Channels statistics.
+Check Gude UPC8226 Power Channels (banks) statistics.
 
 =over 8
 
@@ -288,12 +288,12 @@ Critical threshold for OVP (OverVoltage Protection) status (Default: '%{ovp_stat
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-channels', 'channel-status', 'ovp-status', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
+Can be: 'active-channels', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
 'power-apparent', 'power-factor', 'power-reactive', 'voltage'
 
 =item B<--critical-*>
 
-Can be: 'active-channels', 'channel-status', 'ovp-status', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
+Can be: 'active-channels', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
 'power-apparent', 'power-factor', 'power-reactive', 'voltage'
 
 =back

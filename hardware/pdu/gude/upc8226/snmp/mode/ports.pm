@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::pdu::gude::upc8226::snmp::mode::relayports;
+package hardware::pdu::gude::upc8226::snmp::mode::ports;
 
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
@@ -35,9 +35,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'active-relayports', nlabel => 'pdu.relayports.active', set => {
-                key_values => [ { name => 'active_relayports' } ],
-                output_template => '%s Active relayport(s)',
+        { label => 'total-singleports', nlabel => 'pdu.singleports.total', set => {
+                key_values => [ { name => 'total_relayports' } ],
+                output_template => '%s single port(s)',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -46,16 +46,16 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{relayports} = [
-        { label => 'channel-status', type => 2, critical_default => '%{channel_status} !~ /valid/i', set => {
-                key_values => [ { name => 'channel_status' }, { name => 'display' } ],
+        { label => 'port-status', type => 2, set => {
+                key_values => [ { name => 'port_status' }, { name => 'display' } ],
                 output_template => 'Status : %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'ovp-status', type => 2, critical_default => '%{ovp_status} !~ /ok/i', set => {
-                key_values => [ { name => 'ovp_status' }, { name => 'display' } ],
-                output_template => 'OVP status : %s',
+        { label => 'channel-status', type => 2, set => {
+                key_values => [ { name => 'channel_status' }, { name => 'display' } ],
+                output_template => 'Channel status : %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
@@ -138,7 +138,7 @@ sub set_counters {
 sub prefix_relayports_output {
     my ($self, %options) = @_;
 
-    return "'" . $options{instance_value}->{display} . "' ";
+    return "Port '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -147,7 +147,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-channel:s' => { name => 'filter_channel' }
+        'filter-port:s'   => { name => 'filter_port' },
+        'skip-poweredoff' => { name => 'skip_poweredoff' },
     });
 
     return $self;
@@ -168,7 +169,6 @@ sub manage_selection {
         0 => 'not active',
         1 => 'valid'
     };
-    
 
     my $ports_mapping = {
         epc8226PortName  => { oid => '.1.3.6.1.4.1.28507.58.1.3.1.2.1.2', label => 'port_name' },
@@ -176,7 +176,7 @@ sub manage_selection {
     };
 
     my $singleport_mapping = {
-        epc8226spChanStatus      => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.2', label => 'sp_status', map => $sp_status_mapping },
+        epc8226spChanStatus      => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.2', label => 'channel_status', map => $sp_status_mapping },
         epc8226spAbsEnergyActive => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.3', label => 'abs_energy_active' },
         epc8226spPowerActive     => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.4', label => 'active_power' },
         epc8226spCurrent         => { oid => '.1.3.6.1.4.1.28507.58.1.5.5.2.1.5', label => 'current' },
@@ -198,7 +198,7 @@ sub manage_selection {
     );
 
     $self->{global} = {
-        active_relayports => $global_results->{$epc8226portNumber}
+        total_relayports => $global_results->{$epc8226portNumber}
     };
 
     my $ports_result;
@@ -213,24 +213,25 @@ sub manage_selection {
         my $instance = $1;
         $sp_result->{$instance} = $options{snmp}->map_instance(mapping => $singleport_mapping, results => $relayports_results->{$epc8226spPowerEntry}, instance => $instance);
     };
-    use Data::Dumper; print Dumper($sp_result); exit 0;
 
-    # foreach my $singleport_id (keys %{$ports_result}) {
-    #     #next if (defined($self->{option_results}->{filter_singleport}) && $self->{option_results}->{filter_port} !~ /$singleport_id/);
-    #     foreach my $stat (keys %{$ports_result->{$singleport_id}}) {
-    #         # if ($stat =~ m/epc8226Current|epc8226AbsEnergyActive|epc8226PowerFactor/ && defined($ports_result->{$singleport_id}->{$stat})) {
-    #         #     $ports_result->{$singleport_id}->{$stat} *= 0.001;
-    #         # }
-    #         # if ($stat =~ m/epc8226Frequency|epc8226AbsEnergyActive/ && defined($ports_result->{$singleport_id}->{$stat})) {
-    #         #     $ports_result->{$singleport_id}->{$stat} *= 0.01;
-    #         # }
-    #         $self->{relayports}->{$singleport_id}->{display} = $ports_result->{$singleport_id}->{};
-    #         $self->{relayports}->{$singleport_id}->{ $singleport_mapping->{$stat}->{label} } = $ports_result->{$singleport_id}->{$stat};
-    #     }
-    #     # foreach my $stat (keys %{$ovp_result->{$singleport_id}}) {
-    #     #     $self->{relayports}->{$singleport_id}->{ $ovp_mapping->{$stat}->{label} } = $ovp_result->{$singleport_id}->{$stat};
-    #     # }
-    # }
+    foreach my $singleport_id (keys %{$ports_result}) {
+        next if (defined($self->{option_results}->{skip_poweredoff}) && $ports_result->{$singleport_id}->{epc8226PortState} eq 'off');
+        next if (defined($self->{option_results}->{filter_port}) && $ports_result->{$singleport_id}->{epc8226PortName} !~ /$self->{option_results}->{filter_port}/);
+
+        foreach my $stat (keys %{$ports_result->{$singleport_id}}) {
+            $self->{relayports}->{$singleport_id}->{display} = $singleport_id . '_' . $ports_result->{$singleport_id}->{epc8226PortName};
+            $self->{relayports}->{$singleport_id}->{ $ports_mapping->{$stat}->{label} } = $ports_result->{$singleport_id}->{$stat};
+        }
+        foreach my $stat (keys %{$sp_result->{$singleport_id}}) {
+            if ($stat =~ m/epc8226spCurrent|epc8226spAbsEnergyActive|epc8226spPowerFactor/ && defined($sp_result->{$singleport_id}->{$stat})) {
+                $sp_result->{$singleport_id}->{$stat} *= 0.001;
+            }
+            if ($stat =~ m/epc8226spFrequency|epc8226spAbsEnergyActive/ && defined($sp_result->{$singleport_id}->{$stat})) {
+                $sp_result->{$singleport_id}->{$stat} *= 0.01;
+            }
+            $self->{relayports}->{$singleport_id}->{ $singleport_mapping->{$stat}->{label} } = $sp_result->{$singleport_id}->{$stat};
+        }
+    }
 }
 
 1;
@@ -239,39 +240,43 @@ __END__
 
 =head1 MODE
 
-Check Gude UPC8226 Power relayports statistics.
+Check Gude UPC8226 single ports statistics.
 
 =over 8
 
-=item B<--filter-channel>
+=item B<--filter-port>
 
-Filter channel ID (can be a regexp).
+Filter port name (can be a regexp).
+
+=item B<--skip-poweredoff>
+
+Exlude the single ports that have been powered off.
+
+=item B<--warning-port-status>
+
+Warning threshold for single port status (Default: none)
+
+=item B<--critical-port-status>
+
+Critical threshold for single port status (Example: '%{port_status} !~ /on/i', default: none)
 
 =item B<--warning-channel-status>
 
-Warning threshold for channel status (Default: none)
+Warning threshold for single port channel status (Default: none)
 
 =item B<--critical-channel-status>
 
-Critical threshold for channel status (Default: '%{channel_status} !~ /valid/i')
-
-=item B<--warning-ovp-status>
-
-Warning threshold for OVP (OverVoltage Protection) status (Default: none)
-
-=item B<--critical-ovp-status>
-
-Critical threshold for OVP (OverVoltage Protection) status (Default: '%{ovp_status} !~ /ok/i')
+Critical threshold for single port channel status (Example: '%{channel_status} !~ /valid/i', default: none)
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-relayports', 'channel-status', 'ovp-status', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
+Can be: 'total-singleports', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
 'power-apparent', 'power-factor', 'power-reactive', 'voltage'
 
 =item B<--critical-*>
 
-Can be: 'active-relayports', 'channel-status', 'ovp-status', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
+Can be: 'total-singleports', 'current', 'energy', 'frequency', 'phase-angle', 'power-active',
 'power-apparent', 'power-factor', 'power-reactive', 'voltage'
 
 =back
