@@ -36,22 +36,6 @@ sub get_metrics_mapping {
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
-        },
-        'percentage4xx' => {
-            'output' => 'Percentage of 4XX',
-            'label'  => '4xx-requests-percentage',
-            'nlabel' => 'cdn.requests.4xx.percentage',
-            'unit'   => '%',
-            'min'    => '0',
-            'max'    => '100'
-        },
-        'percentage5xx' => {
-            'output' => 'Percentage of 5XX',
-            'label'  => '5xx-requests-percentage',
-            'nlabel' => 'cdn.requests.5xx.percentage',
-            'unit'   => '%',
-            'min'    => '0',
-            'max'    => '100'
         }
     };
 
