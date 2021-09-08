@@ -50,38 +50,57 @@ sub run {
     my $oid_nodeName = '.1.3.6.1.4.1.789.1.25.2.1.1';
     my $oid_nodeEnvFailedFanCount = '.1.3.6.1.4.1.789.1.25.2.1.19';
     my $oid_nodeEnvFailedFanMessage = '.1.3.6.1.4.1.789.1.25.2.1.20';
-    my $results = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_envFailedFanCount }, 
-                                                            { oid => $oid_envFailedFanMessage },
-                                                            { oid => $oid_nodeName },
-                                                            { oid => $oid_nodeEnvFailedFanCount },
-                                                            { oid => $oid_nodeEnvFailedFanMessage }
-                                                            ], nothing_quit => 1);
+    my $results = $self->{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_envFailedFanCount }, 
+            { oid => $oid_envFailedFanMessage },
+            { oid => $oid_nodeName },
+            { oid => $oid_nodeEnvFailedFanCount },
+            { oid => $oid_nodeEnvFailedFanMessage }
+        ],
+        nothing_quit => 1
+    );
     
     if (defined($results->{$oid_envFailedFanCount}->{$oid_envFailedFanCount . '.0'})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'Fans are ok.');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'Fans are ok.'
+        );
         if ($results->{$oid_envFailedFanCount}->{$oid_envFailedFanCount . '.0'} != 0) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("'%d' fans are failed [message: %s].", 
-                                                        $results->{$oid_envFailedFanCount}->{$oid_envFailedFanCount . '.0'},
-                                                        $results->{$oid_envFailedFanMessage}->{$oid_envFailedFanMessage . '.0'}));
+            $self->{output}->output_add(
+                severity => 'CRITICAL',
+                short_msg => sprintf(
+                    "'%d' fans are failed [message: %s].", 
+                    $results->{$oid_envFailedFanCount}->{$oid_envFailedFanCount . '.0'},
+                    $results->{$oid_envFailedFanMessage}->{$oid_envFailedFanMessage . '.0'}
+                )
+            );
         }
     } else {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'Fans are ok on all nodes');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'Fans are ok on all nodes'
+        );
         foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$results->{$oid_nodeEnvFailedFanCount}})) {
             $oid =~ /^$oid_nodeEnvFailedFanCount\.(.*)$/;
             my $instance = $1;
             my $name = $results->{$oid_nodeName}->{$oid_nodeName . '.' . $instance};
             my $count = $results->{$oid_nodeEnvFailedFanCount}->{$oid};
             my $message = $results->{$oid_nodeEnvFailedFanMessage}->{$oid_nodeEnvFailedFanMessage . '.' . $instance};
-            $self->{output}->output_add(long_msg => sprintf("'%d' fans are failed on node '%s' [message: %s]", 
-                                                            $count, $name, defined($message) ? $message : '-'));
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "'%d' fans are failed on node '%s' [message: %s]", 
+                    $count, $name, defined($message) ? $message : '-'
+                )
+            );
             if ($count != 0) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("'%d' fans are failed on node '%s' [message: %s]", 
-                                                        $count, $name, defined($message) ? $message : '-'));
+                $self->{output}->output_add(
+                    severity => 'CRITICAL',
+                    short_msg => sprintf(
+                        "'%d' fans are failed on node '%s' [message: %s]", 
+                        $count, $name, defined($message) ? $message : '-'
+                    )
+                );
             }
         }
     }
