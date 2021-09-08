@@ -30,8 +30,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'state : ' . $self->{result_values}->{state};
-    return $msg;
+    return 'state : ' . $self->{result_values}->{state};
 }
 
 sub custom_cpu_calc {
@@ -39,7 +38,14 @@ sub custom_cpu_calc {
 
     my $delta_cpu_total = $options{new_datas}->{$self->{instance} . '_cpu_total_usage'} - $options{old_datas}->{$self->{instance} . '_cpu_total_usage'};
     my $delta_cpu_system = $options{new_datas}->{$self->{instance} . '_cpu_system_usage'} - $options{old_datas}->{$self->{instance} . '_cpu_system_usage'};
-    $self->{result_values}->{prct_cpu} = (($delta_cpu_total / $delta_cpu_system) * $options{new_datas}->{$self->{instance} . '_cpu_number'}) * 100;
+    # container is not running
+    return -10 if ($options{new_datas}->{$self->{instance} . '_cpu_system_usage'} == 0);
+
+    if ($delta_cpu_system == 0) {
+        $self->{result_values}->{prct_cpu} = 0;
+    } else {
+        $self->{result_values}->{prct_cpu} = (($delta_cpu_total / $delta_cpu_system) * $options{new_datas}->{$self->{instance} . '_cpu_number'}) * 100;
+    }
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
 
     return 0;
@@ -94,6 +100,9 @@ sub custom_memory_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_memory_total'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_memory_usage'};
+    # container is not running
+    return -10 if ($self->{result_values}->{used} == 0);
+
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
@@ -104,8 +113,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers are ok', skipped_code => { -11 => 1 } },
-        { name => 'containers_traffic', type => 1, cb_prefix_output => 'prefix_containers_traffic_output', message_multiple => 'All container traffics are ok', skipped_code => { -11 => 1 } },
+        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers are ok', skipped_code => { -10 => 1, -11 => 1 } },
+        { name => 'containers_traffic', type => 1, cb_prefix_output => 'prefix_containers_traffic_output', message_multiple => 'All container traffics are ok', skipped_code => { -11 => 1 } }
     ];
     
     $self->{maps_counters}->{containers} = [
@@ -244,7 +253,7 @@ sub manage_selection {
             cpu_number => defined($result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}) ?
                 scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}}) : 1,
             memory_usage => $result->{$container_id}->{Stats}->{memory_stats}->{usage},
-            memory_total => $result->{$container_id}->{Stats}->{memory_stats}->{limit},
+            memory_total => $result->{$container_id}->{Stats}->{memory_stats}->{limit}
         };
         
         foreach my $interface (keys %{$result->{$container_id}->{Stats}->{networks}}) {
