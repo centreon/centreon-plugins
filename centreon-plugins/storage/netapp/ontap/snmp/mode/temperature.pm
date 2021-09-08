@@ -57,31 +57,43 @@ sub run {
         oids => [
             { oid => $oid_envOverTemperature },
             { oid => $oid_nodeName },
-            { oid => $oid_nodeEnvOverTemperature },
+            { oid => $oid_nodeEnvOverTemperature }
         ],
         nothing_quit => 1
     );
     
     if (defined($results->{$oid_envOverTemperature}->{$oid_envOverTemperature . '.0'})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'Hardware temperature is ok.');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'Hardware temperature is ok.'
+        );
         if ($mapping_temperature{$results->{$oid_envOverTemperature}->{$oid_envOverTemperature . '.0'}} eq 'yes') {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => 'Hardware temperature is over temperature range.');
+            $self->{output}->output_add(
+                severity => 'CRITICAL',
+                short_msg => 'Hardware temperature is over temperature range.'
+            );
         }
     } else {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'Hardware temperature are ok on all nodes');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'Hardware temperature are ok on all nodes'
+        );
         foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$results->{$oid_nodeEnvOverTemperature}})) {
             $oid =~ /^$oid_nodeEnvOverTemperature\.(.*)$/;
             my $instance = $1;
             my $name = $results->{$oid_nodeName}->{$oid_nodeName . '.' . $instance};
             my $temp = $results->{$oid_nodeEnvOverTemperature}->{$oid};
-            $self->{output}->output_add(long_msg => sprintf("hardware temperature on node '%s' is over range: '%s'", 
-                                                            $name, $mapping_temperature{$temp}));
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "hardware temperature on node '%s' is over range: '%s'", 
+                    $name, $mapping_temperature{$temp}
+                )
+            );
             if ($mapping_temperature{$temp} eq 'yes') {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Hardware temperature is over temperature range on node '%s'", $name));
+                $self->{output}->output_add(
+                    severity => 'CRITICAL',
+                    short_msg => sprintf("Hardware temperature is over temperature range on node '%s'", $name)
+                );
             }
         }
     }
