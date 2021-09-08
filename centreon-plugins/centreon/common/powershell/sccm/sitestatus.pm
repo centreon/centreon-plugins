@@ -49,6 +49,13 @@ Try {
     $returnArray = @()
 
     $providers = Get-PSProvider | Where {$_.Name -match "CMSite" }
+    if ($null -eq $providers -or $providers.Count -eq 0) {
+        $providers = New-Object System.Collections.Generic.List[Hashtable];
+        $item = @{}
+        $item.Name = "AdminUI.PS.Provider\CMSite"
+        $items.Add($item)
+    }
+
     foreach ($provider in $providers) {
         New-PSDrive -Name SCCMDrive -PSProvider $provider.Name -Root $env:COMPUTERNAME -Description "SCCM Site" | Out-Null
         CD "SCCMDrive:\"
@@ -68,7 +75,7 @@ Try {
             $returnArray += $returnObject
         }
     }
-    
+
     $returnArray | ConvertTo-JSON-20 -forceArray $true
 } Catch {
     Write-Host $Error[0].Exception
