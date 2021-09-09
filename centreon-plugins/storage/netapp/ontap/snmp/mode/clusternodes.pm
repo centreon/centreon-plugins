@@ -83,7 +83,7 @@ sub node_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking node '%s' ",
+        "checking node '%s'",
         $options{instance_value}->{name}
     );
 }
@@ -145,7 +145,7 @@ sub set_counters {
 
     $self->{maps_counters}->{cpu} = [
          { label => 'cpu-utilization', nlabel => 'node.cpu.utilization.percentage', set => {
-                key_values => [ { name => 'cpuUptime' }, { name => 'cpuBusyTime' } ],
+                key_values => [ { name => 'cpuUptime', diff => 1 }, { name => 'cpuBusyTime', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_cpu_calc'),
                 output_template => 'cpu utilization: %.2f%%',
                 output_use => 'cpu_used', threshold_use => 'cpu_used',
