@@ -40,12 +40,29 @@ sub custom_temp_perfdata {
     );
 }
 
+sub plex_long_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "checking plex '%s'",
+        $options{instance_value}->{name}
+    );
+}
+
 sub prefix_plex_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Plex '%s' [aggregate: %s] ",
-        $options{instance_value}->{name},
+        "Plex '%s' ",
+        $options{instance_value}->{name}
+    );
+}
+
+sub prefix_aggregate_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "aggregate '%s' ",
         $options{instance_value}->{aggregate}
     );
 }
@@ -61,7 +78,12 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
-        { name => 'plexes', type => 1, cb_prefix_output => 'prefix_plex_output', message_multiple => 'All plexes are ok', skipped_code => { -10 => 1 } }
+        { name => 'plexes', type => 3, cb_prefix_output => 'prefix_plex_output', cb_long_output => 'plex_long_output',
+          indent_long_output => '    ', message_multiple => 'All plexes are ok',
+            group => [
+                { name => 'aggregates', type => 1, cb_prefix_output => 'prefix_aggregate_output', message_multiple => 'aggregates are ok', display_long => 1, skipped_code => { -10 => 1 } }
+            ]
+        }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -91,7 +113,7 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{plexes} = [
+    $self->{maps_counters}->{aggregates} = [
         {
             label => 'status',
             type => 2,
@@ -105,9 +127,11 @@ sub set_counters {
             }
         },
         { label => 'resyncing', nlabel => 'plex.resyncing.percentage', set => {
-                key_values => [ { name => 'resync' }, { name => 'aggregate' }, { name => 'name' } ],
+                key_values => [ { name => 'resync' } ],
                 output_template => 'resyncing: %.2f %%',
-                closure_custom_perfdata => $self->can('custom_temp_perfdata')
+                perfdatas => [
+                    { template => '%s', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
         }
     ];
@@ -143,6 +167,7 @@ sub manage_selection {
 
     $self->{global} = { offline => 0, resyncing => 0, online => 0 };
     $self->{plexes} = {};
+    my $instances = {};
     my $snmp_result = $options{snmp}->get_table(oid => $oid_plexName, nothing_quit => 1);
     foreach my $oid (keys %$snmp_result) {
         $oid =~ /^$oid_plexName\.(.*)$/;
@@ -155,7 +180,8 @@ sub manage_selection {
             next;
         }
 
-        $self->{plexes}->{$instance} = { name => $name };
+        $instances->{$instance} = $name;
+        $self->{plexes}->{$name} = { name => $name, aggregates => {} };
     }
 
     if (scalar(keys %{$self->{plexes}}) <= 0) {
@@ -167,12 +193,12 @@ sub manage_selection {
         oids => [
             map($_->{oid}, values(%$mapping)) 
         ],
-        instances => [keys %{$self->{plexes}}],
+        instances => [ map($_, keys %$instances) ],
         instance_regexp => '^(.*)$'
     );
     $snmp_result = $options{snmp}->get_leef();
     
-    foreach (keys %{$self->{plexes}}) {
+    foreach (keys %$instances) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
         if (defined($self->{option_results}->{filter_aggregate}) && $self->{option_results}->{filter_aggregate} ne '' &&
             $result->{aggregate} !~ /$self->{option_results}->{filter_aggregate}/) {
@@ -180,9 +206,10 @@ sub manage_selection {
             next;
         }
 
-        $self->{plexes}->{$_}->{status} = $result->{status};
-        $self->{plexes}->{$_}->{aggregate} = $result->{aggregate};
-        $self->{plexes}->{$_}->{resync} = $result->{resync} if ($result->{status} eq 'resyncing');
+        $self->{plexes}->{ $instances->{$_} }->{aggregates}->{ $result->{aggregate} }->{name} = $instances->{$_};
+        $self->{plexes}->{ $instances->{$_} }->{aggregates}->{ $result->{aggregate} }->{aggregate} = $result->{aggregate};
+        $self->{plexes}->{ $instances->{$_} }->{aggregates}->{ $result->{aggregate} }->{status} = $result->{status};
+        $self->{plexes}->{ $instances->{$_} }->{aggregates}->{ $result->{aggregate} }->{resync} = $result->{resync} if ($result->{status} eq 'resyncing');
         $self->{global}->{ $result->{status} }++;
     }
 }
