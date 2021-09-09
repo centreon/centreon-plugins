@@ -1,3 +1,16 @@
+2021-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Fortinet Fortiweb SNMP
+ * Plugin added: Tplink SNMP
+ * Plugin added: Grafana
+ * Plugin added: Symbolg Wing SNMP
+ * Plugin added: Jvm actuator
+ * Plugin added: Azure Container Registry
+ * Plugin added: Barco ClickShare Rest API
+ * Plugin added: HashiCorp Vault Rest API
+ * Core: passmanager change library for keepass v4
+ * Break: [infoblox/snmp] remove cpu/memory modes - add system mode
+ * Break: [qnap/snmp] es serie managed, rename volume-usage
+
 2021-05-20 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Azure MySQL
  * Plugin added: Azure EventGrid
