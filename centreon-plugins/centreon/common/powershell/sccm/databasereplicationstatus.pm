@@ -46,33 +46,47 @@ Try {
     $module = $modulePath + "\ConfigurationManager.psd1"
     Import-Module $module
 
-    New-PSDrive -Name SCCMDrive -PSProvider "AdminUI.PS.Provider\CMSite" -Root $env:COMPUTERNAME -Description "SCCM Site" | Out-Null
-    CD "SCCMDrive:\"
+    $providers = Get-PSProvider | Where {$_.Name -match "CMSite" }
+    if ($null -eq $providers -or $providers.Count -eq 0) {
+        $providers = New-Object System.Collections.Generic.List[Hashtable];
+        $item = @{}
+        $item.Name = "AdminUI.PS.Provider\CMSite"
+        $items.Add($item)
+    }
 
-    $CMObject = Get-CMDatabaseReplicationStatus
+    $returnArray = @()
+    foreach ($provider in $providers) {
+        New-PSDrive -Name SCCMDrive -PSProvider $provider.Name -Root $env:COMPUTERNAME -Description "SCCM Site" | Out-Null
+        CD "SCCMDrive:\"
 
-    CD "C:\"
-    Remove-PSDrive -Name SCCMDrive
-    
-    $returnObject = New-Object -TypeName PSObject
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LinkStatus" -Value $CMObject.LinkStatus
+        $CMObject = Get-CMDatabaseReplicationStatus
 
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site1" -Value $CMObject.Site1
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteName1" -Value $CMObject.SiteName1
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteType1" -Value $CMObject.SiteType1
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site1Status" -Value $CMObject.Site1Status
+        CD "C:\"
+        Remove-PSDrive -Name SCCMDrive
 
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site2" -Value $CMObject.Site2
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteName2" -Value $CMObject.SiteName2
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteType2" -Value $CMObject.SiteType2
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site2Status" -Value $CMObject.Site2Status
+        $returnObject = New-Object -TypeName PSObject
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "providerName" -Value $provider.Name
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LinkStatus" -Value $CMObject.LinkStatus
 
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site1ToSite2GlobalState" -Value $CMObject.Site1ToSite2GlobalState
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site1ToSite2GlobalSyncTime" -Value $CMObject.Site1ToSite2GlobalSyncTime
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site2ToSite1GlobalState" -Value $CMObject.Site2ToSite1GlobalState
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site2ToSite1GlobalSyncTime" -Value $CMObject.Site2ToSite1GlobalSyncTime
-    
-    $returnObject | ConvertTo-JSON-20
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site1" -Value $CMObject.Site1
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteName1" -Value $CMObject.SiteName1
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteType1" -Value $CMObject.SiteType1
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site1Status" -Value $CMObject.Site1Status
+
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site2" -Value $CMObject.Site2
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteName2" -Value $CMObject.SiteName2
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SiteType2" -Value $CMObject.SiteType2
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site2Status" -Value $CMObject.Site2Status
+
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site1ToSite2GlobalState" -Value $CMObject.Site1ToSite2GlobalState
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site1ToSite2GlobalSyncTime" -Value $CMObject.Site1ToSite2GlobalSyncTime
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site2ToSite1GlobalState" -Value $CMObject.Site2ToSite1GlobalState
+        Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "Site2ToSite1GlobalSyncTime" -Value $CMObject.Site2ToSite1GlobalSyncTime
+
+        $returnArray += $returnObject
+    }
+
+    $returnArray | ConvertTo-JSON-20 -forceArray $true
 } Catch {
     Write-Host $Error[0].Exception
     exit 1
