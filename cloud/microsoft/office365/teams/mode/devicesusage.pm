@@ -35,14 +35,17 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
-    $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+    if ($self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/) {
+        $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+    }
 
-    $self->{output}->perfdata_add(label => 'active_devices', nlabel => 'teams.devices.active.count',
-                                  value => $self->{result_values}->{active},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  unit => 'devices', min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'active_devices', nlabel => 'teams.devices.active.count',
+        value => $self->{result_values}->{active},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        unit => 'devices', min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_active_threshold {
@@ -52,21 +55,26 @@ sub custom_active_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_active};
     }
-    my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
-
 }
 
 sub custom_active_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Active devices on %s : %d/%d (%.2f%%)",
-                        $self->{result_values}->{report_date},
-                        $self->{result_values}->{active},
-                        $self->{result_values}->{total},
-                        $self->{result_values}->{prct_active});
+    my $msg = sprintf(
+        "Active devices on %s : %d/%d (%.2f%%)",
+        $self->{result_values}->{report_date},
+        $self->{result_values}->{active},
+        $self->{result_values}->{total},
+        $self->{result_values}->{prct_active}
+    );
     return $msg;
 }
 
@@ -103,63 +111,58 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_active_threshold'),
                 closure_custom_perfdata => $self->can('custom_active_perfdata')
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'windows', nlabel => 'teams.devices.windows.count', set => {
                 key_values => [ { name => 'windows' } ],
                 output_template => 'Windows: %d',
                 perfdatas => [
-                    { label => 'windows', value => 'windows', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'windows', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'mac', nlabel => 'teams.devices.mac.count', set => {
                 key_values => [ { name => 'mac' } ],
                 output_template => 'Mac: %d',
                 perfdatas => [
-                    { label => 'mac', value => 'mac', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'mac', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'web', nlabel => 'teams.devices.web.count', set => {
                 key_values => [ { name => 'web' } ],
                 output_template => 'Web: %d',
                 perfdatas => [
-                    { label => 'web', value => 'web', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'web', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'ios', nlabel => 'teams.devices.ios.count', set => {
                 key_values => [ { name => 'ios' } ],
                 output_template => 'iOS: %d',
                 perfdatas => [
-                    { label => 'ios', value => 'ios', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'ios', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'android-phone', nlabel => 'teams.devices.android.count', set => {
                 key_values => [ { name => 'android_phone' } ],
                 output_template => 'Android Phone: %d',
                 perfdatas => [
-                    { label => 'android_phone', value => 'android_phone', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'android_phone', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'windows-phone', nlabel => 'teams.devices.windowsphone.count', set => {
                 key_values => [ { name => 'windows_phone' } ],
                 output_template => 'Windows Phone: %d',
                 perfdatas => [
-                    { label => 'windows_phone', value => 'windows_phone', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'windows_phone', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
