@@ -911,6 +911,8 @@ sub load_eval {
         $self->{safe}->share('$values');
         $self->{safe}->share('$assign_var');
     }
+
+    $self->{safe_test} = 1;
 }
 
 sub test_eval {
