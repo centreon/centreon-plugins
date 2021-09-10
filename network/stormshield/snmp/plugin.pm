@@ -38,6 +38,7 @@ sub new {
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'load'            => 'snmp_standard::mode::loadaverage',
         'ha-nodes'        => 'network::stormshield::snmp::mode::hanodes',
+        'hardware'        => 'network::stormshield::snmp::mode::hardware',
         'health'          => 'network::stormshield::snmp::mode::health',
         'memory'          => 'os::freebsd::snmp::mode::memory',
         'memory-detailed' => 'network::stormshield::snmp::mode::memorydetailed',
