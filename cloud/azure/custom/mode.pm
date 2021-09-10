@@ -87,10 +87,10 @@ sub custom_metric_output {
 
     my $network = defined($self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{network}) ? { network => '1' } : undef;
 
+
     my ($value, $unit) = $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{unit} eq 'B' ?
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{value}->{absolute}, %{$network}) :
         ($self->{result_values}->{value}->{absolute}, $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{unit});
-
     if (defined($self->{instance_mode}->{option_results}->{per_second})) {
         ($value, $unit) = $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{unit} eq 'B' ?
             $self->{perfdata}->change_bytes(value => $self->{result_values}->{value}->{per_second}, %{$network}) :
@@ -173,15 +173,16 @@ sub manage_selection {
     );
 
     foreach my $metric (@{$self->{az_metrics}}) {
+        $self->{az_metric_name} = lc($metric);
+        $self->{az_metric_name} =~ s/ /_/g;
         foreach my $aggregation (@{$self->{az_aggregations}}) {
-            next if (!defined($metric_results{$self->{az_resource}}->{$metric}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
-
+            next if (!defined($metric_results{$self->{az_resource}}->{$self->{az_metric_name}}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
             $self->{metrics}->{$self->{az_resource}}->{display} = $self->{az_resource};
             $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{display} = lc($aggregation);
             $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{timeframe} = $self->{az_timeframe};
             $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{$metric} =
-                defined($metric_results{$self->{az_resource}}->{$metric}->{lc($aggregation)}) ?
-                $metric_results{$self->{az_resource}}->{$metric}->{lc($aggregation)} : 0;
+                defined($metric_results{$self->{az_resource}}->{$self->{az_metric_name}}->{lc($aggregation)}) ?
+                $metric_results{$self->{az_resource}}->{$self->{az_metric_name}}->{lc($aggregation)} : 0;
         }
     }
 
