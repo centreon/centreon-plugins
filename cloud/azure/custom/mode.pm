@@ -173,16 +173,16 @@ sub manage_selection {
     );
 
     foreach my $metric (@{$self->{az_metrics}}) {
-        $self->{az_metric_name} = lc($metric);
-        $self->{az_metric_name} =~ s/ /_/g;
+        $metric_name = lc($metric);
+        $metric_name =~ s/ /_/g;
         foreach my $aggregation (@{$self->{az_aggregations}}) {
-            next if (!defined($metric_results{$self->{az_resource}}->{$self->{az_metric_name}}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
+            next if (!defined($metric_results{$self->{az_resource}}->{$metric_name}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
             $self->{metrics}->{$self->{az_resource}}->{display} = $self->{az_resource};
             $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{display} = lc($aggregation);
             $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{timeframe} = $self->{az_timeframe};
             $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{$metric} =
-                defined($metric_results{$self->{az_resource}}->{$self->{az_metric_name}}->{lc($aggregation)}) ?
-                $metric_results{$self->{az_resource}}->{$self->{az_metric_name}}->{lc($aggregation)} : 0;
+                defined($metric_results{$self->{az_resource}}->{$metric_name}->{lc($aggregation)}) ?
+                $metric_results{$self->{az_resource}}->{$metric_name}->{lc($aggregation)} : 0;
         }
     }
 
