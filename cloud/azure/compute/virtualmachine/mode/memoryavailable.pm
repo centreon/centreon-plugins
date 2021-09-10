@@ -30,7 +30,6 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'Available Memory Bytes' => {
-            'insight' => 'available_memory_bytes',
             'output'  => 'Available Memory Bytes',
             'label'   => 'memory-available',
             'nlabel'  => 'memory.available.bytes',
