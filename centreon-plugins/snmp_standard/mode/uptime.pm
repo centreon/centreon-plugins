@@ -35,10 +35,15 @@ my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m 
 sub custom_uptime_output { 
     my ($self, %options) = @_;
 
-    return sprintf(
+    my $msg = sprintf(
         'System uptime is: %s',
         centreon::plugins::misc::change_seconds(value => $self->{result_values}->{uptime}, start => 'd')
     );
+    if (defined($self->{instance_mode}->{option_results}->{add_sysdesc})) {
+        $msg .= sprintf(', %s', $self->{result_values}->{sysdesc});
+    }
+
+    return $msg;
 }
 
 sub custom_uptime_perfdata {
@@ -76,7 +81,7 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'uptime', set => {
-                key_values => [ { name => 'uptime' } ],
+                key_values => [ { name => 'uptime' }, { name => 'sysdesc' } ],
                 closure_custom_output => $self->can('custom_uptime_output'),
                 closure_custom_perfdata => $self->can('custom_uptime_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_uptime_threshold')
@@ -94,7 +99,8 @@ sub new {
         'force-oid:s'     => { name => 'force_oid' },
         'check-overload'  => { name => 'check_overload' },
         'reboot-window:s' => { name => 'reboot_window', default => 5000 },
-        'unit:s'          => { name => 'unit', default => 's' }
+        'unit:s'          => { name => 'unit', default => 's' },
+        'add-sysdesc'     => { name => 'add_sysdesc' }
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -145,17 +151,23 @@ sub check_overload {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $oid_sysDescr = '.1.3.6.1.2.1.1.1.0';
+    my @oids = ();
+    if (defined($self->{option_results}->{add_sysdesc})) {
+        @oids = ($oid_sysDescr);
+    }
+
     # To be used first for OS
     my $oid_hrSystemUptime = '.1.3.6.1.2.1.25.1.1.0';
     # For network equipment or others
     my $oid_sysUpTime = '.1.3.6.1.2.1.1.3.0';
     my ($result, $value);
-    
+
     if (defined($self->{option_results}->{force_oid})) {
-        $result = $options{snmp}->get_leef(oids => [ $self->{option_results}->{force_oid} ], nothing_quit => 1);
+        $result = $options{snmp}->get_leef(oids => [ @oids, $self->{option_results}->{force_oid} ], nothing_quit => 1);
         $value = $result->{ $self->{option_results}->{force_oid} };
     } else {
-        $result = $options{snmp}->get_leef(oids => [ $oid_hrSystemUptime, $oid_sysUpTime ], nothing_quit => 1);
+        $result = $options{snmp}->get_leef(oids => [ @oids, $oid_hrSystemUptime, $oid_sysUpTime ], nothing_quit => 1);
         if (defined($result->{$oid_hrSystemUptime})) {
             $value = $result->{$oid_hrSystemUptime};
         } else {
@@ -166,7 +178,7 @@ sub manage_selection {
     $value = $self->check_overload(timeticks => $value, snmp => $options{snmp});
     $value = floor($value / 100);
 
-    $self->{global} = { uptime => $value };
+    $self->{global} = { uptime => $value, sysdesc => defined($result->{$oid_sysDescr}) ? $result->{$oid_sysDescr} : '-' };
 }
 
 1;
@@ -186,6 +198,10 @@ Threshold warning.
 =item B<--critical-uptime>
 
 Threshold critical.
+
+=item B<--add-sysdesc>
+
+Display system description.
 
 =item B<--force-oid>
 
