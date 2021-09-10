@@ -22,12 +22,14 @@ package centreon::plugins::nrpe;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use Convert::Binary::C;
 use Digest::CRC 'crc32';
 use IO::Socket;
 use IO::Socket::INET6;
 use IO::Socket::SSL;
 use Socket qw(SOCK_STREAM AF_INET6 AF_INET);
+use Safe;
 
 sub new {
     my ($class, %options) = @_;
@@ -87,22 +89,65 @@ sub check_options {
         $self->{nrpe_params}->{Domain} = AF_INET6;
     }
 
-    $self->{ssl_context} = '';
-    my $append = '';
+    $self->{ssl_context} = {};
     foreach (@{$options{option_results}->{ssl_opt}}) {
-        if ($_ ne '' && $_ =~ /.*=>.*/) {
-            $self->{ssl_context} .= $append . $_;
-            $append = ', ';
+        if (/(SSL_[A-Za-z_]+)\s+=>\s*(\S+)/) {
+            my $value = $2;
+            $value = $self->assign_eval(eval => $value);
+            $self->{ssl_context}->{$1} = $value;
         }
     }
 }
+
+sub load_eval {
+    my ($self) = @_;
+
+    my ($code) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'Safe',
+        no_quit => 1
+    );
+    if ($code == 0) {
+        $self->{safe} = Safe->new();
+        $self->{safe}->permit_only(':base_core', 'rv2gv', 'padany');
+        $self->{safe}->share('$values');
+        $self->{safe}->share('$assign_var');
+        $self->{safe}->share_from('IO::Socket::SSL', [
+            'SSL_VERIFY_NONE', 'SSL_VERIFY_PEER', 'SSL_VERIFY_FAIL_IF_NO_PEER_CERT', 'SSL_VERIFY_CLIENT_ONCE',
+            'SSL_RECEIVED_SHUTDOWN', 'SSL_SENT_SHUTDOWN',
+            'SSL_OCSP_NO_STAPLE', 'SSL_OCSP_MUST_STAPLE', 'SSL_OCSP_FAIL_HARD', 'SSL_OCSP_FULL_CHAIN', 'SSL_OCSP_TRY_STAPLE'
+        ]);
+    }
+
+    $self->{safe_test} = 1;
+}
+
+sub assign_eval {
+    my ($self, %options) = @_;
+
+    $self->load_eval() if (!defined($self->{safe_test}) || $self->{safe_test} == 0);
+
+    our $assign_var;
+    if (defined($self->{safe})) {
+        our $values = $options{values};
+        $self->{safe}->reval("\$assign_var = $options{eval}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+    } else {
+        my $values = $options{values};
+        eval "\$assign_var = $options{eval}";
+    }
+
+    return $assign_var;
+}
+
 
 sub create_socket {
     my ($self, %options) = @_;
 
     my $socket;
-    if ($self->{ssl_context} ne '') {
-        $socket = IO::Socket::SSL->new(%{$self->{nrpe_params}}, eval $self->{ssl_context});
+    if (scalar(keys %{$self->{ssl_context}} > 0)) {
+        $socket = IO::Socket::SSL->new(%{$self->{nrpe_params}}, %{$self->{ssl_context}});
         if (!$socket) {
             $self->{output}->add_option_msg(short_msg => "Failed to establish SSL connection: $!, ssl_error=$SSL_ERROR");
             $self->{output}->option_exit();
@@ -454,8 +499,8 @@ Timeout in secondes (Default: 10).
 
 =item B<--ssl-opt>
 
-Set SSL Options (--ssl-opt="SSL_version => 'TLSv1'" --ssl-opt="SSL_verify_mode => 0"
---ssl-opt="SSL_cipher_list => ALL").
+Set SSL Options (--ssl-opt="SSL_version => 'TLSv1'" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE"
+--ssl-opt="SSL_cipher_list => 'ALL'").
 
 =back
 
