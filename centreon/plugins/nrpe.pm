@@ -29,7 +29,6 @@ use IO::Socket;
 use IO::Socket::INET6;
 use IO::Socket::SSL;
 use Socket qw(SOCK_STREAM AF_INET6 AF_INET);
-use Safe;
 
 sub new {
     my ($class, %options) = @_;
