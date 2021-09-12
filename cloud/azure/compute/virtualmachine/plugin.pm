@@ -36,7 +36,7 @@ sub new {
         'diskio'            => 'cloud::azure::compute::virtualmachine::mode::diskio',
         'health'            => 'cloud::azure::compute::virtualmachine::mode::health',
         'list-resources'    => 'cloud::azure::compute::virtualmachine::mode::listresources',
-        'memory-available'  => 'cloud::azure::compute::virtualmachine::mode::memoryavailable',
+        'memory'            => 'cloud::azure::compute::virtualmachine::mode::memory',
         'network'           => 'cloud::azure::compute::virtualmachine::mode::network',
         'vm-sizes'          => 'cloud::azure::compute::virtualmachine::mode::vmsizes',
         'vms-state'         => 'cloud::azure::compute::virtualmachine::mode::vmsstate'
