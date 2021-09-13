@@ -99,7 +99,7 @@ __END__
 
 Check Azure MS Compute Virtual Machine available memory.
 
-perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin --mode=memory-available \
+perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin --mode=memory \
 --custommode='api' --resource='***' --resource-group='***' \
 --subscription='***' --tenant='***' --client-id='***' --client-secret='**' --timeframe='900' \
 --interval='PT1M' --aggregation='average' --warning-memory-available=1024: --verbose
