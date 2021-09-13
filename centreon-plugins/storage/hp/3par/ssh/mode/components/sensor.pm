@@ -37,6 +37,9 @@ sub load {
     #  SBB Canister 1 memory      42 C        5 C       82 C Within Tolerance
     #             PCM 0 (5V)    5.19 V        ---        --- Within Tolerance
     #        PCM 0 (40A Max)    2.77 A        ---        --- Within Tolerance
+    #               PS0 Fan0   4380 RPM   1540 RPM   7140 RPM Within Tolerance
+    #               PS0 Fan1   4080 RPM   1540 RPM   7140 RPM Within Tolerance
+
     #
     #Node 1
     #---------
@@ -47,6 +50,11 @@ sub load {
     #            PCM 0 inlet      27 C       10 C       50 C Within Tolerance
     #          PCM 0 hotspot      21 C       10 C       65 C Within Tolerance
     #         Node Input PWR    87.6 W      0.0 W    264.0 W Within Tolerance
+    #          DDR40 VDDQ A     1.20 V     1.14 V     1.26 V Within Tolerance
+    #           DDR40 VPP A     2.48 V     2.37 V     2.75 V Within Tolerance
+    #          DDR40 VDDQ B     1.20 V     1.14 V     1.26 V Within Tolerance
+    #           DDR40 VPP B     2.48 V     2.37 V     2.75 V Within Tolerance
+
     push @{$self->{commands}}, 'echo "===shownodeenv==="', 'shownodeenv';
 }
 
@@ -59,14 +67,14 @@ sub check {
 
     return if ($self->{results} !~ /===shownodeenv===.*?\n(.*?)(===|\Z)/msi);
     my $content = $1;
-    my $unit_new_perf = { A => 'current.ampere', V => 'voltage.volt', W => 'power.watt', C => 'temperature.celsius' };
+    my $unit_new_perf = { A => 'current.ampere', V => 'voltage.volt', W => 'power.watt', C => 'temperature.celsius', R => 'current.speed' };
 
     while ($content =~ /^Node\s+(\d+)(.*?)(?=\nNode|\Z$)/msg) {
         my ($node_id, $measures) = ($1, $2);
 
         my @lines = split /\n/, $measures;
         foreach (@lines) {
-            next if (!/^(.*?)\s+(\S+)\s+([CWAV])\s+(\S+\s+[CWAV]|---)\s+(\S+\s+[CWAV]|---)\s+/);
+            next if (!/^(.*?)\s+([\d.]+)\s+([CWAVR])P?M?\s+([\d.]+\s+[CWAVR]|---)P?M?\s+([\d.]+\s+[CWAVR]|---)P?M?\s+/);
             my ($name, $reading, $unit, $lo_limit, $hi_limit)  = (centreon::plugins::misc::trim($1), $2, $3, $4, $5);
             my $instance = 'node' . $node_id . '.' . $name;
 
