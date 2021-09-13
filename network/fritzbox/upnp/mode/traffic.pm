@@ -30,15 +30,15 @@ sub custom_traffic_perfdata {
     my ($self, %options) = @_;
 
     my ($warning, $critical);
-    if ($self->{instance_mode}->{option_results}->{units} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{unit} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($self->{instance_mode}->{option_results}->{units} =~ /bps|counter/) {
+    } elsif ($self->{instance_mode}->{option_results}->{unit} =~ /bps|counter/) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
 
-    if ($self->{instance_mode}->{option_results}->{units} eq 'counter') {
+    if ($self->{instance_mode}->{option_results}->{unit} eq 'counter') {
         my $nlabel = $self->{nlabel};
         $nlabel =~ s/bitspersecond/bits/;
         $self->{output}->perfdata_add(
@@ -65,11 +65,11 @@ sub custom_traffic_threshold {
     my ($self, %options) = @_;
 
     my $exit = 'ok';
-    if ($self->{instance_mode}->{option_results}->{units} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{unit} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
-    } elsif ($self->{instance_mode}->{option_results}->{units} eq 'bps') {
+    } elsif ($self->{instance_mode}->{option_results}->{unit} eq 'bps') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
-    } elsif ($self->{instance_mode}->{option_results}->{units} eq 'counter') {
+    } elsif ($self->{instance_mode}->{option_results}->{unit} eq 'counter') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_counter}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
@@ -135,7 +135,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'units:s' => { name => 'units', default => 'percent_delta' }
+        'unit:s' => { name => 'unit', default => 'percent_delta' }
     });
 
     return $self;
@@ -145,12 +145,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{option_results}->{units_traffic} = 'percent_delta'
-        if (!defined($self->{option_results}->{units}) ||
-            $self->{option_results}->{units} eq '' ||
-            $self->{option_results}->{units} eq '%');
-    if ($self->{option_results}->{units} !~ /^(?:percent_delta|bps|counter)$/) {
-        $self->{output}->add_option_msg(short_msg => 'Wrong option --units');
+    $self->{option_results}->{unit} = 'percent_delta'
+        if (!defined($self->{option_results}->{unit}) ||
+            $self->{option_results}->{unit} eq '' ||
+            $self->{option_results}->{unit} eq '%');
+    if ($self->{option_results}->{unit} !~ /^(?:percent_delta|bps|counter)$/) {
+        $self->{output}->add_option_msg(short_msg => 'Wrong option --unit');
         $self->{output}->option_exit();
     }
 }
@@ -194,8 +194,6 @@ sub manage_selection {
     $infos = $options{custom}->request(url => 'WANCommonIFC1', ns => 'WANCommonInterfaceConfig', verb => 'GetCommonLinkProperties');
     $self->{global}->{max_out} = $infos->{'s:Body'}->{'u:GetCommonLinkPropertiesResponse'}->{NewLayer1UpstreamMaxBitRate} * 8;
     $self->{global}->{max_in} = $infos->{'s:Body'}->{'u:GetCommonLinkPropertiesResponse'}->{NewLayer1DownstreamMaxBitRate} * 8;
-
-    
 }
 
 1;
@@ -213,9 +211,9 @@ Checks your FritzBox traffic on WAN interface.
 Only display some counters (regexp can be used).
 Example: --filter-counters='^connections$'
 
-=item B<--units>
+=item B<--unit>
 
-Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Unit of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--warning-*> B<--critical-*>
 
