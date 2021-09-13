@@ -118,7 +118,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
-        { label => 'traffic-in', nlabel => 'system.interface.wan.traffic.out.bitspersecond', set => {
+        { label => 'traffic-out', nlabel => 'system.interface.wan.traffic.out.bitspersecond', set => {
                 key_values =>  [ { name => 'total_out', diff => 1 }, { name => 'max_out'} ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
