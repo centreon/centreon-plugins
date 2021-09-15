@@ -207,52 +207,58 @@ sub collect_sql_tables {
     return if (!defined($self->{config}->{sql}->{tables}));
     foreach my $table (@{$self->{config}->{sql}->{tables}}) {
         $self->validate_name(name => $table->{name}, section => "[sql > tables]");
-        if (!defined($table->{oid}) || $table->{oid} eq '') {
-            $self->{output}->add_option_msg(short_msg => "oid attribute is missing [sql > tables > $table->{name}]");
-            $self->{output}->option_exit();
-        }
-        if (!defined($table->{entries})) {
-            $self->{output}->add_option_msg(short_msg => "entries section is missing [sql > tables > $table->{name}]");
+        if (!defined($table->{query}) || $table->{query} eq '') {
+            $self->{output}->add_option_msg(short_msg => "query attribute is missing [sql > tables > $table->{name}]");
             $self->{output}->option_exit();
         }
 
-        my $mapping = {};
-        my $sampling = {};
-        foreach (@{$table->{entries}}) {
-            $self->validate_name(name => $_->{name}, section => "[snmp > tables > $table->{name}]");
-            if (!defined($_->{oid}) || $_->{oid} eq '') {
-                $self->{output}->add_option_msg(short_msg => "oid attribute is missing [snmp > tables > $table->{name} >  $_->{name}]");
-                $self->{output}->option_exit();
-            }
-            $mapping->{ $_->{name} } = { oid => $_->{oid} };
-            $sampling->{ $_->{name} } = 1 if (defined($_->{sampling}) && $_->{sampling} == 1);
-            if (defined($_->{map}) && $_->{map} ne '') {
-                if (!defined($self->{config}->{mapping}) || !defined($self->{config}->{mapping}->{ $_->{map} })) {
-                    $self->{output}->add_option_msg(short_msg => "unknown map attribute [snmp > tables > $table->{name} > $_->{name}]: $_->{map}");
-                    $self->{output}->option_exit();
+        # substitute constants
+        $self->{expand} = $self->set_constants();
+        $table->{query} = $self->substitute_string(value =>  $table->{query});
+
+        $options{sql}->query(query => $table->{query});
+        my $i = 0;
+        while (my $entry = $options{sql}->fetchrow_hashref()) {
+            my $instance = $i;
+            if (defined($table->{instances})) {
+                $instance = '';
+                my $append = '';
+                foreach (@{$table->{instances}}) {
+                    if (!defined($entry->{$_})) {
+                        $self->{output}->add_option_msg(short_msg => "cannot get instance '$_' in result [sql > tables > $table->{name}]");
+                        $self->{output}->option_exit();
+                    }
+
+                    $instance .= $append . $entry->{$_};
+                    $append = ':';
                 }
-                $mapping->{ $_->{name} }->{map} = $self->{config}->{mapping}->{ $_->{map} };
             }
-        }
 
-        if (scalar(keys %$mapping) <= 0) {
-            $self->{output}->add_option_msg(short_msg => "entries section is empty [snmp > tables > $table->{name}]");
-            $self->{output}->option_exit();
-        }
+            if (defined($table->{entries})) {
+                foreach (@{$table->{entries}}) {
+                    if (!defined($_->{id}) || !defined($entry->{ $_->{id} })) {
+                        $self->{output}->add_option_msg(short_msg => "id attribute is missing or wrong [sql > tables > $table->{name} > entries]");
+                        $self->{output}->option_exit();
+                    }
 
-        $self->{snmp_collected}->{tables}->{ $table->{name} } = {};
-        my $used_instance = defined($table->{used_instance}) && $table->{used_instance} ne '' ? $table->{used_instance} : '\.(\d+)$';
-        my $snmp_result = $options{snmp}->get_table(oid => $table->{oid});
-        foreach (keys %$snmp_result) {
-            /$used_instance/;
-            next if (defined($self->{snmp_collected}->{tables}->{ $table->{name} }->{$1}));
-            $self->{snmp_collected}->{tables}->{ $table->{name} }->{$1} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
-            foreach my $sample_name (keys %$sampling) {
-                $self->{snmp_collected_sampling}->{tables}->{ $table->{name} } = {}
-                    if (!defined($self->{snmp_collected_sampling}->{tables}->{ $table->{name} }));
-                $self->{snmp_collected_sampling}->{tables}->{ $table->{name} }->{$1}->{$sample_name} = 
-                    $self->{snmp_collected}->{tables}->{ $table->{name} }->{$1}->{$sample_name};
+                    if (defined($_->{map}) && $_->{map} ne '') {
+                        if (!defined($self->{config}->{mapping}) || !defined($self->{config}->{mapping}->{ $_->{map} })) {
+                            $self->{output}->add_option_msg(short_msg => "unknown map attribute [sql > tables > $table->{name} > $_->{id}]: $_->{map}");
+                            $self->{output}->option_exit();
+                        }
+                        $entry->{ $_->{id} } = $self->{config}->{mapping}->{ $_->{map} }->{ $entry->{ $_->{id} } };
+                    }
+
+                    if (defined($_->{sampling}) && $_->{sampling} == 1) {
+                        $self->{sql_collected_sampling}->{tables}->{ $table->{name} } = {}
+                            if (!defined($self->{sql_collected_sampling}->{tables}->{ $table->{name} }));
+                        $self->{sql_collected_sampling}->{tables}->{ $table->{name} }->{$instance}->{ $_->{id} } = $entry->{ $_->{id} };
+                    }
+                }
             }
+
+            $self->{sql_collected}->{tables}->{ $table->{name} }->{$instance} = $entry;
+            $i++;
         }
     }
 }
@@ -281,6 +287,7 @@ sub use_sql_cache {
     $self->{sql_collected} = $self->{sql_cache}->get(name => 'sql_collected');
     my $reload = defined($self->{config}->{sql}->{cache}->{reload}) && $self->{config}->{sql}->{cache}->{reload} =~ /(\d+)/ ? 
         $self->{config}->{sql}->{cache}->{reload} : 30;
+
     return 0 if (
         $has_cache_file == 0 || 
         !defined($self->{sql_collected}) || 
@@ -306,7 +313,7 @@ sub collect_sql_sampling {
         statefile => 'cache_sql_collection_sampling_' . $options{sql}->get_unique_id4save() . '_' .
             md5_hex($self->{option_results}->{config})
     );
-    my $sql_collected_sampling_old = $self->{snmp_cache}->get(name => 'sql_collected_sampling');
+    my $sql_collected_sampling_old = $self->{sql_cache}->get(name => 'sql_collected_sampling');
     # with cache, we need to load the sampling cache maybe. please a statefile-suffix to get uniq files.
     # sampling with a global cache can be a nonsense
     if (!defined($self->{sql_collected_sampling})) {
@@ -368,8 +375,6 @@ sub collect_sql {
     }
 
     $self->collect_sql_sampling(sql => $options{sql});
-    print "==ic==\n";
-    exit(1);
 }
 
 sub exist_table_name {
