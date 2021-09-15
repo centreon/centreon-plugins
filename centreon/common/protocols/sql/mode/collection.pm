@@ -872,21 +872,15 @@ sub exec_func_date2epoch {
 
     #{
     #   "type": "date2epoch",
-    #   "src": "%(dateTest)",
-    #   "format": "DateAndTime",
-    #   "timezone": "Europe/Paris",
-    #   "save_epoch": "%(plopDateEpoch)",
-    #   "save_diff1": "%(plopDateDiff1)",
-    #   "save_diff2": "%(plopDateDiff2)"
-    #},
-    #{
-    #   "type": "date2epoch",
     #   "src": "%(dateTest2)",
     #   "format_custom": "(\\d+)-(\\d+)-(\\d+)",
     #   "year": 1,
     #   "month": 2,
     #   "day": 3,
-    #   "timezone": "Europe/Paris"
+    #   "timezone": "Europe/Paris",
+    #   "save_epoch": "%(plopDateEpoch)",
+    #   "save_diff1": "%(plopDateDiff1)",
+    #   "save_diff2": "%(plopDateDiff2)"
     #}
     if (!defined($options{src}) || $options{src} eq '') {
         $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
@@ -902,22 +896,7 @@ sub exec_func_date2epoch {
     my $tz = {};
     $tz->{time_zone} = $options{timezone} if (defined($options{timezone}) && $options{timezone} ne '');
     my $dt;
-    if (defined($options{format}) && lc($options{format}) eq 'dateandtime') {
-        my @date = unpack('n C6 a C2', $data);
-        my $timezone;
-        if (defined($date[7]) && !defined($tz->{time_zone})) {
-            $tz->{time_zone} = sprintf('%s%02d%02d', $date[7], $date[8], $date[9]);
-        }
-        $dt = DateTime->new(
-            year => $date[0],
-            month => $date[1],
-            day => $date[2],
-            hour => $date[3],
-            minute => $date[4],
-            second => $date[5],
-            %$tz
-        );
-    } elsif (defined($options{format_custom}) && $options{format_custom} ne '') {
+    if (defined($options{format_custom}) && $options{format_custom} ne '') {
         my @matches = ($data =~ /$options{format_custom}/);
         my $date = {};
         foreach (('year', 'month', 'day', 'hour', 'minute', 'second')) {
@@ -933,7 +912,7 @@ sub exec_func_date2epoch {
         }
         $dt = DateTime->new(%$date, %$tz);
     } else {
-        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set format or format_custom attribute");
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set format_custom attribute");
         $self->{output}->option_exit();
     }
 
@@ -1069,7 +1048,7 @@ sub prepare_variables {
     my ($self, %options) = @_;
 
     return undef if (!defined($options{value}));
-    $options{value} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$expand->{'$1'}/g;
+    $options{value} =~ s/%\(([a-z-A-Z0-9\._]+?)\)/\$expand->{'$1'}/g;
     return $options{value};
 }
 
@@ -1078,7 +1057,7 @@ sub check_filter {
 
     return 0 if (!defined($options{filter}) || $options{filter} eq '');
     our $expand = $self->{expand};
-    $options{filter} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$expand->{'$1'}/g;
+    $options{filter} =~ s/%\(([a-z-A-Z0-9\._]+?)\)/\$expand->{'$1'}/g;
     my $result = $self->{safe}->reval("$options{filter}");
     if ($@) {
         $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
