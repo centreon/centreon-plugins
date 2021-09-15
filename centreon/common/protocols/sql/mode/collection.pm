@@ -380,7 +380,7 @@ sub collect_sql {
 sub exist_table_name {
     my ($self, %options) = @_;
 
-    return 1 if (defined($self->{snmp_collected}->{tables}->{ $options{name} }));
+    return 1 if (defined($self->{sql_collected}->{tables}->{ $options{name} }));
     return 0;
 }
 
@@ -396,56 +396,44 @@ sub set_local_variable {
     $self->{expand}->{ $options{name} } = $options{value};
 }
 
-sub get_leef_variable {
-    my ($self, %options) = @_;
-
-    return $self->{snmp_collected}->{leefs}->{ $options{name} };
-}
-
-sub set_leef_variable {
-    my ($self, %options) = @_;
-
-    $self->{snmp_collected}->{leefs}->{ $options{name} } = $options{value};
-}
-
 sub get_table {
     my ($self, %options) = @_;
 
     return undef if (
-        !defined($self->{snmp_collected}->{tables}->{ $options{table} })
+        !defined($self->{sql_collected}->{tables}->{ $options{table} })
     );
-    return $self->{snmp_collected}->{tables}->{ $options{table} };
+    return $self->{sql_collected}->{tables}->{ $options{table} };
 }
 
 sub get_table_instance {
     my ($self, %options) = @_;
 
     return undef if (
-        !defined($self->{snmp_collected}->{tables}->{ $options{table} }) ||
-        !defined($self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} })
+        !defined($self->{sql_collected}->{tables}->{ $options{table} }) ||
+        !defined($self->{sql_collected}->{tables}->{ $options{table} }->{ $options{instance} })
     );
-    return $self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} };
+    return $self->{sql_collected}->{tables}->{ $options{table} }->{ $options{instance} };
 }
 
 sub get_table_attribute_value {
     my ($self, %options) = @_;
 
     return undef if (
-        !defined($self->{snmp_collected}->{tables}->{ $options{table} }) ||
-        !defined($self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }) ||
-        !defined($self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} })
+        !defined($self->{sql_collected}->{tables}->{ $options{table} }) ||
+        !defined($self->{sql_collected}->{tables}->{ $options{table} }->{ $options{instance} }) ||
+        !defined($self->{sql_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} })
     );
-    return $self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} };
+    return $self->{sql_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} };
 }
 
 sub set_table_attribute_value {
     my ($self, %options) = @_;
 
-    $self->{snmp_collected}->{tables}->{ $options{table} } = {}
-        if (!defined($self->{snmp_collected}->{tables}->{ $options{table} }));
-    $self->{snmp_collected}->{tables}->{ $options{table} } = {}
-        if (!defined($self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }));
-    $self->{snmp_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} } = $options{value};
+    $self->{sql_collected}->{tables}->{ $options{table} } = {}
+        if (!defined($self->{sql_collected}->{tables}->{ $options{table} }));
+    $self->{sql_collected}->{tables}->{ $options{table} } = {}
+        if (!defined($self->{sql_collected}->{tables}->{ $options{table} }->{ $options{instance} }));
+    $self->{sql_collected}->{tables}->{ $options{table} }->{ $options{instance} }->{ $options{attribute} } = $options{value};
 }
 
 sub get_special_variable_value {
@@ -454,8 +442,6 @@ sub get_special_variable_value {
     my $data;
     if ($options{type} == 0) {
         $data = $self->get_local_variable(name => $options{label});
-    } elsif ($options{type} == 1) {
-        $data = $self->get_leef_variable(name => $options{label});
     } elsif ($options{type} == 2) {
         $data = $self->get_table(table => $options{table});
     } elsif ($options{type} == 4) {
@@ -475,8 +461,6 @@ sub set_special_variable_value {
     my $data;
     if ($options{type} == 0) {
         $data = $self->set_local_variable(name => $options{label}, value => $options{value});
-    } elsif ($options{type} == 1) {
-        $data = $self->set_leef_variable(name => $options{label}, value => $options{value});
     } elsif ($options{type} == 4) {
         $data = $self->set_table_attribute_value(
             table => $options{table},
@@ -523,23 +507,22 @@ sub parse_forward {
 
 =pod
 managed variables:
-    %(snmp.tables.plcData)
-    %(snmp.tables.plcData.[1])
-    %(snmp.tables.plcOther.[1].plop)
-    %(snmp.tables.plcOther.[%(mytable.instance)]
-    %(snmp.tables.plcOther.[%(snmp.tables.plcOther.[%(mytable.instance)].test)]
+    %(sql.tables.servers)
+    %(sql.tables.servers.[1])
+    %(sql.tables.servers.[1].plop)
+    %(sql.tables.servers.[%(mytable.instance)]
+    %(sql.tables.servers.[%(sql.tables.servers.[%(mytable.instance)].name)]
     %(test2)
     %(mytable.test)
 
 result:
     - type:
         0=%(test) (label)
-        1=%(snmp.leefs.variable)
-        2=%(snmp.tables.test)
-        3=%(snmp.tables.test.[2])
-        4=%(snmp.tables.test.[2].attrname)
+        2=%(sql.tables.test)
+        3=%(sql.tables.test.[2])
+        4=%(sql.tables.test.[2].attrname)
 =cut
-sub parse_snmp_tables {
+sub parse_sql_tables {
     my ($self, %options) = @_;
 
     my ($code, $msg_error, $end, $table_label, $instance_label, $label);
@@ -563,21 +546,19 @@ sub parse_snmp_tables {
 
     # instance part managenent
     if (!defined($options{chars}->[$end + 1]) || $options{chars}->[$end + 1] ne '[') {
-        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable snmp.tables character '[' mandatory");
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable sql.tables character '[' mandatory");
         $self->{output}->option_exit();
     }
     if ($self->strcmp(chars => $options{chars}, start => $end + 2, test => '%(')) {
         my $result = $self->parse_special_variable(chars => $options{chars}, start => $end + 2);
-        # type allowed: 0,1,4
-        if ($result->{type} !~ /^(?:0|1|4)$/) {
+        # type allowed: 0,4
+        if ($result->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable type not allowed');
             $self->{output}->option_exit();
         }
         $end = $result->{end} + 1;
         if ($result->{type} == 0) {
             $instance_label = $self->get_local_variable(name => $result->{label});
-        } elsif ($result->{type} == 1) {
-            $instance_label = $self->get_leef_variable(name => $result->{label});
         } elsif ($result->{type} == 4) {
             $instance_label = $self->get_table_attribute_value(
                 table => $result->{table},
@@ -601,7 +582,7 @@ sub parse_snmp_tables {
 
     if (!defined($options{chars}->[$end + 1]) ||
         $options{chars}->[$end + 1] !~ /[.)]/) {
-        $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable snmp.tables character [.)] missing');
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable sql.tables character [.)] missing');
         $self->{output}->option_exit();
     }
 
@@ -623,25 +604,13 @@ sub parse_snmp_tables {
     return { type => 4, end => $end, table => $table_label, instance => $instance_label, label => $label };
 }
 
-sub parse_snmp_type {
+sub parse_sql_type {
     my ($self, %options) = @_;
 
-    if ($self->strcmp(chars => $options{chars}, start => $options{start}, test => 'leefs.')) {
-        my ($code, $msg_error, $end, $label) = $self->parse_forward(
-            chars => $options{chars},
-            start => $options{start} + 6,
-            allowed => '[a-zA-Z0-9_]',
-            stop => '[)]'
-        );
-        if ($code) {
-            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " $msg_error");
-            $self->{output}->option_exit();
-        }
-        return { type => 1, end => $end, label => $label };
-    } elsif ($self->strcmp(chars => $options{chars}, start => $options{start}, test => 'tables.')) {
-        return $self->parse_snmp_tables(chars => $options{chars}, start => $options{start} + 7);
+    if ($self->strcmp(chars => $options{chars}, start => $options{start}, test => 'tables.')) {
+        return $self->parse_sql_tables(chars => $options{chars}, start => $options{start} + 7);
     } else {
-        $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable snmp not followed by leefs/tables');
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . ' special variable sql not followed by tables');
         $self->{output}->option_exit();
     }
 }
@@ -657,8 +626,8 @@ sub parse_special_variable {
     }
 
     my $result = { start => $options{start} };
-    if ($self->strcmp(chars => $options{chars}, start => $start + 2, test => 'snmp.')) {
-        my $parse = $self->parse_snmp_type(chars => $options{chars}, start => $start + 2 + 5);
+    if ($self->strcmp(chars => $options{chars}, start => $start + 2, test => 'sql.')) {
+        my $parse = $self->parse_sql_type(chars => $options{chars}, start => $start + 2 + 5);
         $result = { %$parse, %$result };
     } else {
         my ($code, $msg_error, $end, $label) = $self->parse_forward(
@@ -1040,7 +1009,7 @@ sub exec_func_count {
 
     #{
     #   "type": "count",
-    #   "src": "%(snmp.tables.test)",
+    #   "src": "%(sql.tables.test)",
     #   "save": "%(testCount)"
     #}
     if (!defined($options{src}) || $options{src} eq '') {
@@ -1220,14 +1189,14 @@ sub add_selection_loop {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed");
             $self->{output}->option_exit();
         }
-        next if (!defined($self->{snmp_collected}->{tables}->{ $result->{table} }));
+        next if (!defined($self->{sql_collected}->{tables}->{ $result->{table} }));
 
-        foreach my $instance (keys %{$self->{snmp_collected}->{tables}->{ $result->{table} }}) {
+        foreach my $instance (keys %{$self->{sql_collected}->{tables}->{ $result->{table} }}) {
             $self->{expand} = $self->set_constants();
             $self->{expand}->{ $result->{table} . '.instance' } = $instance;
-            foreach my $label (keys %{$self->{snmp_collected}->{tables}->{ $result->{table} }->{$instance}}) {
+            foreach my $label (keys %{$self->{sql_collected}->{tables}->{ $result->{table} }->{$instance}}) {
                 $self->{expand}->{ $result->{table} . '.' . $label } =
-                    $self->{snmp_collected}->{tables}->{ $result->{table} }->{$instance}->{$label};
+                    $self->{sql_collected}->{tables}->{ $result->{table} }->{$instance}->{$label};
             }
             my $config = {};
             $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
@@ -1273,7 +1242,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->read_config();
-    $self->collect_snmp(snmp => $options{snmp});
+    $self->collect_sql(sql => $options{sql});
 
     $self->{selections} = {};
     $self->add_selection();
@@ -1297,9 +1266,6 @@ sub manage_selection {
     #   add some functions types:
     #       eval_equal (concatenate, math operation)
     #       regexp (regexp substitution, extract a pattern)
-    #       decode snmp type: ipAddress
-    #   can cache only some parts of snmp requests:
-    #       use an array for "snmp" ?
     $self->read_config();
     $self->collect_sql(sql => $options{sql});
 
@@ -1315,7 +1281,7 @@ __END__
 
 =head1 MODE
 
-Collect and compute SNMP datas.
+Collect and compute SQL datas.
 
 =over 8
 
