@@ -98,7 +98,7 @@ sub custom_select_output {
     my $output = '';
     foreach (sort keys %{$self->{result_values}->{expand}}) {
         next if (/^constants\./);
-        $output .= '[' . $_ . ': ' . $self->{result_values}->{expand}->{$_} . ']';
+        $output .= '[' . $_ . ': ' . (defined($self->{result_values}->{expand}->{$_}) ? $self->{result_values}->{expand}->{$_} : '') . ']';
     }
 
     return $output;
