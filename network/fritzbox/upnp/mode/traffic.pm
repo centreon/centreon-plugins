@@ -192,8 +192,8 @@ sub manage_selection {
     $self->{global}->{total_in} = $infos->{'s:Body'}->{'u:GetAddonInfosResponse'}->{NewTotalBytesReceived} * 8;
 
     $infos = $options{custom}->request(url => 'WANCommonIFC1', ns => 'WANCommonInterfaceConfig', verb => 'GetCommonLinkProperties');
-    $self->{global}->{max_out} = $infos->{'s:Body'}->{'u:GetCommonLinkPropertiesResponse'}->{NewLayer1UpstreamMaxBitRate} * 8;
-    $self->{global}->{max_in} = $infos->{'s:Body'}->{'u:GetCommonLinkPropertiesResponse'}->{NewLayer1DownstreamMaxBitRate} * 8;
+    $self->{global}->{max_out} = $infos->{'s:Body'}->{'u:GetCommonLinkPropertiesResponse'}->{NewLayer1UpstreamMaxBitRate};
+    $self->{global}->{max_in} = $infos->{'s:Body'}->{'u:GetCommonLinkPropertiesResponse'}->{NewLayer1DownstreamMaxBitRate};
 }
 
 1;
