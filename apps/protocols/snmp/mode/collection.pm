@@ -1137,7 +1137,7 @@ sub prepare_variables {
     my ($self, %options) = @_;
 
     return undef if (!defined($options{value}));
-    $options{value} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$expand->{'$1'}/g;
+    $options{value} =~ s/%\(([a-zA-Z0-9\.]+?)\)/\$expand->{'$1'}/g;
     return $options{value};
 }
 
@@ -1146,7 +1146,7 @@ sub check_filter {
 
     return 0 if (!defined($options{filter}) || $options{filter} eq '');
     our $expand = $self->{expand};
-    $options{filter} =~ s/%\(([a-z-A-Z0-9\.]+?)\)/\$expand->{'$1'}/g;
+    $options{filter} =~ s/%\(([a-zA-Z0-9\.]+?)\)/\$expand->{'$1'}/g;
     my $result = $self->{safe}->reval("$options{filter}");
     if ($@) {
         $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);

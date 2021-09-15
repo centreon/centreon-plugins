@@ -633,7 +633,7 @@ sub parse_special_variable {
         my ($code, $msg_error, $end, $label) = $self->parse_forward(
             chars => $options{chars},
             start => $start + 2, 
-            allowed => '[a-zA-Z0-9_.]',
+            allowed => '[a-zA-Z0-9\._]',
             stop => '[)]'
         );
         if ($code) {
@@ -657,7 +657,7 @@ sub substitute_string {
     while ($options{value} =~ /\Q%(\E/g) {
         next if ($-[0] < $last_end);
         my $result = $self->parse_special_variable(chars => $arr, start => $-[0]);
-        if ($result->{type} !~ /^(?:0|1|4)$/) {
+        if ($result->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed");
             $self->{output}->option_exit();
         }
@@ -1048,7 +1048,7 @@ sub prepare_variables {
     my ($self, %options) = @_;
 
     return undef if (!defined($options{value}));
-    $options{value} =~ s/%\(([a-z-A-Z0-9\._]+?)\)/\$expand->{'$1'}/g;
+    $options{value} =~ s/%\(([a-zA-Z0-9\._:]+?)\)/\$expand->{'$1'}/g;
     return $options{value};
 }
 
@@ -1057,7 +1057,7 @@ sub check_filter {
 
     return 0 if (!defined($options{filter}) || $options{filter} eq '');
     our $expand = $self->{expand};
-    $options{filter} =~ s/%\(([a-z-A-Z0-9\._]+?)\)/\$expand->{'$1'}/g;
+    $options{filter} =~ s/%\(([a-zA-Z0-9\._:]+?)\)/\$expand->{'$1'}/g;
     my $result = $self->{safe}->reval("$options{filter}");
     if ($@) {
         $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
