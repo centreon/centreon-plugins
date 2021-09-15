@@ -33,30 +33,30 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'associated', set => {
+        { label => 'associated', nlabel => 'nodes.associated.count', set => {
                 key_values => [ { name => 'associated' } ],
                 output_template => 'Total Associated Nodes : %s',
                 perfdatas => [
-                    { label => 'associated', value => 'associated', template => '%s', min => 0 },
-                ],
+                    { label => 'associated', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'non-associated', set => {
+        { label => 'non-associated', nlabel => 'nodes.nonassociated.count', set => {
                 key_values => [ { name => 'non_associated' } ],
                 output_template => 'Total Non Associated Nodes : %s',
                 perfdatas => [
-                    { label => 'non_associated', value => 'non_associated', template => '%s', min => 0 },
-                ],
+                    { label => 'non_associated', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'locked', set => {
+        { label => 'locked', nlabel => 'nodes.locked.count', set => {
                 key_values => [ { name => 'locked' } ],
                 output_template => 'Total Locked Nodes : %s',
                 perfdatas => [
-                    { label => 'locked', value => 'locked', template => '%s', min => 0 },
-                ],
+                    { label => 'locked', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 

@@ -30,78 +30,78 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'volumes', type => 1, cb_prefix_output => 'prefix_volumes_output', message_multiple => 'All volumes are ok' },
+        { name => 'volumes', type => 1, cb_prefix_output => 'prefix_volumes_output', message_multiple => 'All volumes are ok' }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'volumes.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Volumes Total : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total', template => '%s', min => 0 },
-                ],
+                    { label => 'total', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'online', set => {
+        { label => 'online', nlabel => 'volumes.online.count', set => {
                 key_values => [ { name => 'online' } ],
                 output_template => 'Online : %s',
                 perfdatas => [
-                    { label => 'online', value => 'online', template => '%s', min => 0 },
-                ],
+                    { label => 'online', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'offline', set => {
+        { label => 'offline', nlabel => 'volumes.offline.count', set => {
                 key_values => [ { name => 'offline' } ],
                 output_template => 'Offline : %s',
                 perfdatas => [
-                    { label => 'offline', value => 'offline', template => '%s', min => 0 },
-                ],
+                    { label => 'offline', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'empty', set => {
+        { label => 'empty', nlabel => 'volumes.empty.count', set => {
                 key_values => [ { name => 'empty' } ],
                 output_template => 'Empty : %s',
                 perfdatas => [
-                    { label => 'empty', value => 'empty', template => '%s', min => 0 },
-                ],
+                    { label => 'empty', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'pending', set => {
+        { label => 'pending', nlabel => 'volumes.pending.count', set => {
                 key_values => [ { name => 'pending' } ],
                 output_template => 'Pending : %s',
                 perfdatas => [
-                    { label => 'pending', value => 'pending', template => '%s', min => 0 },
-                ],
+                    { label => 'pending', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'filling', set => {
+        { label => 'filling', nlabel => 'volumes.filling.count', set => {
                 key_values => [ { name => 'filling' } ],
                 output_template => 'Filling : %s',
                 perfdatas => [
-                    { label => 'filling', value => 'filling', template => '%s', min => 0 },
-                ],
+                    { label => 'filling', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'full', set => {
+        { label => 'full', nlabel => 'volumes.full.count', set => {
                 key_values => [ { name => 'full' } ],
                 output_template => 'Full : %s',
                 perfdatas => [
-                    { label => 'full', value => 'full', template => '%s', min => 0 },
-                ],
+                    { label => 'full', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{volumes} = [
-        { label => 'used', set => {
+        { label => 'used',  nlabel => 'volume.used.percentage', set => {
                 key_values => [ { name => 'prct_utilized' }, { name => 'display' } ],
                 output_template => 'Usage : %s %%',
                 perfdatas => [
-                    { label => 'used', value => 'prct_utilized', template => '%s', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'used', template => '%s', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -116,11 +116,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-volume:s"     => { name => 'filter_volume' },
-                                  "filter-stgpool:s"    => { name => 'filter_stgpool' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-volume:s"     => { name => 'filter_volume' },
+        "filter-stgpool:s"    => { name => 'filter_stgpool' }
+     });
     
     return $self;
 }

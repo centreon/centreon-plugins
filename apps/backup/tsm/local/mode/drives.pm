@@ -29,74 +29,74 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'online', set => {
+        { label => 'online', nlabel => 'drives.online..count', set => {
                 key_values => [ { name => 'online' } ],
                 output_template => 'online : %s',
                 perfdatas => [
-                    { label => 'online', value => 'online', template => '%s', min => 0 },
-                ],
+                    { label => 'online', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'offline', set => {
+        { label => 'offline', nlabel => 'drives.offline.count', set => {
                 key_values => [ { name => 'offline' } ],
                 output_template => 'offline : %s',
                 perfdatas => [
-                    { label => 'offline', value => 'offline', template => '%s', min => 0 },
-                ],
+                    { label => 'offline', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'unavailable', set => {
+        { label => 'unavailable', nlabel => 'drives.unavailable.count', set => {
                 key_values => [ { name => 'unavailable' } ],
                 output_template => 'unavailable : %s',
                 perfdatas => [
-                    { label => 'unavailable', value => 'unavailable', template => '%s', min => 0 },
-                ],
+                    { label => 'unavailable', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'empty', set => {
+        { label => 'empty', nlabel => 'drives.empty.count', set => {
                 key_values => [ { name => 'empty' } ],
                 output_template => 'empty : %s',
                 perfdatas => [
-                    { label => 'empty', value => 'empty', template => '%s', min => 0 },
-                ],
+                    { label => 'empty', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'loaded', set => {
+        { label => 'loaded', nlabel => 'drives.loaded.count', set => {
                 key_values => [ { name => 'loaded' } ],
                 output_template => 'loaded : %s',
                 perfdatas => [
-                    { label => 'loaded', value => 'loaded', template => '%s', min => 0 },
-                ],
+                    { label => 'loaded', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'unloaded', set => {
+        { label => 'unloaded', nlabel => 'drives.unloaded.count', set => {
                 key_values => [ { name => 'unloaded' } ],
                 output_template => 'unloaded : %s',
                 perfdatas => [
-                    { label => 'unloaded', value => 'unloaded', template => '%s', min => 0 },
-                ],
+                    { label => 'unloaded', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'reserved', set => {
+        { label => 'reserved', nlabel => 'drives.reserved.count', set => {
                 key_values => [ { name => 'reserved' } ],
                 output_template => 'reserved : %s',
                 perfdatas => [
-                    { label => 'reserved', value => 'reserved', template => '%s', min => 0 },
-                ],
+                    { label => 'reserved', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'unknown', set => {
+        { label => 'unknown', nlabel => 'drives.unknown.count', set => {
                 key_values => [ { name => 'unknown' } ],
                 output_template => 'unknown : %s',
                 perfdatas => [
-                    { label => 'unknown', value => 'unknown', template => '%s', min => 0 },
-                ],
+                    { label => 'unknown', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
