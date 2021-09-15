@@ -130,6 +130,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'config:s'            => { name => 'config' },
         'filter-selection:s%' => { name => 'filter_selection' },
+        'constant:s%'         => { name => 'constant' }
     });
 
     $self->{safe} = Safe->new();
@@ -444,6 +445,15 @@ sub set_leef_variable {
     $self->{snmp_collected}->{leefs}->{ $options{name} } = $options{value};
 }
 
+sub get_table {
+    my ($self, %options) = @_;
+
+    return undef if (
+        !defined($self->{snmp_collected}->{tables}->{ $options{table} })
+    );
+    return $self->{snmp_collected}->{tables}->{ $options{table} };
+}
+
 sub get_table_instance {
     my ($self, %options) = @_;
 
@@ -483,6 +493,8 @@ sub get_special_variable_value {
         $data = $self->get_local_variable(name => $options{label});
     } elsif ($options{type} == 1) {
         $data = $self->get_leef_variable(name => $options{label});
+    } elsif ($options{type} == 2) {
+        $data = $self->get_table(table => $options{table});
     } elsif ($options{type} == 4) {
         $data = $self->get_table_attribute_value(
             table => $options{table},
@@ -746,6 +758,9 @@ sub set_constants {
     foreach (keys %{$self->{config}->{constants}}) {
         $constants->{'constants.' . $_} = $self->{config}->{constants}->{$_};
     }
+    foreach (keys %{$self->{option_results}->{constant}}) {
+        $constants->{'constants.' . $_} = $self->{option_results}->{constant}->{$_};
+    }
 
     return $constants;
 }
@@ -918,7 +933,7 @@ sub exec_func_date2epoch {
     if (!defined($self->{module_datetime_loaded})) {
         centreon::plugins::misc::mymodule_load(
             module => 'DateTime',
-            error_msg => "Cannot load module 'DatTime'."
+            error_msg => "Cannot load module 'DateTime'."
         );
         $self->{module_datetime_loaded} = 1;
     }
@@ -1014,7 +1029,7 @@ sub exec_func_epoch2date {
     if (!defined($self->{module_datetime_loaded})) {
         centreon::plugins::misc::mymodule_load(
             module => 'DateTime',
-            error_msg => "Cannot load module 'DatTime'."
+            error_msg => "Cannot load module 'DateTime'."
         );
         $self->{module_datetime_loaded} = 1;
     }
@@ -1057,6 +1072,40 @@ sub exec_func_epoch2date {
     }
 }
 
+sub exec_func_count {
+    my ($self, %options) = @_;
+
+    #{
+    #   "type": "count",
+    #   "src": "%(snmp.tables.test)",
+    #   "save": "%(testCount)"
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^2$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+    my $data = $self->get_special_variable_value(%$result);
+    my $value = 0;
+    if (defined($data)) {
+        $value = scalar(keys %$data);
+    }
+
+    if (defined($options{save}) && $options{save} ne '') {
+        my $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        if ($save->{type} !~ /^(?:0|1|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $value, %$save);
+    }
+}
+
 sub set_functions {
     my ($self, %options) = @_;
 
@@ -1078,6 +1127,8 @@ sub set_functions {
             $self->exec_func_date2epoch(%$_);
         } elsif (lc($_->{type}) eq 'epoch2date') {
             $self->exec_func_epoch2date(%$_);
+        } elsif (lc($_->{type}) eq 'count') {
+            $self->exec_func_count(%$_);
         }
     }
 }
@@ -1314,6 +1365,11 @@ Can be a file or json content.
 
 Filter selections.
 Eg: --filter-selection='name=test'
+
+=item B<--constant>
+
+Add a constant.
+Eg: --constant='warning=30' --constant='critical=45'
 
 =back
 
