@@ -627,7 +627,7 @@ sub parse_special_variable {
 
     my $result = { start => $options{start} };
     if ($self->strcmp(chars => $options{chars}, start => $start + 2, test => 'sql.')) {
-        my $parse = $self->parse_sql_type(chars => $options{chars}, start => $start + 2 + 5);
+        my $parse = $self->parse_sql_type(chars => $options{chars}, start => $start + 2 + 4);
         $result = { %$parse, %$result };
     } else {
         my ($code, $msg_error, $end, $label) = $self->parse_forward(
