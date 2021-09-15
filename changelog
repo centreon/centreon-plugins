@@ -1,4 +1,4 @@
-2021-XX-XX Quentin Garnier <qgarnier@centreon.com>
+2021-09-15 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Fortinet Fortiweb SNMP
  * Plugin added: Tplink SNMP
  * Plugin added: Grafana
