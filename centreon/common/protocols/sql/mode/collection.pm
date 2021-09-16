@@ -28,6 +28,7 @@ use JSON::XS;
 use Safe;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
+use Time::HiRes qw(gettimeofday tv_interval);
 
 sub custom_select_threshold {
     my ($self, %options) = @_;
@@ -97,7 +98,7 @@ sub custom_select_output {
     # without formatting: [name: xxxxxx][test: xxxx][test2: xxx][mytable.plcRead: xxx][mytable.plcWrite: xxx]
     my $output = '';
     foreach (sort keys %{$self->{result_values}->{expand}}) {
-        next if (/^constants\./);
+        next if (/^(?:constants|builtin)\./);
         $output .= '[' . $_ . ': ' . (defined($self->{result_values}->{expand}->{$_}) ? $self->{result_values}->{expand}->{$_} : '') . ']';
     }
 
@@ -138,6 +139,8 @@ sub new {
 
     $self->{safe_func} = Safe->new();
     $self->{safe_func}->share('$assign_var');
+
+    $self->{builtin} = {};
 
     $self->{sql_cache} = centreon::plugins::statefile->new(%options);
     return $self;
@@ -220,7 +223,10 @@ sub collect_sql_tables {
         $self->{expand} = $self->set_constants();
         $table->{query} = $self->substitute_string(value =>  $table->{query});
 
+        my $timing0 = [gettimeofday];
         $options{sql}->query(query => $table->{query});
+        $self->add_builtin(name => 'sqlExecutionTime.' . $table->{name}, value => tv_interval($timing0, [gettimeofday]));
+
         my $i = 0;
         while (my $entry = $options{sql}->fetchrow_hashref()) {
             my $instance = $i;
@@ -365,6 +371,7 @@ sub collect_sql {
         $self->{output}->option_exit();
     }
 
+    $self->add_builtin(name => 'currentTime', value => time());
     if ($self->use_sql_cache(sql => $options{sql}) == 0) {
         $self->{sql_collected_sampling} = { tables => {}, epoch => time() };
         $self->{sql_collected} = { tables => {}, epoch => time(), sampling => 0 };
@@ -683,6 +690,20 @@ sub substitute_string {
     }
 
     return $str;
+}
+
+sub add_builtin {
+    my ($self, %options) = @_;
+
+    $self->{builtin}->{ $options{name} } = $options{value};
+}
+
+sub set_builtin {
+    my ($self, %options) = @_;
+
+    foreach (keys %{$self->{builtin}}) {
+        $self->{expand}->{ 'builtin.' . $_ } = $self->{builtin}->{$_};
+    }
 }
 
 sub set_constants {
@@ -1209,6 +1230,7 @@ sub add_selection {
         $i++;
         my $config = {};
         $self->{expand} = $self->set_constants();
+        $self->set_builtin();
         $self->{expand}->{name} = $_->{name} if (defined($_->{name}));
         $self->set_functions(section => "selection > $i > functions", functions => $_->{functions}, position => 'before_expand');
         $self->set_expand_table(section => "selection > $i > expand_table", expand => $_->{expand_table});
@@ -1247,6 +1269,7 @@ sub add_selection_loop {
 
         foreach my $instance (keys %{$self->{sql_collected}->{tables}->{ $result->{table} }}) {
             $self->{expand} = $self->set_constants();
+            $self->set_builtin();
             $self->{expand}->{ $result->{table} . '.instance' } = $instance;
             foreach my $label (keys %{$self->{sql_collected}->{tables}->{ $result->{table} }->{$instance}}) {
                 $self->{expand}->{ $result->{table} . '.' . $label } =
@@ -1304,10 +1327,10 @@ sub disco_show {
     foreach (values %{$self->{selections}}) {
         my $entry = {};
         foreach my $label (keys %{$_->{expand}}) {
-            next if ($label =~ /^constants\./);
+            next if ($label =~ /^(?:constants|builtin)\./);
             my $name = $label;
             $name =~ s/\./_/g;
-            $entry->{$name} = $_->{expand}->{$label};
+            $entry->{$name} = defined($_->{expand}->{$label}) ? $_->{expand}->{$label} : '';
         }
         $self->{output}->add_disco_entry(%$entry);
     }
