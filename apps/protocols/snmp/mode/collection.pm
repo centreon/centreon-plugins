@@ -135,6 +135,10 @@ sub new {
 
     $self->{safe} = Safe->new();
     $self->{safe}->share('$expand');
+
+    $self->{safe_func} = Safe->new();
+    $self->{safe_func}->share('$assign_var');
+
     $self->{snmp_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -1106,6 +1110,73 @@ sub exec_func_count {
     }
 }
 
+sub exec_func_replace {
+    my ($self, %options) = @_;
+
+    #{
+    #   "type": "replace",
+    #   "src": "%(sql.tables.test)",
+    #   "expression": "s/name/name is/"
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+    if (!defined($options{expression}) || $options{expression} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set expression attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+    my $data = $self->get_special_variable_value(%$result);
+
+    if (defined($data)) {
+        my $expression = $self->substitute_string(value => $options{expression});
+        our $assign_var = $data;
+        $self->{safe_func}->reval("\$assign_var =~ $expression", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+        $self->set_special_variable_value(value => $assign_var, %$result);
+    }
+}
+
+sub exec_func_assign {
+    my ($self, %options) = @_;
+
+    #{
+    #   "type": "assign",
+    #   "save": "%(sql.tables.test)",
+    #   "expression": "'%(sql.tables.test)' . 'toto'"
+    #}
+    if (!defined($options{save}) || $options{save} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set save attribute");
+        $self->{output}->option_exit();
+    }
+    if (!defined($options{expression}) || $options{expression} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set expression attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $expression = $self->substitute_string(value => $options{expression});
+    our $assign_var;
+    $self->{safe_func}->reval("\$assign_var = $expression", 1);
+    if ($@) {
+        die 'Unsafe code evaluation: ' . $@;
+    }
+    $self->set_special_variable_value(value => $assign_var, %$result);
+}
+
 sub set_functions {
     my ($self, %options) = @_;
 
@@ -1129,6 +1200,10 @@ sub set_functions {
             $self->exec_func_epoch2date(%$_);
         } elsif (lc($_->{type}) eq 'count') {
             $self->exec_func_count(%$_);
+        } elsif (lc($_->{type}) eq 'replace') {
+            $self->exec_func_replace(%$_);
+        }  elsif (lc($_->{type}) eq 'assign') {
+            $self->exec_func_assign(%$_);
         }
     }
 }
@@ -1332,8 +1407,6 @@ sub manage_selection {
 
     # TODO:
     #   add some functions types:
-    #       eval_equal (concatenate, math operation)
-    #       regexp (regexp substitution, extract a pattern)
     #       decode snmp type: ipAddress
     #   can cache only some parts of snmp requests:
     #       use an array for "snmp" ?

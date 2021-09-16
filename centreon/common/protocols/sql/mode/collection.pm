@@ -135,6 +135,10 @@ sub new {
 
     $self->{safe} = Safe->new();
     $self->{safe}->share('$expand');
+
+    $self->{safe_func} = Safe->new();
+    $self->{safe_func}->share('$assign_var');
+
     $self->{sql_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -830,7 +834,7 @@ sub exec_func_scale {
     }
 
     my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
-    if ($result->{type} !~ /^(?:0|1|4)$/) {
+    if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
     }
@@ -843,7 +847,7 @@ sub exec_func_scale {
 
     if (defined($options{save_value}) && $options{save_value} ne '') {
         my $var_save_value = $self->parse_special_variable(chars => [split //, $options{save_value}], start => 0);
-        if ($var_save_value->{type} !~ /^(?:0|1|4)$/) {
+        if ($var_save_value->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
             $self->{output}->option_exit();
         }
@@ -851,7 +855,7 @@ sub exec_func_scale {
     }
     if (defined($options{save_unit}) && $options{save_unit} ne '') {
         my $var_save_unit = $self->parse_special_variable(chars => [split //, $options{save_unit}], start => 0);
-        if ($var_save_unit->{type} !~ /^(?:0|1|4)$/) {
+        if ($var_save_unit->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_value attribute");
             $self->{output}->option_exit();
         }
@@ -926,7 +930,7 @@ sub exec_func_date2epoch {
         $attr = $options{'save_' . $_}
             if (defined($options{'save_' . $_}) && $options{'save_' . $_} ne '');
         my $var_save_value = $self->parse_special_variable(chars => [split //, $attr], start => 0);
-        if ($var_save_value->{type} !~ /^(?:0|1|4)$/) {
+        if ($var_save_value->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save_$_ attribute");
             $self->{output}->option_exit();
         }
@@ -958,7 +962,7 @@ sub exec_func_epoch2date {
         $self->{output}->option_exit();
     }
     my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
-    if ($result->{type} !~ /^(?:0|1|4)$/) {
+    if ($result->{type} !~ /^(?:0|4)$/) {
         $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
         $self->{output}->option_exit();
     }
@@ -975,7 +979,7 @@ sub exec_func_epoch2date {
 
     if (defined($options{save}) && $options{save} ne '') {
         my $var_save_value = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
-        if ($var_save_value->{type} !~ /^(?:0|1|4)$/) {
+        if ($var_save_value->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
             $self->{output}->option_exit();
         }
@@ -1009,12 +1013,79 @@ sub exec_func_count {
 
     if (defined($options{save}) && $options{save} ne '') {
         my $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
-        if ($save->{type} !~ /^(?:0|1|4)$/) {
+        if ($save->{type} !~ /^(?:0|4)$/) {
             $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
             $self->{output}->option_exit();
         }
         $self->set_special_variable_value(value => $value, %$save);
     }
+}
+
+sub exec_func_replace {
+    my ($self, %options) = @_;
+
+    #{
+    #   "type": "replace",
+    #   "src": "%(sql.tables.test)",
+    #   "expression": "s/name/name is/"
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+    if (!defined($options{expression}) || $options{expression} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set expression attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+    my $data = $self->get_special_variable_value(%$result);
+
+    if (defined($data)) {
+        my $expression = $self->substitute_string(value => $options{expression});
+        our $assign_var = $data;
+        $self->{safe_func}->reval("\$assign_var =~ $expression", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+        $self->set_special_variable_value(value => $assign_var, %$result);
+    }
+}
+
+sub exec_func_assign {
+    my ($self, %options) = @_;
+
+    #{
+    #   "type": "assign",
+    #   "save": "%(sql.tables.test)",
+    #   "expression": "'%(sql.tables.test)' . 'toto'"
+    #}
+    if (!defined($options{save}) || $options{save} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set save attribute");
+        $self->{output}->option_exit();
+    }
+    if (!defined($options{expression}) || $options{expression} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set expression attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $expression = $self->substitute_string(value => $options{expression});
+    our $assign_var;
+    $self->{safe_func}->reval("\$assign_var = $expression", 1);
+    if ($@) {
+        die 'Unsafe code evaluation: ' . $@;
+    }
+    $self->set_special_variable_value(value => $assign_var, %$result);
 }
 
 sub set_functions {
@@ -1040,6 +1111,10 @@ sub set_functions {
             $self->exec_func_epoch2date(%$_);
         } elsif (lc($_->{type}) eq 'count') {
             $self->exec_func_count(%$_);
+        } elsif (lc($_->{type}) eq 'replace') {
+            $self->exec_func_replace(%$_);
+        } elsif (lc($_->{type}) eq 'assign') {
+            $self->exec_func_assign(%$_);
         }
     }
 }
@@ -1241,10 +1316,6 @@ sub disco_show {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # TODO:
-    #   add some functions types:
-    #       eval_equal (concatenate, math operation)
-    #       regexp (regexp substitution, extract a pattern)
     $self->read_config();
     $self->collect_sql(sql => $options{sql});
 
