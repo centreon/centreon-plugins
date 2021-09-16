@@ -50,7 +50,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'alarms', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'alerts', min => 0 }
+        { name => 'alarms', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'alerts', min => 0 },
           group => [ { name => 'alarm', skipped_code => { -11 => 1 } } ] 
         }
     ];
@@ -79,7 +79,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "filter-time:s"       => { name => 'filter_time', default => '1' },
         "memory"              => { name => 'memory' },
-        "timezone:s"          => { name => 'timezone' },
+        "timezone:s"          => { name => 'timezone' }
     });
     
     centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime',
