@@ -35,6 +35,7 @@ sub new {
         'backup-age'           => 'database::mssql::mode::backupage',
         'blocked-processes'    => 'database::mssql::mode::blockedprocesses',
         'cache-hitratio'       => 'database::mssql::mode::cachehitratio',
+        'collection'           => 'centreon::common::protocols::sql::mode::collection',
         'connected-users'      => 'database::mssql::mode::connectedusers',
         'connection-time'      => 'centreon::common::protocols::sql::mode::connectiontime',
         'dead-locks'           => 'database::mssql::mode::deadlocks',
