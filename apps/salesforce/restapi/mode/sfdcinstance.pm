@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -50,21 +50,19 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{salesforce} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} !~ /OK/', set => {
                 key_values => [ { name => 'status' }, { name => 'active' }, { name => 'name' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'incident', nlabel => 'salesforce.incident.current.count', set => {
                 key_values => [ { name => 'incident' } ],
                 output_template => '%s incidents currently',
                 perfdatas => [
-                    { label => 'incident', value => 'incident', template => '%s',
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         }
     ];
@@ -77,20 +75,10 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'instance:s@'       => { name => 'instance' },
-        'alias'             => { name => 'use_alias' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /OK/' }
+        'alias'             => { name => 'use_alias' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {

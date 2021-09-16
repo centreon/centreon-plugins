@@ -41,9 +41,9 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
-            'hostname:s'     => { name => 'hostname' },
-            'timeout:s'      => { name => 'timeout' },
-            'api-versions:s' => { name => 'api_version' }
+            'hostname:s'    => { name => 'hostname' },
+            'timeout:s'     => { name => 'timeout' },
+            'api-version:s' => { name => 'api_version' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -143,9 +143,9 @@ Set hostname to query (default: 'api.status.salesforce.com')
 
 Set HTTP timeout in seconds (Default: '10').
 
-=item B<--api-path>
+=item B<--api-version>
 
-API base url path (Default: '/v1').
+API version (Default: 'v1').
 
 =back
 
