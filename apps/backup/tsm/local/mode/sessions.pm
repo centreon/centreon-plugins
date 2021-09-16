@@ -59,7 +59,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'sessions.count', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'Total Sessions : %s',
+                output_template => 'total sessions : %s',
                 perfdatas => [
                     { label => 'total', template => '%s', min => 0 }
                 ]

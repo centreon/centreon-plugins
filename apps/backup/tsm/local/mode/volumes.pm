@@ -36,7 +36,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'volumes.count', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'Volumes Total : %s',
+                output_template => 'volumes total : %s',
                 perfdatas => [
                     { label => 'total', template => '%s', min => 0 }
                 ]
@@ -44,7 +44,7 @@ sub set_counters {
         },
         { label => 'online', nlabel => 'volumes.online.count', set => {
                 key_values => [ { name => 'online' } ],
-                output_template => 'Online : %s',
+                output_template => 'online : %s',
                 perfdatas => [
                     { label => 'online', template => '%s', min => 0 }
                 ]
@@ -52,7 +52,7 @@ sub set_counters {
         },
         { label => 'offline', nlabel => 'volumes.offline.count', set => {
                 key_values => [ { name => 'offline' } ],
-                output_template => 'Offline : %s',
+                output_template => 'offline : %s',
                 perfdatas => [
                     { label => 'offline', template => '%s', min => 0 }
                 ]
@@ -60,7 +60,7 @@ sub set_counters {
         },
         { label => 'empty', nlabel => 'volumes.empty.count', set => {
                 key_values => [ { name => 'empty' } ],
-                output_template => 'Empty : %s',
+                output_template => 'empty : %s',
                 perfdatas => [
                     { label => 'empty', template => '%s', min => 0 }
                 ]
@@ -68,7 +68,7 @@ sub set_counters {
         },
         { label => 'pending', nlabel => 'volumes.pending.count', set => {
                 key_values => [ { name => 'pending' } ],
-                output_template => 'Pending : %s',
+                output_template => 'pending : %s',
                 perfdatas => [
                     { label => 'pending', template => '%s', min => 0 }
                 ]
@@ -76,7 +76,7 @@ sub set_counters {
         },
         { label => 'filling', nlabel => 'volumes.filling.count', set => {
                 key_values => [ { name => 'filling' } ],
-                output_template => 'Filling : %s',
+                output_template => 'filling : %s',
                 perfdatas => [
                     { label => 'filling', template => '%s', min => 0 }
                 ]
@@ -84,7 +84,7 @@ sub set_counters {
         },
         { label => 'full', nlabel => 'volumes.full.count', set => {
                 key_values => [ { name => 'full' } ],
-                output_template => 'Full : %s',
+                output_template => 'full : %s',
                 perfdatas => [
                     { label => 'full', template => '%s', min => 0 }
                 ]

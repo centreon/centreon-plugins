@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'online', nlabel => 'drives.online..count', set => {
+        { label => 'online', nlabel => 'drives.online.count', set => {
                 key_values => [ { name => 'online' } ],
                 output_template => 'online : %s',
                 perfdatas => [
