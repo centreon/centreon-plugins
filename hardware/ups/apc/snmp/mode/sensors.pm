@@ -36,10 +36,9 @@ sub set_system {
         sensor => [
             ['uioNormal', 'OK'],
             ['uioWarning', 'WARNING'],
-            ['uioCritical', 'OK'],
+            ['uioCritical', 'CRITICAL'],
             ['sensorStatusNotApplicable', 'OK'],
-            
-            ['disconnected', 'OK'],
+            ['disconnected', 'CRITICAL'],
             ['connected', 'OK']
         ]
     };
