@@ -32,8 +32,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes}} = {
         'archivelevel0'    => 'database::informix::sql::mode::archivelevel0',
+        'collection'       => 'centreon::common::protocols::sql::mode::collection',
         'checkpoints'      => 'database::informix::sql::mode::checkpoints',
         'chunkstates'      => 'database::informix::sql::mode::chunkstates',
         'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
@@ -47,7 +48,7 @@ sub new {
         'sessions'         => 'database::informix::sql::mode::sessions',
         'table-locks'      => 'database::informix::sql::mode::tablelocks',
         'sql'              => 'centreon::common::protocols::sql::mode::sql',
-    );
+    };
 
     return $self;
 }
