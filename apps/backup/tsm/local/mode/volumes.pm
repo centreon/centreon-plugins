@@ -93,7 +93,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{volumes} = [
-        { label => 'used',  nlabel => 'volume.usage.percentage', set => {
+        { label => 'used',  nlabel => 'volume.space.usage.percentage', set => {
                 key_values => [ { name => 'prct_utilized' }, { name => 'display' } ],
                 output_template => 'Usage : %s %%',
                 perfdatas => [
