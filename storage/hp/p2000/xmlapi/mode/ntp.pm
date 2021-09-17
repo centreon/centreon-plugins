@@ -97,7 +97,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{contact} = [
-        { label => 'contact-last-time', nlabel => 'ntp.contact.last.time.', set => {
+        { label => 'contact-last-time', nlabel => 'ntp.contact.last.time', set => {
                 key_values      => [ { name => 'contact_seconds' }, { name => 'contact_human' } ],
                 output_template => 'last server contact: %s',
                 output_use => 'contact_human',
