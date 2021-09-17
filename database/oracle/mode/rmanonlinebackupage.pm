@@ -32,9 +32,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "warning:s"               => { name => 'warning', },
-        "critical:s"              => { name => 'critical', },
-        "timezone:s"              => { name => 'timezone', },
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' },
+        'timezone:s' => { name => 'timezone' }
     });
 
     return $self;
@@ -52,7 +52,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-    
+
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $ENV{TZ} = $self->{option_results}->{timezone};
     }
@@ -64,16 +64,19 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    my $query = q{SELECT min(((time - date '1970-01-01') * 86400)) as last_time
-                  FROM v$backup
-                  WHERE STATUS='ACTIVE'
+    my $query = q{
+        SELECT min(((time - date '1970-01-01') * 86400)) as last_time
+        FROM v$backup
+        WHERE STATUS='ACTIVE'
     };
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
     $self->{sql}->disconnect();
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("Backup online modes are ok."));
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("Backup online modes are ok.")
+    );
 
     foreach my $row (@$result) {
         next if (!defined($$row[0]));
@@ -81,24 +84,30 @@ sub run {
         
         my @values = localtime($last_time);
         my $dt = DateTime->new(
-                        year       => $values[5] + 1900,
-                        month      => $values[4] + 1,
-                        day        => $values[3],
-                        hour       => $values[2],
-                        minute     => $values[1],
-                        second     => $values[0],
-                        time_zone  => 'UTC',
+            year       => $values[5] + 1900,
+            month      => $values[4] + 1,
+            day        => $values[3],
+            hour       => $values[2],
+            minute     => $values[1],
+            second     => $values[0],
+            time_zone  => 'UTC'
         );
         my $offset = $last_time - $dt->epoch;
         $last_time = $last_time + $offset;
         
         my $launched = time() - $last_time;
         my $launched_convert = centreon::plugins::misc::change_seconds(value => $launched);
-        $self->{output}->output_add(long_msg => sprintf("backup online mode since %s (%s)", $launched_convert, locatime($last_time)));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "backup online mode since %s (%s)", $launched_convert, localtime($last_time)
+            )
+        );
         my $exit_code = $self->{perfdata}->threshold_check(value => $launched, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("backup online mode since %s (%s)", $launched_convert, locatime($last_time)));
+            $self->{output}->output_add(
+                severity => $exit_code,
+                short_msg => sprintf("backup online mode since %s (%s)", $launched_convert, localtime($last_time))
+            );
         }
     }
 
