@@ -372,7 +372,12 @@ sub change_seconds {
         { unit => 's', value => 1 },
     ];
     my %values = ('y' => 1, 'M' => 2, 'w' => 3, 'd' => 4, 'h' => 5, 'm' => 6, 's' => 7);
-
+    my $sign = '';
+    if ($options{value} <= 0) {
+        $sign = '-';
+        $options{value} = abs($options{value});
+    }
+    
     foreach (@$periods) {
         next if (defined($options{start}) && $values{$_->{unit}} < $values{$options{start}});
         my $count = int($options{value} / $_->{value});
@@ -387,7 +392,7 @@ sub change_seconds {
         $str = $options{value};
         $str .= $options{start} if (defined($options{start}));
     }
-    return $str;
+    return $sign . $str;
 }
 
 sub scale_bytesbit {
