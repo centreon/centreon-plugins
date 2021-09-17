@@ -203,7 +203,7 @@ sub check_rpdu {
     $snmp_result = $options{snmp}->get_leef(oids => [$oid_rPDUIdentName, $oid_rPDUIdentDevicePowerWatts]);
     $self->{device}->{0} = {
         display => $snmp_result->{$oid_rPDUIdentName},
-        power => $snmp_result->{$oid_rPDUIdentDevicePowerWatts} * 10,
+        power => $snmp_result->{$oid_rPDUIdentDevicePowerWatts},
     };
 }
 
