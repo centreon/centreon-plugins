@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-	    'discovery'  => 'cloud::azure::compute::disk::mode::discovery',
+        'discovery'  => 'cloud::azure::compute::disk::mode::discovery',
         'diskio'     => 'cloud::azure::compute::disk::mode::diskio'
     );
 
