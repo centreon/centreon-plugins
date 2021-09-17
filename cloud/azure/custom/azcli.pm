@@ -279,6 +279,19 @@ sub azure_list_vm_sizes {
     return $raw_results;
 }
 
+sub azure_list_vms_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = "vm list --only-show-errors --output json";
+    $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $cmd_options .= " --show-details" if (defined($options{show_details}));
+    $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
+
+    return $cmd_options; 
+}
+
 sub azure_list_vms {
     my ($self, %options) = @_;
 
