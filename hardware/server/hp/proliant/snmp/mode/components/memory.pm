@@ -41,43 +41,56 @@ my %map_memory_status = (
     15 => 'trainingFailure'
 );
 
-# In MIB 'CPQHLTH-MIB.mib'
 my $mapping = {
-    cpqHeResMem2Module => { oid => '.1.3.6.1.4.1.232.6.2.14.13.1.1' },
-    cpqHeResMem2ModuleSize => { oid => '.1.3.6.1.4.1.232.6.2.14.13.1.6' },
-    cpqHeResMem2ModuleHwLocation => { oid => '.1.3.6.1.4.1.232.6.2.14.13.1.13' },
-    cpqHeResMem2ModuleStatus => { oid => '.1.3.6.1.4.1.232.6.2.14.13.1.19', map => \%map_memory_status }
+    size     => { oid => '.1.3.6.1.4.1.232.6.2.14.13.1.6' }, # cpqHeResMem2ModuleSize
+    location => { oid => '.1.3.6.1.4.1.232.6.2.14.13.1.13' }, # cpqHeResMem2ModuleHwLocation
+    status   => { oid => '.1.3.6.1.4.1.232.6.2.14.13.1.19', map => \%map_memory_status } # cpqHeResMem2ModuleStatus
 };
-my $oid_cpqHeResMem2ModuleEntry = '.1.3.6.1.4.1.232.6.2.14.13.1';
+my $oid_cpqHeResMem2Module = '.1.3.6.1.4.1.232.6.2.14.13.1.1';
 
 sub load {
     my ($self) = @_;
-    push @{$self->{request}}, { oid => $oid_cpqHeResMem2ModuleEntry, start => $mapping->{cpqHeResMem2Module}->{oid}, end => $mapping->{cpqHeResMem2ModuleStatus}->{oid} };
+
+    push @{$self->{request}}, { oid => $oid_cpqHeResMem2Module };
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking memory");
-    $self->{components}->{memory} = {name => 'mems', total => 0, skip => 0};
+    $self->{components}->{memory} = { name => 'memory', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'memory'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqHeResMem2ModuleEntry}})) {
-        next if ($oid !~ /^$mapping->{cpqHeResMem2ModuleStatus}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqHeResMem2ModuleEntry}, instance => $instance);
-        
+    $self->{snmp}->load(
+        oids => [map($_->{oid}, values(%$mapping))],
+        instances => [values(%{$self->{results}->{$oid_cpqHeResMem2Module}})]
+    );
+    my $results = $self->{snmp}->get_leef();
+
+    foreach my $instance (sort values(%{$self->{results}->{$oid_cpqHeResMem2Module}})) {
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+
         next if ($self->check_filter(section => 'memory', instance => $instance));
         $self->{components}->{memory}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("memory '%s' [slot: %s, location: %s, size: %skB] status is %s.", 
-                                    $instance, $result->{cpqHeResMem2Module}, $result->{cpqHeResMem2ModuleHwLocation},
-                                    $result->{cpqHeResMem2ModuleSize}, $result->{cpqHeResMem2ModuleStatus}));
-        my $exit = $self->get_severity(section => 'memory', value => $result->{cpqHeResMem2ModuleStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "memory slot '%s' [location: %s, size: %skB] status is %s", 
+                $instance,
+                defined($result->{location}) ? $result->{location} : '-',
+                $result->{size},
+                $result->{status}
+            )
+        );
+        my $exit = $self->get_severity(section => 'memory', value => $result->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("memory '%s' is %s", 
-                                            $instance, $result->{cpqHeResMem2ModuleStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "memory slot '%s' is %s", 
+                    $instance, $result->{status}
+                )
+            );
         }
     }
 }
