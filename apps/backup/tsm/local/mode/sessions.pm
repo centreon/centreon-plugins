@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -53,30 +53,30 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'sessions', type => 1, cb_prefix_output => 'prefix_sessions_output', message_multiple => 'All sessions are ok' },
+        { name => 'sessions', type => 1, cb_prefix_output => 'prefix_sessions_output', message_multiple => 'All sessions are ok' }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'sessions.count', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'Total Sessions : %s',
+                output_template => 'total sessions : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total', template => '%s', min => 0 },
-                ],
+                    { label => 'total', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{sessions} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, set => {
                 key_values => [ { name => 'session_id' }, { name => 'client_name' }, { name => 'session_type' }, 
                     { name => 'state' }, { name => 'since' }, { name => 'generation_time' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
-        },
+        }
     ];
 }
 
@@ -88,18 +88,15 @@ sub prefix_sessions_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-clientname:s"  => { name => 'filter_clientname' },
-                                  "filter-sessiontype:s" => { name => 'filter_sessiontype' },
-                                  "filter-state:s"       => { name => 'filter_state' },
-                                  "warning-status:s"     => { name => 'warning_status', default => '' },
-                                  "critical-status:s"    => { name => 'critical_status', default => '' },
-                                  "timezone:s"           => { name => 'timezone' },
-                                });
+    $options{options}->add_options(arguments =>  {
+        "filter-clientname:s"  => { name => 'filter_clientname' },
+        "filter-sessiontype:s" => { name => 'filter_sessiontype' },
+        "filter-state:s"       => { name => 'filter_state' },
+        "timezone:s"           => { name => 'timezone' },
+    });
     
     centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime',
                                            error_msg => "Cannot load module 'DateTime'.");
