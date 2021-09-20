@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::compute::virtualmachine::mode::memoryavailable;
+package cloud::azure::compute::virtualmachine::mode::memory;
 
 use base qw(cloud::azure::custom::mode);
 

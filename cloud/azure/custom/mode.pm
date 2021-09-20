@@ -173,7 +173,7 @@ sub manage_selection {
     );
 
     foreach my $metric (@{$self->{az_metrics}}) {
-        $metric_name = lc($metric);
+        my $metric_name = lc($metric);
         $metric_name =~ s/ /_/g;
         foreach my $aggregation (@{$self->{az_aggregations}}) {
             next if (!defined($metric_results{$self->{az_resource}}->{$metric_name}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
