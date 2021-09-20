@@ -29,40 +29,40 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0 }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'associated', set => {
+        { label => 'associated', nlabel => 'nodes.associated.count', set => {
                 key_values => [ { name => 'associated' } ],
-                output_template => 'Total Associated Nodes : %s',
+                output_template => 'total associated nodes : %s',
                 perfdatas => [
-                    { label => 'associated', value => 'associated', template => '%s', min => 0 },
-                ],
+                    { label => 'associated', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'non-associated', set => {
+        { label => 'non-associated', nlabel => 'nodes.nonassociated.count', set => {
                 key_values => [ { name => 'non_associated' } ],
-                output_template => 'Total Non Associated Nodes : %s',
+                output_template => 'total non associated nodes : %s',
                 perfdatas => [
-                    { label => 'non_associated', value => 'non_associated', template => '%s', min => 0 },
-                ],
+                    { label => 'non_associated', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'locked', set => {
+        { label => 'locked', nlabel => 'nodes.locked.count', set => {
                 key_values => [ { name => 'locked' } ],
-                output_template => 'Total Locked Nodes : %s',
+                output_template => 'total locked nodes : %s',
                 perfdatas => [
-                    { label => 'locked', value => 'locked', template => '%s', min => 0 },
-                ],
+                    { label => 'locked', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments =>
