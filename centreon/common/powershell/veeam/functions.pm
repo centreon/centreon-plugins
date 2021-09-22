@@ -45,7 +45,7 @@ foreach ($snap_name in $load_snaps) {
     }
 }
 if ($registered -eq 0) {
-    if (@(Get-Module | Where-Object {$_.Name -Match "Veeam.Backup.PowerShell"} ).count -eq 0) {
+    if (@(Get-Module | Where-Object {$_.Name -Match "Veeam.Backup.PowerShell"} ).count -eq 1) {
         Try {
             Import-Module -DisableNameChecking -Name "Veeam.Backup.PowerShell"
             $registered=1
