@@ -33,7 +33,7 @@ sub get_metrics_mapping {
             message_multiple => 'All FS metrics are ok'
         },
         metrics => {
-            DataReadIOByte' => {
+            DataReadIOByte => {
                 output    => 'Data Read IO Bytes',
                 label     => 'data-iobytes-read',
                 nlabel    => {
