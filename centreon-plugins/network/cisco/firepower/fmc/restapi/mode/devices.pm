@@ -163,8 +163,8 @@ sub manage_selection {
                 name => $device->{name},
                 status => $device->{healthStatus}
             };
-            $self->{global}->{'devices_' . lc($device->{name})}++
-                if (defined($self->{global}->{'devices_' . lc($device->{name})}));
+            $self->{global}->{'devices_' . lc($device->{healthStatus})}++
+                if (defined($self->{global}->{'devices_' . lc($device->{healthStatus})}));
             $self->{global}->{devices_total}++;
         }
     }
