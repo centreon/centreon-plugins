@@ -1114,7 +1114,19 @@ sub exec_func_count {
     my $data = $self->get_special_variable_value(%$result);
     my $value = 0;
     if (defined($data)) {
-        $value = scalar(keys %$data);
+        if (defined($options{filter}) && $options{filter} ne '') {
+            my $count = 0;
+            foreach my $instance (keys %$data) {
+                my $values = $self->{expand};
+                foreach my $label (keys %{$data->{$instance}}) {
+                    $values->{'src.' . $label} = $data->{$instance}->{$label};
+                }
+                $count++ unless ($self->check_filter(filter => $options{filter}, values => $values));
+            }
+            $value = $count;
+        } else {
+            $value = scalar(keys %$data);
+        }
     }
 
     if (defined($options{save}) && $options{save} ne '') {
@@ -1237,7 +1249,7 @@ sub check_filter {
     my ($self, %options) = @_;
 
     return 0 if (!defined($options{filter}) || $options{filter} eq '');
-    our $expand = $self->{expand};
+    our $expand = $options{values};
     $options{filter} =~ s/%\(([a-zA-Z0-9\.]+?)\)/\$expand->{'$1'}/g;
     my $result = $self->{safe}->reval("$options{filter}");
     if ($@) {
@@ -1321,7 +1333,7 @@ sub add_selection {
         $self->set_expand_table(section => "selection > $i > expand_table", expand => $_->{expand_table});
         $self->set_expand(section => "selection > $i > expand", expand => $_->{expand});
         $self->set_functions(section => "selection > $i > functions", functions => $_->{functions}, position => 'after_expand', default => 1);
-        next if ($self->check_filter(filter => $_->{filter}));
+        next if ($self->check_filter(filter => $_->{filter}, values => $self->{expand}));
         next if ($self->check_filter_option());
         $config->{unknown} = $self->prepare_variables(section => "selection > $i > unknown", value => $_->{unknown});
         $config->{warning} = $self->prepare_variables(section => "selection > $i > warning", value => $_->{warning});
@@ -1366,7 +1378,7 @@ sub add_selection_loop {
             $self->set_expand_table(section => "selection_loop > $i > expand_table", expand => $_->{expand_table});
             $self->set_expand(section => "selection_loop > $i > expand", expand => $_->{expand});
             $self->set_functions(section => "selection_loop > $i > functions", functions => $_->{functions}, position => 'after_expand', default => 1);
-            next if ($self->check_filter(filter => $_->{filter}));
+            next if ($self->check_filter(filter => $_->{filter}, values => $self->{expand}));
             next if ($self->check_filter_option());
             $config->{unknown} = $self->prepare_variables(section => "selection_loop > $i > unknown", value => $_->{unknown});
             $config->{warning} = $self->prepare_variables(section => "selection_loop > $i > warning", value => $_->{warning});
