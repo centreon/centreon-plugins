@@ -42,6 +42,7 @@ sub custom_content_output {
     if (!$self->{output}->is_status(value => $self->{instance_mode}->{content_status}, compare => 'ok', litteral => 1)) {
         my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '-content'};
         $filter =~ s/\$values->/%/g;
+        $filter =~ s/%\{expected_string\}/$self->{result_values}->{expected_string}/g;
         $msg = sprintf("Content test [filter: '%s']", $filter);
     }
     
@@ -57,7 +58,10 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'content', type => 2, set => {
-                key_values => [ { name => 'content' }, { name => 'code' }, { name => 'first_header' }, { name => 'header' } ],
+                key_values => [
+                    { name => 'content' }, { name => 'code' }, { name => 'first_header' }, { name => 'header' },
+                    { name => 'expected_string' }
+                ],
                 closure_custom_output => $self->can('custom_content_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check =>  $self->can('custom_content_threshold')
@@ -160,7 +164,7 @@ sub check_options {
 
     # Legacy compat
     if (defined($options{option_results}->{expected_string}) && $options{option_results}->{expected_string} ne '') {
-        $options{option_results}->{'critical-content'} = "%{content} !~ /$options{option_results}->{expected_string}/mi";
+        $options{option_results}->{'critical-content'} = "%{content} !~ /%{expected_string}/mi";
     }
     $self->SUPER::check_options(%options);
     $self->load_request();
@@ -181,6 +185,7 @@ sub manage_selection {
         code => $self->{http}->get_code(),
         header => $self->{http}->get_header(),
         first_header => $self->{http}->get_first_header(),
+        expected_string => defined($self->{option_results}->{expected_string}) ? $self->{option_results}->{expected_string} : ''
     };
 
     if (defined($self->{option_results}->{extracted_pattern}) && $self->{option_results}->{extracted_pattern} ne '' &&
