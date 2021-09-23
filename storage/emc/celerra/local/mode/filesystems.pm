@@ -27,7 +27,7 @@ use warnings;
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
+
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_space});
@@ -53,13 +53,13 @@ sub prefix_pool_output {
 
 sub prefix_fs_output {
     my ($self, %options) = @_;
-    
+
     return "filesystem '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'pools', type => 3, cb_prefix_output => 'prefix_pool_output', cb_long_output => 'pool_long_output', indent_long_output => '    ', message_multiple => 'All pools are ok',
             group => [
@@ -100,12 +100,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
+
+    $options{options}->add_options(arguments => {
         'filter-pool-name:s'       => { name => 'filter_pool_name' },
         'filter-filesystem-name:s' => { name => 'filter_filesystem_name' }
     });
-    
+
     return $self;
 }
 
@@ -113,7 +113,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my ($stdout) = $options{custom}->execute_command(
-        command => 'NAS_DB=/nas /nas/bin/nas_fs -query:inuse==y:type=uxfs:IsRoot=False:RWServersNumeric==1 -fields:RWservers,rwvdms,StoragePoolName,Name,PctUsed,MaxSize -format:%L,%L,%s,%s,%d,%d----',
+        command => 'NAS_DB=/nas /nas/bin/nas_fs -query:"inuse==y:type=uxfs:IsRoot=False:RWServersNumeric==1" -fields:"RWservers,rwvdms,StoragePoolName,Name,UsedCapacity,Size,AutoExtend,MaxSize" -format:"%L,%L,%s,%s,%d,%d,%s,%d----"',
         command_options => '2>&1',
     );
 
@@ -122,7 +122,7 @@ sub manage_selection {
 
     $self->{pools} = {};
     foreach my $entry (split(/----/, $stdout)) {
-        my ($servers, $vdms, $pool_name, $fs_name, $prct_used, $size) = split(/,/, $entry);
+        my ($servers, $vdms, $pool_name, $fs_name, $used, $realsize, $autoextend, $maxsize) = split(/,/, $entry);
         if (defined($self->{option_results}->{filter_pool_name}) && $self->{option_results}->{filter_pool_name} ne '' &&
             $pool_name !~ /$self->{option_results}->{filter_pool_name}/) {
             $self->{output}->output_add(long_msg => "skipping filesystem '" . $fs_name . "': no matching filter.", debug => 1);
@@ -141,15 +141,20 @@ sub manage_selection {
             };
         }
 
-        $size *= 1024 * 1024;
-        my $used_space = int($prct_used * $size / 100);
+        my $size;
+        if ($autoextend eq 'True' && $maxsize >= $realsize) {
+            $size = $maxsize*1024*1024;
+        }else{
+            $size = $realsize*1024*1024;
+        }
+        my $used_space = $used/2*1024;
         $self->{pools}->{$pool_name}->{fs}->{$fs_name} = {
             name => $fs_name,
             total_space => $size,
             used_space => $used_space,
             free_space => $size - $used_space,
-            prct_used_space => $prct_used,
-            prct_free_space => 100 - $prct_used
+            prct_used_space => $used_space*100/$size,
+            prct_free_space => 100 - $used_space*100/$size
         };
     }
 }
@@ -162,7 +167,7 @@ __END__
 
 Check filesystems.
 
-Command used: NAS_DB=/nas /nas/bin/nas_fs -query:inuse==y:type=uxfs:IsRoot=False:RWServersNumeric==1 -fields:RWservers,rwvdms,StoragePoolName,Name,PctUsed,MaxSize -format:%L,%L,%s,%s,%d,%d---- 2>&1
+Command used: NAS_DB=/nas /nas/bin/nas_fs -query:"inuse==y:type=uxfs:IsRoot=False:RWServersNumeric==1" -fields:"RWservers,rwvdms,StoragePoolName,Name,UsedCapacity,Size,AutoExtend,MaxSize" -format:"%L,%L,%s,%s,%d,%d,%s,%d----" 2>&1
 
 =over 8
 
