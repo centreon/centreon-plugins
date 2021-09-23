@@ -105,7 +105,7 @@ sub check {
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensor', instance => $type . '.' . $sensor_id, value => $value);
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit,
+                severity => $exit2,
                 short_msg => sprintf("Sensor '%s' is %s %s", $sensor_id, $value, defined($unit) ? $unit : '-')
             );
         }
@@ -116,7 +116,7 @@ sub check {
             instances => $sensor_id,
             value => $value,
             warning => $warn,
-            critical => $crit,
+            critical => $crit
         );
     }
 }
