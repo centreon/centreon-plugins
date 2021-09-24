@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -45,13 +45,19 @@ sub custom_memory_output {
     return $msg;
 }
 
+sub prefix_ap_output {
+    my ($self, %options) = @_;
+    
+    return "Access Point '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output',
-          message_multiple => 'All access points are ok', skipped_code => { -10 => 1 } },
+          message_multiple => 'All access points are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -59,37 +65,34 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total access points: %s',
                 perfdatas => [
-                    { value => 'total', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{ap} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} !~ /up/i', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'clients', nlabel => 'clients.current.count', set => {
                 key_values => [ { name => 'clients' }, { name => 'display' } ],
                 output_template => 'Current Clients: %s',
                 perfdatas => [
-                    { label => 'clients', value => 'clients', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'cpu', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'Cpu: %.2f%%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'mem-usage', nlabel => 'memory.usage.bytes', set => {
@@ -97,9 +100,8 @@ sub set_counters {
                     { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { label => 'mem_used', value => 'used', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'mem-usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
@@ -107,20 +109,18 @@ sub set_counters {
                     { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { label => 'mem_free', value => 'free', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'mem-usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'Memory Used: %.2f %%',
                 perfdatas => [
-                    { label => 'mem_used_prct', value => 'prct_used', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -130,25 +130,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /up/i' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_ap_output {
-    my ($self, %options) = @_;
-    
-    return "Access Point '" . $options{instance_value}->{display} . "' ";
 }
 
 my $map_ap_status = {
@@ -161,7 +146,7 @@ my $mapping = {
     aiAPCPUUtilization  => { oid => '.1.3.6.1.4.1.14823.2.3.3.1.2.1.1.7' },
     aiAPMemoryFree      => { oid => '.1.3.6.1.4.1.14823.2.3.3.1.2.1.1.8' },
     aiAPTotalMemory     => { oid => '.1.3.6.1.4.1.14823.2.3.3.1.2.1.1.10' },
-    aiAPStatus          => { oid => '.1.3.6.1.4.1.14823.2.3.3.1.2.1.1.11', map => $map_ap_status },
+    aiAPStatus          => { oid => '.1.3.6.1.4.1.14823.2.3.3.1.2.1.1.11', map => $map_ap_status }
 };
 my $oid_aiAccessPointEntry = '.1.3.6.1.4.1.14823.2.3.3.1.2.1.1';
 my $oid_aiClientAPIPAddress = '.1.3.6.1.4.1.14823.2.3.3.1.2.4.1.4';
@@ -172,8 +157,8 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $oid_aiAccessPointEntry, start => $mapping->{aiAPName}->{oid}, end => $mapping->{aiAPStatus}->{oid} },
-            { oid => $oid_aiClientAPIPAddress },
-         ], 
+            { oid => $oid_aiClientAPIPAddress }
+         ]
     );
 
     my $link_ap = {};
@@ -191,24 +176,26 @@ sub manage_selection {
         }
 
         $self->{global}->{total}++;
-        $self->{ap}->{$result->{aiAPName}} = {
+        $self->{ap}->{ $result->{aiAPName} } = {
             display => $result->{aiAPName},
             status => $result->{aiAPStatus},
             cpu => $result->{aiAPCPUUtilization},
-            total => $result->{aiAPTotalMemory},
-            free => $result->{aiAPMemoryFree},
-            used => $result->{aiAPTotalMemory} - $result->{aiAPMemoryFree},
-            prct_free => $result->{aiAPMemoryFree} * 100 / $result->{aiAPTotalMemory},
-            prct_used => 100 - ($result->{aiAPMemoryFree} * 100 / $result->{aiAPTotalMemory}),
-            clients => 0,
+            clients => 0
         };
-        $link_ap->{$result->{aiAPIPAddress}} = $self->{ap}->{$result->{aiAPName}};
+        if (defined($result->{aiAPTotalMemory}) && $result->{aiAPTotalMemory} > 0) {
+            $self->{ap}->{ $result->{aiAPName} }->{free} = $result->{aiAPMemoryFree};
+            $self->{ap}->{ $result->{aiAPName} }->{total} = $result->{aiAPTotalMemory};
+            $self->{ap}->{ $result->{aiAPName} }->{used} = $result->{aiAPTotalMemory} - $result->{aiAPMemoryFree};
+            $self->{ap}->{ $result->{aiAPName} }->{prct_free} = $result->{aiAPMemoryFree} * 100 / $result->{aiAPTotalMemory};
+            $self->{ap}->{ $result->{aiAPName} }->{prct_used} = 100 - ($result->{aiAPMemoryFree} * 100 / $result->{aiAPTotalMemory});
+        }
+        $link_ap->{ $result->{aiAPIPAddress} } = $self->{ap}->{$result->{aiAPName}};
     }
 
     if (scalar(keys %{$snmp_result->{$oid_aiAccessPointEntry}}) == 0 && scalar(keys %{$snmp_result->{$oid_aiClientAPIPAddress}}) > 0) {
         $self->{ap}->{default} = {
             display => 'default',
-            clients => 0,
+            clients => 0
         };
     }
 
