@@ -175,7 +175,7 @@ Typical syntax: --warning-status='%{status} ne "STARTED"'
 
 Set warning threshold for status (Default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
-Typical syntax: --critical-status='%{status} ~= m/FAILED/'
+Typical syntax: --critical-status='%{status} =~ m/FAILED/'
 
 =back
 
