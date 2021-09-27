@@ -98,7 +98,7 @@ __END__
 
 =head1 MODE
 
-List queues.
+List queue managers.
 
 =over 8
 

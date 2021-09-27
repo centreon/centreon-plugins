@@ -133,6 +133,8 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/ibmmq/restapi/mgr.json';
     } elsif ($options{endpoint} =~ /qmgr\/$/) {
         $file = '/home/qgarnier/clients/plugins/ibmmq/restapi/listmgr.json';
+    } elsif ($options{endpoint} =~ /queue/) {
+        $file = '/home/qgarnier/clients/plugins/ibmmq/restapi/queue.json';
     }
     my $content = do {
         local $/ = undef;

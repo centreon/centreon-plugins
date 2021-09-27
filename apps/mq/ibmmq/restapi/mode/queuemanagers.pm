@@ -138,7 +138,7 @@ Check queue managers.
 
 =item B<--qmgr-name>
 
-Check exact queue manager name (no API listing call).
+Check exact queue manager (no API listing call).
 
 =item B<--filter-qmgr-name>
 

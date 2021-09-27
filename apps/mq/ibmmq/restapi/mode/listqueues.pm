@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::mq::ibmmq::mqi::mode::listqueues;
+package apps::mq::ibmmq::restapi::mode::listqueues;
 
 use base qw(centreon::plugins::mode);
 
@@ -43,28 +43,38 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->execute_command(
-        command => 'InquireQueueStatus',
-        attrs => { QStatusAttrs => ['QName'] }
+    my $list_qmgr = $options{custom}->request_api(
+        endpoint => '/qmgr/'
     );
 
-    $self->{queue} = {};
-    foreach (@$result) {
-        $self->{queue}->{$_->{QName}} = {
-            name => $_->{QName}
-        };
+    my $results = {};
+    foreach my $qmgr (@{$list_qmgr->{qmgr}}) {
+        my $queues = $options{custom}->request_api(
+            endpoint => '/qmgr/' . $qmgr->{name} . '/queue'
+        );
+        foreach my $queue (@{$queues->{queue}}) {
+            $results->{ $qmgr->{name} . ':' . $queue->{name} } = {
+                qmgr => $qmgr->{name},
+                name => $queue->{name},
+                type => $queue->{type}
+            };
+        }
     }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach (sort keys %{$self->{queue}}) {
+    my $results = $self->manage_selection(%options);
+    foreach (sort keys %$results) {
         $self->{output}->output_add(long_msg =>
             sprintf(
-                '[name = %s]',
-                $self->{queue}->{$_}->{name}
+                '[qmgr: %s][name: %s][types: %s]',
+                $results->{$_}->{qmgr},
+                $results->{$_}->{name},
+                $results->{$_}->{type}
             )
         );
     }
@@ -80,15 +90,15 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => ['qmgr', 'name', 'type']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach (values %{$self->{queue}}) {
-        $self->{output}->add_disco_entry(%$_);
+    my $results = $self->manage_selection(%options);
+    foreach (sort keys %$results) {
+        $self->{output}->add_disco_entry(%{$results->{$_}});
     }
 }
 
