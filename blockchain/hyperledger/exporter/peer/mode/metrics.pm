@@ -33,10 +33,11 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'general', cb_prefix_output => 'prefix_output_peer', type => 0 }
+        { name => 'peer', cb_prefix_output => 'prefix_output_peer', type => 0 },
+        { name => 'duration', cb_prefix_output => 'prefix_output_peer', type => 0 }
     ];
 
-    $self->{maps_counters}->{general} = [
+    $self->{maps_counters}->{peer} = [
         { label => 'peer-known', nlabel => 'peers.known.count', set => {
                 key_values => [ { name => 'gossip_membership_total_peers_known' } ],
                 output_template => 'Number of known peers: %s',
@@ -46,6 +47,8 @@ sub set_counters {
                 ],
             }
         },
+    ];
+    $self->{maps_counters}->{duration} = [
         { label => 'peer-endorsing-duration-avg', nlabel => 'endorser.propsal.duration.avg', set => {
                 key_values => [ { name => 'endorser_propsal_duration_avg' }, { name => 'endorser_successful_proposals' }, { name => 'endorser_endorsement_failures' } ],
                 closure_custom_output => $self->can('custom_endorser_output'),
@@ -196,7 +199,6 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     my $metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
-    #$self->{channel} = {};
     my @channel = ("channel");
     my @chaincode_channel_succes = ('chaincode', 'channel', 'success');
     my @no_dimension = ();
@@ -206,7 +208,7 @@ sub manage_selection {
         label => 'gossip_membership_total_peers_known',
         dimensions =>  \@channel,
         key => 'gossip_membership_total_peers_known',
-        store => 'peers'
+        store => 'peer'
     );
 
     $self->search_metric(
@@ -214,7 +216,7 @@ sub manage_selection {
         label => 'endorser_successful_proposals',
         dimensions =>  \@no_dimension,
         key => 'endorser_successful_proposals',
-        store => 'peers'
+        store => 'duration'
     );
 
     $self->search_metric(
@@ -222,7 +224,7 @@ sub manage_selection {
         label => 'endorser_endorsement_failures',
         dimensions =>  \@no_dimension,
         key => 'endorser_endorsement_failures',
-        store => 'peers'
+        store => 'duration'
     );
 
     $self->search_calc_avg_metric(
@@ -231,7 +233,7 @@ sub manage_selection {
         numerator => 'endorser_proposal_duration_sum',
         denominator => 'endorser_proposal_duration_count',
         key => 'endorser_propsal_duration_avg',
-        store => 'peers'
+        store => 'duration'
     );
     
     $self->search_calc_avg_metric(
@@ -240,7 +242,7 @@ sub manage_selection {
         numerator => 'gossip_state_commit_duration_sum',
         denominator => 'gossip_state_commit_duration_count',
         key => 'gossip_state_commit_duration_avg',
-        store => 'peers'
+        store => 'duration'
     );
 
 
