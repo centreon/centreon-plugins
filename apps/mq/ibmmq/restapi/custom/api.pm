@@ -128,26 +128,7 @@ sub get_hostname {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file = '';
-    if ($options{endpoint} =~ /qmgr\/MQFWIPRD$/) {
-        $file = '/home/qgarnier/clients/plugins/ibmmq/restapi/mgr.json';
-    } elsif ($options{endpoint} =~ /qmgr\/$/) {
-        $file = '/home/qgarnier/clients/plugins/ibmmq/restapi/listmgr.json';
-    } elsif ($options{endpoint} =~ /queue/) {
-        $file = '/home/qgarnier/clients/plugins/ibmmq/restapi/queue.json';
-    }
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     $self->settings();
-
     my $content = $self->{http}->request(
         url_path => $self->{url_path} . $options{endpoint},
         unknown_status => $self->{unknown_http_status},
@@ -155,7 +136,6 @@ sub request_api {
         critical_status => $self->{critical_http_status},
         get_param => $options{get_param}
     );
-=cut
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
