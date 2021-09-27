@@ -774,10 +774,10 @@ sub set_constants {
     my ($self, %options) = @_;
 
     my $constants = {};
-    return $constants if (!defined($self->{config}->{constants}));
-
-    foreach (keys %{$self->{config}->{constants}}) {
-        $constants->{'constants.' . $_} = $self->{config}->{constants}->{$_};
+    if (defined($self->{config}->{constants})) {
+        foreach (keys %{$self->{config}->{constants}}) {
+            $constants->{'constants.' . $_} = $self->{config}->{constants}->{$_};
+        }
     }
     foreach (keys %{$self->{option_results}->{constant}}) {
         $constants->{'constants.' . $_} = $self->{option_results}->{constant}->{$_};
