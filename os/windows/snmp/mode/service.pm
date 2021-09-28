@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -86,11 +86,12 @@ sub run {
         severity => 'OK',
         short_msg => 'All service states are ok'
     );
+    use Encode;
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %$result)) {
         next if ($oid !~ /^$oid_svSvcOperatingState\.(\d+)\.(.*)$/);
         my $instance = $1 . '.' . $2;
 
-        my $svc_name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $2))));
+        my $svc_name = $self->{output}->decode(join('', map(chr($_), split(/\./, $2))));
         my $svc_installed_state = $result->{$oid_svSvcInstalledState . '.' . $instance};
         my $svc_operating_state = $result->{$oid_svSvcOperatingState . '.' . $instance};        
         for (my $i = 0; $i < scalar(@{$self->{option_results}->{service}}); $i++) {

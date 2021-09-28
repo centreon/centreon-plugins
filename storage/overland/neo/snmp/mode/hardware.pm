@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,13 +36,13 @@ sub set_system {
             ['initializedWithError', 'CRITICAL'],
             ['notInitialized', 'WARNING'],
             ['notInstalled', 'OK'],
-            ['notInserted', 'OK'],
+            ['notInserted', 'OK']
         ],
         library => [
             ['initializing', 'OK'],
             ['online', 'OK'],
-            ['offline', 'CRITICAL'],
-        ],
+            ['offline', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'storage::overland::neo::snmp::mode::components';

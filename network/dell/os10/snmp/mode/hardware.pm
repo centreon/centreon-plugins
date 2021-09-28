@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,7 +29,8 @@ sub set_system {
     my ($self, %options) = @_;
 
     $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature)$';
-    
+
+    $self->{cb_hook1} = 'get_system_information';
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
@@ -39,7 +40,7 @@ sub set_system {
             ['cardProblem', 'CRITICAL'],
             ['diagMode', 'OK'],
             ['cardAbsent', 'OK'],
-            ['offline', 'OK'],
+            ['offline', 'OK']
         ],
         operational => [
             ['up', 'OK'],
@@ -49,13 +50,33 @@ sub set_system {
             ['dormant', 'OK'],
             ['notPresent', 'OK'],
             ['lowerLayerDown', 'OK'],
-            ['failed', 'CRITICAL'],
-        ],
+            ['failed', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'network::dell::os10::snmp::mode::components';
     $self->{components_module} = ['card', 'temperature', 'fan', 'fantray', 'psu'];
 }
+
+sub get_system_information {
+    my ($self, %options) = @_;
+
+    my $oid_sysdescr = '.1.3.6.1.2.1.1.1.0';
+    my $result = $options{snmp}->get_leef(oids => [$oid_sysdescr]);
+
+    my $version = 'unknown';
+    if (defined($result->{$oid_sysdescr}) && $result->{$oid_sysdescr} =~ /OS Version:\s*([a-zA-Z0-9\.]+)/msi) {
+        $version = $1;
+        $version =~ s/\.$//;
+    }
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            'os version: %s',
+            $version
+        )
+    );
+}
+
 
 sub snmp_execute {
     my ($self, %options) = @_;

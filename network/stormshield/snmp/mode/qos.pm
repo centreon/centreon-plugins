@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -206,9 +206,9 @@ sub manage_selection {
 
         foreach (('in', 'out')) {
             $result->{'speed_' . $_} = defined($self->{option_results}->{'speed_' . $_}) && $self->{option_results}->{'speed_' . $_} =~ /(\d+)/ ?
-                ($1 * 1000 * 1000): (defined($result->{'speed_' . $_}) ? ($result->{'speed_' . $_} * 1024 * 1000) : 0);
-            $result->{'traffic_' . $_} *= 1000;
-            $result->{'traffic_' . $_ . '_peak'} *= 1000;
+                ($1 * 1000 * 1000): (defined($result->{'speed_' . $_}) ? ($result->{'speed_' . $_} * 1024 * 8) : 0);
+            $result->{'traffic_' . $_} *= 8;
+            $result->{'traffic_' . $_ . '_peak'} *= 8;
         }
         $self->{qos}->{$_} = {
             %{$self->{qos}->{$_}},

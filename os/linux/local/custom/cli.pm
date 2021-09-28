@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,8 +39,9 @@ sub new {
         $options{output}->option_exit();
     }
 
+    $self->{mode_name} = $options{mode_name};
     # discovery-snmp cannot be used at distance.
-    return $self if (defined($options{mode_name}) && $options{mode_name} eq 'discovery-snmp');
+    return $self if (defined($options{mode_name}) && $options{mode_name} =~ /discovery-snmp|check-plugin/);
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
@@ -71,6 +72,8 @@ sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
+
+    return 0 if ($self->{mode_name} =~ /discovery-snmp|check-plugin/);
 
     if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/) {
         $self->{timeout} = $1;

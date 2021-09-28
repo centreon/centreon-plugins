@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,7 +43,7 @@ sub set_counters {
             my $metric_perf = lc($metric);
             my $metric_label = lc($metric);
             $metric_perf =~ s/ /_/g;
-            $metric_label =~ s/ /-/g;
+            $metric_label =~ s/[ |_]/-/g;
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_perf . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
                                 output_template => 'Database size percentage: %.2f %%',

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,6 +27,8 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
+
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:fan|temperature|voltage)$';
 
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -85,7 +87,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1, no_absent => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -108,6 +110,10 @@ Check hardware (fans, power supplies, temperatures, voltages).
 Which component to check (Default: '.*').
 Can be: 'psu', 'fan', 'temperature', 'voltage', 'raiddisk'.
 
+=item B<--add-name-instance>
+
+Add literal description for instance value (used in filter and threshold options).
+
 =item B<--filter>
 
 Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
@@ -123,6 +129,11 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='fan,CRITICAL,^(?!(false)$)'
+
+=item B<--warning> B<--critical>
+
+Set thresholds for 'fan', 'temperature', 'voltage' (syntax: type,regexp,threshold)
+Example: --warning='temperature,.*,40' --warning='critical,.*,45'
 
 =back
 

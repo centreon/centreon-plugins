@@ -10,15 +10,27 @@ stage('Source') {
     source = readProperties file: 'source.properties'
     env.VERSION = "${source.VERSION}"
     env.RELEASE = "${source.RELEASE}"
-    if (env.BRANCH_NAME == 'master') {
-      withSonarQubeEnv('SonarQube') {
-        sh './centreon-build/jobs/plugins/plugins-analysis.sh'
-      }
+    // Run sonarQube analysis
+    withSonarQubeEnv('SonarQubeDev') {
+      sh './centreon-build/jobs/plugins/plugins-analysis.sh'
     }
   }
 }
 
 try {
+  // sonarQube step to get qualityGate result
+  stage('Quality gate') {
+    node {
+      def qualityGate = waitForQualityGate()
+      if (qualityGate.status != 'OK') {
+        currentBuild.result = 'FAIL'
+      }
+      if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
+        error("Quality gate failure: ${qualityGate.status}.");
+      }
+    }
+  }
+
   stage('Package') {
     parallel 'all': {
       node {

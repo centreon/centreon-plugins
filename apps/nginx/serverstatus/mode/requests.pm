@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,137 +20,136 @@
 
 package apps::nginx::serverstatus::mode::requests;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
-use centreon::plugins::statefile;
+use POSIX;
+use Digest::MD5 qw(md5_hex);
 
-my $maps = [
-    { counter => 'accepts', output => 'Connections accepted per seconds %.2f', match => 'server accepts handled requests.*?(\d+)' },
-    { counter => 'handled', output => 'Connections handled per serconds %.2f', match => 'server accepts handled requests.*?\d+\s+(\d+)' }, 
-    { counter => 'requests', output => 'Requests per seconds %.2f', match => 'server accepts handled requests.*?\d+\s+\d+\s+(\d+)' },
-];
+sub custom_requests_perfdata {
+    my ($self, %options) = @_;
+
+    my $nlabel = $self->{nlabel};
+    if (defined($self->{instance_mode}->{option_results}->{per_minute})) {
+        $nlabel =~ s/persecond/perminute/;
+    }
+    $self->{output}->perfdata_add(
+        nlabel => $nlabel,
+        value => sprintf('%.2f', $self->{result_values}->{value}),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_requests_calc {
+    my ($self, %options) = @_;
+
+    my $diff_value = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{metric} } - $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{metric} });
+    $self->{result_values}->{value} = $diff_value / $options{delta_time};
+    if (defined($self->{instance_mode}->{option_results}->{per_minute})) {
+        $self->{result_values}->{value} = $diff_value / ceil($options{delta_time} / 60);
+    }
+    $self->{result_values}->{output_str} = sprintf(
+        $options{extra_options}->{output_str} . (defined($self->{instance_mode}->{option_results}->{per_minute}) ? '/min' : '/s'),
+        $self->{result_values}->{value}
+    );
+    return 0;
+}
+
+sub custom_dropped_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{dropped} =
+        ($options{new_datas}->{ $self->{instance} . '_accepts' } - $options{old_datas}->{ $self->{instance} . '_accepts' }) -
+        ($options{new_datas}->{ $self->{instance} . '_handled' } - $options{old_datas}->{ $self->{instance} . '_handled' });
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, message_separator => ' - ' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'connections-accepted', nlabel => 'server.connections.accepted.persecond', set => {
+                key_values => [ { name => 'accepts', diff => 1 }  ],
+                closure_custom_calc => $self->can('custom_requests_calc'),
+                closure_custom_calc_extra_options => { metric => 'accepts', output_str => 'connections accepted: %.2f' },
+                output_template => '%s',
+                output_use => 'output_str', threshold_use => 'value',
+                closure_custom_perfdata => $self->can('custom_requests_perfdata')
+            }
+        },
+        { label => 'connections-handled', nlabel => 'server.connections.handled.persecond', set => {
+                key_values => [ { name => 'handled', diff => 1 }  ],
+                closure_custom_calc => $self->can('custom_requests_calc'),
+                closure_custom_calc_extra_options => { metric => 'handled', output_str => 'connections handled: %.2f' },
+                output_template => '%s',
+                output_use => 'output_str', threshold_use => 'value',
+                closure_custom_perfdata => $self->can('custom_requests_perfdata')
+            }
+        },
+        { label => 'connections-dropped', nlabel => 'server.connections.dropped.count', set => {
+                key_values => [ { name => 'accepts', diff => 1 }, { name => 'handled', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_dropped_calc'),
+                output_template => 'connections dropped: %d',
+                output_use => 'dropped', threshold_use => 'dropped',
+                perfdatas => [
+                    { value => 'dropped', template => '%d', min => 0 }
+                ]
+            }
+        },
+        { label => 'requests', nlabel => 'server.requests.persecond', set => {
+                key_values => [ { name => 'requests', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_requests_calc'),
+                closure_custom_calc_extra_options => { metric => 'requests', output_str => 'requests: %.2f' },
+                output_template => '%s',
+                output_use => 'output_str', threshold_use => 'value',
+                closure_custom_perfdata => $self->can('custom_requests_perfdata')
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "port:s"            => { name => 'port', },
-        "proto:s"           => { name => 'proto' },
-        "urlpath:s"         => { name => 'url_path', default => "/nginx_status" },
-        "credentials"       => { name => 'credentials' },
-        "basic"             => { name => 'basic' },
-        "username:s"        => { name => 'username' },
-        "password:s"        => { name => 'password' },
-        "timeout:s"         => { name => 'timeout' },
+        'per-minute'  => { name => 'per_minute' }
     });
-    foreach (@{$maps}) {
-        $options{options}->add_options(arguments => {
-                                                    'warning-' . $_->{counter} . ':s'    => { name => 'warning_' . $_->{counter} },
-                                                    'critical-' . $_->{counter} . ':s'    => { name => 'critical_' . $_->{counter} },
-                                                    });
-    }
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
-    $self->{http} = centreon::plugins::http->new(%options);
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->{maps_counters}->{global}->[0]->{nlabel} = 'toto';
+    $self->SUPER::check_options(%options);
 
-    foreach (@{$maps}) {
-        if (($self->{perfdata}->threshold_validate(label => 'warning-' . $_->{counter}, value => $self->{option_results}->{'warning_' . $_->{counter}})) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong warning-" . $_->{counter} . " threshold '" . $self->{option_results}->{'warning_' . $_->{counter}} . "'.");
-            $self->{output}->option_exit();
-        }
-        if (($self->{perfdata}->threshold_validate(label => 'critical-' . $_->{counter}, value => $self->{option_results}->{'critical_' . $_->{counter}})) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong critical-" . $_->{counter} . " threshold '" . $self->{option_results}->{'critical_' . $_->{counter}} . "'.");
-            $self->{output}->option_exit();
-        }
-    }
-    
-    $self->{statefile_value}->check_options(%options);
-    $self->{http}->set_options(%{$self->{option_results}});
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
-    my $webcontent = $self->{http}->request();
-    my ($buffer_creation, $exit) = (0, 0);
-    my $new_datas = {};
-    my $old_datas = {};
-    
-    $self->{statefile_value}->read(statefile => 'nginx_' . $self->{option_results}->{hostname}  . '_' . $self->{http}->get_port() . '_' . $self->{mode});
-    $old_datas->{timestamp} = $self->{statefile_value}->get(name => 'timestamp');
-    $new_datas->{timestamp} = time();
-    foreach (@{$maps}) {
-        if ($webcontent !~ /$_->{match}/msi) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => "Cannot find " . $_->{counter} . " information.");
-            next;
-        }
-
-        $new_datas->{$_->{counter}} = $1;
-        my $tmp_value = $self->{statefile_value}->get(name => $_->{counter});
-        if (!defined($tmp_value)) {
-            $buffer_creation = 1;
-            next;
-        }
-        if ($new_datas->{$_->{counter}} < $tmp_value) {
-            $buffer_creation = 1;
-            next;
-        }
-        
-        $exit = 1;
-        $old_datas->{$_->{counter}} = $tmp_value;
+    my $content = $options{custom}->get_status();
+    if ($content !~ /server accepts handled requests.*?(\d+)\s+(\d+)\s+(\d+)/msi) {
+        $self->{output}->add_option_msg(short_msg => 'Cannot find request informations.');
+        $self->{output}->option_exit();
     }
-    
-    $self->{statefile_value}->write(data => $new_datas);
-    if ($buffer_creation == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-        if ($exit == 0) {
-            $self->{output}->display();
-            $self->{output}->exit();
-        }
-    }
-    
-    foreach (@{$maps}) {
-        # In buffer creation.
-        next if (!defined($old_datas->{$_->{counter}}));
-        if ($new_datas->{$_->{counter}} - $old_datas->{$_->{counter}} == 0) {
-            $self->{output}->output_add(severity => 'OK',
-                                        short_msg => "Counter '" . $_->{counter} . "' not moved. Have to wait.");
-            next;
-        }
-        
-        my $delta_time = $new_datas->{timestamp} - $old_datas->{timestamp};
-        $delta_time = 1 if ($delta_time <= 0);
-        
-        my $value = ($new_datas->{$_->{counter}} - $old_datas->{$_->{counter}}) / $delta_time;
-        my $exit = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical-' . $_->{counter}, 'exit_litteral' => 'critical' }, { label => 'warning-' . $_->{counter}, 'exit_litteral' => 'warning' }]);
- 
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf($_->{output}, $value));
+    $self->{global} = {
+        accepts => $1,
+        handled => $2,
+        requests => $3
+    };
 
-        $self->{output}->perfdata_add(label => $_->{counter},
-                                      value => sprintf('%.2f', $value),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $_->{counter}),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $_->{counter}),
-                                      min => 0);
-        
-    }
-
-    $self->{output}->display();
-    $self->{output}->exit();
-
+    $self->{cache_name} = 'nginx_' . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -159,57 +158,18 @@ __END__
 
 =head1 MODE
 
-Check Nginx Request statistics: number of accepted connections per seconds, number of handled connections per seconds, number of requests per seconds.
+Check Nginx request statistics.
 
 =over 8
 
-=item B<--hostname>
+=item B<--per-minute>
 
-IP Addr/FQDN of the webserver host
+Per second metrics are computed per minute.
 
-=item B<--port>
+=item B<--warning-*> B<--critical-*>
 
-Port used by Apache
-
-=item B<--proto>
-
-Specify https if needed
-
-=item B<--urlpath>
-
-Set path to get server-status page in auto mode (Default: '/nginx_status')
-
-=item B<--credentials>
-
-Specify this option if you access server-status page with authentication
-
-=item B<--username>
-
-Specify username for authentication (Mandatory if --credentials is specified)
-
-=item B<--password>
-
-Specify password for authentication (Mandatory if --credentials is specified)
-
-=item B<--basic>
-
-Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
-
-Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
-
-(Use with --credentials)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout
-
-=item B<--warning-*>
-
-Warning Threshold. Can be: 'accepts', 'handled', 'requests'.
-
-=item B<--critical-*>
-
-Critical Threshold. Can be: 'accepts', 'handled', 'requests'.
+Thresholds.
+Can be: 'connections-accepted', 'connections-handled', 'requests'.
 
 =back
 

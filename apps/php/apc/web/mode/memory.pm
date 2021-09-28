@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,39 +27,6 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::misc;
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'mem', type => 0, cb_prefix_output => 'prefix_output' }
-    ];
-    
-    $self->{maps_counters}->{mem} = [
-        { label => 'used', set => {
-                key_values => [ { name => 'free' }, { name => 'free' } ],
-                closure_custom_calc => $self->can('custom_used_calc'),
-                closure_custom_output => $self->can('custom_used_output'),
-                threshold_use => 'used_prct',
-                output_error_template => 'Memory Usage: %s',
-                perfdatas => [
-                    { value => 'used', label => 'used', template => '%d',
-                      unit => 'B', min => 0, max => 'total', threshold_total => 'total' },
-                ],
-            }
-        },
-        { label => 'fragmentation', set => {
-                key_values => [ { name => 'fragmentation' } ],
-                output_template => 'Memory Fragmentation: %.2f %%', output_error_template => 'Memory Fragmentation: %s',
-                output_use => 'fragmentation', threshold_use => 'fragmentation',
-                perfdatas => [
-                    { value => 'fragmentation', label => 'fragmentation', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
-                ],
-            }
-        },
-    ];
-}
-
 sub custom_used_calc {
     my ($self, %options) = @_;
     
@@ -78,10 +45,12 @@ sub custom_used_output {
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
-    return sprintf("Memory Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_value . " " . $total_unit,
-                   $used_value . " " . $used_unit, $self->{result_values}->{used_prct},
-                   $free_value . " " . $free_unit, $self->{result_values}->{free_prct});
+    return sprintf(
+        "Memory Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_value . " " . $total_unit,
+        $used_value . " " . $used_unit, $self->{result_values}->{used_prct},
+        $free_value . " " . $free_unit, $self->{result_values}->{free_prct}
+    );
 }
 
 sub prefix_output {
@@ -90,25 +59,58 @@ sub prefix_output {
     return "Apc ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'mem', type => 0, cb_prefix_output => 'prefix_output' }
+    ];
+    
+    $self->{maps_counters}->{mem} = [
+        { label => 'used', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'free' } ],
+                closure_custom_calc => $self->can('custom_used_calc'),
+                closure_custom_output => $self->can('custom_used_output'),
+                threshold_use => 'used_prct',
+                output_error_template => 'Memory Usage: %s',
+                perfdatas => [
+                    { label => 'used', template => '%d',
+                      unit => 'B', min => 0, max => 'total', threshold_total => 'total' }
+                ]
+            }
+        },
+        { label => 'fragmentation', nlabel => 'memory.fragmentation.percentage', set => {
+                key_values => [ { name => 'fragmentation' } ],
+                output_template => 'Memory Fragmentation: %.2f %%', output_error_template => 'Memory Fragmentation: %s',
+                output_use => 'fragmentation', threshold_use => 'fragmentation',
+                perfdatas => [
+                    { label => 'fragmentation', template => '%.2f',
+                      unit => '%', min => 0, max => 100 }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "port:s"            => { name => 'port', },
-        "proto:s"           => { name => 'proto' },
-        "urlpath:s"         => { name => 'url_path', default => "/apc.php" },
-        "credentials"       => { name => 'credentials' },
-        "basic"             => { name => 'basic' },
-        "username:s"        => { name => 'username' },
-        "password:s"        => { name => 'password' },
-        "timeout:s"         => { name => 'timeout', default => 30 },
+        'hostname:s'  => { name => 'hostname' },
+        'port:s'      => { name => 'port', },
+        'proto:s'     => { name => 'proto' },
+        'urlpath:s'   => { name => 'url_path', default => "/apc.php" },
+        'credentials' => { name => 'credentials' },
+        'basic'       => { name => 'basic' },
+        'username:s'  => { name => 'username' },
+        'password:s'  => { name => 'password' },
+        'timeout:s'   => { name => 'timeout', default => 30 },
     });
-    
+
     $self->{http} = centreon::plugins::http->new(%options);
-    
+
     return $self;
 }
 
@@ -123,7 +125,7 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     my $webcontent = $self->{http}->request();
-    
+
     my ($free, $used);
     if ($webcontent =~ /Memory Usage.*?Free:.*?([0-9\.]+)\s*(\S*)/msi) {
         $free = centreon::plugins::misc::convert_bytes(value => $1, unit => $2);

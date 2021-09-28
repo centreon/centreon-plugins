@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -188,7 +188,7 @@ sub manage_selection {
             my $port_name = $2;
             my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{$oid_jnxVirtualChassisPortEntry}, instance => $chassis_id . '.' . $1 . '.' . $port_name);
 
-            $port_name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $port_name))));
+            $port_name = $self->{output}->decode(join('', map(chr($_), split(/\./, $port_name))));
             $self->{member}->{$result->{jnxVirtualChassisMemberSerialnumber}}->{port}->{$port_name} = {
                 display => $port_name,
                 admin_status => $result2->{jnxVirtualChassisPortAdminStatus},

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,65 +20,82 @@
 
 package hardware::printers::standard::rfc3805::mode::coverstatus;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my %cover_status = (
-    1 => ["'%s' status is other", 'UNKNOWN'], 
-    3 => ["Cover '%s' status is open", 'WARNING'], 
-    4 => ["Cover '%s' status is closed", 'OK'], 
-    5 => ["Interlock '%s' status is open", 'WARNING'], 
-    6 => ["Interlock '%s' status is closed", 'WARNING'], 
-);
+sub prefix_cover_output {
+    my ($self, %options) = @_;
+
+    return "Cover '" . $options{instance_value}->{description} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'covers', type => 1, cb_prefix_output => 'prefix_cover_output', message_multiple => 'All covers are ok' }
+    ];
+
+    $self->{maps_counters}->{covers} = [
+        {
+            label => 'status',
+            type => 2,
+            unknown_default => '%{status} =~ /other|unknown/',
+            warning_default => '%{status} =~ /coverOpen|interlockOpen/',
+            set => {
+                key_values => [ { name => 'status' }, { name => 'description' } ],
+                output_template => "status is '%s'",
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+
+    $options{options}->add_options(arguments => { 
+    });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
+my $map_status = {
+    1 => 'other', 2 => 'unknown',
+    3 => 'coverOpen', 4 => 'coverClosed',
+    5 => 'interlockOpen', 6 => 'interlockClosed'
+};
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+my $mapping = {
+    description => { oid => '.1.3.6.1.2.1.43.6.1.1.2' }, # prtCoverDescription
+    status      => { oid => '.1.3.6.1.2.1.43.6.1.1.3', map => $map_status } # prtCoverStatus
+};
 
-    $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "All covers/interlocks are ok.");
-    
-    my $oid_prtCoverEntry = '.1.3.6.1.2.1.43.6.1.1';
-    my $oid_prtCoverDescription = '.1.3.6.1.2.1.43.6.1.1.2';
-    my $oid_prtCoverStatus = '.1.3.6.1.2.1.43.6.1.1.3';
-    my $result = $self->{snmp}->get_table(oid => $oid_prtCoverEntry, nothing_quit => 1);
-    
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_prtCoverStatus\.(\d+).(\d+)/);
-        my ($hrDeviceIndex, $prtCoverIndex) = ($1, $2);
-        my $instance = $hrDeviceIndex . '.' . $prtCoverIndex;
-        my $status = $result->{$oid_prtCoverStatus . '.' . $instance};
-        my $descr = centreon::plugins::misc::trim($result->{$oid_prtCoverDescription . '.' . $instance});
-        
-        $self->{output}->output_add(long_msg => sprintf(${$cover_status{$status}}[0], $descr));
-        if (!$self->{output}->is_status(value => ${$cover_status{$status}}[1], compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => ${$cover_status{$status}}[1],
-                                        short_msg => sprintf(${$cover_status{$status}}[0], $descr));
-        }
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $oid_prtCoverTable = '.1.3.6.1.2.1.43.6.1';
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_prtCoverTable,
+        start => $mapping->{description}->{oid},
+        nothing_quit => 1
+    );
+
+    $self->{covers} = {};
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{status}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $result->{description} = centreon::plugins::misc::trim($result->{description});
+        $self->{covers}->{$instance} = $result;
     }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -87,9 +104,24 @@ __END__
 
 =head1 MODE
 
-Check covers and interlocks of the printer.
+Check covers of the printer.
 
 =over 8
+
+=item B<--unknown-status>
+
+Set unknown threshold for status (Default: '%%{status} =~ /other|unknown/').
+Can used special variables like: %{status}, %{description}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '%%{status} =~ /coverOpen|interlockOpen/').
+Can used special variables like: %{status}, %{description}
+
+=item B<--critical-status>
+
+Set critical threshold for status.
+Can used special variables like: %{status}, %{description}
 
 =back
 

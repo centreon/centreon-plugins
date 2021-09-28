@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,7 +32,8 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         'alarms'      => 'hardware::devices::pexip::infinity::managementapi::mode::alarms',
-        'conferences' => 'hardware::devices::pexip::infinity::managementapi::mode::conferences'
+        'conferences' => 'hardware::devices::pexip::infinity::managementapi::mode::conferences',
+        'licenses'    => 'hardware::devices::pexip::infinity::managementapi::mode::licenses'
     };
 
     $self->{custom_modes}->{api} = 'hardware::devices::pexip::infinity::managementapi::custom::api';

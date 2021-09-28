@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -82,7 +82,7 @@ sub check_options {
 
     if (defined($self->{option_results}->{aggregation})) {
         foreach my $aggregation (@{$self->{option_results}->{aggregation}}) {
-            if ($aggregation !~ /average|maximum|minimum|total/i) {
+            if ($aggregation !~ /average|maximum|minimum|total|count/i) {
                 $self->{output}->add_option_msg(short_msg => "Aggregation '" . $aggregation . "' is not handled");
                 $self->{output}->option_exit();
             }
@@ -159,6 +159,7 @@ sub azure_get_metrics_set_cmd {
         "--resource-group '$options{resource_group}' --resource-type '$options{resource_type}' --resource-namespace '$options{resource_namespace}'";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     $cmd_options .= " --filter '$options{dimension}'" if defined($options{dimension});
+    $cmd_options .= " --namespace '$options{metric_namespace}'" if defined($options{metric_namespace});
     
     return $cmd_options;
 }
@@ -197,6 +198,9 @@ sub azure_get_metrics {
                     $results->{$metric_name}->{total} = 0 if (!defined($results->{$metric_name}->{total}));
                     $results->{$metric_name}->{total} += $point->{total};
                     $results->{$metric_name}->{points}++;
+                }
+                if (defined($point->{count})) {
+                    $results->{$metric_name}->{count} = $point->{count};
                 }
             }
         }
@@ -237,7 +241,7 @@ sub azure_list_resources_set_cmd {
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     
     my $cmd_options = "resource list --only-show-errors --output json";
-    $cmd_options .= " --namespace '$options{namespace}'" if (defined($options{namespace}) && $options{namespace} ne '');
+    $cmd_options .= " --namespace '$options{resource_namespace}'" if (defined($options{resource_namespace}) && $options{resource_namespace} ne '');
     $cmd_options .= " --resource-type '$options{resource_type}'" if (defined($options{resource_type}) && $options{resource_type} ne '');
     $cmd_options .= " --location '$options{location}'" if (defined($options{location}) && $options{location} ne '');
     $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
@@ -538,6 +542,23 @@ sub azure_get_log_analytics {
     return $self->execute(cmd_options => $cmd_options);
 }
 
+sub azure_get_publicip_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "network public-ip show --resource-group '$options{resource_group}' --name '$options{resource}'";
+    $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
+    return $cmd_options;
+}
+
+sub azure_get_publicip {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->azure_get_log_analytics_set_cmd(%options);
+    return $self->execute(cmd_options => $cmd_options);
+}
+
 1;
 
 __END__
@@ -584,7 +605,7 @@ Set interval of the metric query (Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H,
 
 =item B<--aggregation>
 
-Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total').
+Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total', 'count').
 
 =item B<--zeroed>
 

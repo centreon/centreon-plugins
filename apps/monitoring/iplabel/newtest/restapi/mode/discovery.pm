@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -55,7 +55,7 @@ sub check_options {
 sub discovery_robots {
     my ($self, %options) = @_;
 
-    my $robots = $options{custom}->request_api(endpoint => '/rest/api/robots');
+    my $robots = $options{custom}->request_api(endpoint => '/api/robots');
 
     my $nodes = {};
     foreach my $robot (@$robots) {
@@ -84,7 +84,7 @@ sub discovery_robots {
 sub discovery_scenarios {
     my ($self, %options) = @_;
 
-    my $scenarios = $options{custom}->request_api(endpoint => '/rest/api/measures');
+    my $scenarios = $options{custom}->request_api(endpoint => '/api/measures');
 
     my $nodes = {};
     foreach my $scenario (@$scenarios) {
@@ -113,7 +113,7 @@ sub run {
     my $disco_stats;
     $disco_stats->{start_time} = time();
 
-    my $instances = $options{custom}->request_api(endpoint => '/rest/api/instances');
+    my $instances = $options{custom}->request_api(endpoint => '/api/instances');
 
     my $results = [];
     if ($self->{option_results}->{resource_type} eq 'robot') {

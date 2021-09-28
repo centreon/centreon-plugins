@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,9 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'connection-time'           => 'centreon::common::protocols::sql::mode::connectiontime',
+    $self->{modes} = {
         'backup'                    => 'database::mysql::mode::backup',
+        'collection'                => 'centreon::common::protocols::sql::mode::collection',
+        'connection-time'           => 'centreon::common::protocols::sql::mode::connectiontime',
         'databases-size'            => 'database::mysql::mode::databasessize',
         'innodb-bufferpool-hitrate' => 'database::mysql::mode::innodbbufferpoolhitrate',
         'long-queries'              => 'database::mysql::mode::longqueries',
@@ -47,7 +48,7 @@ sub new {
         'sql-string'                => 'centreon::common::protocols::sql::mode::sqlstring',
         'threads-connected'         => 'database::mysql::mode::threadsconnected',
         'uptime'                    => 'database::mysql::mode::uptime'
-    );
+    };
 
     $self->{sql_modes}->{dbi} = 'database::mysql::dbi';
     $self->{sql_modes}->{mysqlcmd} = 'database::mysql::mysqlcmd';

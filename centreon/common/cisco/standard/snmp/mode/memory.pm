@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -65,10 +65,12 @@ sub custom_usage_output {
         my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
         my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
         my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-        $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                       $total_size_value . " " . $total_size_unit,
-                       $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                       $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+        $msg = sprintf(
+            'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+            $total_size_value . " " . $total_size_unit,
+            $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+            $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+        );
     } else {
         $msg = sprintf("Usage : %.2f %%", $self->{result_values}->{prct_used});
     }
@@ -91,29 +93,29 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+
+    return "Memory '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memories are ok', skipped_code => { -10 => 1 } },
+        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memories are ok', skipped_code => { -10 => 1 } }
     ];
-    
+
     $self->{maps_counters}->{memory} = [
         { label => 'usage', nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'display' }, { name => 'used' }, { name => 'total' }, { name => 'prct_used' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
-}
-
-sub prefix_memory_output {
-    my ($self, %options) = @_;
-    
-    return "Memory '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -122,8 +124,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-pool:s'     => { name => 'filter_pool' },
-        'check-order:s'     => { name => 'check_order', default => 'enhanced_pool,pool,process,system_ext' },
+        'filter-pool:s' => { name => 'filter_pool' },
+        'check-order:s' => { name => 'check_order', default => 'enhanced_pool,pool,process,system_ext' }
     });
 
     return $self;
@@ -132,7 +134,7 @@ sub new {
 my $mapping_memory_pool = {
     ciscoMemoryPoolName   => { oid => '.1.3.6.1.4.1.9.9.48.1.1.1.2' },
     ciscoMemoryPoolUsed   => { oid => '.1.3.6.1.4.1.9.9.48.1.1.1.5' }, # in B
-    ciscoMemoryPoolFree   => { oid => '.1.3.6.1.4.1.9.9.48.1.1.1.6' }, # in B
+    ciscoMemoryPoolFree   => { oid => '.1.3.6.1.4.1.9.9.48.1.1.1.6' }  # in B
 };
 my $oid_ciscoMemoryPoolEntry = '.1.3.6.1.4.1.9.9.48.1.1.1';
 
@@ -140,12 +142,12 @@ sub check_memory_pool {
     my ($self, %options) = @_;
 
     return if ($self->{checked_memory} == 1);
-    
+
     my $snmp_result = $self->{snmp}->get_table(
         oid => $oid_ciscoMemoryPoolEntry,
         start => $mapping_memory_pool->{ciscoMemoryPoolName}->{oid}, end => $mapping_memory_pool->{ciscoMemoryPoolFree}->{oid}
     );
-    
+
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping_memory_pool->{ciscoMemoryPoolName}->{oid}\.(.*)$/);
         my $instance = $1;
@@ -233,11 +235,6 @@ sub check_memory_enhanced_pool {
         my $result = $self->{snmp}->map_instance(mapping => $mapping_enh_memory_pool, results => $snmp_result, instance => $physical_index . '.' . $mem_index);
 
         $self->{checked_memory} = 1;
-        if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
-            $result->{cempMemPoolName} !~ /$self->{option_results}->{filter_pool}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{cempMemPoolName} . "': no matching filter.", debug => 1);
-            next;
-        }
 
         my $used = defined($result->{cempMemPoolHCUsed}) ? $result->{cempMemPoolHCUsed} : $result->{cempMemPoolUsed};
         my $free = defined($result->{cempMemPoolHCFree}) ? $result->{cempMemPoolHCFree} : $result->{cempMemPoolFree};
@@ -266,8 +263,20 @@ sub check_memory_enhanced_pool {
         $snmp_result = $self->{snmp}->get_leef();
         foreach (keys %{$self->{memory}}) {
             if (defined($snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physical_index} })) {
-                $self->{memory}->{$_}->{display} = 
-                    $snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physical_index} } . '_' . $self->{memory}->{$_}->{display};
+                my $display = $snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physical_index} } . '_' . $self->{memory}->{$_}->{display};
+                if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
+                    $display !~ /$self->{option_results}->{filter_pool}/) {
+                    $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
+                    delete $self->{memory}->{$_};
+                    next;
+                }
+                $self->{memory}->{$_}->{display} = $display;
+            } else {
+                 if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
+                    $self->{memory}->{$_}->{display} !~ /$self->{option_results}->{filter_pool}/) {
+                    $self->{output}->output_add(long_msg => "skipping '" . $self->{memory}->{$_}->{display} . "': no matching filter.", debug => 1);
+                    delete $self->{memory}->{$_};
+                }
             }
         }
     }

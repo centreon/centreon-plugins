@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,65 +26,6 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'dhcp', type => 1, cb_prefix_output => 'prefix_dhcp_output', message_multiple => 'All dhcp subnets are ok' },
-    ];
-    
-    my @map = (
-        ['ibDhcpTotalNoOfDiscovers', 'discovers : %s', 'total-discovers'],
-        ['ibDhcpTotalNoOfRequests', 'requests : %s', 'total-requests'],
-        ['ibDhcpTotalNoOfReleases', 'releases : %s', 'total-releases'],
-        ['ibDhcpTotalNoOfOffers', 'offers : %s', 'total-offers'],
-        ['ibDhcpTotalNoOfAcks', 'acks : %s', 'total-acks'],
-        ['ibDhcpTotalNoOfNacks', 'nacks : %s', 'total-nacks'],
-        ['ibDhcpTotalNoOfDeclines', 'declines : %s', 'total-declines'],
-        ['ibDhcpTotalNoOfInforms', 'informs : %s', 'total-informs'],
-        ['ibDhcpTotalNoOfOthers', 'others : %s', 'total-others'],
-    );
-    
-    $self->{maps_counters}->{global} = [];
-    for (my $i = 0; $i < scalar(@map); $i++) {
-        my $perf_label = $map[$i]->[2];
-        $perf_label =~ s/-/_/g;
-        push @{$self->{maps_counters}->{global}}, { label => $map[$i]->[2], set => {
-                key_values => [ { name => $map[$i]->[0], diff => 1 } ],
-                output_template => $map[$i]->[1],
-                perfdatas => [
-                    { label => $perf_label, value => $map[$i]->[0] , template => '%s', min => 0 },
-                ],
-            }
-        };
-    }
-    
-    $self->{maps_counters}->{dhcp} = [
-        { label => 'subnet-used', set => {
-                key_values => [ { name => 'ibDHCPSubnetPercentUsed' }, { name => 'display' } ],
-                output_template => 'Used : %.2f %%',
-                perfdatas => [
-                    { label => 'subnet_used', value => 'iibDHCPSubnetPercentUsed', template => '%.2f', 
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-    ];
-}
-
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
-    bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' },
-    });
-
-    return $self;
-}
-
 sub prefix_global_output {
     my ($self, %options) = @_;
     
@@ -97,6 +38,63 @@ sub prefix_dhcp_output {
     return "Subnet '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'dhcp', type => 1, cb_prefix_output => 'prefix_dhcp_output', message_multiple => 'All dhcp subnets are ok' }
+    ];
+    
+    my @map = (
+        ['ibDhcpTotalNoOfDiscovers', 'discovers: %s', 'total-discovers', 'dhcp.discovers.count'],
+        ['ibDhcpTotalNoOfRequests', 'requests: %s', 'total-requests', 'dhcp.requests.count'],
+        ['ibDhcpTotalNoOfReleases', 'releases: %s', 'total-releases', 'dhcp.releases.count'],
+        ['ibDhcpTotalNoOfOffers', 'offers: %s', 'total-offers', 'dhcp.offers.count'],
+        ['ibDhcpTotalNoOfAcks', 'acks: %s', 'total-acks', 'dhcp.acks.count'],
+        ['ibDhcpTotalNoOfNacks', 'nacks: %s', 'total-nacks', 'dhcp.nacks.count'],
+        ['ibDhcpTotalNoOfDeclines', 'declines: %s', 'total-declines', 'dhcp.declines.count'],
+        ['ibDhcpTotalNoOfInforms', 'informs: %s', 'total-informs', 'dhcp.informs.count'],
+        ['ibDhcpTotalNoOfOthers', 'others: %s', 'total-others', 'dhcp.others.count']
+    );
+
+    $self->{maps_counters}->{global} = [];
+    for (my $i = 0; $i < scalar(@map); $i++) {
+        push @{$self->{maps_counters}->{global}}, {
+            label => $map[$i]->[2], nlabel => $map[$i]->[3], set => {
+                key_values => [ { name => $map[$i]->[0], diff => 1 } ],
+                output_template => $map[$i]->[1],
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        };
+    }
+
+    $self->{maps_counters}->{dhcp} = [
+        { label => 'subnet-used', nlabel => 'subnet.addresses.usage.percentage', set => {
+                key_values => [ { name => 'ibDHCPSubnetPercentUsed' }, { name => 'display' } ],
+                output_template => 'used: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
+    bless $self, $class;
+    
+    $options{options}->add_options(arguments => { 
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
+    return $self;
+}
+
 my $mapping = {
     ibDhcpTotalNoOfDiscovers    => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.3.1' },
     ibDhcpTotalNoOfRequests     => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.3.2' },
@@ -106,12 +104,12 @@ my $mapping = {
     ibDhcpTotalNoOfNacks        => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.3.6' },
     ibDhcpTotalNoOfDeclines     => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.3.7' },
     ibDhcpTotalNoOfInforms      => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.3.8' },
-    ibDhcpTotalNoOfOthers       => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.3.9' },
+    ibDhcpTotalNoOfOthers       => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.3.9' }
 };
 my $mapping2 = {
     ibDHCPSubnetNetworkAddress  => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1.1' },
     ibDHCPSubnetNetworkMask     => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1.2' },
-    ibDHCPSubnetPercentUsed     => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1.3' },
+    ibDHCPSubnetPercentUsed     => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1.3' }
 };
 
 my $oid_ibDHCPStatistics = '.1.3.6.1.4.1.7779.3.1.1.4.1.3';
@@ -123,7 +121,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $oid_ibDHCPStatistics },
-            { oid => $oid_ibDHCPSubnetEntry },
+            { oid => $oid_ibDHCPSubnetEntry }
         ],
         nothing_quit => 1
     );
@@ -140,16 +138,16 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
             next;
         }
-        
-        $self->{dhcp}->{$instance} = { display => $name, 
+
+        $self->{dhcp}->{$instance} = {
+            display => $name, 
             %$result
         };
     }
 
-    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_ibDHCPStatistics}, instance => '0');
-    $self->{global} = { %$result };
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_ibDHCPStatistics}, instance => 0);
     
-    $self->{cache_name} = "infoblox_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+    $self->{cache_name} = 'infoblox_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

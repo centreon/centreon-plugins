@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,13 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'cpu'                   => 'cloud::google::gcp::compute::computeengine::mode::cpu',
-        'diskio'                => 'cloud::google::gcp::compute::computeengine::mode::diskio',
-        'network'               => 'cloud::google::gcp::compute::computeengine::mode::network',
-    );
+    $self->{modes} = {
+        'cpu'       => 'cloud::google::gcp::compute::computeengine::mode::cpu',
+        'discovery' => 'cloud::google::gcp::compute::computeengine::mode::discovery',
+        'diskio'    => 'cloud::google::gcp::compute::computeengine::mode::diskio',
+        'network'   => 'cloud::google::gcp::compute::computeengine::mode::network'
+    };
 
-    $self->{custom_modes}{api} = 'cloud::google::gcp::custom::api';
+    $self->{custom_modes}->{api} = 'cloud::google::gcp::custom::api';
     return $self;
 }
 

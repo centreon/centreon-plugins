@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,14 +32,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "bcn:s"                   => { name => 'bcn' },
-                                  "name"                    => { name => 'use_name' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "display-transform-src:s" => { name => 'display_transform_src' },
-                                  "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                });
+    $options{options}->add_options(arguments => {
+        'bcn:s'                   => { name => 'bcn' },
+        'name'                    => { name => 'use_name' },
+        'regexp'                  => { name => 'use_regexp' },
+        'display-transform-src:s' => { name => 'display_transform_src' },
+        'display-transform-dst:s' => { name => 'display_transform_dst' }
+    });
+
     $self->{bcn_id_selected} = [];
 
     return $self;
@@ -72,7 +72,7 @@ sub manage_selection {
             next;
         }
         
-        $self->{result_names}->{$oid} = $self->{output}->to_utf8($self->{result_names}->{$oid});
+        $self->{result_names}->{$oid} = $self->{output}->decode($self->{result_names}->{$oid});
         if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{bcn}) {
             push @{$self->{bcn_id_selected}}, $instance; 
         }
@@ -94,8 +94,10 @@ sub run {
         $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List bcn:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List bcn:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -126,8 +128,10 @@ sub disco_show {
         my $name = $self->{result_names}->{$oid_spvBCNName . '.' . $instance};
         $name = $self->get_display_value(value => $name);
         
-        $self->{output}->add_disco_entry(name => $name,
-                                         bcnid => $instance);
+        $self->{output}->add_disco_entry(
+            name => $name,
+            bcnid => $instance
+        );
     }
 }
 

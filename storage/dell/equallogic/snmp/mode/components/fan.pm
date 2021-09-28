@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ my %map_fan_status = (
     0 => 'unknown', 
     1 => 'normal', 
     2 => 'warning', 
-    3 => 'critical',
+    3 => 'critical'
 );
 
 # In MIB 'eqlcontroller.mib'
@@ -38,7 +38,7 @@ my $mapping = {
     eqlMemberHealthDetailsFanHighCriticalThreshold => { oid => '.1.3.6.1.4.1.12740.2.1.7.1.5' },
     eqlMemberHealthDetailsFanHighWarningThreshold => { oid => '.1.3.6.1.4.1.12740.2.1.7.1.6' },
     eqlMemberHealthDetailsFanLowCriticalThreshold => { oid => '.1.3.6.1.4.1.12740.2.1.7.1.7' },
-    eqlMemberHealthDetailsFanLowWarningThreshold => { oid => '.1.3.6.1.4.1.12740.2.1.7.1.8' },
+    eqlMemberHealthDetailsFanLowWarningThreshold => { oid => '.1.3.6.1.4.1.12740.2.1.7.1.8' }
 };
 my $oid_eqlMemberHealthDetailsFanEntry = '.1.3.6.1.4.1.12740.2.1.7.1';
 
@@ -64,15 +64,22 @@ sub check {
         next if ($self->check_filter(section => 'fan', instance => $member_instance . '.' . $instance));
         $self->{components}->{fan}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s/%s' status is %s [instance: %s].",
-                                    $member_name, $result->{eqlMemberHealthDetailsFanName}, $result->{eqlMemberHealthDetailsFanCurrentState},
-                                    $member_instance . '.' . $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s/%s' status is %s [instance: %s].",
+                $member_name, $result->{eqlMemberHealthDetailsFanName}, $result->{eqlMemberHealthDetailsFanCurrentState},
+                $member_instance . '.' . $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'fan', value => $result->{eqlMemberHealthDetailsFanCurrentState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Fan '%s/%s' status is %s",
-                                                             $member_name, $result->{eqlMemberHealthDetailsFanName}, $result->{eqlMemberHealthDetailsFanCurrentState}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Fan '%s/%s' status is %s",
+                    $member_name, $result->{eqlMemberHealthDetailsFanName}, $result->{eqlMemberHealthDetailsFanCurrentState}
+                )
+            );
         }
         
         if (defined($result->{eqlMemberHealthDetailsFanValue})) {
@@ -86,8 +93,10 @@ sub check {
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-fan-instance-' . $instance);
             }
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("Fan '%s/%s' speed is %s rpm", $member_name, $result->{eqlMemberHealthDetailsFanName}, $result->{eqlMemberHealthDetailsFanValue}));
+                $self->{output}->output_add(
+                    severity => $exit2,
+                    short_msg => sprintf("Fan '%s/%s' speed is %s rpm", $member_name, $result->{eqlMemberHealthDetailsFanName}, $result->{eqlMemberHealthDetailsFanValue})
+                );
             }
             $self->{output}->perfdata_add(
                 label => "fan", unit => 'rpm',

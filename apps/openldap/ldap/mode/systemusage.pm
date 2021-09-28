@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,6 +27,12 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::common::protocols::ldap::lib::ldap;
 
+sub prefix_operation_output {
+    my ($self, %options) = @_;
+
+    return 'Operation completed ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -42,36 +48,35 @@ sub set_counters {
                     key_values => [ { name => 'operations_completed_' . $_, diff => 1 } ],
                     output_template => $_ . ' %s',
                     perfdatas => [
-                        { label => 'operations_' . $_, template => '%.2f', min => 0 }
+                        { template => '%.2f', min => 0 }
                     ]
                 }
             };
     }
-    
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'con-current', nlabel => 'system.connections.current.count', set => {
                 key_values => [ { name => 'connections_current' } ],
                 output_template => 'Current connections %s',
                 perfdatas => [
-                    { label => 'connections_current', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'con-total', nlabel => 'system.connections.total.count', set => {
                 key_values => [ { name => 'connections_total', diff => 1 } ],
                 output_template => 'Total connections %s',
                 perfdatas => [
-                    { label => 'connections_total', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'threads-active', nlabel => 'system.threads.active.percentage', set => {
                 key_values => [ { name => 'threads_active_prct' } ],
                 output_template => 'Current active threads %.2f %%',
                 perfdatas => [
-                    { label => 'threads_active', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'traffic',  nlabel => 'system.traffic.bytespersecond', set => {
@@ -79,17 +84,11 @@ sub set_counters {
                 output_template => 'traffic %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'traffic', template => '%s', min => 0, unit => 'B/s', cast_int => 1 },
+                    { template => '%s', min => 0, unit => 'B/s', cast_int => 1 }
                 ]
             }
         }
     ];
-}
-
-sub prefix_operation_output {
-    my ($self, %options) = @_;
-
-    return 'Operation completed ';
 }
 
 sub new {
@@ -106,7 +105,7 @@ sub new {
         'tls'                      => { name => 'use_tls' },
         'username:s'               => { name => 'username' },
         'password:s'               => { name => 'password' },
-        'timeout:s'                => { name => 'timeout', default => '30' },
+        'timeout:s'                => { name => 'timeout', default => '30' }
     });
 
     return $self;
@@ -129,7 +128,7 @@ sub check_options {
 
 sub ldap_error {
     my ($self, %options) = @_;
-    
+
     if ($options{code} == 1) {
         $self->{output}->output_add(
             severity => 'unknown',
@@ -185,9 +184,15 @@ sub manage_selection {
         } 
     }
 
-    $self->{global}->{threads_active_prct} = $self->{global}->{threads_active} * 100 / $self->{global}->{threads_max};
+    if (scalar(keys %{$self->{global}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'cannot get informations from OpenLDAP monitor backend');
+        $self->{output}->option_exit();
+    }
 
-    $self->{cache_name} = "openldap_" . $self->{mode} . '_' . $self->{option_results}->{hostname} . '_' .
+    $self->{global}->{threads_active_prct} = $self->{global}->{threads_active} * 100 / $self->{global}->{threads_max}
+        if (defined($self->{global}->{threads_max}) && $self->{global}->{threads_max} > 0);
+
+    $self->{cache_name} = 'openldap_' . $self->{mode} . '_' . $self->{option_results}->{hostname} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 

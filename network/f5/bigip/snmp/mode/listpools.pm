@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,7 +33,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
@@ -73,7 +73,7 @@ sub manage_selection {
         my ($num, $index) = ($1, $2);
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $num . '.' . $index);
-        my $name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $index))));
+        my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $index))));
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {

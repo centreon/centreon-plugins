@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -211,7 +211,7 @@ sub store_ok {
 
 sub checking_exist {
     my ($self, %options) = @_;
-    
+
     foreach my $severity (('critical', 'warning', 'unknown')) {
         foreach my $absent (@{$self->{option_results}->{$severity . '_absent'}}) {
             my $match = 0;
@@ -226,7 +226,7 @@ sub checking_exist {
                 $self->{instances}->{$severity}->{$absent} = $absent;
             }
         }
-        
+
         foreach my $present (@{$self->{option_results}->{$severity . '_present'}}) {
             my $match = 0;
             foreach (keys %{$self->{instances}}) {
@@ -243,15 +243,15 @@ sub change_macros {
 
     my $value = $self->{option_results}->{'format_' . $options{severity}};
     while ($value =~ /%\{(.*?)\}/g) {
-        $value =~ s/%\{($1)\}/\$self->{macros}->{$1}/g;
+        $value =~ s/%\{($1)\}/$self->{macros}->{$1}/eg;
     }
-    
+
     return $value;
 }
 
 sub build_format_details {
     my ($self, %options) = @_;
-    
+
     foreach my $severity (('ok', 'critical', 'warning', 'unknown')) {
         $self->{macros}->{'details_' . $severity} = '';
         my $append = '';
@@ -261,7 +261,7 @@ sub build_format_details {
             $details =~ s/%\{filter_rows\}/$self->{macros}->{filter_rows}/g;
             $details =~ s/%\{instance\}/$instance/g;
             $details =~ s/%\{value\}/$self->{instances}->{$severity}->{$instance}/g;
-        
+
             $self->{macros}->{'details_' . $severity} .= $append . $details;
             $append = $self->{option_results}->{'format_details_separator_' . $severity};
         }
@@ -270,15 +270,16 @@ sub build_format_details {
 
 sub display_severity {
     my ($self, %options) = @_;
-    
+
     if (!(defined($options{force}) && $options{force} == 1) && scalar(keys %{$self->{instances}->{$options{severity}}}) == 0) {
         return 0;
     }
     
     my $display = $self->change_macros(severity => $options{severity});
-    eval "\$display = \"$display\"";
-    $self->{output}->output_add(severity => $options{severity},
-                                short_msg => $display);
+    $self->{output}->output_add(
+        severity => $options{severity},
+        short_msg => $display
+    );
 }
 
 sub display_result {
@@ -296,7 +297,7 @@ sub run {
     $self->{snmp} = $options{snmp};    
 
     $self->get_snmp_values();
-    
+
     foreach (keys %{$self->{instances}}) {
         $self->checking_regexp(severity => 'critical', instance => $_, value => $self->{instances}->{$_}) || 
             $self->checking_regexp(severity => 'warning', instance => $_, value => $self->{instances}->{$_}) || 

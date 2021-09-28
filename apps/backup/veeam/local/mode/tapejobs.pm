@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::common::powershell::veeam::tapejobs;
 use apps::backup::veeam::local::mode::resources::types qw($job_tape_type $job_tape_result $job_tape_state);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::misc;
 use JSON::XS;
 
@@ -39,6 +39,12 @@ sub custom_status_output {
         $self->{result_values}->{type},
         $self->{result_values}->{last_state},
     );
+}
+
+sub prefix_job_output {
+    my ($self, %options) = @_;
+
+    return "Tape job '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -61,7 +67,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{job} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical => '%{enabled} == 1 and not %{last_result} =~ /Success|None/i', set => {
                 key_values => [
                     { name => 'display' }, { name => 'enabled' },
                     { name => 'type' }, { name => 'last_result' },
@@ -69,7 +75,7 @@ sub set_counters {
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -81,34 +87,18 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'timeout:s'           => { name => 'timeout', default => 50 },
-        'command:s'           => { name => 'command', default => 'powershell.exe' },
-        'command-path:s'      => { name => 'command_path' },
-        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        'no-ps'               => { name => 'no_ps' },
-        'ps-exec-only'        => { name => 'ps_exec_only' },
-        'ps-display'          => { name => 'ps_display' },
-        'filter-name:s'       => { name => 'filter_name' },
-        'filter-type:s'       => { name => 'filter_type' },
-        'unknown-status:s'    => { name => 'unknown_status', default => '' },
-        'warning-status:s'    => { name => 'warning_status', default => '' },
-        'critical-status:s'   => { name => 'critical_status', default => '%{enabled} == 1 and not %{last_result} =~ /Success|None/i' }
+        'timeout:s'         => { name => 'timeout', default => 50 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'             => { name => 'no_ps' },
+        'ps-exec-only'      => { name => 'ps_exec_only' },
+        'ps-display'        => { name => 'ps_display' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'filter-type:s'     => { name => 'filter_type' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
-}
-
-sub prefix_job_output {
-    my ($self, %options) = @_;
-
-    return "Tape job '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
@@ -171,7 +161,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter type.", debug => 1);
             next;
         }
-        
+
         $self->{job}->{ $job->{name} } = {
             display => $job->{name},
             type => $job_tape_type->{ $job->{type} },

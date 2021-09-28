@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -56,20 +56,25 @@ sub run {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $controller->{'durable-id'} !~ /$self->{option_results}->{filter_name}/);
         
-        $self->{output}->output_add(long_msg => sprintf("[name = %s]",
-            $controller->{'durable-id'},
-        ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "[name = %s]",
+                $controller->{'durable-id'}
+            )
+        );
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List controllers:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List controllers:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['name']);
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,12 +26,12 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use Time::HiRes qw(gettimeofday tv_interval);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_content_threshold {
     my ($self, %options) = @_;
 
-    $self->{instance_mode}->{content_status} = catalog_status_threshold($self, %options);
+    $self->{instance_mode}->{content_status} = catalog_status_threshold_ng($self, %options);
     return $self->{instance_mode}->{content_status};
 }
 
@@ -40,64 +40,57 @@ sub custom_content_output {
 
     my $msg = 'HTTP test(s)';
     if (!$self->{output}->is_status(value => $self->{instance_mode}->{content_status}, compare => 'ok', litteral => 1)) {
-        my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '_content'};
-        $filter =~ s/\$self->\{result_values\}->/%/g;
+        my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '-content'};
+        $filter =~ s/\$values->/%/g;
+        $filter =~ s/%\{expected_string\}/$self->{result_values}->{expected_string}/g;
         $msg = sprintf("Content test [filter: '%s']", $filter);
     }
     
     return $msg;
 }
 
-sub custom_content_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{content} = $options{new_datas}->{$self->{instance} . '_content'};
-    $self->{result_values}->{code} = $options{new_datas}->{$self->{instance} . '_code'};
-    $self->{result_values}->{header} = $options{new_datas}->{$self->{instance} . '_header'};
-    $self->{result_values}->{first_header} = $options{new_datas}->{$self->{instance} . '_first_header'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'content', threshold => 0, set => {
-                key_values => [ { name => 'content' }, { name => 'code' }, { name => 'first_header' }, { name => 'header' } ],
+        { label => 'content', type => 2, set => {
+                key_values => [
+                    { name => 'content' }, { name => 'code' }, { name => 'first_header' }, { name => 'header' },
+                    { name => 'expected_string' }
+                ],
                 closure_custom_output => $self->can('custom_content_output'),
-                closure_custom_calc => $self->can('custom_content_calc'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check =>  $self->can('custom_content_threshold'),
+                closure_custom_threshold_check =>  $self->can('custom_content_threshold')
             }
         },
-        { label => 'size', display_ok => 0, set => {
+        { label => 'size', nlabel => 'http.content.size.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'size' } ],
                 output_template => 'Content size : %s',
                 perfdatas => [
-                    { label => 'size', value => 'size', template => '%s', min => 0, unit => 'B' },
-                ],
+                    { label => 'size', template => '%s', min => 0, unit => 'B' }
+                ]
             }
         },
-        { label => 'time', display_ok => 0, set => {
+        { label => 'time', nlabel => 'http.response.time.seconds', display_ok => 0, set => {
                 key_values => [ { name => 'time' } ],
                 output_template => 'Response time : %.3fs',
                 perfdatas => [
-                    { label => 'time', value => 'time', template => '%.3f', min => 0, unit => 's' },
-                ],
+                    { label => 'time', template => '%.3f', min => 0, unit => 's' }
+                ]
             }
         },
-        { label => 'extracted', display_ok => 0, set => {
+        { label => 'extracted', nlabel => 'http.extracted.value.count', display_ok => 0, set => {
                 key_values => [ { name => 'extracted' } ],
                 output_template => 'Extracted value : %s',
                 perfdatas => [
-                    { label => 'value', value => 'extracted', template => '%s' },
-                ],
+                    { label => 'value', template => '%s' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -133,12 +126,9 @@ sub new {
         'cookies-file:s'        => { name => 'cookies_file' },
         'unknown-status:s'      => { name => 'unknown_status' },
         'warning-status:s'      => { name => 'warning_status' },
-        'critical-status:s'     => { name => 'critical_status' },
-        'unknown-content:s'     => { name => 'unknown_content', default => '' },
-        'warning-content:s'     => { name => 'warning_content', default => '' },
-        'critical-content:s'    => { name => 'critical_content', default => '' },
+        'critical-status:s'     => { name => 'critical_status' }
     });
-    
+
     $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
@@ -171,17 +161,15 @@ sub load_request {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->load_request();
 
     # Legacy compat
-    if (defined($self->{option_results}->{expected_string}) && $self->{option_results}->{expected_string} ne '') {
-        $self->{option_results}->{critical_content} = "%{content} !~ /$self->{option_results}->{expected_string}/mi";
+    if (defined($options{option_results}->{expected_string}) && $options{option_results}->{expected_string} ne '') {
+        $options{option_results}->{'critical-content'} = "%{content} !~ /%{expected_string}/mi";
     }
+    $self->SUPER::check_options(%options);
+    $self->load_request();
 
     $self->{http}->set_options(%{$self->{option_results}});
-    $self->change_macros(macros => ['warning_content', 'critical_content', 'unknown_content']);
 }
 
 sub manage_selection {
@@ -190,13 +178,14 @@ sub manage_selection {
     my $timing0 = [gettimeofday];
     my $webcontent = $self->{http}->request(%{$self->{options_request}});
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
-        
+
     $self->{global} = { 
         time => $timeelapsed, 
         content => $webcontent,
         code => $self->{http}->get_code(),
         header => $self->{http}->get_header(),
         first_header => $self->{http}->get_first_header(),
+        expected_string => defined($self->{option_results}->{expected_string}) ? $self->{option_results}->{expected_string} : ''
     };
 
     if (defined($self->{option_results}->{extracted_pattern}) && $self->{option_results}->{extracted_pattern} ne '' &&

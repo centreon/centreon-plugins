@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,8 +30,8 @@ my $oid_xupsOutputSource = '.1.3.6.1.4.1.534.1.4.5.0';
 my $thresholds = {
     osource => [
         ['normal', 'OK'],
-        ['.*', 'CRITICAL'],
-    ],
+        ['.*', 'CRITICAL']
+    ]
 };
 
 my %map_osource_status = (
@@ -40,23 +40,22 @@ my %map_osource_status = (
     3 => 'normal',
     4 => 'bypass',
     5 => 'battery',
-    6 => 'booster', 
-    7 => 'reducer', 
-    8 => 'parallelCapacity', 
-    9 => 'parallelRedundant', 
-    10 => 'highEfficiencyMode', 
-    11 => 'maintenanceBypass', 
+    6 => 'booster',
+    7 => 'reducer',
+    8 => 'parallelCapacity',
+    9 => 'parallelRedundant',
+    10 => 'highEfficiencyMode',
+    11 => 'maintenanceBypass'
 );
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'threshold-overload:s@'  => { name => 'threshold_overload' }
+    });
 
     return $self;
 }
@@ -64,9 +63,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        next if ($val eq '');
+
         if ($val !~ /^(.*?),(.*)$/) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
             $self->{output}->option_exit();
@@ -87,9 +88,13 @@ sub run {
     
     my $result = $self->{snmp}->get_leef(oids => [$oid_xupsOutputSource], nothing_quit => 1);
     my $exit = $self->get_severity(section => 'osource', value => $map_osource_status{$result->{$oid_xupsOutputSource}});
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Output source status is %s",
-                                                     $map_osource_status{$result->{$oid_xupsOutputSource}}));
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf(
+            "Output source status is %s",
+            $map_osource_status{$result->{$oid_xupsOutputSource}}
+        )
+    );
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -99,7 +104,7 @@ sub run {
 sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
-    
+
     if (defined($self->{overload_th}->{$options{section}})) {
         foreach (@{$self->{overload_th}->{$options{section}}}) {            
             if ($options{value} =~ /$_->{filter}/i) {
@@ -114,7 +119,7 @@ sub get_severity {
             return $status;
         }
     }
-    
+
     return $status;
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,14 +24,13 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use storage::emc::DataDomain::lib::functions;
 
-sub custom_status_calc {
+sub prefix_repl_output {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    return 0;
+    return "Replication '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -42,13 +41,17 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{repl} = [
-         { label => 'status', threshold => 0, set => {
+         {
+             label => 'status',
+             type => 2,
+             warning_default => '%{state} =~ /initializing|recovering/i',
+             critical_default => '%{state} =~ /disabledNeedsResync|uninitialized/i',
+             set => {
                 key_values => [ { name => 'state' } ],
                 output_template => "status is '%s'",
                 output_use => 'state',
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'offset', set => {
@@ -63,48 +66,29 @@ sub set_counters {
     ];
 }
 
-sub prefix_repl_output {
-    my ($self, %options) = @_;
-
-    return "Replication '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{state} =~ /initializing|recovering/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{state} =~ /disabledNeedsResync|uninitialized/i' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
-}
-
-my $oid_sysDescr = '.1.3.6.1.2.1.1.1'; # 'Data Domain OS 5.4.1.1-411752'
-my $oid_replicationInfoEntry = '.1.3.6.1.4.1.19746.1.8.1.1.1';
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $oid_sysDescr },
-            { oid => $oid_replicationInfoEntry }
-        ],
+    my $oid_sysDescr = '.1.3.6.1.2.1.1.1.0'; # 'Data Domain OS 5.4.1.1-411752'
+    my $oid_replicationInfoEntry = '.1.3.6.1.4.1.19746.1.8.1.1.1';
+
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ $oid_sysDescr ],
         nothing_quit => 1
     );
 
-    if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $snmp_result->{$oid_sysDescr}->{$oid_sysDescr . '.0'}))) {
+    if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $snmp_result->{$oid_sysDescr}))) {
         $self->{output}->output_add(
             severity => 'UNKNOWN',
             short_msg => 'Cannot get DataDomain OS version.'
@@ -113,10 +97,10 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    if (scalar(keys %{$snmp_result->{$oid_replicationInfoEntry}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'no replication informations');
-        $self->{output}->option_exit();
-    }
+    $snmp_result = $options{snmp}->get_table(
+        oid => $oid_replicationInfoEntry,
+        nothing_quit => 1
+    );
 
     my ($oid_replSource, $oid_replDestination, $oid_replState);
     my %map_state = (
@@ -147,10 +131,10 @@ sub manage_selection {
     };
 
     $self->{repl} = {};
-    foreach my $oid (keys %{$snmp_result->{$oid_replicationInfoEntry}}) {
+    foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{replState}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_replicationInfoEntry}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         $self->{repl}->{$instance} = {
             display => $result->{replSource} . '/' . $result->{replDestination},
             state => $result->{replState},

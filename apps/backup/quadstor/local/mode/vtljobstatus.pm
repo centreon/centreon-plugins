@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,61 +26,24 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status};
 
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return 'status : ' . $self->{result_values}->{status};
 }
 
 sub custom_long_output {
     my ($self, %options) = @_;
-    my $msg = 'elapsed time : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
 
-    return $msg;
-}
-
-sub custom_long_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
-    
-    return 0;
+    return 'elapsed time : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
 }
 
 sub custom_frozen_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($self->{instance_mode}->{option_results}->{critical_frozen}) && $self->{instance_mode}->{option_results}->{critical_frozen} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_frozen}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_frozen}) && $self->{instance_mode}->{option_results}->{warning_frozen} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{warning_frozen}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-       $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
+    my ($self, %options) = @_;
 
+    my $status = catalog_status_threshold_ng($self, %options);
     $self->{instance_mode}->{last_status_frozen} = $status;
     return $status;
 }
@@ -106,6 +69,12 @@ sub custom_frozen_calc {
     return 0;
 }
 
+sub prefix_job_output {
+    my ($self, %options) = @_;
+    
+    return "job '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -116,20 +85,18 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{job} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} =~ /error/i', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'long', threshold => 0, set => {
+        { label => 'long', threshold => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'display' }, { name => 'elapsed' } ],
-                closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'frozen', threshold => 0, set => {
@@ -148,54 +115,36 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'impexp' },
-                                  "command-path:s"    => { name => 'command_path', default => '/quadstorvtl/bin' },
-                                  "command-options:s" => { name => 'command_options', default => '-l' },
-                                  "warning-status:s"        => { name => 'warning_status' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /error/i' },
-                                  "warning-long:s"          => { name => 'warning_long' },
-                                  "critical-long:s"         => { name => 'critical_long' },
-                                  "warning-frozen:s"        => { name => 'warning_frozen' },
-                                  "critical-frozen:s"       => { name => 'critical_frozen' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'impexp' },
+        'command-path:s'    => { name => 'command_path', default => '/quadstorvtl/bin' },
+        'command-options:s' => { name => 'command_options', default => '-l' }
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'warning_long', 'critical_long', 'warning_frozen', 'critical_frozen']);
-}
-
-sub prefix_job_output {
-    my ($self, %options) = @_;
-    
-    return "job '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "quadstor_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
+    $self->{cache_name} = 'quadstor_' . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
-    
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    sudo => $self->{option_results}->{sudo},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
+
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );    
     $self->{jobs}->{global} = { job => {} };
     #JobID  Type     Source           State        Transfer       Elapsed
     #252    Import   701831L2         Error        36.00 GB       572
@@ -207,10 +156,10 @@ sub manage_selection {
     shift @lines;
     foreach (@lines) {
         next if (! /^(\d+)\s+\S+\s+(\S+)\s+(\S+)\s+([0-9\.]+)\s+\S+\s+(\d+)/);
-        
+
         my ($job_id, $job_source, $job_state, $job_kb, $job_elapsed) = 
             ($1, $2, $3, $4, $5);
-        
+
         my $name = $job_source . '.' . $job_id;
         $self->{jobs}->{global}->{job}->{$name} = { 
             display => $name,
@@ -219,7 +168,7 @@ sub manage_selection {
             elapsed => $job_elapsed
         };
     }
-    
+
     if (scalar(keys %{$self->{jobs}->{global}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No job found.");
         $self->{output}->option_exit();

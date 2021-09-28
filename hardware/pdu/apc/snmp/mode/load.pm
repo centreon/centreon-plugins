@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -203,7 +203,7 @@ sub check_rpdu {
     $snmp_result = $options{snmp}->get_leef(oids => [$oid_rPDUIdentName, $oid_rPDUIdentDevicePowerWatts]);
     $self->{device}->{0} = {
         display => $snmp_result->{$oid_rPDUIdentName},
-        power => $snmp_result->{$oid_rPDUIdentDevicePowerWatts} * 10,
+        power => $snmp_result->{$oid_rPDUIdentDevicePowerWatts},
     };
 }
 
@@ -249,7 +249,7 @@ sub check_rpdu2 {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping_phase, results => $snmp_result->{$oid_rPDU2PhaseStatusEntry}, instance => $instance);
 
-        my $name = 'module ' . $result->{rPDU2PhaseStatusModule} . ' phase ' . $result->{rPDU2PhaseStatusNumber};
+        my $name = 'mod' . $result->{rPDU2PhaseStatusModule} . 'phase' . $result->{rPDU2PhaseStatusNumber};
         $self->{phase}->{$name} = {
             display => $name,
             status => $result->{rPDU2PhaseStatusLoadState},
@@ -263,7 +263,7 @@ sub check_rpdu2 {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping_bank, results => $snmp_result->{$oid_rPDU2BankStatusEntry}, instance => $instance);
 
-        my $name = 'module ' . $result->{rPDU2BankStatusModule} . ' num ' . $result->{rPDU2BankStatusNumber};
+        my $name = 'mod' . $result->{rPDU2BankStatusModule} . 'bank' . $result->{rPDU2BankStatusNumber};
         $self->{bank}->{$name} = {
             display => $name,
             status => $result->{rPDU2BankStatusLoadState},

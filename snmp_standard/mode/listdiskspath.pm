@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,19 +34,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "diskpath:s"              => { name => 'diskpath' },
-                                  "name"                    => { name => 'use_name' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },
-                                  "display-transform-src:s" => { name => 'display_transform_src' },
-                                  "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                  "skip-total-size-zero"    => { name => 'skip_total_size_zero' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'diskpath:s'              => { name => 'diskpath' },
+        'name'                    => { name => 'use_name' },
+        'regexp'                  => { name => 'use_regexp' },
+        'regexp-isensitive'       => { name => 'use_regexpi' },
+        'display-transform-src:s' => { name => 'display_transform_src' },
+        'display-transform-dst:s' => { name => 'display_transform_dst' },
+        'skip-total-size-zero'    => { name => 'skip_total_size_zero' }
+    });
 
     $self->{diskpath_id_selected} = [];
-    
+
     return $self;
 }
 
@@ -113,7 +112,7 @@ sub manage_selection {
     my $total_diskpath = 0;
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /\.([0-9]+)$/);
-        $self->{datas}->{'dskPath_' . $1} = $self->{output}->to_utf8($result->{$key});
+        $self->{datas}->{'dskPath_' . $1} = $self->{output}->decode($result->{$key});
         $total_diskpath = $1;
     }
     

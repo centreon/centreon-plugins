@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -132,7 +132,7 @@ sub set_counters {
             }
         },
         { label => 'isl-packets-out', nlabel => 'vsx.isl.packets.out.count', set => {
-                key_values => [ { name => 'isl_packets_in', diff => 1 } ],
+                key_values => [ { name => 'isl_packets_out', diff => 1 } ],
                 output_template => 'packets out: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
@@ -162,7 +162,7 @@ sub set_counters {
             }
         },
         { label => 'keepalive-packets-out', nlabel => 'vsx.keepalive.packets.out.count', set => {
-                key_values => [ { name => 'keepalive_packets_in', diff => 1 } ],
+                key_values => [ { name => 'keepalive_packets_out', diff => 1 } ],
                 output_template => 'packets out: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }

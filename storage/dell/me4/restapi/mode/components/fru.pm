@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,21 +36,27 @@ sub check {
     $self->{components}->{fru} = {name => 'frus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fru'));
     return if (!defined($self->{json_results}->{frus}));
-    
+
     foreach my $result (@{$self->{json_results}->{frus}->{'enclosure-fru'}}) {
         my $instance = $result->{name};
-        
+
         next if ($self->check_filter(section => 'fru', instance => $instance));
 
         $self->{components}->{fru}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("FRU '%s' status is '%s'",
-                                    $result->{name}, $result->{'fru-status'}));
-        
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fru '%s' status is '%s'",
+                $result->{name}, $result->{'fru-status'}
+            )
+        );
+
         my $exit1 = $self->get_severity(section => 'fru', value => $result->{'fru-status'});
         if (!$self->{output}->is_status(value => $exit1, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit1,
-                                        short_msg => sprintf("FRU '%s' status is '%s'", $result->{name}, $result->{'fru-status'}));
+            $self->{output}->output_add(
+                severity => $exit1,
+                short_msg => sprintf("FRU '%s' status is '%s'", $result->{name}, $result->{'fru-status'})
+            );
         }
     }
 }

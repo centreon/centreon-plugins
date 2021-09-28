@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -101,7 +101,7 @@ sub set_counters {
         },
         { label => 'traffic-out', nlabel => 'accesspoint.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
-                output_template => 'traffic in: %s%s/s',
+                output_template => 'traffic out: %s%s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }

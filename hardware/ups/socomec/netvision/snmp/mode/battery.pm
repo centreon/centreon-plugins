@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,7 +36,7 @@ sub custom_load_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "charge remaining: %s%% (%s minutes remaining)", 
+        'charge remaining: %s%% (%s minutes remaining)', 
         $self->{result_values}->{charge_remain},
         $self->{result_values}->{minute_remain}
     );
@@ -46,7 +46,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -129,7 +129,7 @@ my $mapping = {
     charge_remain => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.4' }, # upsEstimatedChargeRemaining
     voltage       => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.5' }, # upsBatteryVoltage (dV)
     temperature   => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.6' }, # upsBatteryTemperature (degrees Centigrade)
-    current       => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.8' } # upsBatteryCurrent (dA)
+    current       => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.8' }  # upsBatteryCurrent (dA)
 };
 
 sub manage_selection {
@@ -140,8 +140,10 @@ sub manage_selection {
         nothing_quit => 1
     );
     $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
-    $self->{global}->{current} = (defined($self->{global}->{current}) && $self->{global}->{current} =~ /\d/) ? $self->{global}->{current} * 0.1 : 0;
-    $self->{global}->{voltage} = (defined($self->{global}->{voltage}) && $self->{global}->{voltage} =~ /\d/) ? $self->{global}->{voltage} * 0.1 : 0;
+    $self->{global}->{current} = (defined($self->{global}->{current}) && $self->{global}->{current} =~ /\d/ && $self->{global}->{current} != -1 && $self->{global}->{current} != 65535) ? 
+        $self->{global}->{current} * 0.1 : 0;
+    $self->{global}->{voltage} = (defined($self->{global}->{voltage}) && $self->{global}->{voltage} =~ /\d/ && $self->{global}->{voltage} != -1 && $self->{global}->{voltage} != 65535) ?
+        $self->{global}->{voltage} * 0.1 : 0;
     $self->{global}->{temperature} = (defined($self->{global}->{temperature}) && $self->{global}->{temperature} =~ /\d/) ? $self->{global}->{temperature} * 0.1 : 0;
     $self->{global}->{minute_remain} = (defined($self->{global}->{minute_remain}) && $self->{global}->{minute_remain} =~ /\d/) ? $self->{global}->{minute_remain} : 'unknown';
     $self->{global}->{charge_remain} = (defined($self->{global}->{charge_remain}) && $self->{global}->{charge_remain} =~ /\d/) ? $self->{global}->{charge_remain} : undef;

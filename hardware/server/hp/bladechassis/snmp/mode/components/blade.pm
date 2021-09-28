@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,8 +40,8 @@ my %present_map = (
 my $mapping = {
     blade_name      => { oid => '.1.3.6.1.4.1.232.22.2.4.1.1.1.4' }, # cpqRackServerBladeName
     blade_part      => { oid => '.1.3.6.1.4.1.232.22.2.4.1.1.1.6' }, # cpqRackServerBladePartNumber
-    blade_status    => { oid => '.1.3.6.1.4.1.232.22.2.3.1.3.1.11', map => \%map_conditions  }, # cpqRackServerBladeStatus (v2)
-    blade_spare     => { oid => '.1.3.6.1.4.1.232.22.2.4.1.1.1.21' }, # cpqRackServerBladeSparePartNumber
+    blade_status    => { oid => '.1.3.6.1.4.1.232.22.2.4.1.1.1.21', map => \%map_conditions  }, # cpqRackServerBladeStatus (v2)
+    blade_spare     => { oid => '.1.3.6.1.4.1.232.22.2.4.1.1.1.7' }, # cpqRackServerBladeSparePartNumber
     blade_productid => { oid => '.1.3.6.1.4.1.232.22.2.4.1.1.1.17' }, # cpqRackServerBladeProductId
     blade_diago     => { oid => '.1.3.6.1.4.1.232.22.2.4.1.1.1.24' }, # cpqRackServerBladeFaultDiagnosticString (v2)
 };

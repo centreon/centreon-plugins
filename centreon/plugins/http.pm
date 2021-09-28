@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,7 +34,7 @@ sub new {
             'proxyurl:s'        => { name => 'proxyurl' },
             'proxypac:s'        => { name => 'proxypac' },
             'insecure'          => { name => 'insecure' },
-            'http-backend:s'    => { name => 'http_backend', default => 'lwp' },
+            'http-backend:s'    => { name => 'http_backend', default => 'lwp' }
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'HTTP GLOBAL OPTIONS');
     }
@@ -218,6 +218,18 @@ sub get_message {
     my ($self, %options) = @_;
 
     return $self->{'backend_' . $self->{http_backend}}->get_message();
+}
+
+sub get_certificate {
+    my ($self, %options) = @_;
+
+    return $self->{'backend_' . $self->{http_backend}}->get_certificate();
+}
+
+sub get_times {
+    my ($self, %options) = @_;
+
+    return $self->{'backend_' . $self->{http_backend}}->get_times();
 }
 
 1;

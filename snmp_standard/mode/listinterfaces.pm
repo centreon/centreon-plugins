@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -177,7 +177,12 @@ sub run {
             $extra_display .= '[' . $name . ' = ' . $extra_values->{$name} . ']';
         }
         if (defined($self->{oid_iftype})) {
-            $extra_display .= '[type = ' . $map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } } . ']';
+            $extra_display .= sprintf(
+                '[type = %s]',
+                defined($result->{ $self->{oid_iftype} . '.' . $_}) && defined($map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } }) ?
+                    $map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } } :
+                    'unknown' 
+            );
         }
 
         $self->{output}->output_add(
@@ -210,15 +215,15 @@ sub get_additional_information {
     push @$oids, $self->{oid_iftype} if (defined($self->{oid_iftype}));
     push @$oids, $oid_speed32 if ($self->{no_speed} == 0);
     push @$oids, $oid_speed64 if (!$self->{snmp}->is_snmpv1() && $self->{no_speed} == 0);
-    
+
     $self->{snmp}->load(oids => $oids, instances => $self->{interface_id_selected});
     return $self->{snmp}->get_leef();
 }
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $options{id}};
 
+    my $value = $self->{datas}->{$self->{option_results}->{oid_display} . '_' . $options{id}};
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
         eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
@@ -238,16 +243,16 @@ sub manage_selection {
             push @$oids, { oid => $self->{extra_oids}->{$_}->{oid} };
         }
     }
-    
+
     $self->{datas} = {};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $oids);
     $self->{datas}->{all_ids} = [];
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $self->{oids_label}->{$self->{option_results}->{oid_filter}} }})) {
         next if ($key !~ /^$self->{oids_label}->{$self->{option_results}->{oid_filter}}\.(.*)$/);
-        $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_filter}} }->{$key});
+        $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->decode($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_filter}} }->{$key});
         push @{$self->{datas}->{all_ids}}, $1;
     }
-    
+
     if (scalar(@{$self->{datas}->{all_ids}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Can't get interfaces...");
         $self->{output}->option_exit();
@@ -256,10 +261,10 @@ sub manage_selection {
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
         foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $self->{oids_label}->{$self->{option_results}->{oid_display}} }})) {
             next if ($key !~ /^$self->{oids_label}->{$self->{option_results}->{oid_display}}\.(.*)$/);
-            $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->to_utf8($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_display}} }->{$key});
+            $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->decode($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_display}} }->{$key});
         }
     }
-    
+
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface})) {
         foreach (@{$self->{datas}->{all_ids}}) {
             if ($self->{option_results}->{interface} =~ /(^|\s|,)$_(\s*,|$)/) {
@@ -270,7 +275,7 @@ sub manage_selection {
         foreach (@{$self->{datas}->{all_ids}}) {
             my $filter_name = $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $_};
             next if (!defined($filter_name));
-            
+
             if (!defined($self->{option_results}->{interface})) {
                 push @{$self->{interface_id_selected}}, $_;
                 next;
@@ -289,35 +294,35 @@ sub manage_selection {
 
 sub get_extra_values_by_instance {
     my ($self, %options) = @_;
-    
+
     my $extra_values = {};
     foreach my $name (keys %{$self->{extra_oids}}) {
         my $matching = $self->{extra_oids}->{$name}->{matching};
         $matching =~ s/%\{instance\}/$options{instance}/g;
         next if (!defined($self->{results}->{ $self->{extra_oids}->{$name}->{oid} }));
-        
+
         my $append = '';
         foreach (keys %{$self->{results}->{ $self->{extra_oids}->{$name}->{oid} }}) {
             if (/^$self->{extra_oids}->{$name}->{oid}\.$matching/) {
                 $extra_values->{$name} = '' if (!defined($extra_values->{$name}));
-                $extra_values->{$name} .= $append . $self->{results}->{$self->{extra_oids}->{$name}->{oid}}->{$_};
+                $extra_values->{$name} .= $append . $self->{output}->decode($self->{results}->{ $self->{extra_oids}->{$name}->{oid} }->{$_});
                 $append = ',';
             }
         }
     }
-    
+
     if (defined($self->{option_results}->{add_mac_address})) {
         my $macaddress = defined($options{result}->{$self->{oid_mac_address} . "." . $_}) ? unpack('H*', $options{result}->{$self->{oid_mac_address} . "." . $_}) : '';
         $macaddress =~ s/(..)(?=.)/$1:/g;
         $extra_values->{macaddress} = $macaddress;
     }
-    
+
     return $extra_values;
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     my $names = ['name', 'total', 'status', 'interfaceid'];
     if (scalar(keys %{$self->{extra_oids}}) > 0) {
         push @$names, keys %{$self->{extra_oids}};
@@ -326,20 +331,20 @@ sub disco_format {
         push @$names, 'macaddress';
     }
     push @$names, 'type' if (defined($self->{oid_iftype}));
-    
+
     $self->{output}->add_disco_format(elements => $names);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
+    $self->{snmp} = $options{snmp};
     $self->manage_selection(disco => 1);
     return if (scalar(@{$self->{interface_id_selected}}) == 0);
     my $result = $self->get_additional_information();
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
-        
+
         my $interface_speed = 0;
         if ($self->{no_speed} == 0) {
             $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0) ? 
@@ -357,7 +362,8 @@ sub disco_show {
 
         my $extra_values = $self->get_extra_values_by_instance(result => $result, instance => $_);
         if (defined($self->{oid_iftype})) {
-            $extra_values->{type} = $map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } };
+            $extra_values->{type} = defined($result->{ $self->{oid_iftype} . '.' . $_ }) && defined($map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } }) ? 
+                $map_iftype->{ $result->{ $self->{oid_iftype} . '.' . $_ } } : 'unknown';
         }
         $self->{output}->add_disco_entry(
             name => $display_value,

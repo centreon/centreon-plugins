@@ -138,6 +138,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $alarms = $options{custom}->request_paging(
+        type => 'alert',
         endpoint => '/Alert'
     );
 

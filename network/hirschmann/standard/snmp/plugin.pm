@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,14 +30,15 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
+        'configuration'    => 'network::hirschmann::standard::snmp::mode::configuration',
         'cpu'              => 'network::hirschmann::standard::snmp::mode::cpu',
         'hardware'         => 'network::hirschmann::standard::snmp::mode::hardware',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'network::hirschmann::standard::snmp::mode::memory',
-        'processcount'     => 'network::hirschmann::standard::snmp::mode::processcount',
-    );
+        'processcount'     => 'network::hirschmann::standard::snmp::mode::processcount'
+    };
 
     return $self;
 }
@@ -48,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Hirschmann in SNMP (HMPRIV-MGMT-SNMP-MIB).
+Check Hirschmann in SNMP.
 
 =cut

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output { 
     my ($self, %options) = @_;
@@ -38,6 +38,12 @@ sub custom_status_output {
         $self->{result_values}->{impactLevel},
         $self->{result_values}->{entityName}
     );
+}
+
+sub prefix_service_output {
+    my ($self, %options) = @_;
+
+    return "Problem '" . $options{instance_value}->{displayName} . "' ";
 }
 
 sub set_counters {
@@ -55,31 +61,25 @@ sub set_counters {
                 key_values => [ { name => 'problems_open' } ],
                 output_template => 'number of open problems : %s',
                 perfdatas => [
-                    { value => 'problems_open', template => '%s', value => 'problems_open', min => 0 },
-                ],
+                    { template => '%s', value => 'problems_open', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{problem} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'impactLevel' }, { name => 'severityLevel' }, 
+        { label => 'status', type => 2, critical_default => '%{status} eq "OPEN"', set => {
+                key_values => [
+                    { name => 'status' }, { name => 'impactLevel' }, { name => 'severityLevel' }, 
                     { name => 'entityName' }, { name => 'eventType' }, { name => 'entityId' }, { name => 'displayName' }, 
-                    { name => 'startTime' }, { name => 'endTime' }, { name => 'commentCount' } 
+                    { name => 'startTime' }, { name => 'endTime' }, { name => 'commentCount' }, { name => 'time' }
                 ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
-}
-
-sub prefix_service_output {
-    my ($self, %options) = @_;
-
-    return "Problem '" . $options{instance_value}->{displayName} ."' ";
 }
 
 sub new {
@@ -89,22 +89,10 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'relative-time:s'   => { name => 'relative_time', default => 'min' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} eq "OPEN"' },
+        'relative-time:s'   => { name => 'relative_time', default => 'min' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [
-        'warning_status', 'critical_status', 'unknown_status',
-    ]);
 }
 
 sub manage_selection {
@@ -116,7 +104,7 @@ sub manage_selection {
     $self->{problem} = {};
 
     $self->{problems}->{global} = { problem => {} };
-    my $i = 1;
+    my ($i, $time) = (1, time());
     foreach my $item (@{$problem}) {
         $self->{problems}->{global}->{problem}->{$i} = {
             displayName => $item->{displayName},
@@ -129,6 +117,7 @@ sub manage_selection {
             startTime => $item->{startTime} / 1000,
             endTime => $item->{endTime} > -1 ? $item->{endTime} / 1000 : -1,
             commentCount => $item->{commentCount},
+            time => $time
         };
         if ($item->{status} eq 'OPEN') {
             $self->{global}->{problems_open}++;
@@ -156,17 +145,17 @@ Can use: min, 5mins, 10mins, 15mins, 30mins, hour, 2hours, 6hours, day, 3days, w
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}
+Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}, %{time}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}
+Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}, %{time}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} eq "OPEN"').
-Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}
+Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}, %{time}
 
 =item B<--warning-*> B<--critical-*>
 

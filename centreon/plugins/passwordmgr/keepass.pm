@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use strict;
 use warnings;
 use JSON::Path;
 use Data::Dumper;
-use File::KeePass;
+use KeePass::Reader;
 
 use vars qw($keepass_connections);
 
@@ -43,18 +43,18 @@ sub new {
     }
 
     $options{options}->add_options(arguments => {
-        "keepass-endpoint:s"        => { name => 'keepass_endpoint' },
-        "keepass-endpoint-file:s"   => { name => 'keepass_endpoint_file' },
-        "keepass-file:s"            => { name => 'keepass_file' },
-        "keepass-password:s"        => { name => 'keepass_password' },
-        "keepass-search-value:s@"   => { name => 'keepass_search_value' },
-        "keepass-map-option:s@"     => { name => 'keepass_map_option' },
+        'keepass-endpoint:s'        => { name => 'keepass_endpoint' },
+        'keepass-endpoint-file:s'   => { name => 'keepass_endpoint_file' },
+        'keepass-file:s'            => { name => 'keepass_file' },
+        'keepass-password:s'        => { name => 'keepass_password' },
+        'keepass-search-value:s@'   => { name => 'keepass_search_value' },
+        'keepass-map-option:s@'     => { name => 'keepass_map_option' }
     });
     $options{options}->add_help(package => __PACKAGE__, sections => 'KEEPASS OPTIONS');
 
     $self->{output} = $options{output};    
     $JSON::Path::Safe = 0;
-    
+
     return $self;
 }
 
@@ -143,19 +143,15 @@ sub manage_options {
     $self->build_api_args(%options);
     return if (!defined($self->{connection_info}->{file}));
     
-    my $keepassfile;
-    eval {
-        $keepassfile = File::KeePass->new();
-        $keepassfile->load_db($self->{connection_info}->{file}, $self->{connection_info}->{password});
-        $keepassfile->unlock;
-        $self->{output}->output_add(long_msg => Data::Dumper::Dumper($keepassfile->groups), debug => 1) if ($self->{output}->is_debug());
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot read keepass file: $@");
+    my $keepass = KeePass::Reader->new();
+    my $content = $keepass->load_db(file => $self->{connection_info}->{file}, password => $self->{connection_info}->{password});
+    if (!defined($content)) {
+        $self->{output}->add_option_msg(short_msg => "Cannot read keepass file: " . $keepass->error());
         $self->{output}->option_exit();
     }
-    
-    $self->do_lookup(%options, json => $keepassfile->groups);
+    $self->{output}->output_add(long_msg => Data::Dumper::Dumper($content), debug => 1) if ($self->{output}->is_debug());
+
+    $self->do_lookup(%options, json => $content);
     $self->do_map(%options);
 }
 

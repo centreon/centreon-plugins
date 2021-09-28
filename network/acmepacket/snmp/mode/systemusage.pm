@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,146 +24,161 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf('replication state : %s', $self->{result_values}->{replication_state});
-    return $msg;
+    return sprintf('replication state: %s', $self->{result_values}->{replication_state});
 }
 
-sub custom_status_calc {
+sub system_long_output {
     my ($self, %options) = @_;
-    
-    $self->{result_values}->{replication_state} = $options{new_datas}->{$self->{instance} . '_replication_state'};
-    return 0;
+
+    return 'checking system';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
-    $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' - ' },
+     $self->{maps_counters_type} = [
+        { name => 'system', type => 3, cb_long_output => 'system_long_output', indent_long_output => '    ',
+            group => [
+                { name => 'health', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
+                { name => 'cpu', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
+                { name => 'memory', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
+                { name => 'license', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
+                { name => 'sessions', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
+                { name => 'calls', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
+                { name => 'replication', type => 0, display_short => 0, skipped_code => { -10 => 1 } }
+            ]
+        }
     ];
     
-    $self->{maps_counters}->{global} = [
+    $self->{maps_counters}->{health} = [
         { label => 'health-score', nlabel => 'health.score.percentage', set => {
                 key_values => [ { name => 'health_score' } ],
-                output_template => 'Health Score : %.2f %%',
+                output_template => 'health score: %.2f %%',
                 perfdatas => [
-                    { label => 'health_score', value => 'health_score', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
+    ];
+
+    $self->{maps_counters}->{cpu} = [
         { label => 'cpu-load', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_load' } ],
-                output_template => 'Cpu Load : %.2f %%',
+                output_template => 'cpu load: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_load', value => 'cpu_load', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
+    ];
+
+    $self->{maps_counters}->{memory} = [
         { label => 'memory-usage', nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'memory_used' } ],
-                output_template => 'Memory Used : %.2f %%',
+                output_template => 'memory used: %.2f %%',
                 perfdatas => [
-                    { label => 'memory_used', value => 'memory_used', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
+    ];
+
+    $self->{maps_counters}->{license} = [
         { label => 'license-usage', nlabel => 'licence.usage.percentage', set => {
                 key_values => [ { name => 'license_used' } ],
-                output_template => 'License Used : %.2f %%',
+                output_template => 'license used: %.2f %%',
                 perfdatas => [
-                    { label => 'license_used', value => 'license_used', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' },
+                ]
             }
-        },
+        }
+    ];
+
+    $self->{maps_counters}->{sessions} = [
         { label => 'current-sessions', nlabel => 'sessions.current.count', set => {
                 key_values => [ { name => 'current_sessions' } ],
-                output_template => 'Current Sessions : %s',
+                output_template => 'current sessions: %s',
                 perfdatas => [
-                    { label => 'current_sessions', value => 'current_sessions', template => '%s',
-                      min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
+    ];
+
+    $self->{maps_counters}->{calls} = [
         { label => 'current-calls', nlabel => 'calls.current.count', set => {
                 key_values => [ { name => 'current_calls' } ],
-                output_template => 'Current Calls : %s/s',
+                output_template => 'current calls: %s/s',
                 perfdatas => [
-                    { label => 'current_calls', value => 'current_calls', template => '%s',
-                      unit => '/s', min => 0 },
-                ],
+                    { template => '%s', unit => '/s', min => 0 }
+                ]
             }
-        },
-        { label => 'replication-status', threshold => 0, set => {
+        }
+    ];
+
+    $self->{maps_counters}->{replication} = [
+        { label => 'replication-status', type => 2, critical_default => '%{replication_state} =~ /outOfService/i', set => {
                 key_values => [ { name => 'replication_state' }, ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-replication-status:s"    => { name => 'warning_replication_status', default => '' },
-                                "critical-replication-status:s"   => { name => 'critical_replication_status', default => '%{replication_state} =~ /outOfService/i' },
-                                });
-   
+
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_replication_status', 'critical_replication_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my %mapping_redundancy = (
+
+    my $mapping_redundancy = {
         0 => 'unknown', 1 => 'initial', 2 => 'active', 3 => 'standby', 
         4 => 'outOfService', 5 => 'unassigned', 6 => 'activePending', 
-        7 => 'standbyPending', 8 => 'outOfServicePending', 9 => 'recovery',
+        7 => 'standbyPending', 8 => 'outOfServicePending', 9 => 'recovery'
+    };
+    my $mapping = {
+        cpu_load          => { oid => '.1.3.6.1.4.1.9148.3.2.1.1.1' }, # apSysCPUUtil
+        memory_used       => { oid => '.1.3.6.1.4.1.9148.3.2.1.1.2' }, # apSysMemoryUtil
+        health_score      => { oid => '.1.3.6.1.4.1.9148.3.2.1.1.3' }, # apSysHealthScore
+        replication_state => { oid => '.1.3.6.1.4.1.9148.3.2.1.1.4', map => $mapping_redundancy }, # apSysRedundancy
+        current_sessions  => { oid => '.1.3.6.1.4.1.9148.3.2.1.1.5' }, # apSysGlobalConSess
+        current_calls     => { oid => '.1.3.6.1.4.1.9148.3.2.1.1.6' }, # apSysGlobalCPS
+        license_used      => { oid => '.1.3.6.1.4.1.9148.3.2.1.1.10' } # apSysLicenseCapacity
+    };
+
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
+        nothing_quit => 1
     );
+    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
 
-    my $oid_apSysCPUUtil = '.1.3.6.1.4.1.9148.3.2.1.1.1.0';
-    my $oid_apSysMemoryUtil = '.1.3.6.1.4.1.9148.3.2.1.1.2.0';
-    my $oid_apSysHealthScore = '.1.3.6.1.4.1.9148.3.2.1.1.3.0';
-    my $oid_apSysRedundancy = '.1.3.6.1.4.1.9148.3.2.1.1.4.0';
-    my $oid_apSysGlobalConSess = '.1.3.6.1.4.1.9148.3.2.1.1.5.0';
-    my $oid_apSysGlobalCPS = '.1.3.6.1.4.1.9148.3.2.1.1.6.0';
-    my $oid_apSysLicenseCapacity = '.1.3.6.1.4.1.9148.3.2.1.1.10.0';
-    my $result = $options{snmp}->get_leef(oids => [
-            $oid_apSysCPUUtil, $oid_apSysMemoryUtil, $oid_apSysHealthScore, $oid_apSysRedundancy,
-            $oid_apSysLicenseCapacity, $oid_apSysGlobalConSess, $oid_apSysGlobalCPS
-        ], 
-        nothing_quit => 1);
+    $self->{output}->output_add(short_msg => 'System usage is ok');
 
-    $self->{global} = { 
-        cpu_load => $result->{$oid_apSysCPUUtil},
-        memory_used => $result->{$oid_apSysMemoryUtil},
-        replication_state => $mapping_redundancy{$result->{$oid_apSysRedundancy}},
-        license_used => $result->{$oid_apSysLicenseCapacity},
-        health_score => $result->{$oid_apSysHealthScore},
-        current_sessions => $result->{$oid_apSysGlobalConSess},
-        current_calls => $result->{$oid_apSysGlobalCPS},
+    $self->{system} = {
+        global => {
+            health => { health_score => $result->{health_score} },
+            cpu => { cpu_load => $result->{cpu_load} },
+            memory => { memory_used => $result->{memory_used} },
+            license => { license_used => $result->{license_used} },
+            sessions => { current_sessions => $result->{current_sessions} },
+            calls => { current_calls => $result->{current_calls} },
+            replication => { replication_state => $result->{replication_state} }
+        }
     };
 }
 

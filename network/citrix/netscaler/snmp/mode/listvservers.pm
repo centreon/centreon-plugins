@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,7 +34,7 @@ my %map_vs_type = (
     2 => 'loadbalancinggroup', 
     3 => 'sslvpn', 
     4 => 'contentswitching', 
-    5 => 'cacheredirection',
+    5 => 'cacheredirection'
 );
 
 sub new {
@@ -42,12 +42,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"                => { name => 'name' },
-                                  "regexp"                => { name => 'use_regexp' },
-                                  "filter-type:s"         => { name => 'filter_type' },
-                                });
+    $options{options}->add_options(arguments => {
+        'name:s'        => { name => 'name' },
+        'regexp'        => { name => 'use_regexp' },
+        'filter-type:s' => { name => 'filter_type' }
+    });
+
     $self->{vs_id_selected} = [];
 
     return $self;
@@ -77,7 +77,7 @@ sub manage_selection {
             next;
         }
         
-        $name = $self->{output}->to_utf8($name);
+        $name = $self->{output}->decode($name);
         if (!defined($self->{option_results}->{use_regexp}) && $name eq $self->{option_results}->{name}) {
             push @{$self->{vs_id_selected}}, $instance;
             next;

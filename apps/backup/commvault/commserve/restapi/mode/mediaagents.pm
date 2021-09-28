@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,6 +43,12 @@ sub prefix_media_output {
     return "Media agent '" . $options{instance_value}->{name} . "' ";
 }
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Media agents ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -53,10 +59,26 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'media-agents-total', nlabel => 'media.agents.total.count', display_ok => 0, set => {
-                key_values => [ { name => 'agents_total' } ],
-                output_template => 'media agents total: %s',
+                key_values => [ { name => 'total' } ],
+                output_template => 'total: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'media-agents-online', nlabel => 'media.agents.online.count', display_ok => 0, set => {
+                key_values => [ { name => 'online' }, { name => 'total' } ],
+                output_template => 'online: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total' }
+                ]
+            }
+        },
+        { label => 'media-agents-offline', nlabel => 'media.agents.offline.count', display_ok => 0, set => {
+                key_values => [ { name => 'offline' }, { name => 'total' } ],
+                output_template => 'offline: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total' }
                 ]
             }
         }
@@ -93,7 +115,7 @@ sub new {
     return $self;
 }
 
-my $map_status = { 1 => 'online', 0 => 'offline' };
+my $map_status = { 0 => 'offline', 1 => 'online' };
 my $map_offline_reason = {
     0 => 'default', 1 => 'connectFail', 2 => 'versionMismatch', 3 => 'markedDisabled',
     4 => 'olderVersionAndPastGraceperiod', 5 => 'initializing', 6 => 'migrated',
@@ -105,10 +127,11 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->request(
+        type => 'mediaagent',
         endpoint => '/v2/MediaAgents'
     );
 
-    $self->{global} = { agents_total => 0 };
+    $self->{global} = { total => 0, online => 0, offline => 0 };
     $self->{medias} = {};
     foreach (@{$results->{mediaAgentList}}) {
         if (defined($self->{option_results}->{filter_media_agent_id}) && $self->{option_results}->{filter_media_agent_id} ne '' &&
@@ -129,7 +152,8 @@ sub manage_selection {
             offline_reason => $map_offline_reason->{ $_->{offlineReason} }
         };
 
-        $self->{global}->{agents_total}++;
+        $self->{global}->{ $map_status->{ $_->{status} } }++;
+        $self->{global}->{total}++;
     }
 }
 
@@ -169,7 +193,7 @@ Can used special variables like: %{status}, %{is_maintenance}, %{offline_reason}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'media-agents-total'.
+Can be: 'media-agents-total', 'media-agents-online', 'media-agents-offline'.
 
 =back
 

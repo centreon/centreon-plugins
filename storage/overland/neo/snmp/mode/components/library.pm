@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,14 +23,12 @@ package storage::overland::neo::snmp::mode::components::library;
 use strict;
 use warnings;
 
-my %map_state = (
-    0 => 'initializing', 
-    1 => 'online', 
-    2 => 'offline',
-);
+my $map_state = {
+    0 => 'initializing',  1 => 'online',  2 => 'offline'
+};
 
 my $mapping = {
-    lstLibraryState => { oid => '.1.3.6.1.4.1.3351.1.3.2.3.2.1.6', map => \%map_state  },
+    lstLibraryState => { oid => '.1.3.6.1.4.1.3351.1.3.2.3.2.1.6', map => $map_state  }
 };
 my $oid_libraryStatusEntry = '.1.3.6.1.4.1.3351.1.3.2.3.2.1';
 
@@ -43,8 +41,8 @@ sub load {
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking libraries");
-    $self->{components}->{library} = {name => 'libraries', total => 0, skip => 0};
+    $self->{output}->output_add(long_msg => 'Checking libraries');
+    $self->{components}->{library} = { name => 'libraries', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'library'));
 
     # there is no instance for the table. Weird. Need to manage the two cases.
@@ -52,18 +50,26 @@ sub check {
         next if ($oid !~ /^$mapping->{lstLibraryState}->{oid}(?:\.(.*)|$)/);
         my $instance = defined($1) ? $1 : undef;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_libraryStatusEntry}, instance => $instance);
-        
+
         # we set a 1 to do some filters
         $instance = '1' if (!defined($instance));
         next if ($self->check_filter(section => 'library', instance => $instance));
 
         $self->{components}->{library}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("library '%s' status is '%s' [instance = %s]",
-                                                        $instance, $result->{lstLibraryState}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "library '%s' status is '%s' [instance = %s]",
+                $instance,
+                $result->{lstLibraryState},
+                $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'library', instance => $instance, value => $result->{lstLibraryState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("library '%s' status is '%s'", $instance, $result->{lstLibraryState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("library '%s' status is '%s'", $instance, $result->{lstLibraryState})
+            );
         }
     }
 }

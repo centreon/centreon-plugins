@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,18 +26,18 @@ use strict;
 use warnings;
 
 my %map_type = (
-    "instance" => "InstanceId",
-    "asg"      => "AutoScalingGroupName",
+    'instance' => 'InstanceId',
+    'asg'      => 'AutoScalingGroupName'
 );
 
 my %map_status = (
     0 => 'passed',
-    1 => 'failed',
+    1 => 'failed'
 );
 
 sub prefix_metric_output {
     my ($self, %options) = @_;
-    
+
     return ucfirst($options{instance_value}->{type}) . " '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -49,12 +49,12 @@ sub custom_status_threshold {
     eval {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
+
         if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_status}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
             $status = 'warning';
         }
     };
@@ -68,13 +68,12 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = $self->{result_values}->{metric}  . ": " . $self->{result_values}->{status};
-    return $msg;
+    return $self->{result_values}->{metric}  . ": " . $self->{result_values}->{status};
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $map_status{$options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric}}};
     $self->{result_values}->{metric} = $options{extra_options}->{metric};
     return 0;
@@ -88,15 +87,16 @@ sub set_counters {
     ];
 
     foreach my $metric ('StatusCheckFailed_Instance', 'StatusCheckFailed_System') {
-        my $entry = { label => lc($metric), threshold => 0, set => {
-                            key_values => [ { name => $metric }, { name => 'display' } ],
-                            closure_custom_calc => $self->can('custom_status_calc'),
-                            closure_custom_calc_extra_options => { metric => $metric },
-                            closure_custom_output => $self->can('custom_status_output'),
-                            closure_custom_perfdata => sub { return 0; },
-                            closure_custom_threshold_check => $self->can('custom_status_threshold'),
-                        }
-                    };
+        my $entry = {
+            label => lc($metric), threshold => 0, set => {
+                key_values => [ { name => $metric }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_calc_extra_options => { metric => $metric },
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold')
+            }
+        };
         push @{$self->{maps_counters}->{metric}}, $entry;
     }
 }
@@ -107,10 +107,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "type:s"	            => { name => 'type' },
-        "name:s@"	            => { name => 'name' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '%{status} =~ /failed/i' },
+        'type:s'	        => { name => 'type' },
+        'name:s@'	        => { name => 'name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /failed/i' }
     });
     
     return $self;
@@ -165,7 +165,7 @@ sub manage_selection {
             timeframe => $self->{aws_timeframe},
             period => $self->{aws_period},
         );
-        
+
         foreach my $metric (keys %{$metric_results{$instance}}) {
             next if (!defined($metric_results{$instance}->{$metric}->{average}));
 

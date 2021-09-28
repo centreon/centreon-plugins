@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,6 +22,7 @@ package centreon::plugins::nrpe;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use Convert::Binary::C;
 use Digest::CRC 'crc32';
 use IO::Socket;
@@ -66,7 +67,7 @@ sub check_options {
     my ($self, %options) = @_;
     
     $options{option_results}->{nrpe_version} =~ s/^v//;
-    if ($options{option_results}->{nrpe_version} !~ /2|3/) {
+    if ($options{option_results}->{nrpe_version} !~ /2|3|4/) {
         $self->{output}->add_option_msg(short_msg => "Unknown NRPE version.");
         $self->{output}->option_exit();
     }
@@ -87,22 +88,65 @@ sub check_options {
         $self->{nrpe_params}->{Domain} = AF_INET6;
     }
 
-    $self->{ssl_context} = '';
-    my $append = '';
+    $self->{ssl_context} = {};
     foreach (@{$options{option_results}->{ssl_opt}}) {
-        if ($_ ne '' && $_ =~ /.*=>.*/) {
-            $self->{ssl_context} .= $append . $_;
-            $append = ', ';
+        if (/(SSL_[A-Za-z_]+)\s+=>\s*(\S+)/) {
+            my $value = $2;
+            $value = $self->assign_eval(eval => $value);
+            $self->{ssl_context}->{$1} = $value;
         }
     }
 }
+
+sub load_eval {
+    my ($self) = @_;
+
+    my ($code) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'Safe',
+        no_quit => 1
+    );
+    if ($code == 0) {
+        $self->{safe} = Safe->new();
+        $self->{safe}->permit_only(':base_core', 'rv2gv', 'padany');
+        $self->{safe}->share('$values');
+        $self->{safe}->share('$assign_var');
+        $self->{safe}->share_from('IO::Socket::SSL', [
+            'SSL_VERIFY_NONE', 'SSL_VERIFY_PEER', 'SSL_VERIFY_FAIL_IF_NO_PEER_CERT', 'SSL_VERIFY_CLIENT_ONCE',
+            'SSL_RECEIVED_SHUTDOWN', 'SSL_SENT_SHUTDOWN',
+            'SSL_OCSP_NO_STAPLE', 'SSL_OCSP_MUST_STAPLE', 'SSL_OCSP_FAIL_HARD', 'SSL_OCSP_FULL_CHAIN', 'SSL_OCSP_TRY_STAPLE'
+        ]);
+    }
+
+    $self->{safe_test} = 1;
+}
+
+sub assign_eval {
+    my ($self, %options) = @_;
+
+    $self->load_eval() if (!defined($self->{safe_test}) || $self->{safe_test} == 0);
+
+    our $assign_var;
+    if (defined($self->{safe})) {
+        our $values = $options{values};
+        $self->{safe}->reval("\$assign_var = $options{eval}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+    } else {
+        my $values = $options{values};
+        eval "\$assign_var = $options{eval}";
+    }
+
+    return $assign_var;
+}
+
 
 sub create_socket {
     my ($self, %options) = @_;
 
     my $socket;
-    if ($self->{ssl_context} ne '') {
-        $socket = IO::Socket::SSL->new(%{$self->{nrpe_params}}, eval $self->{ssl_context});
+    if (scalar(keys %{$self->{ssl_context}} > 0)) {
+        $socket = IO::Socket::SSL->new(%{$self->{nrpe_params}}, %{$self->{ssl_context}});
         if (!$socket) {
             $self->{output}->add_option_msg(short_msg => "Failed to establish SSL connection: $!, ssl_error=$SSL_ERROR");
             $self->{output}->option_exit();
@@ -126,9 +170,56 @@ sub assemble {
     my $packed;
     if ($options{version} eq 2) {
         $packed = $self->assemble_v2(%options);
+    } elsif ($options{version} eq 4) {
+        $packed = $self->assemble_v4(%options);
     } else {
         $packed = $self->assemble_v3(%options);
     }
+    return $packed;
+}
+
+sub assemble_v4 {
+    my ($self, %options) = @_;
+
+    my $buffer = $options{check};
+    my $len = length($buffer);
+
+    # In order for crc32 calculation to be correct we need to pad the buffer with \0
+    # It seems that the buffer must be in multiples of 1024 so to achive this we use
+    # some integer arithmetic to find the next multiple of 1024 that can hold our message
+    my $pack_len;
+    {
+        use integer;
+        $pack_len = (($len / 1024) * 1024) + 1024;
+    }
+    $buffer = pack("Z$pack_len", $buffer);
+    $len = length($buffer) + 4;
+
+    my $unpacked;
+    $unpacked->{alignment} = 0;
+    $unpacked->{buffer_length} = $len;
+    $unpacked->{buffer} = $buffer;
+    $unpacked->{crc32_value} = "\x00\x00\x00\x00";
+    $unpacked->{packet_type} = defined($options{type}) ? $options{type} : 1;
+    $unpacked->{packet_version} = 4;
+    $unpacked->{result_code} = defined($options{result_code}) ? $options{result_code} : 2324;
+
+    $self->{c}->parse(<<PACKET_STRUCT);
+struct Packet{
+  unsigned short   packet_version;
+  unsigned short   packet_type;
+  unsigned int     crc32_value;
+  unsigned short   result_code;
+  unsigned short   alignment;
+  int              buffer_length;
+  char             buffer[$len];
+};
+PACKET_STRUCT
+    $self->{c}->tag('Packet.buffer', Format => 'String');
+    my $packed = $self->{c}->pack('Packet', $unpacked);
+
+    $unpacked->{crc32_value} = crc32($packed);
+    $packed = $self->{c}->pack('Packet', $unpacked);
     return $packed;
 }
 
@@ -379,7 +470,7 @@ NRPE class
 
 =item B<--nrpe-version>
 
-Version: 2 for NRPE v2 (Default), 3 for NRPE v3.
+Version: 2 for NRPE v2 (Default), 3 for NRPE v3, 4 for NRPE v4.
 
 =item B<--nrpe-port>
 
@@ -407,8 +498,8 @@ Timeout in secondes (Default: 10).
 
 =item B<--ssl-opt>
 
-Set SSL Options (--ssl-opt="SSL_version => 'TLSv1'" --ssl-opt="SSL_verify_mode => 0"
---ssl-opt="SSL_cipher_list => ALL").
+Set SSL Options (--ssl-opt="SSL_version => 'TLSv1'" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE"
+--ssl-opt="SSL_cipher_list => 'ALL'").
 
 =back
 

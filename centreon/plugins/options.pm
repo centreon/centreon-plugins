@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,7 +21,6 @@
 package centreon::plugins::options;
 
 use Pod::Usage;
-use Pod::Find qw(pod_where);
 use strict;
 use warnings;
 
@@ -32,6 +31,7 @@ sub new {
     my $self  = {};
     bless $self, $class;
 
+    $self->{pod_where_loaded} = 0;
     $self->{sanity} = 0;
     $self->{options_stored} = {};
     $self->{options} = {};
@@ -76,14 +76,16 @@ sub display_help {
 
     my $stdout;
     foreach (@{$self->{pod_package}}) {
-        
+        my $where = $self->pod_where(package => $_->{package});
+
         {
             local *STDOUT;
             open STDOUT, '>', \$stdout;
-            my $where = pod_where({-inc => 1}, $_->{package});
-            pod2usage(-exitval => 'NOEXIT', -input => $where,
-                      -verbose => 99, 
-                      -sections => $_->{sections}) if (defined($where));
+            pod2usage(
+                -exitval => 'NOEXIT', -input => $where,
+                -verbose => 99, 
+                -sections => $_->{sections}
+            ) if (defined($where));
         }
 
         $self->{output}->add_option_msg(long_msg => $stdout) if (defined($stdout));
@@ -149,6 +151,34 @@ sub parse_options {
     %{$self->{options}} = ();
 
     $SIG{__WARN__} = $save_warn_handler if ($self->{sanity} == 1);
+}
+
+sub pod_where {
+    my ($self, %options) = @_;
+
+    if ($self->{pod_where_loaded} == 0) {
+        $self->{pod_where_loaded} = 1;
+        my ($code) = centreon::plugins::misc::mymodule_load(
+            module => 'Pod::Find',
+            no_quit => 1
+        );
+        if ($code) {
+            $code = centreon::plugins::misc::mymodule_load(
+                module => 'Pod::Simple::Search',
+                no_quit => 1
+            );
+            die "Cannot load module 'Pod::Simple::Search'" if ($code);
+            $self->{pod_where_loaded} = 2;
+            $self->{pod_simple_search} = Pod::Simple::Search->new();
+            $self->{pod_simple_search}->inc(1);
+        }
+    }
+
+    if ($self->{pod_where_loaded} == 1) {
+        return Pod::Find::pod_where({-inc => 1}, $options{package});
+    }
+    
+    return $self->{pod_simple_search}->find($options{package});
 }
 
 sub get_option {

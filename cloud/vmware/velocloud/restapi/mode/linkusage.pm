@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -55,6 +55,14 @@ sub set_counters {
                 output_change_bytes => 2,
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'edge-links-count', nlabel => 'links.total.count', set => {
+                key_values => [ { name => 'link_count' } ],
+                output_template => '%s link(s)',
+                perfdatas => [
+                    { template => '%d', unit => '', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -200,6 +208,7 @@ sub manage_selection {
                 next;
             }
 
+            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
             $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
@@ -248,7 +257,7 @@ Filter link by name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'links-traffic-in', 'links-traffic-out', 
+Can be: 'edge-links-count', 'links-traffic-in', 'links-traffic-out', 
 'traffic-in', 'traffic-out', 'latency-in',
 'latency-out', 'jitter-in', 'jitter-out',
 'packet-loss-in', 'packet-loss-out'.

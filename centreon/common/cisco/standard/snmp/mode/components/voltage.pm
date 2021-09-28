@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,7 +29,7 @@ my %map_voltage_state = (
     3 => 'critical', 
     4 => 'shutdown',
     5 => 'not present',
-    6 => 'not functioning',
+    6 => 'not functioning'
 );
 
 # In MIB 'CISCO-ENVMON-MIB'
@@ -38,39 +38,47 @@ my $mapping = {
     ciscoEnvMonVoltageStatusValue => { oid => '.1.3.6.1.4.1.9.9.13.1.2.1.3' },
     ciscoEnvMonVoltageThresholdLow => { oid => '.1.3.6.1.4.1.9.9.13.1.2.1.4' },
     ciscoEnvMonVoltageThresholdHigh => { oid => '.1.3.6.1.4.1.9.9.13.1.2.1.5' },
-    ciscoEnvMonVoltageState => { oid => '.1.3.6.1.4.1.9.9.13.1.2.1.7', map => \%map_voltage_state },
+    ciscoEnvMonVoltageState => { oid => '.1.3.6.1.4.1.9.9.13.1.2.1.7', map => \%map_voltage_state }
 };
 my $oid_ciscoEnvMonVoltageStatusEntry = '.1.3.6.1.4.1.9.9.13.1.2.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_ciscoEnvMonVoltageStatusEntry };
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking voltages");
-    $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
+    $self->{components}->{voltage} = { name => 'voltages', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'voltage'));
-    
+
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_ciscoEnvMonVoltageStatusEntry}})) {
         next if ($oid !~ /^$mapping->{ciscoEnvMonVoltageState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ciscoEnvMonVoltageStatusEntry}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'voltage', instance => $instance, name => $result->{ciscoEnvMonVoltageStatusDescr}));
         $self->{components}->{voltage}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Voltage '%s' status is %s [instance: %s] [value: %s C]", 
-                                    $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageState},
-                                    $instance, $result->{ciscoEnvMonVoltageStatusValue}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "voltage '%s' status is %s [instance: %s] [value: %s C]", 
+                $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageState},
+                $instance, $result->{ciscoEnvMonVoltageStatusValue}
+            )
+        );
         my $exit = $self->get_severity(section => 'voltage', instance => $instance, value => $result->{ciscoEnvMonVoltageState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' status is %s", 
-                                                             $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Voltage '%s' status is %s", 
+                    $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageState}
+                )
+            );
         }
 
         $result->{ciscoEnvMonVoltageStatusValue} = $result->{ciscoEnvMonVoltageStatusValue} / 1000;
@@ -85,14 +93,16 @@ sub check {
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-voltage-instance-' . $instance);
         }
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Voltage '%s' is %.3f V", $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageStatusValue}));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Voltage '%s' is %.3f V", $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageStatusValue})
+            );
         }
         $self->{output}->perfdata_add(
-            label => "voltage", unit => 'V',
+            label => 'voltage', unit => 'V',
             nlabel => 'hardware.voltage.volt',
             instances => $result->{ciscoEnvMonVoltageStatusDescr},
-            value => sprintf("%.3f", $result->{ciscoEnvMonVoltageStatusValue}),
+            value => sprintf('%.3f', $result->{ciscoEnvMonVoltageStatusValue}),
             warning => $warn,
             critical => $crit
         );

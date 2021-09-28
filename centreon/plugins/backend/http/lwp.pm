@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -51,7 +51,7 @@ sub check_options {
 
     foreach (('unknown_status', 'warning_status', 'critical_status')) {
         if (defined($options{request}->{$_})) {
-            $options{request}->{$_} =~ s/%\{http_code\}/\$self->{response}->code/g;
+            $options{request}->{$_} =~ s/%\{http_code\}/\$values->{code}/g;
         }
     }
 
@@ -124,12 +124,25 @@ sub set_proxy {
 sub request {
     my ($self, %options) = @_;
 
+    my %user_agent_params = (keep_alive => 1);
+    if (defined($options{request}->{certinfo}) && $options{request}->{certinfo} == 1) {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'LWP::ConnCache',
+            error_msg => "Cannot load module 'LWP::ConnCache'."
+        );
+        $self->{cache} = LWP::ConnCache->new();
+        $self->{cache}->total_capacity(1);
+        %user_agent_params = (conn_cache => $self->{cache});
+    }
+
     my $request_options = $options{request};
     if (!defined($self->{ua})) {
+        my $timeout;
+        $timeout = $1 if (defined($request_options->{timeout}) && $request_options->{timeout} =~ /(\d+)/);
         $self->{ua} = centreon::plugins::backend::http::useragent->new(
-            keep_alive => 1,
+            %user_agent_params,
             protocols_allowed => ['http', 'https'], 
-            timeout => $request_options->{timeout},
+            timeout => $timeout,
             credentials => $request_options->{credentials},
             username => $request_options->{username}, 
             password => $request_options->{password}
@@ -244,14 +257,15 @@ sub request {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
+        my $code = $self->{response}->code();
         if (defined($request_options->{critical_status}) && $request_options->{critical_status} ne '' &&
-            eval "$request_options->{critical_status}") {
+            $self->{output}->test_eval(test => $request_options->{critical_status}, values => { code => $code })) {
             $status = 'critical';
         } elsif (defined($request_options->{warning_status}) && $request_options->{warning_status} ne '' &&
-            eval "$request_options->{warning_status}") {
+            $self->{output}->test_eval(test => $request_options->{warning_status}, values => { code => $code })) {
             $status = 'warning';
         } elsif (defined($request_options->{unknown_status}) && $request_options->{unknown_status} ne '' &&
-            eval "$request_options->{unknown_status}") {
+            $self->{output}->test_eval(test => $request_options->{unknown_status}, values => { code => $code })) {
             $status = 'unknown';
         }
     };
@@ -325,6 +339,19 @@ sub get_message {
     my ($self, %options) = @_;
 
     return $self->{response}->message();
+}
+
+sub get_certificate {
+    my ($self, %options) = @_;
+
+    my ($con) = $self->{cache}->get_connections('https');
+    return ('socket', $con);
+}
+
+sub get_times {
+    my ($self, %options) = @_;
+
+    return undef;
 }
 
 1;

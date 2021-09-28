@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -88,11 +88,9 @@ sub set_oids_status {
 
 sub set_oids_errors {
     my ($self, %options) = @_;
-    
-    $self->{oid_ifInDiscards} = '.1.3.6.1.2.1.2.2.1.13';
-    $self->{oid_ifInErrors} = '.1.3.6.1.2.1.2.2.1.14';
-    $self->{oid_ifOutDiscards} = '.1.3.6.1.2.1.2.2.1.19';
-    $self->{oid_ifOutErrors} = '.1.3.6.1.2.1.2.2.1.20';
+
+    $self->SUPER::set_oids_errors(%options);
+    $self->{oid_ifInFCSError} = '.1.3.6.1.2.1.10.7.2.1.3'; # dot3StatsFCSErrors
     $self->{oid_ifInCrc} = '.1.3.6.1.4.1.9.2.2.1.1.12';
 }
 
@@ -107,9 +105,18 @@ sub set_counters_errors {
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Crc : %s',
                 closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
         },
+        { label => 'in-fcserror', filter => 'add_errors', nlabel => 'interface.packets.in.fcserror.count', set => {
+                key_values => [ { name => 'infcserror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => $self->can('custom_errors_calc'),
+                closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'fcserror' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In FCS Error : %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
+            }
+        }
     ;
 }
 
@@ -119,7 +126,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'add-err-disable'   => { name => 'add_err_disable' },
+        'add-err-disable'   => { name => 'add_err_disable' }
     });
 
     return $self;
@@ -127,13 +134,13 @@ sub new {
 
 sub load_errors {
     my ($self, %options) = @_;
-    
+
     $self->set_oids_errors();
     $self->{snmp}->load(
         oids => [
             $self->{oid_ifInDiscards}, $self->{oid_ifInErrors},
             $self->{oid_ifOutDiscards}, $self->{oid_ifOutErrors},
-            $self->{oid_ifInCrc}
+            $self->{oid_ifInCrc}, $self->{oid_ifInFCSError}
         ],
         instances => $self->{array_interface_selected}
     );
@@ -156,6 +163,7 @@ sub add_result_errors {
     $self->{int}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{outerror} = $self->{results}->{$self->{oid_ifOutErrors} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{incrc} = $self->{results}->{$self->{oid_ifInCrc} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{infcserror} = $self->{results}->{$self->{oid_ifInFCSError} . '.' . $options{instance}};
 }
 
 sub add_result_status {
@@ -243,17 +251,21 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{e
 
 Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-crc', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'in-traffic', 'out-traffic', 'in-crc', 'in-fcserror', 'in-error', 'in-discard', 'out-error', 'out-discard',
+'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: '%') ('%', 'absolute').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+
+=item B<--units-cast>
+
+Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -278,10 +290,6 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
-
-=item B<--no-skipped-counters>
-
-Don't skip counters when no change.
 
 =item B<--force-counters32>
 

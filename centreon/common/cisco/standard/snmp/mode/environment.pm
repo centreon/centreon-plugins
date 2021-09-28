@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,29 +35,29 @@ sub set_system {
 
     $self->{thresholds} = {
         fan => [
-            ['unknown', 'UNKNOWN'],
-            ['down', 'CRITICAL'],
-            ['up', 'OK'],
-
             ['normal', 'OK'],
             ['warning', 'WARNING'],
             ['critical', 'CRITICAL'],
             ['shutdown', 'CRITICAL'],
             ['not present', 'OK'],
             ['not functioning', 'WARNING'],
+    
+            ['unknown', 'UNKNOWN'],
+            ['down', 'CRITICAL'],
+            ['up', 'OK']
         ],
-        psu => [
+        psu => [            
+            ['normal', 'OK'],
+            ['warning', 'WARNING'],
+            ['critical', 'CRITICAL'],
+            ['shutdown', 'CRITICAL'],
+            ['not present', 'OK'],
+            ['not functioning', 'WARNING'],
+
             ['^off*', 'WARNING'],
             ['failed', 'CRITICAL'],
             ['onButFanFail|onButInlinePowerFail', 'WARNING'],
-            ['on', 'OK'],
-            
-            ['normal', 'OK'],
-            ['warning', 'WARNING'],
-            ['critical', 'CRITICAL'],
-            ['shutdown', 'CRITICAL'],
-            ['not present', 'OK'],
-            ['not functioning', 'WARNING'],
+            ['on', 'OK']
         ],
         temperature => [
             ['normal', 'OK'],
@@ -65,7 +65,7 @@ sub set_system {
             ['critical', 'CRITICAL'],
             ['shutdown', 'CRITICAL'],
             ['not present', 'OK'],
-            ['not functioning', 'WARNING'],
+            ['not functioning', 'WARNING']
         ],
         voltage => [
             ['normal', 'OK'],
@@ -73,32 +73,31 @@ sub set_system {
             ['critical', 'CRITICAL'],
             ['shutdown', 'CRITICAL'],
             ['not present', 'OK'],
-            ['not functioning', 'WARNING'],
+            ['not functioning', 'WARNING']
         ],
         module => [
             ['unknown|mdr', 'UNKNOWN'],
             ['disabled|okButDiagFailed|missing|mismatchWithParent|mismatchConfig|dormant|outOfServiceAdmin|outOfServiceEnvTemp|powerCycled|okButPowerOverWarning|okButAuthFailed|fwMismatchFound|fwDownloadFailure', 'WARNING'],
             ['failed|diagFailed|poweredDown|powerDenied|okButPowerOverCritical', 'CRITICAL'],
-            ['boot|selfTest|poweredUp|syncInProgress|upgrading|fwDownloadSuccess|ok', 'OK'],
+            ['boot|selfTest|poweredUp|syncInProgress|upgrading|fwDownloadSuccess|ok', 'OK']
         ],
         physical => [
             ['other', 'UNKNOWN'],
             ['incompatible|unsupported', 'CRITICAL'],
-            ['supported', 'OK'],
+            ['supported', 'OK']
         ],
         sensor => [
             ['ok', 'OK'],
             ['unavailable', 'OK'],
-            ['nonoperational', 'CRITICAL'],
-        ],
+            ['nonoperational', 'CRITICAL']
+        ]
     };
 
     $self->{components_path} = 'centreon::common::cisco::standard::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu', 'temperature', 'voltage', 'module', 'physical', 'sensor'];
 }
 
-my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
-my $oid_ciscoEnvMonPresent = ".1.3.6.1.4.1.9.9.13.1.1";
+my $oid_ciscoEnvMonPresent = '.1.3.6.1.4.1.9.9.13.1.1';
 
 my %map_type_mon = (
     1 => 'oldAgs',
@@ -120,11 +119,12 @@ sub snmp_execute {
     my ($self, %options) = @_;
 
     $self->{snmp} = $options{snmp};
+    $self->{physical_name} = defined($self->{option_results}->{use_physical_name}) ? '.1.3.6.1.2.1.47.1.1.1.1.7' : '.1.3.6.1.2.1.47.1.1.1.1.2';
 
-    push @{$self->{request}}, { oid => $oid_entPhysicalDescr }, { oid => $oid_ciscoEnvMonPresent };
+    push @{$self->{request}}, { oid => $self->{physical_name} }, { oid => $oid_ciscoEnvMonPresent };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
-    while (my ($key, $value) = each %{$self->{results}->{$oid_entPhysicalDescr}}) {
-        $self->{results}->{$oid_entPhysicalDescr}->{$key} = centreon::plugins::misc::trim($value);
+    while (my ($key, $value) = each %{$self->{results}->{ $self->{physical_name} }}) {
+        $self->{results}->{ $self->{physical_name} }->{$key} = centreon::plugins::misc::trim($value);
     }
     $self->{output}->output_add(
         long_msg => sprintf(
@@ -140,7 +140,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
+        'use-physical-name' => { name => 'use_physical_name' }
     });
 
     return $self;
@@ -169,6 +170,10 @@ Can also exclude specific instance: --filter=fan,1
 =item B<--add-name-instance>
 
 Add literal description for instance value (used in filter, absent-problem and threshold options).
+
+=item B<--use-physical-name>
+
+Use entPhysicalName OID instead of entPhysicalDescr.
 
 =item B<--absent-problem>
 

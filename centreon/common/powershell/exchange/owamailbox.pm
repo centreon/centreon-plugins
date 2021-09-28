@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -57,32 +57,33 @@ exit 0
 
 sub check {
     my ($self, %options) = @_;
-    # options: stdout
-    
+
     # Following output:
     #[url= http://xxxx/ ][scenario= Options ][result= Ignored ][latency=  ][[error=...]]
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "OWA to '" . $options{mailbox} . "' is ok.");
-   
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => "OWA to '" . $options{mailbox} . "' is ok."
+    );
+
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
     while ($options{stdout} =~ /\[url=(.*?)\]\[scenario=(.*?)\]\[result=(.*?)\]\[latency=(.*?)\]\[\[error=(.*?)\]\]/msg) {
         $self->{data} = {};
         ($self->{data}->{url}, $self->{data}->{scenario}, $self->{data}->{result}, $self->{data}->{latency}, $self->{data}->{error}) = 
-            ($self->{output}->to_utf8($1), $self->{output}->to_utf8($2), centreon::plugins::misc::trim($3), 
+            ($self->{output}->decode($1), $self->{output}->decode($2), centreon::plugins::misc::trim($3), 
              centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
-        
+
         $checked++;
         my ($status, $message) = ('ok');
         eval {
             local $SIG{__WARN__} = sub { $message = $_[0]; };
             local $SIG{__DIE__} = sub { $message = $_[0]; };
-            
+
             if (defined($self->{option_results}->{critical}) && $self->{option_results}->{critical} ne '' &&
-                eval "$self->{option_results}->{critical}") {
+                $self->{output}->test_eval(test => $self->{option_results}->{critical}, values => $self->{data})) {
                 $status = 'critical';
             } elsif (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
-                     eval "$self->{option_results}->{warning}") {
+                     $self->{output}->test_eval(test => $self->{option_results}->{warning}, values => $self->{data})) {
                 $status = 'warning';
             }
         };
@@ -90,21 +91,29 @@ sub check {
             $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $status,
-                                         short_msg => sprintf("OWA scenario '%s' to '%s' is '%s' [url: %s]",
-                                                              $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}, $self->{data}->{url}));
+            $self->{output}->output_add(
+                severity => $status,
+                short_msg => sprintf(
+                    "OWA scenario '%s' to '%s' is '%s' [url: %s]",
+                    $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}, $self->{data}->{url}
+                )
+            );
         }
-        
+
         if ($self->{data}->{latency} =~ /^(\d+)/) {
-            $self->{output}->perfdata_add(label => $self->{data}->{url} . '_' . $self->{data}->{scenario}, unit => 's',
-                                          value => sprintf("%.3f", $1 / 1000),
-                                          min => 0);
+            $self->{output}->perfdata_add(
+                label => $self->{data}->{url} . '_' . $self->{data}->{scenario}, unit => 's',
+                value => sprintf("%.3f", $1 / 1000),
+                min => 0
+            );
         }
     }
     
     if ($checked == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot find informations');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot find informations'
+        );
     }
 }
 

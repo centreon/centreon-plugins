@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,12 +38,12 @@ sub custom_threshold_output {
     eval {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
+
         if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{warning_status}") {
+                 $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
             $status = 'warning';
         }
 
@@ -80,6 +80,64 @@ sub custom_status_calc {
     return 0;
 }
 
+###############
+# Cast
+sub custom_cast_perfdata {
+    my ($self, %options) = @_;
+
+    if ($self->{instance_mode}->{option_results}->{units_cast} =~ /percent/) {
+        my $nlabel = $self->{nlabel};
+        $nlabel =~ s/count$/percentage/;
+        $self->{output}->perfdata_add(
+            force_new_perfdata => 1,
+            nlabel => $nlabel,
+            instances => $self->{result_values}->{display},
+            value => sprintf('%.2f', $self->{result_values}->{prct}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            unit => '%',
+            min => 0,
+            max => 100
+        );
+    } else {
+        $self->{output}->perfdata_add(
+            force_new_perfdata => 1,
+            nlabel => $self->{nlabel},
+            instances => $self->{result_values}->{display},
+            value => $self->{result_values}->{used},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            min => 0,
+            max => $self->{result_values}->{total}
+        );
+    }
+}
+
+sub custom_cast_threshold {
+    my ($self, %options) = @_;
+
+    my $exit = 'ok';
+    if ($self->{instance_mode}->{option_results}->{units_cast} =~ /percent/) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } else {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    }
+    return $exit;
+}
+
+sub custom_cast_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        '%s %s : %.2f%% (%s on %s)',
+        $self->{result_values}->{cast_going} eq 'i' ? 'In' : 'Out',
+        ucfirst($self->{result_values}->{cast_test}),
+        $self->{result_values}->{prct},
+        $self->{result_values}->{used},
+        $self->{result_values}->{total}
+    );
+}
+
 sub custom_cast_calc {
     my ($self, %options) = @_;
 
@@ -89,18 +147,36 @@ sub custom_cast_calc {
         return -2;
     }
 
-    my $diff_cast = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
-    my $total = $diff_cast
-        + ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref1}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref1}}) 
-        + ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref2}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref2}});
+    my $cast_diff = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . $options{extra_options}->{cast_test} } -
+        $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . $options{extra_options}->{cast_test} });
+    my $total_diff =
+        ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . 'ucast' } - $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . 'ucast' })
+        + ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . 'bcast' } - $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . 'bcast' })
+        + ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . 'mcast' } - $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . 'mcast' });
+    my $cast = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . $options{extra_options}->{cast_test} };
+    my $total =
+        $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . 'ucast' }
+        + $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . 'bcast' }
+        + $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . 'mcast' };
 
-    if ($total == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
-        $self->{error_msg} = "skipped";
-        return -2;
+    $self->{result_values}->{prct} = 0;
+    $self->{result_values}->{used} = $cast_diff;
+    $self->{result_values}->{total} = $total_diff;
+    if ($self->{instance_mode}->{option_results}->{units_cast} eq 'percent_delta') {
+        $self->{result_values}->{prct} = $cast_diff * 100 / $total_diff if ($total_diff > 0);
+    } elsif ($self->{instance_mode}->{option_results}->{units_cast} eq 'percent') {
+        $self->{result_values}->{prct} = $cast * 100 / $total if ($total > 0);
+        $self->{result_values}->{used} = $cast;
+    } elsif ($self->{instance_mode}->{option_results}->{units_cast} eq 'delta') {
+        $self->{result_values}->{used} = $cast_diff;
+    } else {
+        $self->{result_values}->{used} = $cast;
+        $self->{result_values}->{total} = $total;
     }
+    $self->{result_values}->{cast_going} = $options{extra_options}->{cast_going};
+    $self->{result_values}->{cast_test} = $options{extra_options}->{cast_test};
+    $self->{result_values}->{display} = $options{new_datas}->{ $self->{instance} . '_display' };
 
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{$options{extra_options}->{label_ref} . '_prct'} = $total == 0 ? 0 : $diff_cast * 100 / $total;
     return 0;
 }
 
@@ -115,12 +191,12 @@ sub custom_traffic_perfdata {
     }
 
     my ($warning, $critical);
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} =~ /bps|counter/) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
 
     if (defined($self->{instance_mode}->{option_results}->{nagvis_perfdata})) {
@@ -131,6 +207,19 @@ sub custom_traffic_perfdata {
             warning => $warning,
             critical => $critical,
             min => 0, max => $self->{result_values}->{speed}
+        );
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'counter') {
+        my $nlabel = $self->{nlabel};
+        $nlabel =~ s/bitspersecond/bits/;
+        $self->{output}->perfdata_add(
+            force_new_perfdata => 1,
+            nlabel => $nlabel,
+            unit => 'b',
+            instances => $self->{result_values}->{display},
+            value => $self->{result_values}->{traffic_counter},
+            warning => $warning,
+            critical => $critical,
+            min => 0
         );
     } else {
         $self->{output}->perfdata_add(
@@ -149,10 +238,12 @@ sub custom_traffic_threshold {
     my ($self, %options) = @_;
 
     my $exit = 'ok';
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
-    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'bps') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'counter') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_counter}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -164,7 +255,7 @@ sub custom_traffic_output {
     return sprintf(
         'Traffic %s : %s/s (%s)',
         ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
-        defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-'
+        defined($self->{result_values}->{traffic_prct}) ? sprintf('%.2f%%', $self->{result_values}->{traffic_prct}) : '-'
     );
 }
 
@@ -176,14 +267,10 @@ sub custom_traffic_calc {
         $self->{error_msg} = 'buffer creation';
         return -2;
     }
-  
-    my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
-    if ($diff_traffic == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
-        $self->{error_msg} = 'skipped';
-        return -2;
-    }
 
+    my $diff_traffic = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} } - $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} });
     $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
+    $self->{result_values}->{traffic_counter} = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} };
     if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) && 
         $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
@@ -191,7 +278,7 @@ sub custom_traffic_calc {
     }
 
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{display} = $options{new_datas}->{ $self->{instance} . '_display' };
     return 0;
 }
 
@@ -200,17 +287,19 @@ sub custom_traffic_calc {
 sub custom_errors_perfdata {
     my ($self, %options) = @_;
 
-    if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units_errors} =~ /percent/) {
         my $nlabel = $self->{nlabel};
         $nlabel =~ s/count$/percentage/;
         $self->{output}->perfdata_add(
-            label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1}, unit => '%',
+            label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1},
+            unit => '%',
             nlabel => $nlabel,
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-            value => sprintf("%.2f", $self->{result_values}->{prct}),
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
-            min => 0, max => 100
+            value => sprintf('%.2f', $self->{result_values}->{prct}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            min => 0,
+            max => 100
         );
     } else {
         $self->{output}->perfdata_add(
@@ -218,9 +307,10 @@ sub custom_errors_perfdata {
             nlabel => $self->{nlabel},
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
             value => $self->{result_values}->{used},
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
-            min => 0, max => $self->{result_values}->{total}
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            min => 0,
+            max => $self->{result_values}->{total}
         );
     }
 }
@@ -229,7 +319,7 @@ sub custom_errors_threshold {
     my ($self, %options) = @_;
 
     my $exit = 'ok';
-    if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units_errors} =~ /percent/) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } else {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
@@ -241,9 +331,11 @@ sub custom_errors_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Packets %s : %.2f%% (%s)',
+        'Packets %s : %.2f%% (%s on %s)',
         $self->{result_values}->{label},
-        $self->{result_values}->{prct}, $self->{result_values}->{used}
+        $self->{result_values}->{prct},
+        $self->{result_values}->{used},
+        $self->{result_values}->{total}
     );
 }
 
@@ -256,18 +348,28 @@ sub custom_errors_calc {
         return -2;
     }
 
-    my $diff = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2}} - 
-        $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2}});
-    my $total = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} - 
+    my $errors = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} };
+    my $errors_diff = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} } - 
+        $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} });
+    my $total = $options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
+    my $total_diff = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} - 
         $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'});
-    if ($total == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
-        $self->{error_msg} = "skipped";
-        return -2;
+
+    $self->{result_values}->{prct} = 0;
+    $self->{result_values}->{used} = $errors_diff;
+    $self->{result_values}->{total} = $total_diff;
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent_delta') {
+        $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent') {
+        $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
+        $self->{result_values}->{used} = $errors;
+    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'delta') {
+        $self->{result_values}->{used} = $errors_diff;
+    } else {
+        $self->{result_values}->{used} = $errors;
+        $self->{result_values}->{total} = $total;
     }
 
-    $self->{result_values}->{prct} = $total == 0 ? 0 : $diff * 100 / $total;
-    $self->{result_values}->{used} = $diff;
-    $self->{result_values}->{total} = $total;
     if (defined($options{extra_options}->{label})) {
         $self->{result_values}->{label} = $options{extra_options}->{label};
     } else {
@@ -433,68 +535,56 @@ sub set_counters_cast {
     push @{$self->{maps_counters}->{int}}, 
         { label => 'in-ucast', filter => 'add_cast', nlabel => 'interface.packets.in.unicast.count', set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'iucast', total_ref1 => 'ibcast', total_ref2 => 'imcast' },
-                output_template => 'In Ucast : %.2f %%', output_error_template => 'In Ucast : %s',
-                output_use => 'iucast_prct',  threshold_use => 'iucast_prct',
-                perfdatas => [
-                    { value => 'iucast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
-                ]
+                closure_custom_calc => $self->can('custom_cast_calc'),
+                closure_custom_calc_extra_options => { cast_going => 'i', cast_test => 'ucast' },
+                closure_custom_output => $self->can('custom_cast_output'), output_error_template => 'In Ucast : %s',
+                closure_custom_perfdata => $self->can('custom_cast_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_cast_threshold')
             }
         },
         { label => 'in-bcast', filter => 'add_cast', nlabel => 'interface.packets.in.broadcast.count', set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'ibcast', total_ref1 => 'iucast', total_ref2 => 'imcast' },
-                output_template => 'In Bcast : %.2f %%', output_error_template => 'In Bcast : %s',
-                output_use => 'ibcast_prct',  threshold_use => 'ibcast_prct',
-                perfdatas => [
-                    { value => 'ibcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
-                ]
+                closure_custom_calc => $self->can('custom_cast_calc'),
+                closure_custom_calc_extra_options => { cast_going => 'i', cast_test => 'bcast' },
+                closure_custom_output => $self->can('custom_cast_output'), output_error_template => 'In Bcast : %s',
+                closure_custom_perfdata => $self->can('custom_cast_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_cast_threshold')
             }
         },
         { label => 'in-mcast', filter => 'add_cast', nlabel => 'interface.packets.in.multicast.count', set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'imcast', total_ref1 => 'iucast', total_ref2 => 'ibcast' },
-                output_template => 'In Mcast : %.2f %%', output_error_template => 'In Mcast : %s',
-                output_use => 'imcast_prct',  threshold_use => 'imcast_prct',
-                perfdatas => [
-                    { value => 'imcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
-                ]
+                closure_custom_calc => $self->can('custom_cast_calc'),
+                closure_custom_calc_extra_options => { cast_going => 'i', cast_test => 'mcast' },
+                closure_custom_output => $self->can('custom_cast_output'), output_error_template => 'In Mcast : %s',
+                closure_custom_perfdata => $self->can('custom_cast_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_cast_threshold')
             }
         },
         { label => 'out-ucast', filter => 'add_cast', nlabel => 'interface.packets.out.unicast.count', set => {
                 key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'oucast', total_ref1 => 'omcast', total_ref2 => 'obcast' },
-                output_template => 'Out Ucast : %.2f %%', output_error_template => 'Out Ucast : %s',
-                output_use => 'oucast_prct',  threshold_use => 'oucast_prct',
-                perfdatas => [
-                    { value => 'oucast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
-                ]
+                closure_custom_calc => $self->can('custom_cast_calc'),
+                closure_custom_calc_extra_options => { cast_going => 'o', cast_test => 'ucast' },
+                closure_custom_output => $self->can('custom_cast_output'), output_error_template => 'Out Ucast : %s',
+                closure_custom_perfdata => $self->can('custom_cast_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_cast_threshold')
             }
         },
         { label => 'out-bcast', filter => 'add_cast', nlabel => 'interface.packets.out.broadcast.count', set => {
                 key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'obcast', total_ref1 => 'omcast', total_ref2 => 'oucast' },
-                output_template => 'Out Bcast : %.2f %%', output_error_template => 'Out Bcast : %s',
-                output_use => 'obcast_prct',  threshold_use => 'obcast_prct',
-                perfdatas => [
-                    { value => 'obcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
-                ]
+                closure_custom_calc => $self->can('custom_cast_calc'),
+                closure_custom_calc_extra_options => { cast_going => 'o', cast_test => 'bcast' },
+                closure_custom_output => $self->can('custom_cast_output'), output_error_template => 'Out Bcast : %s',
+                closure_custom_perfdata => $self->can('custom_cast_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_cast_threshold')
             }
         },
         { label => 'out-mcast', filter => 'add_cast', nlabel => 'interface.packets.out.multicast.count', set => {
                 key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'omcast', total_ref1 => 'oucast', total_ref2 => 'obcast' },
-                output_template => 'Out Mcast : %.2f %%', output_error_template => 'Out Mcast : %s',
-                output_use => 'omcast_prct',  threshold_use => 'omcast_prct',
-                perfdatas => [
-                    { value => 'omcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
-                ]
+                closure_custom_calc => $self->can('custom_cast_calc'),
+                closure_custom_calc_extra_options => { cast_going => 'o', cast_test => 'mcast' },
+                closure_custom_output => $self->can('custom_cast_output'), output_error_template => 'Out Mcast : %s',
+                closure_custom_perfdata => $self->can('custom_cast_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_cast_threshold')
             }
         }
     ;
@@ -791,12 +881,13 @@ sub new {
         'global-admin-down-rule:s' => { name => 'global_admin_down_rule', default => $self->default_global_admin_down_rule() },
         'global-oper-down-rule:s'  => { name => 'global_oper_down_rule', default => $self->default_global_oper_down_rule() },
         'interface:s'              => { name => 'interface' },
-        'units-traffic:s'          => { name => 'units_traffic', default => '%' },
-        'units-errors:s'           => { name => 'units_errors', default => '%' },
+        'units-traffic:s'          => { name => 'units_traffic', default => 'percent_delta' },
+        'units-errors:s'           => { name => 'units_errors', default => 'percent_delta' },
+        'units-cast:s'             => { name => 'units_cast', default => 'percent_delta' },
         'speed:s'                  => { name => 'speed' },
         'speed-in:s'               => { name => 'speed_in' },
         'speed-out:s'              => { name => 'speed_out' },
-        'no-skipped-counters'      => { name => 'no_skipped_counters' },
+        'no-skipped-counters'      => { name => 'no_skipped_counters' }, # legacy
         'display-transform-src:s'  => { name => 'display_transform_src' },
         'display-transform-dst:s'  => { name => 'display_transform_dst' },
         'show-cache'               => { name => 'show_cache' },
@@ -847,16 +938,35 @@ sub check_options {
     $self->check_oids_label();
 
     $self->{statefile_cache}->check_options(%options);
-
-    if (defined($self->{option_results}->{add_traffic}) && 
-        (!defined($self->{option_results}->{units_traffic}) || $self->{option_results}->{units_traffic} !~ /^(%|b\/s)$/)) {
-        $self->{output}->add_option_msg(short_msg => 'Wrong option --units-traffic.');
-        $self->{output}->option_exit();
+    if (defined($self->{option_results}->{add_traffic})) {
+        $self->{option_results}->{units_traffic} = 'percent_delta'
+            if (!defined($self->{option_results}->{units_traffic}) ||
+                $self->{option_results}->{units_traffic} eq '' ||
+                $self->{option_results}->{units_traffic} eq '%');
+        $self->{option_results}->{units_traffic} = 'bps' if ($self->{option_results}->{units_traffic} eq 'absolute'); # compat
+        if ($self->{option_results}->{units_traffic} !~ /^(?:percent_delta|bps|counter)$/) {
+            $self->{output}->add_option_msg(short_msg => 'Wrong option --units-traffic.');
+            $self->{output}->option_exit();
+        }
     }
-    if (defined($self->{option_results}->{add_errors}) && 
-        (!defined($self->{option_results}->{units_errors}) || $self->{option_results}->{units_errors} !~ /^(%|absolute|b\/s)$/)) {
-        $self->{output}->add_option_msg(short_msg => 'Wrong option --units-errors.');
-        $self->{output}->option_exit();
+    if (defined($self->{option_results}->{add_errors})) {
+        $self->{option_results}->{units_errors} = 'percent_delta'
+            if (!defined($self->{option_results}->{units_errors}) ||
+                $self->{option_results}->{units_errors} eq '' ||
+                $self->{option_results}->{units_errors} eq '%');
+        $self->{option_results}->{units_errors} = 'delta' if ($self->{option_results}->{units_errors} eq 'absolute'); # compat
+        if ($self->{option_results}->{units_errors} !~ /^(?:percent|percent_delta|delta|counter)$/) {
+            $self->{output}->add_option_msg(short_msg => 'Wrong option --units-errors.');
+            $self->{output}->option_exit();
+        }
+    }
+    if (defined($self->{option_results}->{add_cast})) {
+        $self->{option_results}->{units_cast} = 'percent_delta'
+            if (!defined($self->{option_results}->{units_cast}) || $self->{option_results}->{units_cast} eq '');
+        if ($self->{option_results}->{units_cast} !~ /^(?:percent|percent_delta|delta|counter)$/) {
+            $self->{output}->add_option_msg(short_msg => 'Wrong option --units-cast.');
+            $self->{output}->option_exit();
+        }
     }
 
     $self->{get_speed} = 0;
@@ -924,7 +1034,7 @@ sub reload_cache_index_value {
     foreach (keys %{$options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }}) {
         /^$self->{oids_label}->{$options{name}}->{oid}\.(.*)$/;
         push @{$options{datas}->{all_ids}}, $1 if ($store_index == 1);
-        $options{datas}->{$options{name} . "_" . $1} = $self->{output}->to_utf8($options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_});
+        $options{datas}->{$options{name} . '_' . $1} = $self->{output}->decode($options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_});
     }
 }
 
@@ -1214,27 +1324,29 @@ sub manage_selection {
 
 sub add_result_global {
     my ($self, %options) = @_;
-    
+
     foreach (('global_admin_up_rule', 'global_admin_down_rule', 'global_oper_up_rule', 'global_oper_down_rule')) {
         if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$$1/g;
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$values->{$1}/g;
         }
     }
-    
+
     $self->{global} = {
         total_port => 0, global_admin_up => 0, global_admin_down => 0,
         global_oper_up => 0, global_oper_down => 0
     };
     foreach (@{$self->{array_interface_selected}}) {
-        my $opstatus = $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $_}};
-        my $admstatus = $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $_}};
+        my $values = {
+            opstatus => $self->{oid_opstatus_mapping}->{ $self->{results}->{$self->{oid_opstatus} . '.' . $_} },
+            admstatus => $self->{oid_adminstatus_mapping}->{ $self->{results}->{$self->{oid_adminstatus} . '.' . $_} }
+        };
         foreach (('global_admin_up', 'global_admin_down', 'global_oper_up', 'global_oper_down')) {
             eval {
                 local $SIG{__WARN__} = sub { return ; };
                 local $SIG{__DIE__} = sub { return ; };
-        
+
                 if (defined($self->{option_results}->{$_ . '_rule'}) && $self->{option_results}->{$_ . '_rule'} ne '' &&
-                    eval "$self->{option_results}->{$_ . '_rule'}") {
+                    $self->{output}->test_eval(test => $self->{option_results}->{$_ . '_rule'}, values => $values)) {
                     $self->{global}->{$_}++;
                 }
             };
@@ -1483,29 +1595,25 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{d
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
-'speed' (b/s).
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: '%') ('%', 'absolute').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+
+=item B<--units-cast>
+
+Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -1538,10 +1646,6 @@ Get interface speed configuration for interface type 'adsl' and 'vdsl2'.
 Syntax: --map-speed-dsl=interface-src-name,interface-dsl-name
 
 E.g: --map-speed-dsl=Et0.835,Et0-vdsl2
-
-=item B<--no-skipped-counters>
-
-Don't skip counters when no change.
 
 =item B<--force-counters64>
 

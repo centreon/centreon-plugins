@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,63 +34,60 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-traffic', set => {
+        { label => 'total-traffic', nlabel => 'traffic.aggregated.bitspersecond', set => {
                 key_values => [ { name => 'total_traffic' } ],
                 output_template => 'Total Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_traffic', template => '%d', min => 0, unit => 'b/s' }
+                    { template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         },
-        { label => 'total-server-traffic', set => {
+        { label => 'total-server-traffic', nlabel => 'traffic.server.bitspersecond', set => {
                 key_values => [ { name => 'total_server_traffic' } ],
                 output_template => 'Total Server Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_server_traffic', template => '%d', min => 0, unit => 'b/s' }
+                    { template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         },
-        { label => 'total-client-traffic', set => {
+        { label => 'total-client-traffic', nlabel => 'traffic.client.bitspersecond', set => {
                 key_values => [ { name => 'total_client_traffic' } ],
                 output_template => 'Total Client Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_client_traffic', template => '%d', min => 0, unit => 'b/s' }
+                    { template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         }
     ];
 
     $self->{maps_counters}->{instances} = [
-        { label => 'traffic', set => {
+        { label => 'traffic', nlabel => 'instance.traffic.aggregated.bitspersecond', set => {
                 key_values => [ { name => 'traffic' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' }
+                    { template => '%d', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' }
                 ]
             }
         },
-        { label => 'server-traffic', set => {
+        { label => 'server-traffic', nlabel => 'instance.traffic.server.bitspersecond', set => {
                 key_values => [ { name => 'server_traffic' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Server Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'server_traffic', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' }
+                    { template => '%d', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' }
                 ]
             }
         },
-        { label => 'client-traffic', set => {
+        { label => 'client-traffic', nlabel => 'instance.traffic.client.bitspersecond', set => {
                 key_values => [ { name => 'client_traffic' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Client Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'client_traffic', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' }
+                    { template => '%d', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' }
                 ]
             }
         }
@@ -112,14 +109,14 @@ sub prefix_instances_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
         'instance:s' => { name => 'instance', default => 'layer' },
         'top:s'      => { name => 'top' },
         'filter:s'   => { name => 'filter' },
-        'from:s'     => { name => 'from' },
+        'from:s'     => { name => 'from' }
     });
 
     return $self;

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,7 +33,7 @@ sub set_counters {
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
         { name => 'vs', type => 3, cb_prefix_output => 'prefix_vs_output', cb_long_output => 'vs_long_output', indent_long_output => '    ', message_multiple => 'All virtual servers are ok', 
             group => [                
-                { name => 'ap', display_long => 1, cb_prefix_output => 'prefix_ap_output',  message_multiple => 'All access profiles are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'ap', display_long => 1, cb_prefix_output => 'prefix_ap_output',  message_multiple => 'All access profiles are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -43,56 +43,53 @@ sub set_counters {
                 key_values => [ { name => 'apmAccessStatTotalSessions', diff => 1 } ],
                 output_template => 'created sessions: %s',
                 perfdatas => [
-                    { value => 'apmAccessStatTotalSessions', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'sessions-active', nlabel => 'system.sessions.active.count', set => {
                 key_values => [ { name => 'apmAccessStatCurrentActiveSessions' } ],
                 output_template => 'active sessions: %s',
                 perfdatas => [
-                    { value => 'apmAccessStatCurrentActiveSessions', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'sessions-pending', nlabel => 'system.sessions.pending.count', set => {
                 key_values => [ { name => 'apmAccessStatCurrentPendingSessions' } ],
                 output_template => 'pending sessions: %s',
                 perfdatas => [
-                    { value => 'apmAccessStatCurrentPendingSessions', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{ap} = [
-        { label => 'ap-sessions-created', nlabel => 'acessprofile.sessions.created.count', set => {
+        { label => 'ap-sessions-created', nlabel => 'accessprofile.sessions.created.count', set => {
                 key_values => [ { name => 'apmPaStatTotalSessions', diff => 1 } ],
                 output_template => 'created sessions: %s',
                 perfdatas => [
-                    { value => 'apmPaStatTotalSessions', template => '%s',
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'ap-sessions-active', nlabel => 'acessprofile.sessions.active.count', set => {
+        { label => 'ap-sessions-active', nlabel => 'accessprofile.sessions.active.count', set => {
                 key_values => [ { name => 'apmPaStatCurrentActiveSessions' } ],
                 output_template => 'active sessions: %s',
                 perfdatas => [
-                    { value => 'apmPaStatCurrentActiveSessions', template => '%s',
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'ap-sessions-pending', nlabel => 'acessprofile.sessions.pending.count', set => {
+        { label => 'ap-sessions-pending', nlabel => 'accessprofile.sessions.pending.count', set => {
                 key_values => [ { name => 'apmPaStatCurrentPendingSessions' } ],
                 output_template => 'pending sessions: %s',
                 perfdatas => [
-                    { value => 'apmPaStatCurrentPendingSessions', template => '%s',
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -121,7 +118,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'filter-vs:s' => { name => 'filter_vs' },
-        'filter-ap:s' => { name => 'filter_ap' },
+        'filter-ap:s' => { name => 'filter_ap' }
     });
     
     return $self;
@@ -160,8 +157,8 @@ sub manage_selection {
         my $instance = $1;
 
         my @indexes = split(/\./, $instance);
-        my $ap_name = $self->{output}->to_utf8(join('', map(chr($_), splice(@indexes, 0, shift(@indexes)) )));
-        my $vs_name = $self->{output}->to_utf8(join('', map(chr($_), splice(@indexes, 0, shift(@indexes)) )));
+        my $ap_name = $self->{output}->decode(join('', map(chr($_), splice(@indexes, 0, shift(@indexes)) )));
+        my $vs_name = $self->{output}->decode(join('', map(chr($_), splice(@indexes, 0, shift(@indexes)) )));
 
         $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_apmPaStatEntry}, instance => $instance);
         if (defined($self->{option_results}->{filter_vs}) && $self->{option_results}->{filter_vs} ne '' &&

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,44 +28,76 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
-    
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature)$';
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         fan => [
+            #hios
+            ['not-available', 'OK'],
+            ['available-and-ok', 'OK'],
+            ['available-but-failure', 'CRITICAL'],
+
+            # classic
             ['ok', 'OK'],
-            ['failed', 'CRITICAL'],
+            ['failed', 'CRITICAL']
         ],
         psu => [
+            # classic
             ['ok', 'OK'],
             ['failed', 'CRITICAL'],
             ['notInstalled', 'OK'],
             ['unknown', 'UNKNOWN'],
             ['ignore', 'OK'],
+
+            # hios
+            ['present', 'OK'],
+            ['defective', 'CRITICAL']
         ],
         led => [
             ['off', 'OK'],
             ['green', 'OK'],
             ['yellow', 'WARNING'],
-            ['red', 'CRITICAL'],
-        ],
+            ['red', 'CRITICAL']
+        ]
     };
-    
+
+    $self->{myrequest} = {
+        classic => [],
+        hios => []
+    };
+
     $self->{components_path} = 'network::hirschmann::standard::snmp::mode::components';
-    $self->{components_module} = ['fan', 'psu', 'temperature', 'led'];
+    $self->{components_module} = ['fan', 'led', 'psu', 'temperature'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+
+    my $hios_serial = '.1.3.6.1.4.1.248.11.10.1.1.3.0'; # hm2DevMgmtSerialNumber
+    my $classic_version = '.1.3.6.1.4.1.248.14.1.1.2.0'; # hmSysVersion
+    my $snmp_result = $self->{snmp}->get_leef(
+        oids => [ $hios_serial, $classic_version ],
+        nothing_quit => 1
+    );
+
+    $self->{os_type} = 'unknown';
+    $self->{results} = {};
+    if (defined($snmp_result->{$classic_version})) {
+        $self->{os_type} = 'classic';
+        $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{myrequest}->{classic});
+    } elsif ($snmp_result->{$hios_serial}) {
+        $self->{os_type} = 'hios';
+        $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{myrequest}->{hios});
+    }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -79,7 +111,7 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Power Supplies, Fans, Temperatures, LEDs).
+Check hardware.
 
 =over 8
 

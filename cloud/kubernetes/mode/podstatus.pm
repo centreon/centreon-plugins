@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,7 +36,8 @@ sub custom_pod_status_output {
 sub custom_pod_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
+    $self->{result_values}->{namespace} = $options{new_datas}->{$self->{instance} . '_namespace'};
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
 
     return 0;
@@ -53,7 +54,7 @@ sub custom_container_status_output {
 sub custom_container_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{state} = ($options{new_datas}->{$self->{instance} . '_state'} == 1) ? "ready" : "not ready";
 
@@ -77,7 +78,7 @@ sub custom_ready_perfdata {
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $total_options{total},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
     );
 }
 
@@ -110,7 +111,7 @@ sub custom_ready_output {
 sub custom_ready_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
     $self->{result_values}->{ready} = $options{new_datas}->{$self->{instance} . '_containers_ready'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_containers_total'};
     return 0 if ($self->{result_values}->{total} == 0);
@@ -125,7 +126,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'pods', type => 3, cb_prefix_output => 'prefix_pod_output', cb_long_output => 'long_output',
-          message_multiple => 'All pods status are ok', indent_long_output => '    ',
+          message_multiple => 'All Pods status are ok', indent_long_output => '    ',
             group => [
                 { name => 'global',  type => 0, skipped_code => { -10 => 1 } },
                 { name => 'containers', display_long => 1, cb_prefix_output => 'prefix_container_output',
@@ -136,7 +137,7 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'containers-ready', set => {
-                key_values => [ { name => 'containers_total' }, { name => 'containers_ready' }, { name => 'display' } ],
+                key_values => [ { name => 'containers_total' }, { name => 'containers_ready' }, { name => 'name' } ],
                 closure_custom_calc => $self->can('custom_ready_calc'),
                 closure_custom_output => $self->can('custom_ready_output'),
                 closure_custom_perfdata => $self->can('custom_ready_perfdata'),
@@ -144,7 +145,7 @@ sub set_counters {
             }
         },
         { label => 'pod-status', set => {
-                key_values => [ { name => 'status' } ],
+                key_values => [ { name => 'status' }, { name => 'name' }, { name => 'namespace' } ],
                 closure_custom_calc => $self->can('custom_pod_status_calc'),
                 closure_custom_output => $self->can('custom_pod_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -152,11 +153,11 @@ sub set_counters {
             }
         },
         { label => 'total-restarts-count', nlabel => 'restarts.total.count', set => {
-                key_values => [ { name => 'restarts_total' }, { name => 'display' } ],
+                key_values => [ { name => 'restarts_total' }, { name => 'name' } ],
                 output_template => 'Restarts: %d',
                 perfdatas => [
                     { label => 'restarts_count', value => 'restarts_total', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -185,24 +186,24 @@ sub set_counters {
 sub prefix_pod_output {
     my ($self, %options) = @_;
 
-    return "Pod '" . $options{instance_value}->{display} . "' ";
+    return "Pod '" . $options{instance_value}->{name} . "' ";
 }
 
 sub prefix_container_output {
     my ($self, %options) = @_;
     
-    return "Container '" . $options{instance_value}->{display} . "' ";
+    return "Container '" . $options{instance_value}->{name} . "' ";
 }
 
 sub long_output {
     my ($self, %options) = @_;
 
-    return "Checking pod '" . $options{instance_value}->{display} . "'";
+    return "Checking pod '" . $options{instance_value}->{name} . "'";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -240,7 +241,7 @@ sub manage_selection {
 
     my $results = $options{custom}->kubernetes_list_pods();
     
-    foreach my $pod (@{$results->{items}}) {
+    foreach my $pod (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $pod->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $pod->{metadata}->{name} . "': no matching filter name.", debug => 1);
@@ -261,9 +262,10 @@ sub manage_selection {
         }
         next if ($next == 1);
 
-        $self->{pods}->{$pod->{metadata}->{uid}}->{display} = $pod->{metadata}->{name};
+        $self->{pods}->{$pod->{metadata}->{uid}}->{name} = $pod->{metadata}->{name};
         $self->{pods}->{$pod->{metadata}->{uid}}->{global} = {
-            display => $pod->{metadata}->{name},
+            name => $pod->{metadata}->{name},
+            namespace => $pod->{metadata}->{namespace},
             status => $pod->{status}->{phase},
             containers_total => scalar(@{$pod->{status}->{containerStatuses}}),
             containers_ready => 0,
@@ -272,7 +274,7 @@ sub manage_selection {
 
         foreach my $container (@{$pod->{status}->{containerStatuses}}) {
             $self->{pods}->{$pod->{metadata}->{uid}}->{containers}->{$container->{name}} = {
-                display => $container->{name},
+                name => $container->{name},
                 status => keys %{$container->{state}},
                 state => $container->{ready},
                 restarts => $container->{restartCount},
@@ -284,7 +286,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{pods}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No pods found.");
+        $self->{output}->add_option_msg(short_msg => "No Pods found.");
         $self->{output}->option_exit();
     }
 }
@@ -316,22 +318,22 @@ Example : --extra-filter='app=mynewapp'
 =item B<--warning-pod-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+Can used special variables like: %{status}, %{name}, %{namespace}.
 
 =item B<--critical-pod-status>
 
 Set critical threshold for status (Default: '%{status} !~ /running/i').
-Can used special variables like: %{status}, %{display}
+Can used special variables like: %{status}, %{name}, %{namespace}.
 
 =item B<--warning-container-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+Can used special variables like: %{status}, %{name}.
 
 =item B<--critical-container-status>
 
 Set critical threshold for status (Default: '%{status} !~ /running/i || %{state} !~ /^ready$/').
-Can used special variables like: %{status}, %{state}, %{display}
+Can used special variables like: %{status}, %{state}, %{name}.
 
 =item B<--warning-*>
 

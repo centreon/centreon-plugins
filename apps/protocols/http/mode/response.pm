@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Time::HiRes qw(gettimeofday tv_interval);
 use centreon::plugins::http;
 
@@ -38,36 +38,77 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 }
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-         { label => 'status', threshold => 0, display_ok => 0, set => {
+         {
+             label => 'status', type => 2, critical_default => '%{http_code} < 200 or %{http_code} >= 300',
+             display_ok => 0, set => {
                 key_values => [
                     { name => 'http_code' }, { name => 'message' }
                 ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'time', nlabel => 'http.response.time.seconds', set => {
                 key_values => [ { name => 'time' } ],
-                output_template => 'Response time %.3fs',
+                output_template => 'response time %.3fs',
                 perfdatas => [
-                    { label => 'time', value => 'time', template => '%.3f', min => 0, unit => 's' }
+                    { label => 'time', template => '%.3f', min => 0, unit => 's' }
                 ]
             }
         },
         { label => 'size', nlabel => 'http.response.size.count', display_ok => 0, set => {
                 key_values => [ { name => 'size' } ],
-                output_template => 'Content size : %s',
+                output_template => 'content size: %s',
                 perfdatas => [
-                    { label => 'size', value => 'size', template => '%s', min => 0, unit => 'B' }
+                    { label => 'size', template => '%s', min => 0, unit => 'B' }
                 ]
             }
-        }
+        },
+        { label => 'resolve', nlabel => 'http.response.resolve.time.milliseconds', display_ok => 0, set => {
+                key_values => [ { name => 'resolve' } ],
+                output_template => 'resolve: %.3f ms',
+                perfdatas => [
+                    { label => 'resolve', template => '%.3f', min => 0, unit => 'ms' }
+                ]
+            }
+        },
+        { label => 'connect', nlabel => 'http.response.connect.time.milliseconds', display_ok => 0, set => {
+                key_values => [ { name => 'resolve' } ],
+                output_template => 'connect: %.3f ms',
+                perfdatas => [
+                    { label => 'connect', template => '%.3f', min => 0, unit => 'ms' }
+                ]
+            }
+        },
+        { label => 'tls', nlabel => 'http.response.tls.time.milliseconds', display_ok => 0, set => {
+                key_values => [ { name => 'tls' } ],
+                output_template => 'tls: %.3f ms',
+                perfdatas => [
+                    { label => 'tls', template => '%.3f', min => 0, unit => 'ms' }
+                ]
+            }
+        },
+        { label => 'processing', nlabel => 'http.response.processing.time.milliseconds', display_ok => 0, set => {
+                key_values => [ { name => 'processing' } ],
+                output_template => 'processing: %.3f ms',
+                perfdatas => [
+                    { label => 'processing', template => '%.3f', min => 0, unit => 'ms' }
+                ]
+            }
+        },
+        { label => 'transfer', nlabel => 'http.response.transfer.time.milliseconds', display_ok => 0, set => {
+                key_values => [ { name => 'resolve' } ],
+                output_template => 'transfer: %.3f ms',
+                perfdatas => [
+                    { label => 'transfer', template => '%.3f', min => 0, unit => 'ms' }
+                ]
+            }
+        },
     ];
 }
 
@@ -94,15 +135,13 @@ sub new {
         'cacert-file:s' => { name => 'cacert_file' },
         'cert-pwd:s'    => { name => 'cert_pwd' },
         'cert-pkcs12'   => { name => 'cert_pkcs12' },
-        'header:s@'            => { name => 'header' },
-        'get-param:s@'         => { name => 'get_param' },
-        'post-param:s@'        => { name => 'post_param' },
-        'cookies-file:s'       => { name => 'cookies_file' },
-        'unknown-status:s'     => { name => 'unknown_status', default => '' },
-        'warning-status:s'     => { name => 'warning_status' },
-        'critical-status:s'    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
-        'warning:s'            => { name => 'warning' },
-        'critical:s'           => { name => 'critical' }
+        'header:s@'      => { name => 'header' },
+        'get-param:s@'   => { name => 'get_param' },
+        'post-param:s@'  => { name => 'post_param' },
+        'cookies-file:s' => { name => 'cookies_file' },
+        'warning:s'      => { name => 'warning' },
+        'critical:s'     => { name => 'critical' },
+        'extra-stats'    => { name => 'extra_stats' }
     });
 
     $self->{http} = centreon::plugins::http->new(%options);
@@ -122,8 +161,6 @@ sub check_options {
         $options{option_results}->{'critical-http-response-time-seconds'} = $options{option_results}->{critical};
     }    
     $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -143,6 +180,15 @@ sub manage_selection {
         require bytes;
         
         $self->{global}->{size} = bytes::length($webcontent);
+    }
+
+    if (defined($self->{option_results}->{extra_stats})) {
+        my $times = $self->{http}->get_times();
+        if (!defined($times)) {
+            $self->{output}->add_option_msg(short_msg => 'Unsupported --extra-stats option for current http backend. Please try with curl backend.');
+            $self->{output}->option_exit();
+        }
+        $self->{global} = { %$times, %{$self->{global}} };
     }
 }
 
@@ -256,13 +302,15 @@ Threshold warning for http response code
 
 Threshold critical for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
-=item B<--warning-time>
+=item B<--extra-stats>
 
-Threshold warning in seconds (Webpage response time)
+Add detailed time statistics (only with curl backend).
 
-=item B<--critical-time>
+=item B<--warning-*> B<--critical-*>
 
-Threshold critical in seconds (Webpage response time)
+Thresholds. Can be:
+'time', 'size',
+'resolve', 'connect', 'tls', 'processing', 'transfer'. 
 
 =back
 

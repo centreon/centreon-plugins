@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -50,15 +50,14 @@ my %map_module_state = (
     24 => 'mdr',
     25 => 'fwMismatchFound',
     26 => 'fwDownloadSuccess',
-    27 => 'fwDownloadFailure',
+    27 => 'fwDownloadFailure'
 );
 
 # In MIB 'CISCO-ENTITY-FRU-CONTROL-MIB'
 my $mapping = {
-    cefcModuleOperStatus => { oid => '.1.3.6.1.4.1.9.9.117.1.2.1.1.2', map => \%map_module_state },
+    cefcModuleOperStatus => { oid => '.1.3.6.1.4.1.9.9.117.1.2.1.1.2', map => \%map_module_state }
 };
 my $oid_cefcModuleOperStatus = '.1.3.6.1.4.1.9.9.117.1.2.1.1.2';
-my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 
 sub load {
     my ($self) = @_;
@@ -77,18 +76,26 @@ sub check {
         $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cefcModuleOperStatus}, instance => $instance);
-        my $module_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
-        
+        my $module_descr = $self->{results}->{$self->{physical_name} }->{ $self->{physical_name} . '.' . $instance };
+
         next if ($self->check_filter(section => 'module', instance => $instance, name => $module_descr));
-        
+
         $self->{components}->{module}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Module '%s' status is %s [instance: %s]",
-                                    $module_descr, $result->{cefcModuleOperStatus}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "module '%s' status is %s [instance: %s]",
+                $module_descr, $result->{cefcModuleOperStatus}, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'module', instance => $instance, value => $result->{cefcModuleOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Module '%s/%s' status is %s", $module_descr, 
-                                                        $instance, $result->{cefcModuleOperStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Module '%s/%s' status is %s",
+                    $module_descr, $instance, $result->{cefcModuleOperStatus}
+                )
+            );
         }
     }
 }

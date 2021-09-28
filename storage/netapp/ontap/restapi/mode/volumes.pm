@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -112,6 +112,24 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'other', nlabel => 'volume.io.other.usage.bytespersecond', display_ok => 0, set => {
+                key_values => [ { name => 'other' } ],
+                output_template => 'other: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'total', nlabel => 'volume.io.total.usage.bytespersecond', display_ok => 0, set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'total: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
         { label => 'read-iops', nlabel => 'volume.io.read.usage.iops', set => {
                 key_values => [ { name => 'read_iops' } ],
                 output_template => 'read iops: %s',
@@ -123,6 +141,22 @@ sub set_counters {
         { label => 'write-iops', nlabel => 'volume.io.write.usage.iops', set => {
                 key_values => [ { name => 'write_iops' } ],
                 output_template => 'write iops: %s',
+                perfdatas => [
+                    { template => '%s', unit => 'iops', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'other-iops', nlabel => 'volume.io.other.usage.iops', set => {
+                key_values => [ { name => 'other_iops' } ],
+                output_template => 'other iops: %s',
+                perfdatas => [
+                    { template => '%s', unit => 'iops', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'total-iops', nlabel => 'volume.io.total.usage.iops', set => {
+                key_values => [ { name => 'total_iops' } ],
+                output_template => 'total iops: %s',
                 perfdatas => [
                     { template => '%s', unit => 'iops', min => 0, label_extra_instance => 1 }
                 ]
@@ -143,6 +177,22 @@ sub set_counters {
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
             }
+        },
+        { label => 'other-latency', nlabel => 'volume.io.other.latency.milliseconds', set => {
+                key_values => [ { name => 'other_latency' } ],
+                output_template => 'other latency: %s ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'total-latency', nlabel => 'volume.io.total.latency.milliseconds', set => {
+                key_values => [ { name => 'total_latency' } ],
+                output_template => 'total latency: %s ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
+            }
         }
     ];
 }
@@ -153,7 +203,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-name:s'         => { name => 'filter_name' },
+        'filter-vserver-name:s' => { name => 'filter_vserver_name' }
     });
     
     return $self;
@@ -166,14 +217,22 @@ sub manage_selection {
 
     $self->{volumes} = {};
     foreach (@{$volumes->{records}}) {
+        my $name = defined($_->{svm}) && $_->{svm}->{name} ne '' ?
+            $_->{svm}->{name} . ':' . $_->{name} :
+            $_->{name};
+        if (defined($self->{option_results}->{filter_vserver_name}) && $self->{option_results}->{filter_vserver_name} ne '' &&
+            defined($_->{svm}) && $_->{svm}->{name} ne '' &&  $_->{svm}->{name} !~ /$self->{option_results}->{filter_vserver_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $_->{svm}->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $_->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping volume '" . $_->{name} . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{volumes}->{ $_->{name} } = {
-            display => $_->{name},
+        $self->{volumes}->{$name} = {
+            display => $name,
             state => $_->{state},
 
             total_space => $_->{space}->{size},
@@ -184,10 +243,16 @@ sub manage_selection {
 
             read          => $_->{metric}->{throughput}->{read},
             write         => $_->{metric}->{throughput}->{write},
+            other         => $_->{metric}->{throughput}->{other},
+            total         => $_->{metric}->{throughput}->{total},
             read_iops     => $_->{metric}->{iops}->{read},
             write_iops    => $_->{metric}->{iops}->{write},
+            other_iops    => $_->{metric}->{iops}->{other},
+            total_iops    => $_->{metric}->{iops}->{total},
             read_latency  => $_->{metric}->{latency}->{read},
-            write_latency => $_->{metric}->{latency}->{write}
+            write_latency => $_->{metric}->{latency}->{write},
+            other_latency => $_->{metric}->{latency}->{other},
+            total_latency => $_->{metric}->{latency}->{total}
         };
     }
 
@@ -214,7 +279,11 @@ Example: --filter-counters='^usage$'
 
 =item B<--filter-name>
 
-Filter volume name (can be a regexp).
+Filter volumes by volume name (can be a regexp).
+
+=item B<--filter-vserver-name>
+
+Filter volumes by vserver name (can be a regexp).
 
 =item B<--unknown-status>
 
@@ -236,7 +305,9 @@ Can used special variables like: %{state}, %{display}
 Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%),
 'read' (B/s), 'read-iops', 'write' (B/s), 'write-iops',
-'read-latency' (ms), 'write-latency' (ms).
+'read-latency' (ms), 'write-latency' (ms), 'total-latency' (ms),
+'other-latency' (ms), 'other' (B/s), 'total' (B/s),
+'other-iops', 'total-iops'.
 
 =back
 

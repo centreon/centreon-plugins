@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,12 +31,12 @@ my %map_raid_status = (
     5 => 'failed',
     6 => 'catastrophicLoss',
     7 => 'expanding',
-    8 => 'mirroring',
+    8 => 'mirroring'
 );
 
 # In MIB 'eqlcontroller.mib'
 my $mapping = {
-    eqlMemberRaidStatus => { oid => '.1.3.6.1.4.1.12740.2.1.13.1.1', map => \%map_raid_status },
+    eqlMemberRaidStatus => { oid => '.1.3.6.1.4.1.12740.2.1.13.1.1', map => \%map_raid_status }
 };
 my $oid_eqlMemberRAIDEntry = '.1.3.6.1.4.1.12740.2.1.13.1';
 
@@ -62,14 +62,21 @@ sub check {
         next if ($self->check_filter(section => 'raid', instance => $member_instance));
         $self->{components}->{raid}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Raid '%s' status is %s [instance: %s].",
-                                    $member_name, $result->{eqlMemberRaidStatus}, $member_instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "raid '%s' status is %s [instance: %s].",
+                $member_name, $result->{eqlMemberRaidStatus}, $member_instance
+            )
+        );
         my $exit = $self->get_severity(section => 'raid', value => $result->{eqlMemberRaidStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Raid '%s' status is %s",
-                                                             $member_name, $result->{eqlMemberRaidStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Raid '%s' status is %s",
+                    $member_name, $result->{eqlMemberRaidStatus}
+                )
+            );
         }
     }
 }

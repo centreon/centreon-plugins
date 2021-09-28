@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -127,12 +127,12 @@ sub reload_cache_fcportname {
         my $if_index = $1;
         push @{$options{datas}->{all_ids}}, $if_index if ($store_index == 1);
         if ($options{result}->{ $self->{oids_label}->{ifname}->{oid} }->{$_} =~ /\d+\/(\d+)$/) {
-            $options{datas}->{ $options{name} . '_' . $if_index } = $self->{output}->to_utf8(
+            $options{datas}->{ $options{name} . '_' . $if_index } = $self->{output}->decode(
                 $options{result}->{ $self->{oids_label}->{ $options{name} }->{oid} }->{ $self->{oids_label}->{ $options{name} }->{oid} . '.' . ($1 + 1) }
             );
         } else {
             # we use ifname if there is no fcportname
-            $options{datas}->{ $options{name} . '_' . $if_index } = $self->{output}->to_utf8(
+            $options{datas}->{ $options{name} . '_' . $if_index } = $self->{output}->decode(
                 $options{result}->{ $self->{oids_label}->{ifname}->{oid} }->{$_}
             );
         }
@@ -294,28 +294,32 @@ Check interface optical.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{errdisable}, %{display}
+Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{errdisable}, %{display}
+Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-crc', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s), 'laser-temp', 'input-power', 'output-power'.
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: '%') ('%', 'absolute').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+
+=item B<--units-cast>
+
+Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -340,10 +344,6 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
-
-=item B<--no-skipped-counters>
-
-Don't skip counters when no change.
 
 =item B<--force-counters32>
 

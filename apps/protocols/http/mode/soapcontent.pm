@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -67,7 +67,7 @@ sub new {
         'format-ok:s'             => { name => 'format_ok', default => '%{count} element(s) found' },
         'format-warning:s'        => { name => 'format_warning', default => '%{count} element(s) found' },
         'format-critical:s'       => { name => 'format_critical', default => '%{count} element(s) found' },
-        'values-separator:s'      => { name => 'values_separator', default => ', ' },
+        'values-separator:s'      => { name => 'values_separator', default => ', ' }
     });
     $self->{count} = 0;
     $self->{count_ok} = 0;
@@ -148,8 +148,10 @@ sub display_output {
             }
             $format =~ s/%\{$1\}/$replace/g;
         }
-        $self->{output}->output_add(severity => $severity,
-                                    short_msg => $format);
+        $self->{output}->output_add(
+            severity => $severity,
+            short_msg => $format
+        );
     }
 }
 
@@ -210,14 +212,17 @@ sub lookup {
     }
 
     if ($self->{option_results}->{threshold_value} eq 'count') {
-        my $exit = lc($self->{perfdata}->threshold_check(value => $self->{count},
-                                                         threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]));
+        my $exit = lc($self->{perfdata}->threshold_check(
+            value => $self->{count},
+            threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ])
+        );
         push @{$self->{'values_' . $exit}}, $self->{count};
         $self->{'count_' . $exit}++;
     }
 
     $self->{output}->perfdata_add(
         label => 'count',
+        nlabel => 'xml.match.total.count',
         value => $self->{count},
         warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
         critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
@@ -229,13 +234,16 @@ sub lookup {
         $count++;
         if ($value =~ /^[0-9.]+$/) {
             if ($self->{option_results}->{threshold_value} eq 'values') {
-                my $exit = lc($self->{perfdata}->threshold_check(value => $value,
-                                            threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]));
+                my $exit = lc($self->{perfdata}->threshold_check(
+                    value => $value,
+                    threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ])
+                );
                 push @{$self->{'values_' . $exit}}, $value;
                 $self->{'count_' . $exit}++
             }
             $self->{output}->perfdata_add(
                 label => 'element_' . $count,
+                nlabel => 'xml.match.element.' . $count . '.count',
                 value => $value,
                 warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
                 critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef
@@ -270,22 +278,30 @@ sub run {
         scalar(@{$self->{option_results}->{lookup}}) == 0 ||
         $self->{option_results}->{lookup}->[0] eq ''
     ) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "SOAP request success");
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'SOAP request success'
+        );
     } else {
         $self->lookup();
     }
 
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical-time', exit_litteral => 'critical' }, { label => 'warning-time', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $timeelapsed,
+        threshold => [ { label => 'critical-time', exit_litteral => 'critical' }, { label => 'warning-time', exit_litteral => 'warning' } ]
+    );
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Response time %.3fs", $timeelapsed));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("Response time %.3fs", $timeelapsed)
+        );
     } else {
-        $self->{output}->output_add(long_msg => sprintf("Response time %.3fs", $timeelapsed));
+        $self->{output}->output_add(long_msg => sprintf('Response time %.3fs', $timeelapsed));
     }
     $self->{output}->perfdata_add(
-        label => "time", unit => 's',
+        label => 'time',
+        nlabel => 'http.response.time.seconds',
+        unit => 's',
         value => sprintf('%.3f', $timeelapsed),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-time'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),

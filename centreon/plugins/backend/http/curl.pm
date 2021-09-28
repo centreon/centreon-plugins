@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -59,7 +59,7 @@ sub check_options {
 
     foreach (('unknown_status', 'warning_status', 'critical_status')) {
         if (defined($options{request}->{$_})) {
-            $options{request}->{$_} =~ s/%\{http_code\}/\$self->{response_code}/g;
+            $options{request}->{$_} =~ s/%\{http_code\}/\$values->{code}/g;
         }
     }
 
@@ -125,18 +125,14 @@ sub cb_debug {
     if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_DATA_OUT')) {
         $msg = sprintf("=> Send data: %s", $data);
     }
-    if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_SSL_DATA_OUT')) {
-        $msg = sprintf("=> Send SSL data: %s", $data);
-    }
     if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_HEADER_IN')) {
         $msg = sprintf("=> Recv header: %s", $data);
     }
     if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_DATA_IN')) {
         $msg = sprintf("=> Recv data: %s", $data);
     }
-    if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_SSL_DATA_IN')) {
-        $msg = sprintf("=> Recv SSL data: %s", $data);
-    }
+    return 0 if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_SSL_DATA_OUT'));
+    return 0 if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_SSL_DATA_IN'));
 
     $uservar->{output}->output_add(long_msg => $msg, debug => 1);
     return 0;
@@ -371,6 +367,10 @@ sub request {
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERDATA'), parameter => $self);
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERFUNCTION'), parameter => \&cb_get_header);
 
+    if (defined($options{request}->{certinfo}) && $options{request}->{certinfo} == 1) {
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CERTINFO'), parameter => 1);
+    }
+
     eval {
         $self->{curl_easy}->perform();
     };
@@ -390,13 +390,13 @@ sub request {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
         if (defined($options{request}->{critical_status}) && $options{request}->{critical_status} ne '' &&
-            eval "$options{request}->{critical_status}") {
+            $self->{output}->test_eval(test => $options{request}->{critical_status}, values => { code => $self->{response_code} })) {
             $status = 'critical';
         } elsif (defined($options{request}->{warning_status}) && $options{request}->{warning_status} ne '' &&
-            eval "$options{request}->{warning_status}") {
+            $self->{output}->test_eval(test => $options{request}->{warning_status}, values => { code => $self->{response_code} })) {
             $status = 'warning';
         } elsif (defined($options{request}->{unknown_status}) && $options{request}->{unknown_status} ne '' &&
-            eval "$options{request}->{unknown_status}") {
+            $self->{output}->test_eval(test => $options{request}->{unknown_status}, values => { code => $self->{response_code} })) {
             $status = 'unknown';
         }
     };
@@ -468,6 +468,37 @@ sub get_message {
     my ($self, %options) = @_;
 
     return $http_code_explained->{$self->{response_code}};
+}
+
+sub get_certificate {
+    my ($self, %options) = @_;
+
+    my $certs = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_CERTINFO'));
+    return ('pem', $certs->[0]->{Cert});
+}
+
+sub get_times {
+    my ($self, %options) = @_;
+
+    # TIME_T = 7.61.0
+    my $resolve = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_NAMELOOKUP_TIME'));
+    my $connect = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_CONNECT_TIME'));
+    my $appconnect = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_APPCONNECT_TIME'));
+    my $start = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_STARTTRANSFER_TIME'));
+    my $total = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_TOTAL_TIME'));
+    my $times = {
+        resolve => $resolve * 1000,
+        connect => ($connect - $resolve) * 1000,
+        transfer => ($total - $start) * 1000
+    };
+    if ($appconnect > 0) {
+        $times->{tls} = ($appconnect - $connect) * 1000;
+        $times->{processing} = ($start - $appconnect) * 1000;
+    } else {
+        $times->{processing} = ($start - $connect) * 1000;
+    }
+
+    return $times;
 }
 
 1;

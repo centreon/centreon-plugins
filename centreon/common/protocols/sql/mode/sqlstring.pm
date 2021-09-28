@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,7 +23,7 @@ package centreon::common::protocols::sql::mode::sqlstring;
 use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -33,24 +33,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{rows} = [
-        { label => 'string', threshold => 0, set => {
+        { label => 'string', type => 2, set => {
                 key_values => [ { name => 'key_field' }, { name => 'value_field' } ],
-                closure_custom_calc => $self->can('custom_string_calc'),
                 closure_custom_output => $self->can('custom_string_output'),
-                closure_custom_threshold_check => $self->can('custom_string_threshold'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_perfdata => sub { return 0; }
             }
-        },
+        }
     ];
-}
-
-sub custom_string_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{key_field} = $options{new_datas}->{$self->{instance} . '_key_field'};
-    $self->{result_values}->{value_field} = $options{new_datas}->{$self->{instance} . '_value_field'};
-
-    return 0;
 }
 
 sub custom_string_output {
@@ -75,46 +65,19 @@ sub custom_string_output {
     return $msg;
 }
 
-sub custom_string_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($self->{instance_mode}->{option_results}->{critical_string}) && $self->{instance_mode}->{option_results}->{critical_string} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_string}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_string}) && $self->{instance_mode}->{option_results}->{warning_string} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_string}") {
-            $status = 'warning';
-        }
-    };
-
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'threshold regex issue: ' . $message);
-    }
-
-    return $status;
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "sql-statement:s"         => { name => 'sql_statement' },
-        "key-column:s"            => { name => 'key_column' },
-        "value-column:s"          => { name => 'value_column' },
-        "warning-string:s"        => { name => 'warning_string', default => '' },
-        "critical-string:s"       => { name => 'critical_string', default => '' },
-        "printf-format:s"         => { name => 'printf_format' },
-        "printf-value:s"          => { name => 'printf_value' },
-        "dual-table"              => { name => 'dual_table' },
-        "empty-sql-string:s"      => { name => 'empty_sql_string', default => 'No row returned or --key-column/--value-column do not correctly match selected field' },
+        'sql-statement:s'    => { name => 'sql_statement' },
+        'key-column:s'       => { name => 'key_column' },
+        'value-column:s'     => { name => 'value_column' },
+        'printf-format:s'    => { name => 'printf_format' },
+        'printf-value:s'     => { name => 'printf_value' },
+        'dual-table'         => { name => 'dual_table' },
+        'empty-sql-string:s' => { name => 'empty_sql_string', default => 'No row returned or --key-column/--value-column do not correctly match selected field' }
     });
 
     return $self;
@@ -128,19 +91,17 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
         $self->{output}->option_exit();
     }
-
-    $self->change_macros(macros => ['warning_string', 'critical_string']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    $self->{sql} = $options{sql};
-    $self->{sql}->connect();
-    $self->{sql}->query(query => $self->{option_results}->{sql_statement});
+
+    $options{sql}->connect();
+    $options{sql}->query(query => $self->{option_results}->{sql_statement});
     $self->{rows} = {};
     my $row_count = 0;
 
-    while (my $row = $self->{sql}->fetchrow_hashref()) {
+    while (my $row = $options{sql}->fetchrow_hashref()) {
         if (defined($self->{option_results}->{dual_table})) {
             $row->{$self->{option_results}->{value_column}} = delete $row->{keys %{$row}};
             foreach (keys %{$row}) {
@@ -148,17 +109,21 @@ sub manage_selection {
             }
         }
         if (!defined($self->{option_results}->{key_column})) {
-            $self->{rows}->{$self->{option_results}->{value_column} . $row_count} = { key_field => $row->{$self->{option_results}->{value_column}},
-                                                                                      value_field => $row->{$self->{option_results}->{value_column}}};
+            $self->{rows}->{$self->{option_results}->{value_column} . $row_count} = {
+                key_field => $row->{ $self->{option_results}->{value_column} },
+                value_field => $row->{ $self->{option_results}->{value_column} }
+            };
             $row_count++;
         } else {
-            $self->{rows}->{$self->{option_results}->{key_column} . $row_count} = { key_field => $row->{$self->{option_results}->{key_column}},
-                                                                                    value_field => $row->{$self->{option_results}->{value_column}}};
+            $self->{rows}->{$self->{option_results}->{key_column} . $row_count} = {
+                key_field => $row->{ $self->{option_results}->{key_column} },
+                value_field => $row->{ $self->{option_results}->{value_column} }
+            };
             $row_count++;
         }
     }
 
-    $self->{sql}->disconnect();
+    $options{sql}->disconnect();
     if (scalar(keys %{$self->{rows}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => $self->{option_results}->{empty_sql_string});
         $self->{output}->option_exit();

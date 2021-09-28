@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,16 +30,22 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'cpu'              => 'snmp_standard::mode::cpu',
-        'hardware'         => 'storage::qnap::snmp::mode::hardware',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'list-storages'    => 'snmp_standard::mode::liststorages',
-        'memory'           => 'storage::qnap::snmp::mode::memory',
-        'storage'          => 'snmp_standard::mode::storage',
-        'volume-usage'     => 'storage::qnap::snmp::mode::volumeusage',
-    );
+    $self->{modes} = {
+        'cpu'             => 'snmp_standard::mode::cpu',
+        'hardware'        => 'storage::qnap::snmp::mode::hardware',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-processes'  => 'snmp_standard::mode::listprocesses',
+        'list-storages'   => 'snmp_standard::mode::liststorages',
+        'memory'          => 'storage::qnap::snmp::mode::memory',
+        'pools'           => 'storage::qnap::snmp::mode::pools',
+        'processcount'    => 'snmp_standard::mode::processcount',
+        'storage'         => 'snmp_standard::mode::storage',
+        'time'            => 'snmp_standard::mode::ntp',
+        'upgrade'         => 'storage::qnap::snmp::mode::upgrade',
+        'uptime'          => 'snmp_standard::mode::uptime',
+        'volumes'         => 'storage::qnap::snmp::mode::volumes'
+    };
 
     return $self;
 }

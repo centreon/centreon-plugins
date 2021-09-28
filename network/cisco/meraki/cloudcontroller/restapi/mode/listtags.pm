@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -70,8 +70,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
             $organization_name !~ /$self->{option_results}->{filter_organization_name}/);
 
-        while ($devices->{$_}->{tags} =~ /(\S+)/g) {
-            my $tag = $1;
+        foreach my $tag (@{$devices->{$_}->{tags}}) {
             if (!defined($results->{$tag})) {
                 $results->{$tag} = {
                     network_names => {},

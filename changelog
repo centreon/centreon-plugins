@@ -1,3 +1,56 @@
+2021-09-15 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Fortinet Fortiweb SNMP
+ * Plugin added: Tplink SNMP
+ * Plugin added: Grafana
+ * Plugin added: Symbolg Wing SNMP
+ * Plugin added: Jvm actuator
+ * Plugin added: Azure Container Registry
+ * Plugin added: Barco ClickShare Rest API
+ * Plugin added: HashiCorp Vault Rest API
+ * Core: passmanager change library for keepass v4
+ * Break: [infoblox/snmp] remove cpu/memory modes - add system mode
+ * Break: [qnap/snmp] es serie managed, rename volume-usage
+
+2021-05-20 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Azure MySQL
+ * Plugin added: Azure EventGrid
+ * Plugin added: Azure ServiceBus
+ * Plugin added: Azure AutomationAccount
+ * Plugin added: Azure SignalR
+ * Plugin added: Azure FrontDoor
+ * Plugin added: Azure App Service
+ * Plugin added: Azure EventHub
+ * Plugin added: Azure Functions
+ * Plugin added: Azure Application Gateway
+ * Plugin added: Azure Application Insights
+ * Plugin added: Azure Cosmos DB
+ * Plugin added: Azure App Service Plan
+ * Plugin added: Cisco WAP SNMP
+ * Plugin added: Huawei OceanStor SNMP
+ * Plugin added: Proxmox MG API
+ * Plugin added: Ubiquiti Unifi SNMP
+ * Core: secure plugins options
+ * Core: use package Pod::Simple::Search
+ * Mode added: [linux/local] 'check-plugin'
+ * Mode added: [protocol/snmp] 'collection'
+ * Mode added: [veeam] 'licenses'
+
+2021-02-18 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Google Cloud CloudSQL MySQL
+ * Plugin added: Google Cloud Storage
+ * Plugin added: Azure Load Balancer
+ * Plugin added: Azure Firewall
+ * Plugin added: Azure Public IPs
+ * Plugin added: Azure Key Vaults
+ * Plugin added: Notification Jasmin SMS
+ * Plugin added: Athonet ePC SNMP
+ * Plugin added: Meru SNMP
+ * Plugin added: Ubiquiti Airfiber SNMP
+ * Plugin added: EMC PPMA Rest API
+ * Plugin added: DenyALL SNMP
+ * Mode added: [cisco/standard/snmp] 'aaa-servers'
+ * Break: refactoring for protocol x509
+
 2021-01-13 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Hitachi HCP SNMP
  * Plugin added: Aruba AOS-CX Rest API

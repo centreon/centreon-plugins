@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -51,10 +51,19 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $edge (@{$self->{edges}}) {
-        $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s][description = %s][edge_state = %s]" .
-            "[service_state = %s][ha_state = %s][activation_state = %s]",
-            $edge->{id}, $edge->{name}, $edge->{description}, $edge->{edgeState}, $edge->{serviceState},
-            $edge->{haState}, $edge->{activationState}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "[id = %s][name = %s][description = %s][edge_state = %s]" .
+                "[service_state = %s][ha_state = %s][activation_state = %s]",
+                $edge->{id},
+                $edge->{name},
+                defined($edge->{description}) ? $edge->{description} : '',
+                $edge->{edgeState},
+                $edge->{serviceState},
+                $edge->{haState},
+                $edge->{activationState}
+            )
+        );
     }
 
     $self->{output}->output_add(
@@ -84,7 +93,7 @@ sub disco_show {
         $self->{output}->add_disco_entry(
             id => $edge->{id},
             name => $edge->{name},
-            description => $edge->{description},
+            description => defined($edge->{description}) ? $edge->{description} : '',
             edge_state => $edge->{edgeState},
             service_state => $edge->{serviceState},
             ha_state => $edge->{haState},

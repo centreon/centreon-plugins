@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,11 +32,12 @@ sub custom_usage_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -67,10 +68,10 @@ sub set_counters {
                 threshold_use => 'prct_used',
                 perfdatas => [
                     { label => 'used', value => 'used', template => '%s',
-                      unit => 'B', min => 0, max => 'total', cast_int => 1 },
-                ],
+                      unit => 'B', min => 0, max => 'total', cast_int => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -80,7 +81,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s" => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -94,7 +95,7 @@ sub prefix_array_output {
 
 my $mapping = {
     nasArrayCapacity    => { oid => '.1.3.6.1.4.1.5227.27.1.3.1.3' }, # in GB
-    nasArrayUsed        => { oid => '.1.3.6.1.4.1.5227.27.1.3.1.4' }, # in %
+    nasArrayUsed        => { oid => '.1.3.6.1.4.1.5227.27.1.3.1.4' }  # in %
 };
 
 sub manage_selection {
@@ -113,7 +114,7 @@ sub manage_selection {
         next if ($oid !~ /^$mapping->{nasArrayCapacity}->{oid}\.(.*)/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $instance !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $instance . "': no matching array name.", debug => 1);

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,6 +22,7 @@ package centreon::plugins::values;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 # Warning message with sprintf and too much arguments.
 # Really annoying. Need to disable that warning
 no if ($^V gt v5.22.0), 'warnings' => 'redundant';
@@ -55,7 +56,8 @@ sub new {
     $self->{last_timestamp} = undef;
 
     $self->{result_values} = {};
-    
+    $self->{safe_test} = 0;
+
     return $self;
 }
 
@@ -229,6 +231,36 @@ sub perfdata {
             max => $max
         );
     }
+}
+
+sub eval {
+    my ($self, %options) = @_;
+
+    if ($self->{safe_test} == 0) {
+        my ($code) = centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'Safe', 
+            no_quit => 1
+        );
+        if ($code == 0) {
+            $self->{safe} = Safe->new();
+            $self->{safe}->share('$values');
+        }
+        $self->{safe_test} = 1;
+    }
+
+    my $result;
+    if (defined($self->{safe})) {
+        our $values = $self->{result_values};
+        $result = $self->{safe}->reval($options{value}, 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+    } else {
+        my $values = $self->{result_values};
+        $result = eval "$options{value}";
+    }
+
+    return $result;
 }
 
 sub execute {

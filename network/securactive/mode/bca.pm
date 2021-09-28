@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -90,7 +90,7 @@ sub manage_selection {
             next;
         }
         
-        $self->{result_names}->{$oid} = $self->{output}->to_utf8($self->{result_names}->{$oid});
+        $self->{result_names}->{$oid} = $self->{output}->decode($self->{result_names}->{$oid});
         if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
             push @{$self->{bca_id_selected}}, $instance; 
         }
@@ -110,11 +110,15 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     $self->manage_selection();
-    $self->{snmp}->load(oids => [$oid_spvBCAStatus, $oid_spvBCAEURT, $oid_spvBCASRT, 
-                                 $oid_spvBCARTTClient, $oid_spvBCARTTServer,
-                                 $oid_spvBCADTTClient, $oid_spvBCADTTServer,
-                                 $oid_spvBCAThresholdWarning, $oid_spvBCAThresholdAlert], 
-                        instances => $self->{bca_id_selected});
+    $self->{snmp}->load(
+        oids => [
+            $oid_spvBCAStatus, $oid_spvBCAEURT, $oid_spvBCASRT, 
+            $oid_spvBCARTTClient, $oid_spvBCARTTServer,
+            $oid_spvBCADTTClient, $oid_spvBCADTTServer,
+            $oid_spvBCAThresholdWarning, $oid_spvBCAThresholdAlert
+        ],
+        instances => $self->{bca_id_selected}
+    );
     my $result = $self->{snmp}->get_leef();
     
     if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {

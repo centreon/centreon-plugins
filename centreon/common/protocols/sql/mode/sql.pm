@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,25 +20,71 @@
 
 package centreon::common::protocols::sql::mode::sql;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Time::HiRes qw(gettimeofday tv_interval);
+
+sub custom_value_output {
+    my ($self, %options) = @_;
+
+    return sprintf($self->{instance_mode}->{option_results}->{format}, $self->{result_values}->{value});
+}
+
+sub custom_value_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{instance_mode}->{option_results}->{perfdata_name},
+        unit => $self->{instance_mode}->{option_results}->{perfdata_unit},
+        value => $self->{result_values}->{value},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => $self->{instance_mode}->{option_results}->{perfdata_min},
+        max => $self->{instance_mode}->{option_results}->{perfdata_max}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'value', set => {
+                key_values => [ { name => 'value' } ],
+                closure_custom_output => $self->can('custom_value_output'),
+                closure_custom_perfdata => $self->can('custom_value_perfdata')
+            }
+        },
+        { label => 'execution-time', nlabel => 'sqlrequest.execution.time.seconds', display_ok => 0, set => {
+                key_values => [ { name => 'time' } ],
+                output_template => 'execution time: %.3f second(s)',
+                perfdatas => [
+                    { template => '%.3f', min => 0, unit => 's' }
+                ]
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "sql-statement:s"         => { name => 'sql_statement', },
-        "format:s"                => { name => 'format', default => 'SQL statement result : %i.'},
-        "perfdata-unit:s"         => { name => 'perfdata_unit', default => ''},
-        "perfdata-name:s"         => { name => 'perfdata_name', default => 'value'},
-        "perfdata-min:s"          => { name => 'perfdata_min', default => ''},
-        "perfdata-max:s"          => { name => 'perfdata_max', default => ''},
-        "warning:s"               => { name => 'warning', },
-        "critical:s"              => { name => 'critical', },
+        'sql-statement:s' => { name => 'sql_statement' },
+        'format:s'        => { name => 'format', default => 'SQL statement result : %i.' },
+        'perfdata-unit:s' => { name => 'perfdata_unit', default => '' },
+        'perfdata-name:s' => { name => 'perfdata_name', default => 'value' },
+        'perfdata-min:s'  => { name => 'perfdata_min', default => '' },
+        'perfdata-max:s'  => { name => 'perfdata_max', default => '' },
+        'warning:s'       => { name => 'warning', redirect => 'warning-value' },
+        'critical:s'      => { name => 'critical', redirect => 'critical-value' }
     });
 
     return $self;
@@ -46,16 +92,8 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{sql_statement}) || $self->{option_results}->{sql_statement} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
         $self->{output}->option_exit();
@@ -66,30 +104,20 @@ sub check_options {
     }
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{sql} = $options{sql};
 
-    my $query = $self->{option_results}->{sql_statement};
+    $options{sql}->connect();
+    
+    my $timing0 = [gettimeofday];
+    $options{sql}->query(query => $self->{option_results}->{sql_statement});
+    my $value = $options{sql}->fetchrow_array();
+    $self->{global} = {
+        value => $value,
+        time => tv_interval($timing0, [gettimeofday])
+    };
 
-    $self->{sql}->connect();
-    $self->{sql}->query(query => $query);
-    my $value = $self->{sql}->fetchrow_array();
-    $self->{sql}->disconnect();
-
-    my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf($self->{option_results}->{format}, $value));
-    $self->{output}->perfdata_add(label => $self->{option_results}->{perfdata_name},
-                                  unit => $self->{option_results}->{perfdata_unit},
-                                  value => $value,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => $self->{option_results}->{perfdata_min},
-                                  max => $self->{option_results}->{perfdata_max});
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $options{sql}->disconnect();
 }
 
 1;
@@ -126,13 +154,10 @@ Minimum value to add in perfdata output (Default: '')
 
 Maximum value to add in perfdata output (Default: '')
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
+Thresholds.
+Can be: 'value', 'execution-time'.
 
 =back
 

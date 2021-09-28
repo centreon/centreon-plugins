@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -110,7 +110,8 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         foreach (('current', 'voltage')) {
-            $result->{$_} = 0 if (defined($result->{$_}) && $result->{$_} eq '');
+            $result->{$_} = 0 if (defined($result->{$_}) && (
+                $result->{$_} eq '' || $result->{$_} == -1 || $result->{$_} == 65535 || $result->{$_} == 655350));
             $result->{$_} *= 0.1;
         }
 
@@ -126,7 +127,8 @@ sub manage_selection {
     }
 
     $self->{global} = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => 0);
-    $self->{global}->{frequency} = defined($self->{global}->{frequency}) ? ($self->{global}->{frequency} * 0.1) : 0;
+    $self->{global}->{frequency} = defined($self->{global}->{frequency}) && $self->{global}->{frequency} != -1 && $self->{global}->{frequency} != 65535
+        ? ($self->{global}->{frequency} * 0.1) : 0;
 }
 
 1;

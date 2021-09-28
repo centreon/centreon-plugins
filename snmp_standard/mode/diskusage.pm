@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -268,8 +268,8 @@ sub reload_cache {
     foreach my $key (keys %$result) {
         next if ($key !~ /$oid_dskPath\.([0-9]+)$/);
         $datas->{disks}->{$1} = [
-            $self->{output}->to_utf8($result->{$key}),
-            $self->{output}->to_utf8($result->{$oid_dskDevice . '.' . $1})
+            $self->{output}->decode($result->{$key}),
+            $self->{output}->decode($result->{$oid_dskDevice . '.' . $1})
         ];
     }
 

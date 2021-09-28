@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,63 +26,63 @@ use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return 'SNMP Agent ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'rta', set => {
+        { label => 'rta', nlabel => 'roundtrip.time.average.milliseconds', set => {
                 key_values => [ { name => 'rta' } ],
                 output_template => 'rta %.3fms',
                 perfdatas => [
-                    { label => 'rta', value => 'rta', template => '%.3f', min => 0, unit => 'ms' },
-                ],
+                    { label => 'rta', template => '%.3f', min => 0, unit => 'ms' }
+                ]
             }
         },
-        { label => 'rtmax', display_ok => 0, set => {
+        { label => 'rtmax', nlabel => 'roundtrip.time.maximum.milliseconds', display_ok => 0, set => {
                 key_values => [ { name => 'rtmax' } ],
                 perfdatas => [
-                    { label => 'rtmax', value => 'rtmax', template => '%.3f', min => 0, unit => 'ms' },
-                ],
+                    { label => 'rtmax', template => '%.3f', min => 0, unit => 'ms' }
+                ]
             }
         },
-        { label => 'rtmin', display_ok => 0, set => {
+        { label => 'rtmin', nlabel => 'roundtrip.time.minimum.milliseconds', display_ok => 0, set => {
                 key_values => [ { name => 'rtmin' } ],
                 perfdatas => [
-                    { label => 'rtmin', value => 'rtmin', template => '%.3f', min => 0, unit => 'ms' },
-                ],
+                    { label => 'rtmin', template => '%.3f', min => 0, unit => 'ms' }
+                ]
             }
         },
-        { label => 'pl', set => {
+        { label => 'pl', nlabel => 'packets.loss.percentage', set => {
                 key_values => [ { name => 'pl' } ],
                 output_template => 'lost %s%%',
                 perfdatas => [
-                    { label => 'pl', value => 'pl', template => '%s', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'pl', template => '%s', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-
-    return "SNMP Agent ";
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "timeout:s" => { name => 'timeout' },
-        "packets:s" => { name => 'packets' },
+        'timeout:s' => { name => 'timeout' },
+        'packets:s' => { name => 'packets' }
     });
-                                
+
     return $self;
 }
 
@@ -98,7 +98,7 @@ sub check_options {
     if (defined($self->{option_results}->{packets}) && $self->{option_results}->{packets} =~ /(\d+)/) {
         $self->{option_packets} = $1;
     }
-    
+
     $options{snmp}->set_snmp_connect_params(Timeout => $self->{option_timeout} * (10**6));
     $options{snmp}->set_snmp_connect_params(Retries => 0);
     $options{snmp}->set_snmp_params(subsetleef => 1);
@@ -106,8 +106,8 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $sysDescr = ".1.3.6.1.2.1.1.1.0";
+
+    my $sysDescr = '.1.3.6.1.2.1.1.1.0';
     my $total_time_elapsed = 0;
     my $max_time_elapsed = 0;
     my $min_time_elapsed = 0;
@@ -116,7 +116,7 @@ sub manage_selection {
         my $timing0 = [gettimeofday];
         my $return = $options{snmp}->get_leef(oids => [$sysDescr], nothing_quit => 0, dont_quit => 1);
         my $timeelapsed = tv_interval($timing0, [gettimeofday]);
-        
+
         if (!defined($return)) {
             $total_packet_lost++;
         } else {
@@ -130,7 +130,7 @@ sub manage_selection {
         rta => ($self->{option_packets} > $total_packet_lost) ? $total_time_elapsed * 1000 / ($self->{option_packets} - $total_packet_lost) : 0,
         rtmax => $max_time_elapsed * 1000,
         rtmin => $min_time_elapsed * 1000,
-        pl => int($total_packet_lost * 100 / $self->{option_packets}),
+        pl => int($total_packet_lost * 100 / $self->{option_packets})
     };
 }
     

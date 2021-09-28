@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,8 +31,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'asm-diskgroup-usage'      => 'database::oracle::mode::asmdiskgroupusage',
+        'collection'               => 'centreon::common::protocols::sql::mode::collection',
         'connection-time'          => 'centreon::common::protocols::sql::mode::connectiontime',
         'connected-users'          => 'database::oracle::mode::connectedusers',
         'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
@@ -59,7 +60,7 @@ sub new {
         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',
         'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
         'tnsping'                  => 'database::oracle::mode::tnsping'
-    );
+    };
 
     $self->{sql_modes}->{dbi} = 'database::oracle::dbi';
     $self->{sql_modes}->{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 

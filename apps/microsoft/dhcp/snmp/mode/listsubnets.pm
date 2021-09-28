@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,22 +41,30 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-my $oid_subnetAdd = '.1.3.6.1.4.1.311.1.3.2.1.1.1';
+my $mapping = {
+    address        => { oid => '.1.3.6.1.4.1.311.1.3.2.1.1.1' }, # subnetAdd
+    used           => { oid => '.1.3.6.1.4.1.311.1.3.2.1.1.2' }, # noAddInUse
+    free           => { oid => '.1.3.6.1.4.1.311.1.3.2.1.1.3' }, # noAddFree
+    pending_offers => { oid => '.1.3.6.1.4.1.311.1.3.2.1.1.4' }  # noPendingOffers
+};
+my $oid_scope_table = '.1.3.6.1.4.1.311.1.3.2.1.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_subnetAdd,
-        nothing_quit => 1
-    );
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_scope_table);
 
     my $results = {};
     foreach (keys %$snmp_result) {
-        /^$oid_subnetAdd\.(.*)$/;
+        next if (! /^$mapping->{address}->{oid}\.(.*)$/);
         my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
 
-        $results->{$instance} = { name => $snmp_result->{$_} };
+        my $status = 'enabled';
+        if ($result->{free} == 0 && $result->{used} == 0 && $result->{pending_offers} == 0) {
+            $status = 'disabled';
+        }
+        $results->{$instance} = { address => $result->{address}, status => $status };
     }
 
     return $results;
@@ -69,8 +77,9 @@ sub run {
     foreach (sort keys %$results) {
         $self->{output}->output_add(long_msg => 
             sprintf(
-                '[address = %s]',
-                $results->{$_}->{name}
+                '[address: %s][status: %s]',
+                $results->{$_}->{address},
+                $results->{$_}->{status}
             )
         );
     }
@@ -86,7 +95,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['address']);
+    $self->{output}->add_disco_format(elements => ['address', 'status']);
 }
 
 sub disco_show {
@@ -94,9 +103,7 @@ sub disco_show {
 
     my $results = $self->manage_selection(snmp => $options{snmp});
     foreach (sort keys %$results) {        
-        $self->{output}->add_disco_entry(
-            address => $results->{$_}->{name}
-        );
+        $self->{output}->add_disco_entry(%{$results->{$_}});
     }
 }
 

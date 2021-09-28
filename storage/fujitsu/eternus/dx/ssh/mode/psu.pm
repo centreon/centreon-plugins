@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,8 +35,8 @@ my $thresholds = {
         ['Undefined', 'WARNING'],
         ['Normal (Inside unused parts)', 'WARNING'],
         ['Error', 'CRITICAL'],
-        ['Unknown', 'UNKNOWN'],
-    ],
+        ['Unknown', 'UNKNOWN']
+    ]
 };
 
 sub new {
@@ -44,20 +44,20 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"              => { name => 'hostname' },
-                                  "ssh-option:s@"           => { name => 'ssh_option' },
-                                  "ssh-path:s"              => { name => 'ssh_path' },
-                                  "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"               => { name => 'timeout', default => 30 },
-                                  "command:s"               => { name => 'command', default => 'show' },
-                                  "command-path:s"          => { name => 'command_path' },
-                                  "command-options:s"       => { name => 'command_options', default => 'enclosure-status -type all' },
-                                  "filter:s@"               => { name => 'filter' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                  "no-component:s"          => { name => 'no_component' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'hostname:s'              => { name => 'hostname' },
+        'ssh-option:s@'           => { name => 'ssh_option' },
+        'ssh-path:s'              => { name => 'ssh_path' },
+        'ssh-command:s'           => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'               => { name => 'timeout', default => 30 },
+        'command:s'               => { name => 'command', default => 'show' },
+        'command-path:s'          => { name => 'command_path' },
+        'command-options:s'       => { name => 'command_options', default => 'enclosure-status -type all' },
+        'filter:s@'               => { name => 'filter' },
+        'threshold-overload:s@'   => { name => 'threshold_overload' },
+        'no-component:s'          => { name => 'no_component' }
+    });
+
     $self->{no_components} = undef;
     return $self;
 }
@@ -76,7 +76,7 @@ sub check_options {
         my @values = split (/,/, $val);
         push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
     }
-    
+
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         if ($val !~ /^(.*?),(.*?),(.*)$/) {
@@ -104,12 +104,14 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  ssh_pipe => 1,
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my $stdout = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        ssh_pipe => 1,
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
 
     #Controller Enclosure #0 Information
     #...
@@ -149,35 +151,43 @@ sub run {
     #   PSU#1 [Normal / 0xE001]
     
     my $total_components = 0;
-    while ($stdout =~ /^(Controller|Frontend)\s+Enclosure\s+(#\d+\s+|)Status(.*?)(\n\n|\Z)/msg) {
+    while ($stdout =~ /^(Controller|Frontend|Drive)\s+Enclosure\s+(#\d+\s+|)Status(.*?)(\n\n|\Z)/msg) {
         my ($type, $num, $content) = ($1, $2, $3);
-        
+
         my $prefix = 'fe';
-        if ($type =~ /^C/) {
+        if ($type =~ /controller/i) {
             $prefix = 'ce' . centreon::plugins::misc::trim($num);
+        } elsif ($type =~ /drive/i) {
+            $prefix = 'drive' . centreon::plugins::misc::trim($num);
         }
         while ($content =~ /PSU#(\d+)\s+\[\s*(\S+)/msig) {
             my ($psu_number, $psu_status) = ($1, $2);
             my $psu_name = $prefix . '_' . $psu_number;
-            
+
             next if ($self->check_filter(section => 'psu', instance => $psu_name));
 
             $total_components++;
             $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' status is '%s'", $psu_name, $psu_status));
             my $exit = $self->get_severity(section => 'psu', value => $psu_status);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Power Supply '%s' status is '%s'.", $psu_name, $psu_status));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Power Supply '%s' status is '%s'.", $psu_name, $psu_status)
+                );
             }
         }
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %d power supplies are ok.", $total_components));
-     
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("All %d power supplies are ok.", $total_components)
+    );
+
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
-                                    short_msg => 'No components are checked.');
+        $self->{output}->output_add(
+            severity => $self->{no_components},
+            short_msg => 'No components are checked.'
+        );
     }
  
     $self->{output}->display();

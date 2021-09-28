@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -116,7 +116,7 @@ sub api_display {
         }
         
         if (!open (FH, '>', $self->{option_results}->{api_write_file})) {
-            $self->output_add(
+            $self->{output}->output_add(
                 severity => 'UNKNOWN',
                 short_msg => "cannot open file  '" . $self->{option_results}->{api_write_file} . "': $!"
             );
@@ -125,7 +125,7 @@ sub api_display {
         FH->autoflush(1);
         print FH $options{content};
         close FH;
-        $self->output_add(
+        $self->{output}->output_add(
             severity => 'OK',
             short_msg => "Data written in file '" . $self->{option_results}->{api_write_file} . "': $!"
         );
@@ -300,7 +300,7 @@ sub internal_api_get_container_stats {
     };
     if ($@) {
         $container_stats = {};
-        $self->output_add(
+        $self->{output}->output_add(
             severity => 'UNKNOWN',
             short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@"
         );

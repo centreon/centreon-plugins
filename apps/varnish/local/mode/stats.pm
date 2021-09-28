@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -167,8 +167,7 @@ sub custom_output_second {
 
     my $label = $self->{label};
     $label =~ s/-/_/g;
-    my $msg = sprintf('%s: %.2f/s', $self->{result_values}->{$label . '_description'},  $self->{result_values}->{$label});
-    return $msg;
+    return sprintf('%s: %.2f/s', $self->{result_values}->{$label . '_description'},  $self->{result_values}->{$label});
 }
 
 sub custom_output { 
@@ -176,8 +175,7 @@ sub custom_output {
 
     my $label = $self->{label};
     $label =~ s/-/_/g;
-    my $msg = sprintf('%s: %s', $self->{result_values}->{$label . '_description'},  $self->{result_values}->{$label });
-    return $msg;
+    return sprintf('%s: %s', $self->{result_values}->{$label . '_description'},  $self->{result_values}->{$label});
 }
 
 sub set_counters {
@@ -238,7 +236,9 @@ sub check_varnish_old {
 sub check_varnish_new {
     my ($self, %options) = @_;
 
-    return if (!defined($options{json}->{'MAIN.uptime'}));
+    my $counters = $options{json};
+    $counters = $counters->{counters} if (defined($counters->{counters})); # since varnish 6.6.x
+    return if (!defined($counters->{'MAIN.uptime'}));
 
     #   "MAIN.cache_hit": {"type": "MAIN", "value": 18437, "flag": "a", "description": "Cache hits"},
     #   "MAIN.cache_hitpass": {"type": "MAIN", "value": 3488, "flag": "a", "description": "Cache hits for pass"},
@@ -246,9 +246,9 @@ sub check_varnish_new {
     #   "SMA.s0.g_space": { "description": "Bytes available", "flag": "g", "format": "B", "value": 4244053932 },
     foreach (@{$self->{varnish_stats}}) {
         my $category = defined($_->{category}) ? $_->{category} : 'MAIN';
-        next if (!defined($options{json}->{$category . '.' . $_->{entry}}));
-        $self->{global}->{$_->{entry}} = $options{json}->{$category . '.' . $_->{entry}}->{value};
-        $self->{global}->{$_->{entry} . '_description'} = $options{json}->{$category . '.' . $_->{entry}}->{description};
+        next if (!defined($counters->{ $category . '.' . $_->{entry} }));
+        $self->{global}->{$_->{entry}} = $counters->{ $category . '.' . $_->{entry} }->{value};
+        $self->{global}->{$_->{entry} . '_description'} = $counters->{ $category . '.' . $_->{entry} }->{description};
     }
 }
 

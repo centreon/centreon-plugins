@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -50,7 +50,7 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         label => $self->{result_values}->{label_ref} . '_' . $label, unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{instance} : undef,
         nlabel => $nlabel,
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),

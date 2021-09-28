@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,20 +26,12 @@ use strict;
 use warnings;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return 'status : ' . $self->{result_values}->{status};
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
 }
 
 sub custom_traffic_perfdata {
@@ -85,11 +77,12 @@ sub custom_traffic_output {
         ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{speed}, network => 1);
     }
 
-    my $msg = sprintf("Traffic %s : %s/s (%s on %s)",
-                      ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
-                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
-                      defined($total_value) ? $total_value . $total_unit : '-');
-    return $msg;
+    return sprintf(
+        "Traffic %s: %s/s (%s on %s)",
+        ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
+        defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
+        defined($total_value) ? $total_value . $total_unit : '-'
+    );
 }
 
 sub custom_traffic_calc {
@@ -106,104 +99,6 @@ sub custom_traffic_calc {
     return 0;
 }
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_init => 'skip_global' },
-        { name => 'device', type => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'All devices are ok' },
-        { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All device interfaces are ok', skipped_code => { -10 => 1 } },
-    ];
-    $self->{maps_counters}->{global} = [
-        { label => 'total-devices', set => {
-                key_values => [ { name => 'total' } ],
-                output_template => 'Total devices : %s',
-                perfdatas => [
-                    { label => 'total', template => '%s', min => 0 },
-                ],
-            }
-        },
-    ];
-    
-    $self->{maps_counters}->{device} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-        { label => 'clients', set => {
-                key_values => [ { name => 'clients' }, { name => 'display' } ],
-                output_template => 'Clients : %s',
-                perfdatas => [
-                    { label => 'clients', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-    ];
-    
-    $self->{maps_counters}->{interface} = [
-        { label => 'in', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
-                closure_custom_output => $self->can('custom_traffic_output'),
-                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
-            }
-        },
-        { label => 'out', set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
-                closure_custom_output => $self->can('custom_traffic_output'),
-                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
-            }
-        },
-    ];
-}
-
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
-    bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        'filter-name:s'      => { name => 'filter_name' },
-        'filter-interface:s' => { name => 'filter_interface' },
-        'filter-network:s'   => { name => 'filter_network' },
-        'filter-product:s'   => { name => 'filter_product' },
-        'warning-status:s'   => { name => 'warning_status', default => '' },
-        'critical-status:s'  => { name => 'critical_status', default => '%{status} =~ /offline/' },
-        'speed-in:s'         => { name => 'speed_in' },
-        'speed-out:s'        => { name => 'speed_out' },
-        'units-traffic:s'    => { name => 'units_traffic', default => '%' },
-        'cache-expires-on:s' => { name => 'cache_expires_on' },
-    });
-
-    $self->{cache} = centreon::plugins::statefile->new(%options);
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-    $self->{cache}->check_options(option_results => $self->{option_results});
-    if (defined($self->{option_results}->{cache_expires_on}) && $self->{option_results}->{cache_expires_on} =~ /(\d+)/) {
-        $self->{cache_expires_on} = $1; 
-    }
-}
-
-sub skip_global {
-    my ($self, %options) = @_;
-
-    scalar(keys %{$self->{device}}) > 1 ? return(0) : return(1);
-}
-
 sub prefix_device_output {
     my ($self, %options) = @_;
     
@@ -217,21 +112,110 @@ sub prefix_interface_output {
     return "Interface '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+        { name => 'device', type => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'All devices are ok' },
+        { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All device interfaces are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'total-devices', display_ok => 0, set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'Total devices: %s',
+                perfdatas => [
+                    { label => 'total', template => '%s', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{device} = [
+        { label => 'status', type => 2, critical_default => '%{status} =~ /offline/', set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'clients', set => {
+                key_values => [ { name => 'clients' }, { name => 'display' } ],
+                output_template => 'Clients: %s',
+                perfdatas => [
+                    { label => 'clients', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{interface} = [
+        { label => 'in', set => {
+                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_traffic_output'),
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
+            }
+        },
+        { label => 'out', set => {
+                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_traffic_output'),
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
+            }
+        }
+    ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    bless $self, $class;
+    
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'      => { name => 'filter_name' },
+        'filter-interface:s' => { name => 'filter_interface' },
+        'filter-network:s'   => { name => 'filter_network' },
+        'filter-product:s'   => { name => 'filter_product' },
+        'speed-in:s'         => { name => 'speed_in' },
+        'speed-out:s'        => { name => 'speed_out' },
+        'units-traffic:s'    => { name => 'units_traffic', default => '%' },
+        'cache-expires-on:s' => { name => 'cache_expires_on' }
+    });
+
+    $self->{cache} = centreon::plugins::statefile->new(%options);
+    return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{cache}->check_options(option_results => $self->{option_results});
+    if (defined($self->{option_results}->{cache_expires_on}) && $self->{option_results}->{cache_expires_on} =~ /(\d+)/) {
+        $self->{cache_expires_on} = $1;
+    }
+}
+
 my %map_status = (
     0 => 'offline',
-    1 => 'online',
+    1 => 'online'
 );
 my $mapping = {
     devName         => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.2' },
     devStatus       => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.3', map => \%map_status },
     devClientCount  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.5' },
     devProductCode  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.9' },
-    devNetworkName  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.11' },
+    devNetworkName  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.11' }
 };
 my $mapping2 = {
     devInterfaceName        => { oid => '.1.3.6.1.4.1.29671.1.1.5.1.3' },
     devInterfaceSentBytes   => { oid => '.1.3.6.1.4.1.29671.1.1.5.1.6' },
-    devInterfaceRecvBytes   => { oid => '.1.3.6.1.4.1.29671.1.1.5.1.7' },
+    devInterfaceRecvBytes   => { oid => '.1.3.6.1.4.1.29671.1.1.5.1.7' }
 };
 
 sub get_devices_infos_snmp {
@@ -301,7 +285,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping device '" . $dev_name . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         foreach (keys %{$snmp_result->{ $mapping2->{devInterfaceName}->{oid} }}) {
             next if (!/^$mapping2->{devInterfaceName}->{oid}\.$instance\.(.*)/);
             
@@ -315,7 +299,7 @@ sub manage_selection {
             
             $self->{interface}->{$instance . '.' . $index} = { display => $dev_name . '.' . $interface_name };
         }
-        
+
         $self->{global}->{total}++;
         $self->{device}->{$instance} = { display => $dev_name, network => $network, product => $product };
     }
@@ -333,8 +317,11 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{device}}) > 0) {
-        $options{snmp}->load(oids => [$mapping->{devStatus}->{oid}, $mapping->{devClientCount}->{oid}],
-            instances => [keys %{$self->{device}}], instance_regexp => '^(.*)$');
+        $options{snmp}->load(
+            oids => [$mapping->{devStatus}->{oid}, $mapping->{devClientCount}->{oid}],
+            instances => [keys %{$self->{device}}],
+            instance_regexp => '^(.*)$'
+        );
         $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
         foreach (keys %{$self->{device}}) {
             my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
@@ -343,8 +330,8 @@ sub manage_selection {
             $self->{device}->{$_}->{clients} = $result->{devClientCount};
         }
     }
-    
-    $self->{cache_name} = "cisco_meraki_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+
+    $self->{cache_name} = 'cisco_meraki_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all')) . '_' .

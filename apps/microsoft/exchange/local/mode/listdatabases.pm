@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::exchange::listdatabases;
+use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
@@ -42,6 +43,7 @@ sub new {
         'command-path:s'    => { name => 'command_path' },
         'command-options:s'    => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
         'ps-exec-only'         => { name => 'ps_exec_only' },
+        'ps-display'           => { name => 'ps_display' },
         'ps-database-filter:s' => { name => 'ps_database_filter' }
     });
 
@@ -51,6 +53,20 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->decode($options{stdout});
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+    return $decoded;
 }
 
 sub run {
@@ -75,9 +91,9 @@ sub run {
         $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
     }
 
-    my ($stdout) = centreon::plugins::misc::windows_execute(
+    my ($stdout) = centreon::plugins::misc::execute(
         output => $self->{output},
-        timeout => $self->{option_results}->{timeout},
+        options => $self->{option_results},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
         command_options => $self->{option_results}->{command_options}
@@ -92,7 +108,18 @@ sub run {
             severity => 'OK',
             short_msg => 'List databases:'
         );
-        centreon::common::powershell::exchange::listdatabases::list($self, stdout => $stdout);
+
+        my $decoded = $self->manage_selection(stdout => $stdout);
+        foreach my $db (@$decoded) {
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "[name: %s][server: %s][mounted: %s]",
+                    $db->{name},
+                    $db->{server},
+                    $db->{mounted} =~ /True|1/i ? 'true' : 'false'
+                )
+            );
+        }
     }
     
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -117,14 +144,24 @@ sub disco_show {
         );
         $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
     }
-    my ($stdout) = centreon::plugins::misc::windows_execute(
+
+    my ($stdout) = centreon::plugins::misc::execute(
         output => $self->{output},
-        timeout => $self->{option_results}->{timeout},
+        options => $self->{option_results},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
         command_options => $self->{option_results}->{command_options}
     );
-    centreon::common::powershell::exchange::listdatabases::disco_show($self, stdout => $stdout);
+
+    my $decoded = $self->manage_selection(stdout => $stdout);
+
+    foreach my $db (@$decoded) {
+        $self->{output}->add_disco_entry(
+            name => $db->{name},
+            server => $db->{server},
+            mounted => $db->{mounted} =~ /True|1/i ? 'true' : 'false'
+        );
+    }
 }
 
 1;

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,14 +29,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'memory-usage'      => 'apps::bind9::web::mode::memoryusage',
-        'server-usage'      => 'apps::bind9::web::mode::serverusage',
-        'zone-usage'        => 'apps::bind9::web::mode::zoneusage',
-    );
+    $self->{version} = '1.1';
+    $self->{modes} = {
+        'memory-usage' => 'apps::bind9::web::mode::memoryusage',
+        'server-usage' => 'apps::bind9::web::mode::serverusage',
+        'zone-usage'   => 'apps::bind9::web::mode::zoneusage'
+    };
 
-    $self->{custom_modes}{api} = 'apps::bind9::web::custom::api';
+    $self->{custom_modes}->{api} = 'apps::bind9::web::custom::api';
     return $self;
 }
 

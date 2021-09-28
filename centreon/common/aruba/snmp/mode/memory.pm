@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,8 +33,8 @@ sub custom_usage_perfdata {
         label => 'usage', nlabel => 'memory.usage.bytes',
         unit => 'B',
         value => $self->{result_values}->{used},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
         min => 0, max => $self->{result_values}->{total});
 }
 
@@ -43,8 +43,11 @@ sub custom_usage_threshold {
 
     my $exit = $self->{perfdata}->threshold_check(
         value => $self->{result_values}->{prct_used},
-        threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                       { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -78,7 +81,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'memory', type => 1, cb_prefix_output => 'prefix_output',
-          message_multiple => 'All memory pools are ok' },
+          message_multiple => 'All memory pools are ok' }
     ];
 
     $self->{maps_counters}->{memory} = [
@@ -87,9 +90,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 }
 

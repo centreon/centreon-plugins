@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::common::powershell::veeam::jobstatus;
 use apps::backup::veeam::local::mode::resources::types qw($job_type $job_result);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::plugins::misc;
 use JSON::XS;
 
@@ -65,7 +65,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'jobs.total.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Jobs : %s',
                 perfdatas => [
@@ -78,7 +78,6 @@ sub set_counters {
     $self->{maps_counters}->{job} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' }, { name => 'type' }, { name => 'is_running' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
@@ -190,13 +189,14 @@ sub manage_selection {
         $job->{creationTimeUTC} =~ s/,/\./;
         $job->{endTimeUTC} =~ s/,/\./;
 
+        my $job_type = defined($job_type->{ $job->{type} }) ? $job_type->{ $job->{type} } : 'unknown';
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $job->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $job_type->{ $job->{type} } !~ /$self->{option_results}->{filter_type}/) {
+            $job_type !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter type.", debug => 1);
             next;
         }
@@ -218,7 +218,7 @@ sub manage_selection {
         $self->{job}->{ $job->{name} } = {
             display => $job->{name},
             elapsed => $elapsed_time,
-            type => $job_type->{ $job->{type} },
+            type => $job_type,
             is_running => $job->{isRunning} =~ /True|1/ ? 1 : ($job->{creationTimeUTC} !~ /[0-9]/ ? 2 : 0),
             status => defined($job_result->{ $job->{result} }) && $job_result->{ $job->{result} } ne '' ?
                 $job_result->{ $job->{result} } : '-'

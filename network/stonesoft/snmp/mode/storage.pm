@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -154,7 +154,7 @@ sub manage_selection {
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fwMountPointName}})) {
         $key =~ /\.([0-9]+)$/;
         my $instance = $1;
-        my $filter_name = $self->{output}->to_utf8($self->{results}->{$oid_fwMountPointName}->{$key});
+        my $filter_name = $self->{output}->decode($self->{results}->{$oid_fwMountPointName}->{$key});
         next if (!defined($filter_name));
         if (!defined($self->{option_results}->{storage})) {
             push @{$self->{storage_id_selected}}, $instance; 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,15 +24,16 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Health is '%s', Status is '%s'",
+    return sprintf(
+        "Health is '%s', Status is '%s'",
         $self->{result_values}->{health},
-        $self->{result_values}->{status});
-    return $msg;
+        $self->{result_values}->{status}
+    );
 }
 
 sub custom_status_calc {
@@ -50,23 +51,22 @@ sub set_counters {
         { name => 'global', type => 0, cb_prefix_output => 'prefix_status_output' },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0,  set => {
+        { label => 'status', type => 2, critical_default => '%{health} !~ /Healthy/ || %{status} !~ /running/', set => {
                 key_values => [ { name => 'health' }, { name => 'serviceStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'uptime', set => {
                 key_values => [ { name => 'serviceUptime' }, { name => 'serviceUptime_human' } ],
                 output_template => 'Uptime: %s', output_use => 'serviceUptime_human',
                 perfdatas => [
-                    { label => 'uptime', value => 'serviceUptime', template => '%d',
-                      min => 0, unit => 's' },
-                ],
+                    { label => 'uptime', template => '%d', min => 0, unit => 's' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -82,42 +82,33 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments =>  {
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{health} !~ /Healthy/ || %{status} !~ /running/' },
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 my $mappings = {
     common    => {
         health => { oid => '.1.3.6.1.4.1.17163.1.1.2.2' },
         serviceStatus => { oid => '.1.3.6.1.4.1.17163.1.1.2.3' },
-        serviceUptime => { oid => '.1.3.6.1.4.1.17163.1.1.2.4' },
+        serviceUptime => { oid => '.1.3.6.1.4.1.17163.1.1.2.4' }
     },
     ex => {
         health => { oid => '.1.3.6.1.4.1.17163.1.51.2.2' },
         serviceStatus => { oid => '.1.3.6.1.4.1.17163.1.51.2.3' },
-        serviceUptime => { oid => '.1.3.6.1.4.1.17163.1.51.2.4' },
+        serviceUptime => { oid => '.1.3.6.1.4.1.17163.1.51.2.4' }
     },
     interceptor => {
         health => { oid => '.1.3.6.1.4.1.17163.1.3.2.2' },
         serviceStatus => { oid => '.1.3.6.1.4.1.17163.1.3.2.3' },
-        serviceUptime => { oid => '.1.3.6.1.4.1.17163.1.3.2.4' },
+        serviceUptime => { oid => '.1.3.6.1.4.1.17163.1.3.2.4' }
     },
 };
 
 my $oids = {
     common => '.1.3.6.1.4.1.17163.1.1.2',
     ex => '.1.3.6.1.4.1.17163.1.51.2',
-    interceptor => '.1.3.6.1.4.1.17163.1.3.2',
+    interceptor => '.1.3.6.1.4.1.17163.1.3.2'
 };
 
 sub manage_selection {
@@ -134,9 +125,8 @@ sub manage_selection {
     foreach my $equipment (keys %{$oids}) {
         next if (!%{$results->{$oids->{$equipment}}});
 
-        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment},
-            results => $results->{$oids->{$equipment}}, instance => 0);
-            
+        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment}, results => $results->{$oids->{$equipment}}, instance => 0);
+
         $self->{global} = {
             health => $result->{health},
             serviceStatus => $result->{serviceStatus},

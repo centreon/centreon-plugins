@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,63 +24,66 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("battery status is '%s'", $self->{result_values}->{status});
-    return $msg;
+    return sprintf("battery status is '%s'", $self->{result_values}->{status});
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
-        
+
     $self->{maps_counters}->{global} = [
-         { label => 'status', threshold => 0, set => {
+         {
+             label => 'status',
+             type => 2,
+             unknown_default => '%{status} =~ /unknown/i',
+             warning_default => '%{status} =~ /low/i',
+             set => {
                 key_values => [ { name => 'status' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'charge-remaining', , nlabel => 'battery.charge.remaining.percent', set => {
                 key_values => [ { name => 'upsSmartBatteryCapacity' } ],
                 output_template => 'remaining capacity: %s %%',
                 perfdatas => [
-                    { value => 'upsSmartBatteryCapacity', template => '%s', min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%s', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'charge-remaining-minutes', nlabel => 'battery.charge.remaining.minutes', display_ok => 0, set => {
                 key_values => [ { name => 'upsSmartBatteryRunTimeRemaining' } ],
                 output_template => 'remaining time: %s minutes',
                 perfdatas => [
-                    { value => 'upsSmartBatteryRunTimeRemaining', template => '%s', min => 0, unit => 'm' },
-                ],
+                    { template => '%s', min => 0, unit => 'm' }
+                ]
             }
         },
         { label => 'voltage', nlabel => 'battery.voltage.volt', display_ok => 0, set => {
                 key_values => [ { name => 'upsSmartBatteryVoltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { value => 'upsSmartBatteryVoltage', template => '%s', unit => 'V' },
-                ],
+                    { template => '%s', unit => 'V' }
+                ]
             }
         },
         { label => 'temperature', nlabel => 'battery.temperature.celsius', display_ok => 0, set => {
                 key_values => [ { name => 'upsSmartBatteryTemperature', no_value => 0 } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
-                    { value => 'upsSmartBatteryTemperature', template => '%s', unit => 'C' },
-                ],
+                    { template => '%s', unit => 'C' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -90,19 +93,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /low/i' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 my $map_battery_status = {
@@ -114,12 +107,12 @@ my $mapping = {
     upsSmartBatteryVoltage          => { oid => '.1.3.6.1.4.1.935.1.1.1.2.2.2' }, # in dV
     upsSmartBatteryTemperature      => { oid => '.1.3.6.1.4.1.935.1.1.1.2.2.3' }, # in tenth of celsius
     upsSmartBatteryRunTimeRemaining => { oid => '.1.3.6.1.4.1.935.1.1.1.2.2.4' }, # in seconds
-    upsSmartBatteryCapacity         => { oid => '.1.3.6.1.4.1.935.1.1.1.2.2.1' },
+    upsSmartBatteryCapacity         => { oid => '.1.3.6.1.4.1.935.1.1.1.2.2.1' }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $snmp_result = $options{snmp}->get_leef(
         oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
         nothing_quit => 1

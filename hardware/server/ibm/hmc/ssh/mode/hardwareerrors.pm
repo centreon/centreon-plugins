@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,21 +31,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"              => { name => 'hostname' },
-                                  "timeout:s"               => { name => 'timeout', default => 30 },
-                                  "sudo"                    => { name => 'sudo' },
-                                  "ssh-option:s@"           => { name => 'ssh_option' },
-                                  "ssh-path:s"              => { name => 'ssh_path' },
-                                  "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-                                  "hmc-command:s"           => { name => 'hmc_command', default => 'lssvcevents' },
-                                  "retention:s"             => { name => 'retention' },
-                                  "minutes"                 => { name => 'minutes' },
-                                  "filter-status:s"         => { name => 'filter_status', default => 'open' },
-                                  "filter-problem-nums:s"   => { name => 'filter_problem_nums' },
-                                  "filter-system:s"         => { name => 'filter_system' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'hmc-command:s'           => { name => 'hmc_command', default => 'lssvcevents' },
+        'retention:s'             => { name => 'retention' },
+        'minutes'                 => { name => 'minutes' },
+        'filter-status:s'         => { name => 'filter_status', default => 'open' },
+        'filter-problem-nums:s'   => { name => 'filter_problem_nums' },
+        'filter-system:s'         => { name => 'filter_system' }
+    });
+
     return $self;
 }
 
@@ -53,20 +47,16 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{hostname})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify a hostname.");
-       $self->{output}->option_exit(); 
-    }
     if (defined($self->{option_results}->{retention}) && $self->{option_results}->{retention} !~ /^\d+$/) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify an integer as retention.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify an integer as retention.');
         $self->{output}->option_exit();
     }
 }
 
 sub build_command {
     my ($self, %options) = @_;
-    
-    $self->{hmc_command} = $self->{option_results}->{hmc_command} . " -t hardware -F first_time~sys_name~text "; 
+
+    $self->{hmc_command} = $self->{option_results}->{hmc_command} . ' -t hardware -F first_time~sys_name~text '; 
     if (defined($self->{option_results}->{retention}) && $self->{option_results}->{retention} ne '') {
         if (defined($self->{option_results}->{minutes})) {
             $self->{hmc_command} .= ' -i ' . $self->{option_results}->{retention};
@@ -92,37 +82,37 @@ sub run {
     my ($self, %options) = @_;
 
     $self->build_command();
-    $self->{option_results}->{remote} = 1;
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{hmc_command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => $self->{hmc_command}
+    );
 
     ######
     # Command treatment
     ######
     my @long_msg = split("\n", $stdout);
-   
     if (defined($self->{option_results}->{retention}) and defined($self->{option_results}->{minutes})) {
-        $self->{output}->output_add(long_msg => $stdout);
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "No Problems on system since " . $self->{option_results}->{retention} . " minutes.");
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "No problems on system since " . $self->{option_results}->{retention} . " minutes."
+        );
     } elsif (defined($self->{option_results}->{retention})) {
-        $self->{output}->output_add(long_msg => $stdout);
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "No Problems on system since " . $self->{option_results}->{retention} . " days.");
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "No Problems on system since " . $self->{option_results}->{retention} . " days."
+        );
     } else { 
-        $self->{output}->output_add(long_msg => $stdout);
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No Problems on system.");
+        $self->{output}->output_add(
+            severity => 'OK', 
+            short_msg => "No problems on system."
+        );
     }
 
     foreach my $line (@long_msg){
         if ($line =~ /^(.*)~(.*)~(.*)$/) {
-            $self->{output}->output_add(severity => 'CRITICAL', 
-                                        short_msg => "[$1][$2] $3");
+            $self->{output}->output_add(
+                severity => 'CRITICAL', 
+                short_msg => "[$1][$2] $3"
+            );
         }
     }
 
@@ -139,26 +129,6 @@ __END__
 Check Hardware for system managed by HMC.
 
 =over 8
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh').
 
 =item B<--command-hmc>
 

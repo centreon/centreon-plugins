@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,18 +35,33 @@ sub set_system {
     
     $self->{thresholds} = {
         disk => [
+            ['good', 'OK'],
+            ['warning', 'WARNING'],
+            ['abnormal', 'CRITICAL'],
+
+            ['in-use', 'OK'], # es
             ['noDisk', 'OK'],
             ['ready', 'OK'],
             ['invalid', 'CRITICAL'],
             ['rwError', 'CRITICAL'],
             ['unknown', 'UNKNOWN'],
-
-            ['abnormal', 'WARNING'],
-            ['good', 'OK'],
-            ['warning', 'WARNING'],
             ['error', 'CRITICAL']
         ],
+        fan => [
+            ['ok', 'OK'],
+            ['n/a', 'OK'],
+            ['fail', 'CRITICAL']
+        ],
+        psu => [
+            ['ok', 'OK'],
+            ['fail', 'CRITICAL']
+        ],
         smartdisk => [
+            ['good', 'OK'],
+            ['warning', 'WARNING'],
+            ['abnormal', 'CRITICAL'],
+            ['error', 'CRITICAL'],
+
             ['GOOD', 'OK'],
             ['NORMAL', 'OK'],
             ['--', 'OK'],
@@ -57,22 +72,31 @@ sub set_system {
             ['Synchronizing', 'OK'],
             ['degraded', 'WARNING'],
             ['.*', 'CRITICAL']
-        ],
-        psu => [
-            ['ok', 'OK'],
-            ['fail', 'CRITICAL']
         ]
     };
 
     $self->{components_path} = 'storage::qnap::snmp::mode::components';
-    $self->{components_module} = ['disk', 'fan', 'psu', 'raid', 'temperature'];
+    $self->{components_module} = ['disk', 'fan', 'mdisk', 'psu', 'raid', 'temperature'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
 
     $self->{snmp} = $options{snmp};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+
+    $self->{is_es} = 0;
+    $self->{is_qts} = 0;
+    my $oid_es_uptime = '.1.3.6.1.4.1.24681.2.2.4.0'; # es-SystemUptime
+    my $oid_qts_model = '.1.3.6.1.4.1.55062.1.12.3.0'; # systemModel
+    my $snmp_result = $self->{snmp}->get_leef(
+        oids => [$oid_es_uptime, $oid_qts_model]
+    ); 
+    if (defined($snmp_result->{$oid_es_uptime})) {
+        $self->{is_es} = 1;
+    }
+    if (defined($snmp_result->{$oid_qts_model})) {
+        $self->{is_qts} = 1;
+    }
 }
 
 sub new {
@@ -91,14 +115,14 @@ __END__
 
 =head1 MODE
 
-Check hardware (NAS.mib) (Fans, Temperatures, Disks, Raid).
+Check hardware.
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'disk', 'fan', 'psu', 'raid', 'temperature'.
+Can be: 'disk', 'fan', 'mdisk', 'psu', 'raid', 'temperature'.
 
 =item B<--filter>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -123,7 +123,6 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    $self->{http}->add_header(key => 'Content-Type', value => $options{content_type});
     $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token}) if (defined($self->{access_token}));
     $self->{http}->add_header(key => 'X-ANYPNT-ENV-ID', value => $self->{environment_id}) if (defined $options{environment_header});
     $self->{http}->add_header(key => 'X-ANYPNT-ORG-ID', value => $self->{organization_id}) if (defined $options{organization_header});
@@ -140,10 +139,11 @@ sub get_access_token {
         my $login = { username => $self->{api_username}, password => $self->{api_password} };
         my $post_json = JSON::XS->new->utf8->encode($login);
 
-        $self->settings(content_type => 'application/json');
+        $self->settings();
 
         my $content = $self->{http}->request(
             method => 'POST',
+            header => ['Content-type: application/json'],
             query_form_post => $post_json,
             url_path => $self->{authent_endpoint}
         );
@@ -183,7 +183,7 @@ sub request_api {
         $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
     }
 
-    $self->settings(content_type => 'application/x-www-form-urlencoded', environment_header => 1, organization_header => 1);
+    $self->settings(environment_header => 1, organization_header => 1);
 
     my $content = $self->{http}->request(%options);
 

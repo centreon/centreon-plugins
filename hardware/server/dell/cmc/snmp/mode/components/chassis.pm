@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,19 +26,19 @@ use warnings;
 # In MIB 'DELL-RAC-MIB'
 my $mapping = {
     drsWattsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.13', section => 'power', label => 'power', unit => 'watt' },
-    drsAmpsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.14', section => 'current', label => 'current', unit => 'ampere' },
+    drsAmpsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.14', section => 'current', label => 'current', unit => 'ampere' }
 };
 my $oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry = '.1.3.6.1.4.1.674.10892.2.4.1.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry };
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking chassis");
     $self->{components}->{chassis} = { name => 'chassis', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'chassis'));
@@ -51,17 +51,29 @@ sub check {
         next if ($self->check_filter(section => 'chassis', instance => $instance));
         $self->{components}->{chassis}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Chassis '%s': power %s W, current %s A [instance: %s].",
-                                    $instance, $result->{drsWattsReading}, $result->{drsAmpsReading},
-                                    $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "chassis '%s': power %s W, current %s A [instance: %s].",
+                $instance,
+                $result->{drsWattsReading},
+                $result->{drsAmpsReading},
+                $instance
+            )
+        );
         foreach my $probe (('drsWattsReading', 'drsAmpsReading')) {
             next if (!defined($result->{$probe}));
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'chassis.' . $mapping->{$probe}->{section}, instance => $instance, value => $result->{$probe});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Chassis '%s' %s is %s%s", $instance, 
-                                                                 $mapping->{$probe}->{section}, $result->{$probe}, $mapping->{$probe}->{unit}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf(
+                        "Chassis '%s' %s is %s%s",
+                        $instance, 
+                        $mapping->{$probe}->{section},
+                        $result->{$probe},
+                        $mapping->{$probe}->{unit}
+                    )
+                );
             }
             $self->{output}->perfdata_add(
                 label => 'chassis_' . $mapping->{$probe}->{label}, unit => $mapping->{$probe}->{unit},

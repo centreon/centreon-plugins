@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,20 +18,20 @@
 # limitations under the License.
 #
 
-package storage::buffalo::terastation::snmp::::mode::components::disk;
+package storage::buffalo::terastation::snmp::mode::components::disk;
 
 use strict;
 use warnings;
 
 my %map_disk_status = (
-    1 => 'notSupport', 1 => 'normal', 2 => 'array1', 3 => 'array2',
+    -1 => 'notSupport', 1 => 'normal', 2 => 'array1', 3 => 'array2',
     4 => 'standby', 5 => 'degrade', 6 => 'remove', 7 => 'standbyRemoved',
     8 => 'degradeRemoved', 9 => 'removeRemoved', 10 => 'array3',
     11 => 'array4', 12 => 'mediaCartridge', 13 => 'array5', 14 => 'array6',
 );
 
 my $mapping = {
-    nasDiskStatus => { oid => '.1.3.6.1.4.1.5227.27.1.2.1.2', map => \%map_disk_status },
+    nasDiskStatus => { oid => '.1.3.6.1.4.1.5227.27.1.2.1.2', map => \%map_disk_status }
 };
 
 sub load {
@@ -55,14 +55,21 @@ sub check {
         next if ($self->check_filter(section => 'disk', instance => $instance));
         $self->{components}->{disk}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("disk '%s' status is '%s' [instance: %s].",
-                                    $instance, $result->{nasDiskStatus}, $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "disk '%s' status is '%s' [instance: %s].",
+                $instance, $result->{nasDiskStatus}, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'disk', value => $result->{nasDiskStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Disk '%s' status is '%s'",
-                                                             $instance, $result->{nasDiskStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Disk '%s' status is '%s'",
+                    $instance, $result->{nasDiskStatus}
+                )
+            );
         }
     }
 }

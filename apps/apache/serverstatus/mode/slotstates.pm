@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -65,11 +65,12 @@ sub custom_value_output {
     
     my $label = $self->{result_values}->{label};
     $label =~ s/_/ /g;
-    $label =~ s/(\w+)/\u$1/g;
-    my $msg = sprintf("%s : %s (%.2f %%)",
-                      ucfirst($label),
-                      $self->{result_values}->{used}, $self->{result_values}->{prct});
-    return $msg;
+    return sprintf(
+        "%s: %s (%.2f %%)",
+        $label,
+        $self->{result_values}->{used},
+        $self->{result_values}->{prct}
+    );
 }
 
 sub custom_value_calc {
@@ -200,17 +201,17 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "hostname:s"    => { name => 'hostname' },
-        "port:s"        => { name => 'port', },
-        "proto:s"       => { name => 'proto' },
-        "urlpath:s"     => { name => 'url_path', default => "/server-status/?auto" },
-        "credentials"   => { name => 'credentials' },
-        "basic"         => { name => 'basic' },
-        "username:s"    => { name => 'username' },
-        "password:s"    => { name => 'password' },
-        "header:s@"     => { name => 'header' },
-        "timeout:s"     => { name => 'timeout' },
-        "units:s"       => { name => 'units', default => '%' },
+        'hostname:s'  => { name => 'hostname' },
+        'port:s'      => { name => 'port', },
+        'proto:s'     => { name => 'proto' },
+        'urlpath:s'   => { name => 'url_path', default => "/server-status/?auto" },
+        'credentials' => { name => 'credentials' },
+        'basic'       => { name => 'basic' },
+        'username:s'  => { name => 'username' },
+        'password:s'  => { name => 'password' },
+        'header:s@'   => { name => 'header' },
+        'timeout:s'   => { name => 'timeout' },
+        'units:s'     => { name => 'units', default => '%' }
     });
     
     $self->{http} = centreon::plugins::http->new(%options);
@@ -238,11 +239,11 @@ sub manage_selection {
     if ($webcontent =~ /^Scoreboard:\s+([^\s]+)/mi) {
         $ScoreBoard = $1;
     }
-    
+
     $self->{global} = { 
         total => length($ScoreBoard),
-        free => ($ScoreBoard =~ tr/\.//),
-        busy => length($ScoreBoard) - ($ScoreBoard =~ tr/\.//),
+        free => ($ScoreBoard =~ tr/\.//) + ($ScoreBoard =~ tr/\_//),
+        busy => length($ScoreBoard) - ($ScoreBoard =~ tr/\.//) - ($ScoreBoard =~ tr/\_//),
         waiting => ($ScoreBoard =~ tr/\_//), starting => ($ScoreBoard =~ tr/S//),
         reading => ($ScoreBoard =~ tr/R//), sending => ($ScoreBoard =~ tr/W//),
         keepalive => ($ScoreBoard =~ tr/K//), dns_lookup => ($ScoreBoard =~ tr/D//),

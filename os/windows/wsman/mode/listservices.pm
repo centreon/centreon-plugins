@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -71,14 +71,18 @@ sub run {
 
     $self->manage_selection();
     foreach my $name (sort(keys %{$self->{result}})) {
-        $self->{output}->output_add(long_msg => "'" . $name . "' [DisplayName = " . $self->{output}->to_utf8($self->{result}->{$name}->{DisplayName}) . '] [' . 
-                                                'StartMode = ' . $self->{result}->{$name}->{StartMode} . '] [' .
-                                                'State = ' . $self->{result}->{$name}->{State} .
-                                                ']');
+        $self->{output}->output_add(
+            long_msg => "'" . $name . "' [DisplayName = " . $self->{output}->decode($self->{result}->{$name}->{DisplayName}) . '] [' . 
+                'StartMode = ' . $self->{result}->{$name}->{StartMode} . '] [' .
+                'State = ' . $self->{result}->{$name}->{State} .
+                ']'
+            );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List services:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List services:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -98,7 +102,7 @@ sub disco_show {
     foreach my $name (sort(keys %{$self->{result}})) {     
         $self->{output}->add_disco_entry(
             name => $name,
-            display_name => $self->{output}->to_utf8($self->{result}->{$name}->{DisplayName}),
+            display_name => $self->{output}->decode($self->{result}->{$name}->{DisplayName}),
             start_mode => $self->{result}->{$name}->{StartMode},
             state => $self->{result}->{$name}->{State}
         );

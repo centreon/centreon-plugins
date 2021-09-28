@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_instances_output {
+    my ($self, %options) = @_;
+
+    return $options{instance_value}->{instance_label} . " '" . $options{instance_value}->{key} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -33,40 +39,34 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{instances} = [
-        { label => 'ratio', set => {
+        { label => 'ratio', nlabel => 'http.hits.percentage', set => {
                 key_values => [ { name => 'ratio' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'Ratio: %.2f',
+                output_template => 'ratio: %.2f',
                 perfdatas => [
                     { label => 'ratio', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'key' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
         },
-        { label => 'hits-error', set => {
+        { label => 'hits-error', nlabel => 'http.hits.error.persecond', set => {
                 key_values => [ { name => 'error_hits' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'Hits Error: %.3f hits/s',
+                output_template => 'hits error: %.3f hits/s',
                 perfdatas => [
                     { label => 'hits_error', template => '%.3f',
-                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' },
-                ],
+                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
         },
-        { label => 'hits', set => {
+        { label => 'hits', nlabel => 'http.hits.persecond', set => {
                 key_values => [ { name => 'hits' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'Hits: %.3f hits/s',
+                output_template => 'hits: %.3f hits/s',
                 perfdatas => [
                     { label => 'hits', template => '%.3f',
-                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' },
-                ],
+                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_instances_output {
-    my ($self, %options) = @_;
-
-    return $options{instance_value}->{instance_label} . " '" . $options{instance_value}->{key} . "' ";
 }
 
 sub new {

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,12 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'count-channels' => 'apps::slack::restapi::mode::countchannels',
         'count-members'  => 'apps::slack::restapi::mode::countmembers',
-    );
+        'list-services'  => 'apps::slack::restapi::mode::listservices',
+        'services'       => 'apps::slack::restapi::mode::services'
+    };
 
-    $self->{custom_modes}{restapi} = 'apps::slack::restapi::custom::api';
+    $self->{custom_modes}->{restapi} = 'apps::slack::restapi::custom::api';
     return $self;
 }
 

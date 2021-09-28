@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,7 +29,7 @@ use centreon::common::logger;
 
 use vars qw($centreon_config);
 
-my %DSTYPE = ( "0" => "g", "1" => "c", "2" => "d", "3" => "a");
+my %DSTYPE = ( '0' => 'g', '1' => 'c', '2' => 'd', '3' => 'a');
 
 sub new {
     my ($class, %options) = @_;
@@ -38,7 +38,7 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'centreon-config:s' => { name => 'centreon_config', default => '/etc/centreon/centreon-config.pm' },
-        'meta-id:s'         => { name => 'meta_id' },
+        'meta-id:s'         => { name => 'meta_id' }
     });
 
     $self->{metric_selected} = {};
@@ -181,8 +181,10 @@ sub run {
     );
     my $status = $self->{centreon_db_centreon}->connect();
     if ($status == -1) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot connect to Centreon Database.');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot connect to Centreon Database.'
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -234,15 +236,19 @@ sub run {
 
     my $result = $self->calculate(calculation => $row->{calcul_type});
 
-    my $exit = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my $display = defined($row->{meta_display}) ? $row->{meta_display} : $row->{calcul_type} . ' - value : %f';
     $self->{output}->output_add(
         severity => $exit,
         short_msg => sprintf($display, $result)
     );
     $self->{output}->perfdata_add(
-        label => (defined($DSTYPE{$row->{data_source_type}}) ? $DSTYPE{$row->{data_source_type}} : 'g') . '[' . $row->{metric} . ']', 
-        value => sprintf("%02.2f", $result),
+        label => sprintf(
+            '%s[%s]',
+            (defined($DSTYPE{$row->{data_source_type}}) ? $DSTYPE{$row->{data_source_type}} : 'g'),
+            defined($row->{metric}) && $row->{metric} ne '' ? $row->{metric} : 'value',
+        ),
+        value => sprintf('%02.2f', $result),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
     );

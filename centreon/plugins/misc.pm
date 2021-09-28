@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -372,7 +372,12 @@ sub change_seconds {
         { unit => 's', value => 1 },
     ];
     my %values = ('y' => 1, 'M' => 2, 'w' => 3, 'd' => 4, 'h' => 5, 'm' => 6, 's' => 7);
-
+    my $sign = '';
+    if ($options{value} <= 0) {
+        $sign = '-';
+        $options{value} = abs($options{value});
+    }
+    
     foreach (@$periods) {
         next if (defined($options{start}) && $values{$_->{unit}} < $values{$options{start}});
         my $count = int($options{value} / $_->{value});
@@ -387,7 +392,7 @@ sub change_seconds {
         $str = $options{value};
         $str .= $options{start} if (defined($options{start}));
     }
-    return $str;
+    return $sign . $str;
 }
 
 sub scale_bytesbit {

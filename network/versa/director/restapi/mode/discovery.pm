@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -61,12 +61,8 @@ sub discovery_devices {
         $node->{uuid} = $device->{uuid};
         $node->{name} = $device->{name};
         $node->{type} = $device->{type};
-        $node->{ip} = $device->{'ip-address'};
-        $node->{organizations} = [];
-        foreach (@{$device->{orgs}}) {
-            push @{$node->{organizations}}, $options{organizations}->{entries}->{ $_->{uuid} }->{name};
-        }
-
+        $node->{ip} = $device->{ipAddress};
+        $node->{organizations} = $device->{orgs};
         push @$disco_data, $node;
     }
 
@@ -77,13 +73,18 @@ sub discovery_organizations {
     my ($self, %options) = @_;
 
     my $disco_data = [];
-    foreach my $org (values %{$options{organizations}->{entries}}) {
+    foreach my $org (values %{$options{orgs}->{entries}}) {
         my $node = {};
         $node->{uuid} = $org->{uuid};
         $node->{name} = $org->{name};
         $node->{devices} = [];
-        foreach (@{$org->{appliances}}) {
-            push @{$node->{devices}}, $options{devices}->{entries}->{ $_ }->{name};
+        foreach my $device (values %{$options{devices}->{entries}}) {
+            foreach (@{$device->{orgs}}) {
+                if ($_ eq $org->{name}) {
+                    push @{$node->{devices}}, $device->{name};
+                    last;
+                }
+            }
         }
 
         push @$disco_data, $node;
@@ -98,19 +99,20 @@ sub run {
     my $disco_stats;
     $disco_stats->{start_time} = time();
 
-    my $organizations = $options{custom}->get_organizations(disable_cache => 1);
-    my $devices = $options{custom}->get_appliances(disable_cache => 1);
+    my $orgs = $options{custom}->get_organizations();
+    # find top level org with depth attribute
+    my $root_org_name = $options{custom}->find_root_organization_name(orgs => $orgs);
+    my $devices = $options{custom}->get_devices(org_name => $root_org_name);
 
     my $results = [];
     if ($self->{option_results}->{resource_type} eq 'device') {
         $results = $self->discovery_devices(
-            devices => $devices,
-            organizations => $organizations
+            devices => $devices
         );
     } else {
         $results = $self->discovery_organizations(
             devices => $devices,
-            organizations => $organizations
+            orgs => $orgs
         );
     }
 
@@ -130,7 +132,7 @@ sub run {
     if ($@) {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
     }
-    
+
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();

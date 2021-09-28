@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -104,6 +104,7 @@ sub build_options_for_httplib {
     } else {
         $self->{option_results}->{hostname} = $self->{hostname};
     }
+    $self->{option_results}->{environment_id} = $self->{environment_id};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
@@ -123,7 +124,7 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-    my $content = $self->{http}->request(%options, 
+    my $content = $self->{http}->request(%options,
         warning_status => '', unknown_status => '%{http_code} < 200 or %{http_code} >= 300', critical_status => ''
     );
 
@@ -148,7 +149,10 @@ sub request_api {
 sub internal_problem {
     my ($self, %options) = @_;
 
-    my $status = $self->request_api(method => 'GET', url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e') . '/api/v1/problem/feed?relativeTime=' . $self->{option_results}->{relative_time});
+    my $status = $self->request_api(
+        method => 'GET',
+        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . '/api/v1/problem/feed?relativeTime=' . $self->{option_results}->{relative_time}
+    );
     return $status;
 }
 

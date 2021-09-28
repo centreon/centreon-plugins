@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,14 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cpu'              => 'network::extreme::snmp::mode::cpu',
-        'hardware'         => 'network::extreme::snmp::mode::hardware',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::extreme::snmp::mode::memory',
-        'stack'            => 'network::extreme::snmp::mode::stack',
-    );
+    $self->{modes} = {
+        'cpu'             => 'network::extreme::snmp::mode::cpu',
+        'hardware'        => 'network::extreme::snmp::mode::hardware',
+        'interfaces'      => 'network::extreme::snmp::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'memory'          => 'network::extreme::snmp::mode::memory',
+        'stack'           => 'network::extreme::snmp::mode::stack'
+    };
 
     return $self;
 }

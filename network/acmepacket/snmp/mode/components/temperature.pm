@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ use network::acmepacket::snmp::mode::components::resources qw($map_status);
 my $mapping = {
     apEnvMonTemperatureStatusDescr  => { oid => '.1.3.6.1.4.1.9148.3.3.1.3.1.1.3' },
     apEnvMonTemperatureStatusValue  => { oid => '.1.3.6.1.4.1.9148.3.3.1.3.1.1.4' },
-    apEnvMonTemperatureState        => { oid => '.1.3.6.1.4.1.9148.3.3.1.3.1.1.5', map => $map_status },
+    apEnvMonTemperatureState        => { oid => '.1.3.6.1.4.1.9148.3.3.1.3.1.1.5', map => $map_status }
 };
 my $oid_apEnvMonTemperatureStatusEntry = '.1.3.6.1.4.1.9148.3.3.1.3.1.1';
 
@@ -55,22 +55,32 @@ sub check {
                  $self->absent_problem(section => 'temperature', instance => $instance));
         
         $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("temperature '%s' status is '%s' [instance = %s, value = %s]",
-                                                        $result->{apEnvMonTemperatureStatusDescr}, $result->{apEnvMonTemperatureState}, $instance, 
-                                                        $result->{apEnvMonTemperatureStatusValue}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' status is '%s' [instance = %s, value = %s]",
+                $result->{apEnvMonTemperatureStatusDescr},
+                $result->{apEnvMonTemperatureState},
+                $instance, 
+                $result->{apEnvMonTemperatureStatusValue}
+            )
+        );
         $exit = $self->get_severity(label => 'default', section => 'temperature', value => $result->{apEnvMonTemperatureState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' status is '%s'", $result->{apEnvMonTemperatureStatusDescr}, $result->{apEnvMonTemperatureState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Temperature '%s' status is '%s'", $result->{apEnvMonTemperatureStatusDescr}, $result->{apEnvMonTemperatureState})
+            );
         }
         
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{apEnvMonTemperatureStatusValue});            
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' is '%s' C", $result->{apEnvMonTemperatureStatusDescr}, $result->{apEnvMonTemperatureStatusValue}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Temperature '%s' is '%s' C", $result->{apEnvMonTemperatureStatusDescr}, $result->{apEnvMonTemperatureStatusValue})
+            );
         }
         $self->{output}->perfdata_add(
-            label => 'temperature', unit => 'C',
+            unit => 'C',
             nlabel => 'hardware.temperature.celsius',
             instances => $result->{apEnvMonTemperatureStatusDescr},
             value => $result->{apEnvMonTemperatureStatusValue},

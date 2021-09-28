@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,35 +23,24 @@ package centreon::common::powershell::veeam::tapejobs;
 use strict;
 use warnings;
 use centreon::common::powershell::functions;
+use centreon::common::powershell::veeam::functions;
 
 sub get_powershell {
     my (%options) = @_;
 
     my $ps = '
+$ProgressPreference = "SilentlyContinue"
+$WarningPreference = "SilentlyContinue"
+
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
 ';
 
     $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
     $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+    $ps .= centreon::common::powershell::veeam::functions::powershell_init();
 
     $ps .= '
-If (@(Get-PSSnapin -Registered | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -gt 0) {
-    If (@(Get-PSSnapin | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -eq 0) {
-        Try {
-            Get-PSSnapin -Registered | Where-Object {$_.Name -Match "VeeamPSSnapin"} | Add-PSSnapin -ErrorAction STOP
-        } Catch {
-            Write-Host $Error[0].Exception
-            exit 1
-        }
-    }
-} else {
-    Write-Host "Snap-In Veeam no present or not registered"
-    exit 1
-}
-
-$ProgressPreference = "SilentlyContinue"
-
 Try {
     $ErrorActionPreference = "Stop"
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,6 +38,7 @@ sub new {
         'explode-perfdata-max:s@' => { name => 'explode_perfdata_max' },
         'range-perfdata:s'        => { name => 'range_perfdata' },
         'filter-perfdata:s'       => { name => 'filter_perfdata' },
+        'filter-perfdata-adv:s'   => { name => 'filter_perfdata_adv' },
         'change-perfdata:s@'      => { name => 'change_perfdata' },
         'extend-perfdata:s@'      => { name => 'extend_perfdata' },
         'extend-perfdata-group:s@'=> { name => 'extend_perfdata_group' },
@@ -55,10 +56,11 @@ sub new {
         'output-file:s'           => { name => 'output_file' },
         'disco-format'            => { name => 'disco_format' },
         'disco-show'              => { name => 'disco_show' },
-        'float-precision:s'       => { name => 'float_precision', default => 8 }
+        'float-precision:s'       => { name => 'float_precision', default => 8 },
+        'source-encoding:s'       => { name => 'source_encoding' , default => 'UTF-8' }
     });
 
-    %{$self->{option_results}} = ();
+    $self->{option_results} = {};
 
     $self->{option_msg} = [];
 
@@ -80,8 +82,9 @@ sub new {
     $self->{explode_perfdata_total} = 0;
     $self->{range_perfdata} = 0;
     $self->{global_status} = 0;
-    $self->{encode_utf8_import} = 0;
+    $self->{encode_import} = 0;
     $self->{perlqq} = 0;
+    $self->{safe_test} = 0;
 
     $self->{disco_elements} = [];
     $self->{disco_entries} = [];
@@ -135,8 +138,16 @@ sub check_options {
         }
     }
 
+    if (defined($self->{option_results}->{filter_perfdata_adv}) && $self->{option_results}->{filter_perfdata_adv} ne '') {
+        $self->{option_results}->{filter_perfdata_adv} =~ s/%\{(.*?)\}/\$values->{$1}/g;
+        $self->{option_results}->{filter_perfdata_adv} =~ s/%\((.*?)\)/\$values->{$1}/g;
+    }
+
     $self->load_perfdata_extend_args();
     $self->{option_results}->{use_new_perfdata} = 1 if (defined($self->{option_results}->{output_openmetrics}));
+
+    $self->{source_encoding} = (!defined($self->{option_results}->{source_encoding}) || $self->{option_results}->{source_encoding} eq '') ?
+        'UTF-8' : $self->{option_results}->{source_encoding};
 }
 
 sub add_option_msg {
@@ -146,6 +157,12 @@ sub add_option_msg {
     $options{severity} = 'UNQUALIFIED_YET';
 
     $self->output_add(%options);
+}
+
+sub set_ignore_label {
+    my ($self, %options) = @_;
+
+    $self->{option_results}->{output_ignore_label} = 1; 
 }
 
 sub set_status {
@@ -190,21 +207,23 @@ sub output_add {
 
 sub perfdata_add {
     my ($self, %options) = @_;
+
     my $perfdata = {
-        label => '', value => '', unit => '', warning => '', critical => '', min => '', max => '', mode => $self->{mode},
+        label => '', value => '', unit => '', warning => '', critical => '', min => '', max => '', mode => $self->{mode}
     };
     foreach (keys %options) {
         next if (!defined($options{$_}));
         $perfdata->{$_} = $options{$_};
     }
 
-    if (defined($self->{option_results}->{use_new_perfdata}) && defined($options{nlabel})) {
+    if ((defined($self->{option_results}->{use_new_perfdata}) || defined($options{force_new_perfdata})) && 
+        defined($options{nlabel})) {
         $perfdata->{label} = $options{nlabel};
     }
     if (defined($options{instances})) {
         $options{instances} = [$options{instances}] if (!ref($options{instances}));
         my ($external_instance_separator, $internal_instance_separator) = ('#', '~');
-        if (defined($self->{option_results}->{use_new_perfdata})) {
+        if (defined($self->{option_results}->{use_new_perfdata}) || defined($options{force_new_perfdata})) {
             $perfdata->{label} = join('~', @{$options{instances}}) . '#' . $perfdata->{label};
         } else {
             $perfdata->{label} .= '_' . join('_', @{$options{instances}});
@@ -213,6 +232,23 @@ sub perfdata_add {
 
     $perfdata->{label} =~ s/'/''/g;
     push @{$self->{perfdatas}}, $perfdata;
+}
+
+sub filter_perfdata {
+    my ($self, %options) = @_;
+
+    return 1 if (
+        defined($self->{option_results}->{filter_perfdata}) &&
+        $options{perf}->{label} !~ /$self->{option_results}->{filter_perfdata}/
+    );
+
+    return 1 if (
+        defined($self->{option_results}->{filter_perfdata_adv}) &&
+        $self->{option_results}->{filter_perfdata_adv} ne '' &&
+        !$self->test_eval(test => $self->{option_results}->{filter_perfdata_adv}, values => $options{perf})
+    );
+
+    return 0;
 }
 
 sub range_perfdata {
@@ -269,8 +305,7 @@ sub output_json {
     if ($options{force_ignore_perfdata} == 0) {
         $self->change_perfdata();
         foreach my $perf (@{$self->{perfdatas}}) {
-            next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            next if ($self->filter_perfdata(perf => $perf));
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
 
             my %values = ();
@@ -359,8 +394,7 @@ sub output_xml {
     if ($options{force_ignore_perfdata} == 0) {
         $self->change_perfdata();
         foreach my $perf (@{$self->{perfdatas}}) {
-            next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            next if ($self->filter_perfdata(perf => $perf));
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
         
             my ($child_perfdata);
@@ -391,10 +425,12 @@ sub output_openmetrics {
     $self->change_perfdata();
 
     foreach my $perf (@{$self->{perfdatas}}) {
-        next if (defined($self->{option_results}->{filter_perfdata}) &&
-                 $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
-        $perf->{unit} = '' if (defined($self->{option_results}->{filter_uom}) &&
-            $perf->{unit} !~ /$self->{option_results}->{filter_uom}/);
+        next if ($self->filter_perfdata(perf => $perf));
+
+        $perf->{unit} = '' if (
+            defined($self->{option_results}->{filter_uom}) &&
+            $perf->{unit} !~ /$self->{option_results}->{filter_uom}/
+        );
         $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
         my $label = $perf->{label};
         my $instance;
@@ -474,8 +510,7 @@ sub output_txt {
         print '|';
         $self->change_perfdata();
         foreach my $perf (@{$self->{perfdatas}}) {
-            next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            next if ($self->filter_perfdata(perf => $perf));
             $perf->{unit} = '' if (defined($self->{option_results}->{filter_uom}) &&
                 $perf->{unit} !~ /$self->{option_results}->{filter_uom}/);
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
@@ -794,24 +829,23 @@ sub display_disco_show {
     }
 }
 
-sub to_utf8 {
+sub decode {
     my ($self, $value) = @_;
 
-    if ($self->{encode_utf8_import} == 0) {
+    if ($self->{encode_import} == 0) {
         # Some Perl version dont have the following module (like Perl 5.6.x)
-        if (centreon::plugins::misc::mymodule_load(
-            no_quit => 1, module => 'Encode',
-            error_msg => "Cannot load module 'Encode'.")
-            ) {
-            print "Cannot load module 'Encode'\n";
-            $self->exit(exit_litteral => 'unknown');
-        }
+        my $rv = centreon::plugins::misc::mymodule_load(
+            no_quit => 1,
+            module => 'Encode',
+            error_msg => "Cannot load module 'Encode'."
+        );
+        return $value if ($rv);
 
-        $self->{encode_utf8_import} = 1;
+        $self->{encode_import} = 1;
         eval '$self->{perlqq} = Encode::PERLQQ';
     }
 
-    return centreon::plugins::misc::trim(Encode::decode('UTF-8', $value, $self->{perlqq}));
+    return centreon::plugins::misc::trim(Encode::decode($self->{source_encoding}, $value, $self->{perlqq}));
 }
 
 sub parameter {
@@ -863,6 +897,73 @@ sub is_debug {
         return 1;
     }
     return 0;
+}
+
+sub load_eval {
+    my ($self) = @_;
+
+    my ($code) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'Safe', 
+        no_quit => 1
+    );
+    if ($code == 0) {
+        $self->{safe} = Safe->new();
+        $self->{safe}->share('$values');
+        $self->{safe}->share('$assign_var');
+    }
+
+    $self->{safe_test} = 1;
+}
+
+sub test_eval {
+    my ($self, %options) = @_;
+
+    $self->load_eval() if ($self->{safe_test} == 0);
+
+    my $result;
+    if (defined($self->{safe})) {
+        our $values = $options{values};
+        $result = $self->{safe}->reval($options{test}, 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+    } elsif (defined($options{values})) {
+        # unsafe code execution. don't need to check if it's safe (with no values)
+        my $values = $options{values};
+        $result = eval "$options{test}";
+    }
+
+    return $result;
+}
+
+sub open_eval {
+    my ($self, %options) = @_;
+
+    $self->load_eval() if ($self->{safe_test} == 0);
+    our $values = $options{values};
+    $self->{safe}->reval("$options{eval}", 1);
+
+    return $values;
+}
+
+sub assign_eval {
+    my ($self, %options) = @_;
+
+    $self->load_eval() if ($self->{safe_test} == 0);
+
+    our $assign_var;
+    if (defined($self->{safe})) {
+        our $values = $options{values};
+        $self->{safe}->reval("\$assign_var = $options{eval}", 1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+    } else {
+        my $values = $options{values};
+        eval "\$assign_var = $options{eval}";
+    }
+
+    return $assign_var;
 }
 
 sub use_new_perfdata {
@@ -919,6 +1020,16 @@ sub parse_pfdata_math {
     return (0, $args);
 }
 
+sub parse_pfdata_eval {
+    my ($self, %options) = @_;
+
+    # --extend-perfdata=perfx,,eval(%(label) =~ s/a/A/g)
+    my $args = { expr => $options{args} };
+    $args->{expr} =~ s/%\{(.*?)\}/\$values->{$1}/g;
+    $args->{expr} =~ s/%\((.*?)\)/\$values->{$1}/g;
+    return (0, $args);
+}
+
 sub parse_group_pfdata {
     my ($self, %options) = @_;
 
@@ -962,9 +1073,11 @@ sub apply_pfdata_scale {
     return if (${$options{perf}}->{unit} !~ /^([KMGTPEkmgtpe])?(B|b|bps|Bps|b\/s)$/);
 
     my ($src_quantity, $src_unit) = ($1, $2);
-    my ($value, $dst_quantity, $dst_unit) = centreon::plugins::misc::scale_bytesbit(value => ${$options{perf}}->{value},
-        src_quantity => $src_quantity, src_unit => $src_unit, dst_quantity => $options{args}->{quantity}, dst_unit => $options{args}->{unit});
-    ${$options{perf}}->{value} = sprintf("%.2f", $value);
+    my ($value, $dst_quantity, $dst_unit) = centreon::plugins::misc::scale_bytesbit(
+        value => ${$options{perf}}->{value},
+        src_quantity => $src_quantity, src_unit => $src_unit, dst_quantity => $options{args}->{quantity}, dst_unit => $options{args}->{unit}
+    );
+    ${$options{perf}}->{value} = sprintf('%.2f', $value);
     if (defined($dst_unit)) {
        ${$options{perf}}->{unit} = $dst_quantity . $dst_unit;
     } else {
@@ -1052,6 +1165,12 @@ sub apply_pfdata_percent {
     ${$options{perf}}->{max} = 100; 
 }
 
+sub apply_pfdata_eval {
+    my ($self, %options) = @_;
+
+    ${$options{perf}} = $self->open_eval(eval => $options{args}->{expr}, values => ${$options{perf}});
+}
+
 sub apply_pfdata_math {
     my ($self, %options) = @_;
 
@@ -1086,8 +1205,7 @@ sub apply_pfdata_math {
 sub apply_pfdata_min {
     my ($self, %options) = @_;
 
-    my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    my $pattern_pf = $self->assign_eval(eval => "\"$options{args}->{pattern_pf}\"");
     my $min;
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
@@ -1103,8 +1221,7 @@ sub apply_pfdata_min {
 sub apply_pfdata_max {
     my ($self, %options) = @_;
 
-    my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    my $pattern_pf = $self->assign_eval(eval => "\"$options{args}->{pattern_pf}\"");
     my $max;
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
@@ -1120,8 +1237,7 @@ sub apply_pfdata_max {
 sub apply_pfdata_sum {
     my ($self, %options) = @_;
 
-    my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    my $pattern_pf = $self->assign_eval(eval => "\"$options{args}->{pattern_pf}\"");
     my ($sum, $num) = (0, 0);
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
@@ -1137,8 +1253,7 @@ sub apply_pfdata_sum {
 sub apply_pfdata_average {
     my ($self, %options) = @_;
 
-    my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    my $pattern_pf = $self->assign_eval(eval => "\"$options{args}->{pattern_pf}\"");
     my ($sum, $num) = (0, 0);
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
@@ -1212,7 +1327,7 @@ sub parse_perfdata_extend_args {
     };
 
     if (defined($method) && $method ne '') {
-        if ($method !~ /^\s*(invert|percent|scale|math|min|max|average|sum)\s*\(\s*(.*?)\s*\)\s*$/) {
+        if ($method !~ /^\s*(invert|percent|scale|math|min|max|average|sum|eval)\s*\(\s*(.*?)\s*\)\s*$/) {
             $self->output_add(long_msg => "method in argument '$options{arg}' is unknown", debug => 1);
             return ;
         }
@@ -1228,7 +1343,7 @@ sub parse_perfdata_extend_args {
         }
     }
 
-    push  @{$self->{pfdata_extends}}, $pfdata_extends;
+    push @{$self->{pfdata_extends}}, $pfdata_extends;
 }
 
 sub apply_perfdata_explode {
@@ -1357,6 +1472,12 @@ Display also debug messages.
 
 Filter perfdata that match the regexp.
 
+=item B<--filter-perfdata-adv>
+
+Advanced perfdata filter.
+
+Eg: --filter-perfdata-adv='not (%(value) == 0 and %(max) eq "")'
+
 =item B<--explode-perfdata-max>
 
 Put max perfdata (if it exist) in a specific perfdata 
@@ -1383,7 +1504,7 @@ Change traffic values in percent: --change-perfdata=traffic_in,,percent()
 
 =back
 
-=item B<--extend-perfdata-group> 
+=item B<--extend-perfdata-group>
 
 Extend perfdata from multiple perfdatas (methods in target are: min, max, average, sum)
 Syntax: --extend-perfdata-group=searchlabel,newlabel,target[,[newuom],[min],[max]]
@@ -1452,6 +1573,10 @@ Display discovery values (if the mode manages it).
 =item B<--float-precision>
 
 Set the float precision for thresholds (Default: 8).
+
+=item B<--source-encoding>
+
+Set encoding of monitoring sources (In some case. Default: 'UTF-8').
 
 =head1 DESCRIPTION
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -57,7 +57,7 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical (1min) threshold '" . $self->{crit1m} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'crit5h', value => $self->{crit5})) == 0) {
+    if (($self->{perfdata}->threshold_validate(label => 'crit1h', value => $self->{crit1h})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong critical (1hour) threshold '" . $self->{crit1h} . "'.");
        $self->{output}->option_exit();
     }
@@ -65,7 +65,7 @@ sub check_options {
 
 sub check_cpu {
     my ($self, %options) = @_;
-    
+
     my $exit1 = $self->{perfdata}->threshold_check(
         value => $options{'1min'},
         threshold => [ 
@@ -83,19 +83,25 @@ sub check_cpu {
 
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
 
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("%s: %.2f%% (1min), %.2f%% (1hour)", $options{name}, $options{'1min'}, $options{'1hour'}));
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf("%s: %.2f%% (1min), %.2f%% (1hour)", $options{name}, $options{'1min'}, $options{'1hour'})
+    );
 
-    $self->{output}->perfdata_add(label => "cpu1m" . $options{perf_label} , unit => '%',
-                                  value => $options{'1min'},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1m'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1m'),
-                                  min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu1h" . $options{perf_label} , unit => '%',
-                                  value => $options{'1hour'},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1h'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1h'),
-                                  min => 0, max => 100);
+    $self->{output}->perfdata_add(
+        label => "cpu1m" . $options{perf_label} , unit => '%',
+        value => $options{'1min'},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1m'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1m'),
+        min => 0, max => 100
+    );
+    $self->{output}->perfdata_add(
+        label => "cpu1h" . $options{perf_label} , unit => '%',
+        value => $options{'1hour'},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1h'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1h'),
+        min => 0, max => 100
+    );
 }
 
 sub run {
@@ -107,20 +113,20 @@ sub run {
             entry_module => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1',
             device => {
                 healthDeviceCpu1MinAvg  => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.14' },
-                healthDeviceCpu1HrAvg   => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.15' },
+                healthDeviceCpu1HrAvg   => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.15' }
             },
             module => {
                 healthModuleCpu1MinAvg  => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.15' },
-                healthModuleCpu1HrAvg  => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.16' },
-            },
+                healthModuleCpu1HrAvg  => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.16' }
+            }
         },
         aos7 => {
             entry_module => '.1.3.6.1.4.1.6486.801.1.2.1.16.1.1.1.1.1',
             module => {
                 healthModuleCpu1MinAvg  => { oid => '.1.3.6.1.4.1.6486.801.1.2.1.16.1.1.1.1.1.11' },
-                healthModuleCpu1HrAvg  => { oid => '.1.3.6.1.4.1.6486.801.1.2.1.16.1.1.1.1.1.12' },
-            },
-        },
+                healthModuleCpu1HrAvg  => { oid => '.1.3.6.1.4.1.6486.801.1.2.1.16.1.1.1.1.1.12' }
+            }
+        }
     };
 
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
@@ -133,7 +139,7 @@ sub run {
     if (scalar(keys %{$snmp_result->{ $mapping->{aos7}->{entry_module} }}) > 0) {
         $type = 'aos7';
     }
-    
+
     if (defined($mapping->{$type}->{device})) {
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$type}->{device}, results => $snmp_result->{ $mapping->{$type}->{entry_device} }, instance => '0');
         $self->check_cpu(
@@ -143,11 +149,11 @@ sub run {
             '1hour' => $result->{healthDeviceCpu1HrAvg}
         );
     }
-    
+
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$snmp_result->{ $mapping->{$type}->{entry_module} }})) {
         next if ($oid !~ /^$mapping->{$type}->{module}->{healthModuleCpu1MinAvg}->{oid}\.(.*)$/);
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$type}->{module}, results => $snmp_result->{ $mapping->{$type}->{entry_module} }, instance => $1);
-        
+
         $self->check_cpu(
             name => "Module cpu '$1'",
             perf_label => "_module_$1", 

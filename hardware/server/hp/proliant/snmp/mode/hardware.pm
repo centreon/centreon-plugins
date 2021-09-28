@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -132,6 +132,23 @@ sub set_system {
             ['degraded', 'WARNING'],
             ['failed', 'CRITICAL']
         ],
+        memory => [
+            ['other', 'OK'],
+            ['notPresent', 'OK'],
+            ['present', 'OK'],
+            ['good', 'OK'],
+            ['add', 'OK'],
+            ['upgrade', 'OK'],
+            ['missing', 'CRITICAL'],
+            ['doesNotMatch', 'CRITICAL'],
+            ['notSupported', 'CRITICAL'],
+            ['badConfig', 'CRITICAL'],
+            ['degraded', 'WARNING'],
+            ['spare', 'OK'],
+            ['partial', 'OK'],
+            ['configError', 'CRITICAL'],
+            ['trainingFailure', 'CRITICAL']
+        ],
         # ilo, pnic, fan, dapdrive, daacc, dactl, fcapdrive, fcaexternalacc, fcaexternalctl, fcahostctl, scsipdrive, scsictl, saspdrive, sasctl, psu, pc, idepdrive, idectl
         default => [
             ['other', 'UNKNOWN'],
@@ -146,7 +163,7 @@ sub set_system {
         'cpu', 'idectl', 'ideldrive', 'idepdrive', 'pc', 'psu',
         'sasctl', 'sasldrive', 'saspdrive', 'scsictl', 'scsildrive', 'scsipdrive',
         'fcahostctl', 'fcaexternalctl', 'fcaexternalacc', 'fcaldrive', 'fcapdrive',
-        'dactl', 'daacc', 'daldrive', 'dapdrive', 'fan', 'pnic', 'lnic', 'temperature', 'ilo'
+        'dactl', 'daacc', 'daldrive', 'dapdrive', 'fan', 'pnic', 'lnic', 'temperature', 'ilo', 'memory'
     ];
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,19 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub custom_optimized_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "optimized total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
+        $self->{result_values}->{max_optimized},
+        $self->{result_values}->{optimized},
+        $self->{result_values}->{prct_optimized},
+        $self->{result_values}->{optimized_free},
+        $self->{result_values}->{prct_optimized_free}
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -33,74 +46,83 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
-                key_values => [ { name => 'totalConnections' } ],
+        { label => 'total', nlabel => 'connections.total.count', set => {
+                key_values => [ { name => 'total' } ],
                 output_template => 'total %s',
                 perfdatas => [
-                    { label => 'total', value => 'totalConnections', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'established', set => {
-                key_values => [ { name => 'establishedConnections' } ],
+        { label => 'established', nlabel => 'connections.established.count', set => {
+                key_values => [ { name => 'established' } ],
                 output_template => 'established %s',
                 perfdatas => [
-                    { label => 'established', value => 'establishedConnections', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'active', set => {
-                key_values => [ { name => 'activeConnections' } ],
+        { label => 'active', nlabel => 'connections.active.count', set => {
+                key_values => [ { name => 'active' } ],
                 output_template => 'active %s',
                 perfdatas => [
-                    { label => 'active', value => 'activeConnections', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'optimized', set => {
-                key_values => [ { name => 'optimizedConnections' } ],
-                output_template => 'optimized %s',
+
+        { label => 'optimized', nlabel => 'connections.optimized.count', set => {
+                key_values => [ { name => 'optimized' }, { name => 'optimized_free' }, { name => 'prct_optimized' }, { name => 'prct_optimized_free' }, { name => 'max_optimized' } ],
+                closure_custom_output => $self->can('custom_optimized_output'),
                 perfdatas => [
-                    { label => 'optimized', value => 'optimizedConnections', template => '%s', min => 0 },
-                ],
+                    { template => '%d', min => 0, max => 'max_optimized' }
+                ]
             }
         },
-        { label => 'passthrough', set => {
-                key_values => [ { name => 'passthroughConnections' } ],
+        { label => 'optimized-prct', display_ok => 0, nlabel => 'connections.optimized.percentage', set => {
+                key_values => [ { name => 'prct_optimized' }, { name => 'optimized_free' }, { name => 'optimized' }, { name => 'prct_optimized_free' }, { name => 'max_optimized' } ],
+                closure_custom_output => $self->can('custom_optimized_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        },
+        { label => 'passthrough', nlabel => 'connections.passthrough.count', set => {
+                key_values => [ { name => 'passthrough' } ],
                 output_template => 'passthrough %s',
                 perfdatas => [
-                    { label => 'passthrough', value => 'passthroughConnections', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-         { label => 'half-opened', set => {
-                key_values => [ { name => 'halfOpenedConnections' } ],
+        { label => 'half-opened', nlabel => 'connections.half_opened.count', set => {
+                key_values => [ { name => 'half_opened' } ],
                 output_template => 'half opened %s',
                 perfdatas => [
-                    { label => 'half_opened', value => 'halfOpenedConnections', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-         { label => 'half-closed', set => {
-                key_values => [ { name => 'halfClosedConnections' } ],
+        { label => 'half-closed', nlabel => 'connections.half_closed.count', set => {
+                key_values => [ { name => 'half_closed' } ],
                 output_template => 'half closed %s',
                 perfdatas => [
-                    { label => 'half_closed', value => 'halfClosedConnections', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub prefix_connection_output {
     my ($self, %options) = @_;
     
-    return "Connections: ";
+    return 'Connections: ';
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -111,48 +133,47 @@ sub new {
 
 my $mappings = {
     common    => {
-        optimizedConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.1' },
-        passthroughConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.2' },
-        halfOpenedConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.3' },
-        halfClosedConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.4' },
-        establishedConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.5' },
-        activeConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.6' },
-        totalConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.7' },
+        max_optimized => { oid => '.1.3.6.1.4.1.17163.1.1.2.13.1' }, # shMaxConnections
+        optimized     => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.1' }, # optimizedConnections
+        passthrough   => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.2' }, # passthroughConnections
+        half_opened   => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.3' }, # halfOpenedConnections
+        half_closed   => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.4' }, # halfClosedConnections
+        established   => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.5' }, # establishedConnections
+        active        => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.6' }, # activeConnections
+        total         => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.7' }  # totalConnections
     },
     ex => {
-        optimizedConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.1' },
-        passthroughConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.2' },
-        halfOpenedConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.3' },
-        halfClosedConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.4' },
-        establishedConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.5' },
-        activeConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.6' },
-        totalConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.7' },
-    },
-};
-
-my $oids = {
-    common => '.1.3.6.1.4.1.17163.1.1.5.2',
-    ex => '.1.3.6.1.4.1.17163.1.51.5.2',
+        max_optimized => { oid => '.1.3.6.1.4.1.17163.1.51.2.13.1' }, # shMaxConnections
+        optimized     => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.1' }, # optimizedConnections
+        passthrough   => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.2' }, # passthroughConnections
+        half_opened   => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.3' }, # halfOpenedConnections
+        half_closed   => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.4' }, # halfClosedConnections
+        established   => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.5' }, # establishedConnections
+        active        => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.6' }, # activeConnections
+        total         => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.7' } # totalConnections
+    }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{snmp}->get_multiple_table(
+    my $snmp_result = $options{snmp}->get_leef(
         oids => [
-            { oid => $oids->{common}, start => $mappings->{common}->{optimizedConnections}->{oid}, end => $mappings->{common}->{totalConnections}->{oid} },
-            { oid => $oids->{ex}, start => $mappings->{ex}->{optimizedConnections}->{oid}, end => $mappings->{ex}->{totalConnections}->{oid} }
-        ]
+            map($_->{oid} . '.0', values(%{$mappings->{common}})),
+            map($_->{oid} . '.0', values(%{$mappings->{ex}}))
+        ],
+        nothing_quit => 1
     );
 
-    foreach my $equipment (keys %{$oids}) {
-        next if (!%{$results->{$oids->{$equipment}}});
-
-        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment},
-            results => $results->{$oids->{$equipment}}, instance => 0);
-        
-        $self->{global} = { %$result };
+    my $result = $options{snmp}->map_instance(mapping => $mappings->{common}, results => $snmp_result, instance => 0);
+    if (!defined($result->{optimized})) {
+        $result = $options{snmp}->map_instance(mapping => $mappings->{ex}, results => $snmp_result, instance => 0);
     }
+
+    $self->{global} = $result;
+    $self->{global}->{optimized_free} = $result->{max_optimized} - $result->{optimized};
+    $self->{global}->{prct_optimized} = $result->{optimized} * 100 / $result->{max_optimized};
+    $self->{global}->{prct_optimized_free} = 100 - $self->{global}->{prct_optimized};
 }
 
 1;
@@ -171,16 +192,10 @@ half opened and half closed ones (STEELHEAD-MIB and STEELHEAD-EX-MIB).
 Only display some counters (regexp can be used).
 Example: --filter-counters='^(total)$'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'total', 'established', 'active', 'optimized',
-'passthrough', 'half-opened', 'half-closed'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'total', 'established', 'active', 'optimized',
+Thresholds.
+Can be: 'total', 'established', 'active', 'optimized', 'optimized-prct',
 'passthrough', 'half-opened', 'half-closed'.
 
 =back

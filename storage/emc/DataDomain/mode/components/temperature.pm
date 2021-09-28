@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,8 +45,10 @@ sub check {
         $oid_tempSensorDescription = '.1.3.6.1.4.1.19746.1.1.2.1.1.1.4';
         $oid_tempSensorCurrentValue = '.1.3.6.1.4.1.19746.1.1.2.1.1.1.5';
         $oid_tempSensorStatus = '.1.3.6.1.4.1.19746.1.1.2.1.1.1.6';
-        %map_temp_status = (0 => 'failed', 1 => 'ok', 2 => 'notfound', 3 => 'overheatWarning',
-                            4 => 'overheatCritical');
+        %map_temp_status = (
+            0 => 'failed', 1 => 'ok', 2 => 'notfound', 3 => 'overheatWarning',
+            4 => 'overheatCritical'
+        );
     } else {
         $oid_tempSensorDescription = '.1.3.6.1.4.1.19746.1.1.2.1.1.1.3';
         $oid_tempSensorCurrentValue = '.1.3.6.1.4.1.19746.1.1.2.1.1.1.4';
@@ -58,30 +60,38 @@ sub check {
         next if ($oid !~ /^$oid_tempSensorStatus\.(.*)$/);
         my $instance = $1;
         my $temp_descr = defined($self->{results}->{$oid_temperatureSensorEntry}->{$oid_tempSensorDescription . '.' . $instance}) ? 
-                            centreon::plugins::misc::trim($self->{results}->{$oid_temperatureSensorEntry}->{$oid_tempSensorDescription . '.' . $instance}) : 'unknown';
+            centreon::plugins::misc::trim($self->{results}->{$oid_temperatureSensorEntry}->{$oid_tempSensorDescription . '.' . $instance}) : 'unknown';
         my $temp_status = defined($map_temp_status{$self->{results}->{$oid_temperatureSensorEntry}->{$oid}}) ?
-                            $map_temp_status{$self->{results}->{$oid_temperatureSensorEntry}->{$oid}} : 'unknown';
+            $map_temp_status{$self->{results}->{$oid_temperatureSensorEntry}->{$oid}} : 'unknown';
         my $temp_value = $self->{results}->{$oid_temperatureSensorEntry}->{$oid_tempSensorCurrentValue . '.' . $instance};
 
         next if ($self->check_filter(section => 'temperature', instance => $instance));
         next if ($temp_status =~ /absent|notfound/i && 
                  $self->absent_problem(section => 'temperature', instance => $instance));
-        
+
         $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' status is '%s' [instance = %s]",
-                                    $temp_descr, $temp_status, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Temperature '%s' status is '%s' [instance = %s]",
+                $temp_descr, $temp_status, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'temperature', value => $temp_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' status is '%s'", $temp_descr, $temp_status));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Temperature '%s' status is '%s'", $temp_descr, $temp_status)
+            );
         }
 
         if (defined($temp_value) && $temp_value =~ /[0-9]/) {
             my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $temp_value);
             $self->{output}->output_add(long_msg => sprintf("Temperature '%s' is %s degree centigrade", $temp_descr, $temp_value));
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Temperature '%s' is %s degree centigrade", $temp_descr, $temp_value));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Temperature '%s' is %s degree centigrade", $temp_descr, $temp_value)
+                );
             }
             $self->{output}->perfdata_add(
                 label => 'temp', unit => 'C',
@@ -89,7 +99,7 @@ sub check {
                 instances => $instance,
                 value => $temp_value,
                 warning => $warn,
-                critical => $crit,
+                critical => $crit
             );
         }
     }

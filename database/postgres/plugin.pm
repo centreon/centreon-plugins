@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,13 +26,13 @@ use base qw(centreon::plugins::script_sql);
 
 sub new {
     my ($class, %options) = @_;
-    
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'backends'         => 'database::postgres::mode::backends',
+        'collection'       => 'centreon::common::protocols::sql::mode::collection',
         'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
         'database-size'    => 'database::postgres::mode::databasesize',
         'hitratio'         => 'database::postgres::mode::hitratio',
@@ -45,7 +45,7 @@ sub new {
         'tablespace'       => 'database::postgres::mode::tablespace',
         'timesync'         => 'database::postgres::mode::timesync',
         'vacuum'           => 'database::postgres::mode::vacuum',
-    );
+    };
 
     $self->{sql_modes}->{psqlcmd} = 'database::postgres::psqlcmd';
     return $self;

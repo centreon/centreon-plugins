@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use JSON::XS;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::common::powershell::sccm::databasereplicationstatus;
 use centreon::plugins::misc;
 use DateTime;
@@ -33,7 +33,7 @@ use DateTime;
 my %map_link_status = (
     1 => 'Degraded',
     2 => 'Active',
-    3 => 'Failed',
+    3 => 'Failed'
 );
 my %map_status = (
     100 => 'SITE_INSTALLING',
@@ -53,13 +53,13 @@ my %map_status = (
     225 => 'RECOVERY_IN_PROGRESS',
     230 => 'RECOVERING_DELTAS',
     250 => 'RECOVERY_RETRY',
-    255 => 'RECOVERY_FAILED',
+    255 => 'RECOVERY_FAILED'
 );
 my %map_type = (
     0 => 'Unknown',
     1 => 'SECONDARY',
     2 => 'PRIMARY',
-    4 => 'CAS',
+    4 => 'CAS'
 );
 
 sub custom_status_output {
@@ -102,12 +102,18 @@ sub custom_site_status_calc {
     return 0;
 }
 
+sub prefix_output_site {
+    my ($self, %options) = @_;
+
+    return "Site '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'sites', type => 1, cb_prefix_output => 'prefix_output_site', message_multiple => 'All sites status are ok' },
+        { name => 'sites', type => 1, cb_prefix_output => 'prefix_output_site', message_multiple => 'All sites status are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -116,10 +122,11 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
     ];
+
     $self->{maps_counters}->{sites} = [
         { label => 'site-status', threshold => 0, set => {
                 key_values => [ { name => 'SiteType' }, { name => 'SiteStatus' }, { name => 'SiteToSiteGlobalState' },
@@ -127,16 +134,10 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_site_status_calc'),
                 closure_custom_output => $self->can('custom_site_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
-}
-
-sub prefix_output_site {
-    my ($self, %options) = @_;
-
-    return "Site '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -152,24 +153,10 @@ sub new {
         'no-ps'                  => { name => 'no_ps' },
         'ps-exec-only'           => { name => 'ps_exec_only' },
         'ps-display'             => { name => 'ps_display' },
-        'warning-link-status:s'  => { name => 'warning_link_status', default => '' },
-        'critical-link-status:s' => { name => 'critical_link_status', default => '' },
-        'warning-site-status:s'  => { name => 'warning_site_status', default => '' },
-        'critical-site-status:s' => { name => 'critical_site_status', default => '' },
         'timezone:s'             => { name => 'timezone', default => 'UTC' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [
-        'warning_link_status', 'critical_link_status',
-        'warning_site_status', 'critical_site_status'
-    ]);
 }
 
 sub manage_selection {
@@ -207,33 +194,37 @@ sub manage_selection {
     
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($stdout);
+        $decoded = JSON::XS->new->decode($self->{output}->decode($stdout));
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
 
-    if (!defined($decoded->{LinkStatus})) {
+    $self->{sites} = {};
+    foreach (@$decoded) {
+        $self->{sites}->{ $_->{Site1} } = {
+            display => $_->{Site1},
+            SiteType => $map_type{$_->{SiteType1}},
+            SiteStatus => $map_status{$_->{Site1Status}},
+            SiteToSiteGlobalState => $_->{Site1ToSite2GlobalState},
+            SiteToSiteGlobalSyncTime => $_->{Site1ToSite2GlobalSyncTime}
+        };
+        $self->{sites}->{ $_->{Site2} } = {
+            display => $_->{Site2},
+            SiteType => $map_type{$_->{SiteType2}},
+            SiteStatus => $map_status{$_->{Site2Status}},
+            SiteToSiteGlobalState => $_->{Site2ToSite1GlobalState},
+            SiteToSiteGlobalSyncTime => $_->{Site2ToSite1GlobalSyncTime}
+        };
+    }
+
+    if (scalar(keys %{$self->{sites}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No database replication');
         $self->{output}->option_exit();
     }
-    $self->{global}->{LinkStatus} = $map_link_status{$decoded->{LinkStatus}};
 
-    $self->{sites}->{$decoded->{Site1}} = {
-        display => $decoded->{Site1},
-        SiteType => $map_type{$decoded->{SiteType1}},
-        SiteStatus => $map_status{$decoded->{Site1Status}},
-        SiteToSiteGlobalState => $decoded->{Site1ToSite2GlobalState},
-        SiteToSiteGlobalSyncTime => $decoded->{Site1ToSite2GlobalSyncTime},
-    };
-    $self->{sites}->{$decoded->{Site2}} = {
-        display => $decoded->{Site2},
-        SiteType => $map_type{$decoded->{SiteType2}},
-        SiteStatus => $map_status{$decoded->{Site2Status}},
-        SiteToSiteGlobalState => $decoded->{Site2ToSite1GlobalState},
-        SiteToSiteGlobalSyncTime => $decoded->{Site2ToSite1GlobalSyncTime},
-    };
+    $self->{global} = { LinkStatus => $map_link_status{ $decoded->[0]->{LinkStatus} } };
 }
 
 1;

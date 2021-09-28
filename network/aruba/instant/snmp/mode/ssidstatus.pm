@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,33 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = "Status is '" . $self->{result_values}->{status} . "'";
-    return $msg;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'ssid', display_long => 1, cb_prefix_output => 'prefix_output',
-          message_multiple => 'All SSIDs are ok', type => 1 },
-    ];
-    
-    $self->{maps_counters}->{ssid} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-    ];
+    return "Status is '" . $self->{result_values}->{status} . "'";
 }
 
 sub prefix_output {
@@ -59,25 +38,35 @@ sub prefix_output {
     return "SSID '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'ssid', display_long => 1, cb_prefix_output => 'prefix_output',
+          message_multiple => 'All SSIDs are ok', type => 1 }
+    ];
+    
+    $self->{maps_counters}->{ssid} = [
+        { label => 'status', type => 2, critical_default => '%{status} !~ /enable/i', set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /enable/i' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 my $map_status = {
@@ -86,7 +75,7 @@ my $map_status = {
 
 my $mapping = {
     aiSSID          => { oid => '.1.3.6.1.4.1.14823.2.3.3.1.1.7.1.2' },
-    aiSSIDStatus    => { oid => '.1.3.6.1.4.1.14823.2.3.3.1.1.7.1.3', map => $map_status },
+    aiSSIDStatus    => { oid => '.1.3.6.1.4.1.14823.2.3.3.1.1.7.1.3', map => $map_status }
 };
 my $oid_aiWlanSSIDEntry = '.1.3.6.1.4.1.14823.2.3.3.1.1.7.1';
 

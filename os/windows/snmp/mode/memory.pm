@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,8 +45,8 @@ sub custom_usage_perfdata {
         label => $label,
         nlabel => $self->{nlabel},
         value => $value_perf, unit => 'B',
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $self->{result_values}->{total}
     );
 }
@@ -61,18 +61,19 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_used};
         $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Total: %s%s Used: %s%s (%.2f%%) Free: %s%s (%.2f%%)",
-                   $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
-                   $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}), $self->{result_values}->{prct_used},
-                   $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}), $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "Total: %s%s Used: %s%s (%.2f%%) Free: %s%s (%.2f%%)",
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}), $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}), $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -87,11 +88,17 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+
+    return 'Ram ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'memory', type => 0, cb_prefix_output => 'prefix_memory_output' },
+        { name => 'memory', type => 0, cb_prefix_output => 'prefix_memory_output' }
     ];
 
     $self->{maps_counters}->{memory} = [
@@ -100,16 +107,10 @@ sub set_counters {
                 closure_custom_calc => \&custom_usage_calc,
                 closure_custom_output => \&custom_usage_output,
                 closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
+                closure_custom_threshold_check => \&custom_usage_threshold
             }
-        },
+        }
     ];
-}
-
-sub prefix_memory_output {
-    my ($self, %options) = @_;
-
-    return "Ram ";
 }
 
 sub new {
@@ -118,8 +119,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'units:s'   => { name => 'units', default => '%' },
-        'free'      => { name => 'free' },
+        'units:s' => { name => 'units', default => '%' },
+        'free'    => { name => 'free' }
     });
 
     return $self;
@@ -143,7 +144,7 @@ sub manage_selection {
     }
 
     if (!defined($self->{physical_memory_id})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find physical memory informations.");
+        $self->{output}->add_option_msg(short_msg => 'Cannot find physical memory informations.');
         $self->{output}->option_exit();
     }
 
@@ -151,8 +152,10 @@ sub manage_selection {
     my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
     my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
 
-    $options{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed],
-                        instances => [$self->{physical_memory_id}]);
+    $options{snmp}->load(
+        oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed],
+        instances => [$self->{physical_memory_id}]
+    );
     $result = $options{snmp}->get_leef();
 
     $used_bytes = $result->{$oid_hrStorageUsed . "." . $self->{physical_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{physical_memory_id}};

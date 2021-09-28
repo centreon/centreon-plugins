@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,71 +20,116 @@
 
 package network::hirschmann::standard::snmp::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub custom_ram_usage_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'Memory total: %s %s used: %s %s (%.2f%%) free: %s %s (%.2f%%)',
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
+        $self->{result_values}->{prct_free}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'ram', type => 0, skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{ram} = [
+        { label => 'memory-usage', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_ram_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
+            }
+        },
+        { label => 'memory-usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_ram_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
+            }
+        },
+        { label => 'memory-usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_ram_usage_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-
-    $options{options}->add_options(arguments => {
-        "warning:s"               => { name => 'warning' },
-        "critical:s"              => { name => 'critical' },
-    });
-
+    
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+my $map_enable = {
+    1 => 'enable', 2 => 'disable'
+};
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+my $mapping = {
+    hios => {
+        measure_enable => { oid => '.1.3.6.1.4.1.248.11.22.1.8.1', map => $map_enable }, # hm2DiagEnableMeasurement
+        ram_total      => { oid => '.1.3.6.1.4.1.248.11.22.1.8.11.1' }, # hm2DiagMemoryRamAllocated
+        ram_free       => { oid => '.1.3.6.1.4.1.248.11.22.1.8.11.2' }  # hm2DiagMemoryRamFree
+    },
+    classic => {
+        measure_enable => { oid => '.1.3.6.1.4.1.248.14.2.15.1', map => $map_enable }, # hmEnableMeasurement
+        ram_total      => { oid => '.1.3.6.1.4.1.248.14.2.15.3.1' }, # hmMemoryAllocated
+        ram_free       => { oid => '.1.3.6.1.4.1.248.14.2.15.3.2' }  # hmMemoryFree
+    }
+};
+
+sub check_memory {
+    my ($self, %options) = @_;
+
+    my $result = $options{snmp}->map_instance(mapping => $mapping->{ $options{type} }, results => $options{snmp_result}, instance => 0);
+    return 0 if (!defined($result->{ram_free}));
+
+    if ($result->{measure_enable} eq 'disable') {
+        $self->{output}->add_option_msg(short_msg => 'resource measurement is disabled');
         $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
+
+    $result->{ram_total} *= 1024;
+    $result->{ram_free} *= 1024;
+    $self->{ram} = {
+        total => $result->{ram_total},
+        used => $result->{ram_total} - $result->{ram_free},
+        free => $result->{ram_free},
+        prct_used => 100 - ($result->{ram_free} * 100 / $result->{ram_total}),
+        prct_free => $result->{ram_free} * 100 / $result->{ram_total}
+    };
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    my $oid_hmMemoryFree = '.1.3.6.1.4.1.248.14.2.15.3.2.0'; # in KBytes
-    my $oid_hmMemoryAllocated = '.1.3.6.1.4.1.248.14.2.15.3.1.0'; # in KBytes
-
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmMemoryFree, $oid_hmMemoryAllocated],
-                                         nothing_quit => 1);
-    my $mem_free = $result->{$oid_hmMemoryFree} * 1024;
-    my $mem_allocated = $result->{$oid_hmMemoryAllocated} * 1024;
-
-    my $mem_total = $mem_allocated + $mem_free;
-
-    my $mem_percent_used = ($mem_total != 0) ? $mem_allocated / $mem_total * 100 : '0';
-
-    my $exit = $self->{perfdata}->threshold_check(value => $mem_percent_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    my ($mem_allocated_value, $mem_allocated_unit) = $self->{perfdata}->change_bytes(value => $mem_allocated);
-
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory used %s (%.2f%%)", 
-                                    $mem_allocated_value . " " . $mem_allocated_unit, $mem_percent_used));
-
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $mem_allocated,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $mem_total, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $mem_total, cast_int => 1),
-                                  min => 0, max => $mem_total,
-                                  );
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%{$mapping->{hios}}), values(%{$mapping->{classic}})) ],
+        nothing_quit => 1
+    );
+    if ($self->check_memory(snmp => $options{snmp}, type => 'hios', snmp_result => $snmp_result) == 0) {
+        $self->check_memory(snmp => $options{snmp}, type => 'classic', snmp_result => $snmp_result);
+    }
 }
 
 1;
@@ -93,18 +138,14 @@ __END__
 
 =head1 MODE
 
-Check Memory usage.
-hmEnableMeasurement must be activated (value = 1).
+Check memory.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning in %.
-
-=item B<--critical>
-
-Threshold critical in %.
+Thresholds.
+Can be: 'memory-usage' (B), 'memory-usage-free' (B), 'memory-usage-prct' (%).
 
 =back
 

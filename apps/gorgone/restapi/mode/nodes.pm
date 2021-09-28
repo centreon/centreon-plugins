@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 sub prefix_node_output {
     my ($self, %options) = @_;
@@ -52,8 +53,9 @@ sub set_counters {
 
     $self->{maps_counters}->{nodes} = [
         { label => 'ping-received-lasttime', nlabel => 'node.ping.received.lasttime.seconds', set => {
-                key_values => [ { name => 'last_ping_recv' }, { name => 'display' },  ],
-                output_template => 'last ping received: %s s',
+                key_values => [ { name => 'last_ping_recv' }, { name => 'last_ping_recv_human' }, { name => 'display' } ],
+                output_template => 'last ping received: %s',
+                output_use => 'last_ping_recv_human',
                 perfdatas => [
                     { template => '%d', min => -1, unit => 's', label_extra_instance => 1 }
                 ]
@@ -88,10 +90,12 @@ sub manage_selection {
             next;
         }
 
+        my $last_ping_recv = defined($nodes->{data}->{$node_id}->{last_ping_recv}) && $nodes->{data}->{$node_id}->{last_ping_recv} != 0 ? 
+            time() - $nodes->{data}->{$node_id}->{last_ping_recv} : -1;
         $self->{nodes}->{ $node_id } = {
             display => $node_id,
-            last_ping_recv => defined($nodes->{data}->{$node_id}->{last_ping_recv}) ? 
-                time() - $nodes->{data}->{$node_id}->{last_ping_recv} : -1
+            last_ping_recv => $last_ping_recv,
+            last_ping_recv_human => $last_ping_recv != -1 ? centreon::plugins::misc::change_seconds(value => $last_ping_recv) : $last_ping_recv
         };
         $self->{global}->{total}++;
     }

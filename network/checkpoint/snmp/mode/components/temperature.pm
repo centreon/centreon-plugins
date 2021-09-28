@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,13 +26,13 @@ use warnings;
 my %map_states_temperature = (
     0 => 'false',
     1 => 'true',
-    2 => 'reading error',
+    2 => 'reading error'
 );
 
 my $mapping = {
     tempertureSensorName => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.1.1.2' },
     tempertureSensorValue => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.1.1.3' },
-    tempertureSensorStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.1.1.6', map => \%map_states_temperature },
+    tempertureSensorStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.1.1.6', map => \%map_states_temperature }
 };
 my $oid_tempertureSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.1.1';
 
@@ -54,26 +54,48 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_tempertureSensorEntry}, instance => $instance);
 
-        next if ($self->check_filter(section => 'temperature', instance => $instance));
+        next if ($self->check_filter(section => 'temperature', instance => $instance, name => $result->{tempertureSensorName}));
         next if ($result->{tempertureSensorName} !~ /^[0-9a-zA-Z ]+$/); # sometimes there is some wrong values in hex 
     	
         $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' sensor out of range status is '%s' [instance: %s]",
-                                        $result->{tempertureSensorName}, $result->{tempertureSensorStatus}, $instance));
-        my $exit = $self->get_severity(section => 'temperature', value => $result->{tempertureSensorStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' sensor out of range status is '%s' [instance: %s]",
+                $result->{tempertureSensorName},
+                $result->{tempertureSensorStatus},
+                $instance
+            )
+        );
+        my $exit = $self->get_severity(section => 'temperature', instance => $instance, value => $result->{tempertureSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s/%s' sensor out of range status is '%s'", $result->{tempertureSensorName}, $instance, $result->{tempertureSensorStatus}));
-        }
-
-        if (defined($result->{tempertureSensorValue}) && $result->{tempertureSensorValue} =~ /^[0-9\.]+$/) {
-            $self->{output}->perfdata_add(
-                label => 'temp', unit => 'C',
-                nlabel => 'hardware.temperature.celsius',
-                instances => [$result->{tempertureSensorName}, $instance],
-                value => sprintf("%.2f", $result->{tempertureSensorValue})
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Temperature '%s/%s' sensor out of range status is '%s'",
+                    $result->{tempertureSensorName},
+                    $instance,
+                    $result->{tempertureSensorStatus})
             );
         }
+
+        next if (defined($result->{tempertureSensorValue}) && $result->{tempertureSensorValue} !~ /^[0-9\.]+$/);
+
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, name => $result->{tempertureSensorName}, value => $result->{tempertureSensorValue});
+        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Temperature '%s/%s' sensor is %.2f C", $result->{tempertureSensorName}, $instance, $result->{tempertureSensorValue})
+            );
+        }
+
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => [$result->{tempertureSensorName}, $instance],
+            value => sprintf('%.2f', $result->{tempertureSensorValue}),
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

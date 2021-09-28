@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,7 +22,7 @@ package apps::protocols::x509::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -31,9 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'certificate' => 'apps::protocols::x509::mode::certificate',
-        'validity'    => 'apps::protocols::x509::mode::validity' #legacy mode
+        'certificate' => 'apps::protocols::x509::mode::certificate'
     };
+
+    $self->{custom_modes}->{tcp} = 'apps::protocols::x509::custom::tcp';
+    $self->{custom_modes}->{https} = 'apps::protocols::x509::custom::https';
+    $self->{custom_modes}->{file} = 'apps::protocols::x509::custom::file';
 
     return $self;
 }

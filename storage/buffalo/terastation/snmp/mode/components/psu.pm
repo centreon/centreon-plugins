@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::buffalo::terastation::snmp::::mode::components::psu;
+package storage::buffalo::terastation::snmp::mode::components::psu;
 
 use strict;
 use warnings;
@@ -28,18 +28,18 @@ my %map_psu_status = (
 );
 
 my $mapping = {
-    nasRPSUStatus => { oid => '.1.3.6.1.4.1.5227.27.1.8.1.2', map => \%map_psu_status },
+    nasRPSUStatus => { oid => '.1.3.6.1.4.1.5227.27.1.8.1.2', map => \%map_psu_status }
 };
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $mapping->{nasRPSUStatus}->{oid} };
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking redundant power supplies");
     $self->{components}->{psu} = { name => 'psu', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'psu'));
@@ -52,14 +52,21 @@ sub check {
         next if ($self->check_filter(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("redundant psu '%s' status is '%s' [instance: %s].",
-                                    $instance, $result->{nasRPSUStatus}, $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "redundant psu '%s' status is '%s' [instance: %s].",
+                $instance, $result->{nasRPSUStatus}, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'psu', value => $result->{nasRPSUStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Redundant psu '%s' status is '%s'",
-                                                             $instance, $result->{nasRPSUStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Redundant psu '%s' status is '%s'",
+                    $instance, $result->{nasRPSUStatus}
+                )
+            );
         }
     }
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -48,8 +48,10 @@ sub check {
     } else {
         $oid_nvramBatteryStatus = '.1.3.6.1.4.1.19746.1.2.3.1.1.2';
         $oid_nvramBatteryCharge = '.1.3.6.1.4.1.19746.1.2.3.1.1.3';
-        %map_battery_status =  (1 => 'ok', 2 => 'disabled', 3 => 'discharged', 4 => 'unknown', 
-                                5 => 'softdisabled');
+        %map_battery_status =  (
+            1 => 'ok', 2 => 'disabled', 3 => 'discharged', 4 => 'unknown', 
+            5 => 'softdisabled'
+        );
     }
 
     foreach my $oid (keys %{$self->{results}->{$oid_nvramBatteryEntry}}) {
@@ -62,22 +64,30 @@ sub check {
         next if ($self->check_filter(section => 'battery', instance => $instance));
         next if ($batt_status =~ /disabled/i && 
                  $self->absent_problem(section => 'battery', instance => $instance));
-        
+
         $self->{components}->{battery}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Nvram battery '%s' status is '%s'",
-                                    $instance, $batt_status));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Nvram battery '%s' status is '%s'",
+                $instance, $batt_status
+            )
+        );
         my $exit = $self->get_severity(section => 'battery', value => $batt_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Nvram battery '%s' status is '%s'", $instance, $batt_status));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Nvram battery '%s' status is '%s'", $instance, $batt_status)
+            );
         }
 
         if (defined($batt_value) && $batt_value =~ /[0-9]/) {
             my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'battery', instance => $instance, value => $batt_value);
             $self->{output}->output_add(long_msg => sprintf("Nvram battery '%s' charge is %s %%", $instance, $batt_value));
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Nvram battery '%s' charge is %s %%", $instance, $batt_value));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Nvram battery '%s' charge is %s %%", $instance, $batt_value)
+                );
             }
             $self->{output}->perfdata_add(
                 label => 'nvram_battery', unit => '%',

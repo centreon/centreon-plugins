@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,56 +26,54 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return 'Threads ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'active', set => {
+        { label => 'active', nlabel => 'threads.active.count', set => {
                 key_values => [ { name => 'ThreadCount' } ],
-                output_template => 'Active : %s',
+                output_template => 'active: %s',
                 perfdatas => [
-                    { label => 'active', value => 'ThreadCount', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'started', set => {
+        { label => 'started', nlabel => 'threads.started.count', set => {
                 key_values => [ { name => 'TotalStartedThreadCount', diff => 1 } ],
-                output_template => 'Started : %s',
+                output_template => 'started: %s',
                 perfdatas => [
-                    { label => 'started', value => 'TotalStartedThreadCount', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'daemon', set => {
+        { label => 'daemon', nlabel => 'threads.daemon.count', set => {
                 key_values => [ { name => 'DaemonThreadCount' } ],
-                output_template => 'Daemon : %s',
+                output_template => 'daemon: %s',
                 perfdatas => [
-                    { label => 'daemon', value => 'DaemonThreadCount', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-    
-    return "Threads ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { });
+
     return $self;
 }
 
@@ -88,9 +86,9 @@ sub manage_selection {
     ];
     my $result = $options{custom}->get_attributes(request => $request, nothing_quit => 1);
 
-    $self->{global} = { %{$result->{$mbean}} };
-    
-    $self->{cache_name} = "jvm_standard_" . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
+    $self->{global} = $result->{$mbean};
+
+    $self->{cache_name} = 'jvm_standard_' . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 

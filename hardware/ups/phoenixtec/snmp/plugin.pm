@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,13 +28,13 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'battery-status' => 'centreon::common::xppc::snmp::mode::batterystatus',
         'input-lines'    => 'centreon::common::xppc::snmp::mode::inputlines',
-        'output-lines'   => 'centreon::common::xppc::snmp::mode::outputlines',
-    );
+        'output-lines'   => 'centreon::common::xppc::snmp::mode::outputlines'
+    };
 
     return $self;
 }

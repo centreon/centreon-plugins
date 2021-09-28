@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -181,17 +181,17 @@ Check system usage.
 Only display some counters (regexp can be used).
 Example: --filter-counters='^mail-sent$'
 
-=item B<--unknown-status>
+=item B<--unknown-cluster-status>
 
 Set unknown threshold for status (Default: '').
 Can used special variables like: %{cluster_status}
 
-=item B<--warning-status>
+=item B<--warning-cluster-status>
 
 Set warning threshold for status (Default: '').
 Can used special variables like: %{cluster_status}
 
-=item B<--critical-status>
+=item B<--critical-cluster-status>
 
 Set critical threshold for status (Default: '%{cluster_status} =~ /error/i').
 Can used special variables like: %{cluster_status}

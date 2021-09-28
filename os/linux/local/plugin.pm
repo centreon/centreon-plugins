@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,13 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'check-plugin'      => 'os::linux::local::mode::checkplugin',
         'cpu'               => 'os::linux::local::mode::cpu',
         'cpu-detailed'      => 'os::linux::local::mode::cpudetailed',
         'cmd-return'        => 'os::linux::local::mode::cmdreturn',
         'connections'       => 'os::linux::local::mode::connections',
         'directlvm-usage'   => 'os::linux::local::mode::directlvmusage',
-        'discovery-nmap'    => 'os::linux::local::mode::discoverynmap',
         'discovery-snmp'    => 'os::linux::local::mode::discoverysnmp',
+        'discovery-snmpv3'  => 'os::linux::local::mode::discoverysnmpv3',
         'diskio'            => 'os::linux::local::mode::diskio',
         'files-size'        => 'os::linux::local::mode::filessize',
         'files-date'        => 'os::linux::local::mode::filesdate',

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -54,7 +54,7 @@ sub set_counters {
     
     $self->{maps_counters}->{host} = [
         {
-            label => 'status', type => 2, unknow_default => '%{status} !~ /^connected$/i',
+            label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
             set => {
                 key_values => [ { name => 'state' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),

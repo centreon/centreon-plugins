@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -76,7 +76,8 @@ sub custom_memory_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("memory usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
+    my $msg = sprintf(
+        "memory usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
@@ -103,17 +104,17 @@ sub set_counters {
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'members-total', nlabel => 'stack.members.total.count', set => {
-                key_values => [ { name => 'members'} ],
+                key_values => [ { name => 'members' } ],
                 output_template => 'total members: %s',
                 perfdatas => [
-                    { value => 'members', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{member_global} = [
@@ -122,45 +123,45 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_member_status_calc'),
                 closure_custom_output => $self->can('custom_member_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'cpu-utilization', nlabel => 'member.cpu.utilization.percentage', set => {
-                key_values => [ { name => 'cpu'}, { name => 'display'} ],
+                key_values => [ { name => 'cpu' }, { name => 'display'} ],
                 output_template => 'cpu usage: %.2f%%',
                 perfdatas => [
-                    { value => 'cpu', template => '%.2f', unit => '%', min => 0, max => 100, 
-                      label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100, 
+                      label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'memory-usage', nlabel => 'member.memory.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memory_usage_output'),
                 perfdatas => [
-                    { value => 'used', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1 },
-                ],
+                    { template => '%d', min => 0, max => 'total',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'memory-usage-free', display_ok => 0, nlabel => 'member.memory.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memory_usage_output'),
                 perfdatas => [
-                    { value => 'free', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1 },
-                ],
+                    { template => '%d', min => 0, max => 'total',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'memory-usage-prct', display_ok => 0, nlabel => 'member.memory.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'memory used : %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{link} = [
@@ -169,9 +170,9 @@ sub set_counters {
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_link_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -247,18 +248,18 @@ my $mapping_link_status = {
 
 my $mapping = {
     hpicfVsfVCOperStatus  => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.1.2', map => $mapping_oper_status },
-    hpicfVsfVCAdminStatus => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.1.3', map => $mapping_admin_status },  
+    hpicfVsfVCAdminStatus => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.1.3', map => $mapping_admin_status }
 };
 my $mapping2 = {
     hpicfVsfVCMemberState       => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.3.1.9', map => $mapping_member_state },
     hpicfVsfVCMemberSerialNum   => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.3.1.14' },  
     hpicfVsfVCMemberCpuUtil     => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.3.1.19' },
     hpicfVsfVCMemberTotalMemory => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.3.1.20' },
-    hpicfVsfVCMemberFreeMemory  => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.3.1.21' },
+    hpicfVsfVCMemberFreeMemory  => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.3.1.21' }
 };
 my $mapping3 = {
     hpicfVsfVCLinkName       => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.4.1.3' },
-    hpicfVsfVCLinkOperStatus => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.4.1.4', map => $mapping_link_status },  
+    hpicfVsfVCLinkOperStatus => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.4.1.4', map => $mapping_link_status }
 };
 my $oid_hpicfVsfVCConfig = '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.1';
 my $oid_hpicfVsfVCMemberEntry = '.1.3.6.1.4.1.11.2.14.11.5.1.116.1.3.1';
@@ -275,7 +276,7 @@ sub manage_selection {
         ],
         nothing_quit => 1
     );
-    
+
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_hpicfVsfVCConfig}, instance => '0');
     if ($result->{hpicfVsfVCAdminStatus} eq 'disable') {
         $self->{output}->output_add(

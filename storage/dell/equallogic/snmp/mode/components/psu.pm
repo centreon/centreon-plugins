@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -64,23 +64,34 @@ sub check {
         next if ($self->check_filter(section => 'psu', instance => $member_instance . '.' . $instance));
         $self->{components}->{psu}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Power supply '%s/%s' status is %s [instance: %s] [fan status: %s].",
-                                    $member_name, $result->{eqlMemberHealthDetailsPowerSupplyName}, $result->{eqlMemberHealthDetailsPowerSupplyCurrentState},
-                                    $member_instance . '.' . $instance, $result->{eqlMemberHealthDetailsPowerSupplyFanStatus}
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s/%s' status is %s [instance: %s] [fan status: %s].",
+                $member_name, $result->{eqlMemberHealthDetailsPowerSupplyName}, $result->{eqlMemberHealthDetailsPowerSupplyCurrentState},
+                $member_instance . '.' . $instance, $result->{eqlMemberHealthDetailsPowerSupplyFanStatus}
+            )
+        );
         my $exit = $self->get_severity(section => 'psu', value => $result->{eqlMemberHealthDetailsPowerSupplyCurrentState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Power supply '%s/%s' status is %s",
-                                                             $member_name, $result->{eqlMemberHealthDetailsPowerSupplyName}, $result->{eqlMemberHealthDetailsPowerSupplyCurrentState}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Power supply '%s/%s' status is %s",
+                    $member_name, $result->{eqlMemberHealthDetailsPowerSupplyName}, $result->{eqlMemberHealthDetailsPowerSupplyCurrentState}
+                )
+            );
         }
 
         next if ($self->check_filter(section => 'psu.fan', instance => $member_instance . '.' . $instance));
         $exit = $self->get_severity(section => 'psu.fan', value => $result->{eqlMemberHealthDetailsPowerSupplyFanStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Power supply '%s/%s' fan status is %s",
-                                                             $member_name, $result->{eqlMemberHealthDetailsPowerSupplyName}, $result->{eqlMemberHealthDetailsPowerSupplyFanStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Power supply '%s/%s' fan status is %s",
+                    $member_name, $result->{eqlMemberHealthDetailsPowerSupplyName}, $result->{eqlMemberHealthDetailsPowerSupplyFanStatus}
+                )
+            );
         }
     }
 }

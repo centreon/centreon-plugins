@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -78,11 +78,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{licenses} = [
-        { label => 'license-status', threshold => 0, set => {
+        { label => 'license-status', type => 2, critical_default => '%{status} !~ /in compliance/i', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'usage', nlabel => 'licenses.usage.count', set => {
@@ -102,10 +102,10 @@ sub set_counters {
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'licenses.usage.percentage', set => {
-                key_values => [ { name => 'prct_used' } ],
-                output_template => 'used: %.2f %%',
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { template => '%d', min => 0, max => 'total', label_extra_instance => 1 }
                 ]
             }
         }
@@ -116,15 +116,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        'account:s@'                => { name => 'account' },
-        'filter-license-name:s'     => { name => 'filter_license_name' },
-        'unknown-license-status:s'  => { name => 'unknown_license_status', default => '' },
-        'warning-license-status:s'  => { name => 'warning_license_status', default => '' },
-        'critical-license-status:s' => { name => 'critical_license_status', default => '%{status} !~ /in compliance/i' }
+        'account:s@'            => { name => 'account' },
+        'filter-license-name:s' => { name => 'filter_license_name' }
     });
-    
+
     return $self;
 }
 
@@ -142,8 +139,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'need to specify --account option.');
         $self->{output}->option_exit();
     }
-
-    $self->change_macros(macros => ['warning_license_status', 'critical_license_status', 'unknown_license_status']);
 }
 
 sub manage_selection {
@@ -171,8 +166,8 @@ sub manage_selection {
                 used => $_->{inUse},
                 free => $_->{available},
                 total => $_->{quantity},
-                prct_used => $_->{inUse} * 100 / $_->{quantity},
-                prct_free => $_->{available} * 100 / $_->{quantity}
+                prct_used => $_->{quantity} > 0 ? ($_->{inUse} * 100 / $_->{quantity}) : undef,
+                prct_free => $_->{quantity} > 0 ? ($_->{available} * 100 / $_->{quantity}) : undef
             };
         }
     }

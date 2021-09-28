@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,15 +30,15 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'array-usage'       => 'storage::buffalo::terastation::snmp::mode::arrayusage',
         'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
         'hardware'          => 'storage::buffalo::terastation::snmp::mode::hardware',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
         'load'              => 'snmp_standard::mode::loadaverage',
         'interfaces'        => 'snmp_standard::mode::interfaces',
-        'memory'            => 'snmp_standard::mode::memory',
-    );
+        'memory'            => 'snmp_standard::mode::memory'
+    };
 
     return $self;
 }

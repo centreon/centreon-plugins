@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,20 +25,18 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'Status : ' . $self->{result_values}->{status};
-    return $msg;
+    return 'status: ' . $self->{result_values}->{status};
 }
 
-sub custom_status_calc {
+sub prefix_sip_output {
     my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_apSipSAStatsSessionAgentStatus'};
-    return 0;
+    
+    return "SIP '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -49,78 +47,58 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{sip} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'apSipSAStatsSessionAgentStatus' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+        { label => 'status', type => 2, critical_default => '%{status} =~ /outOfService|constraintsViolation|inServiceTimedOut/i', set => {
+                key_values => [ { name => 'status' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'in-sessions-rate', nlabel => 'sip.sessions.in.rate', set => {
-                key_values => [ { name => 'apSipSAStatsTotalSessionsInbound', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Inbound Sessions Rate : %.2f/s',
+                key_values => [ { name => 'sessions_inbound', per_second => 1 }, { name => 'display' } ],
+                output_template => 'inbound sessions rate: %.2f/s',
                 perfdatas => [
-                    { label => 'inbound_sessions_rate', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'out-sessions-rate', nlabel => 'sip.sessions.out.rate', set => {
-                key_values => [ { name => 'apSipSAStatsTotalSessionsOutbound', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Outbound Sessions Rate : %.2f/s',
+                key_values => [ { name => 'sessions_outbound', per_second => 1 }, { name => 'display' } ],
+                output_template => 'outbound sessions rate: %.2f/s',
                 perfdatas => [
-                    { label => 'outbound_sessions_rate', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'latency', nlabel => 'sip.stats.latency.milliseconds', set => {
-                key_values => [ { name => 'apSipSAStatsAverageLatency' }, { name => 'display' } ],
-                output_template => 'Average Latency : %s ms',
+                key_values => [ { name => 'average_latency' }, { name => 'display' } ],
+                output_template => 'average latency: %s ms',
                 perfdatas => [
-                    { label => 'avg_latency', template => '%s',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'asr', nlabel => 'sip.stats.asr.percentage', set => {
-                key_values => [ { name => 'apSipSAStatsPeriodASR' }, { name => 'display' } ],
-                output_template => 'Answer-to-seizure Ratio : %s %%',
+                key_values => [ { name => 'period_asr' }, { name => 'display' } ],
+                output_template => 'answer-to-seizure ratio: %s %%',
                 perfdatas => [
-                    { label => 'asr', template => '%s',
-                      unit => '%', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', unit => '%', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_sip_output {
-    my ($self, %options) = @_;
-    
-    return "SIP '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        'filter-name:s'     => { name => 'filter_name' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /outOfService|constraintsViolation|inServiceTimedOut/i' }
+        'filter-name:s'     => { name => 'filter_name' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 my %map_status = (
@@ -129,19 +107,19 @@ my %map_status = (
     4 => 'constraintsViolation', 5 => 'inServiceTimedOut',
     6 => 'oosprovisionedresponse',
 );
-my $oid_apSipSAStatsSessionAgentHostname = '.1.3.6.1.4.1.9148.3.2.1.2.2.1.2';
+my $oid_name = '.1.3.6.1.4.1.9148.3.2.1.2.2.1.2'; # apSipSAStatsSessionAgentHostname
 my $mapping = {
-    apSipSAStatsTotalSessionsInbound    => { oid => '.1.3.6.1.4.1.9148.3.2.1.2.2.1.8' },
-    apSipSAStatsTotalSessionsOutbound   => { oid => '.1.3.6.1.4.1.9148.3.2.1.2.2.1.12' },
-    apSipSAStatsPeriodASR               => { oid => '.1.3.6.1.4.1.9148.3.2.1.2.2.1.19' },
-    apSipSAStatsAverageLatency          => { oid => '.1.3.6.1.4.1.9148.3.2.1.2.2.1.20' },
-    apSipSAStatsSessionAgentStatus      => { oid => '.1.3.6.1.4.1.9148.3.2.1.2.2.1.22', map => \%map_status },
+    sessions_inbound  => { oid => '.1.3.6.1.4.1.9148.3.2.1.2.2.1.8' }, # apSipSAStatsTotalSessionsInbound
+    sessions_outbound => { oid => '.1.3.6.1.4.1.9148.3.2.1.2.2.1.12' }, # apSipSAStatsTotalSessionsOutbound
+    period_asr        => { oid => '.1.3.6.1.4.1.9148.3.2.1.2.2.1.19' }, # apSipSAStatsPeriodASR
+    average_latency   => { oid => '.1.3.6.1.4.1.9148.3.2.1.2.2.1.20' }, # apSipSAStatsAverageLatency
+    status            => { oid => '.1.3.6.1.4.1.9148.3.2.1.2.2.1.22', map => \%map_status } # apSipSAStatsSessionAgentStatus
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_apSipSAStatsSessionAgentHostname, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_name, nothing_quit => 1);
     $self->{sip} = {};
     foreach my $oid (keys %{$snmp_result}) {
         $oid =~ /\.(\d+)$/;
@@ -154,27 +132,27 @@ sub manage_selection {
         
         $self->{sip}->{$instance} = { display => $snmp_result->{$oid} };
     }
-    $options{snmp}->load(oids => [$mapping->{apSipSAStatsTotalSessionsInbound}->{oid}, $mapping->{apSipSAStatsTotalSessionsOutbound}->{oid},
-        $mapping->{apSipSAStatsPeriodASR}->{oid}, $mapping->{apSipSAStatsAverageLatency}->{oid},
-        $mapping->{apSipSAStatsSessionAgentStatus}->{oid}
-        ], 
-        instances => [keys %{$self->{sip}}], instance_regexp => '^(.*)$');
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping)) ],
+        instances => [keys %{$self->{sip}}],
+        instance_regexp => '^(.*)$'
+    );
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     
     foreach (keys %{$self->{sip}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);        
-        
+
         foreach my $name (keys %$mapping) {
             $self->{sip}->{$_}->{$name} = $result->{$name};
         }
     }
-    
+
     if (scalar(keys %{$self->{sip}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No SIP found.");
         $self->{output}->option_exit();
     }
-    
-    $self->{cache_name} = "acmepacket_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+
+    $self->{cache_name} = 'acmepacket_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

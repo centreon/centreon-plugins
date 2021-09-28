@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -71,10 +70,10 @@ my $oid_stConnectedSockets = '.1.3.6.1.4.1.1230.2.7.2.5.3.0';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{snmp}->get_leef(oids => [ $oid_stClientCount, $oid_stConnectedSockets ], 
-                                           nothing_quit => 1);
-    
-    $self->{global} = {};
+    my $results = $options{snmp}->get_leef(
+        oids => [ $oid_stClientCount, $oid_stConnectedSockets ], 
+        nothing_quit => 1
+    );
 
     $self->{global} = {
         stClientCount => $results->{$oid_stClientCount},

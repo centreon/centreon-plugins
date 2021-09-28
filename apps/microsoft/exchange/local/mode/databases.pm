@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::common::powershell::exchange::databases;
-use apps::microsoft::exchange::local::mode::resources::types qw($copystatus_contentindexstate);
+use apps::microsoft::exchange::local::mode::resources::types qw($copystatus_contentindexstate $mapi_result);
 use JSON::XS;
 
 sub custom_mailflow_latency_perfdata {
@@ -335,6 +335,8 @@ sub manage_selection {
         $db->{mounted} = $db->{mounted} =~ /True|1/i ? 1 : 0;
         $db->{copystatus_indexstate} = $copystatus_contentindexstate->{ $db->{copystatus_indexstate} }
             if (defined($db->{copystatus_indexstate}));
+        $db->{mapi_result} = $mapi_result->{ $db->{mapi_result} }
+            if (defined($db->{mapi_result}));
 
         $self->{databases}->{ $db->{database} . ':' . $db->{server} } = {
             database => $db->{database},

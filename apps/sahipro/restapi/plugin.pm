@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,9 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'scenario' => 'apps::sahipro::restapi::mode::scenario',
-    );
+    $self->{modes} = {
+        'scenario' => 'apps::sahipro::restapi::mode::scenario'
+    };
 
     return $self;
 }

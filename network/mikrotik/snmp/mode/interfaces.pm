@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -74,9 +74,9 @@ sub set_counters_errors {
                     closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label => $1 . ' ' . $2, label_ref1 => lc($1), label_ref2 => lc($2) },
                     closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets ' . $1 . ' ' . $2 . ' : %s',
                     closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                    closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+                    closure_custom_threshold_check => $self->can('custom_errors_threshold')
                 }
-            },
+            }
         ;
     }
 }
@@ -88,7 +88,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'warning-errors:s'  => { name => 'warning_errors' },
-        'critical-errors:s' => { name => 'critical_errors' },
+        'critical-errors:s' => { name => 'critical_errors' }
     });
 
     return $self;
@@ -191,27 +191,12 @@ Set warning threshold for all error counters.
 
 Set critical threshold for all error counters.
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning (will superseed --warning-errors).
+Thresholds (will superseed --[warning|critical]-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
-'speed' (b/s).
-
-And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror' (%), 'in-fragment' (%),
-'in-overflow' (%), 'in-unknownop' (%), 'in-lengtherror' (%), 'in-codeerror' (%), 'in-carriererror' (%),
-'in-jabber' (%), 'in-drop' (%), 'out-tooshort' (%), 'out-toolong' (%), 'out-underrun' (%),
-'out-collision' (%), 'out-excessivecollision' (%), 'out-multiplecollision' (%), 'out-singlecollision' (%),
-'out-excessivedeferred' (%),'out-deferred' (%), 'out-latecollision' (%), 'out-totalcollision' (%),
-'out-drop' (%), 'out-jabber' (%), 'out-fcserror' (%), 'out-fragment' (%).
-
-=item B<--critical-*>
-
-Threshold critical (will superseed --warning-errors).
-Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 
 And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror' (%), 'in-fragment' (%),
@@ -223,11 +208,15 @@ And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (Default: '%') ('%', 'absolute').
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+
+=item B<--units-cast>
+
+Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -252,10 +241,6 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
-
-=item B<--no-skipped-counters>
-
-Don't skip counters when no change.
 
 =item B<--force-counters32>
 

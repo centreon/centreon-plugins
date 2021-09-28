@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -86,6 +86,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+         'filter-feature:s' => { name => 'filter_feature' }
     });
 
     return $self;
@@ -105,13 +106,19 @@ sub manage_selection {
     foreach my $feature (@{$result->{licenses}->{entry}}) {
         $feature->{expires} = lc($feature->{expires});
 
+        if (defined($self->{option_results}->{filter_feature}) && $self->{option_results}->{filter_feature} ne '' &&
+            $feature->{feature} !~ /$self->{option_results}->{filter_feature}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $feature->{feature} . "': no matching feature.", debug => 1);
+            next;
+        }
+
         # January 30, 2022
         my $dt;
         if ($feature->{expires} =~ /^(\w+)\s+(\d+).*?(\d+)$/) {
             $dt = DateTime->new(year => $3, month => $months->{$1}, day => $2);
         }
 
-        $self->{features}->{$feature->{feature}} = {
+        $self->{features}->{ $feature->{feature} } = {
             feature => $feature->{feature},
             expired => $feature->{expired},
             expiry_date => $feature->{expires},
@@ -134,6 +141,10 @@ __END__
 Check features licensing.
 
 =over 8
+
+=item B<--filter-feature>
+
+Filter license by feature (can be a regexp).
 
 =item B<--warning-status>
 

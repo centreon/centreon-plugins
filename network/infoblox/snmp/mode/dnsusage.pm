@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,107 +26,135 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-sub set_counters {
+sub prefix_dns_output {
     my ($self, %options) = @_;
     
+    return "zone '" . $options{instance_value}->{name} . "' ";
+}
+
+sub prefix_aa_output {
+    my ($self, %options) = @_;
+
+    return 'autoritative average latency ';
+}
+
+sub prefix_naa_output {
+    my ($self, %options) = @_;
+
+    return 'non autoritative average latency ';
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'dns', type => 1, cb_prefix_output => 'prefix_dns_output', message_multiple => 'All dns zones are ok' },
+        { name => 'aa', type => 0, cb_prefix_output => 'prefix_aa_output' },
+        { name => 'naa', type => 0, cb_prefix_output => 'prefix_naa_output' },
+        { name => 'dns', type => 1, cb_prefix_output => 'prefix_dns_output', message_multiple => 'All dns zones are ok' }
     ];
-    
+
     $self->{maps_counters}->{global} = [
-        { label => 'total-query-rate', set => {
-                key_values => [ { name => 'ibDnsQueryRate' } ],
-                output_template => 'Total query rate : %s',
+        { label => 'total-query-rate', nlabel => 'dns.queries.persecond', set => {
+                key_values => [ { name => 'dns_query' } ],
+                output_template => 'query rate: %s/s',
                 perfdatas => [
-                    { label => 'total_query_rate', value => 'ibDnsQueryRate', template => '%s',
-                      min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'total-hit-ratio', set => {
-                key_values => [ { name => 'ibDnsHitRatio' } ],
-                output_template => 'Total hit ratio : %.2f %%',
+        { label => 'total-hit-ratio', nlabel => 'dns.hits.percentage', set => {
+                key_values => [ { name => 'dns_hit' } ],
+                output_template => 'hit ratio: %.2f %%',
                 perfdatas => [
-                    { label => 'total_hit_ratio', value => 'ibDnsHitRatio', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
-    
+
+    my $nlabels = { aa => 'authoritative', naa => 'non_authoritative' };
+    foreach (('aa', 'naa')) {
+        $self->{maps_counters}->{$_} = [];
+        foreach my $timeframe (('1m', '5m', '15m')) {
+            push @{$self->{maps_counters}->{$_}}, {
+                label => $_ . '-latency-' . $timeframe, nlabel => 'dns.queries.' . $nlabels->{$_} . '.latency.' . $timeframe . '.microseconds', set => {
+                    key_values => [ { name => $_ . '_latency_' . $timeframe } ],
+                    output_template => '%s (' . $timeframe  . ')',
+                    perfdatas => [
+                        { template => '%s', min => 0, unit => 'us' }
+                    ]
+                }
+            };
+        }
+    }
+
     $self->{maps_counters}->{dns} = [
-        { label => 'success-count', set => {
-                key_values => [ { name => 'ibBindZoneSuccess', diff => 1 }, { name => 'display' } ],
-                output_template => 'Success responses : %s',
+        { label => 'success-count', nlabel => 'zone.responses.succeeded.count', set => {
+                key_values => [ { name => 'success', diff => 1 }, { name => 'name' } ],
+                output_template => 'success responses: %s',
                 perfdatas => [
-                    { label => 'success_count', value => 'ibBindZoneSuccess', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
         },
-        { label => 'referral-count', set => {
-                key_values => [ { name => 'ibBindZoneReferral', diff => 1 }, { name => 'display' } ],
-                output_template => 'Referrals : %s',
+        { label => 'referral-count', nlabel => 'zone.referrals.count', set => {
+                key_values => [ { name => 'referral', diff => 1 }, { name => 'name' } ],
+                output_template => 'referrals: %s',
                 perfdatas => [
-                    { label => 'referral_count', value => 'ibBindZoneReferral', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
         },
-        { label => 'nxrrset-count', set => {
-                key_values => [ { name => 'ibBindZoneNxRRset', diff => 1 }, { name => 'display' } ],
-                output_template => 'Non-existent record : %s',
+        { label => 'nxrrset-count', nlabel => 'zone.queries.nxrrset.count', set => {
+                key_values => [ { name => 'nxrrset', diff => 1 }, { name => 'name' } ],
+                output_template => 'non-existent record: %s',
                 perfdatas => [
-                    { label => 'nxrrset_count', value => 'ibBindZoneNxRRset', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
         },
-        { label => 'failure-count', set => {
-                key_values => [ { name => 'ibBindZoneFailure', diff => 1 }, { name => 'display' } ],
-                output_template => 'Failed queries : %s',
+        { label => 'failure-count', nlabel => 'zone.queries.failed.count', set => {
+                key_values => [ { name => 'failure', diff => 1 }, { name => 'name' } ],
+                output_template => 'failed queries: %s',
                 perfdatas => [
-                    { label => 'failure_count', value => 'ibBindZoneFailure', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' },
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
     });
-    
+
     return $self;
 }
 
-sub prefix_dns_output {
-    my ($self, %options) = @_;
-    
-    return "Zone '" . $options{instance_value}->{display} . "' ";
-}
-
 my $mapping = {
-    ibBindZoneName      => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.1' },
-    ibBindZoneSuccess   => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.2' },
-    ibBindZoneReferral  => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.3' },
-    ibBindZoneNxRRset   => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.4' },
-    ibBindZoneFailure   => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.7' },
+    name     => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.1' }, # ibBindZoneName
+    success  => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.2' }, # ibBindZoneSuccess
+    referral => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.3' }, # ibBindZoneReferral
+    nxrrset  => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.4' }, # ibBindZoneNxRRset
+    failure  => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.7' }  # ibBindZoneFailure
 };
 my $mapping2 = {
-    ibDnsHitRatio       => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.5' },
-    ibDnsQueryRate      => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.6' },
+    naa_latency_1m  => { oid => '.1.3.6.1.4.1.7779.3.1.1.2.1.3.1.2.1.1' }, # ibNetworkMonitorDNSNonAAT1AvgLatency
+    naa_latency_5m  => { oid => '.1.3.6.1.4.1.7779.3.1.1.2.1.3.1.2.2.1' }, # ibNetworkMonitorDNSNonAAT5AvgLatency
+    naa_latency_15m => { oid => '.1.3.6.1.4.1.7779.3.1.1.2.1.3.1.2.3.1' }, # ibNetworkMonitorDNSNonAAT15AvgLatency
+    aa_latency_1m   => { oid => '.1.3.6.1.4.1.7779.3.1.1.2.1.3.1.3.1.1' }, # ibNetworkMonitorDNSAAT1AvgLatency
+    aa_latency_5m   => { oid => '.1.3.6.1.4.1.7779.3.1.1.2.1.3.1.3.2.1' }, # ibNetworkMonitorDNSAAT5AvgLatency
+    aa_latency_15m  => { oid => '.1.3.6.1.4.1.7779.3.1.1.2.1.3.1.3.3.1' }, # ibNetworkMonitorDNSAAT15AvgLatency
+    dns_hit         => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.5' }, # ibDnsHitRatio
+    dns_query       => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.6' }  # ibDnsQueryRate
 };
-
 my $oid_ibZoneStatisticsEntry = '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1';
-my $oid_ibDnsModule = '.1.3.6.1.4.1.7779.3.1.1.3.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -135,16 +163,17 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
-    
-    $self->{dns} = {};
-    my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $oid_ibZoneStatisticsEntry },
-            { oid => $oid_ibDnsModule, start => $mapping2->{ibDnsHitRatio}->{oid} },
-        ],
+
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%$mapping2)) ],
         nothing_quit => 1
     );
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => 0);
+    $self->{aa} = $self->{global};
+    $self->{naa} = $self->{global};
 
+    $snmp_result = $options{snmp}->get_table(oid => $oid_ibZoneStatisticsEntry);
+    $self->{dns} = {};
     foreach my $oid (keys %{$snmp_result->{$oid_ibZoneStatisticsEntry}}) {
         next if ($oid !~ /^$mapping->{ibBindZoneName}->{oid}\.(.*)$/);
         my $instance = $1;
@@ -155,21 +184,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{ibBindZoneName} . "': no matching filter.", debug => 1);
             next;
         }
-        
-        $self->{dns}->{$instance} = { display => $result->{ibBindZoneName}, 
-            %$result
-        };
+
+        $self->{dns}->{$instance} = $result;
     }
     
-    if (scalar(keys %{$self->{dns}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No dns zone found.");
-        $self->{output}->option_exit();
-    }
-    
-    my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{$oid_ibDnsModule}, instance => '0');
-    $self->{global} = { %$result };
-    
-    $self->{cache_name} = "infoblox_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+    $self->{cache_name} = 'infoblox_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
@@ -187,7 +206,7 @@ Check dns usage.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^success-coun$'
+Example: --filter-counters='success'
 
 =item B<--filter-name>
 
@@ -202,8 +221,10 @@ Can be: 'total-query-rate', 'total-hit-ratio', 'success-count', 'referral-count'
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total-query-rate', 'total-hit-ratio', 'success-count', 'referral-count', 'nxrrset-count', 
-'failure-count'.
+Can be: 'total-query-rate', 'total-hit-ratio',
+'success-count', 'referral-count', 'nxrrset-count', 'failure-count',
+'aa-latency-1m', 'aa-latency-5m', 'aa-latency-15m',
+'naa-latency-1m', 'naa-latency-5m', 'naa-latency-15m'.
 
 =back
 

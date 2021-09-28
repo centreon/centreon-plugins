@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,89 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'led state : ' . $self->{result_values}->{ledstate};
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{ledstate} = $options{new_datas}->{$self->{instance} . '_ledstate'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'physical', type => 1, cb_prefix_output => 'prefix_physical_output', message_multiple => 'All physical status are ok' },
-        { name => 'virtuallpar', type => 1, cb_prefix_output => 'prefix_virtuallpar_output', message_multiple => 'All virtual partition status are ok' }
-    ];
-    
-    $self->{maps_counters}->{physical} = [
-        { label => 'physical-status', threshold => 0, set => {
-                key_values => [ { name => 'ledstate' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-    ];
-    $self->{maps_counters}->{virtuallpar} = [
-        { label => 'virtuallpar-status', threshold => 0, set => {
-                key_values => [ { name => 'ledstate' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-    ];
-}
-
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"                   => { name => 'filter_name' },
-                                  "warning-physical-status:s"       => { name => 'warning_physical_status', default => '' },
-                                  "critical-physical-status:s"      => { name => 'critical_physical_status', default => '%{ledstate} =~ /on/' },
-                                  "warning-virtuallpar-status:s"    => { name => 'warning_virtuallpar_status', default => '' },
-                                  "critical-virtuallpar-status:s"   => { name => 'critical_virtuallpar_status', default => '%{ledstate} =~ /on/' },
-                                  
-                                  "hostname:s"          => { name => 'hostname' },
-                                  "ssh-option:s@"       => { name => 'ssh_option' },
-                                  "ssh-path:s"          => { name => 'ssh_path' },
-                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "command:s"           => { name => 'command' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options' },
-                                });
-    
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
-    $self->{default_hmc_cmd} = 'while read system ; do echo "system: $system"; echo -n "  phys led: "; lsled -r sa -m "$system" -t "phys" ; while read lpar; do echo -n "  lpar [$lpar] led: "; lsled -m "$system" -r sa -t virtuallpar --filter "lpar_names=$lpar" -F state ; done < <(lssyscfg -m "$system" -r lpar -F name) ; done < <(lssyscfg -r sys -F "name")
-';
-    $self->change_macros(macros => ['warning_physical_status', 'critical_physical_status', 'warning_virtuallpar_status', 'critical_virtuallpar_status']);
+    return 'led state : ' . $self->{result_values}->{ledstate};
 }
 
 sub prefix_physical_output {
@@ -121,29 +44,69 @@ sub prefix_virtuallpar_output {
     return "Virtual partition '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'physical', type => 1, cb_prefix_output => 'prefix_physical_output', message_multiple => 'All physical status are ok' },
+        { name => 'virtuallpar', type => 1, cb_prefix_output => 'prefix_virtuallpar_output', message_multiple => 'All virtual partition status are ok' }
+    ];
+    
+    $self->{maps_counters}->{physical} = [
+        { label => 'physical-status', type => 2, critical_default => '%{ledstate} =~ /on/', set => {
+                key_values => [ { name => 'ledstate' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{virtuallpar} = [
+        { label => 'virtuallpar-status', type => 2, critical_default => '%{ledstate} =~ /on/', set => {
+                key_values => [ { name => 'ledstate' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+    
+    $options{options}->add_options(arguments => { 
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
+    return $self;
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
     
     #system: Server-8203-E4A-SN06DF9A5
     #  phys led: state=on
     #  lpar [LPAR1] led: off
-    my $content = centreon::plugins::misc::execute(output => $self->{output},
-                                                   options => $self->{option_results},
-                                                   command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{default_hmc_cmd},
-                                                   command_path => $self->{option_results}->{command_path},
-                                                   command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef);
-    
+    my ($content) = $options{custom}->execute_command(
+        command => 'while read system ; do echo "system: $system"; echo -n "  phys led: "; lsled -r sa -m "$system" -t "phys" ; while read lpar; do echo -n "  lpar [$lpar] led: "; lsled -m "$system" -r sa -t virtuallpar --filter "lpar_names=$lpar" -F state ; done < <(lssyscfg -m "$system" -r lpar -F name) ; done < <(lssyscfg -r sys -F "name")
+',
+        command_options => '2>&1'
+    );
+
     $self->{physical} = {};
     $self->{virtuallpar} = {};
-    
-    while ($content =~ /^system:\s+(.*?)\n(.*?)(?:system:|\Z)/msg) {
+    while ($content =~ /^system:\s+(.*?)\n(.*?)(?=system:|\Z)/msg) {
         my ($system_name, $subcontent) = ($1, $2);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $system_name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $system_name . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $subcontent =~ /phys\s+led:\s+state=(\S+)/;
         my $system_ledstate = $1;
         while ($subcontent =~ /lpar\s+\[(.*?)\]\s+led:\s+(\S+)/msg) {
@@ -154,15 +117,15 @@ sub manage_selection {
                 $self->{output}->output_add(long_msg => "skipping  '" . $lpar_name . "': no matching filter.", debug => 1);
                 next;
             }
-            
+
             $self->{virtuallpar}->{$lpar_name} = { display => $lpar_name, ledstate => $lpar_ledstate };
         }
-        
+
         $self->{physical}->{$system_name} = { display => $system_name, ledstate => $system_ledstate };        
     }
-    
+
     if (scalar(keys %{$self->{physical}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No managed system found.");
+        $self->{output}->add_option_msg(short_msg => 'No managed system found.');
         $self->{output}->option_exit();
     }
 }
@@ -206,38 +169,6 @@ Can used special variables like: %{ledstate}, %{display}
 
 Set critical threshold (Default: '%{ledstate} =~ /on/').
 Can used special variables like: %{ledstate}, %{display}
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--command>
-
-Command to get information. Used it you have output in a file.
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,12 +39,14 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'psu'));
-    
+
     if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.x')) {
         $oid_powerModuleDescription = '.1.3.6.1.4.1.19746.1.1.1.1.1.1.3';
         $oid_powerModuleStatus = '.1.3.6.1.4.1.19746.1.1.1.1.1.1.4';
-        %map_psu_status = (0 => 'absent', 1 => 'ok', 2 => 'failed', 3 => 'faulty', 4 => 'acnone',
-                           99 => 'unknown');
+        %map_psu_status = (
+            0 => 'absent', 1 => 'ok', 2 => 'failed', 3 => 'faulty', 4 => 'acnone',
+            99 => 'unknown'
+        );
     } else {
         $oid_powerModuleDescription = ''; # none
         $oid_powerModuleStatus = '.1.3.6.1.4.1.19746.1.1.1.1.1.1.4';
@@ -55,21 +57,27 @@ sub check {
         next if ($oid !~ /^$oid_powerModuleStatus\.(.*)$/);
         my $instance = $1;
         my $psu_descr = defined($self->{results}->{$oid_powerModuleEntry}->{$oid_powerModuleDescription . '.' . $instance}) ? 
-                            centreon::plugins::misc::trim($self->{results}->{$oid_powerModuleEntry}->{$oid_powerModuleDescription . '.' . $instance}) : 'unknown';
+            centreon::plugins::misc::trim($self->{results}->{$oid_powerModuleEntry}->{$oid_powerModuleDescription . '.' . $instance}) : 'unknown';
         my $psu_status = defined($map_psu_status{$self->{results}->{$oid_powerModuleEntry}->{$oid}}) ?
-                            $map_psu_status{$self->{results}->{$oid_powerModuleEntry}->{$oid}} : 'unknown';
+            $map_psu_status{$self->{results}->{$oid_powerModuleEntry}->{$oid}} : 'unknown';
 
         next if ($self->check_filter(section => 'psu', instance => $instance));
         next if ($psu_status =~ /absent/i && 
                  $self->absent_problem(section => 'psu', instance => $instance));
-        
+
         $self->{components}->{psu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' status is '%s' [description = %s]",
-                                    $instance, $psu_status, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Power Supply '%s' status is '%s' [description = %s]",
+                $instance, $psu_status, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'psu', value => $psu_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power Supply '%s' status is '%s'", $instance, $psu_status));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Power Supply '%s' status is '%s'", $instance, $psu_status)
+            );
         }
     }
 }

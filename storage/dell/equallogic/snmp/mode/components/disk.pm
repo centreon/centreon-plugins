@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,12 +33,12 @@ my %map_disk_status = (
     7 => 'history-of-failures',
     8 => 'unsupported-version',
     9 => 'unhealthy',
-    10 => 'replacement',
+    10 => 'replacement'
 );
 
 # In MIB 'eqldisk.mib'
 my $mapping = {
-    eqlDiskStatus => { oid => '.1.3.6.1.4.1.12740.3.1.1.1.8', map => \%map_disk_status },
+    eqlDiskStatus => { oid => '.1.3.6.1.4.1.12740.3.1.1.1.8', map => \%map_disk_status }
 };
 my $oid_eqlDiskStatus = '.1.3.6.1.4.1.12740.3.1.1.1.8';
 
@@ -64,14 +64,21 @@ sub check {
         next if ($self->check_filter(section => 'disk', instance => $member_instance . '.' . $instance));
         $self->{components}->{disk}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Disk '%s/%s' status is %s [instance: %s].",
-                                    $member_name, $instance, $result->{eqlDiskStatus}, $member_instance . '.' . $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "disk '%s/%s' status is %s [instance: %s].",
+                $member_name, $instance, $result->{eqlDiskStatus}, $member_instance . '.' . $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'disk', value => $result->{eqlDiskStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Disk '%s/%s' status is %s",
-                                                             $member_name, $instance, $result->{eqlDiskStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Disk '%s/%s' status is %s",
+                    $member_name, $instance, $result->{eqlDiskStatus}
+                )
+            );
         }
     }
 }

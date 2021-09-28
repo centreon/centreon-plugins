@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -218,7 +218,6 @@ sub request_api_csv {
     }
 
     $self->settings();
-
     $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
 
     my $content = $self->{http}->request(%options);
@@ -238,18 +237,10 @@ sub request_api_csv {
             $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
-    }    
-    
-    my $decoded;
-    eval {
-        $decoded = decode('UTF-8', $content);
-    };
-    if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response: $@");
-        $self->{output}->option_exit();
     }
-    $decoded =~ s/^\x{feff}//;
+
+    $content =~ s/^(?:\x{feff}|\x{ef}\x{bb}\x{bf})//;
+    my $decoded = encode('UTF-8', $content);
 
     my @rows;
     eval {
@@ -261,7 +252,6 @@ sub request_api_csv {
         }
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot parse csv response: $@");
         $self->{output}->option_exit();
     }

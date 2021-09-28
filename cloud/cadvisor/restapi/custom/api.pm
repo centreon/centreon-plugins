@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,7 +46,7 @@ sub new {
             'hostname:s@'   => { name => 'hostname' },
             'port:s'        => { name => 'port', default => 8080 },
             'proto:s'       => { name => 'proto', default => 'http' },
-            'path:s'        => { name => 'path', default => '/containers/docker/' },
+            'api-path:s'    => { name => 'api_path', default => '/containers/docker/' },
             'credentials'   => { name => 'credentials' },
             'username:s'    => { name => 'username' },
             'password:s'    => { name => 'password' },
@@ -114,7 +114,7 @@ sub internal_api_list_nodes {
     
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{path},
+        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path},
         unknown_status => '', critical_status => '', warning_status => '');
     my $nodes;
     eval {
@@ -122,8 +122,10 @@ sub internal_api_list_nodes {
     };
     if ($@) {
         $nodes = {};
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Node '$options{node_name}': cannot decode json list nodes response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json list nodes response: $@"
+        );
     } else {
         $nodes = {} if (ref($nodes) eq 'ARRAY'); # nodes is not in a swarm
     }
@@ -144,8 +146,10 @@ sub internal_api_info {
     };
     if ($@) {
         $nodes = [];
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Node '$options{node_name}': cannot decode json info response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json info response: $@"
+        );
     }
     
     return $nodes;
@@ -156,7 +160,7 @@ sub internal_api_list_containers {
     
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{path},
+        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path},
         unknown_status => '', critical_status => '', warning_status => '');
     my $containers = [];
     my $containers_ids;
@@ -165,8 +169,10 @@ sub internal_api_list_containers {
     };
     if ($@) {
         $containers = [];
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Node '$options{node_name}': cannot decode json get containers response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json get containers response: $@"
+        );
     }
     foreach my $container (@{$containers_ids->{subcontainers}}) {
         my $json_response = JSON::XS->new->utf8->decode(
@@ -199,8 +205,10 @@ sub internal_api_get_machine_stats {
     };
     if ($@) {
         $machine_stats = {};
-        $self->output_add(severity => 'UNKNOWN',
-                          short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@"
+        );
     } else {
         $machine_stats->{num_cores} = $full_machine_stats->{num_cores};
         $machine_stats->{memory_capacity} = $full_machine_stats->{memory_capacity};
@@ -212,7 +220,7 @@ sub internal_api_get_container_stats {
     my ($self, %options) = @_;
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{path} . '/' . $options{container_id},
+        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path} . '/' . $options{container_id},
         unknown_status => '', critical_status => '', warning_status => '');
     my $container_stats;
     my $full_container_stats;
@@ -221,8 +229,10 @@ sub internal_api_get_container_stats {
     };
     if ($@) {
         $container_stats = [];
-        $self->output_add(severity => 'UNKNOWN',
-                          short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@"
+        );
     } else {
         $container_stats->[0] = $full_container_stats->{stats}[0];
         $container_stats->[1] = $full_container_stats->{stats}[scalar(@{$full_container_stats->{stats}}) - 1];
@@ -337,7 +347,7 @@ Port used (Default: 8080)
 
 Specify https if needed (Default: 'http')
 
-=item B<--path>
+=item B<--api-path>
 
 Path used (Default: '/containers/docker')
 

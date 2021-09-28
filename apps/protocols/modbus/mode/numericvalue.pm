@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,56 +28,86 @@ use List::Util qw (min max sum);
 use JSON;
 my $config_data;
 
+sub get_printf_vars {
+    my ($self, %options) = @_;
+
+    # compat
+    if (ref($options{printf_var}) ne 'ARRAY') {
+        $options{printf_var} = [split /,/, $options{printf_var}];
+    }
+
+    my $message;
+    my $vars = [];
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+
+        foreach my $var (@{$options{printf_var}}) {
+            $var =~ s/\$self->\{result_values\}/\$values/;
+            push @$vars, $self->{output}->assign_eval(eval => $var, values => $options{values});
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'eval printf_var problem: ' . $message);
+        $self->{output}->option_exit();
+    }
+
+    return $vars;
+}
+
 sub custom_metric_output {
     my ($self, %options) = @_;
-    my $msg;
-    my $message;
 
+    my $output;
     if ($self->{result_values}->{type} eq 'unique') {
         if (defined($config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}) && defined($config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg})) {
-            eval {
-                local $SIG{__WARN__} = sub { $message = $_[0]; };
-                local $SIG{__DIE__} = sub { $message = $_[0]; };
-                $msg = sprintf("$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}",
-                                eval "$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
-            };
+            my $vars = $self->{instance_mode}->get_printf_vars(
+                printf_var => $config_data->{selection}->{ $self->{result_values}->{instance} }->{formatting}->{printf_var},
+                values => $self->{result_values}
+            );
+            $output = sprintf(
+                $config_data->{selection}->{ $self->{result_values}->{instance} }->{formatting}->{printf_msg},
+                @$vars
+            );
         } elsif (defined($config_data->{formatting}->{printf_var}) && defined($config_data->{formatting}->{printf_msg})) {
-            eval {
-                local $SIG{__WARN__} = sub { $message = $_[0]; };
-                local $SIG{__DIE__} = sub { $message = $_[0]; };
-                $msg = sprintf("$config_data->{formatting}->{printf_msg}", eval "$config_data->{formatting}->{printf_var}");
-            };
+            my $vars = $self->{instance_mode}->get_printf_vars(
+                printf_var => $config_data->{formatting}->{printf_var},
+                values => $self->{result_values}
+            );
+            $output = sprintf(
+                $config_data->{formatting}->{printf_msg},
+                @$vars
+            );
         } else {
-            $msg = sprintf("Metric '%s' value is '%s'", $self->{result_values}->{instance}, $self->{result_values}->{value});
+            $output = sprintf("Metric '%s' value is '%s'", $self->{result_values}->{instance}, $self->{result_values}->{value});
         }
     }
 
     if ($self->{result_values}->{type} eq 'global') {
         if (defined($config_data->{virtualcurve}->{$self->{result_values}->{instance}}->{formatting})) {
-            eval {
-                local $SIG{__WARN__} = sub { $message = $_[0]; };
-                local $SIG{__DIE__} = sub { $message = $_[0]; };
-                $msg = sprintf("$config_data->{virtualcurve}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}",
-                                eval "$config_data->{virtualcurve}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
-            };
+            my $vars = $self->{instance_mode}->get_printf_vars(
+                printf_var => $config_data->{virtualcurve}->{ $self->{result_values}->{instance} }->{formatting}->{printf_var},
+                values => $self->{result_values}
+            );
+            $output = sprintf(
+                $config_data->{virtualcurve}->{ $self->{result_values}->{instance} }->{formatting}->{printf_msg},
+                @$vars
+            );
         } elsif (defined($config_data->{formatting}->{printf_var}) && defined($config_data->{formatting}->{printf_msg})) {
-            eval {
-                local $SIG{__WARN__} = sub { $message = $_[0]; };
-                local $SIG{__DIE__} = sub { $message = $_[0]; };
-                $msg = sprintf("$config_data->{formatting}->{printf_msg}", eval "$config_data->{formatting}->{printf_var}");
-            };
+            my $vars = $self->{instance_mode}->get_printf_vars(
+                printf_var => $config_data->{formatting}->{printf_var},
+                values => $self->{result_values}
+            );
+            $output = sprintf(
+                $config_data->{formatting}->{printf_msg},
+                @$vars
+            );
         } else {
-            $msg = sprintf("Metric '%s' value is '%s'", $self->{result_values}->{instance}, $self->{result_values}->{value});
+            $output = sprintf("Metric '%s' value is '%s'", $self->{result_values}->{instance}, $self->{result_values}->{value});
         }
     }
 
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'printf expression problem: ' . $message);
-        $self->{output}->option_exit();
-    }
-
-    return $msg;
-
+    return $output;
 }
 
 sub custom_metric_calc {
@@ -109,15 +139,15 @@ sub custom_metric_calc {
 sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
-    $self->{output}->perfdata_add(label => $self->{result_values}->{instance},
-                                  value => $self->{result_values}->{perfdata_value},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance}),
-                                  unit => $self->{result_values}->{perfdata_unit},
-                                  min => $self->{result_values}->{min},
-                                  max => $self->{result_values}->{max},
-                                 );
-
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{instance},
+        value => $self->{result_values}->{perfdata_value},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance}),
+        unit => $self->{result_values}->{perfdata_unit},
+        min => $self->{result_values}->{min},
+        max => $self->{result_values}->{max},
+    );
 }
 
 sub custom_metric_threshold {
@@ -126,9 +156,13 @@ sub custom_metric_threshold {
     my $label_warn = ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance};
     my $label_crit = ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance};
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{perfdata_value},
-                                                  threshold => [ { label => $label_crit, exit_litteral => 'critical' },
-                                                                 { label => $label_warn, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{perfdata_value},
+        threshold => [
+            { label => $label_crit, exit_litteral => 'critical' },
+            { label => $label_warn, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -143,7 +177,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_metric_calc'),
                 closure_custom_output => $self->can('custom_metric_output'),
                 closure_custom_perfdata => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
+                closure_custom_threshold_check => $self->can('custom_metric_threshold')
             }
         }
     ];
@@ -154,7 +188,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_metric_calc'),
                 closure_custom_output => $self->can('custom_metric_output'),
                 closure_custom_perfdata => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
+                closure_custom_threshold_check => $self->can('custom_metric_threshold')
             }
         }
     ];
@@ -165,10 +199,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                  "config:s"    => { name => 'config' },
-                                });
+    $options{options}->add_options(arguments => {
+        'config:s' => { name => 'config' }
+    });
+
     return $self;
 }
 
@@ -291,15 +325,19 @@ sub manage_selection {
         }
 
         next if (!defined($self->{vmetrics}->{$vcurve}->{values}) || scalar(@{$self->{vmetrics}->{$vcurve}->{values}}) == 0);
-        
-        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                sum(@{$self->{vmetrics}->{$vcurve}->{values}}) / scalar(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'avg');
-        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                sum(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'sum');
-        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                min(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'min');
-        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                max(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'max');
+
+        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+            $config_data->{formatting}->{printf_metric_value},
+            sum(@{$self->{vmetrics}->{$vcurve}->{values}}) / scalar(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'avg');
+        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+            $config_data->{formatting}->{printf_metric_value},
+            sum(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'sum');
+        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+            $config_data->{formatting}->{printf_metric_value},
+            min(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'min');
+        $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+            $config_data->{formatting}->{printf_metric_value},
+            max(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'max');
         $self->{vmetrics}->{$vcurve}->{aggregated_value} = eval "$self->{vmetrics}->{$vcurve}->{aggregated_value} $config_data->{virtualcurve}->{$vcurve}->{custom}" if (defined($config_data->{virtualcurve}->{$vcurve}->{custom}));
 
         $self->{vmetrics}->{$vcurve}->{unit} = (defined($config_data->{virtualcurve}->{$vcurve}->{unit})) ? $config_data->{virtualcurve}->{$vcurve}->{unit} : '';

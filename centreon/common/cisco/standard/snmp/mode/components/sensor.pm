@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,7 +43,7 @@ my %map_sensor_type = (
     11 => 'cmm',
     12 => 'truthvalue',
     13 => 'specialEnum',
-    14 => 'dBm',
+    14 => 'dBm'
 );
 my %map_scale = (
     1 => -24, # yocto, 
@@ -62,13 +62,13 @@ my %map_scale = (
     14 => 18, #exa
     15 => 15, #peta
     16 => 21, #zetta
-    17 => 24, #yotta
+    17 => 24 #yotta
 );
 my %map_severity = (
     1 => 'other',
     10 => 'minor',
     20 => 'major',
-    30 => 'critical',
+    30 => 'critical'
 );
 my %map_relation = (
     1 => 'lessThan',
@@ -76,7 +76,7 @@ my %map_relation = (
     3 => 'greaterThan',
     4 => 'greaterOrEqual',
     5 => 'equalTo',
-    6 => 'notEqualTo',
+    6 => 'notEqualTo'
 );
 my %perfdata_unit = (
     'other' => '',
@@ -92,7 +92,7 @@ my %perfdata_unit = (
     'cmm' => '',
     'truthvalue' => '',
     'specialEnum' => '',
-    'dBm' => 'dBm',
+    'dBm' => 'dBm'
 );
 
 # In MIB 'CISCO-ENTITY-SENSOR-MIB'
@@ -102,16 +102,15 @@ my $mapping = {
     entSensorPrecision       => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.3' },
     entSensorValue           => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.4' },
     entSensorStatus          => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.5', map => \%map_sensor_status },
-    entSensorValueUpdateRate => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.7' }, # 0 means no threshold check
+    entSensorValueUpdateRate => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.7' } # 0 means no threshold check
 };
 my $mapping2 = {
     entSensorThresholdSeverity => { oid => '.1.3.6.1.4.1.9.9.91.1.2.1.1.2', map => \%map_severity },
     entSensorThresholdRelation => { oid => '.1.3.6.1.4.1.9.9.91.1.2.1.1.3', map => \%map_relation },
-    entSensorThresholdValue    => { oid => '.1.3.6.1.4.1.9.9.91.1.2.1.1.4' },
+    entSensorThresholdValue    => { oid => '.1.3.6.1.4.1.9.9.91.1.2.1.1.4' }
 };
 my $oid_entSensorValueEntry     = '.1.3.6.1.4.1.9.9.91.1.1.1.1';
 my $oid_entSensorThresholdEntry = '.1.3.6.1.4.1.9.9.91.1.2.1.1';
-my $oid_entPhysicalDescr        = '.1.3.6.1.2.1.47.1.1.1.1.2';
 
 sub load {
     my ($self) = @_;
@@ -201,10 +200,10 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_entSensorValueEntry}, instance => $instance);
 
-        next if (!defined($self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance}));
-        my $sensor_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
+        next if (!defined($self->{results}->{ $self->{physical_name} }->{ $self->{physical_name} . '.' . $instance }));
+        my $sensor_descr = $self->{results}->{ $self->{physical_name} }->{ $self->{physical_name} . '.' . $instance };
 
-        next if ($self->check_filter(section => 'sensor', instance => $result->{entSensorType} . '.' . $instance));
+        next if ($self->check_filter(section => 'sensor', instance => $result->{entSensorType} . '.' . $instance, name => $sensor_descr));
         $self->{components}->{sensor}->{total}++;
 
         $result->{entSensorValue} = defined($result->{entSensorValue}) ? 
@@ -212,7 +211,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Sensor '%s' status is '%s' [instance: %s] [value: %s %s]", 
+                "sensor '%s' status is '%s' [instance: %s] [value: %s %s]", 
                 $sensor_descr, $result->{entSensorStatus},
                 $instance, 
                 defined($result->{entSensorValue}) ? $result->{entSensorValue} : '-',
@@ -233,7 +232,12 @@ sub check {
         next if (!defined($result->{entSensorValue}) || $result->{entSensorValue} !~ /[0-9]/);
 
         my $component = 'sensor.' . $result->{entSensorType};
-        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => $component, instance => $instance, value => $result->{entSensorValue});
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(
+            section => $component,
+            instance => $instance,
+            name => $sensor_descr,
+            value => $result->{entSensorValue}
+        );
         if ($checked == 0) {
             my $warn_th = get_default_warning_threshold($self, instance => $instance, result => $result);
             my $crit_th = get_default_critical_threshold($self, instance => $instance, result => $result);

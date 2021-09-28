@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,7 +44,7 @@ sub set_system {
             ['Down', 'CRITICAL'],
             ['N/A', 'UNKNOWN'],
             ['Unknown', 'UNKNOWN'],
-            ['Not Installed', 'UNKNOWN'],
+            ['Not Installed', 'UNKNOWN']
         ],
         disk => [
             ['OK', 'OK'],
@@ -70,7 +70,7 @@ sub set_system {
             ['UNUSABLE', 'CRITICAL'],
             ['N/A', 'UNKNOWN'],
             ['Unknown', 'UNKNOWN'],
-            ['Not Present', 'UNKNOWN'],
+            ['Not Present', 'UNKNOWN']
         ],
         fan => [
             ['OK', 'OK'],
@@ -81,14 +81,14 @@ sub set_system {
             ['Missing', 'UNKNOWN'],
             ['Off', 'UNKNOWN'],
             ['N/A', 'UNKNOWN'],
-            ['Unknown', 'UNKNOWN'],
+            ['Unknown', 'UNKNOWN']
         ],
         fru => [
             ['OK', 'OK'],
             ['Fault', 'CRITICAL'],
             ['Invalid Data', 'CRITICAL'],
             ['Power OFF', 'UNKNOWN'],
-            ['Absent', 'UNKNOWN'],
+            ['Absent', 'UNKNOWN']
         ],
         psu => [
             ['OK', 'OK'],
@@ -99,7 +99,7 @@ sub set_system {
             ['Missing', 'UNKNOWN'],
             ['Off', 'UNKNOWN'],
             ['N/A', 'UNKNOWN'],
-            ['Unknown', 'UNKNOWN'],
+            ['Unknown', 'UNKNOWN']
         ],
         sensor => [
             ['OK', 'OK'],
@@ -109,15 +109,15 @@ sub set_system {
             ['Unrecoverable', 'UNKNOWN'],
             ['Not Installed', 'UNKNOWN'],
             ['Unsupported', 'UNKNOWN'],
-            ['Unknown', 'UNKNOWN'],
+            ['Unknown', 'UNKNOWN']
         ],
         volume => [
             ['OK', 'OK'],
             ['Degraded', 'WARNING'],
             ['Fault', 'CRITICAL'],
             ['N/A', 'UNKNOWN'],
-            ['Unknown', 'UNKNOWN'],
-        ],
+            ['Unknown', 'UNKNOWN']
+        ]
     };
     
     $self->{components_path} = 'storage::dell::me4::restapi::mode::components';

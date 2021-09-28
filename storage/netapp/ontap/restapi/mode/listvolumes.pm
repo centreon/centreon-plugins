@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -52,10 +52,12 @@ sub run {
 
     my $volumes = $self->manage_selection(%options);
     foreach (@{$volumes->{records}}) {
+        my $vserver_name = defined($_->{svm}) && $_->{svm}->{name} ne '' ? $_->{svm}->{name} : '-';
         $self->{output}->output_add(long_msg => sprintf(
-            '[name = %s][state = %s]',
+            '[name = %s][state = %s][vserver = %s]',
             $_->{name},
-            $_->{state}
+            $_->{state},
+            $vserver_name
         ));
     }
 
@@ -70,7 +72,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'state']);
+    $self->{output}->add_disco_format(elements => ['name', 'state', 'vserver_name']);
 }
 
 sub disco_show {
@@ -78,9 +80,11 @@ sub disco_show {
 
     my $volumes = $self->manage_selection(%options);
     foreach (@{$volumes->{records}}) {
+        my $vserver_name = defined($_->{svm}) && $_->{svm}->{name} ne '' ? $_->{svm}->{name} : '-';
         $self->{output}->add_disco_entry(
             name => $_->{name},
-            state => $_->{state}
+            state => $_->{state},
+            vserver_name => $_->{svm}->{name}
         );
     }
 }

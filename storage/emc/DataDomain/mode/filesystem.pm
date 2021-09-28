@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,35 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use storage::emc::DataDomain::lib::functions;
-
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'fs', type => 1, cb_prefix_output => 'prefix_fs_output', message_multiple => 'All filesystems are ok.' },
-    ];
-
-    $self->{maps_counters}->{fs} = [
-        { label => 'usage', set => {
-                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_used_calc'),
-                closure_custom_output => $self->can('custom_used_output'),
-                threshold_use => 'used_prct', output_error_template => '%s',
-                perfdatas => [
-                    { value => 'used', label => 'used', cast_int => 1,
-                      unit => 'B', min => 0, max => 'total', threshold_total => 'total', 
-                      label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
-        }
-    ];
-}
-
-sub prefix_fs_output {
-    my ($self, %options) = @_;
-
-    return "Filesystem '" . $options{instance_value}->{display} . "' ";
-}
 
 sub custom_used_calc {
     my ($self, %options) = @_;
@@ -82,6 +53,35 @@ sub custom_used_output {
     );
 }
 
+sub prefix_fs_output {
+    my ($self, %options) = @_;
+
+    return "Filesystem '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'fs', type => 1, cb_prefix_output => 'prefix_fs_output', message_multiple => 'All filesystems are ok.' }
+    ];
+
+    $self->{maps_counters}->{fs} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_used_calc'),
+                closure_custom_output => $self->can('custom_used_output'),
+                threshold_use => 'used_prct', output_error_template => '%s',
+                perfdatas => [
+                    { value => 'used', label => 'used', cast_int => 1,
+                      unit => 'B', min => 0, max => 'total', threshold_total => 'total', 
+                      label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -98,29 +98,26 @@ sub new {
 }
 
 my $oid_fileSystemSpaceEntry = '.1.3.6.1.4.1.19746.1.3.2.1.1';
-my $oid_sysDescr = '.1.3.6.1.2.1.1.1'; # 'Data Domain OS 5.4.1.1-411752'
+my $oid_sysDescr = '.1.3.6.1.2.1.1.1.0'; # 'Data Domain OS 5.4.1.1-411752'
 my ($oid_fileSystemResourceName, $oid_fileSystemSpaceUsed, $oid_fileSystemSpaceAvail);
 
 sub add_result {
     my ($self, %options) = @_;
 
-    $self->{fs}->{$options{instance}} = {};
-    $self->{fs}->{$options{instance}}->{display} = $self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemResourceName . '.' . $options{instance}};    
-    $self->{fs}->{$options{instance}}->{free} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceAvail . '.' . $options{instance}} * 1024 * 1024 * 1024);
-    $self->{fs}->{$options{instance}}->{used} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceUsed . '.' . $options{instance}} * 1024 * 1024 * 1024);
+    $self->{fs}->{ $options{instance} } = {};
+    $self->{fs}->{ $options{instance} }->{display} = $options{snmp_result}->{$oid_fileSystemResourceName . '.' . $options{instance}};    
+    $self->{fs}->{ $options{instance} }->{free} = int($options{snmp_result}->{$oid_fileSystemSpaceAvail . '.' . $options{instance}} * 1024 * 1024 * 1024);
+    $self->{fs}->{ $options{instance} }->{used} = int($options{snmp_result}->{$oid_fileSystemSpaceUsed . '.' . $options{instance}} * 1024 * 1024 * 1024);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $oid_sysDescr },
-            { oid => $oid_fileSystemSpaceEntry },
-        ], 
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ $oid_sysDescr ],
         nothing_quit => 1
     );
-    if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $self->{results}->{$oid_sysDescr}->{$oid_sysDescr . '.0'}))) {
+    if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $snmp_result->{$oid_sysDescr}))) {
         $self->{output}->output_add(
             severity => 'UNKNOWN',
             short_msg => 'Cannot get DataDomain OS version.'
@@ -128,6 +125,12 @@ sub manage_selection {
         $self->{output}->display();
         $self->{output}->exit();
     }
+
+    $snmp_result = $options{snmp}->get_table(
+        oid => $oid_fileSystemSpaceEntry,
+        nothing_quit => 1
+    );
+
     if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.x')) {
         $oid_fileSystemResourceName = '.1.3.6.1.4.1.19746.1.3.2.1.1.3';
         $oid_fileSystemSpaceUsed = '.1.3.6.1.4.1.19746.1.3.2.1.1.5';
@@ -139,28 +142,28 @@ sub manage_selection {
     }
 
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{filesystem})) {
-        if (!defined($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemResourceName . '.' . $self->{option_results}->{filesystem}})) {
+        if (!defined($snmp_result->{$oid_fileSystemResourceName . '.' . $self->{option_results}->{filesystem}})) {
             $self->{output}->add_option_msg(short_msg => "No filesystem found for id '" . $self->{option_results}->{filesystem} . "'.");
             $self->{output}->option_exit();
         }
-        $self->add_result(instance => $self->{option_results}->{filesystem});
+        $self->add_result(instance => $self->{option_results}->{filesystem}, snmp_result => $snmp_result);
     } else {
-        foreach my $oid (keys %{$self->{results}->{$oid_fileSystemSpaceEntry}}) {
+        foreach my $oid (keys %$snmp_result) {
             next if ($oid !~ /^$oid_fileSystemResourceName\.(\d+)$/);
             my $instance = $1;
-            my $filter_name = $self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemResourceName . '.' . $instance}; 
+            my $filter_name = $snmp_result->{$oid_fileSystemResourceName . '.' . $instance}; 
             if (!defined($self->{option_results}->{filesystem})) {
-                $self->add_result(instance => $instance);
+                $self->add_result(instance => $instance, snmp_result => $snmp_result);
                 next;
             }
             if (defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{filesystem}/i) {
-                $self->add_result(instance => $instance);
+                $self->add_result(instance => $instance, snmp_result => $snmp_result);
             }
             if (defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{filesystem}/) {
-                $self->add_result(instance => $instance);
+                $self->add_result(instance => $instance, snmp_result => $snmp_result);
             }
             if (!defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name eq $self->{option_results}->{filesystem}) {
-                $self->add_result(instance => $instance);
+                $self->add_result(instance => $instance, snmp_result => $snmp_result);
             }
         }    
     }
@@ -184,8 +187,7 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->{snmp} = $options{snmp};
-    $self->manage_selection(disco => 1);
+    $self->manage_selection(disco => 1, snmp => $options{snmp});
     foreach (sort keys %{$self->{fs}}) {
         $self->{output}->add_disco_entry(
             name => $self->{fs}->{$_}->{display},

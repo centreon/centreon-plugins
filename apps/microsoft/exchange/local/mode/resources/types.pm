@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,11 +27,12 @@ use Exporter;
 our $queue_status;
 our $queue_delivery_type;
 our $copystatus_contentindexstate;
+our $mapi_result;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
     $queue_status $queue_delivery_type
-    $copystatus_contentindexstate
+    $copystatus_contentindexstate $mapi_result
 );
 
 $queue_status = {
@@ -85,6 +86,14 @@ $copystatus_contentindexstate = {
     8 => 'AutoSuspended',
     9 => 'HealthyAndUpgrading',
     10 => 'DiskUnavailable'
+};
+
+$mapi_result = {
+    0 => 'Undefined',
+    1 => 'Success',
+    2 => 'Failure',
+    3 => 'MdbMoved',
+    4 => 'StoreNotRunning'
 };
 
 1;

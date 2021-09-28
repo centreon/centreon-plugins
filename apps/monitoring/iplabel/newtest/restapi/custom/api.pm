@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,6 +47,7 @@ sub new {
             'port:s'                 => { name => 'port' },
             'proto:s'                => { name => 'proto' },
             'timeout:s'              => { name => 'timeout' },
+            'url-path:s'             => { name => 'url_path' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' }
@@ -74,6 +75,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/rest';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
@@ -132,7 +134,7 @@ sub request_api {
     $self->settings();
 
     my $content = $self->{http}->request(
-        url_path => $options{endpoint},
+        url_path => $self->{url_path} . $options{endpoint},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
@@ -180,6 +182,10 @@ Port used (Default: 8085)
 =item B<--proto>
 
 Specify https if needed (Default: 'http')
+
+=item B<--url-path>
+
+API url path (Default: '/rest')
 
 =item B<--api-username>
 

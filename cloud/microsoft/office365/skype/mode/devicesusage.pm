@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,14 +35,18 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
-    $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+    if ($self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/) {
+        $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+    }
 
-    $self->{output}->perfdata_add(label => 'active_devices', nlabel => 'skype.devices.active.count',
-                                  value => $self->{result_values}->{active},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  unit => 'devices', min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'active_devices',
+        nlabel => 'skype.devices.active.count',
+        value => $self->{result_values}->{active},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        unit => 'devices', min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_active_threshold {
@@ -52,9 +56,13 @@ sub custom_active_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_active};
     }
-    my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 
 }
@@ -62,12 +70,13 @@ sub custom_active_threshold {
 sub custom_active_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Active devices on %s : %d/%d (%.2f%%)",
-                        $self->{result_values}->{report_date},
-                        $self->{result_values}->{active},
-                        $self->{result_values}->{total},
-                        $self->{result_values}->{prct_active});
-    return $msg;
+    return sprintf(
+        "Active devices on %s : %d/%d (%.2f%%)",
+        $self->{result_values}->{report_date},
+        $self->{result_values}->{active},
+        $self->{result_values}->{total},
+        $self->{result_values}->{prct_active}
+    );
 }
 
 sub custom_active_calc {
@@ -105,52 +114,53 @@ sub set_counters {
             }
         },
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'windows', nlabel => 'skype.devices.windows.count', set => {
                 key_values => [ { name => 'windows' } ],
                 output_template => 'Windows: %d',
                 perfdatas => [
-                    { label => 'windows', value => 'windows', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'windows', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'ipad', nlabel => 'skype.devices.ipad.count', set => {
                 key_values => [ { name => 'ipad' } ],
                 output_template => 'iPad: %d',
                 perfdatas => [
-                    { label => 'ipad', value => 'ipad', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'ipad', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'iphone', nlabel => 'skype.devices.iphone.count', set => {
                 key_values => [ { name => 'iphone' } ],
                 output_template => 'iPhone: %d',
                 perfdatas => [
-                    { label => 'iphone', value => 'iphone', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'iphone', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'android-phone', nlabel => 'skype.devices.android.count', set => {
                 key_values => [ { name => 'android_phone' } ],
                 output_template => 'Android Phone: %d',
                 perfdatas => [
-                    { label => 'android_phone', value => 'android_phone', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'android_phone', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'windows-phone', nlabel => 'skype.devices.windowsphone.count', set => {
                 key_values => [ { name => 'windows_phone' } ],
                 output_template => 'Windows Phone: %d',
                 perfdatas => [
-                    { label => 'windows_phone', value => 'windows_phone', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'windows_phone', template => '%d',
+                      min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -160,8 +170,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-user:s"     => { name => 'filter_user' },
-        "units:s"           => { name => 'units', default => '%' },
+        'filter-user:s' => { name => 'filter_user' },
+        'units:s'       => { name => 'units', default => '%' }
     });
     
     return $self;

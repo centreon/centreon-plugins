@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,10 +36,9 @@ sub set_system {
         sensor => [
             ['uioNormal', 'OK'],
             ['uioWarning', 'WARNING'],
-            ['uioCritical', 'OK'],
+            ['uioCritical', 'CRITICAL'],
             ['sensorStatusNotApplicable', 'OK'],
-            
-            ['disconnected', 'OK'],
+            ['disconnected', 'CRITICAL'],
             ['connected', 'OK']
         ]
     };

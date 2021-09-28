@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_cpu_core_output {
+    my ($self, %options) = @_;
+
+    return "CPU '" . $options{instance_value}->{display} . "' load ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -37,36 +43,27 @@ sub set_counters {
                 key_values => [ { name => 'cpmCPULoadAvg1min' }, { name => 'display' } ],
                 output_template => '%.2f (1m)',
                 perfdatas => [
-                    { value => 'cpmCPULoadAvg1min', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'core-load-5m', nlabel => 'core.cpu.load.5m.count', set => {
                 key_values => [ { name => 'cpmCPULoadAvg5min' }, { name => 'display' } ],
                 output_template => '%.2f (5m)',
                 perfdatas => [
-                    { value => 'cpmCPULoadAvg5min', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                ]
             }
         },
         { label => 'core-load-15m', nlabel => 'core.cpu.load.15m.count', set => {
                 key_values => [ { name => 'cpmCPULoadAvg15min' }, { name => 'display' } ],
                 output_template => '%.2f (15m)',
                 perfdatas => [
-                    { value => 'cpmCPULoadAvg15min', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_cpu_core_output {
-    my ($self, %options) = @_;
-
-    return "CPU '" . $options{instance_value}->{display} . "' load ";
 }
 
 sub new {
@@ -84,7 +81,7 @@ my $mapping = {
     cpmCPUTotalPhysicalIndex  => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.2' },
     cpmCPULoadAvg1min         => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.24' },
     cpmCPULoadAvg5min         => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.25' },
-    cpmCPULoadAvg15min        => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.26' },
+    cpmCPULoadAvg15min        => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.26' }
 };
 
 sub manage_selection {
@@ -94,7 +91,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $oid_cpmCPUTotalEntry, start => $mapping->{cpmCPULoadAvg1min}->{oid}, end => $mapping->{cpmCPULoadAvg15min}->{oid} },
-            { oid => $mapping->{cpmCPUTotalPhysicalIndex}->{oid} },
+            { oid => $mapping->{cpmCPUTotalPhysicalIndex}->{oid} }
         ],
         return_type => 1,
         nothing_quit => 1
@@ -106,6 +103,9 @@ sub manage_selection {
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $result->{cpmCPULoadAvg1min} *= 0.01 if (defined($result->{cpmCPULoadAvg1min}));
+        $result->{cpmCPULoadAvg5min} *= 0.01 if (defined($result->{cpmCPULoadAvg5min}));
+        $result->{cpmCPULoadAvg15min} *= 0.01 if (defined($result->{cpmCPULoadAvg15min}));
         $self->{cpu_core}->{$instance} = {
             display => $instance,
             %$result

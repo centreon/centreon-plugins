@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,14 +35,17 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
-    $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+    if ($self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/) {
+        $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+    }
 
-    $self->{output}->perfdata_add(label => 'active_users', nlabel => 'sharepoint.users.active.count',
-                                  value => $self->{result_values}->{active},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  unit => 'users', min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'active_users', nlabel => 'sharepoint.users.active.count',
+        value => $self->{result_values}->{active},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        unit => 'users', min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_active_threshold {
@@ -52,22 +55,26 @@ sub custom_active_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_active};
     }
-    my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
-
 }
 
 sub custom_active_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Active users on %s : %d/%d (%.2f%%)",
-                        $self->{result_values}->{report_date},
-                        $self->{result_values}->{active},
-                        $self->{result_values}->{total},
-                        $self->{result_values}->{prct_active});
-    return $msg;
+    return sprintf(
+        "Active users on %s : %d/%d (%.2f%%)",
+        $self->{result_values}->{report_date},
+        $self->{result_values}->{active},
+        $self->{result_values}->{total},
+        $self->{result_values}->{prct_active}
+    );
 }
 
 sub custom_active_calc {
@@ -99,7 +106,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'active', type => 0 },
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'users', type => 1, cb_prefix_output => 'prefix_user_output', message_multiple => 'All users activity are ok' },
+        { name => 'users', type => 1, cb_prefix_output => 'prefix_user_output', message_multiple => 'All users activity are ok' }
     ];
     
     $self->{maps_counters}->{active} = [
@@ -110,101 +117,103 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_active_threshold'),
                 closure_custom_perfdata => $self->can('custom_active_perfdata')
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'total-viewed-edited-file-count', nlabel => 'sharepoint.users.files.viewed.total.count', set => {
                 key_values => [ { name => 'viewed_edited_file_count' } ],
                 output_template => 'Viewed or Edited File Count: %d',
                 perfdatas => [
-                    { label => 'total_viewed_edited_file_count', value => 'viewed_edited_file_count', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_viewed_edited_file_count', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'total-synced-file-count', nlabel => 'sharepoint.users.files.synced.total.count', set => {
                 key_values => [ { name => 'synced_file_count' } ],
                 output_template => 'Synced File Count: %d',
                 perfdatas => [
-                    { label => 'total_synced_file_count', value => 'synced_file_count', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_synced_file_count', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'total-shared-int-file-count', nlabel => 'sharepoint.users.files.shared.internally.total.count', set => {
                 key_values => [ { name => 'shared_int_file_count' } ],
                 output_template => 'Shared Internally File Count: %d',
                 perfdatas => [
-                    { label => 'total_shared_int_file_count', value => 'shared_int_file_count', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_shared_int_file_count', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'total-shared-ext-file-count', nlabel => 'sharepoint.users.files.shared.externally.total.count', set => {
                 key_values => [ { name => 'shared_ext_file_count' } ],
                 output_template => 'Shared Externally File Count: %d',
                 perfdatas => [
-                    { label => 'total_shared_ext_file_count', value => 'shared_ext_file_count', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_shared_ext_file_count', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'total-visited-page-count', nlabel => 'sharepoint.users.pages.visited.total.count', set => {
                 key_values => [ { name => 'visited_page_count' } ],
                 output_template => 'Visited Page Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_visited_page_count', value => 'visited_page_count', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_visited_page_count', template => '%d',
+                      min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{users} = [
         { label => 'viewed-edited-file-count', nlabel => 'sharepoint.users.files.viewed.count', set => {
                 key_values => [ { name => 'viewed_edited_file_count' }, { name => 'name' } ],
                 output_template => 'Viewed or Edited File Count: %d',
                 perfdatas => [
-                    { label => 'viewed_edited_file_count', value => 'viewed_edited_file_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                    { label => 'viewed_edited_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
         },
         { label => 'synced-file-count', nlabel => 'sharepoint.users.files.synced.count', set => {
                 key_values => [ { name => 'synced_file_count' }, { name => 'name' } ],
                 output_template => 'Synced File Count: %d',
                 perfdatas => [
-                    { label => 'synced_file_count', value => 'synced_file_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                    { label => 'synced_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
         },
         { label => 'shared-int-file-count', nlabel => 'sharepoint.users.files.shared.internally.count', set => {
                 key_values => [ { name => 'shared_int_file_count' }, { name => 'name' } ],
                 output_template => 'Shared Internally File Count: %d',
                 perfdatas => [
-                    { label => 'shared_int_file_count', value => 'shared_int_file_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                    { label => 'shared_int_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
         },
         { label => 'shared-ext-file-count', nlabel => 'sharepoint.users.files.shared.externally.count', set => {
                 key_values => [ { name => 'shared_ext_file_count' }, { name => 'name' } ],
                 output_template => 'Shared Externally File Count: %d',
                 perfdatas => [
-                    { label => 'shared_ext_file_count', value => 'shared_ext_file_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                    { label => 'shared_ext_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
         },
         { label => 'visited-page-count', nlabel => 'sharepoint.users.pages.visited.count', set => {
                 key_values => [ { name => 'visited_page_count' }, { name => 'name' } ],
                 output_template => 'Visited Page Count: %d',
                 perfdatas => [
-                    { label => 'visited_page_count', value => 'visited_page_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                    { label => 'visited_page_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -216,7 +225,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "filter-user:s"         => { name => 'filter_user' },
         "units:s"               => { name => 'units', default => '%' },
-        "filter-counters:s"     => { name => 'filter_counters', default => 'active|total' }, 
+        "filter-counters:s"     => { name => 'filter_counters', default => 'active|total' }
     });
 
     return $self;
@@ -226,9 +235,11 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $self->{active} = { active => 0, total => 0, report_date => '' };
-    $self->{global} = { viewed_edited_file_count => 0, synced_file_count => 0,
-                        shared_int_file_count => 0, shared_ext_file_count => 0,
-                        visited_page_count => 0 };
+    $self->{global} = {
+        viewed_edited_file_count => 0, synced_file_count => 0,
+        shared_int_file_count => 0, shared_ext_file_count => 0,
+        visited_page_count => 0
+    };
     $self->{users} = {};
 
     my $results = $options{custom}->office_get_sharepoint_activity(param => "period='D7'");

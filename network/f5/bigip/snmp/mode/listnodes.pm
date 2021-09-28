@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -48,14 +48,14 @@ sub manage_selection {
     my $map_pool_status = {
         0 => 'none', 1 => 'green',
         2 => 'yellow', 3 => 'red',
-        4 => 'blue', 5 => 'gray',
+        4 => 'blue', 5 => 'gray'
     };
     my $map_pool_enabled = {
-        0 => 'none', 1 => 'enabled', 2 => 'disabled', 3 => 'disabledbyparent',
+        0 => 'none', 1 => 'enabled', 2 => 'disabled', 3 => 'disabledbyparent'
     };
     my $mapping = {
         AvailState      => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.3', map => $map_pool_status },
-        EnabledState    => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.4', map => $map_pool_enabled },
+        EnabledState    => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.4', map => $map_pool_enabled }
     };
     my $oid_ltmNodeAddrStatusEntry = '.1.3.6.1.4.1.3375.2.2.4.3.2.1';
 
@@ -71,7 +71,7 @@ sub manage_selection {
         my ($num, $index) = ($1, $2);
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $num . '.' . $index);
-        my $name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $index))));
+        my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $index))));
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
@@ -81,7 +81,7 @@ sub manage_selection {
 
         $results->{$name} = {
             status => $result->{AvailState},
-            state => $result->{EnabledState},
+            state => $result->{EnabledState}
         };
     }
 

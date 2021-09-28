@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -279,6 +279,7 @@ sub azure_get_metrics_set_url {
         "&metricnames=" . $encoded_metrics . "&aggregation=" . $encoded_aggregations .
         "&timespan=" . $encoded_timespan . "&interval=" . $options{interval};
     $url .= "&\$filter=" . $options{dimension} if defined($options{dimension});
+    $url .= "&metricnamespace=" . $uri->encode($options{metric_namespace}) if defined($options{metric_namespace});
 
     return $url;
 }
@@ -318,6 +319,9 @@ sub azure_get_metrics {
                     $results->{$metric_name}->{total} += $point->{total};
                     $results->{$metric_name}->{points}++;
                 }
+                if (defined($point->{count})) {
+                    $results->{$metric_name}->{count} = $point->{count};
+                }
             }
         }
 
@@ -334,7 +338,7 @@ sub azure_get_resource_health_set_url {
 
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" .
         $options{resource_group} . "/providers/" . $options{resource_namespace} . "/" . $options{resource_type} .
-        "/" . $options{resource} . "/providers/Microsoft.ResourceHealth/availabilityStatuses/current?api-version=" . $self->{api_version};
+        "/" . $options{resource} . "/providers/Microsoft.ResourceHealth/availabilityStatuses/current?api-version=" . $options{api_version};
 
     return $url;
 }
@@ -628,6 +632,7 @@ sub azure_get_log_analytics_set_url {
     my $encoded_timespan = $uri->encode($options{timespan});
     my $url = $self->{management_endpoint} . '/v1/workspaces/' . $options{workspace_id} . '/query?query=' . $encoded_query;
     $url .= '&timespan=' . $encoded_timespan if (defined($encoded_timespan));
+    $url .= '&api-version=' . $self->{api_version};
 
     return $url;
 }
@@ -636,6 +641,26 @@ sub azure_get_log_analytics {
     my ($self, %options) = @_;
 
     my $full_url = $self->azure_get_log_analytics_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
+sub azure_get_publicip_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Network/publicIPAddresses/" . $options{resource} if (defined($options{resource}) && $options{resource} ne '');
+    $url .= "?api-version=" . $self->{api_version};
+
+    return $url;
+}
+
+sub azure_get_publicip {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_get_publicip_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
 
     return $response;
@@ -699,7 +724,7 @@ Set interval of the metric query (Can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H,
 
 =item B<--aggregation>
 
-Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total').
+Set monitor aggregation (Can be multiple, Can be: 'minimum', 'maximum', 'average', 'total', 'count').
 
 =item B<--zeroed>
 

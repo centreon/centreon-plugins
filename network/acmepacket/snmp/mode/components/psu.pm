@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,7 @@ use network::acmepacket::snmp::mode::components::resources qw($map_status);
 
 my $mapping = {
     apEnvMonPowerSupplyStatusDescr  => { oid => '.1.3.6.1.4.1.9148.3.3.1.5.1.1.3' },
-    apEnvMonPowerSupplyState        => { oid => '.1.3.6.1.4.1.9148.3.3.1.5.1.1.4', map => $map_status },
+    apEnvMonPowerSupplyState        => { oid => '.1.3.6.1.4.1.9148.3.3.1.5.1.1.4', map => $map_status }
 };
 my $oid_apEnvMonPowerSupplyStatusEntry = '.1.3.6.1.4.1.9148.3.3.1.5.1.1';
 
@@ -53,12 +53,19 @@ sub check {
                  $self->absent_problem(section => 'psu', instance => $instance));
         
         $self->{components}->{psu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is '%s' [instance = %s]",
-                                                        $result->{apEnvMonPowerSupplyStatusDescr}, $result->{apEnvMonPowerSupplyState}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' status is '%s' [instance = %s]",
+                $result->{apEnvMonPowerSupplyStatusDescr},
+                $result->{apEnvMonPowerSupplyState}, $instance
+            )
+        );
         my $exit = $self->get_severity(label => 'default', section => 'psu', value => $result->{apEnvMonPowerSupplyState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power supply '%s' status is '%s'", $result->{apEnvMonPowerSupplyStatusDescr}, $result->{apEnvMonPowerSupplyState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Power supply '%s' status is '%s'", $result->{apEnvMonPowerSupplyStatusDescr}, $result->{apEnvMonPowerSupplyState})
+            );
         }
     }
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -53,7 +53,10 @@ Try {
         $item.name = $vm.VMName
         $item.state = $vm.State.value__
         $item.integration_services_state = $vm.IntegrationServicesState
-        $item.integration_services_version = $vm.IntegrationServicesVersion.toString()
+        $item.integration_services_version = $null
+        if ($null -ne $vm.IntegrationServicesVersion) {
+            $item.integration_services_version = $vm.IntegrationServicesVersion.toString()
+        }
         $item.note = $note
 
         $services = New-Object System.Collections.Generic.List[Hashtable];

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,9 +25,15 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Input lines ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
     ];
@@ -37,34 +43,26 @@ sub set_counters {
                 key_values => [ { name => 'upsSmartInputFrequency', no_value => 0 } ],
                 output_template => 'frequence: %.2f Hz',
                 perfdatas => [
-                    { value => 'upsSmartInputFrequency', template => '%.2f', 
-                      unit => 'Hz' },
-                ],
+                    { template => '%.2f', unit => 'Hz' }
+                ]
             }
         },
         { label => 'voltage', nlabel => 'lines.input.voltage.volt', set => {
                 key_values => [ { name => 'upsSmartInputLineVoltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { value => 'upsSmartInputLineVoltage', template => '%s', 
-                      unit => 'V' },
-                ],
+                    { template => '%s', unit => 'V' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Input lines ';
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
     });
 
@@ -73,13 +71,13 @@ sub new {
 
 my $mapping = {
     upsSmartInputLineVoltage => { oid => '.1.3.6.1.4.1.935.1.1.1.3.2.1' }, # in dV
-    upsSmartInputFrequency   => { oid => '.1.3.6.1.4.1.935.1.1.1.3.2.4' }, # in tenth of Hz
+    upsSmartInputFrequency   => { oid => '.1.3.6.1.4.1.935.1.1.1.3.2.4' }  # in tenth of Hz
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
- 
-     my $snmp_result = $options{snmp}->get_leef(
+
+    my $snmp_result = $options{snmp}->get_leef(
         oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
         nothing_quit => 1
     );

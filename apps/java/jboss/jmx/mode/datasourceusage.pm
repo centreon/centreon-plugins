@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,57 +26,53 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'datasource', type => 1, cb_prefix_output => 'prefix_ds_output', message_multiple => 'All datasources are ok' },
-    ];
-
-    $self->{maps_counters}->{datasource} = [
-        { label => 'active-con', set => {
-                key_values => [ { name => 'ActiveCount' }, { name => 'display' } ],
-                output_template => 'Current Active Connections : %s',
-                perfdatas => [
-                    { label => 'active_con', value => 'ActiveCount', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'available-con', set => {
-                key_values => [ { name => 'AvailableCount' }, { name => 'display' } ],
-                output_template => 'Current Available Connections : %s',
-                perfdatas => [
-                    { label => 'available_con', value => 'AvailableCount', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'in-use-con', set => {
-                key_values => [ { name => 'InUseCount' }, { name => 'display' } ],
-                output_template => 'Current In Use Connections : %s',
-                perfdatas => [
-                    { label => 'in_use_con', value => 'InUseCount', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'created-con', set => {
-                key_values => [ { name => 'CreatedCount', diff => 1 }, { name => 'display' } ],
-                output_template => 'Created Connections : %s',
-                perfdatas => [
-                    { label => 'created_con', value => 'CreatedCount', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-    ];
-}
-
 sub prefix_ds_output {
     my ($self, %options) = @_;
 
     return "Datasource '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'datasource', type => 1, cb_prefix_output => 'prefix_ds_output', message_multiple => 'All datasources are ok' }
+    ];
+
+    $self->{maps_counters}->{datasource} = [
+        { label => 'active-con', nlabel => 'datasource.connections.active.count', set => {
+                key_values => [ { name => 'ActiveCount' } ],
+                output_template => 'current active connections: %s',
+                perfdatas => [
+                    { label => 'active_con', template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'available-con', nlabel => 'datasource.connections.available.count', set => {
+                key_values => [ { name => 'AvailableCount' } ],
+                output_template => 'current available connections: %s',
+                perfdatas => [
+                    { label => 'available_con', template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'in-use-con', nlabel => 'datasource.connections.inuse.count', set => {
+                key_values => [ { name => 'InUseCount' } ],
+                output_template => 'current in use connections: %s',
+                perfdatas => [
+                    { label => 'in_use_con', template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'created-con', nlabel => 'datasource.connections.created.count', set => {
+                key_values => [ { name => 'CreatedCount', diff => 1 } ],
+                output_template => 'created connections: %s',
+                perfdatas => [
+                    { label => 'created_con', template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
 }
 
 sub new {
@@ -94,15 +90,16 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    # 'jboss.as|jboss.as.expr'
     my $request = [
-        { mbean => "jboss.jca:name=*,service=ManagedConnectionPool", attributes => 
+        { mbean => 'jboss.jca:name=*,service=ManagedConnectionPool', attributes => 
              [ { name => 'AvailableConnectionCount' }, { name => 'ConnectionCount' }, { name => 'ConnectionCreatedCount' }, { name => 'InUseConnectionCount' } ] },
-        { mbean => "jboss.as:data-source=*,statistics=pool,subsystem=datasources", attributes => 
+        { mbean => 'jboss.as*:data-source=*,statistics=pool,subsystem=datasources', attributes => 
              [ { name => 'AvailableCount' }, { name => 'ActiveCount' }, { name => 'CreatedCount' }, { name => 'InUseCount' } ] },
-        { mbean => "jboss.as.expr:xa-data-source=*,statistics=pool,subsystem=datasources", attributes =>
-             [ { name => 'AvailableCount' }, { name => 'ActiveCount' }, { name => 'CreatedCount' }, { name => 'InUseCount' } ] },
+        { mbean => 'jboss.as*:xa-data-source=*,statistics=pool,subsystem=datasources', attributes =>
+             [ { name => 'AvailableCount' }, { name => 'ActiveCount' }, { name => 'CreatedCount' }, { name => 'InUseCount' } ] }
     ];
-    
+
     my $result = $options{custom}->get_attributes(request => $request, nothing_quit => 1);
 
     $self->{datasource} = {};
@@ -110,23 +107,23 @@ sub manage_selection {
         $key =~ /(?:[:,])(?:name|data-source|xa-data-source)=(.*?)(?:,|$)/;
         my $ds_name = $1;
         $ds_name =~ s/^"(.*)"$/$1/;
-        
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $ds_name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $ds_name . "': no matching filter.", debug => 1);
             next;
         }
-     
+
         $self->{datasource}->{$ds_name} = {
             display => $ds_name,
             AvailableCount => defined($result->{$key}->{AvailableConnectionCount}) ? $result->{$key}->{AvailableConnectionCount} : $result->{$key}->{AvailableCount},
             ActiveCount => defined($result->{$key}->{ConnectionCount}) ? $result->{$key}->{ConnectionCount} : $result->{$key}->{ActiveCount},
             CreatedCount => defined($result->{$key}->{ConnectionCreatedCount}) ? $result->{$key}->{ConnectionCreatedCount} : $result->{$key}->{CreatedCount},
-            InUseCount => defined($result->{$key}->{InUseConnectionCount}) ? $result->{$key}->{InUseConnectionCount} : $result->{$key}->{InUseCount},
+            InUseCount => defined($result->{$key}->{InUseConnectionCount}) ? $result->{$key}->{InUseConnectionCount} : $result->{$key}->{InUseCount}
         };
     }
     
-    $self->{cache_name} = "jboss_" . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
+    $self->{cache_name} = 'jboss_' . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

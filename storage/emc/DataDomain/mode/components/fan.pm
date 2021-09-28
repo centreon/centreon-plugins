@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,13 +27,13 @@ use centreon::plugins::misc;
 my %map_fan_status = (
     0 => 'notfound',
     1 => 'ok',
-    2 => 'failed',
+    2 => 'failed'
 );
 my %level_map = ( 
     0 => 'unknown',
     1 => 'low',
     2 => 'normal',
-    3 => 'high',
+    3 => 'high'
 ); 
 
 my ($oid_fanDescription, $oid_fanLevel, $oid_fanStatus);
@@ -51,7 +51,7 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fan'));
-    
+
     if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.x')) {
         $oid_fanDescription = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.4';
         $oid_fanLevel = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.5';
@@ -67,20 +67,26 @@ sub check {
         my $instance = $1;
         my $fan_descr = centreon::plugins::misc::trim($self->{results}->{$oid_fanPropertiesEntry}->{$oid_fanDescription . '.' . $instance});
         my $fan_status = defined($map_fan_status{$self->{results}->{$oid_fanPropertiesEntry}->{$oid}}) ?
-                            $map_fan_status{$self->{results}->{$oid_fanPropertiesEntry}->{$oid}} : 'unknown';
+            $map_fan_status{$self->{results}->{$oid_fanPropertiesEntry}->{$oid}} : 'unknown';
         my $fan_level = $self->{results}->{$oid_fanPropertiesEntry}->{$oid_fanLevel . '.' . $instance};
 
         next if ($self->check_filter(section => 'fan', instance => $instance));
         next if ($fan_status =~ /notfound/i && 
                  $self->absent_problem(section => 'fan', instance => $instance));
-        
+
         $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is '%s' [instance = %s, level = %s]",
-                                    $fan_descr, $fan_status, $instance, $level_map{$fan_level}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Fan '%s' status is '%s' [instance = %s, level = %s]",
+                $fan_descr, $fan_status, $instance, $level_map{$fan_level}
+            )
+        );
         my $exit = $self->get_severity(section => 'fan', value => $fan_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' status is '%s'", $fan_descr, $fan_status));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '%s' status is '%s'", $fan_descr, $fan_status)
+            );
         }
     }
 }

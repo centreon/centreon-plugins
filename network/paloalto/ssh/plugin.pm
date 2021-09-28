@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,7 +39,7 @@ sub new {
         'system'      => 'network::paloalto::ssh::mode::system'
     };
 
-    $self->{custom_modes}{ssh} = 'network::paloalto::ssh::custom::cli';
+    $self->{custom_modes}->{ssh} = 'network::paloalto::ssh::custom::cli';
     return $self;
 }
 

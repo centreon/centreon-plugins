@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,14 +35,18 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
-    $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+    if ($self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/) {
+        $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,12,$3,$2-1,$1-1900));
+    }
 
-    $self->{output}->perfdata_add(label => 'active_users', nlabel => 'exchange.users.active.count',
-                                  value => $self->{result_values}->{active},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  unit => 'users', min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'active_users',
+        nlabel => 'exchange.users.active.count',
+        value => $self->{result_values}->{active},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        unit => 'users', min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_active_threshold {
@@ -52,9 +56,13 @@ sub custom_active_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_active};
     }
-    my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 
 }
@@ -62,12 +70,13 @@ sub custom_active_threshold {
 sub custom_active_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Active users on %s : %d/%d (%.2f%%)",
-                        $self->{result_values}->{report_date},
-                        $self->{result_values}->{active},
-                        $self->{result_values}->{total},
-                        $self->{result_values}->{prct_active});
-    return $msg;
+    return sprintf(
+        "Active users on %s : %d/%d (%.2f%%)",
+        $self->{result_values}->{report_date},
+        $self->{result_values}->{active},
+        $self->{result_values}->{total},
+        $self->{result_values}->{prct_active}
+    );
 }
 
 sub custom_active_calc {
@@ -99,7 +108,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'active', type => 0 },
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'users', type => 1, cb_prefix_output => 'prefix_mailbox_output', message_multiple => 'All email activity are ok' },
+        { name => 'users', type => 1, cb_prefix_output => 'prefix_mailbox_output', message_multiple => 'All email activity are ok' }
     ];
     
     $self->{maps_counters}->{active} = [
@@ -112,63 +121,65 @@ sub set_counters {
             }
         },
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'total-send-count', nlabel => 'exchange.users.emails.sent.total.count', set => {
                 key_values => [ { name => 'send_count' } ],
                 output_template => 'Send Count: %d',
                 perfdatas => [
-                    { label => 'total_send_count', value => 'send_count', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_send_count', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'total-receive-count', nlabel => 'exchange.users.emails.received.total.count', set => {
                 key_values => [ { name => 'receive_count' } ],
                 output_template => 'Receive Count: %d',
                 perfdatas => [
-                    { label => 'total_receive_count', value => 'receive_count', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_receive_count', template => '%d',
+                      min => 0 }
+                ]
             }
         },
         { label => 'total-read-count', nlabel => 'exchange.users.emails.read.total.count', set => {
                 key_values => [ { name => 'read_count' } ],
                 output_template => 'Read Count: %d',
                 perfdatas => [
-                    { label => 'total_read_count', value => 'read_count', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_read_count', template => '%d',
+                      min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{users} = [
         { label => 'send-count', nlabel => 'exchange.users.emails.sent.count', set => {
                 key_values => [ { name => 'send_count' }, { name => 'name' } ],
                 output_template => 'Send Count: %d',
                 perfdatas => [
-                    { label => 'send_count', value => 'send_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                    { label => 'send_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
         },
         { label => 'receive-count', nlabel => 'exchange.users.emails.received.count', set => {
                 key_values => [ { name => 'receive_count' }, { name => 'name' } ],
                 output_template => 'Receive Count: %d',
                 perfdatas => [
-                    { label => 'receive_count', value => 'receive_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                    { label => 'receive_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
         },
         { label => 'read-count', nlabel => 'exchange.users.emails.read.count', set => {
                 key_values => [ { name => 'read_count' }, { name => 'name' } ],
                 output_template => 'Read Count: %d',
                 perfdatas => [
-                    { label => 'read_count', value => 'read_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                    { label => 'read_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -180,7 +191,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "filter-user:s"         => { name => 'filter_user' },
         "units:s"               => { name => 'units', default => '%' },
-        "filter-counters:s"     => { name => 'filter_counters', default => 'active|total' }, 
+        "filter-counters:s"     => { name => 'filter_counters', default => 'active|total' }
     });
     
     return $self;

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -65,32 +65,33 @@ exit 0
 
 sub check {
     my ($self, %options) = @_;
-    # options: stdout
     
     # Following output:
     #[id= XXXX ][type= Success][[message=...]]
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("Outlook webservices to '%s' are ok.", $options{mailbox}));
-   
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("Outlook webservices to '%s' are ok.", $options{mailbox})
+    );
+
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
     while ($options{stdout} =~ /\[id=(.*?)\]\[type=(.*?)\]\[\[message=(.*?)\]\]/msg) {
         $self->{data} = {};
         ($self->{data}->{id}, $self->{data}->{type}, $self->{data}->{message}) = 
-            (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), $self->{output}->to_utf8($3));
+            (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), $self->{output}->decode($3));
         
         $checked++;
-        
+
         my ($status, $message) = ('ok');
         eval {
             local $SIG{__WARN__} = sub { $message = $_[0]; };
             local $SIG{__DIE__} = sub { $message = $_[0]; };
-            
+
             if (defined($self->{option_results}->{critical}) && $self->{option_results}->{critical} ne '' &&
-                eval "$self->{option_results}->{critical}") {
+                $self->{output}->test_eval(test => $self->{option_results}->{critical}, values => $self->{data})) {
                 $status = 'critical';
             } elsif (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
-                     eval "$self->{option_results}->{warning}") {
+                     $self->{output}->test_eval(test => $self->{option_results}->{warning}, values => $self->{data})) {
                 $status = 'warning';
             }
         };
@@ -98,15 +99,21 @@ sub check {
             $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $status,
-                                        short_msg => sprintf("Check id '%s' status is '%s' [message: %s]",
-                                                             $self->{data}->{id}, $self->{data}->{type}, $self->{data}->{message}));
+            $self->{output}->output_add(
+                severity => $status,
+                short_msg => sprintf(
+                    "Check id '%s' status is '%s' [message: %s]",
+                    $self->{data}->{id}, $self->{data}->{type}, $self->{data}->{message}
+                )
+            );
         }
     }
-    
+
     if ($checked == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot find informations');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot find informations'
+        );
     }
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,59 +41,8 @@ my %mapping_memory = (
     'JIT Code Cache' => 'code',
     'CMS Old Gen' => 'tenured',
     'PS Old Gen' => 'tenured',
-    'Tenured Gen' => 'tenured',
+    'Tenured Gen' => 'tenured'
 );
-
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'mem', type => 1, cb_prefix_output => 'prefix_mem_output', message_multiple => 'All memories within bounds', skipped_code => { -12 => 1 } },
-    ];
-    
-    $self->{maps_counters}->{mem} = [
-        { label => 'eden', set => {
-                key_values => [ { name => 'used' }, { name => 'max' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-            }
-        },
-        { label => 'tenured', set => {
-                key_values => [ { name => 'used' }, { name => 'max' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-            }
-        },
-        { label => 'survivor', set => {
-                key_values => [  { name => 'used' }, { name => 'max' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-            }
-        },
-        { label => 'permanent', set => {
-                key_values => [ { name => 'used' }, { name => 'max' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-            }
-        },
-        { label => 'code', set => {
-                key_values => [ { name => 'used' }, { name => 'max' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-            }
-        },
-    ];
-}
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
@@ -108,16 +57,19 @@ sub custom_usage_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $self->{label}, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $use_th == 1 ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options) : undef,
-                                  critical => $use_th == 1 ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options) : undef,
-                                  min => 0, max => $self->{result_values}->{max} > 0 ? $self->{result_values}->{max} : undef);
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => 'B',
+        value => $value_perf,
+        warning => $use_th == 1 ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options) : undef,
+        critical => $use_th == 1 ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options) : undef,
+        min => 0, max => $self->{result_values}->{max} > 0 ? $self->{result_values}->{max} : undef
+    );
 }
 
 sub custom_usage_threshold {
     my ($self, %options) = @_;
-    
+
     # Cannot use percent without total
     return 'ok' if ($self->{result_values}->{max} <= 0 && $self->{instance_mode}->{option_results}->{units} eq '%');
     my ($exit, $threshold_value);
@@ -125,7 +77,12 @@ sub custom_usage_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value, threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -137,10 +94,12 @@ sub custom_usage_output {
     if ($self->{result_values}->{max} > 0) {
         my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{max});
         my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{max} - $self->{result_values}->{used});
-        $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used});
+        $msg = sprintf(
+            "Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+            $total_size_value . " " . $total_size_unit,
+            $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+            $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used}
+        );
     } else {
         $msg = sprintf("Used: %s", $total_used_value . " " . $total_used_unit);
     }
@@ -169,13 +128,64 @@ sub prefix_mem_output {
     return "Memory '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'mem', type => 1, cb_prefix_output => 'prefix_mem_output', message_multiple => 'All memories within bounds', skipped_code => { -12 => 1 } }
+    ];
+
+    $self->{maps_counters}->{mem} = [
+        { label => 'eden', nlabel => 'memory.eden.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'max' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+            }
+        },
+        { label => 'tenured', nlabel => 'memory.tenured.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'max' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+            }
+        },
+        { label => 'survivor', nlabel => 'memory.survivor.usage.bytes', set => {
+                key_values => [  { name => 'used' }, { name => 'max' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+            }
+        },
+        { label => 'permanent', nlabel => 'memory.permanent.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'max' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+            }
+        },
+        { label => 'code', nlabel => 'memory.code.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'max' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "units:s"       => { name => 'units', default => '%' },
+        'units:s' => { name => 'units', default => '%' }
     });
 
     return $self;
@@ -185,25 +195,25 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{request} = [
-         { mbean => "java.lang:type=MemoryPool,name=*", attributes => [ { name => 'Usage' } ] }
+         { mbean => 'java.lang:type=MemoryPool,name=*', attributes => [ { name => 'Usage' } ] }
     ];
-    
+
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
     $self->{mem} = {};
     foreach my $key (keys %$result) {
         $key =~ /(?:[:,])name=(.*?)(?:,|$)/;
         my $memtype = $1;
-        
+
         if (!defined($mapping_memory{$memtype})) {
             $self->{output}->output_add(long_msg => "unknown memory type: " . $memtype, debug => 1);
             next;
         }
-        
+
         $self->{mem}->{$memtype} = {
             display => $memtype,
-            used => $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used},
-            max => $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{max},
+            used => $result->{'java.lang:name=' . $memtype . ',type=MemoryPool'}->{Usage}->{used},
+            max => $result->{'java.lang:name=' . $memtype . ',type=MemoryPool'}->{Usage}->{max}
         };
     }
 }

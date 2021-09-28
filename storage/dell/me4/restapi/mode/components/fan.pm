@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,29 +36,37 @@ sub check {
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fan'));
     return if (!defined($self->{json_results}->{fans}));
-    
+
     foreach my $result (@{$self->{json_results}->{fans}->{fan}}) {
         my $instance = $result->{'durable-id'};
-        
+
         next if ($self->check_filter(section => 'fan', instance => $instance));
 
         $self->{components}->{fan}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is '%s', health is '%s' [instance = %s] [speed = %s rpm]",
-                                    $result->{name}, $result->{status}, $result->{health}, $instance,
-                                    $result->{speed}));
-        
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s' status is '%s', health is '%s' [instance = %s] [speed = %s rpm]",
+                $result->{name}, $result->{status}, $result->{health}, $instance,
+                $result->{speed}
+            )
+        );
+
         my $exit1 = $self->get_severity(section => 'fan', value => $result->{status});
         if (!$self->{output}->is_status(value => $exit1, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit1,
-                                        short_msg => sprintf("Fan '%s' status is '%s'", $result->{name}, $result->{status}));
+            $self->{output}->output_add(
+                severity => $exit1,
+                short_msg => sprintf("Fan '%s' status is '%s'", $result->{name}, $result->{status})
+            );
         }
         my $exit2 = $self->get_severity(section => 'fan', value => $result->{health});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Fan '%s' health is '%s'", $result->{name}, $result->{health}));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Fan '%s' health is '%s'", $result->{name}, $result->{health})
+            );
         }
-        
+
         next if ($result->{speed} !~ /[0-9]/);
         my ($exit3, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{speed});        
         if (!$self->{output}->is_status(value => $exit3, compare => 'ok', litteral => 1)) {
@@ -66,8 +74,8 @@ sub check {
                                         short_msg => sprintf("Fan '%s' speed is %s rpm", $result->{name}, $result->{speed}));
         }
         $self->{output}->perfdata_add(
-            label => 'speed', unit => 'rpm',
             nlabel => 'hardware.fan.speed.rpm',
+            unit => 'rpm',
             instances => $instance,
             value => $result->{speed},
             warning => $warn,

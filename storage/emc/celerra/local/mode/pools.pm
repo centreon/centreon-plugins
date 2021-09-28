@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ use warnings;
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
+
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_space});
@@ -47,7 +47,7 @@ sub prefix_pool_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'pools', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All pools are ok', skipped_code => { -10 => 1 } }
     ];
@@ -84,11 +84,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
+
+    $options{options}->add_options(arguments => {
         'filter-pool-name:s' => { name => 'filter_pool_name' }
     });
-    
+
     return $self;
 }
 
@@ -117,15 +117,17 @@ sub manage_selection {
             next;
         }
 
-        my $total_space = $fields->{total_mb} * 1024 * 1024;
+        my $used_space = $fields->{used_mb} * 1024 * 1024;
         my $free_space = $fields->{avail_mb} * 1024 * 1024;
+        my $total_space = $fields->{total_mb} * 1024 * 1024;
+        my $potential_space = $fields->{potential_mb} * 1024 * 1024;
         $self->{pools}->{ $fields->{name} } = {
             name => $fields->{name},
-            total_space => $total_space,
-            used_space => $total_space - $free_space,
-            free_space => $free_space,
-            prct_used_space => ($total_space - $free_space) * 100 / $total_space,
-            prct_free_space => $free_space * 100 / $total_space
+            total_space => $total_space + $potential_space,
+            used_space => $used_space,
+            free_space => $free_space + $potential_space,
+            prct_used_space => $used_space * 100 / ($total_space + $potential_space),
+            prct_free_space => 100 - ($used_space * 100 / ($total_space + $potential_space))
         };
     }
 }

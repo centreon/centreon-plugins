@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -73,7 +73,7 @@ sub check {
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{boxServicesTempSensorTemperature});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' is '%s' rpm", $instance, $result->{boxServicesTempSensorTemperature}));
+                                        short_msg => sprintf("Temperature '%s' is '%s' C", $instance, $result->{boxServicesTempSensorTemperature}));
         }
         $self->{output}->perfdata_add(
             label => 'temp', unit => 'C',

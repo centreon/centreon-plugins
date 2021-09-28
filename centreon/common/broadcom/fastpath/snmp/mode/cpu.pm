@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+    
+    return 'CPU ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -33,50 +39,39 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => '5s', set => {
+        { label => '5s', nlabel => 'cpu.utilization.5s.percentage', set => {
                 key_values => [ { name => 'usage_5s' } ],
                 output_template => '%.2f %% (5sec)', output_error_template => "%s (5sec)",
                 perfdatas => [
-                    { label => 'cpu_5s', value => 'usage_5s', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100 }
+                ]
             }
         },
-        { label => '1m', set => {
+        { label => '1m', nlabel => 'cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => 'usage_1m' } ],
                 output_template => '%.2f %% (1m)', output_error_template => "%s (1min)",
                 perfdatas => [
-                    { label => 'cpu_1m', value => 'usage_1m', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100 }
+                ]
             }
         },
-        { label => '5m', set => {
+        { label => '5m', nlabel => 'cpu.utilization.5m.percentage', set => {
                 key_values => [ { name => 'usage_5m' } ],
                 output_template => '%.2f %% (5min)', output_error_template => "%s (5min)",
                 perfdatas => [
-                    { label => 'cpu_5m', value => 'usage_5m', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100 }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_cpu_output {
-    my ($self, %options) = @_;
-    
-    return "CPU ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => {});
     
     return $self;
 }

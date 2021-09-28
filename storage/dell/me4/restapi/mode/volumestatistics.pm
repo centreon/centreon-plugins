@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,12 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_output {
+    my ($self, %options) = @_;
+    
+    return "Volume '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -35,103 +41,97 @@ sub set_counters {
 
     $self->{maps_counters}->{volumes} = [
         { label => 'data-read', nlabel => 'volume.data.read.bytespersecond', set => {
-                key_values => [ { name => 'data-read-numeric', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Data Read: %s%s/s',
+                key_values => [ { name => 'data-read-numeric', per_second => 1 } ],
+                output_template => 'data read: %s%s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'data-written', nlabel => 'volume.data.written.bytespersecond', set => {
-                key_values => [ { name => 'data-written-numeric', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Data Written: %s%s/s',
+                key_values => [ { name => 'data-written-numeric', per_second => 1 } ],
+                output_template => 'data written: %s%s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'reads', nlabel => 'volume.reads.count', set => {
-                key_values => [ { name => 'number-of-reads', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Reads: %s/s',
+        { label => 'reads', nlabel => 'volume.reads.persecond', set => {
+                key_values => [ { name => 'number-of-reads', per_second => 1 } ],
+                output_template => 'reads: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'writes', nlabel => 'volume.writes.count', set => {
-                key_values => [ { name => 'number-of-writes', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Writes: %s/s',
+        { label => 'writes', nlabel => 'volume.writes.persecond', set => {
+                key_values => [ { name => 'number-of-writes', per_second => 1 } ],
+                output_template => 'writes: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'data-transfer', nlabel => 'volume.data.transfer.bytespersecond', set => {
-                key_values => [ { name => 'bytes-per-second-numeric' }, { name => 'display' } ],
-                output_template => 'Data Transfer: %s%s/s',
+                key_values => [ { name => 'bytes-per-second-numeric' } ],
+                output_template => 'data transfer: %s%s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'iops', nlabel => 'volume.iops.ops', set => {
-                key_values => [ { name => 'iops' }, { name => 'display' } ],
-                output_template => 'IOPS: %d ops',
+                key_values => [ { name => 'iops' } ],
+                output_template => 'iops: %d ops',
                 perfdatas => [
-                    { template => '%d', min => 0, unit => 'ops', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', min => 0, unit => 'ops', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'write-cache-percent', nlabel => 'volume.cache.write.usage.percentage', set => {
-                key_values => [ { name => 'write-cache-percent'}, { name => 'display' } ],
-                output_template => 'Cache Write Usage: %s%%',
+                key_values => [ { name => 'write-cache-percent' } ],
+                output_template => 'cache write usage: %s%%',
                 perfdatas => [
-                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'write-cache-hits', nlabel => 'volume.cache.write.hits.count', set => {
-                key_values => [ { name => 'write-cache-hits', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Cache Write Hits: %s/s',
+        { label => 'write-cache-hits', nlabel => 'volume.cache.write.hits.persecond', set => {
+                key_values => [ { name => 'write-cache-hits', per_second => 1 } ],
+                output_template => 'cache write hits: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'write-cache-misses', nlabel => 'volume.cache.write.misses.count', set => {
-                key_values => [ { name => 'write-cache-misses', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Cache Write Misses: %s/s',
+        { label => 'write-cache-misses', nlabel => 'volume.cache.write.misses.persecond', set => {
+                key_values => [ { name => 'write-cache-misses', per_second => 1 } ],
+                output_template => 'cache write misses: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'read-cache-hits', nlabel => 'volume.cache.read.hits.count', set => {
-                key_values => [ { name => 'read-cache-hits', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Cache Read Hits: %s/s',
+        { label => 'read-cache-hits', nlabel => 'volume.cache.read.hits.persecond', set => {
+                key_values => [ { name => 'read-cache-hits', per_second => 1 } ],
+                output_template => 'cache read hits: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'read-cache-misses', nlabel => 'volume.cache.read.misses.count', set => {
-                key_values => [ { name => 'read-cache-misses', per_second => 1 }, { name => 'display'} ],
-                output_template => 'Cache Read Misses: %s/s',
+        { label => 'read-cache-misses', nlabel => 'volume.cache.read.misses.persecond', set => {
+                key_values => [ { name => 'read-cache-misses', per_second => 1 } ],
+                output_template => 'cache read misses: %s/s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
     ];
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-    
-    return "Volume '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -152,20 +152,19 @@ sub manage_selection {
     my $results = $options{custom}->request_api(method => 'GET', url_path => '/api/show/volume-statistics');
 
     $self->{volumes} = {};
-
     foreach my $volume (@{$results->{'volume-statistics'}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $volume->{'volume-name'} !~ /$self->{option_results}->{filter_name}/);
         
         $self->{volumes}->{$volume->{'volume-name'}} = { display => $volume->{'volume-name'}, %{$volume} };
     }
-    
+
     if (scalar(keys %{$self->{volumes}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No volumes found.");
         $self->{output}->option_exit();
     }
 
-    $self->{cache_name} = "dell_me4_" . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
+    $self->{cache_name} = 'dell_me4_' . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 

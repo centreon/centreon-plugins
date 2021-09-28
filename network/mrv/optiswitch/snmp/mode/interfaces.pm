@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -58,8 +58,8 @@ sub set_counters_global {
                 output_use => 'global_link_up',  threshold_use => 'global_link_up',
                 perfdatas => [
                     { label => 'total_link_up', value => 'global_link_up', template => '%s',
-                      min => 0, max => 'total_port' },
-                ],
+                      min => 0, max => 'total_port' }
+                ]
             }
         },
         { label => 'total-link-down', filter => 'add_global', nlabel => 'total.interfaces.link.down.count', set => {
@@ -68,10 +68,10 @@ sub set_counters_global {
                 output_use => 'global_link_down',  threshold_use => 'global_link_down',
                 perfdatas => [
                     { label => 'total_link_down', value => 'global_link_down', template => '%s',
-                      min => 0, max => 'total_port' },
-               ],
+                      min => 0, max => 'total_port' }
+               ]
             }
-        },
+        }
     ;
 }
 
@@ -84,9 +84,9 @@ sub set_counters_errors {
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Crc : %s',
                 closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
-        },
+        }
     ;
 }
 
@@ -192,19 +192,19 @@ sub default_global_admin_up_rule {
 
 sub default_global_admin_down_rule {
     my ($self, %options) = @_;
-    
+
     return '%{admstatus} ne "enable"';
 }
 
 sub default_global_oper_up_rule {
     my ($self, %options) = @_;
-    
+
     return '%{opstatus} eq "enabled"';
 }
 
 sub default_global_oper_down_rule {
     my ($self, %options) = @_;
-    
+
     return '%{opstatus} ne "enabled"';
 }
 
@@ -259,9 +259,13 @@ sub load_cast {
 
     $self->set_oids_cast();
 
-    $self->{snmp}->load(oids => [$self->{oid_ifHCInUcastPkts}, $self->{oid_ifHCInMulticastPkts}, $self->{oid_ifHCInBroadcastPkts},
-                                    $self->{oid_ifHCOutUcastPkts}, $self->{oid_ifHCOutMulticastPkts}, $self->{oid_ifHCOutBroadcastPkts}],
-                        instances => $self->{array_interface_selected});
+    $self->{snmp}->load(
+        oids => [
+            $self->{oid_ifHCInUcastPkts}, $self->{oid_ifHCInMulticastPkts}, $self->{oid_ifHCInBroadcastPkts},
+            $self->{oid_ifHCOutUcastPkts}, $self->{oid_ifHCOutMulticastPkts}, $self->{oid_ifHCOutBroadcastPkts}
+        ],
+        instances => $self->{array_interface_selected}
+    );
 }
 
 sub load_errors {
@@ -314,16 +318,18 @@ sub add_result_global {
     $self->{global} = { total_port => 0, global_link_up => 0, global_link_down => 0, global_admin_up => 0,
                         global_admin_down => 0, global_oper_up => 0, global_oper_down => 0};
     foreach (@{$self->{array_interface_selected}}) {
-        my $linkstatus = $self->{oid_linkstatus_mapping}->{$self->{results}->{$self->{oid_linkstatus} . '.' . $_}};
-        my $opstatus = $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $_}};
-        my $admstatus = $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $_}};
+        my $values = {
+            linkstatus => $self->{oid_linkstatus_mapping}->{$self->{results}->{$self->{oid_linkstatus} . '.' . $_}},
+            opstatus => $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $_}},
+            admstatus => $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $_}}
+        };
         foreach (('global_link_up', 'global_link_down', 'global_admin_up', 'global_admin_down', 'global_oper_up', 'global_oper_down')) {
             eval {
                 local $SIG{__WARN__} = sub { return ; };
                 local $SIG{__DIE__} = sub { return ; };
-        
+
                 if (defined($self->{option_results}->{$_ . '_rule'}) && $self->{option_results}->{$_ . '_rule'} ne '' &&
-                    eval "$self->{option_results}->{$_ . '_rule'}") {
+                    $self->{output}->test_eval(test => $self->{option_results}->{$_ . '_rule'}, values => $values)) {
                     $self->{global}->{$_}++;
                 }
             };
@@ -381,11 +387,11 @@ sub add_result_cast {
         $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}} : 0;
         $self->{int}->{$options{instance}}->{mode_cast} = 64;
     }
-    
+
     foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'obcast')) {
         $self->{int}->{$options{instance}}->{$_} = 0 if (!defined($self->{int}->{$options{instance}}->{$_}));
     }
-    
+
     $self->{int}->{$options{instance}}->{total_in_packets} = $self->{int}->{$options{instance}}->{iucast} + $self->{int}->{$options{instance}}->{imcast} + $self->{int}->{$options{instance}}->{ibcast};
     $self->{int}->{$options{instance}}->{total_out_packets} = $self->{int}->{$options{instance}}->{oucast} + $self->{int}->{$options{instance}}->{omcast} + $self->{int}->{$options{instance}}->{obcast};
 }
@@ -464,23 +470,24 @@ Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{dup
 Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} eq "enabled" and %{linkstatus} ne "true"').
 Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down', 'total-link-up', 'total-link-down',
-'in-traffic', 'out-traffic', 'in-crc', 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
-'speed' (b/s).
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down', 'total-link-up', 'total-link-down',
-'in-traffic', 'out-traffic', 'in-crc', 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'in-traffic', 'out-traffic', 'in-crc', 'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+
+=item B<--units-errors>
+
+Units of thresholds for errors/discards (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
+
+=item B<--units-cast>
+
+Units of thresholds for communication types (Default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'counter').
 
 =item B<--nagvis-perfdata>
 
@@ -505,10 +512,6 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
-
-=item B<--no-skipped-counters>
-
-Don't skip counters when no change.
 
 =item B<--reload-cache-time>
 

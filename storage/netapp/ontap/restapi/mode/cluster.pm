@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -86,6 +86,24 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'other', nlabel => 'cluster.io.other.usage.bytespersecond', display_ok => 0, set => {
+                key_values => [ { name => 'other', per_second => 1 }, { name => 'display' } ],
+                output_template => 'other: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%d', unit => 'B/s', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'total', nlabel => 'cluster.io.total.usage.bytespersecond', display_ok => 0, set => {
+                key_values => [ { name => 'total', per_second => 1 }, { name => 'display' } ],
+                output_template => 'total: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
         { label => 'read-iops', nlabel => 'cluster.io.read.usage.iops', set => {
                 key_values => [ { name => 'read_iops' }, { name => 'display' } ],
                 output_template => 'read iops: %s',
@@ -102,6 +120,22 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'other-iops', nlabel => 'cluster.io.other.usage.iops', set => {
+                key_values => [ { name => 'other_iops' }, { name => 'display' } ],
+                output_template => 'other iops: %s',
+                perfdatas => [
+                    { template => '%s', unit => 'iops', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'total-iops', nlabel => 'cluster.io.total.usage.iops', set => {
+                key_values => [ { name => 'total_iops' }, { name => 'display' } ],
+                output_template => 'total iops: %s',
+                perfdatas => [
+                    { template => '%s', unit => 'iops', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
         { label => 'read-latency', nlabel => 'cluster.io.read.latency.milliseconds', set => {
                 key_values => [ { name => 'read_latency' }, { name => 'display' } ],
                 output_template => 'read latency: %s ms',
@@ -113,6 +147,22 @@ sub set_counters {
         { label => 'write-latency', nlabel => 'cluster.io.write.latency.milliseconds', set => {
                 key_values => [ { name => 'write_latency' }, { name => 'display' } ],
                 output_template => 'write latency: %s ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'other-latency', nlabel => 'cluster.io.other.latency.milliseconds', set => {
+                key_values => [ { name => 'other_latency' }, { name => 'display' } ],
+                output_template => 'other latency: %s ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0 }
+                ]
+            }
+        },
+        { label => 'total-latency', nlabel => 'cluster.io.total.latency.milliseconds', set => {
+                key_values => [ { name => 'total_latency' }, { name => 'display' } ],
+                output_template => 'total latency: %s ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
@@ -154,10 +204,16 @@ sub manage_selection {
                 display       => $cluster->{name},
                 read          => $cluster->{statistics}->{throughput_raw}->{read},
                 write         => $cluster->{statistics}->{throughput_raw}->{write},
+                other         => $cluster->{statistics}->{throughput_raw}->{other},
+                total         => $cluster->{statistics}->{throughput_raw}->{total},
                 read_iops     => $cluster->{metric}->{iops}->{read},
                 write_iops    => $cluster->{metric}->{iops}->{write},
+                other_iops     => $cluster->{metric}->{iops}->{other},
+                total_iops    => $cluster->{metric}->{iops}->{total},
                 read_latency  => $cluster->{metric}->{latency}->{read},
-                write_latency => $cluster->{metric}->{latency}->{write}
+                write_latency => $cluster->{metric}->{latency}->{write},
+                other_latency  => $cluster->{metric}->{latency}->{other},
+                total_latency => $cluster->{metric}->{latency}->{total}
             },
             nodes => {}
         }
@@ -209,7 +265,9 @@ Can used special variables like: %{state}, %{link_status}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'cpu-utilization' (%), 'read' (B/s), 'write' (B/s), 'read-iops', 'write-iops'.
+Can be: 'cpu-utilization' (%), 'read' (B/s), 'write' (B/s), 'read-iops', 'write-iops',
+'read-latency' (ms), 'write-lantency' (ms), 'other-latency' (ms), 'total-latency' (ms),
+'other' (B/s), 'total' (B/s), 'other-iops', 'total-iops'.
 
 =back
 

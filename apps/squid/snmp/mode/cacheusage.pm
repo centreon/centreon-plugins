@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,43 +33,39 @@ sub set_counters {
     ];
         
     $self->{maps_counters}->{global} = [
-        { label => 'cpu', set => {
+        { label => 'cpu', nlabel => 'cache.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cacheCpuUsage' } ],
-                output_template => 'Cpu usage : %s %%',
+                output_template => 'Cpu usage: %s %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cacheCpuUsage', template => '%s',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'cpu', template => '%s', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'cache.memory.usage.bytes', set => {
                 key_values => [ { name => 'cacheMemUsage' } ],
-                output_template => 'Memory usage : %s %s',
+                output_template => 'Memory usage: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'memory', value => 'cacheMemUsage', template => '%s',
-                      min => 0, unit => 'B' },
-                ],
+                    { label => 'memory', template => '%s', min => 0, unit => 'B' }
+                ]
             }
         },
-        { label => 'fd', set => {
+        { label => 'fd', nlabel => 'cache.filedescriptors.count', set => {
                 key_values => [ { name => 'cacheCurrentFileDescrCnt' } ],
-                output_template => 'Number of file descriptors : %s',
+                output_template => 'Number of file descriptors: %s',
                 perfdatas => [
-                    { label => 'fd', value => 'cacheCurrentFileDescrCnt', template => '%s',
-                      min => 0 },
-                ],
+                    { label => 'fd', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'object', set => {
+        { label => 'object', nlabel => 'cache.objects.count', set => {
                 key_values => [ { name => 'cacheNumObjCount' } ],
-                output_template => 'Number of object stored : %s',
+                output_template => 'Number of object stored: %s',
                 perfdatas => [
-                    { label => 'objects', value => 'cacheNumObjCount', template => '%s',
-                      min => 0 },
-                ],
+                    { label => 'objects', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -77,11 +73,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments =>  { 
+    });
+
     return $self;
 }
 
@@ -92,11 +87,11 @@ sub manage_selection {
         cacheMemUsage => '.1.3.6.1.4.1.3495.1.3.1.3.0',
         cacheCpuUsage => '.1.3.6.1.4.1.3495.1.3.1.5.0',
         cacheNumObjCount => '.1.3.6.1.4.1.3495.1.3.1.7.0',
-        cacheCurrentFileDescrCnt => '.1.3.6.1.4.1.3495.1.3.1.12.0',
+        cacheCurrentFileDescrCnt => '.1.3.6.1.4.1.3495.1.3.1.12.0'
     );
-    my $snmp_result = $options{snmp}->get_leef(oids => [
-            values %oids
-        ], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ values %oids ],
+        nothing_quit => 1);
 
     $snmp_result->{$oids{cacheMemUsage}} *= 1024;
     $self->{global} = {};

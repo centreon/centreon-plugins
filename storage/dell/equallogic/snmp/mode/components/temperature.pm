@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ my %map_temperature_status = (
     0 => 'unknown', 
     1 => 'normal', 
     2 => 'warning', 
-    3 => 'critical',
+    3 => 'critical'
 );
 
 # In MIB 'eqlcontroller.mib'
@@ -38,7 +38,7 @@ my $mapping = {
     eqlMemberHealthDetailsTemperatureHighCriticalThreshold => { oid => '.1.3.6.1.4.1.12740.2.1.6.1.5' },
     eqlMemberHealthDetailsTemperatureHighWarningThreshold => { oid => '.1.3.6.1.4.1.12740.2.1.6.1.6' },
     eqlMemberHealthDetailsTemperatureLowCriticalThreshold => { oid => '.1.3.6.1.4.1.12740.2.1.6.1.7' },
-    eqlMemberHealthDetailsTemperatureLowWarningThreshold => { oid => '.1.3.6.1.4.1.12740.2.1.6.1.8' },
+    eqlMemberHealthDetailsTemperatureLowWarningThreshold => { oid => '.1.3.6.1.4.1.12740.2.1.6.1.8' }
 };
 my $oid_eqlMemberHealthDetailsTemperatureEntry = '.1.3.6.1.4.1.12740.2.1.6.1';
 
@@ -64,15 +64,22 @@ sub check {
         next if ($self->check_filter(section => 'temperature', instance => $member_instance . '.' . $instance));
         $self->{components}->{temperature}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Temperature '%s/%s' status is %s [instance: %s].",
-                                    $member_name, $result->{eqlMemberHealthDetailsTemperatureName}, $result->{eqlMemberHealthDetailsTemperatureCurrentState},
-                                    $member_instance . '.' . $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s/%s' status is %s [instance: %s].",
+                $member_name, $result->{eqlMemberHealthDetailsTemperatureName}, $result->{eqlMemberHealthDetailsTemperatureCurrentState},
+                $member_instance . '.' . $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'temperature', value => $result->{eqlMemberHealthDetailsTemperatureCurrentState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Temperature '%s/%s' status is %s",
-                                                             $member_name, $result->{eqlMemberHealthDetailsTemperatureName}, $result->{eqlMemberHealthDetailsTemperatureCurrentState}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Temperature '%s/%s' status is %s",
+                    $member_name, $result->{eqlMemberHealthDetailsTemperatureName}, $result->{eqlMemberHealthDetailsTemperatureCurrentState}
+                )
+            );
         }
         
         if (defined($result->{eqlMemberHealthDetailsTemperatureValue})) {
@@ -86,8 +93,10 @@ sub check {
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
             }
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("Temperature '%s/%s' is %s degree centigrade", $member_name, $result->{eqlMemberHealthDetailsTemperatureName}, $result->{eqlMemberHealthDetailsTemperatureValue}));
+                $self->{output}->output_add(
+                    severity => $exit2,
+                    short_msg => sprintf("Temperature '%s/%s' is %s degree centigrade", $member_name, $result->{eqlMemberHealthDetailsTemperatureName}, $result->{eqlMemberHealthDetailsTemperatureValue})
+                );
             }
             $self->{output}->perfdata_add(
                 label => "temp", unit => 'C',

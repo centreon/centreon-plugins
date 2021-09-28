@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,8 +66,8 @@ sub new {
             'securityengineid:s' => { name => 'snmp_security_engine_id' },
             'snmp-errors-exit:s' => { name => 'snmp_errors_exit', default => 'unknown' },
         });
+        $options{options}->add_help(package => __PACKAGE__, sections => 'SNMP OPTIONS');
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'SNMP OPTIONS');
 
     #####
     $self->{session} = undef;
@@ -101,13 +101,23 @@ sub connect {
 
     $self->{session} = new SNMP::Session(%{$self->{snmp_params}});
     if (!defined($self->{session})) {
+        if (defined($options{dont_quit}) && $options{dont_quit} == 1) {
+            $self->set_error(error_status => -1, error_msg => 'SNMP Session : unable to create');
+            return 1;
+        }
         $self->{output}->add_option_msg(short_msg => 'SNMP Session : unable to create');
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
     if ($self->{session}->{ErrorNum}) {
+        if (defined($options{dont_quit}) && $options{dont_quit} == 1) {
+            $self->set_error(error_status => -1, error_msg => 'SNMP Session : ' . $self->{session}->{ErrorStr});
+            return 1;
+        }
         $self->{output}->add_option_msg(short_msg => 'SNMP Session : ' . $self->{session}->{ErrorStr});
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
+
+    return 0;
 }
 
 sub load {

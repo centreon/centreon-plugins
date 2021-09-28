@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -91,7 +91,7 @@ sub manage_selection {
             display => $name,
             healthy => $_->{healthy} =~ /true|1/i ? 'true' : 'false',
             state => $_->{state},
-            transfer_state => $_->{transfer}->{state}
+            transfer_state => defined($_->{transfer}->{state}) ? $_->{transfer}->{state} : 'n/a'
         };
     }
     

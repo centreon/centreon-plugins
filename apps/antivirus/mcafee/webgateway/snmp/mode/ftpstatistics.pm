@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -98,15 +98,17 @@ my $oid_stFtpBytesToServer = '.1.3.6.1.4.1.1230.2.7.2.4.5.0';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "mcafee_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'mcafee_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
-    my $results = $options{snmp}->get_leef(oids => [ $oid_stFtpBytesFromClient, $oid_stFtpBytesFromServer,
-                                                     $oid_stFtpBytesToClient, $oid_stFtpBytesToServer ], 
-                                           nothing_quit => 1);
-    
-    $self->{traffics} = {};
+    my $results = $options{snmp}->get_leef(
+        oids => [
+            $oid_stFtpBytesFromClient, $oid_stFtpBytesFromServer,
+            $oid_stFtpBytesToClient, $oid_stFtpBytesToServer
+        ], 
+        nothing_quit => 1
+    );
 
     $self->{traffics} = {
         stFtpBytesFromClient => $results->{$oid_stFtpBytesFromClient} * 8,

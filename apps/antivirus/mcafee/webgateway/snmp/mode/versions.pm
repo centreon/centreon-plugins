@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,10 +41,13 @@ sub custom_version_calc {
 sub custom_version_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{since},
-                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    return $exit;
+    return $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{since},
+        threshold => [
+            { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{label}, exit_litteral => 'warning' }
+        ]
+    );
 }
 
 sub custom_version_output {
@@ -72,7 +75,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { label_ref => 'pMFEDATVersion', output_ref => 'DAT Version' },
                 closure_custom_output => $self->can('custom_version_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_version_threshold'),
+                closure_custom_threshold_check => $self->can('custom_version_threshold')
             }
         },
         { label => 'tsdb-version', set => {
@@ -81,7 +84,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { label_ref => 'pTSDBVersion', output_ref => 'TrustedSource Database Version' },
                 closure_custom_output => $self->can('custom_version_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_version_threshold'),
+                closure_custom_threshold_check => $self->can('custom_version_threshold')
             }
         },
         { label => 'proactive-version', set => {
@@ -90,17 +93,10 @@ sub set_counters {
                 closure_custom_calc_extra_options => { label_ref => 'pAMProactiveVersion', output_ref => 'ProActive Database Version' },
                 closure_custom_output => $self->can('custom_version_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_version_threshold'),
+                closure_custom_threshold_check => $self->can('custom_version_threshold')
             }
         }
     ];
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->{cache}->check_options(%options);
 }
 
 sub new {
@@ -115,6 +111,13 @@ sub new {
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{cache}->check_options(%options);
+}
+
 my $oid_pMFEDATVersion = '.1.3.6.1.4.1.1230.2.7.1.20.4.0';
 my $oid_pAMProactiveVersion = '.1.3.6.1.4.1.1230.2.7.1.20.5.0';
 my $oid_pTSDBVersion = '.1.3.6.1.4.1.1230.2.7.1.20.6.0';
@@ -122,19 +125,18 @@ my $oid_pTSDBVersion = '.1.3.6.1.4.1.1230.2.7.1.20.6.0';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{new_datas} = {};
-    $self->{cache}->read(statefile => "mcafee_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache}->read(statefile => 'mcafee_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')));
 
-    my $results = $options{snmp}->get_leef(oids => [ $oid_pMFEDATVersion, $oid_pAMProactiveVersion, $oid_pTSDBVersion ], 
-                                           nothing_quit => 1);
-    
-    $self->{global} = {};
+    my $results = $options{snmp}->get_leef(
+        oids => [ $oid_pMFEDATVersion, $oid_pAMProactiveVersion, $oid_pTSDBVersion ], 
+        nothing_quit => 1
+    );
 
     $self->{new_datas} = {
         pMFEDATVersion => $results->{$oid_pMFEDATVersion},
         pAMProactiveVersion => $results->{$oid_pAMProactiveVersion},
-        pTSDBVersion => $results->{$oid_pTSDBVersion},
+        pTSDBVersion => $results->{$oid_pTSDBVersion}
     };
 
     foreach my $version (('pMFEDATVersion', 'pAMProactiveVersion', 'pTSDBVersion')) {

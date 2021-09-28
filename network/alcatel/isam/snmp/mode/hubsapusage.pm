@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,20 +26,19 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::statefile;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'sap', type => 1, cb_prefix_output => 'prefix_sap_output', message_multiple => 'All SAP are ok', skipped_code => { -10 => 1 } },
+        { name => 'sap', type => 1, cb_prefix_output => 'prefix_sap_output', message_multiple => 'All SAP are ok', skipped_code => { -10 => 1 } }
     ];
-    
+
     $self->{maps_counters}->{sap} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{admin} =~ /up/i and %{status} !~ /up/i', set => {
                 key_values => [ { name => 'status' }, { name => 'admin' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold')
@@ -60,7 +59,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_sap_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_sap_threshold')
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -87,7 +86,7 @@ sub set_counters {
 
 sub custom_total_traffic_perfdata {
     my ($self, %options) = @_;
-    
+
     my ($warning, $critical);
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
@@ -96,7 +95,7 @@ sub custom_total_traffic_perfdata {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
-    
+
     $self->{output}->perfdata_add(
         label => 'total_traffic_' . $self->{result_values}->{label}, unit => 'b/s',
         nlabel => $self->{nlabel},
@@ -109,7 +108,7 @@ sub custom_total_traffic_perfdata {
 
 sub custom_total_traffic_threshold {
     my ($self, %options) = @_;
-    
+
     my $exit = 'ok';
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
@@ -121,18 +120,19 @@ sub custom_total_traffic_threshold {
 
 sub custom_total_traffic_output {
     my ($self, %options) = @_;
-    
+
     my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_traffic}, network => 1);
     my ($total_value, $total_unit);
     if (defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} =~ /[0-9]/) {
         ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{speed}, network => 1);
     }
-   
-    my $msg = sprintf("Total Traffic %s : %s/s (%s on %s)",
-                      ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
-                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
-                      defined($total_value) ? $total_value . $total_unit : '-');
-    return $msg;
+
+    return sprintf(
+        "Total Traffic %s : %s/s (%s on %s)",
+        ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
+        defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
+        defined($total_value) ? $total_value . $total_unit : '-'
+    );
 }
 
 sub custom_total_traffic_calc {
@@ -165,49 +165,19 @@ sub custom_total_traffic_calc {
 
 sub custom_status_threshold {
     my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
 
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($self->{instance_mode}->{option_results}->{'critical_' . $label}) && $self->{instance_mode}->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{'critical_' . $label}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{'warning_' . $label}) && $self->{instance_mode}->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{'warning_' . $label}") {
-            $status = 'warning';
-        }
-
-        $self->{instance_mode}->{last_status} = 0;
-        if ($self->{result_values}->{admin} eq 'up') {
-            $self->{instance_mode}->{last_status} = 1;
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    my $status = catalog_status_threshold_ng($self, %options);
+    $self->{instance_mode}->{last_status} = 0;
+    if ($self->{result_values}->{admin} eq 'up') {
+        $self->{instance_mode}->{last_status} = 1;
     }
-
     return $status;
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'Status : ' . $self->{result_values}->{status} . ' (admin: ' . $self->{result_values}->{admin} . ')';
 
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{admin} = $options{new_datas}->{$self->{instance} . '_admin'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return 'Status : ' . $self->{result_values}->{status} . ' (admin: ' . $self->{result_values}->{admin} . ')';
 }
 
 sub custom_sap_perfdata {
@@ -221,7 +191,7 @@ sub custom_sap_perfdata {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
-    
+
     $self->{output}->perfdata_add(
         label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
         nlabel => $self->{nlabel},
@@ -235,7 +205,7 @@ sub custom_sap_perfdata {
 
 sub custom_sap_threshold {
     my ($self, %options) = @_;
-    
+
     my $exit = 'ok';
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
@@ -247,23 +217,24 @@ sub custom_sap_threshold {
 
 sub custom_sap_output {
     my ($self, %options) = @_;
-    
+
     my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic}, network => 1);
     my ($total_value, $total_unit);
     if (defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} =~ /[0-9]/) {
         ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{speed}, network => 1);
     }
    
-    my $msg = sprintf("Traffic %s : %s/s (%s on %s)",
-                      ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
-                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
-                      defined($total_value) ? $total_value . $total_unit : '-');
-    return $msg;
+    return sprintf(
+        "Traffic %s : %s/s (%s on %s)",
+        ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
+        defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
+        defined($total_value) ? $total_value . $total_unit : '-'
+    );
 }
 
 sub custom_sap_calc {
     my ($self, %options) = @_;
-    
+
     return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
@@ -279,7 +250,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
         'reload-cache-time:s' => { name => 'reload_cache_time', default => 300 },
         'display-name:s'      => { name => 'display_name', default => '%{SvcDescription}.%{IfName}.%{SapEncapName}' },
@@ -288,11 +259,9 @@ sub new {
         'speed-out:s'         => { name => 'speed_out' },
         'speed-total-in:s'    => { name => 'speed_total_in' },
         'speed-total-out:s'   => { name => 'speed_total_out' },
-        'units-traffic:s'     => { name => 'units_traffic', default => '%' },
-        'warning-status:s'    => { name => 'warning_status', default => '' },
-        'critical-status:s'   => { name => 'critical_status', default => '%{admin} =~ /up/i and %{status} !~ /up/i' },
+        'units-traffic:s'     => { name => 'units_traffic', default => '%' }
     });
-    
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -300,8 +269,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
+
     $self->{statefile_cache}->check_options(%options);
 }
 
@@ -313,7 +281,7 @@ sub prefix_sap_output {
 
 sub get_display_name {
     my ($self, %options) = @_;
-    
+
     my $display_name = $self->{option_results}->{display_name};
     $display_name =~ s/%\{(.*?)\}/$options{$1}/ge;
     return $display_name;
@@ -338,14 +306,16 @@ my $oid_ifName  = '.1.3.6.1.2.1.31.1.1.1.1';
 
 sub reload_cache {
     my ($self, %options) = @_;
-    
+
     my $datas = { last_timestamp => time() };
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [ 
             { oid => $oid_sapDescription }, 
             { oid => $oid_svcDescription },
-            { oid => $oid_ifName },
+            { oid => $oid_ifName }
         ],
-        nothing_quit => 1);
+        nothing_quit => 1
+    );
     $datas->{snmp_result} = $snmp_result;
    
     if (scalar(keys %{$datas->{snmp_result}->{$oid_sapDescription}}) <= 0) {
@@ -358,12 +328,12 @@ sub reload_cache {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     if ($options{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
-    
+
     my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_alcatel_isam_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
     if ($has_cache_file == 0 || !defined($timestamp_cache) ||
@@ -376,7 +346,6 @@ sub manage_selection {
 
     $self->{global} = {};
     $self->{sap} = {};
-
     foreach my $oid (keys %{$snmp_result->{$oid_sapDescription}}) {
         next if ($oid !~ /^$oid_sapDescription\.(.*?)\.(.*?)\.(.*?)$/);
         # $SvcId and $SapEncapValue is the same. We use service table
@@ -391,7 +360,7 @@ sub manage_selection {
            $snmp_result->{$oid_ifName}->{$oid_ifName . '.' . $SapPortId} :  $SapPortId;
         my $SapEncapName = defined($snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue}) && $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue} ne '' ?
            $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue} : $SapEncapValue;
-        
+
         my $name = $self->get_display_name(
             SapDescription => $SapDescription, 
             SvcDescription => $SvcDescription,
@@ -399,24 +368,26 @@ sub manage_selection {
             IfName => $IfName,
             SvcId => $SvcId, 
             SapPortId => $SapPortId, 
-            SapEncapValue => $SapEncapValue);
+            SapEncapValue => $SapEncapValue
+        );
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $self->{sap}->{$instance} = { display => $name };
     }
     
     $options{snmp}->load(oids => [$mapping->{fadSapStatsIngressOctets}->{oid}, 
         $mapping->{fadSapStatsEgressOctets}->{oid},
         $mapping->{sapAdminStatus}->{oid}, $mapping->{sapOperStatus}->{oid}], 
-        instances => [keys %{$self->{sap}}], instance_regexp => '(\d+\.\d+\.\d+)$');
-    
+        instances => [keys %{$self->{sap}}], instance_regexp => '(\d+\.\d+\.\d+)$'
+    );
+
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    
+
     foreach (keys %{$self->{sap}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);        
         $self->{sap}->{$_}->{in} = $result->{fadSapStatsIngressOctets} * 8;
@@ -433,7 +404,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    $self->{cache_name} = "alcatel_isam_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+    $self->{cache_name} = 'alcatel_isam_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ use warnings;
 
 sub set_oids_traffic {
     my ($self, %options) = @_;
-    
+
     $self->{currentEthRx15minBytes} = '.1.3.6.1.4.1.2544.1.11.2.6.2.52.1.5'; # in B
     $self->{currentEthRx1dayBytes} = '.1.3.6.1.4.1.2544.1.11.2.6.2.53.1.5'; # in B
     $self->{currentEthTx15minBytes} = '.1.3.6.1.4.1.2544.1.11.2.6.2.56.1.3'; # in B
@@ -70,8 +70,8 @@ sub set_counters {
                 output_template => 'Laser Temperature : %.2f C', output_error_template => 'Laser Temperature : %.2f',
                 perfdatas => [
                     { label => 'laser_temp', template => '%.2f',
-                      unit => 'C', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'C', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'input-power', filter => 'add_optical', nlabel => 'interface.input.power.dbm', set => {
@@ -79,8 +79,8 @@ sub set_counters {
                 output_template => 'Input Power : %s dBm', output_error_template => 'Input Power : %s',
                 perfdatas => [
                     { label => 'input_power', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'output-power', filter => 'add_optical', nlabel => 'interface.output.power.dbm', set => {
@@ -88,44 +88,61 @@ sub set_counters {
                 output_template => 'Output Power : %s dBm', output_error_template => 'Output Power : %s',
                 perfdatas => [
                     { label => 'output_power', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ;
 }
 
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
-    
+
     my ($warning, $critical);
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} =~ /bps|counter/) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
-    
-    $self->{output}->perfdata_add(
-        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
-        nlabel => $self->{nlabel},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-        value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
-        warning => $warning,
-        critical => $critical,
-        min => 0, max => $self->{result_values}->{speed}
-    );
+
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq 'counter') {
+        my $nlabel = $self->{nlabel};
+        $nlabel =~ s/bitspersecond/bits/;
+        $self->{output}->perfdata_add(
+            force_new_perfdata => 1,
+            nlabel => $nlabel,
+            unit => 'b',
+            instances => $self->{result_values}->{display},
+            value => $self->{result_values}->{traffic_counter},
+            warning => $warning,
+            critical => $critical,
+            min => 0
+        );
+    } else {
+        $self->{output}->perfdata_add(
+            label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+            nlabel => $self->{nlabel},
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+            value => sprintf('%.2f', $self->{result_values}->{traffic_per_seconds}),
+            warning => $warning,
+            critical => $critical,
+            min => 0, max => $self->{result_values}->{speed}
+        );
+    }
 }
 
 sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
-    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'bps') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'counter') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_counter}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -137,9 +154,11 @@ sub custom_traffic_output {
     $label =~ s/_/ /g;
     $label =~ s/(\w+)/\u$1/g;
     my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);    
-    my $msg = sprintf("Traffic %s : %s/s (%s)",
-                      $label, $traffic_value . $traffic_unit,
-                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-');
+    my $msg = sprintf(
+        "Traffic %s : %s/s (%s)",
+        $label, $traffic_value . $traffic_unit,
+        defined($self->{result_values}->{traffic_prct}) ? sprintf('%.2f%%', $self->{result_values}->{traffic_prct}) : '-'
+    );
     return $msg;
 }
 
@@ -154,15 +173,16 @@ sub custom_traffic_calc {
         $counter = 'traffic_' . $options{extra_options}->{label_ref} . '_1day';
     }
 
-    my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $counter} - $options{old_datas}->{$self->{instance} . '_' . $counter});
-    
+    my $diff_traffic = ($options{new_datas}->{ $self->{instance} . '_' . $counter } - $options{old_datas}->{ $self->{instance} . '_' . $counter });
+
     $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
+    $self->{result_values}->{traffic_counter} = $options{new_datas}->{ $self->{instance} . '_' . $counter };
     if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) && 
         $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
         $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
     }
-    
+
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -174,7 +194,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-            'add-optical'   => { name => 'add_optical' },
+            'add-optical' => { name => 'add_optical' }
         }
     );
     
@@ -238,9 +258,14 @@ sub load_traffic {
     }
     
     $self->set_oids_traffic();
-    $self->{snmp}->load(oids => [$self->{currentEthRx15minBytes}, $self->{currentEthRx1dayBytes}, 
-                                 $self->{currentEthTx15minBytes}, $self->{currentEthTx1dayBytes},
-                                 $self->{currentEthRxHighSpeed15minBytes}, $self->{currentEthRxHighSpeed1dayBytes}], instances => $self->{array_interface_selected});
+    $self->{snmp}->load(
+        oids => [
+            $self->{currentEthRx15minBytes}, $self->{currentEthRx1dayBytes}, 
+            $self->{currentEthTx15minBytes}, $self->{currentEthTx1dayBytes},
+            $self->{currentEthRxHighSpeed15minBytes}, $self->{currentEthRxHighSpeed1dayBytes}
+        ],
+        instances => $self->{array_interface_selected}
+    );
 }
 
 sub add_result_traffic {
@@ -301,19 +326,14 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'laser-temp', 'input-power', 'output-power', 'traffic-in', 'traffic-out'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'laser-temp', 'input-power', 'output-power', 'traffic-in', 'traffic-out'.
 
 =item B<--units-traffic>
 
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
 =item B<--interface>
 

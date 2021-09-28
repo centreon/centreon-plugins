@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -175,7 +175,7 @@ Typical syntax: --warning-status='%{status} ne "STARTED"'
 
 Set warning threshold for status (Default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
-Typical syntax: --critical-status='%{status} ~= m/FAILED/'
+Typical syntax: --critical-status='%{status} =~ m/FAILED/'
 
 =back
 

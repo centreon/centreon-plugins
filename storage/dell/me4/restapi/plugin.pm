@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,16 +30,16 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{ $self->{modes} } = (
+    $self->{modes} = {
         'controller-statistics' => 'storage::dell::me4::restapi::mode::controllerstatistics',
         'hardware'              => 'storage::dell::me4::restapi::mode::hardware',
         'interfaces'            => 'storage::dell::me4::restapi::mode::interfaces',
         'list-controllers'      => 'storage::dell::me4::restapi::mode::listcontrollers',
         'list-volumes'          => 'storage::dell::me4::restapi::mode::listvolumes',
         'volume-statistics'     => 'storage::dell::me4::restapi::mode::volumestatistics'
-    );
+    };
 
-    $self->{custom_modes}{api} = 'storage::dell::me4::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'storage::dell::me4::restapi::custom::api';
     return $self;
 }
 

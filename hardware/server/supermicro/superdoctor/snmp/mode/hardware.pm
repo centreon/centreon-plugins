@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,9 +29,9 @@ sub set_system {
     my ($self, %options) = @_;
 
     $self->{regexp_threshold_numeric_check_section_option} = '^(sensor\..*)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         sensor => [
             ['ok', 'OK'],
@@ -50,7 +50,7 @@ sub set_system {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -115,7 +115,7 @@ use warnings;
 
 my %map_sensor_status = (0 => 'ok', 1 => 'warning', 2 => 'critical');
 my %map_sensor_type = (
-    0 => 'fan', 1 => 'voltage', 2 => 'temperature', 3 => 'discrete',
+    0 => 'fan', 1 => 'voltage', 2 => 'temperature', 3 => 'discrete'
 );
 my %map_sensor_monitored = (
     0 => 'not monitored', 1 => 'monitored',
@@ -127,13 +127,13 @@ my $mapping = {
     smHealthMonitorReading      => { oid => '.1.3.6.1.4.1.10876.2.1.1.1.1.4' },
     smHealthMonitorMonitor      => { oid => '.1.3.6.1.4.1.10876.2.1.1.1.1.10', map => \%map_sensor_monitored },
     smHealthMonitorReadingUnit  => { oid => '.1.3.6.1.4.1.10876.2.1.1.1.1.11' },
-    smHealthMonitorStatus       => { oid => '.1.3.6.1.4.1.10876.2.1.1.1.1.12', map => \%map_sensor_status },
+    smHealthMonitorStatus       => { oid => '.1.3.6.1.4.1.10876.2.1.1.1.1.12', map => \%map_sensor_status }
 };
 my $oid_smHealthMonitorEntry = '.1.3.6.1.4.1.10876.2.1.1.1.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_smHealthMonitorEntry };
 }
 
@@ -156,7 +156,7 @@ sub check {
         $self->{components}->{sensor}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "sensor '%s' status is '%s' [instance = %s, value = %s]",
+                "sensor '%s' status is '%s' [instance: %s, value: %s]",
                 $result->{smHealthMonitorName}, 
                 defined($result->{smHealthMonitorStatus}) ? $result->{smHealthMonitorStatus} : 'undefined', 
                 $result->{smHealthMonitorType} . '.' . $instance,
@@ -197,8 +197,8 @@ sub check {
 
         # need some snmpwalk to do unit mapping!! experimental
         $self->{output}->perfdata_add(
-            label => $component, unit => $result->{smHealthMonitorReadingUnit},
             nlabel => 'hardware.sensor.' . $result->{smHealthMonitorType} . '.' . $result->{smHealthMonitorReadingUnit},
+            unit => $result->{smHealthMonitorReadingUnit},
             instances => $result->{smHealthMonitorName},
             value => $result->{smHealthMonitorReading},
             warning => $warn,
@@ -218,7 +218,7 @@ my %map_memory_status = (0 => 'ok', 2 => 'critical');
 
 my $mapping_memory = {
     memTag          => { oid => '.1.3.6.1.4.1.10876.100.1.3.1.1' },
-    memDeviceStatus => { oid => '.1.3.6.1.4.1.10876.100.1.3.1.3', map => \%map_memory_status },
+    memDeviceStatus => { oid => '.1.3.6.1.4.1.10876.100.1.3.1.3', map => \%map_memory_status }
 };
 my $oid_memEntry = '.1.3.6.1.4.1.10876.100.1.3.1';
 
@@ -245,7 +245,7 @@ sub check {
         $self->{components}->{memory}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "memory '%s' status is '%s' [instance = %s]",
+                "memory '%s' status is '%s' [instance: %s]",
                 $result->{memTag}, 
                 $result->{memDeviceStatus},
                 $instance
@@ -304,7 +304,7 @@ sub check {
         $self->{components}->{memory}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "disk '%s' status is '%s' [instance = %s]",
+                "disk '%s' status is '%s' [instance: %s]",
                 $result->{diskName}, 
                 $result->{diskSmartStatus},
                 $instance
@@ -361,7 +361,7 @@ sub check {
         $self->{components}->{cpu}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "cpu '%s' status is '%s' [instance = %s]",
+                "cpu '%s' status is '%s' [instance: %s]",
                 $instance, 
                 $result->{cpuDeviceStatus},
                 $instance

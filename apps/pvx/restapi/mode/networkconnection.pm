@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_instances_output {
+    my ($self, %options) = @_;
+
+    return $options{instance_value}->{instance_label} . " '" . $options{instance_value}->{key} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -33,49 +39,43 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{instances} = [
-        { label => 'ratio', set => {
+        { label => 'ratio', nlabel => 'connections.ratio.percentage', set => {
                 key_values => [ { name => 'syns_ratio' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'Ratio: %.2f',
+                output_template => 'ratio: %.2f',
                 perfdatas => [
                     { label => 'ratio', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'key' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
         },
-        { label => 'attempt', set => {
+        { label => 'attempt', nlabel => 'connections.attempts.persecond', set => {
                 key_values => [ { name => 'syns' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'Connections Attempts: %.2f conn/s',
+                output_template => 'connections attempts: %.2f conn/s',
                 perfdatas => [
                     { label => 'attempt', template => '%.2f',
-                      min => 0, unit => 'connections/s', label_extra_instance => 1, instance_use => 'key' },
-                ],
+                      min => 0, unit => 'connections/s', label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
         },
-        { label => 'successful', set => {
+        { label => 'successful', nlabel => 'connections.successful.persecond', set => {
                 key_values => [ { name => 'ct_count' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'Successful Connections: %.2f conn/s',
+                output_template => 'successful connections: %.2f conn/s',
                 perfdatas => [
                     { label => 'successful', template => '%.2f',
-                      min => 0, unit => 'connections/s', label_extra_instance => 1, instance_use => 'key' },
-                ],
+                      min => 0, unit => 'connections/s', label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
         },
-        { label => 'connection-time', set => {
+        { label => 'connection-time', nlabel => 'connection.time.milliseconds', set => {
                 key_values => [ { name => 'ct' }, { name => 'key' }, { name => 'instance_label' } ],
-                output_template => 'Average Connection Time: %.3f ms',
+                output_template => 'average connection time: %.3f ms',
                 perfdatas => [
                     { label => 'connection_time', template => '%.3f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'key' },
-                ],
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_instances_output {
-    my ($self, %options) = @_;
-
-    return $options{instance_value}->{instance_label} . " '" . $options{instance_value}->{key} . "' ";
 }
 
 sub new {
@@ -87,7 +87,7 @@ sub new {
         'instance:s' => { name => 'instance', default => 'layer' },
         'top:s'      => { name => 'top' },
         'filter:s'   => { name => 'filter' },
-        'from:s'     => { name => 'from' },
+        'from:s'     => { name => 'from' }
     });
 
     return $self;

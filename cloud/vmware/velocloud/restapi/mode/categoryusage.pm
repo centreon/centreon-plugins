@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,9 +32,19 @@ sub set_counters {
         { name => 'edges', type => 3, cb_prefix_output => 'prefix_edge_output', cb_long_output => 'long_output',
           message_multiple => 'All edges categories usage are ok', indent_long_output => '    ',
             group => [
+                { name => 'global', type => 0 },
                 { name => 'categories', display_long => 1, cb_prefix_output => 'prefix_category_output',
                   message_multiple => 'All categories usage are ok', type => 1 }
             ]
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'edge-categories-count', nlabel => 'edge.categories.total.count', set => {
+                key_values => [ { name => 'category_count' } ],
+                output_template => '%s categorie(s)',
+                perfdatas => [ { template => '%d', unit => '', min => 0, label_extra_instance => 1 } ]
+            }
         }
     ];
 
@@ -143,6 +153,7 @@ sub manage_selection {
                 next;
             }
 
+            $self->{edges}->{$edge->{name}}->{global}->{category_count}++;
             $self->{edges}->{$edge->{name}}->{categories}->{$category->{name}} = {
                 id => $category->{category},
                 display => $category->{name},
@@ -181,7 +192,7 @@ Filter category by name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'traffic-in', 'traffic-out',
+Can be: 'edge-categories-count', 'traffic-in', 'traffic-out',
 'packets-in', 'packets-out'.
 
 =back

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -412,7 +412,7 @@ sub ec2_get_instances_status {
     foreach (@{$raw_results->{InstanceStatuses}}) {
         $instance_results->{$_->{InstanceId}} = {
             state => $_->{InstanceState}->{Name},
-            status => => $_->{InstanceStatus}->{Status}
+            status => $_->{InstanceStatus}->{Status}
         };
     }
 
@@ -517,13 +517,33 @@ sub ec2_list_resources {
                 AvailabilityZone => $instance->{Placement}->{AvailabilityZone},
                 InstanceType => $instance->{InstanceType},
                 State => $instance->{State}->{Name},
-                Tags => join(",", @instance_tags),
-                KeyName => $instance->{KeyName},
+                Tags => join(',', @instance_tags),
+                KeyName => $instance->{KeyName}
             };
         }
     }
 
     return $resource_results;
+}
+
+sub ec2_get_instances {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->ec2_list_resources_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $instance_results = {};
+    foreach my $reservation (@{$raw_results->{Reservations}}) {
+        foreach my $instance (@{$reservation->{Instances}}) {
+            $instance_results->{ $instance->{InstanceId} } = {
+                State => $instance->{State}->{Name},
+                InstanceType => $instance->{InstanceType},
+                LaunchTime => $instance->{LaunchTime}
+            };
+        }
+    }
+
+    return $instance_results;
 }
 
 sub asg_get_resources_set_cmd {
@@ -596,6 +616,7 @@ sub rds_list_instances {
             Engine => $instance->{Engine},
             StorageType => $instance->{StorageType},
             DBInstanceStatus => $instance->{DBInstanceStatus},
+            AllocatedStorage => $instance->{AllocatedStorage}
         };
     }
 
@@ -626,6 +647,7 @@ sub rds_list_clusters {
             DatabaseName => $cluster->{DatabaseName},
             Engine => $cluster->{Engine},
             Status => $cluster->{Status},
+            AllocatedStorage => $cluster->{AllocatedStorage}
         };
     }
 

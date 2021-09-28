@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,8 +39,8 @@ sub set_counters {
                 output_template => 'Traffic In (Wan2Lan): %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'traffic_in', template => '%s', min => 0, unit => 'B/s' },
-                ],
+                    { label => 'traffic_in', template => '%s', min => 0, unit => 'B/s' }
+                ]
             }
         },
         { label => 'traffic-out', set => {
@@ -48,33 +48,33 @@ sub set_counters {
                 output_template => 'Traffic Out (Lan2Wan): %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'traffic_out', template => '%s', min => 0, unit => 'B/s' },
-                ],
+                    { label => 'traffic_out', template => '%s', min => 0, unit => 'B/s' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub prefix_output {
     my ($self, %options) = @_;
     
-    return "Passthrough ";
+    return 'Passthrough ';
 }
 
 my $mappings = {
     common    => {
         bwPassThroughIn => { oid => '.1.3.6.1.4.1.17163.1.1.5.3.3.1' },
-        bwPassThroughOut => { oid => '.1.3.6.1.4.1.17163.1.1.5.3.3.2' },
+        bwPassThroughOut => { oid => '.1.3.6.1.4.1.17163.1.1.5.3.3.2' }
     },
     ex => {
         bwPassThroughIn => { oid => '.1.3.6.1.4.1.17163.1.51.5.3.3.1' },
-        bwPassThroughOut => { oid => '.1.3.6.1.4.1.17163.1.51.5.3.3.2' },
-    },
+        bwPassThroughOut => { oid => '.1.3.6.1.4.1.17163.1.51.5.3.3.2' }
+    }
 };
 
 my $oids = {
     common => '.1.3.6.1.4.1.17163.1.1.5.3.3',
-    ex => '.1.3.6.1.4.1.17163.1.51.5.3.3',
+    ex => '.1.3.6.1.4.1.17163.1.51.5.3.3'
 };
 
 sub new {
@@ -101,13 +101,10 @@ sub manage_selection {
     foreach my $equipment (keys %{$oids}) {
         next if (!%{$results->{$oids->{$equipment}}});
 
-        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment},
-            results => $results->{$oids->{$equipment}}, instance => 0);
-
-        $self->{global} = { %$result };
+        $self->{global} = $options{snmp}->map_instance(mapping => $mappings->{$equipment}, results => $results->{$oids->{$equipment}}, instance => 0);
     }
 
-    $self->{cache_name} = "riverbed_steelhead_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() .
+    $self->{cache_name} = 'riverbed_steelhead_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() .
         '_' . $self->{mode} . '_' . md5_hex('all');
 }
 

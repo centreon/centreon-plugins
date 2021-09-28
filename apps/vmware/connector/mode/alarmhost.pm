@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,14 +36,12 @@ sub custom_status_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($self->{instance_mode}->{option_results}->{'critical_' . $label}) && $self->{instance_mode}->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{'critical_' . $label}") {
+        if (defined($self->{instance_mode}->{option_results}->{'critical-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}} ne '' &&
+            $self->eval(value => $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}})) {
             $self->{instance_mode}->{host_critical}++;
             $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{'warning_' . $label}) && $self->{instance_mode}->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{'warning_' . $label}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{'warning-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}} ne '' &&
+                 $self->eval(value => $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}})) {
             $self->{instance_mode}->{host_warning}++;
             $status = 'warning';
         }
@@ -58,7 +56,8 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("alarm [%s] [%s] [%s] [%s] %s/%s", 
+    return sprintf(
+        "alarm [%s] [%s] [%s] [%s] %s/%s", 
         $self->{result_values}->{status},
         $self->{result_values}->{type},
         $self->{result_values}->{entity_name},
@@ -66,8 +65,6 @@ sub custom_status_output {
         $self->{result_values}->{name},
         $self->{result_values}->{description}
     );
-
-    return $msg;
 }
 
 sub custom_esxhost_perfdata {
@@ -129,9 +126,15 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{alarm} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'entity_name' }, { name => 'status' }, 
-                    { name => 'time' }, { name => 'description' }, { name => 'name' }, { name => 'type' }, { name => 'since' } ],
+        {
+            label => 'status', type => 2,
+            warning_default => '%{status} =~ /yellow/i',
+            critical_default => '%{status} =~ /red/i',
+            set => {
+                key_values => [
+                    { name => 'entity_name' }, { name => 'status' }, 
+                    { name => 'time' }, { name => 'description' }, { name => 'name' }, { name => 'type' }, { name => 'since' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold')
@@ -140,7 +143,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{esxhost_metrics} = [
-        { label => 'alarm-warning', threshold => 0, set => {
+        { label => 'alarm-warning', type => 2, set => {
                 key_values => [ { name => 'name' }  ],
                 output_template => '',
                 closure_custom_threshold_check => sub { return 'ok' },
@@ -148,7 +151,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_esxhost_perfdata')
             }
         },
-        { label => 'alarm-critical', threshold => 0, set => {
+        { label => 'alarm-critical', type => 2, set => {
                 key_values => [ { name => 'name' }  ],
                 output_template => '',
                 closure_custom_threshold_check => sub { return 'ok' },
@@ -183,20 +186,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "esx-hostname:s"          => { name => 'esx_hostname' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "filter-time:s"           => { name => 'filter_time', },
-                                  "memory"                  => { name => 'memory', },
-                                  "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /yellow/i' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /red/i' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'esx-hostname:s'     => { name => 'esx_hostname' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' },
+        'scope-cluster:s'    => { name => 'scope_cluster' },
+        'filter-time:s'      => { name => 'filter_time' },
+        'memory'             => { name => 'memory' }
+    });
 
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Date::Parse',
-                                           error_msg => "Cannot load module 'Date::Parse'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'Date::Parse',
+        error_msg => "Cannot load module 'Date::Parse'."
+    );
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -205,7 +207,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
     }
@@ -216,8 +217,10 @@ sub manage_selection {
 
     $self->{global} = { yellow => 0, red => 0 };
     $self->{esxhost} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'alarmhost');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'alarmhost'
+    );
 
     my $last_time;
     if (defined($self->{option_results}->{memory})) {

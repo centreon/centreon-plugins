@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,19 +31,30 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'daemonset-status'  => 'cloud::kubernetes::mode::daemonsetstatus',
-        'deployment-status' => 'cloud::kubernetes::mode::deploymentstatus',
-        'list-daemonsets'   => 'cloud::kubernetes::mode::listdaemonsets',
-        'list-deployments'  => 'cloud::kubernetes::mode::listdeployments',
-        'list-ingresses'    => 'cloud::kubernetes::mode::listingresses',
-        'list-namespaces'   => 'cloud::kubernetes::mode::listnamespaces',
-        'list-nodes'        => 'cloud::kubernetes::mode::listnodes',
-        'list-pods'         => 'cloud::kubernetes::mode::listpods',
-        'list-replicasets'  => 'cloud::kubernetes::mode::listreplicasets',
-        'list-services'     => 'cloud::kubernetes::mode::listservices',
-        'list-statefulsets' => 'cloud::kubernetes::mode::liststatefulsets',
-        'node-usage'        => 'cloud::kubernetes::mode::nodeusage',
-        'pod-status'        => 'cloud::kubernetes::mode::podstatus',
+        'cluster-events'                => 'cloud::kubernetes::mode::clusterevents',
+        'cronjob-status'                => 'cloud::kubernetes::mode::cronjobstatus',
+        'daemonset-status'              => 'cloud::kubernetes::mode::daemonsetstatus',
+        'deployment-status'             => 'cloud::kubernetes::mode::deploymentstatus',
+        'discovery-nodes'               => 'cloud::kubernetes::mode::discoverynodes',
+        'list-cronjobs'                 => 'cloud::kubernetes::mode::listcronjobs',
+        'list-daemonsets'               => 'cloud::kubernetes::mode::listdaemonsets',
+        'list-deployments'              => 'cloud::kubernetes::mode::listdeployments',
+        'list-ingresses'                => 'cloud::kubernetes::mode::listingresses',
+        'list-namespaces'               => 'cloud::kubernetes::mode::listnamespaces',
+        'list-nodes'                    => 'cloud::kubernetes::mode::listnodes',
+        'list-persistentvolumes'        => 'cloud::kubernetes::mode::listpersistentvolumes',
+        'list-pods'                     => 'cloud::kubernetes::mode::listpods',
+        'list-replicasets'              => 'cloud::kubernetes::mode::listreplicasets',
+        'list-replicationcontrollers'   => 'cloud::kubernetes::mode::listreplicationcontrollers',
+        'list-services'                 => 'cloud::kubernetes::mode::listservices',
+        'list-statefulsets'             => 'cloud::kubernetes::mode::liststatefulsets',
+        'node-status'                   => 'cloud::kubernetes::mode::nodestatus',
+        'node-usage'                    => 'cloud::kubernetes::mode::nodeusage',
+        'persistentvolume-status'       => 'cloud::kubernetes::mode::persistentvolumestatus',
+        'pod-status'                    => 'cloud::kubernetes::mode::podstatus',
+        'replicaset-status'             => 'cloud::kubernetes::mode::replicasetstatus',
+        'replicationcontroller-status'  => 'cloud::kubernetes::mode::replicationcontrollerstatus',
+        'statefulset-status'            => 'cloud::kubernetes::mode::statefulsetstatus',
     );
 
     $self->{custom_modes}{api} = 'cloud::kubernetes::custom::api';

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,32 +26,32 @@ use warnings;
 my $map_sc_voltage_status = {
     1 => 'unknown', 2 => 'not-available', 3 => 'ok',
     4 => 'too-low', 5 => 'too-high', 6 => 'out-of-range',
-    7 => 'battery-prefailure',
+    7 => 'battery-prefailure'
 };
 my $map_sc2_voltage_status = {
     1 => 'unknown', 2 => 'not-available', 3 => 'ok',
     4 => 'too-low', 5 => 'too-high', 6 => 'out-of-range',
-    7 => 'warning',
+    7 => 'warning'
 };
 
 my $mapping = {
     sc => {
         sniScVoltageStatus          => { oid => '.1.3.6.1.4.1.231.2.10.2.2.5.11.4.1.3', map => $map_sc_voltage_status },
         sniScVoltageDesignation     => { oid => '.1.3.6.1.4.1.231.2.10.2.2.5.11.4.1.4' },
-        sniScVoltageCurrentValue    => { oid => '.1.3.6.1.4.1.231.2.10.2.2.5.11.4.1.7' },
+        sniScVoltageCurrentValue    => { oid => '.1.3.6.1.4.1.231.2.10.2.2.5.11.4.1.7' }
     },
     sc2 => {
         sc2VoltageDesignation   => { oid => '.1.3.6.1.4.1.231.2.10.2.2.10.6.3.1.3' },
         sc2VoltageStatus        => { oid => '.1.3.6.1.4.1.231.2.10.2.2.10.6.3.1.4', map => $map_sc2_voltage_status },
-        sc2VoltageCurrentValue  => { oid => '.1.3.6.1.4.1.231.2.10.2.2.10.6.3.1.5' },
-    },
+        sc2VoltageCurrentValue  => { oid => '.1.3.6.1.4.1.231.2.10.2.2.10.6.3.1.5' }
+    }
 };
 my $oid_sc2Voltages = '.1.3.6.1.4.1.231.2.10.2.2.10.6.3.1';
 my $oid_sniScVoltages = '.1.3.6.1.4.1.231.2.10.2.2.5.11.4.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_sc2Voltages, end => $mapping->{sc2}->{sc2VoltageCurrentValue} }, { oid => $oid_sniScVoltages };
 }
 
@@ -63,7 +63,7 @@ sub check_voltage {
         next if ($oid !~ /^$options{mapping}->{$options{status}}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $options{mapping}, results => $self->{results}->{$options{entry}}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'voltage', instance => $instance));
         next if ($result->{$options{status}} =~ /not-present|not-available/i &&
                  $self->absent_problem(section => 'voltage', instance => $instance));
@@ -71,31 +71,37 @@ sub check_voltage {
 
         $result->{$options{current}} = $result->{$options{current}} / 1000 if (defined($result->{$options{current}}));
 
-        $self->{output}->output_add(long_msg => sprintf("voltage '%s' status is '%s' [instance = %s] [value = %s]",
-                                    $result->{$options{name}}, $result->{$options{status}}, $instance, $result->{$options{current}}
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "voltage '%s' status is '%s' [instance: %s] [value: %s]",
+                $result->{$options{name}}, $result->{$options{status}}, $instance, $result->{$options{current}}
+            )
+        );
 
         $exit = $self->get_severity(section => 'voltage', value => $result->{$options{status}});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' status is '%s'", $result->{$options{name}}, $result->{$options{status}}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Voltage '%s' status is '%s'", $result->{$options{name}}, $result->{$options{status}})
+            );
         }
-     
+
         next if (!defined($result->{$options{current}}));
-     
+
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{$options{current}});
-        
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' is %s V", $result->{$options{name}}, $result->{$options{current}}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Voltage '%s' is %s V", $result->{$options{name}}, $result->{$options{current}})
+            );
         }
         $self->{output}->perfdata_add(
-            label => 'voltage', unit => 'V',
             nlabel => 'hardware.voltage.volt',
+            unit => 'V',
             instances => $result->{$options{name}},
             value => $result->{$options{current}},
             warning => $warn,
-            critical => $crit,
+            critical => $crit
         );
     }
 }
@@ -103,16 +109,20 @@ sub check_voltage {
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking voltages");
-    $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
+    $self->{output}->output_add(long_msg => 'Checking voltages');
+    $self->{components}->{voltage} = { name => 'voltages', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'voltage'));
 
     if (defined($self->{results}->{$oid_sc2Voltages}) && scalar(keys %{$self->{results}->{$oid_sc2Voltages}}) > 0) {
-        check_voltage($self, entry => $oid_sc2Voltages, mapping => $mapping->{sc2}, name => 'sc2VoltageDesignation',
-            current => 'sc2VoltageCurrentValue', status => 'sc2VoltageStatus');
+        check_voltage(
+            $self, entry => $oid_sc2Voltages, mapping => $mapping->{sc2}, name => 'sc2VoltageDesignation',
+            current => 'sc2VoltageCurrentValue', status => 'sc2VoltageStatus'
+        );
     } else {
-        check_voltage($self, entry => $oid_sniScVoltages, mapping => $mapping->{sc}, name => 'sniScVoltageDesignation', 
-            current => 'sniScVoltageCurrentValue', status => 'sniScVoltageStatus');
+        check_voltage(
+            $self, entry => $oid_sniScVoltages, mapping => $mapping->{sc}, name => 'sniScVoltageDesignation', 
+            current => 'sniScVoltageCurrentValue', status => 'sniScVoltageStatus'
+        );
     }
 }
 

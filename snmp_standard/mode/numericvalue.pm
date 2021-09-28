@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,23 +31,23 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        'oid:s'                   => { name => 'oid' },
-        'oid-type:s'              => { name => 'oid_type' },
-        'counter-per-seconds'     => { name => 'counter_per_seconds' },
-        'warning:s'               => { name => 'warning' },
-        'critical:s'              => { name => 'critical' },
-        'extracted-pattern:s'     => { name => 'extracted_pattern' },
-        'format:s'                => { name => 'format' },
-        'format-custom:s'         => { name => 'format_custom' },
-        'format-scale'            => { name => 'format_scale' },
-        'format-scale-type:s'     => { name => 'format_scale_type' },
-        'perfdata-unit:s'         => { name => 'perfdata_unit' },
-        'perfdata-name:s'         => { name => 'perfdata_name' },
-        'perfdata-min:s'          => { name => 'perfdata_min' },
-        'perfdata-max:s'          => { name => 'perfdata_max' },
-        'config-json:s'           => { name => 'config_json' },
+
+    $options{options}->add_options(arguments => {
+        'oid:s'               => { name => 'oid' },
+        'oid-type:s'          => { name => 'oid_type' },
+        'counter-per-seconds' => { name => 'counter_per_seconds' },
+        'warning:s'           => { name => 'warning' },
+        'critical:s'          => { name => 'critical' },
+        'extracted-pattern:s' => { name => 'extracted_pattern' },
+        'format:s'            => { name => 'format' },
+        'format-custom:s'     => { name => 'format_custom' },
+        'format-scale'        => { name => 'format_scale' },
+        'format-scale-type:s' => { name => 'format_scale_type' },
+        'perfdata-unit:s'     => { name => 'perfdata_unit' },
+        'perfdata-name:s'     => { name => 'perfdata_name' },
+        'perfdata-min:s'      => { name => 'perfdata_min' },
+        'perfdata-max:s'      => { name => 'perfdata_max' },
+        'config-json:s'       => { name => 'config_json' }
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -57,24 +57,24 @@ sub new {
 
 sub add_data {
     my ($self, %options) = @_;
-    
-    my $entry = {};    
+
+    my $entry = {};
     return if (!defined($options{data}->{oid}) || $options{data}->{oid} eq '');
     $entry->{oid} = $options{data}->{oid};
     $entry->{oid} = '.' . $entry->{oid} if ($options{data}->{oid} !~ /^\./);
 
-    $entry->{oid_type} = defined($options{data}->{oid_type}) && $options{data}->{oid_type} ne '' ? $options{data}->{oid_type} : 'gauge';    
+    $entry->{oid_type} = defined($options{data}->{oid_type}) && $options{data}->{oid_type} ne '' ? $options{data}->{oid_type} : 'gauge';
     if ($entry->{oid_type} !~ /^gauge|counter$/i) {
         $self->{output}->add_option_msg(short_msg => "Wrong oid-type argument '" . $entry->{oid_type} . "' ('gauge' or 'counter').");
         $self->{output}->option_exit();
     }
-    
-    $entry->{format_scale_type} = defined($options{data}->{format_scale_type}) && $options{data}->{format_scale_type} ne '' ? $options{data}->{format_scale_type} : 'other';  
+
+    $entry->{format_scale_type} = defined($options{data}->{format_scale_type}) && $options{data}->{format_scale_type} ne '' ? $options{data}->{format_scale_type} : 'other';
     if ($entry->{format_scale_type} !~ /^other|network$/i) {
         $self->{output}->add_option_msg(short_msg => "Wrong format-scale-type argument '" . $entry->{format_scale_type} . "' ('other' or 'network').");
         $self->{output}->option_exit();
     }
-    
+
     if (($self->{perfdata}->threshold_validate(label => 'warning-' . $options{num}, value => $options{data}->{warning})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $options{data}->{warning} . "'.");
         $self->{output}->option_exit();
@@ -83,7 +83,7 @@ sub add_data {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $options{data}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-    
+
     foreach (['oid_type', 'gauge'], ['counter_per_seconds'], ['format', 'current value is %s'], 
              ['format_custom', ''], ['format_scale'],
              ['perfdata_unit', ''], ['perfdata_name', 'value'],
@@ -94,10 +94,10 @@ sub add_data {
             $entry->{$_->[0]} = $_->[1];
         }
     }
-    
+
     push @{$self->{entries}}, $entry;
     push @{$self->{request_oids}}, $entry->{oid};
-    
+
     if (defined($options{data}->{oid_type}) && $options{data}->{oid_type} =~ /^counter$/i)  {
         $self->{use_statefile} = 1;
     }
@@ -122,7 +122,7 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
             $self->{output}->option_exit();
         }
-        
+
         my $i = 0;
         foreach (@$content) {
             $self->add_data(data => $_, num => $i);
@@ -131,12 +131,12 @@ sub check_options {
     } else {
         $self->add_data(data => $self->{option_results}, num => 0);
     }
-    
+
     if (scalar(@{$self->{entries}}) == 0) {
         $self->{output}->add_option_msg(short_msg => "Need to specify an OID.");
-        $self->{output}->option_exit(); 
+        $self->{output}->option_exit();
     }
-    
+
     if ($self->{use_statefile} == 1) {
         $self->{statefile_cache}->check_options(%options);
     }
@@ -144,7 +144,7 @@ sub check_options {
 
 sub check_data {
     my ($self, %options) = @_;
-    
+
     if (!defined($self->{results}->{$options{entry}->{oid}})) {
         $self->{output}->output_add(
             severity => 'UNKNOWN',
@@ -166,20 +166,20 @@ sub check_data {
         );
         return ;
     }
-    
+
     if ($options{entry}->{oid_type} =~ /^counter$/i)  {
         my $old_timestamp = $self->{statefile_cache}->get(name => 'timestamp');
         my $old_value = $self->{statefile_cache}->get(name => 'value-' . $options{num});
-        
+
         $self->{cache_datas}->{timestamp} = time();
         $self->{cache_datas}->{'value-' . $options{num}} = $value;
-        
+
         if (!defined($old_timestamp)) {
             $self->{output}->output_add(severity => 'OK',
                                         short_msg => "Buffer creation...");
             return ;
         }
-        
+
         # Reboot or counter goes back
         if ($old_value > $value) {
             $old_value = 0;
@@ -191,18 +191,17 @@ sub check_data {
             $value = $value / $delta_time;
         }
     }
-    
+
     if ($options{entry}->{format_custom} ne '') {
         $value = eval "$value $options{entry}->{format_custom}";
     }
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $value, 
+
+    my $exit = $self->{perfdata}->threshold_check(value => $value,
                                                   threshold => [ { label => 'critical-' . $options{num}, exit_litteral => 'critical' }, { label => 'warning-' . $options{num}, exit_litteral => 'warning' } ]);
     if (defined($options{entry}->{format_scale})) {
-        my ($value_mod, $value_unit) = $self->{perfdata}->change_bytes(value => $value);
-        if ($options{entry}->{format_scale_type} =~ /^network$/i) {
-            ($value_mod, $value_unit) = $self->{perfdata}->change_bytes(value => $value, network => 1);
-        }
+        my $network = $options{entry}->{format_scale_type} =~ /^network$/i ? { network => 1 } : {};
+        my ($value_mod, $value_unit) = $self->{perfdata}->change_bytes(value => $value, %{$network});
+        $value_unit .= '/s' if (defined($options{entry}->{counter_per_seconds}));
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf($options{entry}->{format}, $value_mod . $value_unit));
     } else {
@@ -219,7 +218,7 @@ sub check_data {
 
 sub run {
     my ($self, %options) = @_;
-    
+
     if ($self->{use_statefile} == 1) {
         $self->{cache_datas} = {};
         $self->{statefile_cache}->read(statefile => 'snmpstandard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex(join('-', @{$self->{request_oids}})));
@@ -231,11 +230,11 @@ sub run {
         $self->check_data(entry => $_, num => $num);
         $num++;
     }
-    
+
     if ($self->{use_statefile} == 1) {
         $self->{statefile_cache}->write(data => $self->{cache_datas});
     }
-        
+
     $self->{output}->display();
     $self->{output}->exit();
 }

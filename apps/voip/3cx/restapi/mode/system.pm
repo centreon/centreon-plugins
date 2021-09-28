@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,6 +37,17 @@ sub custom_status_output {
     return $msg;
 }
 
+sub custom_calls_usage_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'active calls usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+        $self->{result_values}->{calls_max},
+        $self->{result_values}->{calls_used}, $self->{result_values}->{calls_prct_used},
+        $self->{result_values}->{calls_free}, 100 - $self->{result_values}->{calls_prct_used}
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -46,19 +57,35 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'calls-active', nlabel => 'system.calls.active.current', set => {
-                key_values => [ { name => 'calls_active' } ],
-                output_template => 'calls active: %s',
+        { label => 'calls-active-usage', nlabel => 'system.calls.active.usage.count', set => {
+                key_values => [ { name => 'calls_used' }, { name => 'calls_free' }, { name => 'calls_prct_used' }, { name => 'calls_max' } ],
+                closure_custom_output => $self->can('custom_calls_usage_output'),
                 perfdatas => [
-                    { label => 'calls_active', template => '%s', min => 0 }
+                    { template => '%d', min => 0, max => 'calls_max' }
                 ]
             }
         },
-        { label => 'extensions-registered', nlabel => 'system.extensions.registered.current', set => {
-                key_values => [ { name => 'extensions_registered' } ],
+        { label => 'calls-active-free', nlabel => 'system.calls.active.free.count', display_ok => 0, set => {
+                key_values => [ { name => 'calls_free' }, { name => 'calls_used' }, { name => 'calls_prct_used' }, { name => 'calls_max' } ],
+                closure_custom_output => $self->can('custom_calls_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'calls_max' }
+                ]
+            }
+        },
+        { label => 'calls-active-usage-prct', nlabel => 'system.calls.active.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'calls_prct_used' }, { name => 'calls_free' }, { name => 'calls_used' }, { name => 'calls_max' } ],
+                closure_custom_output => $self->can('custom_calls_usage_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 'calls_max' }
+                ]
+            }
+        },
+        { label => 'extensions-registered', nlabel => 'system.extensions.registered.count', set => {
+                key_values => [ { name => 'extensions_registered' }, { name => 'extensions_total' } ],
                 output_template => 'extensions registered: %s',
                 perfdatas => [
-                    { label => 'extensions_registered', template => '%s', min => 0 }
+                    { label => 'extensions_registered', template => '%s', min => 0, max => 'extensions_total' }
                 ]
             }
         }
@@ -87,6 +114,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-category:s' => { name => 'filter_category' }
     });
 
     return $self;
@@ -121,14 +149,27 @@ sub manage_selection {
         service => 'HasUnregisteredSystemExtensions', 
         error => $system->{HasUnregisteredSystemExtensions} ? 'true' : 'false',
     };
+    my $updates = 0;
+    foreach my $item (@$update) {
+        if (defined($self->{option_results}->{filter_category}) && $self->{option_results}->{filter_category} ne '' &&
+            $item->{Category} !~ /$self->{option_results}->{filter_category}/) {
+            $self->{output}->output_add(long_msg => "skipping update '" . $item->{Category} . "': no matching filter.", debug => 1);
+            next;
+        }
+        $updates++;
+    }
     $self->{service}->{HasUpdatesAvailable} = {
         service => 'HasUpdatesAvailable', 
-        error => scalar(@$update) ? 'true' : 'false',
+        error => $updates ? 'true' : 'false'
     };
     
     $self->{global} = {
-        calls_active => $system->{CallsActive},
+        calls_used => $system->{CallsActive},
+        calls_free => $system->{MaxSimCalls} - $system->{CallsActive},
+        calls_max => $system->{MaxSimCalls},
+        calls_prct_used => $system->{CallsActive} * 100 / $system->{MaxSimCalls},
         extensions_registered => $system->{ExtensionsRegistered},
+        extensions_total => $system->{ExtensionsTotal}
     };
 }
 
@@ -141,6 +182,10 @@ __END__
 Check system health
 
 =over 8
+
+=item B<--filter-category>
+
+Filter updates' category.
 
 =item B<--unknown-status>
 
@@ -160,7 +205,8 @@ Can used special variables like: %{error}, %{service}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'calls-active', 'extensions-registered'.
+Can be: 'calls-active-usage', 'calls-active-free', 'calls-active-usage-prct',
+'extensions-registered'.
 
 =back
 

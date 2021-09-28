@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -61,6 +61,18 @@ sub custom_active_output {
         $self->{result_values}->{sessions_active},
         $self->{result_values}->{sessions_max} != 0 ? $self->{result_values}->{sessions_max} : '-'
     );
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return "Sessions ";
+}
+
+sub prefix_vsys_output {
+    my ($self, %options) = @_;
+
+    return "Vsys '" . $options{instance_value}->{display} . "' sessions ";
 }
 
 sub set_counters {
@@ -158,25 +170,14 @@ sub set_counters {
     ];
 }
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return "Sessions ";
-}
-
-sub prefix_vsys_output {
-    my ($self, %options) = @_;
-
-    return "Vsys '" . $options{instance_value}->{display} . "' sessions ";
-}
-
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, force_new_perfdata => 1, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'add-vsys' => { name => 'add_vsys' },
+        'add-vsys'           => { name => 'add_vsys' },
+        'filter-vsys-name:s' => { name => 'filter_vsys_name' }
     });
 
     return $self;
@@ -214,6 +215,12 @@ sub add_vsys {
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(mapping => $mapping_vsys, results => $snmp_result, instance => $instance);
+        if (defined($self->{option_results}->{filter_vsys_name}) && $self->{option_results}->{filter_vsys_name} ne '' &&
+            $result->{display} !~ /$self->{option_results}->{filter_vsys_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{display} . "'.", debug => 1);
+            next;
+        }
+
         $self->{vsys}->{$result->{display}} = $result;
         $self->{vsys}->{$result->{display}}->{sessions_max} = 0 if (!defined($result->{sessions_max}));
         $self->{vsys}->{$result->{display}}->{sessions_active_prct} = $result->{sessions_active} * 100 / $self->{vsys}->{$result->{display}}->{sessions_max}
@@ -246,6 +253,14 @@ __END__
 Check sessions.
 
 =over 8
+
+=item B<--add-vsys>
+
+Monitor virtual systems.
+
+=item B<--filter-vsys-name>
+
+Filter virtual systems by name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,149 +20,175 @@
 
 package database::mssql::mode::failedjobs;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use Time::Local;
 use centreon::plugins::misc;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my %states = (
-    0 => 'failed',
-    1 => 'success',
-    2 => 'Retry',
-    3 => 'Canceled',
-    4 => 'Running',
-);
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "job '%s' status %s [runtime: %s] [duration: %s]",
+        $self->{result_values}->{name},
+        $self->{result_values}->{status},
+        $self->{result_values}->{runtime},
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{duration})
+    );
+}
+
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Jobs  ';
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'jobs', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { nlabel => 'jobs.problems.current.count', min => 0 },
+          group => [ { name => 'job', skipped_code => { -11 => 1 } } ]
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'jobs-total', nlabel => 'jobs.total.count', display_ok => 0, set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'total: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    foreach (('failed', 'success', 'canceled', 'running', 'retry')) {
+        push @{$self->{maps_counters}->{global}},
+            { label => 'jobs-' . $_, nlabel => 'jobs.' . $_ . '.count', display_ok => 0, set => {
+                    key_values => [ { name => $_ }, { name => 'total' } ],
+                    output_template => $_ . ': %s',
+                    perfdatas => [
+                        { template => '%s', min => 0, max => 'total' }
+                    ]
+                }
+            };
+    }
+
+    $self->{maps_counters}->{job} = [
+        {
+            label => 'status',
+            type => 2,
+            set => {
+                key_values => [
+                    { name => 'name' }, { name => 'status' },
+                    { name => 'runtime'}, { name => 'duration' }
+                ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter:s"                => { name => 'filter', },
-                                  "skip"                    => { name => 'skip', },
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "warning-duration:s"      => { name => 'warning_duration', },
-                                  "critical-duration:s"     => { name => 'critical_duration', },
-                                  "lookback:s"              => { name => 'lookback', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'filter:s'            => { name => 'filter' },
+        'warning:s'           => { name => 'warning', redirect => 'warning-jobs-failed-count' },  # legacy
+        'critical:s'          => { name => 'critical', redirect => 'critical-jobs-failed-count' }, # legacy
+        'lookback:s'          => { name => 'lookback' }
+    });
 
     return $self;
 }
 
-sub check_options {
+my $map_state = {
+    0 => 'failed',
+    1 => 'success',
+    2 => 'retry',
+    3 => 'canceled',
+    4 => 'running'
+};
+
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-duration', value => $self->{option_results}->{warning_duration})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning duration threshold '" . $self->{option_results}->{warning_duration} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-duration', value => $self->{option_results}->{critical_duration})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical duration threshold '" . $self->{option_results}->{critical_duration} . "'.");
-       $self->{output}->option_exit();
-    }
-}
+    $options{sql}->connect();
+    my $query = "
+        SELECT 
+            j.[name] AS [JobName], run_status, run_duration, h.run_date AS LastRunDate, h.run_time AS LastRunTime,
+            CASE
+            WHEN h.[run_date] IS NULL OR h.[run_time] IS NULL THEN NULL
+            ELSE datediff(Minute, CAST(
+                CAST(h.[run_date] AS CHAR(8))
+                + ' '
+                + STUFF(
+                    STUFF(RIGHT('000000' + CAST(h.[run_time] AS VARCHAR(6)),  6)
+                        , 3, 0, ':')
+                        , 6, 0, ':')
+                AS DATETIME), current_timestamp)
+            END AS [MinutesSinceStart]
+        FROM msdb.dbo.sysjobhistory h 
+        INNER JOIN msdb.dbo.sysjobs j ON h.job_id = j.job_id 
+        WHERE j.enabled = 1 
+        AND h.instance_id IN (SELECT MAX(h.instance_id) 
+        FROM msdb.dbo.sysjobhistory h GROUP BY (h.job_id))";
+    $options{sql}->query(query => $query);    
+    my $result = $options{sql}->fetchall_arrayref();
 
-sub run {
-    my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
+    $self->{global} = {
+        total => 0,
+        failed => 0,
+        success => 0,
+        retry => 0,
+        canceled => 0,
+        running => 0
+    };
+    $self->{jobs}->{global} = { job => {} };
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "All jobs are ok.");
-
-    $self->{sql}->connect();
-
-    my $count = 0;
-    my $count_failed = 0;
-
-    my $query = "SELECT j.[name] AS [JobName], run_status, run_duration, h.run_date AS LastRunDate, h.run_time AS LastRunTime,
-                 CASE
-                    WHEN h.[run_date] IS NULL OR h.[run_time] IS NULL THEN NULL
-                    ELSE datediff(Minute, CAST(
-                        CAST(h.[run_date] AS CHAR(8))
-                        + ' '
-                        + STUFF(
-                            STUFF(RIGHT('000000' + CAST(h.[run_time] AS VARCHAR(6)),  6)
-                                , 3, 0, ':')
-                                , 6, 0, ':')
-                        AS DATETIME), current_timestamp)
-                 END AS [MinutesSinceStart]
-                 FROM msdb.dbo.sysjobhistory h 
-                 INNER JOIN msdb.dbo.sysjobs j ON h.job_id = j.job_id 
-                 WHERE j.enabled = 1 
-                 AND h.instance_id IN (SELECT MAX(h.instance_id) 
-                 FROM msdb.dbo.sysjobhistory h GROUP BY (h.job_id))";
-    $self->{sql}->query(query => $query);
-    my $result = $self->{sql}->fetchall_arrayref();
-    my @job_failed;
     # run_date format = YYYYMMDD
     # run_time format = HHMMSS. Can be: HMMSS
     # run_duration format = HHMMSS
     foreach my $row (@$result) {
-        next if (defined($self->{option_results}->{filter}) && $$row[0] !~ /$self->{option_results}->{filter}/);
-        next if (defined($self->{option_results}->{lookback}) && $$row[5] > $self->{option_results}->{lookback});
-        $count++;
-        my $job_name = $$row[0];
-        my $run_status = $$row[1];
+        next if (defined($self->{option_results}->{filter}) && $row->[0] !~ /$self->{option_results}->{filter}/);
+        next if (defined($self->{option_results}->{lookback}) && $row->[5] > $self->{option_results}->{lookback});
+    
+        my $job_name = $row->[0];
         my $run_duration;
-        my $run_date = $$row[3];
-        my ($year,$month,$day) = $run_date =~ /(\d{4})(\d{2})(\d{2})/;
-        my $run_time = sprintf("%06d", $$row[4]);
+        my $run_date = $row->[3];
+        my ($year, $month, $day) = $run_date =~ /(\d{4})(\d{2})(\d{2})/;
+        my $run_time = sprintf('%06d', $row->[4]);
         my ($hour, $minute, $second) = $run_time =~ /(\d{2})(\d{2})(\d{2})$/;
 
-        if (defined($$row[2])) {
-            my $run_duration_padding = sprintf("%06d", $$row[2]);
+        if (defined($row->[2])) {
+            my $run_duration_padding = sprintf('%06d', $row->[2]);
             my ($hour_duration, $minute_duration, $second_duration) = $run_duration_padding =~ /(\d{2})(\d{2})(\d{2})$/;
             $run_duration = ($hour_duration * 3600 + $minute_duration * 60 + $second_duration);
         } else {
-            my $start_time = timelocal($second,$minute,$hour,$day,$month-1,$year);
+            my $start_time = timelocal($second, $minute, $hour, $day, $month - 1, $year);
             $run_duration = (time() - $start_time);
         }
 
-        if ($run_status == 0) {
-            $count_failed++;
-            push (@job_failed, $job_name);
-        } else {
-            my $exit_code1 = $self->{perfdata}->threshold_check(value => $run_duration / 60, threshold => [ { label => 'critical-duration', exit_litteral => 'critical' }, { label => 'warning-duration', exit_litteral => 'warning' } ]);
-            if (!$self->{output}->is_status(value => $exit_code1, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit_code1,
-                                            short_msg => sprintf("Job '%s' duration : %s", $job_name, centreon::plugins::misc::change_seconds(value => $run_duration)));
-            }
-        }
-        $self->{output}->output_add(long_msg => sprintf("Job '%s' status %s [Runtime : %s %s] [Duration : %s]", 
-            $job_name, $states{$run_status}, defined($year) ? $year . '-' . $month . '-' . $day : '', $hour . ':' . $minute . ':' . $second, centreon::plugins::misc::change_seconds(value => $run_duration)));
+        $self->{jobs}->{global}->{job}->{$job_name} = {
+            name => $job_name,
+            status => $map_state->{ $row->[1] },
+            duration => $run_duration,
+            runtime => (defined($year) ? $year . '-' . $month . '-' . $day : '') . $hour . ':' . $minute . ':' . $second
+        };
+
+        $self->{global}->{total}++;
+        $self->{global}->{ $map_state->{ $row->[1] } }++;
     }
-
-    my $exit_code2 = $self->{perfdata}->threshold_check(value => $count_failed, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    if(!defined($self->{option_results}->{skip}) && $count == 0) {
-        $self->{output}->output_add(severity => 'Unknown',
-                                    short_msg => "No job found.");
-    } elsif (!$self->{output}->is_status(value => $exit_code2, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit_code2,
-                                    short_msg => sprintf("%d failed job(s)", $count_failed));
-    }
-
-    $self->{output}->perfdata_add(label => 'failed_jobs',
-                                  value => $count_failed,
-                                  min => 0,
-                                  max => $count);
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -179,29 +205,24 @@ Check MSSQL failed jobs.
 
 Filter job.
 
-=item B<--skip>
-
-Skip error if no job found.
-
-=item B<--warning>
-
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
-
-=item B<--warning-duration>
-
-Threshold warning for job duration.
-
-=item B<--critical-duration>
-
-Threshold critical for job duration.
-
 =item B<--lookback>
 
 Check job history in minutes.
+
+=item B<--warning-status>
+
+Set warning threshold for status.
+Can used special variables like: %{name}, %{status}, %{duration}
+
+=item B<--critical-status>
+
+Set critical threshold for status.
+Can used special variables like: %{name}, %{status}, %{duration}
+
+=item B<--warning-*> B<--critical-*> 
+
+Thresholds.
+Can be: 'jobs-total', 'jobs-failed', 'jobs-success', 'jobs-canceled', 'jobs-running', 'jobs-retry'.
 
 =back
 

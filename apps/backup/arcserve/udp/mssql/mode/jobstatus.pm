@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_threshold {
     my ($self, %options) = @_; 
@@ -37,13 +36,13 @@ sub custom_status_threshold {
         
         # To exclude some OK
         if (defined($self->{instance_mode}->{option_results}->{ok_status}) && $self->{instance_mode}->{option_results}->{ok_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{ok_status}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{ok_status})) {
             $status = 'ok';
         } elsif (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_status}") {
+            $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
             $status = 'warning';
         }
     };
@@ -57,7 +56,8 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf('status : %s (%s) [type: %s] [remote hostname: %s] [vmname: %s] [plan name: %s] [end time: %s]',
+    return sprintf(
+        'status : %s (%s) [type: %s] [remote hostname: %s] [vmname: %s] [plan name: %s] [end time: %s]',
         $self->{result_values}->{status} == 1 ? 'ok' : 'failed',
         $self->{result_values}->{status},
         $self->{result_values}->{type},
@@ -66,7 +66,6 @@ sub custom_status_output {
         $self->{result_values}->{plan_name},
         scalar(localtime($self->{result_values}->{end_time}))
     );
-    return $msg;
 }
 
 sub set_counters {
@@ -90,13 +89,14 @@ sub set_counters {
     
     $self->{maps_counters}->{job} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, 
+                key_values => [
+                    { name => 'status' }, { name => 'display' }, 
                     { name => 'type' }, { name => 'rhostname' }, { name => 'vmname' }, { name => 'plan_name' },
-                    { name => 'elapsed_time' }, { name => 'end_time' } ],
-                closure_custom_calc => \&catalog_status_calc,
+                    { name => 'elapsed_time' }, { name => 'end_time' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => $self->can('custom_status_threshold')
             }
         },
     ];
@@ -115,7 +115,7 @@ sub new {
         'ok-status:s'          => { name => 'ok_status', default => '%{status} == 1' },
         'warning-status:s'     => { name => 'warning_status', default => '' },
         'critical-status:s'    => { name => 'critical_status', default => '%{status} != 1' },
-        'timezone:s'           => { name => 'timezone' },
+        'timezone:s'           => { name => 'timezone' }
     });
     
     return $self;
@@ -202,7 +202,7 @@ sub manage_selection {
             plan_name => $plan_name,
             end_time => $row->{end_time},
         };
-        
+
         $self->{global}->{total}++;
     }
 }

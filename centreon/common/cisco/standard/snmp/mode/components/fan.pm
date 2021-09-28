@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,7 +40,6 @@ my %map_fan_state2 = (
 
 my $oid_ciscoEnvMonFanStatusEntry = '.1.3.6.1.4.1.9.9.13.1.4.1'; # CISCO-ENVMON-MIB
 my $oid_cefcFanTrayOperStatus = '.1.3.6.1.4.1.9.9.117.1.4.1.1.1'; # CISCO-ENTITY-SENSOR-MIB
-my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 
 sub load {
     my ($self) = @_;
@@ -77,9 +76,13 @@ sub check_fan_envmon {
         );
         my $exit = $self->get_severity(section => 'fan', instance => $instance, value => $result->{ciscoEnvMonFanState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("fan '%s' status is %s",
-                                                             $result->{ciscoEnvMonFanStatusDescr}, $result->{ciscoEnvMonFanState}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "fan '%s' status is %s",
+                    $result->{ciscoEnvMonFanStatusDescr}, $result->{ciscoEnvMonFanState}
+                )
+            );
         }
     }
 }
@@ -88,28 +91,30 @@ sub check_fan_entity {
     my ($self) = @_;
     
     my $mapping = {
-        cefcFanTrayOperStatus => { oid => '.1.3.6.1.4.1.9.9.117.1.4.1.1.1', map => \%map_fan_state2 },
+        cefcFanTrayOperStatus => { oid => '.1.3.6.1.4.1.9.9.117.1.4.1.1.1', map => \%map_fan_state2 }
     };
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcFanTrayOperStatus}})) {
         $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
-        
-        my $fan_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
+
+        my $fan_descr = $self->{results}->{ $self->{physical_name} }->{ $self->{physical_name} . '.' . $instance };
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cefcFanTrayOperStatus}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'fan', instance => $instance, name => $fan_descr));
-        
+
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "Fan '%s' status is %s [instance: %s]",
+                "fan '%s' status is %s [instance: %s]",
                 $fan_descr, $result->{cefcFanTrayOperStatus}, $instance
             )
         );
         my $exit = $self->get_severity(section => 'fan', instance => $instance, value => $result->{cefcFanTrayOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s/%s' status is %s", $fan_descr, $instance, $result->{cefcFanTrayOperStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '%s/%s' status is %s", $fan_descr, $instance, $result->{cefcFanTrayOperStatus})
+            );
         }
     }
 }
@@ -118,7 +123,7 @@ sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking fans");
-    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    $self->{components}->{fan} = { name => 'fans', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
 
     check_fan_envmon($self);

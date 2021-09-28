@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -162,7 +162,7 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_as}) && $self->{option_results}->{filter_as} ne '' &&
-            $instance !~ /$self->{option_results}->{filter_as}/) {
+            $mapped_value->{bgpPeerRemoteAs} !~ /$self->{option_results}->{filter_as}/) {
             $self->{output}->output_add(
                 long_msg => "skipping AS '" . $mapped_value->{bgpPeerRemoteAs} . "': no matching filter.",
                 debug => 1

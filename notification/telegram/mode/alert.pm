@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -61,7 +61,7 @@ sub new {
         "link-url:s"            => { name => 'link_url' },
         "centreon-url:s"        => { name => 'centreon_url' },
         "centreon-token:s"      => { name => 'centreon_token' },
-        "timeout:s"             => { name => 'timeout' },
+        "timeout:s"             => { name => 'timeout' }
     });
 
     $self->{http} = centreon::plugins::http->new(%options);
@@ -87,8 +87,7 @@ sub check_options {
 
     foreach (('graph_url', 'link_url')) {
         if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{option_results}->{$1}/g;
-            eval "\$self->{option_results}->{\$_} = \"$self->{option_results}->{$_}\"";
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/$self->{option_results}->{$1}/eg;
         }
     }
 
@@ -161,9 +160,11 @@ sub format_payload {
 
     my $json = JSON::XS->new->utf8;
 
-    my $payload = { chat_id =>$self->{option_results}->{chat_id},
-                    parse_mode => 'HTML',
-                    text => $self->{message} };
+    my $payload = {
+        chat_id =>$self->{option_results}->{chat_id},
+        parse_mode => 'HTML',
+        text => $self->{message}
+    };
     eval {
         $self->{payload_str} = $json->encode($payload);
     };
@@ -184,15 +185,16 @@ sub run {
     $self->format_payload();
 
     my $url_path = '/bot' . $self->{option_results}->{bot_token} . $self->{option_results}->{url_path};
-    my $response = $self->{http}->request(url_path => $url_path,
-                                          method => 'POST', query_form_post => $self->{payload_str});
+    my $response = $self->{http}->request(
+        url_path => $url_path,
+        method => 'POST', query_form_post => $self->{payload_str}
+    );
 
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($response);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $response, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }

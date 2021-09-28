@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,9 +44,19 @@ sub set_counters {
         { name => 'edges', type => 3, cb_prefix_output => 'prefix_edge_output', cb_long_output => 'long_output',
           message_multiple => 'All edges links status are ok', indent_long_output => '    ',
             group => [
+                { name => 'global', type => 0 },
                 { name => 'links', display_long => 1, cb_prefix_output => 'prefix_link_output',
                   message_multiple => 'All links status are ok', type => 1 }
             ]
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'edge-links-count', nlabel => 'edge.links.total.count', set => {
+                key_values => [ { name => 'link_count' } ],
+                output_template => '%s link(s)',
+                perfdatas => [ { template => '%d', unit => '', min => 0 } ]
+            }
         }
     ];
 
@@ -134,6 +144,7 @@ sub manage_selection {
                 next;
             }
 
+            $self->{edges}->{$edge->{name}}->{global}->{link_count}++;
             $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
@@ -173,15 +184,13 @@ Filter link by name (Can be a regexp).
 Set unknown threshold for status (Default: '').
 Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
 
-=item B<--warning-status>
+=item B<--warning-*> B<--critical-*>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
+Warning & Critical thresholds
+Can be 'status', 'edge-links-count'.
 
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/').
-Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
+For 'status', special variables can be used: %{state}, %{vpn_state}, %{backup_state}
+(Critical threshold default: '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/').
 
 =back
 

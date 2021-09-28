@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -109,7 +109,7 @@ my $map_status = {
 my $mapping = {
     voltage      => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1.2' }, # upsOutputVoltage (Volt) 
     current      => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1.3' }, # upsOutputCurrent (dA)
-    percent_load => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1.4' } # upsOutputPercentLoad
+    percent_load => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1.4' }  # upsOutputPercentLoad
 };
 my $mapping2 = {
     status => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.1', map => $map_status } # upsOutputSource
@@ -133,10 +133,11 @@ sub manage_selection {
         next if (defined($self->{oline}->{$instance}));
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        if (defined($self->{option_results}->{ignore_zero_counters})) {
-            foreach (keys %$result) {
-                delete $result->{$_} if ($result->{$_} == 0);
-            }
+        foreach (keys %$result) {
+            delete $result->{$_} if (
+                (defined($self->{option_results}->{ignore_zero_counters}) && $result->{$_} == 0) ||
+                ($result->{$_} == -1 || $result->{$_} == 65535)
+            );
         }
         $result->{current} *= 0.1 if (defined($result->{current}));
         $result->{voltage} *= 0.1 if (defined($result->{voltage}));

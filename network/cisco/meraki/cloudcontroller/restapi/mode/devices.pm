@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -299,7 +299,10 @@ sub new {
         'filter-organization-id:s'     => { name => 'filter_organization_id' },
         'filter-tags:s'                => { name => 'filter_tags' },
         'add-switch-ports'             => { name => 'add_switch_ports' },
-        'skip-traffic-disconnect-port' => { name => 'skip_traffic_disconnect_port' }
+        'skip-traffic-disconnect-port' => { name => 'skip_traffic_disconnect_port' },
+        'skip-clients'                 => { name => 'skip_clients' },
+        'skip-performance'             => { name => 'skip_performance' },
+        'skip-connections'             => { name => 'skip_connections' }
     });
 
     return $self;
@@ -350,7 +353,7 @@ sub add_uplink {
 
     my $links = $options{custom}->get_network_device_uplink(
         serial => $options{serial},
-        network_id => $options{network_id}
+        organization_id => $options{organization_id}
     );
 
     if (defined($links)) {
@@ -382,15 +385,17 @@ sub add_uplink_loss_latency {
         $interface =~ s/\s+//g;
         next if (!defined($self->{devices}->{ $options{serial} }->{device_links}->{$interface}));
 
-        my ($latency, $loss) = (0, 0);
+        my ($latency, $loss, $count) = (0, 0, 0);
         foreach my $ts (@{$_->{timeSeries}}) {
+            next if (!defined($ts->{latencyMs}));
             $latency += $ts->{latencyMs};
             $loss += $ts->{lossPercent};
+            $count++;
         }
 
-        if (scalar(@{$_->{timeSeries}}) > 0) {
-            $latency /= scalar(@{$_->{timeSeries}});
-            $loss /= scalar(@{$_->{timeSeries}});
+        if ($count > 0) {
+            $latency /= $count;
+            $loss /= $count;
         }
 
         $self->{devices}->{ $options{serial} }->{device_links}->{$interface}->{loss_percent} = $loss;
@@ -461,10 +466,13 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
-            (!defined($_->{tags}) || $_->{tags} !~ /$self->{option_results}->{filter_tags}/)) {
-            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
-            next;
+        if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '') {
+            my $tags;
+            $tags = join(' ', @{$_->{tags}}) if (defined($_->{tags}));
+            if (!defined($tags) || $tags !~ /$self->{option_results}->{filter_tags}/) {
+                $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
+                next;
+            }
         }
         
         my $organization = $options{custom}->get_organization(network_id => $_->{networkId});
@@ -479,7 +487,7 @@ sub manage_selection {
             next;
         }
 
-        $devices->{ $_->{serial} } = $_->{model};
+        $devices->{ $_->{serial} } = { model => $_->{model}, organization_id => $organization->{id} };
     }
 
     my $device_statuses = $options{custom}->get_organization_device_statuses();
@@ -492,7 +500,7 @@ sub manage_selection {
     # MX [appliance]    |    X     |                  |      X       |    X    |            X           |
     # MR [wireless]     |    X     |         X        |              |    X    |                        |
 
-    $self->{global} = { total => 0, online => 0, offline => 0, alerting => 0 };
+    $self->{global} = { total => 0, online => 0, offline => 0, alerting => 0, offline_prct => 0, online_prct => 0 };
     $self->{devices} = {};
     foreach my $serial (keys %$devices) {
         $self->{devices}->{$serial} = {
@@ -505,7 +513,7 @@ sub manage_selection {
             device_ports => {}
         };
 
-        if ($devices->{$serial} =~ /^(?:MG|MR)/) {
+        if (!defined($self->{option_results}->{skip_connections}) && $devices->{$serial}->{model} =~ /^(?:MG|MR)/) {
             $self->add_connection_stats(
                 custom => $options{custom},
                 timespan => $timespan,
@@ -514,7 +522,7 @@ sub manage_selection {
                 network_id => $cache_devices->{$serial}->{networkId}
             );
         }
-        if ($devices->{$serial} =~ /^(?:MS|MG|MR|MX)/) {
+        if (!defined($self->{option_results}->{skip_clients}) && $devices->{$serial}->{model} =~ /^(?:MS|MG|MR|MX)/) {
             $self->add_clients(
                 custom => $options{custom},
                 timespan => $timespan,
@@ -522,12 +530,12 @@ sub manage_selection {
                 name => $cache_devices->{$serial}->{name}
             );
         }
-        if ($devices->{$serial} =~ /^(?:MV|MS|MG|MR|MX)/) {
+        if ($devices->{$serial}->{model} =~ /^(?:MV|MS|MG|MR|MX)/) {
             $self->add_uplink(
                 custom => $options{custom},
                 serial => $serial,
                 name => $cache_devices->{$serial}->{name},
-                network_id => $cache_devices->{$serial}->{networkId}
+                organization_id => $devices->{$serial}->{organization_id}
             );
         }
         if (defined($self->{option_results}->{add_switch_ports}) && $devices->{$serial} =~ /^MS/) {
@@ -537,13 +545,13 @@ sub manage_selection {
                 serial => $serial
             );
         }
-        if ($devices->{$serial} =~ /^MX/) {
+        if ($devices->{$serial}->{model} =~ /^MX/) {
             $self->add_performance(
                 custom => $options{custom},
                 serial => $serial,
                 name => $cache_devices->{$serial}->{name},
                 network_id => $cache_devices->{$serial}->{networkId}
-            );
+            ) if (!defined($self->{option_results}->{skip_performance}));
             $self->add_uplink_loss_latency(
                 custom => $options{custom},
                 timespan => $timespan,
@@ -557,12 +565,16 @@ sub manage_selection {
             if (defined($self->{global}->{ lc($device_statuses->{$serial}->{status}) }));
     }
 
+    $options{custom}->close_extra_cache();
+
     if (scalar(keys %{$self->{devices}}) <= 0) {
         $self->{output}->output_add(short_msg => 'no devices found');
     }
 
-    $self->{global}->{online_prct} = $self->{global}->{online} * 100 / $self->{global}->{total};
-    $self->{global}->{offline_prct} = $self->{global}->{offline} * 100 / $self->{global}->{total};
+    if ($self->{global}->{total} > 0) {
+        $self->{global}->{online_prct} = $self->{global}->{online} * 100 / $self->{global}->{total};
+        $self->{global}->{offline_prct} = $self->{global}->{offline} * 100 / $self->{global}->{total};
+    }
 }
 
 1;
@@ -598,6 +610,18 @@ Filter devices by tags (Can be a regexp).
 =item B<--add-switch-ports>
 
 Add switch port statuses and traffic.
+
+=item B<--skip-clients>
+
+Don't monitor clients traffic on device.
+
+=item B<--skip-performance>
+
+Don't monitor appliance perfscore.
+
+=item B<--skip-connections>
+
+Don't monitor connection stats.
 
 =item B<--skip-traffic-disconnect-port>
 

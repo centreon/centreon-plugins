@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,7 +29,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' },
     });
@@ -56,14 +56,19 @@ sub run {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $volume->{'volume-name'} !~ /$self->{option_results}->{filter_name}/);
         
-        $self->{output}->output_add(long_msg => sprintf("[name = %s][volumegroup = %s]",
-            $volume->{'volume-name'},
-            $volume->{'volume-group'},
-        ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "[name = %s][volumegroup = %s]",
+                $volume->{'volume-name'},
+                $volume->{'volume-group'}
+            )
+        );
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List volumes:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List volumes:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::buffalo::terastation::snmp::::mode::components::iscsi;
+package storage::buffalo::terastation::snmp::mode::components::iscsi;
 
 use strict;
 use warnings;
@@ -29,7 +29,7 @@ my %map_iscsi_status = (
 
 my $mapping = {
     nasISCSIName    => { oid => '.1.3.6.1.4.1.5227.27.1.9.1.2' },
-    nasISCSIStatus  => { oid => '.1.3.6.1.4.1.5227.27.1.9.1.3', map => \%map_iscsi_status },
+    nasISCSIStatus  => { oid => '.1.3.6.1.4.1.5227.27.1.9.1.3', map => \%map_iscsi_status }
 };
 my $nasISCSIEntry = '.1.3.6.1.4.1.5227.27.1.9.1';
 
@@ -54,14 +54,21 @@ sub check {
         next if ($self->check_filter(section => 'iscsi', instance => $instance, name => $result->{nasISCSIName}));
         $self->{components}->{iscsi}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("iscsi '%s' status is '%s' [instance: %s].",
-                                    $result->{nasISCSIName}, $result->{nasISCSIStatus}, $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "iscsi '%s' status is '%s' [instance: %s].",
+                $result->{nasISCSIName}, $result->{nasISCSIStatus}, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'iscsi', value => $result->{nasISCSIStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Iscsi '%s' status is '%s'",
-                                                             $result->{nasISCSIName}, $result->{nasISCSIStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Iscsi '%s' status is '%s'",
+                    $result->{nasISCSIName}, $result->{nasISCSIStatus}
+                )
+            );
         }
     }
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,14 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'ccm-usage'         => 'network::cisco::callmanager::snmp::mode::ccmusage',
         'cti-usage'         => 'network::cisco::callmanager::snmp::mode::ctiusage',
         'gateway-usage'     => 'network::cisco::callmanager::snmp::mode::gatewayusage',
         'mediadevice-usage' => 'network::cisco::callmanager::snmp::mode::mediadeviceusage',
         'phone-usage'       => 'network::cisco::callmanager::snmp::mode::phoneusage',
-        'voicemail-usage'   => 'network::cisco::callmanager::snmp::mode::voicemailusage',
-    );
+        'voicemail-usage'   => 'network::cisco::callmanager::snmp::mode::voicemailusage'
+    };
 
     return $self;
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -56,30 +56,31 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{alarm} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', 
+          type => 2,
+          warning_default => '%{severity} =~ /warning/',
+          critical_default => '%{severity} =~ /error|severe/',
+          set => {
                 key_values => [ { name => 'message' }, { name => 'severity' }, { name => 'since' }, { name => 'generation_time' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-time:s"       => { name => 'filter_time', default => '1' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /warning/' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /error|severe/' },
-                                  "memory"              => { name => 'memory' },
-                                  "timezone:s"          => { name => 'timezone' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-time:s"       => { name => 'filter_time', default => '1' },
+        "memory"              => { name => 'memory' },
+        "timezone:s"          => { name => 'timezone' }
+    });
     
     centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime',
                                            error_msg => "Cannot load module 'DateTime'.");

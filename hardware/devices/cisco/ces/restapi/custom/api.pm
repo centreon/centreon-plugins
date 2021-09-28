@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use XML::Simple;
+use XML::LibXML::Simple;
 use Digest::MD5 qw(md5_hex);
 
 sub new {
@@ -198,6 +198,7 @@ sub request_api {
 
     my $result;
     eval {
+        $SIG{__WARN__} = sub {};
         $result = XMLin($content, ForceArray => $options{ForceArray}, KeyAttr => []);
     };
     if ($@) {

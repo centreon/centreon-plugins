@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -89,8 +89,8 @@ sub custom_usage_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
-    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
-    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / ($self->{result_values}->{used} + $self->{result_values}->{free});
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
 
     return 0;
@@ -105,7 +105,7 @@ sub set_counters {
     
     $self->{maps_counters}->{disks} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'display' }, { name => 'used' }, { name => 'total' } ],
+                key_values => [ { name => 'display' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -159,11 +159,14 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_mountpoint}) && $self->{option_results}->{filter_mountpoint} ne '' &&
             $mount !~ /$self->{option_results}->{filter_mountpoint}/);
 
-        $size *= 1024;
-        if (defined($self->{option_results}->{space_reservation})) {
-            $size = int($size - ($self->{option_results}->{space_reservation} * $size / 100));
-        }
-        $self->{disks}->{$mount} = { display => $mount, fs => $fs, type => $type, total => $size, used => $used * 1024 };
+        $self->{disks}->{$mount} = {
+            display => $mount,
+            fs => $fs,
+            type => $type,
+            total => $size * 1024,
+            used => $used * 1024,
+            free => $available * 1024
+        };
     }
 
     if (scalar(keys %{$self->{disks}}) <= 0) {
@@ -214,11 +217,6 @@ Filter filesystem type (regexp can be used).
 =item B<--filter-fs>
 
 Filter filesystem (regexp can be used).
-
-=item B<--space-reservation>
-
-Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none).
 
 =back
 

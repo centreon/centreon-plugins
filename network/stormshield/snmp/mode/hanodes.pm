@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,9 +29,11 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_node_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => 'dead_nodes',
-                                  value => sprintf("%d", $self->{result_values}->{dead_nodes}),
-                                  min => 0, max => $self->{result_values}->{total_nodes});
+    $self->{output}->perfdata_add(
+        label => 'dead_nodes',
+        value => sprintf("%d", $self->{result_values}->{dead_nodes}),
+        min => 0, max => $self->{result_values}->{total_nodes}
+    );
 }
 
 sub custom_node_threshold {
@@ -64,8 +66,7 @@ sub custom_node_calc {
 sub custom_state_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("state is '%s' [role: %s]", $self->{result_values}->{state}, $self->{result_values}->{role});
-    return $msg;
+    return sprintf("state is '%s' [role: %s]", $self->{result_values}->{state}, $self->{result_values}->{role});
 }
 
 sub custom_state_calc {
@@ -77,12 +78,18 @@ sub custom_state_calc {
     return 0;
 }
 
+sub prefix_node_output {
+    my ($self, %options) = @_;
+
+    return "Node '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All HA nodes are OK' },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All HA nodes are OK' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -91,35 +98,30 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_node_calc'),
                 closure_custom_output => $self->can('custom_node_output'),
                 closure_custom_threshold_check => $self->can('custom_node_threshold'),
-                closure_custom_perfdata => $self->can('custom_node_perfdata'),
+                closure_custom_perfdata => $self->can('custom_node_perfdata')
             }
         }
     ];
+
     $self->{maps_counters}->{nodes} = [
         { label => 'state', threshold => 0,  set => {
                 key_values => [ { name => 'ntqOnline' }, { name => 'ntqHALicence' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'health', set => {
                 key_values => [ { name => 'ntqHAQuality' }, { name => 'display' } ],
                 output_template => 'health: %s%%',
                 perfdatas => [
-                    { label => 'health', value => 'ntqHAQuality', template => '%d', min => 0, max => 100,
-                       unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'health', template => '%d', min => 0, max => 100,
+                       unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         }
     ];
-}
-
-sub prefix_node_output {
-    my ($self, %options) = @_;
-
-    return "Node '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -127,13 +129,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-node:s"         => { name => 'filter_node' },
-                                "percent"               => { name => 'percent' },
-                                "warning-state:s"       => { name => 'warning_state', default => '' },
-                                "critical-state:s"      => { name => 'critical_state', default => '%{state} =~ /offline/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-node:s'         => { name => 'filter_node' },
+        'percent'               => { name => 'percent' },
+        'warning-state:s'       => { name => 'warning_state', default => '' },
+        'critical-state:s'      => { name => 'critical_state', default => '%{state} =~ /offline/i' }
+    });
+
     return $self;
 }
 
@@ -163,12 +165,13 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_ntqNbNode, $oid_ntqNbDeadNode ], nothing_quit => 1);
-    
-    my $prct_dead = $snmp_result->{$oid_ntqNbDeadNode} * 100 / $snmp_result->{$oid_ntqNbNode};
 
-    $self->{global} = { dead_nodes => $snmp_result->{$oid_ntqNbDeadNode},
-                        total_nodes => $snmp_result->{$oid_ntqNbNode},
-                        prct_dead => $prct_dead };
+    my $prct_dead = $snmp_result->{$oid_ntqNbDeadNode} * 100 / $snmp_result->{$oid_ntqNbNode};
+    $self->{global} = {
+        dead_nodes => $snmp_result->{$oid_ntqNbDeadNode},
+        total_nodes => $snmp_result->{$oid_ntqNbNode},
+        prct_dead => $prct_dead
+    };
 
     $snmp_result = $options{snmp}->get_table(oid => $oid_ntqFwSerial, nothing_quit => 1);
     $self->{nodes} = {};
@@ -196,7 +199,7 @@ sub manage_selection {
 
     foreach (keys %{$self->{nodes}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
-        
+
         foreach my $name (keys %$mapping) {
             $self->{nodes}->{$_}->{$name} = $result->{$name};
         }

@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -63,8 +63,11 @@ sub manage_selection {
     foreach (keys %$devices) {
         next if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
             $devices->{$_}->{networkId} !~ /$self->{option_results}->{filter_network_id}/);
-        next if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
-            (!defined($devices->{$_}->{tags}) || $devices->{$_}->{tags} !~ /$self->{option_results}->{filter_tags}/));
+        if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '') {
+            my $tags;
+            $tags = join(' ', @{$devices->{$_}->{tags}}) if (defined($devices->{$_}->{tags}));
+            next if (!defined($tags) || $tags !~ /$self->{option_results}->{filter_tags}/);
+        }
         next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
             $networks->{ $devices->{$_}->{networkId} }->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
 

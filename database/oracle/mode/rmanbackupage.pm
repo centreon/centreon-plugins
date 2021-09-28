@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -78,32 +78,35 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
 
-    $self->{sql}->connect();
+    $options{sql}->connect();
     my $query;
     if (defined($self->{option_results}->{incremental_level})) {
-        $query = q{SELECT v$rman_status.object_type,
-                    ((max(v$rman_status.start_time) - date '1970-01-01')*24*60*60) as last_time,
-                    SUM(v$backup_set_details.incremental_level)
-                    FROM v$rman_status LEFT JOIN v$backup_set_details ON v$rman_status.session_recid = v$backup_set_details.session_recid
-                    WHERE operation='BACKUP'
-                    GROUP BY object_type, v$backup_set_details.session_recid ORDER BY last_time DESC
+        $query = q{
+            SELECT v$rman_status.object_type,
+                ((max(v$rman_status.start_time) - date '1970-01-01')*24*60*60) as last_time,
+                SUM(v$backup_set_details.incremental_level)
+            FROM v$rman_status LEFT JOIN v$backup_set_details ON v$rman_status.session_recid = v$backup_set_details.session_recid
+            WHERE operation='BACKUP'
+            GROUP BY object_type, v$backup_set_details.session_recid ORDER BY last_time DESC
         };
     } else {
-        $query = q{SELECT object_type,
-                    ((max(start_time) - date '1970-01-01')*24*60*60) as last_time
-                    FROM v$rman_status
-                    WHERE operation='BACKUP'
-                    GROUP BY object_type};
+        $query = q{
+            SELECT object_type,
+                ((max(start_time) - date '1970-01-01')*24*60*60) as last_time
+            FROM v$rman_status
+            WHERE operation='BACKUP'
+            GROUP BY object_type
+        };
     }
-    $self->{sql}->query(query => $query);
-    my $result = $self->{sql}->fetchall_arrayref();
-    $self->{sql}->disconnect();
+    $options{sql}->query(query => $query);
+    my $result = $options{sql}->fetchall_arrayref();
+    $options{sql}->disconnect();
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("Rman backup age are ok."));
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("Rman backup age are ok.")
+    );
 
     my $count_backups = 0;
     my $already_checked = {};
@@ -133,6 +136,7 @@ sub run {
             my ($type, $last_time) = @$row;
             next if (defined($self->{option_results}->{filter_type}) && $type !~ /$self->{option_results}->{filter_type}/);
 
+            $last_time =~ s/,/./g;
             my @values = localtime($last_time);
             my $dt = DateTime->new(
                 year       => $values[5] + 1900,

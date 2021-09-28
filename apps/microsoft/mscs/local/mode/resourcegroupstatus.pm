@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,82 +25,35 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Win32::OLE;
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'rg', type => 1, cb_prefix_output => 'prefix_rg_output', message_multiple => 'All resource groups are ok' }
-    ];
-    
-    $self->{maps_counters}->{rg} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'display' }, { name => 'owner_node' }, { name => 'preferred_owners' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
-            }
-        },
-    ];
-}
-
-my $instance_current;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub is_preferred_node {
-    if (!defined($instance_current->{result_values}->{preferred_owners}) ||
-        scalar(@{$instance_current->{result_values}->{preferred_owners}}) == 0) {
+    my (%options) = @_;
+
+    if (!defined($options{preferred_owners}) ||
+        scalar(@{$options{preferred_owners}}) == 0) {
         return 1;
     }
-    
-    foreach my $pref_node (@{$instance_current->{result_values}->{preferred_owners}}) {
-        if ($pref_node eq $instance_current->{result_values}->{owner_node}) {
+
+    foreach my $pref_node (@{$options{preferred_owners}}) {
+        if ($pref_node eq $options{owner_node}) {
             return 1;
         }
     }
-    
+
     return 0;
-}
-
-sub custom_threshold_output {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    $instance_current = $self;
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{warning_status}") {
-            $status = 'warning';
-        } elsif (defined($self->{instance_mode}->{option_results}->{unknown_status}) && $self->{instance_mode}->{option_results}->{unknown_status} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{unknown_status}") {
-            $status = 'unknown';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
     my $pref_nodes = 'any';
-    if (defined($instance_current->{result_values}->{preferred_owners}) &&
-        scalar(@{$instance_current->{result_values}->{preferred_owners}}) > 0) {
-        $pref_nodes = join(', ', @{$instance_current->{result_values}->{preferred_owners}});
+    if (defined($self->{result_values}->{preferred_owners}) &&
+        scalar(@{$self->{result_values}->{preferred_owners}}) > 0) {
+        $pref_nodes = join(', ', @{$self->{result_values}->{preferred_owners}});
     }
 
-    my $msg = 'state : ' . $self->{result_values}->{state} . ' [node: ' . $self->{result_values}->{owner_node}  . '] [preferred nodes: ' . $pref_nodes . ']';
-    return $msg;
+    return 'state: ' . $self->{result_values}->{state} . ' [node: ' . $self->{result_values}->{owner_node}  . '] [preferred nodes: ' . $pref_nodes . ']';
 }
 
 sub custom_status_calc {
@@ -110,27 +63,51 @@ sub custom_status_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{owner_node} = $options{new_datas}->{$self->{instance} . '_owner_node'};
     $self->{result_values}->{preferred_owners} = $options{new_datas}->{$self->{instance} . '_preferred_owners'};
+    $self->{result_values}->{is_preferred_node} = is_preferred_node(
+        preferred_owners => $self->{result_values}->{preferred_owners},
+        owner_node => $self->{result_values}->{owner_node}
+    );
     return 0;
 }
 
 sub prefix_rg_output {
     my ($self, %options) = @_;
-    
+
     return "Resource group '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'rg', type => 1, cb_prefix_output => 'prefix_rg_output', message_multiple => 'All resource groups are ok' }
+    ];
+    
+    $self->{maps_counters}->{rg} = [
+        {
+            label => 'status', type => 2,
+            unknown_default => '%{state} =~ /unknown/',
+            warning_default => '%{is_preferred_node} == 0',
+            critical_default => '%{state} =~ /failed|offline/',
+            set => {
+                key_values => [ { name => 'state' }, { name => 'display' }, { name => 'owner_node' }, { name => 'preferred_owners' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-name:s"           => { name => 'filter_name' },
-                                "unknown-status:s"        => { name => 'unknown_status', default => '%{state} =~ /unknown/' },
-                                "warning-status:s"        => { name => 'warning_status', default => 'not is_preferred_node()' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{state} =~ /failed|offline/' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
 
     return $self;
 }
@@ -138,8 +115,13 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
+
+    # compatibility
+    foreach (('unknown_status', 'warning_status', 'critical_status')) {
+        if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
+            $self->{option_results}->{$_} =~ s/is_preferred_node\(\)/\$values->{is_preferred_node}/g;
+        }
+    }
 }
 
 my %map_state = (
@@ -148,7 +130,7 @@ my %map_state = (
     1 => 'offline',
     2 => 'failed',
     3 => 'partial online',
-    4 => 'pending',
+    4 => 'pending'
 );
 
 sub manage_selection {
@@ -160,13 +142,11 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "Cant create server object:" . Win32::OLE->LastError());
         $self->{output}->option_exit();
     }
-    
-    my $query = "Select * from MSCluster_ResourceGroupToPreferredNode";
+
+    my $query = 'Select * from MSCluster_ResourceGroupToPreferredNode';
     my $resultset = $wmi->ExecQuery($query);
     my $preferred_nodes = {};
     foreach my $obj (in $resultset) {
-        use Data::Dumper;
-        
         # MSCluster_ResourceGroup.Name="xxx"
         if ($obj->GroupComponent =~ /MSCluster_ResourceGroup.Name="(.*?)"/i) {
             my $rg = $1;
@@ -176,9 +156,9 @@ sub manage_selection {
             push @{$preferred_nodes->{$rg}}, $node;
         }
     }
-    
+
     $self->{rg} = {};
-    $query = "Select * from MSCluster_ResourceGroup";
+    $query = 'Select * from MSCluster_ResourceGroup';
     $resultset = $wmi->ExecQuery($query);
     foreach my $obj (in $resultset) {
         my $name = $obj->{Name};
@@ -191,9 +171,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
             next;
         }
-    
-        $self->{rg}->{$id} = { display => $name, state => $state, owner_node => $owner_node,
-                               preferred_owners => defined($preferred_nodes->{$name}) ? $preferred_nodes->{$name} : [] };
+
+        $self->{rg}->{$id} = {
+            display => $name, state => $state, owner_node => $owner_node,
+            preferred_owners => defined($preferred_nodes->{$name}) ? $preferred_nodes->{$name} : []
+        };
     }
 }
 
@@ -218,7 +200,7 @@ Can used special variables like: %{state}, %{display}, %{owner_node}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: 'not is_preferred_node()').
+Set warning threshold for status (Default: '%{is_preferred_node} == 0').
 Can used special variables like: %{state}, %{display}, %{owner_node}
 
 =item B<--critical-status>

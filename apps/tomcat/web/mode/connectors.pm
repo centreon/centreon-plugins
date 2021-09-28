@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -76,8 +76,8 @@ sub set_counters {
                 output_template => 'Threads Current : %s',
                 perfdatas => [
                     { label => 'threads_current', template => '%.2f', min => 0, max => 'maxThreads',
-                      label_extra_instance => 1 },
-                ],
+                      label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'threads-busy', nlabel => 'connector.threads.busy.count', set => {
@@ -85,8 +85,8 @@ sub set_counters {
                 output_template => 'Threads Busy : %s',
                 perfdatas => [
                     { label => 'threads_busy', template => '%.2f', min => 0, max => 'maxThreads',
-                      label_extra_instance => 1 },
-                ],
+                      label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'traffic-in', nlabel => 'connector.traffic.in.bitspersecond', set => {
@@ -96,8 +96,8 @@ sub set_counters {
                 threshold_use => 'traffic',
                 perfdatas => [
                     { label => 'traffic_in', value => 'traffic', template => '%.2f', min => 0, max => 'speed',
-                      unit => 'b/s', label_extra_instance => 1 },
-                ],
+                      unit => 'b/s', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'traffic-in-prct', display_ok => 0, nlabel => 'connector.traffic.in.percent', set => {
@@ -118,8 +118,8 @@ sub set_counters {
                 threshold_use => 'traffic',
                 perfdatas => [
                     { label => 'traffic_out', value => 'traffic', template => '%.2f', min => 0, max => 'speed',
-                      unit => 'b/s', label_extra_instance => 1 },
-                ],
+                      unit => 'b/s', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'traffic-out-prct', display_ok => 0, nlabel => 'connector.traffic.out.percent', set => {
@@ -129,8 +129,8 @@ sub set_counters {
                 output_use => 'traffic_prct', threshold_use => 'traffic_prct',
                 perfdatas => [
                     { label => 'traffic_out_prct', value => 'traffic_prct', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1 },
-                ],
+                      unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'requests-processingtime-total', nlabel => 'connector.requests.processingtime.total.milliseconds', set => {
@@ -138,8 +138,8 @@ sub set_counters {
                 output_template => 'Requests Total Processing Time : %s ms',
                 perfdatas => [
                     { label => 'requests_processingtime_total', template => '%s', min => 0,
-                      unit => 'ms', label_extra_instance => 1 },
-                ],
+                      unit => 'ms', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'requests-errors', nlabel => 'connector.requests.errors.count', set => {
@@ -147,8 +147,8 @@ sub set_counters {
                 output_template => 'Requests Errors : %s',
                 perfdatas => [
                     { label => 'requests_errors', template => '%s', min => 0,
-                      label_extra_instance => 1 },
-                ],
+                      label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'requests-total', nlabel => 'connector.requests.total.count', set => {
@@ -156,10 +156,10 @@ sub set_counters {
                 output_template => 'Requests Total : %s',
                 perfdatas => [
                     { label => 'requests_total', template => '%s', min => 0,
-                      label_extra_instance => 1 },
-                ],
+                      label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 

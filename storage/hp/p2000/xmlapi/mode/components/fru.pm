@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,7 +29,7 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking frus");
     $self->{components}->{fru} = {name => 'frus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fru'));
-    
+
     my ($entries) = $self->{custom}->get_infos(
         cmd => 'show frus', 
         base_type => 'enclosure-fru',
@@ -44,14 +44,13 @@ sub check {
         if (defined($results->{$name})) {
             $duplicated->{$name} = 1;
             my $instance = $results->{$name}->{'fru-location'} . ':' . $results->{$name}->{oid};
-            $results->{$instance} = $results->{$name};
-            delete $results->{$name};
+            $results->{$instance} = delete $results->{$name};
             $name = $_->{'fru-location'} . ':' . $_->{oid};
         }
         $results->{$name} = $_;
     }
 
-    foreach my $instance (keys %$results) {    
+    foreach my $instance (sort keys %$results) {    
         next if ($self->check_filter(section => 'fru', instance => $instance));
         $self->{components}->{fru}->{total}++;
         

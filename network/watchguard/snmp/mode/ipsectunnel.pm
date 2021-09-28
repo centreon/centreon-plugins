@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -77,7 +77,7 @@ sub custom_traffic_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'tunnel', type => 1, cb_prefix_output => 'prefix_tunnel_output', message_multiple => 'All tunnels are ok', skipped_code => { -10 => 1 } }
@@ -196,8 +196,8 @@ sub manage_selection {
         my @instances = keys %{$self->{tunnel}};
         foreach (@instances) {
             my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
-            $result->{traffic_in} = $result->{traffic_in} * 1024 * 8;
-            $result->{traffic_out} = $result->{traffic_out} * 1024 * 8;
+            $result->{traffic_in} = defined($result->{traffic_in}) ? $result->{traffic_in} * 1024 * 8 : 0;
+            $result->{traffic_out} = defined($result->{traffic_out}) ? $result->{traffic_out} * 1024 * 8 : 0;
 
             my $uuid = $self->{tunnel}->{$_}->{display} . '_' . $result->{selector_local_ip_one} . '_' . $result->{selector_local_ip_two} . '_' .
                 $result->{selector_remote_ip_one} . '_' . $result->{selector_remote_ip_two};

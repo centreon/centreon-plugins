@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -57,7 +57,7 @@ sub custom_dailydb_status_output {
 
     return sprintf(
         "daily.cvd version '%s/%s', last update %s",
-        $self->{result_values}->{current_dailydb_version};
+        $self->{result_values}->{current_dailydb_version},
         $self->{result_values}->{last_dailydb_version},
         centreon::plugins::misc::change_seconds(
             value => $self->{result_values}->{current_dailydb_timediff}

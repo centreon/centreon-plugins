@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,13 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-            'cpuload'       => 'apps::apache::serverstatus::mode::cpuload',
-            'responsetime'  => 'apps::apache::serverstatus::mode::responsetime',
-            'requests'      => 'apps::apache::serverstatus::mode::requests',
-            'slotstates'	=> 'apps::apache::serverstatus::mode::slotstates',
-            'workers'       => 'apps::apache::serverstatus::mode::workers',
-    );
+    $self->{modes} = {
+        'cpuload'      => 'apps::apache::serverstatus::mode::cpuload',
+        'responsetime' => 'apps::apache::serverstatus::mode::responsetime',
+        'requests'     => 'apps::apache::serverstatus::mode::requests',
+        'slotstates'   => 'apps::apache::serverstatus::mode::slotstates',
+        'workers'      => 'apps::apache::serverstatus::mode::workers'
+    };
 
     return $self;
 }

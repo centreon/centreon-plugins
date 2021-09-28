@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -92,7 +92,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'too-many-threats', nlabel => 'protection.hosts.2manythreats.count', set => {
+        { label => 'too-many-threats', nlabel => 'protection.hosts.toomanythreats.count', set => {
                 key_values => [ { name => 'hostsTooManyThreats' } ],
                 output_template => '%d host(s) with too many threats',
                 perfdatas => [
