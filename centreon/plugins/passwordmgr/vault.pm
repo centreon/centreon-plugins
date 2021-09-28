@@ -303,11 +303,11 @@ More information here: https://www.vaultproject.io/api-docs/secret/kv
 
 Overload Plugin option with K/V values.
 Use the following syntax:
-key_$secret_path$=%{$the_option_to_overload$} or
-value_$secret_path$=%{$the_option_to_overload$}
+the_option_to_overload='%{key_$secret_path$}' or
+the_option_to_overload='%{value_$secret_path$}'
 Example:
---map-option="key_mysecrets/servicecredentials=%{username}"
---map-option="value_mysecrets/servicecredentials=%{password}"
+--map-option='username=%{key_mysecrets/servicecredentials}'
+--map-option='password=%{value_mysecrets/servicecredentials}'
 
 =back
 
