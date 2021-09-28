@@ -48,15 +48,10 @@ if ($registered -eq 0) {
     if (@(Get-Module | Where-Object {$_.Name -Match "Veeam.Backup.PowerShell"} ).count -eq 0) {
         Try {
             Import-Module -DisableNameChecking -Name "Veeam.Backup.PowerShell"
-            $registered=1
         } Catch {
             Write-Host $Error[0].Exception
             exit 1
         }
-    }
-    if ($registered -eq 0) {
-        Write-Host "Snap-In/Module Veeam no present or not registered"
-        exit 1
     }
 }
 ';
