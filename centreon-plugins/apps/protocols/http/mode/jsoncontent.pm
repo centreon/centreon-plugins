@@ -232,7 +232,7 @@ sub lookup {
     my $count = 0;
     foreach my $value (@{$self->{values}}) {
         $count++;
-        if ($value =~ /^(?:[0-9.]+|([0-9.]*)e([-+]?)(\d*))$/) {
+        if ($value =~ /^(?:[0-9]+(?:\.[0-9]+)?|([0-9.]*)e([-+]?)(\d*))$/) {
             my $value_expand = centreon::plugins::misc::expand_exponential(value => $value);
             if ($self->{option_results}->{threshold_value} eq 'values') {
                 my $exit = lc(
