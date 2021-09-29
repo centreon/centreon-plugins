@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::grafana::restapi::mode::health;
+package apps::grafana::api::mode::health;
 
 use base qw(centreon::plugins::templates::counter);
 

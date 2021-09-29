@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::grafana::restapi::plugin;
+package apps::grafana::api::plugin;
 
 use strict;
 use warnings;
@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'health' => 'apps::grafana::restapi::mode::health'
+        'health' => 'apps::grafana::api::mode::health'
     };
 
-    $self->{custom_modes}->{api} = 'apps::grafana::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::grafana::api::custom::api';
     return $self;
 }
 
@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Grafana with Rest API.
+Check Grafana with API.
 
 =cut
