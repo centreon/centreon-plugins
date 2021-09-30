@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::integration::eventgrid::mode::health;
+package cloud::azure::management::automation::mode::health;
 
 use base qw(cloud::azure::management::monitor::mode::health);
 
