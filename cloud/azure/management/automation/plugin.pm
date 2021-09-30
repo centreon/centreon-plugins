@@ -32,7 +32,6 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         'jobs'      => 'cloud::azure::management::automation::mode::jobs',
-        'health'    => 'cloud::azure::management::automation::mode::health',
         'discovery' => 'cloud::azure::management::automation::mode::discovery'
     };
 
