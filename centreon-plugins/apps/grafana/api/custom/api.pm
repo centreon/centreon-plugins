@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::grafana::restapi::custom::api;
+package apps::grafana::api::custom::api;
 
 use base qw(centreon::plugins::mode);
 
