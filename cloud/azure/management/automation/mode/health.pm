@@ -29,8 +29,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{az_resource_namespace} = 'Microsoft.EventGrid';
-    $self->{az_resource_type} = 'namespaces';
+    $self->{az_resource_namespace} = 'Microsoft.Automation';
+    $self->{az_resource_type} = 'automationAccounts';
 }
 
 1;
