@@ -25,14 +25,15 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("status: %s",
-        $self->{result_values}->{status});
-    return $msg;
+    return sprintf(
+        "status: %s",
+        $self->{result_values}->{status}
+    );
 }
 
 sub custom_status_calc {
@@ -46,42 +47,6 @@ sub custom_status_calc {
     }
 
     return 0;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'nsrp', type => 3, cb_prefix_output => 'prefix_nsrp_output', cb_long_output => 'nsrp_long_output', indent_long_output => '    ', message_multiple => 'All nsrp groups are ok', 
-            group => [
-                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'member', cb_prefix_output => 'prefix_member_output', message_multiple => 'All members are ok', type => 1, skipped_code => { -10 => 1 } },
-            ]
-        }
-    ];
-    
-    $self->{maps_counters}->{global} = [
-        { label => 'group-transition-change', nlabel => 'nsrp.group.transition.change.count', set => {
-                key_values => [ { name => 'nsrpVsdGroupCntStateChange', diff => 1 } ],
-                output_template => 'number of state transition events: %s',
-                perfdatas => [
-                    { value => 'nsrpVsdGroupCntStateChange', template => '%s',
-                      min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-    ];
-    
-    $self->{maps_counters}->{member} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-    ];
 }
 
 sub prefix_nsrp_output {
@@ -102,82 +67,109 @@ sub prefix_member_output {
     return "member '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'nsrp', type => 3, cb_prefix_output => 'prefix_nsrp_output', cb_long_output => 'nsrp_long_output', indent_long_output => '    ', message_multiple => 'All nsrp groups are ok', 
+            group => [
+                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'member', cb_prefix_output => 'prefix_member_output', message_multiple => 'All members are ok', type => 1, skipped_code => { -10 => 1 } }
+            ]
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'group-transition-change', nlabel => 'nsrp.group.transition.change.count', set => {
+                key_values => [ { name => 'cnt_state_change', diff => 1 } ],
+                output_template => 'number of state transition events: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{member} = [
+        {
+            label => 'status',
+            type => 2,
+            unknown_default => '%{status} =~ /undefined/i',
+            critical_default => '%{status} =~ /ineligible|inoperable/i',
+            set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        'unknown-status:s'      => { name => 'unknown_status', default => '%{status} =~ /undefined/i' },
-        'warning-status:s'      => { name => 'warning_status', default => '' },
-        'critical-status:s'     => { name => 'critical_status', default => '%{status} =~ /ineligible|inoperable/i' },
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
-}
-
-my %map_status = (
+my $map_status = {
     0 => 'undefined',
     1 => 'init',
     2 => 'master',
     3 => 'primary-backup',
     4 => 'backup',
     5 => 'ineligible',
-    6 => 'inoperable',
-);
+    6 => 'inoperable'
+};
 
 my $mapping = {
-    nsrpVsdMemberStatus => { oid => '.1.3.6.1.4.1.3224.6.2.2.1.3', map => \%map_status },
+    group_id  => { oid => '.1.3.6.1.4.1.3224.6.2.2.1.1' }, # nsrpVsdMemberGroupId
+    member_id => { oid => '.1.3.6.1.4.1.3224.6.2.2.1.2' }, # nsrpVsdMemberUnitId
+    member_status => { oid => '.1.3.6.1.4.1.3224.6.2.2.1.3', map => $map_status } # nsrpVsdMemberStatus
 };
 my $mapping2 = {
-    nsrpVsdGroupCntStateChange  => { oid => '.1.3.6.1.4.1.3224.6.2.1.1.6' },
-    nsrpVsdGroupCntToInit       => { oid => '.1.3.6.1.4.1.3224.6.2.1.1.7' },
-    nsrpVsdGroupCntToMaster     => { oid => '.1.3.6.1.4.1.3224.6.2.1.1.8' },
+    cnt_state_change  => { oid => '.1.3.6.1.4.1.3224.6.2.1.1.6' } # nsrpVsdGroupCntStateChange
 };
-my $oid_nsrpVsdGroupEntry = '.1.3.6.1.4.1.3224.6.2.1.1';
+my $oid_member_entry = '.1.3.6.1.4.1.3224.6.2.2.1'; # nsrpVsdMemberEntry
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{nsrp} = {};
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $mapping->{nsrpVsdMemberStatus}->{oid} },
-            { oid => $oid_nsrpVsdGroupEntry, start => $mapping2->{nsrpVsdGroupCntStateChange}->{oid}, end => $mapping2->{nsrpVsdGroupCntToMaster}->{oid} },
+            { oid => $mapping2->{cnt_state_change}->{oid} },
+            { oid => $oid_member_entry, end => $mapping->{member_status}->{oid} }
         ],
         nothing_quit => 1
     );
 
-    foreach my $oid (keys %{$snmp_result->{ $mapping->{nsrpVsdMemberStatus}->{oid} }}) {
-        $oid =~ /^$mapping->{nsrpVsdMemberStatus}->{oid}\.(\d+)\.(\d+)$/;
-        my ($group_id, $member_id) = ($1, $2);
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{ $mapping->{nsrpVsdMemberStatus}->{oid} }, instance => $group_id . '.' . $member_id);
-        
-        if (!defined($self->{nsrp}->{$group_id})) {
-            my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{$oid_nsrpVsdGroupEntry}, instance => $group_id);
-            $self->{nsrp}->{$group_id} = {
-                display => $group_id, 
-                global => {
-                    %$result2
-                },
+    $self->{nsrp} = {};
+    foreach my $oid (keys %{$snmp_result->{$oid_member_entry}}) {
+        next if ($oid !~ /^$mapping->{member_status}->{oid}\.(.*?)$/);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_member_entry}, instance => $1);
+
+        if (!defined($self->{nsrp}->{ $result->{group_id} })) {
+            my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{ $mapping2->{cnt_state_change}->{oid} }, instance => $result->{group_id});
+            $self->{nsrp}->{ $result->{group_id} } = {
+                display => $result->{group_id}, 
+                global => $result2,
                 member => {},
             };
         }
 
-        $self->{nsrp}->{$group_id}->{member}->{$member_id} = {
-            display => $member_id, 
-            status => $result->{nsrpVsdMemberStatus},
+        $self->{nsrp}->{ $result->{group_id} }->{member}->{ $result->{member_id} } = {
+            display => $result->{member_id},
+            status => $result->{member_status}
         };
     }
 
-    $self->{cache_name} = "juniper_screenos_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+    $self->{cache_name} = 'juniper_screenos_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
@@ -193,12 +185,12 @@ Check nsrp groups.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /undefined/i').
+Set unknown threshold for status (Default: '%{status} =~ /undefined/i').
 Can used special variables like: %{status}, %{statusLast}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Set warning threshold for status.
 Can used special variables like: %{status}, %{statusLast}
 
 =item B<--critical-status>
