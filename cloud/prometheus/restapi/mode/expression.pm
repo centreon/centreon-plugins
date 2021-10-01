@@ -231,12 +231,12 @@ Set the instance label on which the results should be calculate for (Example: --
 
 =item B<--output>
 
-Set the output for each instances (Example: --output='Container %{instance} value is {label}').
+Set the output for each instances (Example: --output='Container %{instance} value is %{label}').
 
 =item B<--multiple-output>
 
 Set the global output in case everything is fine for multiple instances
-(Example: --multiple-output='Container %{instance} value is {label}').
+(Example: --multiple-output='Containers are OK').
 
 =item B<--warning-status>
 
