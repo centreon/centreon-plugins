@@ -408,7 +408,7 @@ sub azure_list_resources {
     if (defined($initial_response->{nextLink})) {
         my $nextlink_url = $initial_response->{nextLink};
         while (1) {
-            my $page_content = $self->request_api(method => 'GET', full_url => $nextlink_url, hostname => '', no_token => 1);
+            my $page_content = $self->request_api(method => 'GET', full_url => $nextlink_url, hostname => '');
             foreach (@{$page_content->{value}}) {
                 push @$full_response, $_;
             }
