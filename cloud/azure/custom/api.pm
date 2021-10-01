@@ -210,12 +210,12 @@ sub request_api {
 
     $self->settings();
 
-    my $content = $self->{http}->request(%options);    
+    my $content = $self->{http}->request(%options);
     if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
         $self->{output}->add_option_msg(short_msg => "Management endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
-    
+
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
@@ -388,20 +388,35 @@ sub azure_list_resources_set_url {
 
     my $uri = URI::Encode->new({encode_reserved => 1});
     my $encoded_filter = $uri->encode($filter);
-    
+
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resources?api-version=" . $self->{api_version};
     $url .= "&\$filter=" . $encoded_filter if (defined($encoded_filter) && $encoded_filter ne '');
 
-    return $url; 
+    return $url;
 }
 
 sub azure_list_resources {
     my ($self, %options) = @_;
 
+    my $full_response;
     my $full_url = $self->azure_list_resources_set_url(%options);
-    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+    my $initial_response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+    foreach (@{$initial_response->{value}}) {
+        push @$full_response, $_;
+    }
 
-    return $response->{value};
+    if (defined($initial_response->{nextLink})) {
+        my $nextlink_url = $initial_response->{nextLink};
+        while (1) {
+            my $page_content = $self->request_api(method => 'GET', full_url => $nextlink_url, hostname => '', no_token => 1);
+            foreach (@{$page_content->{value}}) {
+                push @$full_response, $_;
+            }
+            last if (!defined($page_content->{nextLink}));
+            $nextlink_url = $page_content->{nextLink};
+        }
+    }
+    return $full_response;
 }
 
 sub azure_list_vms_set_url {
@@ -410,8 +425,8 @@ sub azure_list_vms_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Compute/virtualMachines?api-version=" . $self->{api_version};
-        
-    return $url; 
+
+    return $url;
 }
 
 sub azure_list_vms {
@@ -419,7 +434,7 @@ sub azure_list_vms {
 
     my $full_url = $self->azure_list_vms_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response->{value};
 }
 
@@ -427,7 +442,7 @@ sub azure_list_groups_set_url {
     my ($self, %options) = @_;
 
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups?api-version=" . $self->{api_version};
-    return $url; 
+    return $url;
 }
 
 sub azure_list_groups {
@@ -444,7 +459,7 @@ sub azure_list_deployments_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
         $options{resource_group} . "/providers/Microsoft.Resources/deployments?api-version=" . $self->{api_version};
 
-    return $url; 
+    return $url;
 }
 
 sub azure_list_deployments {
@@ -461,7 +476,7 @@ sub azure_list_vaults_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.RecoveryServices/vaults?api-version=" . $self->{api_version};
-    return $url; 
+    return $url;
 }
 
 sub azure_list_vaults {
@@ -479,7 +494,7 @@ sub azure_list_backup_jobs_set_url {
         $options{resource_group} . "/providers/Microsoft.RecoveryServices/vaults/" .
         $options{vault_name} . "/backupJobs?api-version=" . $self->{api_version};
 
-    return $url; 
+    return $url;
 }
 
 sub azure_list_backup_jobs {
@@ -497,7 +512,7 @@ sub azure_list_backup_items_set_url {
         $options{resource_group} . "/providers/Microsoft.RecoveryServices/vaults/" .
         $options{vault_name} . "/backupProtectedItems?api-version=" . $self->{api_version};
 
-    return $url; 
+    return $url;
 }
 
 sub azure_list_backup_items {
@@ -516,7 +531,7 @@ sub azure_list_expressroute_circuits_set_url {
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Network/expressRouteCircuits?api-version=" . $self->{api_version};
 
-    return $url; 
+    return $url;
 }
 
 sub azure_list_expressroute_circuits {
@@ -534,15 +549,15 @@ sub azure_list_vpn_gateways_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
         $options{resource_group} . "/providers/Microsoft.Network/virtualNetworkGateways?api-version=" . $self->{api_version};
 
-    return $url; 
+    return $url;
 }
 
 sub azure_list_vpn_gateways {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_vpn_gateways_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response->{value};
 }
 
@@ -553,15 +568,15 @@ sub azure_list_virtualnetworks_set_url {
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Network/virtualNetworks?api-version=" . $self->{api_version};
 
-    return $url; 
+    return $url;
 }
 
 sub azure_list_virtualnetworks {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_virtualnetworks_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response->{value};
 }
 
@@ -573,15 +588,15 @@ sub azure_list_vnet_peerings_set_url {
     $url .= "/providers/Microsoft.Network/virtualNetworks/" . $options{vnet_name} if (defined($options{vnet_name}) && $options{vnet_name} ne '');
     $url .= "/virtualNetworkPeerings?api-version=" . $self->{api_version};
 
-    return $url; 
+    return $url;
 }
 
 sub azure_list_vnet_peerings {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_vnet_peerings_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response->{value};
 }
 
@@ -592,15 +607,15 @@ sub azure_list_sqlservers_set_url {
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Sql/servers?api-version=" . $self->{api_version};
 
-    return $url; 
+    return $url;
 }
 
 sub azure_list_sqlservers {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_sqlservers_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response->{value};
 }
 
@@ -611,16 +626,16 @@ sub azure_list_sqldatabases_set_url {
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Sql/servers/" . $options{server} if (defined($options{server}) && $options{server} ne '');
     $url .= "/databases?api-version=" . $self->{api_version};
-    
-    return $url; 
+
+    return $url;
 }
 
 sub azure_list_sqldatabases {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_sqldatabases_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response->{value};
 }
 
