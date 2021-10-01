@@ -185,12 +185,12 @@ Check nsrp groups.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /undefined/i').
+Set unknown threshold for status (Default: '%{status} =~ /undefined/i').
 Can used special variables like: %{status}, %{statusLast}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Set warning threshold for status.
 Can used special variables like: %{status}, %{statusLast}
 
 =item B<--critical-status>
