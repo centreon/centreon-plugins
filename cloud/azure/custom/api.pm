@@ -398,24 +398,18 @@ sub azure_list_resources_set_url {
 sub azure_list_resources {
     my ($self, %options) = @_;
 
-    my $full_response;
+    my $full_response = [];
     my $full_url = $self->azure_list_resources_set_url(%options);
-    my $initial_response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    foreach (@{$initial_response->{value}}) {
-        push @$full_response, $_;
+    while (1) {
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
+
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
     }
 
-    if (defined($initial_response->{nextLink})) {
-        my $nextlink_url = $initial_response->{nextLink};
-        while (1) {
-            my $page_content = $self->request_api(method => 'GET', full_url => $nextlink_url, hostname => '');
-            foreach (@{$page_content->{value}}) {
-                push @$full_response, $_;
-            }
-            last if (!defined($page_content->{nextLink}));
-            $nextlink_url = $page_content->{nextLink};
-        }
-    }
     return $full_response;
 }
 
