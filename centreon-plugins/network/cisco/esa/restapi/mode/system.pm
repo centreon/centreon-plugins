@@ -25,58 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub custom_cpu_temp_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
-        unit => 'C',
-        instances => 'cpu',
-        value => $self->{result_values}->{cpu},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
-    );
-}
-
-sub custom_pcie_temp_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
-        unit => 'C',
-        instances => 'pcie',
-        value => $self->{result_values}->{pcie},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
-    );
-}
-
-sub custom_sio_temp_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
-        unit => 'C',
-        instances => 'sio',
-        value => $self->{result_values}->{sio},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
-    );
-}
-
-sub custom_cpu_fan_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
-        unit => 'rpm',
-        instances => 'cpu',
-        value => $self->{result_values}->{cpu},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
-    );
-}
-
 sub system_long_output {
     my ($self, %options) = @_;
 
