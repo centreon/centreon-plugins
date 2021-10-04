@@ -340,6 +340,7 @@ sub cache_storages {
         foreach my $storage (@{$list_storages}) {
             $storages->{$storage->{id}} = {
                 State => $storage->{status},
+                Node => $storage->{node},
                 Name => $storage->{storage},
             };
         }
@@ -368,7 +369,15 @@ sub internal_api_get_node_stats {
 sub internal_api_get_storage_stats {
     my ($self, %options) = @_;
 
-    my (undef, $node, $storage) = split(/\//, $options{storage_id});
+    my $storage;
+    my $node;
+
+    if (defined($options{node_id}) && $options{node_id} ne '') {
+         (undef, undef, $storage) = split(/\//, $options{storage_id});
+         (undef, $node) = split(/\//, $options{node_id});
+    } else {
+         (undef, $node, $storage) = split(/\//, $options{storage_id});
+    }
 
     my $storage_stats = $self->request_api(method => 'GET', url_path => '/api2/json/nodes/' . $node . '/storage/' . $storage . '/status');
     return $storage_stats;
@@ -453,10 +462,30 @@ sub api_get_storages {
     my ($self, %options) = @_;
     
     my $content_total = $self->cache_storages(statefile => $options{statefile});
+    my $content_node_total = $self->cache_nodes(statefile => $options{statefile});
+    my $node_id = '';
+    my $node = '';
+
+    if (defined($options{node_id}) && $options{node_id} ne '') {
+        if (defined($content_node_total->{$options{node_id}})) {
+            $node_id = $options{node_id};
+        }
+    } elsif (defined($options{node_name}) && $options{node_name} ne '') {
+        foreach (keys %{$content_node_total}) {
+            if ($content_node_total->{$_}->{Name} eq $options{node_name}) {
+                $node_id = $_;
+                last;
+            }
+        }
+    }
+    (undef, $node) = split(/\//, $node_id);
 
     if (defined($options{storage_id}) && $options{storage_id} ne '') {
         if (defined($content_total->{$options{storage_id}})) {
-            $content_total->{$options{storage_id}}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $options{storage_id});
+            my (undef, $node_storage, $storage_name) = split(/\//, $options{storage_id});
+            if ( !defined($node) || $node eq $node_storage) {
+                $content_total->{$options{storage_id}}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $options{storage_id}, node_id => $node_id);
+            }
         }
     } elsif (defined($options{storage_name}) && $options{storage_name} ne '') {
         my $storage_id;
@@ -467,11 +496,17 @@ sub api_get_storages {
             }
         }
         if (defined($storage_id)) {
-            $content_total->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id);
+            my (undef, $node_storage, $storage_name) = split(/\//, $storage_id);
+            if (! defined($node) || $node eq $node_storage) {
+                $content_total->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id, node_id => $node_id);
+            }
         }
     } else {
         foreach my $storage_id (keys %{$content_total}) {
-            $content_total->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id);
+            my (undef, $node_storage, $storage_name) = split(/\//, $storage_id);
+            if (!defined($node) || $node eq $node_storage) {
+                $content_total->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id, node_id => $node_id);
+            }
         }
     }
 
