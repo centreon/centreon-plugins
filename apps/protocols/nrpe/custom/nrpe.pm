@@ -121,7 +121,7 @@ sub output_noperf {
 sub format_result {
     my ($self, %options) = @_;
     
-    my ( $message ) = ($options{content}->{buffer} =~ m/\|/) ? $options{content}->{buffer} =~ m/(.*)\|.*$/m : $options{content}->{buffer} =~ m/(.*$/m;
+    my ( $message ) = ($options{content}->{buffer} =~ m/^.*\|.*$/g) ? $options{content}->{buffer} =~ m/(.*)\|.*$/ : $options{content}->{buffer} =~ m/(.*)/g ;
     my ( $perf ) = ($options{content}->{buffer} =~ m/\|/) ? $options{content}->{buffer} =~ m/.*\|\s*(.*)$/m : undef;
     my ( $verbose ) = ($options{content}->{buffer} =~ m/\n/s) ? $options{content}->{buffer} =~ m/[^\n]*(.*)/s : undef;
     my ( $long_msg ) = defined($verbose) ? $verbose =~ m/\s*([^\|]*)/s : undef;
