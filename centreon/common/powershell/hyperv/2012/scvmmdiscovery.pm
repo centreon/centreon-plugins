@@ -57,10 +57,10 @@ Try {
     Foreach ($vm in $vms) {
         $item = @{}
 
-        $desc = $vm.Description -replace "\r",""
         $item.type = "vm"
         $item.vmId = $vm.VMId
         $item.name = $vm.Name
+        $desc = $vm.Description -replace "\r",""
         $item.description = $desc
         $item.operatingSystem = $vm.OperatingSystem.ToString()
         $item.status = $vm.Status.value__

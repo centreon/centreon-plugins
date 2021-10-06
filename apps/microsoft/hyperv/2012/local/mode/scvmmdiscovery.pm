@@ -121,7 +121,7 @@ sub powershell_exec {
 
     my $decoded;
     eval {
-        $decoded = = JSON::XS->new->decode($self->{output}->decode($stdout));
+        $decoded = JSON::XS->new->decode($self->{output}->decode($stdout));
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
@@ -136,11 +136,39 @@ sub run {
 
     my $decoded = $self->powershell_exec();
 
+    my $hosts = {};
+    foreach my $entry (@$decoded) {
+        next if ($entry->{type} ne 'host');
+        $hosts->{ $entry->{id} } = { cluster_name => $entry->{clusterName}, name => $entry->{name} };
+    }
+
     my $disco_data;
     my $disco_stats;
-    foreach my $node (@$decoded) {
+    foreach my $entry (@$decoded) {
         my $item = {};
-        $item->{id} = $instance->{id};
+        $item->{type} = $entry->{type};
+
+        if ($self->{option_results}->{resource_type} eq 'vm' && $entry->{type} eq 'vm') {
+            $item->{id} = $entry->{vmId};
+            $item->{name} = $entry->{name};
+            $item->{description} = $entry->{description};
+            $item->{operating_system} = $entry->{operatingSystem};
+            $item->{status} = $scvmm_vm_status->{ $entry->{status} };
+            $item->{hostgroup_path} = $entry->{hostGroupPath};
+            $item->{enabled} = ($entry->{enabled} =~ /True|1/i) ? 'yes' : 'no';
+            $item->{computer_name} = $entry->{computerName};
+            $item->{tag} = $entry->{tag};
+            $item->{ipv4_addresses} = $entry->{ipv4Addresses};
+            $item->{vmhost_name} = $hosts->{ $entry->{vmHostId} }->{name};
+            $item->{cluster_name} = $hosts->{ $entry->{vmHostId} }->{cluster_name};
+        } elsif ($self->{option_results}->{resource_type} eq 'host' && $entry->{type} eq 'host') {
+            $item->{id} = $entry->{id};
+            $item->{name} = $entry->{name};
+            $item->{description} = $entry->{description};
+            $item->{fqdn} = $entry->{FQDN};
+            $item->{cluster_name} = $entry->{clusterName};
+            $item->{operating_system} = $entry->{operatingSystem};
+        }
 
         push @$disco_data, $item;
     }
