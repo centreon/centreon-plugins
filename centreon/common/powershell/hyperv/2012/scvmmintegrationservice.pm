@@ -27,6 +27,10 @@ use centreon::common::powershell::functions;
 sub get_powershell {
     my (%options) = @_;
 
+    my $hostname = '$env:computername';
+    if (defined($options{scvmm_hostname}) && $options{scvmm_hostname} ne '') {
+        $hostname = '"' . $options{scvmm_hostname} . '"';
+    }
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
@@ -46,7 +50,7 @@ Try {
     $password = ConvertTo-SecureString "' . $options{scvmm_password} . '" -AsPlainText -Force
     $UserCredential = new-object -typename System.Management.Automation.PSCredential -argumentlist $username,$password
 
-    $connection = Get-VMMServer -ComputerName "' . $options{scvmm_hostname} . '" -TCPPort ' . $options{scvmm_port} . ' -Credential $UserCredential
+    $connection = Get-VMMServer -ComputerName ' . $hostname . ' -TCPPort ' . $options{scvmm_port} . ' -Credential $UserCredential
     $vms = Get-SCVirtualMachine -VMMServer $connection
 
     $items = New-Object System.Collections.Generic.List[Hashtable];

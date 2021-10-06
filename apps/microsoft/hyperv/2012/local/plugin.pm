@@ -36,6 +36,7 @@ sub new {
         'node-replication'          => 'apps::microsoft::hyperv::2012::local::mode::nodereplication',
         'node-snapshot'             => 'apps::microsoft::hyperv::2012::local::mode::nodesnapshot',
         'node-vm-status'            => 'apps::microsoft::hyperv::2012::local::mode::nodevmstatus',
+        'scvmm-discovery'           => 'apps::microsoft::hyperv::2012::local::mode::scvmmdiscovery',
         'scvmm-integration-service' => 'apps::microsoft::hyperv::2012::local::mode::scvmmintegrationservice',
         'scvmm-snapshot'            => 'apps::microsoft::hyperv::2012::local::mode::scvmmsnapshot',
         'scvmm-vm-status'           => 'apps::microsoft::hyperv::2012::local::mode::scvmmvmstatus'
