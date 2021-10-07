@@ -91,7 +91,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);  
 
-    foreach my $label (('scvmm_hostname', 'scvmm_username', 'scvmm_password', 'scvmm_port')) {
+    foreach my $label (('scvmm_username', 'scvmm_password', 'scvmm_port')) {
         if (!defined($self->{option_results}->{$label}) || $self->{option_results}->{$label} eq '') {
             my ($label_opt) = $label;
             $label_opt =~ tr/_/-/;
@@ -199,7 +199,7 @@ Check virtual machine status on SCVMM.
 
 =item B<--scvmm-hostname>
 
-SCVMM hostname (Required).
+SCVMM hostname.
 
 =item B<--scvmm-username>
 
