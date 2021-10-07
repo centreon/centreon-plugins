@@ -265,6 +265,22 @@ sub convert_duration {
     return $duration;
 }
 
+sub json_decode {
+    my ($self, %options) = @_;
+
+    $options{content} =~ s/\r//mg;
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($options{content});
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $decoded;
+}
+
 sub azure_get_metrics_set_url {
     my ($self, %options) = @_;
 

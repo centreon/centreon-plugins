@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'logicaldisk'         => 'cloud::azure::management::insightsmetrics::mode::logicaldisk',
-        'list-vm-disks'     => 'cloud::azure::management::insightsmetrics::mode::listvmdisks'
+        'logical-disks'         => 'cloud::azure::management::insightsmetrics::mode::logicaldisks',
+        'list-logical-disks'     => 'cloud::azure::management::insightsmetrics::mode::listlogicaldisks'
     );
 
     $self->{custom_modes}{api} = 'cloud::azure::custom::api';

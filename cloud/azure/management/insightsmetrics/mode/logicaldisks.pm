@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::insightsmetrics::mode::logicaldisk;
+package cloud::azure::management::insightsmetrics::mode::logicaldisks;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -35,7 +35,7 @@ sub custom_usage_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{UsedSpace});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{FreeSpace});
     return sprintf(
-        'usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+        'total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{UsedSpacePercentage},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{FreeSpacePercentage}
@@ -51,9 +51,8 @@ sub computer_long_output {
 sub prefix_logicaldisk_output {
     my ($self, %options) = @_;
 
-    return $options{instance_value}->{display} . " " ;
+    return "'" . $options{instance_value}->{display} . "' " ;
 }
-
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -65,7 +64,6 @@ sub set_counters {
             ]
         }
     ];
-
 
     $self->{maps_counters}->{logicaldisk} = [
         { label => 'status', type => 2, critical_default => '%{status} eq "NOT OK"', set => {
@@ -130,7 +128,7 @@ sub set_counters {
                 output_template => "transfers per second : %.2f/s",
                 perfdatas       => [ { template => '%.2f', min => 0 } ]
             }
-        },
+        }
     ];
 }
 
@@ -140,9 +138,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'workspace-id:s'  => { name => 'workspace_id' },
         'filter-computer:s' => { name => 'filter_computer' },
-        'filter-disk:s' => { name => 'filter_disk' },
+        'filter-disk:s'     => { name => 'filter_disk' },
+        'workspace-id:s'    => { name => 'workspace_id' }
     });
 
     return $self;
@@ -151,23 +149,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-}
-
-sub json_tag_format {
-    my ($self, %options) = @_;
-
-    $options{content} =~ s/\r//mg;
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($options{content});
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-
-    return $decoded;
 }
 
 
@@ -205,7 +186,7 @@ sub manage_selection {
 
     my $decoded_tag;
     foreach my $entry (keys %{$self->{raw_results}->{data}}) {
-        $decoded_tag = $self->json_tag_format(content => $self->{raw_results}->{data}->{$entry}->{tags});
+        $decoded_tag = $options{custom}->json_decode(content => $self->{raw_results}->{data}->{$entry}->{tags});
         next if (defined($self->{option_results}->{filter_disk}) && $decoded_tag->{"vm.azm.ms\/mountId"} !~ m/$self->{option_results}->{filter_disk}/);
 
         if ($self->{raw_results}->{data}->{$entry}->{tags} =~ m/\{"vm\.azm\.ms\/mountId":"(.*)"\}/) {
@@ -217,7 +198,7 @@ sub manage_selection {
     foreach my $computer (keys %{$self->{computer}}) {
         foreach my $disk (keys %{$self->{computer}->{$computer}->{logicaldisk}}) {
             foreach my $entry (keys %{$self->{raw_results}->{data}}) {
-                $decoded_tag = $self->json_tag_format(content => $self->{raw_results}->{data}->{$entry}->{tags});
+                $decoded_tag = $options{custom}->json_decode(content => $self->{raw_results}->{data}->{$entry}->{tags});
                 my $mountid = $decoded_tag->{"vm.azm.ms/mountId"};
                 next if ($mountid !~ m/$disk/);
 
@@ -243,12 +224,11 @@ sub manage_selection {
             }
         }
     }
-    #use Data::Dumper; print Dumper($self->{computer}); exit 0;
+
     if (scalar(keys %{$self->{computer}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No computer found. Can be: filters, cache file.");
         $self->{output}->option_exit();
     }
-    
 }
 
 1;
@@ -264,31 +244,34 @@ Example:
 perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plugin --custommode=api --mode=logical-disk
 --subscription=1111 --tenant=2222 --client-id=3333 --client-secret=4444 --workspace-id=5555 --verbose
 
-
 =over 8
 
-=item B<--resource>
+=item B<--filter-computer>
 
-Set resource name or id (Required).
+Filter on a specific Azure "computer".
 
-=item B<--resource-group>
+=item B<--filter-disk>
 
-Set resource group (Required if resource's name is used).
+Filter on specific logical(s) disk(s).
 
-=item B<--filter-metric>
 
-Filter metrics (Can be: 'CPU Credits Remaining', 'CPU Credits Consumed',
-'Percentage CPU') (Can be a regexp).
+=item B<--warning-status>
 
-=item B<--warning-$metric$-$aggregation$>
+Warning threshold on logical disk status (Default: none).
 
-Thresholds warning ($metric$ can be: 'cpu-credits-remaining', 'cpu-credits-consumed',
-'percentage-cpu', $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
+=item B<--critical-status>
 
-=item B<--critical-$metric$-$aggregation$>
+Critical threshold on logical disk status (Default: '%{status} eq "NOT OK"').
 
-Thresholds critical ($metric$ can be: 'cpu-credits-remaining', 'cpu-credits-consumed',
-'percentage-cpu', $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
+=item B<--warning-*>
+
+Warning threshold where '*' can be:
+'usage', 'usage-percentage', 'free-percentage', 'reads-persecond', 'read-bytes-persecond', 'writes-persecond', 'write-bytes-persecond', 'transfers-persecond'
+
+=item B<--critical-*>
+
+Critical threshold where '*' can be:
+'usage', 'usage-percentage', 'free-percentage', 'reads-persecond', 'read-bytes-persecond', 'writes-persecond', 'write-bytes-persecond', 'transfers-persecond'
 
 =back
 
