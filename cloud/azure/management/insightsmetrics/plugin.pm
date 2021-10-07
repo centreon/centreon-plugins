@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'logical-disks'         => 'cloud::azure::management::insightsmetrics::mode::logicaldisks',
-        'list-logical-disks'     => 'cloud::azure::management::insightsmetrics::mode::listlogicaldisks'
+        'logical-disks'      => 'cloud::azure::management::insightsmetrics::mode::logicaldisks',
+        'list-logical-disks' => 'cloud::azure::management::insightsmetrics::mode::listlogicaldisks'
     );
 
     $self->{custom_modes}{api} = 'cloud::azure::custom::api';
@@ -55,6 +55,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure monitor service using API.
+Check Microsoft Azure Insights metrics service using Loganalytics API.
 
 =cut
