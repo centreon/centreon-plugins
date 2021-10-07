@@ -32,8 +32,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'computer:s' => { name => 'computer' },
-        'workspace-id:s'    => { name => 'workspace_id' }
+        'computer:s'     => { name => 'computer' },
+        'workspace-id:s' => { name => 'workspace_id' }
     });
     return $self;
 }
@@ -72,31 +72,25 @@ sub manage_selection {
             $j++;
         }
     }
-    my $status_mapping = {
-        0 => 'NOT OK',
-        1 => 'OK'
-    };
 
-    my $decoded_tag;
     foreach my $entry (keys %{$self->{raw_results}->{data}}) {
-        $decoded_tag = $options{custom}->json_decode(content => $self->{raw_results}->{data}->{$entry}->{tags});
+        my $decoded_tag = $options{custom}->json_decode(content => $self->{raw_results}->{data}->{$entry}->{tags});
 
         $self->{logicaldisk}->{$decoded_tag->{"vm.azm.ms/mountId"}}->{name} = $decoded_tag->{"vm.azm.ms/mountId"};
     }
-    #use Data::Dumper;print Dumper($self->{logicaldisk}); exit 0;
 }
 
 sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $mount (sort keys %{$self->{logicaldisk}}) { 
+    foreach my $mount (sort keys %{$self->{logicaldisk}}) {
         $self->{output}->output_add(long_msg => '[name = ' . $mount . ']' );
     }
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List mounts:'
+        short_msg => 'List logical disks:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -105,7 +99,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => [ 'name' ]);
 }
 
 sub disco_show {
@@ -130,4 +124,4 @@ List Azure Computer logical disks.
 =back
 
 =cut
-    
+
