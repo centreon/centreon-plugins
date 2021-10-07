@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::hyperv::2012::scvmmsnapshot;
+package centreon::common::powershell::hyperv::2012::scvmmdiscovery;
 
 use strict;
 use warnings;
@@ -57,23 +57,43 @@ Try {
     Foreach ($vm in $vms) {
         $item = @{}
 
-        $checkpoints = Get-SCVMCheckpoint -VMMServer $connection -Vm $vm
-        $desc = $vm.description -replace "\r",""
-        $desc = $desc -replace "\n"," - "
+        $item.type = "vm"
+        $item.vmId = $vm.VMId
         $item.name = $vm.Name
+        $desc = $vm.Description -replace "\r",""
         $item.description = $desc
+        $item.operatingSystem = $vm.OperatingSystem.ToString()
         $item.status = $vm.Status.value__
-        $item.host_group_path = $vm.HostGroupPath
+        $item.hostGroupPath = $vm.HostGroupPath
+        $item.enabled = $vm.enabled
+        $item.computerName = $vm.ComputerName
+        $item.tag = $vm.Tag
+        $item.vmHostId = $vm.VMHost.ID
 
-        $chkpt_list = New-Object System.Collections.Generic.List[Hashtable];
-        foreach ($checkpoint in $checkpoints) {
-            $chkpt = @{}
-            $chkpt.type = "backing"
-            $chkpt.added_time = (get-date -date $checkpoint.AddedTime.ToUniversalTime() -UFormat ' . "'%s'" . ')
-            $chkpt_list.Add($chkpt)
+        $ipv4Addresses = @()
+        if ($vm.Status -eq "Running") {
+            Foreach ($adapter in $vm.VirtualNetworkAdapters) {
+                $ipv4Addresses += $adapter.IPv4Addresses
+            }
         }
+        $item.ipv4Addresses = $ipv4Addresses
 
-        $item.checkpoints = $chkpt_list
+        $items.Add($item)
+    }
+
+    $hosts = Get-SCVmHost -VMMServer $connection
+    Foreach ($host in $hosts) {
+        $item = @{}
+
+        $item.type = "host"
+        $item.id = $host.ID
+        $item.name = $host.Name
+        $desc = $host.Description -replace "\r",""
+        $item.description = $desc
+        $item.FQDN = $host.FQDN
+        $item.clusterName = $host.HostCluster.Name
+        $item.operatingSystem = $host.OperatingSystem.Name
+
         $items.Add($item)
     }
 
