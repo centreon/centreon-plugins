@@ -68,7 +68,7 @@ Try {
         $item.enabled = $vm.enabled
         $item.computerName = $vm.ComputerName
         $item.tag = $vm.Tag
-        $item.vmHostId = $vm.VMHost.ID
+        $item.vmHostId = $vm.VMHost.ID.Guid
 
         $ipv4Addresses = @()
         if ($vm.Status -eq "Running") {
@@ -81,18 +81,18 @@ Try {
         $items.Add($item)
     }
 
-    $hosts = Get-SCVmHost -VMMServer $connection
-    Foreach ($host in $hosts) {
+    $vmhosts = Get-SCVmHost -VMMServer $connection
+    Foreach ($vmhost in $vmhosts) {
         $item = @{}
 
         $item.type = "host"
-        $item.id = $host.ID
-        $item.name = $host.Name
+        $item.id = $vmhost.ID.Guid
+        $item.name = $vmhost.Name
         $desc = $host.Description -replace "\r",""
         $item.description = $desc
-        $item.FQDN = $host.FQDN
-        $item.clusterName = $host.HostCluster.Name
-        $item.operatingSystem = $host.OperatingSystem.Name
+        $item.FQDN = $vmhost.FQDN
+        $item.clusterName = $vmhost.HostCluster.Name
+        $item.operatingSystem = $vmhost.OperatingSystem.Name
 
         $items.Add($item)
     }
