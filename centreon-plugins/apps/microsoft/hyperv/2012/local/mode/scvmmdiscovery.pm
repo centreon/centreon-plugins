@@ -146,8 +146,8 @@ sub run {
     my $disco_stats;
     foreach my $entry (@$decoded) {
         my $item = {};
-        $item->{type} = $entry->{type};
 
+        $item->{type} = $entry->{type};
         if ($self->{option_results}->{resource_type} eq 'vm' && $entry->{type} eq 'vm') {
             $item->{id} = $entry->{vmId};
             $item->{name} = $entry->{name};
@@ -158,9 +158,12 @@ sub run {
             $item->{enabled} = ($entry->{enabled} =~ /True|1/i) ? 'yes' : 'no';
             $item->{computer_name} = $entry->{computerName};
             $item->{tag} = $entry->{tag};
+            $entry->{ipv4Addresses} = [$entry->{ipv4Addresses}] if (ref($entry->{ipv4Addresses}) ne 'ARRAY');
             $item->{ipv4_addresses} = $entry->{ipv4Addresses};
+            $item->{ipv4_address} = defined($entry->{ipv4Addresses}->[0]) ? $entry->{ipv4Addresses}->[0] : '';
             $item->{vmhost_name} = $hosts->{ $entry->{vmHostId} }->{name};
             $item->{cluster_name} = $hosts->{ $entry->{vmHostId} }->{cluster_name};
+            push @$disco_data, $item;
         } elsif ($self->{option_results}->{resource_type} eq 'host' && $entry->{type} eq 'host') {
             $item->{id} = $entry->{id};
             $item->{name} = $entry->{name};
@@ -168,9 +171,8 @@ sub run {
             $item->{fqdn} = $entry->{FQDN};
             $item->{cluster_name} = $entry->{clusterName};
             $item->{operating_system} = $entry->{operatingSystem};
+            push @$disco_data, $item;
         }
-
-        push @$disco_data, $item;
     }
 
     $disco_stats->{end_time} = time();
