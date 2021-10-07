@@ -73,60 +73,70 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'usage', nlabel => 'azure.insights.logicaldisk.usage.used.bytes', set => {
+        { label => 'usage', nlabel => 'azure.insights.logicaldisk.used.bytes', set => {
                 key_values      => [ { name => 'UsedSpace' }, { name => 'UsedSpacePercentage' }, { name => 'FreeSpacePercentage' }, { name => 'FreeSpace' }, { name => 'diskSize'} ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { template => '%.2f', unit => 'B', min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => 'B', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'usage-percentage', display_ok => 0, nlabel => 'azure.insights.logicaldisk.usage.used.percentage', set => {
+        { label => 'usage-percentage', display_ok => 0, nlabel => 'azure.insights.logicaldisk.used.percentage', set => {
                 key_values      => [ { name => 'UsedSpacePercentage' } ],
                 output_template => "used : %.2f%%",
                 perfdatas => [
-                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'free-percentage', display_ok => 0, nlabel => 'azure.insights.logicaldisk.usage.free.percentage', set => {
+        { label => 'free-percentage', display_ok => 0, nlabel => 'azure.insights.logicaldisk.free.percentage', set => {
                 key_values      => [ { name => 'FreeSpacePercentage' } ],
                 output_template => "free : %.2f%%",
                 perfdatas => [
-                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'reads-persecond', nlabel => 'azure.insights.logicaldisks.io.readspersecond', set => {
                 key_values      => [ { name => 'ReadsPerSecond' }  ],
                 output_template => "reads per second : %.2f/s",
-                perfdatas       => [ { template => '%d', min => 0 } ]
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'read-bytes-persecond', nlabel => 'azure.insights.logicaldisks.io.readbytespersecond', set => {
                 key_values      => [ { name => 'ReadBytesPerSecond' }  ],
                 output_change_bytes => 1,
                 output_template => "read bytes per second : %.2f/s",
-                perfdatas       => [ { template => '%.2f', unit => 'B/s', min => 0 } ]
+                perfdatas       => [
+                    { template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'writes-persecond', nlabel => 'azure.insights.logicaldisks.io.writespersecond', set => {
                 key_values      => [ { name => 'WritesPerSecond' }  ],
                 output_template => "write per second : %.2f/s",
-                perfdatas       => [ { template => '%.2f', min => 0 } ]
+                perfdatas       => [
+                    { template => '%.2f', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'write-bytes-persecond', nlabel => 'azure.insights.logicaldisks.io.writebytespersecond', set => {
                 key_values      => [ { name => 'WriteBytesPerSecond' }  ],
                 output_change_bytes => 1,
                 output_template => "write bytes per second : %.2f/s",
-                perfdatas       => [ { template => '%.2f', unit => 'B/s', min => 0 } ]
+                perfdatas       => [
+                    { template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'transfers-persecond', nlabel => 'azure.insights.logicaldisks.io.transferspersecond', set => {
                 key_values      => [ { name => 'TransfersPerSecond' }  ],
                 output_template => "transfers per second : %.2f/s",
-                perfdatas       => [ { template => '%.2f', min => 0 } ]
+                perfdatas       => [
+                    { template => '%.2f', min => 0, label_extra_instance => 1 }
+                ]
             }
         }
     ];
