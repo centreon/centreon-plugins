@@ -671,6 +671,36 @@ sub azure_get_log_analytics {
     return $response;
 }
 
+sub azure_get_insights_analytics {
+    my ($self, %options) = @_;
+
+    my $raw_results = {};
+    my $analytics_results = $self->azure_get_log_analytics(
+        workspace_id => $options{workspace_id},
+        query => $options{query},
+        timespan => $options{timespan}
+    );
+
+    foreach (@{$analytics_results->{tables}}) {
+        my ($i, $j) = (0, 0);
+        foreach my $entry (@{$_->{columns}}) {
+            $raw_results->{index}->{$entry->{name}} = $i;
+            $i++;
+        }
+
+        foreach (@{$_->{rows}}) {
+            $raw_results->{data}->{$j}->{tags} = @$_[$raw_results->{index}->{Tags}];
+            $raw_results->{data}->{$j}->{computer} = @$_[$raw_results->{index}->{Computer}];
+            if (!defined($options{disco})) {
+                $raw_results->{data}->{$j}->{name} = @$_[$raw_results->{index}->{Name}];
+                $raw_results->{data}->{$j}->{value} = @$_[$raw_results->{index}->{Val}];
+            }
+            $j++;
+        }
+    }
+    return $raw_results;
+}
+
 sub azure_get_publicip_set_url {
     my ($self, %options) = @_;
 

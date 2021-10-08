@@ -58,7 +58,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'computer', type => 3, cb_long_output => 'computer_long_output', indent_long_output => '    ', message_multiple => 'All logical disks are OK',
+        { name => 'computer', type => 3, cb_long_output => 'computer_long_output', indent_long_output => '    ', message_multiple => 'All computers disks are OK',
         group => [
                 { name => 'logicaldisk', display_long => 1, cb_prefix_output => 'prefix_logicaldisk_output',  message_multiple => 'All logical disks are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
@@ -168,68 +168,53 @@ sub manage_selection {
     my $query = 'InsightsMetrics | where Namespace == "LogicalDisk" | summarize arg_max(TimeGenerated, *) by Tags, Name, Computer'; 
     $query .= '| where Computer == "' . $self->{option_results}->{filter_computer} . '"' if defined $self->{option_results}->{filter_computer} && $self->{option_results}->{filter_computer} ne '';
 
-    my ($analytics_results) = $options{custom}->azure_get_log_analytics(
+    my $results = $options{custom}->azure_get_insights_analytics(
         workspace_id => $self->{option_results}->{workspace_id},
         query => $query,
         timespan => $self->{option_results}->{timespan}
     );
 
-    foreach (@{$analytics_results->{tables}}) {
-        my ($i, $j) = (0, 0);
-        foreach my $entry (@{$_->{columns}}) {
-            $self->{raw_results}->{index}->{$entry->{name}} = $i;
-            $i++;
-        }
-
-        foreach (@{$_->{rows}}) {
-            $self->{raw_results}->{data}->{$j}->{name} = @$_[$self->{raw_results}->{index}->{Name}];
-            $self->{raw_results}->{data}->{$j}->{value} = @$_[$self->{raw_results}->{index}->{Val}];
-            $self->{raw_results}->{data}->{$j}->{tags} = @$_[$self->{raw_results}->{index}->{Tags}];
-            $self->{raw_results}->{data}->{$j}->{computer} = @$_[$self->{raw_results}->{index}->{Computer}];
-            $j++;
-        }
-    }
     my $status_mapping = {
         0 => 'NOT OK',
         1 => 'OK'
     };
 
     my $decoded_tag;
-    foreach my $entry (keys %{$self->{raw_results}->{data}}) {
-        $decoded_tag = $options{custom}->json_decode(content => $self->{raw_results}->{data}->{$entry}->{tags});
+    foreach my $entry (keys %{$results->{data}}) {
+        $decoded_tag = $options{custom}->json_decode(content => $results->{data}->{$entry}->{tags});
         next if (defined($self->{option_results}->{filter_disk}) && $decoded_tag->{"vm.azm.ms\/mountId"} !~ m/$self->{option_results}->{filter_disk}/);
 
-        if ($self->{raw_results}->{data}->{$entry}->{tags} =~ m/\{"vm\.azm\.ms\/mountId":"(.*)"\}/) {
-            $self->{computer}->{$self->{raw_results}->{data}->{$entry}->{computer}}->{logicaldisk}->{$decoded_tag->{"vm.azm.ms/mountId"}}->{display} = $decoded_tag->{"vm.azm.ms/mountId"};
+        if ($results->{data}->{$entry}->{tags} =~ m/\{"vm\.azm\.ms\/mountId":"(.*)"\}/) {
+            $self->{computer}->{$results->{data}->{$entry}->{computer}}->{logicaldisk}->{$decoded_tag->{"vm.azm.ms/mountId"}}->{display} = $decoded_tag->{"vm.azm.ms/mountId"};
         }
-        $self->{computer}->{$self->{raw_results}->{data}->{$entry}->{computer}}->{display} = $self->{raw_results}->{data}->{$entry}->{computer};
+        $self->{computer}->{$results->{data}->{$entry}->{computer}}->{display} = $results->{data}->{$entry}->{computer};
     }
 
     foreach my $computer (keys %{$self->{computer}}) {
         foreach my $disk (keys %{$self->{computer}->{$computer}->{logicaldisk}}) {
-            foreach my $entry (keys %{$self->{raw_results}->{data}}) {
-                $decoded_tag = $options{custom}->json_decode(content => $self->{raw_results}->{data}->{$entry}->{tags});
+            foreach my $entry (keys %{$results->{data}}) {
+                $decoded_tag = $options{custom}->json_decode(content => $results->{data}->{$entry}->{tags});
                 my $mountid = $decoded_tag->{"vm.azm.ms/mountId"};
                 next if ($mountid !~ m/$disk/);
 
-                if ($self->{raw_results}->{data}->{$entry}->{name} =~ m/(.*Space)MB/) {
-                    $self->{computer}->{$self->{raw_results}->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{$1} = $self->{raw_results}->{data}->{$entry}->{value} * 1000000;
+                if ($results->{data}->{$entry}->{name} =~ m/(.*Space)MB/) {
+                    $self->{computer}->{$results->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{$1} = $results->{data}->{$entry}->{value} * 1000000;
                 } else {
-                    $self->{computer}->{$self->{raw_results}->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{$self->{raw_results}->{data}->{$entry}->{name}} = $self->{raw_results}->{data}->{$entry}->{value};
+                    $self->{computer}->{$results->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{$results->{data}->{$entry}->{name}} = $results->{data}->{$entry}->{value};
                 }
-                if ($self->{raw_results}->{data}->{$entry}->{name} =~ 'Status') {
-                    $self->{computer}->{$self->{raw_results}->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{$self->{raw_results}->{data}->{$entry}->{name}} = %$status_mapping{$self->{raw_results}->{data}->{$entry}->{value}};
+                if ($results->{data}->{$entry}->{name} =~ 'Status') {
+                    $self->{computer}->{$results->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{$results->{data}->{$entry}->{name}} = %$status_mapping{$results->{data}->{$entry}->{value}};
                 }
 
                 if (defined($decoded_tag->{"vm.azm.ms/diskSizeMB"})) {
-                    $self->{computer}->{$self->{raw_results}->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{diskSize} = $decoded_tag->{"vm.azm.ms/diskSizeMB"} * 1000000;
+                    $self->{computer}->{$results->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{diskSize} = $decoded_tag->{"vm.azm.ms/diskSizeMB"} * 1000000;
                 }
             }
             $self->{computer}->{$computer}->{logicaldisk}->{$disk}->{UsedSpace} = $self->{computer}->{$computer}->{logicaldisk}->{$disk}->{diskSize} - $self->{computer}->{$computer}->{logicaldisk}->{$disk}->{FreeSpace};
             $self->{computer}->{$computer}->{logicaldisk}->{$disk}->{UsedSpacePercentage} = 100 - $self->{computer}->{$computer}->{logicaldisk}->{$disk}->{FreeSpacePercentage};
 
             if (scalar(keys %{$self->{computer}->{$computer}->{logicaldisk}}) <= 0) {
-                $self->{output}->add_option_msg(short_msg => "No logical disk found.");
+                $self->{output}->add_option_msg(short_msg => "No logical disk found for computer " . $self->{computer}->{$computer}->{display});
                 $self->{output}->option_exit();
             }
         }
@@ -251,7 +236,7 @@ Check Aure VM logical disks using Insights metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plugin --custommode=api --mode=logical-disk
+perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plugin --custommode=api --mode=logical-disks
 --subscription=1111 --tenant=2222 --client-id=3333 --client-secret=4444 --workspace-id=5555 --verbose
 
 =over 8

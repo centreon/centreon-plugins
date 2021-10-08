@@ -53,28 +53,16 @@ sub manage_selection {
 
    my $query = 'InsightsMetrics | where Namespace == "LogicalDisk" | distinct Tags, Computer | where Computer == "' . $self->{option_results}->{computer} . '"';
 
-    my ($analytics_results) = $options{custom}->azure_get_log_analytics(
+    my $results = $options{custom}->azure_get_insights_analytics(
         workspace_id => $self->{option_results}->{workspace_id},
-        query => $query,
-        timespan => $self->{option_results}->{timespan}
+        query        => $query,
+        timespan     => $self->{option_results}->{timespan},
+        disco        => 1
     );
 
-    foreach (@{$analytics_results->{tables}}) {
-        my ($i, $j) = (0, 0);
-        foreach my $entry (@{$_->{columns}}) {
-            $self->{raw_results}->{index}->{$entry->{name}} = $i;
-            $i++;
-        }
 
-        foreach (@{$_->{rows}}) {
-            $self->{raw_results}->{data}->{$j}->{tags} = @$_[$self->{raw_results}->{index}->{Tags}];
-            $self->{raw_results}->{data}->{$j}->{computer} = @$_[$self->{raw_results}->{index}->{Computer}];
-            $j++;
-        }
-    }
-
-    foreach my $entry (keys %{$self->{raw_results}->{data}}) {
-        my $decoded_tag = $options{custom}->json_decode(content => $self->{raw_results}->{data}->{$entry}->{tags});
+    foreach my $entry (keys %{$results->{data}}) {
+        my $decoded_tag = $options{custom}->json_decode(content => $results->{data}->{$entry}->{tags});
 
         $self->{logicaldisk}->{$decoded_tag->{"vm.azm.ms/mountId"}}->{name} = $decoded_tag->{"vm.azm.ms/mountId"};
     }

@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'cpu'      => 'cloud::azure::management::insightsmetrics::mode::cpu',
         'logical-disks'      => 'cloud::azure::management::insightsmetrics::mode::logicaldisks',
         'list-logical-disks' => 'cloud::azure::management::insightsmetrics::mode::listlogicaldisks'
     );
