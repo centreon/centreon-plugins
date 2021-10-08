@@ -18,12 +18,13 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::insightsmetrics::mode::cpu;
+package cloud::azure::management::insightsmetrics::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use POSIX qw(strftime);
 
 sub computer_long_output {
     my ($self, %options) = @_;
@@ -31,16 +32,10 @@ sub computer_long_output {
     return "Computer '" . $options{instance_value}->{display} . "'";
 }
 
-sub prefix_core_output {
+sub prefix_memory_output {
     my ($self, %options) = @_;
 
-    return "CPU #" . $options{instance_value}->{display} . " " ;
-}
-
-sub prefix_avg_output {
-    my ($self, %options) = @_;
-
-    return $options{instance_value}->{count} . " CPU(s) average utilization: "  ;
+    return " Memory utilization: "  ;
 }
 
 sub set_counters {
@@ -49,30 +44,18 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'computer', type => 3, cb_long_output => 'computer_long_output', indent_long_output => '    ', message_multiple => 'All computers CPUs are OK',
         group => [
-                { name => 'cpu_avg', display_long => 1, cb_prefix_output => 'prefix_avg_output', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'cpu_core', display_long => 1, cb_prefix_output => 'prefix_core_output', message_multiple => 'All CPUs are ok', type => 1, skipped_code => { -10 => 1 } }
+                { name => 'memory', display_long => 1, cb_prefix_output => 'prefix_memory_output', type => 0, skipped_code => { -10 => 1 } },
             ]
         }
     ];
 
-    $self->{maps_counters}->{cpu_avg} = [
-        { label => 'average-utilization-percentage', nlabel => 'azure.insights.cpu.average.utilization.percentage', set => {
-                key_values => [ { name => 'average' }, { name => 'count' } ],
-                output_template => '%.2f %%',
+    $self->{maps_counters}->{memory} = [
+        { label => 'usage', nlabel => 'azure.insights.memory.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'used-prct' }, { name => 'available' }, { name => 'available-prct' }, ],
+                closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
-            }
-        },
-    ];
-
-    $self->{maps_counters}->{cpu_core} = [
-        { label => 'core-utilization-percentage', nlabel => 'azure.insights.cpu.core.utilization.percentage', set => {
-                key_values => [ { name => 'utilizationpercentage' }, { name => 'display' } ],
-                output_template => 'usage : %.2f %%',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', unit => 'B', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
     ];
@@ -85,7 +68,6 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-computer:s' => { name => 'filter_computer' },
-        'filter-cpu:s'     => { name => 'filter_cpu' },
         'workspace-id:s'    => { name => 'workspace_id' }
     });
 
@@ -101,7 +83,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $query = 'InsightsMetrics | where Namespace == "Processor" | summarize arg_max(TimeGenerated, *) by Tags, Name, Computer'; 
+    my $query = 'InsightsMetrics | where Namespace == "Memory" | summarize arg_max(TimeGenerated, *) by Tags, Name, Computer'; 
     $query .= '| where Computer == "' . $self->{option_results}->{filter_computer} . '"' if defined $self->{option_results}->{filter_computer} && $self->{option_results}->{filter_computer} ne '';
 
     my $results = $options{custom}->azure_get_insights_analytics(
@@ -110,39 +92,26 @@ sub manage_selection {
         timespan => $self->{option_results}->{timespan}
     );
 
-    my $decoded_tag;
     foreach my $entry (keys %{$results->{data}}) {
-        $decoded_tag = $options{custom}->json_decode(content => $results->{data}->{$entry}->{tags});
-        next if (defined($self->{option_results}->{filter_cpu}) && $decoded_tag->{"vm.azm.ms\/totalCpus"} !~ m/$self->{option_results}->{filter_cpu}/);
-
         $self->{computer}->{$results->{data}->{$entry}->{computer}}->{display} = $results->{data}->{$entry}->{computer};
-        $self->{computer}->{$results->{data}->{$entry}->{computer}}->{cpu_core}->{$decoded_tag->{"vm.azm.ms/totalCpus"}}->{display} = $decoded_tag->{"vm.azm.ms/totalCpus"};
-
     }
 
+    my $decoded_tag;
     foreach my $computer (keys %{$self->{computer}}) {
-        my $cpu_avg;
-        foreach my $cpu (keys %{$self->{computer}->{$computer}->{cpu_core}}) {
-            foreach my $entry (keys %{$results->{data}}) {
-                $decoded_tag = $options{custom}->json_decode(content => $results->{data}->{$entry}->{tags});
-                my $cpu_id = $decoded_tag->{"vm.azm.ms/totalCpus"};
-                next if ($cpu_id !~ m/$cpu/);
-
-                $self->{computer}->{$results->{data}->{$entry}->{computer}}->{cpu_core}->{$cpu_id}->{utilizationpercentage} = $results->{data}->{$entry}->{value};
-                $cpu_avg += $results->{data}->{$entry}->{value};
-            }
-
-            if (scalar(keys %{$self->{computer}->{$computer}->{cpu_core}}) <= 0) {
-                $self->{output}->add_option_msg(short_msg => "No CPU found for computer " . $self->{computer}->{$computer}->{display});
-                $self->{output}->option_exit();
-            }
+        foreach my $entry (keys %{$results->{data}}) {
+            $decoded_tag = $options{custom}->json_decode(content => $results->{data}->{$entry}->{tags});
+            $self->{computer}->{$results->{data}->{$entry}->{computer}}->{memory}->{available} = $results->{data}->{$entry}->{value} * 1000000;
+            $self->{computer}->{$results->{data}->{$entry}->{computer}}->{memory}->{total} = defined($decoded_tag->{"vm.azm.ms/memorySizeMB"}) ? $decoded_tag->{"vm.azm.ms/memorySizeMB"} * 1000000 : 0;
         }
-        if (!defined($self->{option_results}->{filter_cpu}) || $self->{option_results}->{filter_cpu} eq '') {
-            $self->{computer}->{$computer}->{cpu_avg}->{count} = scalar(keys %{$self->{computer}->{$computer}});
-            $self->{computer}->{$computer}->{cpu_avg}->{average} = $cpu_avg / $self->{computer}->{$computer}->{cpu_avg}->{count};
+        $self->{computer}->{$computer}->{memory}->{used} = $self->{computer}->{$computer}->{memory}->{total} -
+            $self->{computer}->{$computer}->{memory}->{available};
+
+        if (scalar(keys %{$self->{computer}->{$computer}->{memory}}) <= 0) {
+            $self->{output}->add_option_msg(short_msg => "No memory found for computer " . $self->{computer}->{$computer}->{display});
+            $self->{output}->option_exit();
         }
+        use Data::Dumper; print Dumper($self->{computer});
     }
-
     if (scalar(keys %{$self->{computer}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No computer found. Can be: filters, cache file.");
         $self->{output}->option_exit();

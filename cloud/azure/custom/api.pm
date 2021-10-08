@@ -692,6 +692,7 @@ sub azure_get_insights_analytics {
             $raw_results->{data}->{$j}->{tags} = @$_[$raw_results->{index}->{Tags}];
             $raw_results->{data}->{$j}->{computer} = @$_[$raw_results->{index}->{Computer}];
             if (!defined($options{disco})) {
+                $raw_results->{data}->{$j}->{timegenerated} = @$_[$raw_results->{index}->{TimeGenerated}];
                 $raw_results->{data}->{$j}->{name} = @$_[$raw_results->{index}->{Name}];
                 $raw_results->{data}->{$j}->{value} = @$_[$raw_results->{index}->{Val}];
             }
