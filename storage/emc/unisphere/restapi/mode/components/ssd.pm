@@ -49,7 +49,7 @@ sub check {
         $self->{output}->output_add(
             long_msg => sprintf(
                 "ssd '%s' status is '%s' [instance = %s]",
-                $name, $health, $instance,
+                $name, $health, $instance
             )
         );
         
