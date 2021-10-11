@@ -44,11 +44,12 @@ sub check {
         next if ($self->check_filter(section => 'ssd', instance => $instance));
         $self->{components}->{ssd}->{total}++;
 
+        my $name = defined($result->{content}->{name}) ? $result->{content}->{name} : $result->{content}->{id};
         my $health = $health_status->{ $result->{content}->{health}->{value} };
         $self->{output}->output_add(
             long_msg => sprintf(
                 "ssd '%s' status is '%s' [instance = %s]",
-                $result->{content}->{name}, $health, $instance,
+                $name, $health, $instance,
             )
         );
         
@@ -56,7 +57,7 @@ sub check {
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("ssd '%s' status is '%s'", $result->{content}->{name}, $health)
+                short_msg => sprintf("ssd '%s' status is '%s'", $name, $health)
             );
         }
     }
