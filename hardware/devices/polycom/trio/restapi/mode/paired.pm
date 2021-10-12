@@ -123,6 +123,12 @@ Check paired devices.
 
 =over 8
 
+=item B<--filter-device>
+
+Filter result by paired device.
+Can be: 'cameraSrc', 'audioSrcSink', 
+'displayUI'
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
