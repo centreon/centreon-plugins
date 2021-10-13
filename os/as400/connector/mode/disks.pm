@@ -94,7 +94,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'disks-errors', nlabel => 'disks.repartition.gap.percentage', set => {
+        { label => 'disks-gap-repartition', nlabel => 'disks.gap.repartition.percentage', set => {
                 key_values => [ { name => 'gap' } ],
                 output_template => 'gap repartition between min/max: %.2f %%',
                 perfdatas => [
@@ -256,7 +256,8 @@ Can used special variables like: %{status}, %{name}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'nodes-total', 'ping-received-lasttime' (s).
+Can be: 'space-usage', 'space-usage-free', 'space-usage-prct', 'reserved', 
+'disks-total', 'disks-active', 'disks-errors', 'disks-gap-repartition'.
 
 =back
 
