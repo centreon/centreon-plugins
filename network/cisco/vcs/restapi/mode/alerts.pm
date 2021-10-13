@@ -121,7 +121,7 @@ Check alerts.
 
 Filter alerts by reason (Can use regexp).
 
-=item B<--display-alerts
+=item B<--display-alerts>
 
 Display alerts in verbose output.
 
