@@ -150,6 +150,8 @@ sub request_api {
     my $file;
     if ($options{command} eq 'listDisks') {
         $file = '/home/qgarnier/clients/plugins/as400/as400calls/listDisks.json';
+    } elsif ($options{command} eq 'listSubsystems') {
+        $file = '/home/qgarnier/clients/plugins/as400/as400calls/listSubsystems.json';
     }
     my $content = do {
         local $/ = undef;
