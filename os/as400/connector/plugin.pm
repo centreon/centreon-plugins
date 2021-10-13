@@ -32,9 +32,10 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         'disks'           => 'os::as400::connector::mode::disks',
+        'jobs'           => 'os::as400::connector::mode::jobs',
         'list-disks'      => 'os::as400::connector::mode::listdisks',
         'list-subsystems' => 'os::as400::connector::mode::listsubsystems',
-        'subsystems'      => 'os::as400::connector::mode::subsystems',
+        'subsystems'      => 'os::as400::connector::mode::subsystems'
     };
 
     $self->{custom_modes}->{api} = 'os::as400::connector::custom::api';
