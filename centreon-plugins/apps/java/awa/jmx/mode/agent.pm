@@ -118,25 +118,31 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
             next;
         }
-        
-        next if ($result->{$mbean}->{LastCheck} !~ /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/);
-        
-        my $dt = DateTime->new(
-            year       => $1,
-            month      => $2,
-            day        => $3,
-            hour       => $4,
-            minute     => $5,
-            second     => $6,
-            %$tz
-        );
-        
-        $self->{agent}->{$display} = { 
+
+        my $agent_infos = {
             display => $display,
             ipaddress => $result->{$mbean}->{IpAddress},
             active => $result->{$mbean}->{Active} ? 'yes' : 'no',
-            since => time() - $dt->epoch,
         };
+
+        if ($result->{$mbean}->{LastCheck} =~ /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/) {
+            my $dt = DateTime->new(
+                year       => $1,
+                month      => $2,
+                day        => $3,
+                hour       => $4,
+                minute     => $5,
+                second     => $6,
+                %$tz
+            );
+          $agent_infos->{since} = time() - $dt->epoch;
+        } elsif ($result->{$mbean}->{LastCheck} =~ /^\s*00:00:00/) {
+          $agent_infos->{since} = 0;
+        } else {
+          next;
+        }
+
+        $self->{agent}->{$display} = $agent_infos;
     }
     
     if (scalar(keys %{$self->{agent}}) <= 0) {
