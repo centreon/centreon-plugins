@@ -32,7 +32,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'computer:s'     => { name => 'computer' },
+        'name'           => { name => 'name' },
+        'resource:s'     => { name => 'resource' },
         'workspace-id:s' => { name => 'workspace_id' }
     });
     return $self;
@@ -42,8 +43,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{computer}) || $self->{option_results}->{computer} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --computer option.");
+    if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --resource option.");
         $self->{output}->option_exit();
     }
 }
@@ -51,7 +52,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-   my $query = 'InsightsMetrics | where Namespace == "LogicalDisk" | distinct Tags, Computer | where Computer == "' . $self->{option_results}->{computer} . '"';
+   my $query = 'InsightsMetrics | where Namespace == "LogicalDisk" | distinct Tags, _ResourceId, Computer';
+   if (defined($self->{option_results}->{name})) {
+       $query .= '| where Computer == "' . $self->{option_results}->{resource} . '"';
+   } else {
+       $query .= '| where _ResourceId == "' . $self->{option_results}->{resource} . '"';
+   }
 
     my $results = $options{custom}->azure_get_insights_analytics(
         workspace_id => $self->{option_results}->{workspace_id},
@@ -65,6 +71,11 @@ sub manage_selection {
         my $decoded_tag = $options{custom}->json_decode(content => $results->{data}->{$entry}->{tags});
 
         $self->{logicaldisk}->{$decoded_tag->{"vm.azm.ms/mountId"}}->{name} = $decoded_tag->{"vm.azm.ms/mountId"};
+    }
+
+    if (scalar(keys %{$self->{logicaldisk}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No logical disks found. Can be: filters, cache file.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -107,7 +118,29 @@ __END__
 
 List Azure Computer logical disks.
 
+Example:
+
+perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plugin --custommode=api --mode=list-logical-disks
+--subscription=1111 --tenant=2222 --client-id=3333 --client-secret=4444 --workspace-id=5555 --verbose --resource='azure-vm1'
+--name
+
 =over 8
+
+=item B<--workspace-id>
+(Mandatory)
+Specify the Azure Log Analytics Workspace ID.
+
+=item B<--resource>
+
+(Mandatory)
+Specify the Azure VM Resource ID or name. Short name can be used if the option --name is defined.
+Example: --resource='/subscriptions/1234abcd-5678-defg-9012-3456789abcde/resourcegroups/my_resourcegroup/providers/microsoft.compute/virtualmachines/azure-vm1'
+
+=item B<--name>
+
+(Optional)
+Use only the name of the VM resource rather than the full ID.
+Example: --resource='azure-vm1' --name
 
 =back
 
