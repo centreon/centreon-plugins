@@ -125,8 +125,14 @@ sub get_access_token {
     my $has_cache_file = $options{statefile}->read(statefile => 'office365_managementapi_' . md5_hex($self->{tenant}) . '_' . md5_hex($self->{client_id}));
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
+    my $md5_secret_cache = $options{statefile}->get(name => 'md5_secret');
+    my $md5_secret = md5_hex($self->{client_secret});
 
-    if ($has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10)) {
+    if ($has_cache_file == 0 ||
+        !defined($access_token) ||
+        (($expires_on - time()) < 10) ||
+        (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
+        ) {
         my $uri = URI::Encode->new({encode_reserved => 1});
         my $encoded_client_secret = $uri->encode($self->{client_secret});
         my $encoded_management_endpoint = $uri->encode($self->{management_endpoint});
@@ -134,12 +140,14 @@ sub get_access_token {
             '&client_id=' . $self->{client_id} .
             '&client_secret=' . $encoded_client_secret .
             '&resource=' . $encoded_management_endpoint;
-        
+
         $self->settings();
 
-        my $content = $self->{http}->request(method => 'POST', query_form_post => $post_data,
-                                             full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/token?api-version=1.0',
-                                             hostname => '');
+        my $content = $self->{http}->request(
+            method => 'POST', query_form_post => $post_data,
+            full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/token?api-version=1.0',
+            hostname => ''
+        );
 
         my $decoded;
         eval {
@@ -157,10 +165,15 @@ sub get_access_token {
         }
 
         $access_token = $decoded->{access_token};
-        my $datas = { last_timestamp => time(), access_token => $decoded->{access_token}, expires_on => $decoded->{expires_on} };
+        my $datas = {
+            last_timestamp => time(),
+            access_token => $decoded->{access_token},
+            expires_on => $decoded->{expires_on},
+            md5_secret => $md5_secret
+        };
         $options{statefile}->write(data => $datas);
     }
-    
+
     return $access_token;
 }
 
@@ -172,20 +185,17 @@ sub request_api {
     }
 
     $self->settings();
-
     my $content = $self->{http}->request(%options);
-    
+
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
     if (defined($decoded->{error})) {
-        $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}->{message}, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Management endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
         $self->{output}->option_exit();
     }
