@@ -84,9 +84,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-computer:s' => { name => 'filter_computer' },
-        'filter-cpu:s'     => { name => 'filter_cpu' },
-        'workspace-id:s'    => { name => 'workspace_id' }
+        'filter-computer:s'   => { name => 'filter_computer' },
+        'filter-cpu:s'        => { name => 'filter_cpu' },
+        'filter-resourceid:s' => { name => 'filter_resourceid' },
+        'workspace-id:s'      => { name => 'workspace_id' }
     });
 
     return $self;
@@ -103,6 +104,7 @@ sub manage_selection {
 
     my $query = 'InsightsMetrics | where Namespace == "Processor" | summarize arg_max(TimeGenerated, *) by Tags, Name, Computer'; 
     $query .= '| where Computer == "' . $self->{option_results}->{filter_computer} . '"' if defined $self->{option_results}->{filter_computer} && $self->{option_results}->{filter_computer} ne '';
+    $query .= '| where _ResourceId == "' . $self->{option_results}->{filter_resourceid} . '"' if defined $self->{option_results}->{filter_resourceid} && $self->{option_results}->{filter_resourceid} ne '';
 
     my $results = $options{custom}->azure_get_insights_analytics(
         workspace_id => $self->{option_results}->{workspace_id},
@@ -163,6 +165,10 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plu
 --subscription=1111 --tenant=2222 --client-id=3333 --client-secret=4444 --workspace-id=5555 --verbose
 
 =over 8
+
+=item B<--workspace-id>
+(Mandatory)
+Specify the Azure Log Analytics Workspace ID.
 
 =item B<--filter-computer>
 
