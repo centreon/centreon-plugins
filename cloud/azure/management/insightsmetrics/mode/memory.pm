@@ -24,7 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use POSIX qw(strftime);
+use List::Util qw(max);
+use Date::Parse;
 
 sub computer_long_output {
     my ($self, %options) = @_;
@@ -35,7 +36,20 @@ sub computer_long_output {
 sub prefix_memory_output {
     my ($self, %options) = @_;
 
-    return " Memory utilization: "  ;
+    return " Memory usage: "  ;
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'Memory Total: %s %s Used: %s%s (%.2f%%) Available: %s%s (%.2f%%)',
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{used_prct},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{available}),
+        $self->{result_values}->{available_prct}
+    );
 }
 
 sub set_counters {
@@ -51,10 +65,26 @@ sub set_counters {
 
     $self->{maps_counters}->{memory} = [
         { label => 'usage', nlabel => 'azure.insights.memory.usage.bytes', set => {
-                key_values => [ { name => 'used' }, { name => 'used-prct' }, { name => 'available' }, { name => 'available-prct' }, ],
+                key_values => [ { name => 'used' }, { name => 'used_prct' }, { name => 'available' }, { name => 'available_prct' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { template => '%.2f', unit => 'B', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'usage-percentage', display_ok => 0, nlabel => 'azure.insights.memory.usage.percentage', set => {
+                key_values => [ { name => 'used_prct' } ],
+                output_template => 'used %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'available-percentage', display_ok => 0, nlabel => 'azure.insights.memory.available.percentage', set => {
+                key_values => [ { name => 'available_prct' } ],
+                output_template => 'available %.2f %%',
+                perfdatas => [
+                    { template => '%d', min => 0, max => 100, label_extra_instance => 1 }
                 ]
             }
         },
@@ -92,26 +122,36 @@ sub manage_selection {
         timespan => $self->{option_results}->{timespan}
     );
 
+    my $timestamps = [];
     foreach my $entry (keys %{$results->{data}}) {
         $self->{computer}->{$results->{data}->{$entry}->{computer}}->{display} = $results->{data}->{$entry}->{computer};
+        push @$timestamps, Date::Parse::str2time($results->{data}->{$entry}->{timegenerated});
     }
 
     my $decoded_tag;
     foreach my $computer (keys %{$self->{computer}}) {
         foreach my $entry (keys %{$results->{data}}) {
+            next if Date::Parse::str2time($results->{data}->{$entry}->{timegenerated}) != max(@$timestamps);
             $decoded_tag = $options{custom}->json_decode(content => $results->{data}->{$entry}->{tags});
-            $self->{computer}->{$results->{data}->{$entry}->{computer}}->{memory}->{available} = $results->{data}->{$entry}->{value} * 1000000;
-            $self->{computer}->{$results->{data}->{$entry}->{computer}}->{memory}->{total} = defined($decoded_tag->{"vm.azm.ms/memorySizeMB"}) ? $decoded_tag->{"vm.azm.ms/memorySizeMB"} * 1000000 : 0;
+            if (defined($results->{data}->{$entry}->{value})) {
+                $self->{computer}->{$results->{data}->{$entry}->{computer}}->{memory}->{available} = $results->{data}->{$entry}->{value} * 1000000;
+            }
+            $self->{computer}->{$results->{data}->{$entry}->{computer}}->{memory}->{total} = defined($decoded_tag->{"vm.azm.ms/memorySizeMB"}) ? $decoded_tag->{"vm.azm.ms/memorySizeMB"} * 1000000 : undef;
         }
-        $self->{computer}->{$computer}->{memory}->{used} = $self->{computer}->{$computer}->{memory}->{total} -
-            $self->{computer}->{$computer}->{memory}->{available};
+        if (defined($self->{computer}->{$computer}->{memory}->{available}) && defined($self->{computer}->{$computer}->{memory}->{total})) {
+            $self->{computer}->{$computer}->{memory}->{used} = $self->{computer}->{$computer}->{memory}->{total} -
+                $self->{computer}->{$computer}->{memory}->{available} ;
+
+            $self->{computer}->{$computer}->{memory}->{used_prct} = $self->{computer}->{$computer}->{memory}->{used} * 100 / $self->{computer}->{$computer}->{memory}->{total};
+            $self->{computer}->{$computer}->{memory}->{available_prct} = 100 - $self->{computer}->{$computer}->{memory}->{used_prct};
+        }
 
         if (scalar(keys %{$self->{computer}->{$computer}->{memory}}) <= 0) {
             $self->{output}->add_option_msg(short_msg => "No memory found for computer " . $self->{computer}->{$computer}->{display});
             $self->{output}->option_exit();
         }
-        use Data::Dumper; print Dumper($self->{computer});
     }
+
     if (scalar(keys %{$self->{computer}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No computer found. Can be: filters, cache file.");
         $self->{output}->option_exit();
@@ -124,11 +164,11 @@ __END__
 
 =head1 MODE
 
-Check Aure VM CPUs using Insights metrics.
+Check Aure VM memory usage using Insights metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plugin --custommode=api --mode=cpu
+perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plugin --custommode=api --mode=memory
 --subscription=1111 --tenant=2222 --client-id=3333 --client-secret=4444 --workspace-id=5555 --verbose
 
 =over 8
@@ -137,19 +177,15 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::insightsmetrics::plu
 
 Filter on a specific Azure "computer".
 
-=item B<--filter-cpu>
-
-Filter on specific CPU ID.
-
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'average-utilization-percentage', 'core-utilization-percentage'
+'usage', 'usage-percentage', 'available-percentage'
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'average-utilization-percentage', 'core-utilization-percentage'
+'usage', 'usage-percentage', 'available-percentage'
 
 =back
 
