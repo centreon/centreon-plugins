@@ -52,7 +52,7 @@ sub set_counters {
          },
          { label => 'display-count', nlabel => 'display.count', set => {
                 key_values => [ { name => 'displayUI' } ],
-                output_template => 'audioSrcSink: %d',
+                output_template => 'displayUI: %d',
                 perfdatas => [
                     { template => '%d', min => 0 }
                 ]
