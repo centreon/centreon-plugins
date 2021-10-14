@@ -265,6 +265,22 @@ sub convert_duration {
     return $duration;
 }
 
+sub json_decode {
+    my ($self, %options) = @_;
+
+    $options{content} =~ s/\r//mg;
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($options{content});
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $decoded;
+}
+
 sub azure_get_metrics_set_url {
     my ($self, %options) = @_;
 
@@ -653,6 +669,37 @@ sub azure_get_log_analytics {
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
 
     return $response;
+}
+
+sub azure_get_insights_analytics {
+    my ($self, %options) = @_;
+
+    my $raw_results = {};
+    my $analytics_results = $self->azure_get_log_analytics(
+        workspace_id => $options{workspace_id},
+        query => $options{query},
+        timespan => $options{timespan}
+    );
+
+    foreach (@{$analytics_results->{tables}}) {
+        my ($i, $j) = (0, 0);
+        foreach my $entry (@{$_->{columns}}) {
+            $raw_results->{index}->{$entry->{name}} = $i;
+            $i++;
+        }
+
+        foreach (@{$_->{rows}}) {
+            $raw_results->{data}->{$j}->{tags} = @$_[$raw_results->{index}->{Tags}];
+            $raw_results->{data}->{$j}->{computer} = @$_[$raw_results->{index}->{Computer}];
+            if (!defined($options{disco})) {
+                $raw_results->{data}->{$j}->{timegenerated} = @$_[$raw_results->{index}->{TimeGenerated}];
+                $raw_results->{data}->{$j}->{name} = @$_[$raw_results->{index}->{Name}];
+                $raw_results->{data}->{$j}->{value} = @$_[$raw_results->{index}->{Val}];
+            }
+            $j++;
+        }
+    }
+    return $raw_results;
 }
 
 sub azure_get_publicip_set_url {
