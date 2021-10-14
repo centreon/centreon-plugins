@@ -36,7 +36,7 @@ sub computer_long_output {
 sub prefix_memory_output {
     my ($self, %options) = @_;
 
-    return " Memory usage: "  ;
+    return "Memory usage: ";
 }
 
 sub custom_usage_output {
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'available_prct' } ],
                 output_template => 'available %.2f %%',
                 perfdatas => [
-                    { template => '%d', min => 0, max => 100, label_extra_instance => 1 }
+                    { template => '%d', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
         },
