@@ -127,8 +127,14 @@ sub get_access_token {
     my $has_cache_file = $options{statefile}->read(statefile => 'office365_graphapi_' . md5_hex($self->{tenant}) . '_' . md5_hex($self->{client_id}));
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
+    my $md5_secret_cache = $options{statefile}->get(name => 'md5_secret');
+    my $md5_secret = md5_hex($self->{client_secret});
 
-    if ($has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10)) {
+    if ($has_cache_file == 0 ||
+        !defined($access_token) ||
+        (($expires_on - time()) < 10) ||
+        (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
+        ) {
         my $uri = URI::Encode->new({encode_reserved => 1});
         my $encoded_client_secret = $uri->encode($self->{client_secret});
         my $encoded_graph_endpoint = $uri->encode($self->{graph_endpoint} . '/.default');
@@ -139,34 +145,39 @@ sub get_access_token {
         
         $self->settings();
 
-        my $content = $self->{http}->request(method => 'POST', query_form_post => $post_data,
-                                             full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/v2.0/token',
-                                             hostname => '');
+        my $content = $self->{http}->request(
+            method => 'POST', query_form_post => $post_data,
+            full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/v2.0/token',
+            hostname => ''
+        );
 
         my $decoded;
         eval {
             $decoded = JSON::XS->new->utf8->decode($content);
         };
         if ($@) {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
             $self->{output}->option_exit();
         }
         if (defined($decoded->{error})) {
-            $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error_description}, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Login endpoint API return error code '" . $decoded->{error} . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
 
         $access_token = $decoded->{access_token};
-        my $datas = { last_timestamp => time(), access_token => $decoded->{access_token}, expires_on => time() + $decoded->{expires_in} };
+        my $datas = {
+            last_timestamp => time(),
+            access_token => $decoded->{access_token},
+            expires_on => time() + $decoded->{expires_in},
+            md5_secret => $md5_secret
+        };
         $options{statefile}->write(data => $datas);
     }
     
     return $access_token;
 }
 
-sub request_api_json { #so lame for now
+sub request_api_json {
     my ($self, %options) = @_;
 
     if (!defined($self->{access_token})) {
@@ -179,30 +190,26 @@ sub request_api_json { #so lame for now
     my %local_options = %options;
 
     while (1) {
-        $self->{output}->output_add(long_msg => "URL: '" . $local_options{full_url} . "'", debug => 1);
-
         my $content = $self->{http}->request(%local_options);
 
         if ($self->{http}->get_code() == 429) {
             last;
         }
-        
+
         my $decoded;
         eval {
             $decoded = JSON::XS->new->utf8->decode($content);
         };
         if ($@) {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
             $self->{output}->option_exit();
         }
         if (defined($decoded->{error})) {
-            $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}->{message}, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
         push @results, @{$decoded->{value}};
-        
+
         last if (!defined($decoded->{'@odata.nextLink'}));
         $local_options{full_url} = $decoded->{'@odata.nextLink'};
     }
@@ -218,22 +225,19 @@ sub request_api_csv {
     }
 
     $self->settings();
-    $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
 
     my $content = $self->{http}->request(%options);
-    
+
     if ($self->{http}->get_code() != 200) {
         my $decoded;
         eval {
             $decoded = JSON::XS->new->utf8->decode($content);
         };
         if ($@) {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
             $self->{output}->option_exit();
         }
         if (defined($decoded->{error})) {
-            $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}->{message}, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
@@ -272,7 +276,7 @@ sub office_get_sharepoint_site_usage {
 
     my $full_url = $self->office_get_sharepoint_site_usage_set_url(%options);
     my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response;
 }
 
@@ -289,7 +293,7 @@ sub office_get_sharepoint_activity {
 
     my $full_url = $self->office_get_sharepoint_activity_set_url(%options);
     my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response;
 }
 
