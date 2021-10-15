@@ -37,7 +37,7 @@ sub new {
         'memory'             => 'cloud::azure::management::insightsmetrics::mode::memory',
     );
 
-    $self->{custom_modes}{api} = 'cloud::azure::custom::api';
+    $self->{custom_modes}->{api} = 'cloud::azure::custom::api';
     return $self;
 }
 
