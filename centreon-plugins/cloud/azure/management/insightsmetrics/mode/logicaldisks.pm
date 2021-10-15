@@ -166,7 +166,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $query = 'InsightsMetrics | where Namespace == "LogicalDisk" | summarize arg_max(TimeGenerated, *) by Tags, Name, Computer'; 
+    my $query = 'InsightsMetrics | where Namespace == "LogicalDisk" | summarize arg_max(TimeGenerated, *) by Tags, Name, Computer';
     $query .= '| where Computer == "' . $self->{option_results}->{filter_computer} . '"' if defined $self->{option_results}->{filter_computer} && $self->{option_results}->{filter_computer} ne '';
     $query .= '| where _ResourceId == "' . $self->{option_results}->{filter_resourceid} . '"' if defined $self->{option_results}->{filter_resourceid} && $self->{option_results}->{filter_resourceid} ne '';
 
@@ -198,6 +198,7 @@ sub manage_selection {
                 $decoded_tag = $options{custom}->json_decode(content => $results->{data}->{$entry}->{tags});
                 my $mountid = $decoded_tag->{"vm.azm.ms/mountId"};
                 next if ($mountid !~ m/$disk/);
+                next if (defined($self->{option_results}->{filter_disk}) && $decoded_tag->{"vm.azm.ms\/mountId"} !~ m/$self->{option_results}->{filter_disk}/);
 
                 if ($results->{data}->{$entry}->{name} =~ m/(.*Space)MB/) {
                     $self->{computer}->{$results->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{$1} = $results->{data}->{$entry}->{value} * 1000000;
@@ -205,7 +206,7 @@ sub manage_selection {
                     $self->{computer}->{$results->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{$results->{data}->{$entry}->{name}} = $results->{data}->{$entry}->{value};
                 }
                 if ($results->{data}->{$entry}->{name} =~ 'Status') {
-                    $self->{computer}->{$results->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{$results->{data}->{$entry}->{name}} = %$status_mapping{$results->{data}->{$entry}->{value}};
+                    $self->{computer}->{$results->{data}->{$entry}->{computer}}->{logicaldisk}->{$mountid}->{$results->{data}->{$entry}->{name}} = $status_mapping->{$results->{data}->{$entry}->{value}};
                 }
 
                 if (defined($decoded_tag->{"vm.azm.ms/diskSizeMB"})) {
@@ -249,12 +250,17 @@ Specify the Azure Log Analytics Workspace ID.
 
 =item B<--filter-computer>
 
-Filter on a specific Azure "computer".
+Filter on a specific Azure "computer" name.
+Example: --filter-name='azure-vm1'
+
+=item B<--filter-resourceid>
+
+Filter on a specific Azure "computer" based on the full resource ID.
+Example: --filter-resourceid='/subscriptions/1234abcd-5678-defg-9012-3456789abcde/resourcegroups/my_resourcegroup/providers/microsoft.compute/virtualmachines/azure-vm1'
 
 =item B<--filter-disk>
 
 Filter on specific logical(s) disk(s).
-
 
 =item B<--warning-status>
 
