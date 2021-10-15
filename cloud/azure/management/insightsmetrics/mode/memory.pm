@@ -87,7 +87,7 @@ sub set_counters {
                     { template => '%d', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
-        },
+        }
     ];
 }
 
@@ -114,7 +114,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $query = 'InsightsMetrics | where Namespace == "Memory" | summarize arg_max(TimeGenerated, *) by Tags, Name, Computer'; 
+    my $query = 'InsightsMetrics | where Namespace == "Memory" | summarize arg_max(TimeGenerated, *) by Tags, Name, Computer';
     $query .= '| where Computer == "' . $self->{option_results}->{filter_computer} . '"' if defined $self->{option_results}->{filter_computer} && $self->{option_results}->{filter_computer} ne '';
     $query .= '| where _ResourceId == "' . $self->{option_results}->{filter_resourceid} . '"' if defined $self->{option_results}->{filter_resourceid} && $self->{option_results}->{filter_resourceid} ne '';
 
@@ -181,7 +181,13 @@ Specify the Azure Log Analytics Workspace ID.
 
 =item B<--filter-computer>
 
-Filter on a specific Azure "computer".
+Filter on a specific Azure "computer" name.
+Example: --filter-name='azure-vm1'
+
+=item B<--filter-resourceid>
+
+Filter on a specific Azure "computer" based on the full resource ID.
+Example: --filter-resourceid='/subscriptions/1234abcd-5678-defg-9012-3456789abcde/resourcegroups/my_resourcegroup/providers/microsoft.compute/virtualmachines/azure-vm1'
 
 =item B<--warning-*>
 
