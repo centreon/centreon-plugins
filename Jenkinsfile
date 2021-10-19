@@ -44,18 +44,17 @@ stage('RPM Packaging') {
   }
 }
 
-if ((env.BUILD == 'REFERENCE')) {
-  stage('RPM Delivery') {
-    parallel 'all': {
-      node {
-        sh 'setup_centreon_build.sh'
-        unstash 'rpms-centos7'
-        unstash 'rpms-centos8'
-        sh './centreon-build/jobs/plugins/plugins-delivery.sh'
-      }
-    }
-    if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
-      error('Package stage failure.');
+stage('RPM Delivery') {
+  parallel 'all': {
+    node {
+      sh 'setup_centreon_build.sh'
+      unstash 'rpms-centos7'
+      unstash 'rpms-centos8'
+      sh './centreon-build/jobs/plugins/plugins-delivery.sh'
     }
   }
+  if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
+    error('Package stage failure.');
+  }
 }
+
