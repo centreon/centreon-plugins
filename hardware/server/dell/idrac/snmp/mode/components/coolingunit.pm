@@ -53,7 +53,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_coolingUnitTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'coolingunit', instance => $instance));
+        next if ($self->check_filter(section => 'coolingunit', instance => $instance, name => $result->{coolingUnitName}));
         $self->{components}->{coolingunit}->{total}++;
 
         $self->{output}->output_add(

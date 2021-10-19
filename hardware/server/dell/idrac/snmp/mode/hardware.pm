@@ -141,6 +141,10 @@ Can be: 'amperage', 'coolingdevice', 'coolingunit', 'enclosure',
 Exclude some parts (comma seperated list) (Example: --filter=temperature --filter=psu)
 Can also exclude specific instance: --filter=temperature,1.1
 
+=item B<--add-name-instance>
+
+Add literal description for instance value (used in filter and threshold options).
+
 =item B<--no-component>
 
 Return an error if no compenents are checked.

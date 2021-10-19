@@ -48,13 +48,13 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        next if ($self->check_filter(section => 'vdisk', instance => $instance));
+        next if ($self->check_filter(section => 'vdisk', instance => $instance, name => $result->{virtualDiskFQDD}));
         $self->{components}->{vdisk}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
                 "virtual disk '%s' state is '%s' [instance = %s]",
-                $result->{virtualDiskFQDD}, $result->{virtualDiskState}, $instance, 
+                $result->{virtualDiskFQDD}, $result->{virtualDiskState}, $instance
             )
         );
 

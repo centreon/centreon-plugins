@@ -52,7 +52,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fruTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'fru', instance => $instance));
+        next if ($self->check_filter(section => 'fru', instance => $instance, name => $result->{fruSerialNumberName}));
         $self->{components}->{fru}->{total}++;
 
         $self->{output}->output_add(

@@ -53,7 +53,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
-        next if ($self->check_filter(section => 'processor', instance => $instance));
+        next if ($self->check_filter(section => 'processor', instance => $instance, name => $result->{processorDeviceFQDD}));
         $self->{components}->{processor}->{total}++;
 
         $self->{output}->output_add(
