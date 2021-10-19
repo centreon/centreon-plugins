@@ -53,7 +53,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_enclosureTableEntry}, instance => $instance);
 
-        next if ($self->check_filter(section => 'enclosure', instance => $instance));
+        next if ($self->check_filter(section => 'enclosure', instance => $instance, name => $result->{enclosureName}));
         $self->{components}->{enclosure}->{total}++;
 
         $self->{output}->output_add(

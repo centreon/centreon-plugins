@@ -64,7 +64,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
 
-        next if ($self->check_filter(section => 'pdisk', instance => $instance));
+        next if ($self->check_filter(section => 'pdisk', instance => $instance, name => $result->{physicalDiskFQDD}));
         $self->{components}->{pdisk}->{total}++;
 
         if ($result->{physicalDiskState} eq 'ready') {

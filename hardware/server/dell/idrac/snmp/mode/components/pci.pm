@@ -53,7 +53,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_pCIDeviceTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'pci', instance => $instance));
+        next if ($self->check_filter(section => 'pci', instance => $instance, name => $result->{pCIDeviceDescriptionName}));
         $self->{components}->{pci}->{total}++;
 
         $self->{output}->output_add(

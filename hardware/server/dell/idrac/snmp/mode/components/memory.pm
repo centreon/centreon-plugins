@@ -53,7 +53,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_memoryDeviceTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'memory', instance => $instance));
+        next if ($self->check_filter(section => 'memory', instance => $instance, name => $result->{memoryDeviceLocationName}));
         $self->{components}->{memory}->{total}++;
 
         $self->{output}->output_add(

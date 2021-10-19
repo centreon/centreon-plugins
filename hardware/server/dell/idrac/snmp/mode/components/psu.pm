@@ -52,13 +52,13 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_powerSupplyTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance, name => $result->{powerSupplyLocationName}));
         $self->{components}->{psu}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
                 "power supply '%s' status is '%s' [instance = %s]",
-                $result->{powerSupplyLocationName}, $result->{powerSupplyStatus}, $instance, 
+                $result->{powerSupplyLocationName}, $result->{powerSupplyStatus}, $instance
             )
         );
 

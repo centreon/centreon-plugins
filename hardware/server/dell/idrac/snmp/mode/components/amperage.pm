@@ -59,7 +59,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_amperageProbeTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'amperage', instance => $instance));
+        next if ($self->check_filter(section => 'amperage', instance => $instance, name => $result->{amperageProbeLocationName}));
         $self->{components}->{amperage}->{total}++;
 
         my ($divisor, $unit) = (1000, 'A');
@@ -99,7 +99,12 @@ sub check {
         next if ($result->{amperageProbeType} =~ /amperageProbeTypeIsDiscrete/);
         
         if (defined($result->{amperageProbeReading}) && $result->{amperageProbeReading} =~ /[0-9]/) {
-            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'amperage', instance => $instance, value => $result->{amperageProbeReading});
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(
+                section => 'amperage',
+                instance => $instance,
+                name => $result->{amperageProbeLocationName},
+                value => $result->{amperageProbeReading}
+            );
             if ($checked == 0) {
                 $result->{amperageProbeLowerNonCriticalThreshold} = (defined($result->{amperageProbeLowerNonCriticalThreshold}) && $result->{amperageProbeLowerNonCriticalThreshold} =~ /[0-9]/) ?
                     $result->{amperageProbeLowerNonCriticalThreshold} / $divisor : '';

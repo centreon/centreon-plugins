@@ -48,13 +48,13 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
-        next if ($self->check_filter(section => 'storagectrl', instance => $instance));
+        next if ($self->check_filter(section => 'storagectrl', instance => $instance, name => $result->{controllerFQDD}));
         $self->{components}->{storagectrl}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
                 "storage controller '%s' status is '%s' [instance = %s]",
-                $result->{controllerFQDD}, $result->{controllerComponentStatus}, $instance, 
+                $result->{controllerFQDD}, $result->{controllerComponentStatus}, $instance
             )
         );
 

@@ -58,7 +58,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_coolingDeviceTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'coolingdevice', instance => $instance));
+        next if ($self->check_filter(section => 'coolingdevice', instance => $instance, name => $result->{coolingDeviceLocationName}));
         $self->{components}->{coolingdevice}->{total}++;
 
         $result->{coolingDeviceReading} = (defined($result->{coolingDeviceReading})) ? $result->{coolingDeviceReading} : 'unknown';
@@ -72,8 +72,10 @@ sub check {
 
         my $exit = $self->get_severity(label => 'default.state', section => 'coolingdevice.state', value => $result->{coolingDeviceStateSettings});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Cooling device '%s' state is '%s'", $result->{coolingDeviceLocationName}, $result->{coolingDeviceStateSettings}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Cooling device '%s' state is '%s'", $result->{coolingDeviceLocationName}, $result->{coolingDeviceStateSettings})
+            );
             next;
         }
 
@@ -86,7 +88,12 @@ sub check {
         }
      
         if (defined($result->{coolingDeviceReading}) && $result->{coolingDeviceReading} =~ /[0-9]/) {
-            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'coolingdevice', instance => $instance, value => $result->{coolingDeviceReading});
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(
+                section => 'coolingdevice',
+                instance => $instance,
+                name => $result->{coolingDeviceLocationName},
+                value => $result->{coolingDeviceReading}
+            );
             if ($checked == 0) {
                 $result->{coolingDeviceLowerNonCriticalThreshold} = (defined($result->{coolingDeviceLowerNonCriticalThreshold}) && $result->{coolingDeviceLowerNonCriticalThreshold} =~ /[0-9]/) ?
                     $result->{coolingDeviceLowerNonCriticalThreshold} / 10 : '';
