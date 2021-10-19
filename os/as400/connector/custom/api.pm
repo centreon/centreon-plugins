@@ -154,6 +154,8 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/as400/as400calls/listSubsystems.json';
     } elsif ($options{command} eq 'listJobs') {
         $file = '/home/qgarnier/clients/plugins/as400/as400calls/listJobs.json';
+    } elsif ($options{command} eq 'getSystem') {
+        $file = '/home/qgarnier/clients/plugins/as400/as400-json/getSystem.json';
     }
     my $content = do {
         local $/ = undef;
