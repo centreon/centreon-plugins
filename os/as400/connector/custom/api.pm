@@ -156,6 +156,10 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/as400/as400calls/listJobs.json';
     } elsif ($options{command} eq 'getSystem') {
         $file = '/home/qgarnier/clients/plugins/as400/as400-json/getSystem.json';
+    } elsif ($options{command} eq 'getErrorMessageQueue') {
+        $file = '/home/qgarnier/clients/plugins/as400/as400-json/getErrorMessageQueue.json';
+    } elsif ($options{command} eq 'getNewMessageInMessageQueue') {
+        $file = '/home/qgarnier/clients/plugins/as400/as400-json/getNewMessageInMessageQueue-after.json';
     }
     my $content = do {
         local $/ = undef;
