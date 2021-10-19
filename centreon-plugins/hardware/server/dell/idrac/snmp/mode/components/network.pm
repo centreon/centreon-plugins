@@ -52,7 +52,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_networkDeviceTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'network', instance => $instance));
+        next if ($self->check_filter(section => 'network', instance => $instance, name => $result->{networkDeviceProductName}));
         $self->{components}->{network}->{total}++;
 
         $self->{output}->output_add(

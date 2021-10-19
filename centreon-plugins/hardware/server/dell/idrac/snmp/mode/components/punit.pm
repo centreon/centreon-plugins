@@ -53,7 +53,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_powerUnitTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'punit', instance => $instance));
+        next if ($self->check_filter(section => 'punit', instance => $instance, name => $result->{powerUnitName}));
         $self->{components}->{punit}->{total}++;
 
         $self->{output}->output_add(

@@ -58,7 +58,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_voltageProbeTableEntry}, instance => $instance);
 
-        next if ($self->check_filter(section => 'voltage', instance => $instance));
+        next if ($self->check_filter(section => 'voltage', instance => $instance, name => $result->{voltageProbeLocationName}));
         $self->{components}->{voltage}->{total}++;
 
         $result->{voltageProbeReading} = (defined($result->{voltageProbeReading})) ? $result->{voltageProbeReading} / 1000 : 'unknown';
@@ -92,7 +92,12 @@ sub check {
         }
      
         if (defined($result->{voltageProbeReading}) && $result->{voltageProbeReading} =~ /[0-9]/) {
-            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{voltageProbeReading});
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(
+                section => 'voltage',
+                instance => $instance,
+                name => $result->{voltageProbeLocationName},
+                value => $result->{voltageProbeReading}
+            );
             if ($checked == 0) {
                 $result->{voltageProbeLowerNonCriticalThreshold} = (defined($result->{voltageProbeLowerNonCriticalThreshold}) && $result->{voltageProbeLowerNonCriticalThreshold} =~ /[0-9]/) ?
                     $result->{voltageProbeLowerNonCriticalThreshold} / 1000 : '';

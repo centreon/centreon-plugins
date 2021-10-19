@@ -53,7 +53,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_systemBatteryTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'systembattery', instance => $instance));
+        next if ($self->check_filter(section => 'systembattery', instance => $instance, name => $result->{systemBatteryLocationName}));
         $self->{components}->{systembattery}->{total}++;
 
         $self->{output}->output_add(

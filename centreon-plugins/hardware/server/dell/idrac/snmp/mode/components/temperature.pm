@@ -66,7 +66,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_temperatureProbeTableEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'temperature', instance => $instance));
+        next if ($self->check_filter(section => 'temperature', instance => $instance, name => $result->{temperatureProbeLocationName}));
         $self->{components}->{temperature}->{total}++;
 
         $result->{temperatureProbeReading} = (defined($result->{temperatureProbeReading})) ? $result->{temperatureProbeReading} / 10 : 'unknown';
@@ -98,9 +98,14 @@ sub check {
                 )
             );
         }
-     
+
         if (defined($result->{temperatureProbeReading}) && $result->{temperatureProbeReading} =~ /[0-9]/) {
-            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{temperatureProbeReading});
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(
+                section => 'temperature',
+                instance => $instance,
+                name => $result->{temperatureProbeLocationName},
+                value => $result->{temperatureProbeReading}
+            );
             if ($checked == 0) {
                 $result->{temperatureProbeLowerNonCriticalThreshold} = (defined($result->{temperatureProbeLowerNonCriticalThreshold}) && $result->{temperatureProbeLowerNonCriticalThreshold} =~ /[0-9]/) ?
                     $result->{temperatureProbeLowerNonCriticalThreshold} / 10 : '';

@@ -48,13 +48,13 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
-        next if ($self->check_filter(section => 'storagebattery', instance => $instance));
+        next if ($self->check_filter(section => 'storagebattery', instance => $instance, name => $result->{batteryFQDD}));
         $self->{components}->{storagebattery}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
                 "storage battery '%s' status is '%s' [instance = %s]",
-                $result->{batteryFQDD}, $result->{batteryComponentStatus}, $instance, 
+                $result->{batteryFQDD}, $result->{batteryComponentStatus}, $instance
             )
         );
 

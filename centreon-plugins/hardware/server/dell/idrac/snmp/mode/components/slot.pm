@@ -52,13 +52,13 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_systemSlotTableEntry}, instance => $instance);
 
-        next if ($self->check_filter(section => 'slot', instance => $instance));
+        next if ($self->check_filter(section => 'slot', instance => $instance, name => $result->{systemSlotSlotExternalSlotName}));
         $self->{components}->{slot}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
                 "slot '%s' status is '%s' [instance = %s]",
-                $result->{systemSlotSlotExternalSlotName}, $result->{systemSlotStatus}, $instance, 
+                $result->{systemSlotSlotExternalSlotName}, $result->{systemSlotStatus}, $instance
             )
         );
 
