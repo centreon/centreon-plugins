@@ -232,10 +232,11 @@ sub new {
 }
 
 my $mapping = {
-    cikeTunLocalValue       => { oid => '.1.3.6.1.4.1.9.9.171.1.2.3.1.3' },
-    cikeTunRemoteValue      => { oid => '.1.3.6.1.4.1.9.9.171.1.2.3.1.7' },
-    cikeTunActiveTime       => { oid => '.1.3.6.1.4.1.9.9.171.1.2.3.1.16' },
+    cikeTunLocalValue  => { oid => '.1.3.6.1.4.1.9.9.171.1.2.3.1.3' },
+    cikeTunRemoteValue => { oid => '.1.3.6.1.4.1.9.9.171.1.2.3.1.7' }
 };
+my $oid_cikeTunActiveTime = '.1.3.6.1.4.1.9.9.171.1.2.3.1.16';
+
 my $mapping2 = {
     cipSecTunInOctets       => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.26' },
     cipSecTunHcInOctets     => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.27' },
@@ -247,37 +248,40 @@ my $mapping2 = {
     cipSecTunOutDropPkts    => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.46' }
 };
 my $mapping3 = {
-    cipSecEndPtLocalAddr1   => { oid => '.1.3.6.1.4.1.9.9.171.1.3.3.1.4' },
     cipSecEndPtLocalAddr2   => { oid => '.1.3.6.1.4.1.9.9.171.1.3.3.1.5' },
     cipSecEndPtRemoteAddr1  => { oid => '.1.3.6.1.4.1.9.9.171.1.3.3.1.10' },
     cipSecEndPtRemoteAddr2  => { oid => '.1.3.6.1.4.1.9.9.171.1.3.3.1.11' }
 };
 
-my $oid_cikeTunnelEntry = '.1.3.6.1.4.1.9.9.171.1.2.3.1';
-my $oid_cipSecTunnelEntry = '.1.3.6.1.4.1.9.9.171.1.3.2.1';
-my $oid_cipSecEndPtEntry = '.1.3.6.1.4.1.9.9.171.1.3.3.1';
+my $oid_cipSecEndPtLocalAddr1 = '.1.3.6.1.4.1.9.9.171.1.3.3.1.4';
 my $oid_cipSecTunIkeTunnelIndex = '.1.3.6.1.4.1.9.9.171.1.3.2.1.2';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{tunnel} = {};    
-    my $request_oids = [
-        { oid => $oid_cikeTunnelEntry, start => $mapping->{cikeTunLocalValue}->{oid}, end => $mapping->{cikeTunActiveTime}->{oid} },
-        { oid => $oid_cipSecTunnelEntry, start => $mapping2->{cipSecTunInOctets}->{oid}, end => $mapping2->{cipSecTunOutDropPkts}->{oid} },
-        { oid => $oid_cipSecEndPtEntry, start => $mapping3->{cipSecEndPtLocalAddr1}->{oid}, end => $mapping3->{cipSecEndPtRemoteAddr2}->{oid} },
-        { oid => $oid_cipSecTunIkeTunnelIndex }
-    ];
-    my $results = $options{snmp}->get_multiple_table(oids => $request_oids);
+    $self->{cache_name} = 'cisco_ipsectunnel_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_sa}) ? md5_hex($self->{option_results}->{filter_sa}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+
+    $self->{global} = { total => 0 };
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping->{cikeTunLocalValue}->{oid} },
+            { oid => $mapping->{cikeTunRemoteValue}->{oid} },
+        ],
+        return_type => 1
+    );
 
     # The MIB doesn't give IPSec tunnel type (site-to-site or dynamic client)
     # You surely need to filter on SA. Dynamic client usually doesn't push local routes.
-    foreach (keys %{$results->{$oid_cikeTunnelEntry}}) {
+    $self->{tunnel} = {};
+    foreach (keys %$snmp_result) {
         next if (!/$mapping->{cikeTunRemoteValue}->{oid}\.(\d+)/);
-        
+
         my $cike_tun_index = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results->{$oid_cikeTunnelEntry}, instance => $cike_tun_index);
-        
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $cike_tun_index);
+
         my $name = $result->{cikeTunLocalValue} . '_' . $result->{cikeTunRemoteValue};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
@@ -285,47 +289,87 @@ sub manage_selection {
             next;
         }
 
-        foreach my $key (keys %{$results->{$oid_cipSecTunIkeTunnelIndex}}) {
-            next if ($results->{$oid_cipSecTunIkeTunnelIndex}->{$key} != $cike_tun_index);
-            $key =~ /^$oid_cipSecTunIkeTunnelIndex\.(\d+)/;
-            my $cip_tun_index = $1;
-
-            my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $results->{$oid_cipSecTunnelEntry}, instance => $cip_tun_index);
-            my $sa_name = '';
-            foreach my $key2 (keys %{$results->{$oid_cipSecEndPtEntry}}) {
-                if ($key2 =~ /^$mapping3->{cipSecEndPtLocalAddr1}->{oid}\.$cip_tun_index\.(\d+)/) {
-                    my $result3 = $options{snmp}->map_instance(mapping => $mapping3, results => $results->{$oid_cipSecEndPtEntry}, instance => $cip_tun_index . '.' . $1);
-                    $sa_name = inet_ntoa($result3->{cipSecEndPtLocalAddr1}) . ':' . inet_ntoa($result3->{cipSecEndPtLocalAddr2}) . '_' . inet_ntoa($result3->{cipSecEndPtRemoteAddr1}) . ':' . inet_ntoa($result3->{cipSecEndPtRemoteAddr2});
-                    last;
-                }
-            }
-
-            if (defined($self->{option_results}->{filter_sa}) && $self->{option_results}->{filter_sa} ne '' &&
-                $sa_name !~ /$self->{option_results}->{filter_sa}/) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $sa_name . "': no matching filter sa.", debug => 1);
-                next;
-            }
-
-            $self->{tunnel}->{$name} = { display => $name, sa => 0 } 
-                if (!defined($self->{tunnel}->{$name}));
-            if (defined($result2->{cipSecTunHcInOctets}) && defined($result2->{cipSecTunHcOutOctets})) {
-                delete $result2->{cipSecTunInOctets};
-                delete $result2->{cipSecTunInOctWraps};
-                delete $result2->{cipSecTunOutOctets};
-                delete $result2->{cipSecTunOutOctWraps};
-            }
-            foreach my $oid_name (keys %{$mapping2}) {
-                $self->{tunnel}->{$name}->{$oid_name . '_' . $cip_tun_index} = $result2->{$oid_name} if (defined($result2->{$oid_name}));
-            }
-            $self->{tunnel}->{$name}->{cikeTunActiveTime} = $result->{cikeTunActiveTime};
-            $self->{tunnel}->{$name}->{sa}++;
-        }
+        $self->{tunnel}->{$name} = { display => $name, sa => 0, ike_tun_index => $cike_tun_index };
     }
 
-    $self->{cache_name} = 'cisco_ipsectunnel_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_sa}) ? md5_hex($self->{option_results}->{filter_sa}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+    $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [ 
+            { oid => $oid_cipSecTunIkeTunnelIndex },
+            { oid => $oid_cipSecEndPtLocalAddr1 }
+        ]
+    );
+    my $tunnel_idx = {};
+    my $tunnel_idx_select = {};
+    foreach (keys %{$snmp_result->{$oid_cipSecTunIkeTunnelIndex}}) {
+        /^$oid_cipSecTunIkeTunnelIndex\.(\d+)/;
+        $tunnel_idx->{ $snmp_result->{$oid_cipSecTunIkeTunnelIndex}->{$_} } = $1;
+    }
+    foreach my $name (keys %{$self->{tunnel}}) {
+        if (!defined($tunnel_idx->{ $self->{tunnel}->{$name}->{ike_tun_index} })) {
+            delete $self->{tunnel}->{$name};
+            next;
+        }
+
+        $self->{tunnel}->{$name}->{tun_index} = $tunnel_idx->{ $self->{tunnel}->{$name}->{ike_tun_index} };
+        $tunnel_idx_select->{ $self->{tunnel}->{$name}->{tun_index} } = 1;
+    }
+
+    return if (scalar(keys %{$self->{tunnel}}) <= 0);
+
+    my $instances_end = {};
+    my $instances = [];
+    foreach (keys %{$snmp_result->{$oid_cipSecEndPtLocalAddr1}}) {
+        /(\d+)\.(\d+)$/;
+        next if (!defined($tunnel_idx_select->{$1}));
+        push @$instances, $1 . '.' . $2;
+        $instances_end->{$1} = [] if (!defined($instances_end->{$1}));
+        $instances_end->{$1} = [$2, $snmp_result->{$oid_cipSecEndPtLocalAddr1}->{$_}];
+    }
+
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping2)) ],
+        instances => [ map($_->{tun_index}, values(%{$self->{tunnel}})) ],
+        instance_regexp => '^(.*)$'
+    );
+    $options{snmp}->load(
+        oids => [$oid_cikeTunActiveTime],
+        instances => [ map($_->{ike_tun_index}, values(%{$self->{tunnel}})) ],
+        instance_regexp => '^(.*)$'
+    );
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping3)) ],
+        instances => $instances,
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef();
+
+    foreach my $name (keys %{$self->{tunnel}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $self->{tunnel}->{$name}->{tun_index});
+
+        my $sa_name = '';
+        if (defined($instances_end->{ $self->{tunnel}->{$name}->{tun_index} })) {
+            my $result3 = $options{snmp}->map_instance(mapping => $mapping3, results => $snmp_result, instance => $self->{tunnel}->{$name}->{tun_index} . '.' . $instances_end->{ $self->{tunnel}->{$name}->{tun_index} }->[0]);
+            $sa_name = inet_ntoa($instances_end->{ $self->{tunnel}->{$name}->{tun_index} }->[1]) . ':' . inet_ntoa($result3->{cipSecEndPtLocalAddr2}) . '_' . inet_ntoa($result3->{cipSecEndPtRemoteAddr1}) . ':' . inet_ntoa($result3->{cipSecEndPtRemoteAddr2});
+        }
+
+        if (defined($self->{option_results}->{filter_sa}) && $self->{option_results}->{filter_sa} ne '' &&
+            $sa_name !~ /$self->{option_results}->{filter_sa}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $sa_name . "': no matching filter sa.", debug => 1);
+            next;
+        }
+
+        if (defined($result->{cipSecTunHcInOctets}) && defined($result->{cipSecTunHcOutOctets})) {
+            delete $result->{cipSecTunInOctets};
+            delete $result->{cipSecTunInOctWraps};
+            delete $result->{cipSecTunOutOctets};
+            delete $result->{cipSecTunOutOctWraps};
+        }
+        foreach my $oid_name (keys %{$mapping2}) {
+            $self->{tunnel}->{$name}->{ $oid_name . '_' . $self->{tunnel}->{$name}->{tun_index} } = $result->{$oid_name} if (defined($result->{$oid_name}));
+        }
+        $self->{tunnel}->{$name}->{cikeTunActiveTime} = $snmp_result->{ $oid_cikeTunActiveTime . '.' . $self->{tunnel}->{$name}->{ike_tun_index} };
+        $self->{tunnel}->{$name}->{sa}++;
+    }
 
     $self->{global} = { total => scalar(keys %{$self->{tunnel}}) };
 }
