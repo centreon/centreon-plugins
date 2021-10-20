@@ -234,7 +234,7 @@ Check disks.
 
 Check exact disk.
 
-=item B<--filter-queue-name>
+=item B<--filter-disk-name>
 
 Filter disks by name (can be a regexp).
 

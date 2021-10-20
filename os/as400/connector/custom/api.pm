@@ -149,17 +149,19 @@ sub request_api {
 
     my $file;
     if ($options{command} eq 'listDisks') {
-        $file = '/home/qgarnier/clients/plugins/as400/as400calls/listDisks.json';
+        $file = '/home/qgarnier/clients/plugins/as400/as400-json/listDisks.json';
     } elsif ($options{command} eq 'listSubsystems') {
-        $file = '/home/qgarnier/clients/plugins/as400/as400calls/listSubsystems.json';
+        $file = '/home/qgarnier/clients/plugins/as400/as400-json/listSubsystems.json';
     } elsif ($options{command} eq 'listJobs') {
-        $file = '/home/qgarnier/clients/plugins/as400/as400calls/listJobs.json';
+        $file = '/home/qgarnier/clients/plugins/as400/as400-json/listJobs.json';
     } elsif ($options{command} eq 'getSystem') {
         $file = '/home/qgarnier/clients/plugins/as400/as400-json/getSystem.json';
     } elsif ($options{command} eq 'getErrorMessageQueue') {
         $file = '/home/qgarnier/clients/plugins/as400/as400-json/getErrorMessageQueue.json';
     } elsif ($options{command} eq 'getNewMessageInMessageQueue') {
         $file = '/home/qgarnier/clients/plugins/as400/as400-json/getNewMessageInMessageQueue-after.json';
+    } elsif ($options{command} eq 'pageFault') {
+        $file = '/home/qgarnier/clients/plugins/as400/as400-json/pageFault.json';
     }
     my $content = do {
         local $/ = undef;

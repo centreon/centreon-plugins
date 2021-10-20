@@ -36,6 +36,7 @@ sub new {
         'list-disks'      => 'os::as400::connector::mode::listdisks',
         'list-subsystems' => 'os::as400::connector::mode::listsubsystems',
         'message-queue'   => 'os::as400::connector::mode::messagequeue',
+        'page-faults'     => 'os::as400::connector::mode::pagefaults',
         'system'          => 'os::as400::connector::mode::system',
         'subsystems'      => 'os::as400::connector::mode::subsystems'
     };
