@@ -31,8 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'command'         => 'os::as400::connector::mode::command',
         'disks'           => 'os::as400::connector::mode::disks',
         'jobs'            => 'os::as400::connector::mode::jobs',
+        'job-queues'      => 'os::as400::connector::mode::jobqueues',
         'list-disks'      => 'os::as400::connector::mode::listdisks',
         'list-subsystems' => 'os::as400::connector::mode::listsubsystems',
         'message-queue'   => 'os::as400::connector::mode::messagequeue',

@@ -119,7 +119,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = $self->{connector_port};
     $self->{option_results}->{proto} = $self->{connector_proto};
     $self->{option_results}->{timeout} = $self->{connector_timeout};
-    if ($self->{api_username} ne '') {
+    if ($self->{connector_api_username} ne '') {
         $self->{option_results}->{credentials} = 1;
         $self->{option_results}->{basic} = 1;
         $self->{option_results}->{username} = $self->{connector_api_username};
@@ -147,32 +147,6 @@ sub get_hostname {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{command} eq 'listDisks') {
-        $file = '/home/qgarnier/clients/plugins/as400/as400-json/listDisks.json';
-    } elsif ($options{command} eq 'listSubsystems') {
-        $file = '/home/qgarnier/clients/plugins/as400/as400-json/listSubsystems.json';
-    } elsif ($options{command} eq 'listJobs') {
-        $file = '/home/qgarnier/clients/plugins/as400/as400-json/listJobs.json';
-    } elsif ($options{command} eq 'getSystem') {
-        $file = '/home/qgarnier/clients/plugins/as400/as400-json/getSystem.json';
-    } elsif ($options{command} eq 'getErrorMessageQueue') {
-        $file = '/home/qgarnier/clients/plugins/as400/as400-json/getErrorMessageQueue.json';
-    } elsif ($options{command} eq 'getNewMessageInMessageQueue') {
-        $file = '/home/qgarnier/clients/plugins/as400/as400-json/getNewMessageInMessageQueue-after.json';
-    } elsif ($options{command} eq 'pageFault') {
-        $file = '/home/qgarnier/clients/plugins/as400/as400-json/pageFault.json';
-    }
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $file : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     my $post = {
         host => $self->{as400_hostname},
         login => $self->{as400_username},
@@ -194,7 +168,6 @@ sub request_api {
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
     );
-=cut
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
