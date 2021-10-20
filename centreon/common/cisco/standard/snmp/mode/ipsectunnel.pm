@@ -268,7 +268,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $mapping->{cikeTunLocalValue}->{oid} },
-            { oid => $mapping->{cikeTunRemoteValue}->{oid} },
+            { oid => $mapping->{cikeTunRemoteValue}->{oid} }
         ],
         return_type => 1
     );
@@ -276,6 +276,7 @@ sub manage_selection {
     # The MIB doesn't give IPSec tunnel type (site-to-site or dynamic client)
     # You surely need to filter on SA. Dynamic client usually doesn't push local routes.
     $self->{tunnel} = {};
+    my $ike_idx = {};
     foreach (keys %$snmp_result) {
         next if (!/$mapping->{cikeTunRemoteValue}->{oid}\.(\d+)/);
 
@@ -289,7 +290,8 @@ sub manage_selection {
             next;
         }
 
-        $self->{tunnel}->{$name} = { display => $name, sa => 0, ike_tun_index => $cike_tun_index };
+        $ike_idx->{$cike_tun_index} = 1;
+        $self->{tunnel}->{$name} = { display => $name, sa => 0, ike_tun_idx => $cike_tun_index };
     }
 
     $snmp_result = $options{snmp}->get_multiple_table(
@@ -298,77 +300,84 @@ sub manage_selection {
             { oid => $oid_cipSecEndPtLocalAddr1 }
         ]
     );
-    my $tunnel_idx = {};
-    my $tunnel_idx_select = {};
+    my $sectun_idx_instances = {};
+    my $sectun_idx_select = {};
     foreach (keys %{$snmp_result->{$oid_cipSecTunIkeTunnelIndex}}) {
-        /^$oid_cipSecTunIkeTunnelIndex\.(\d+)/;
-        $tunnel_idx->{ $snmp_result->{$oid_cipSecTunIkeTunnelIndex}->{$_} } = $1;
-    }
-    foreach my $name (keys %{$self->{tunnel}}) {
-        if (!defined($tunnel_idx->{ $self->{tunnel}->{$name}->{ike_tun_index} })) {
-            delete $self->{tunnel}->{$name};
-            next;
-        }
+        next if (!defined($ike_idx->{ $snmp_result->{$oid_cipSecTunIkeTunnelIndex}->{$_} }));
 
-        $self->{tunnel}->{$name}->{tun_index} = $tunnel_idx->{ $self->{tunnel}->{$name}->{ike_tun_index} };
-        $tunnel_idx_select->{ $self->{tunnel}->{$name}->{tun_index} } = 1;
+        /^$oid_cipSecTunIkeTunnelIndex\.(\d+)/;
+        if (!defined($sectun_idx_instances->{ $snmp_result->{$oid_cipSecTunIkeTunnelIndex}->{$_} })) {
+            $sectun_idx_instances->{ $snmp_result->{$oid_cipSecTunIkeTunnelIndex}->{$_} } = [];
+        }
+        $sectun_idx_select->{$1} = 1;
+        push @{$sectun_idx_instances->{ $snmp_result->{$oid_cipSecTunIkeTunnelIndex}->{$_} }}, $1;
+    }
+
+    foreach my $name (keys %{$self->{tunnel}}) {
+        delete $self->{tunnel}->{$name} if (!defined($sectun_idx_instances->{ $self->{tunnel}->{$name}->{ike_tun_idx} }));
     }
 
     return if (scalar(keys %{$self->{tunnel}}) <= 0);
 
-    my $instances_end = {};
-    my $instances = [];
+    my $sec_endpoint_idx_select = {};
+    my $sec_endpoint_idx_instances = [];
     foreach (keys %{$snmp_result->{$oid_cipSecEndPtLocalAddr1}}) {
         /(\d+)\.(\d+)$/;
-        next if (!defined($tunnel_idx_select->{$1}));
-        push @$instances, $1 . '.' . $2;
-        $instances_end->{$1} = [] if (!defined($instances_end->{$1}));
-        $instances_end->{$1} = [$2, $snmp_result->{$oid_cipSecEndPtLocalAddr1}->{$_}];
+        next if (!defined($sectun_idx_select->{$1}));
+        push @$sec_endpoint_idx_instances, $1 . '.' . $2;
+        $sec_endpoint_idx_select->{$1} = [] if (!defined($sec_endpoint_idx_select->{$1}));
+        $sec_endpoint_idx_select->{$1} = [$2, $snmp_result->{$oid_cipSecEndPtLocalAddr1}->{$_}];
     }
 
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping2)) ],
-        instances => [ map($_->{tun_index}, values(%{$self->{tunnel}})) ],
+        instances => [ map(@$_, values(%$sectun_idx_instances)) ],
         instance_regexp => '^(.*)$'
     );
     $options{snmp}->load(
         oids => [$oid_cikeTunActiveTime],
-        instances => [ map($_->{ike_tun_index}, values(%{$self->{tunnel}})) ],
+        instances => [ map($_->{ike_tun_idx}, values(%{$self->{tunnel}})) ],
         instance_regexp => '^(.*)$'
     );
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping3)) ],
-        instances => $instances,
+        instances => $sec_endpoint_idx_instances,
         instance_regexp => '^(.*)$'
     );
     $snmp_result = $options{snmp}->get_leef();
 
     foreach my $name (keys %{$self->{tunnel}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $self->{tunnel}->{$name}->{tun_index});
+        foreach my $cip_sec_tun_idx (@{$sectun_idx_instances->{ $self->{tunnel}->{$name}->{ike_tun_idx} }}) {
+            my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $cip_sec_tun_idx);
 
-        my $sa_name = '';
-        if (defined($instances_end->{ $self->{tunnel}->{$name}->{tun_index} })) {
-            my $result3 = $options{snmp}->map_instance(mapping => $mapping3, results => $snmp_result, instance => $self->{tunnel}->{$name}->{tun_index} . '.' . $instances_end->{ $self->{tunnel}->{$name}->{tun_index} }->[0]);
-            $sa_name = inet_ntoa($instances_end->{ $self->{tunnel}->{$name}->{tun_index} }->[1]) . ':' . inet_ntoa($result3->{cipSecEndPtLocalAddr2}) . '_' . inet_ntoa($result3->{cipSecEndPtRemoteAddr1}) . ':' . inet_ntoa($result3->{cipSecEndPtRemoteAddr2});
-        }
+            my $sa_name = '';
+            if (defined($sec_endpoint_idx_select->{$cip_sec_tun_idx})) {
+                my $result3 = $options{snmp}->map_instance(mapping => $mapping3, results => $snmp_result, instance => $cip_sec_tun_idx . '.' . $sec_endpoint_idx_select->{$cip_sec_tun_idx}->[0]);
+                $sa_name = inet_ntoa($sec_endpoint_idx_select->{$cip_sec_tun_idx}->[1]) . ':' . inet_ntoa($result3->{cipSecEndPtLocalAddr2}) . '_' . inet_ntoa($result3->{cipSecEndPtRemoteAddr1}) . ':' . inet_ntoa($result3->{cipSecEndPtRemoteAddr2});
+            }
 
-        if (defined($self->{option_results}->{filter_sa}) && $self->{option_results}->{filter_sa} ne '' &&
-            $sa_name !~ /$self->{option_results}->{filter_sa}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $sa_name . "': no matching filter sa.", debug => 1);
-            next;
-        }
+            if (defined($self->{option_results}->{filter_sa}) && $self->{option_results}->{filter_sa} ne '' &&
+                $sa_name !~ /$self->{option_results}->{filter_sa}/) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $sa_name . "': no matching filter sa.", debug => 1);
+                next;
+            }
 
-        if (defined($result->{cipSecTunHcInOctets}) && defined($result->{cipSecTunHcOutOctets})) {
-            delete $result->{cipSecTunInOctets};
-            delete $result->{cipSecTunInOctWraps};
-            delete $result->{cipSecTunOutOctets};
-            delete $result->{cipSecTunOutOctWraps};
+            if (defined($result->{cipSecTunHcInOctets}) && defined($result->{cipSecTunHcOutOctets})) {
+                delete $result->{cipSecTunInOctets};
+                delete $result->{cipSecTunInOctWraps};
+                delete $result->{cipSecTunOutOctets};
+                delete $result->{cipSecTunOutOctWraps};
+            }
+            foreach my $oid_name (keys %$mapping2) {
+                $self->{tunnel}->{$name}->{ $oid_name . '_' . $cip_sec_tun_idx } = $result->{$oid_name} if (defined($result->{$oid_name}));
+            }
+            $self->{tunnel}->{$name}->{cikeTunActiveTime} = $snmp_result->{ $oid_cikeTunActiveTime . '.' . $self->{tunnel}->{$name}->{ike_tun_idx} };
+            $self->{tunnel}->{$name}->{sa}++;
         }
-        foreach my $oid_name (keys %{$mapping2}) {
-            $self->{tunnel}->{$name}->{ $oid_name . '_' . $self->{tunnel}->{$name}->{tun_index} } = $result->{$oid_name} if (defined($result->{$oid_name}));
-        }
-        $self->{tunnel}->{$name}->{cikeTunActiveTime} = $snmp_result->{ $oid_cikeTunActiveTime . '.' . $self->{tunnel}->{$name}->{ike_tun_index} };
-        $self->{tunnel}->{$name}->{sa}++;
+    }
+
+    foreach my $name (keys %{$self->{tunnel}}) {
+        delete $self->{tunnel}->{$name} if ($self->{tunnel}->{$name}->{sa} == 0);
     }
 
     $self->{global} = { total => scalar(keys %{$self->{tunnel}}) };
