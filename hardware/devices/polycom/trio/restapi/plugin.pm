@@ -35,7 +35,8 @@ sub new {
         'calls-rt'      => 'hardware::devices::polycom::trio::restapi::mode::callsrt',
         'device'        => 'hardware::devices::polycom::trio::restapi::mode::device',
         'network'       => 'hardware::devices::polycom::trio::restapi::mode::network',
-        'paired'        => 'hardware::devices::polycom::trio::restapi::mode::paired'
+        'paired'        => 'hardware::devices::polycom::trio::restapi::mode::paired',
+        'registration'  => 'hardware::devices::polycom::trio::restapi::mode::registration'
     );
 
     $self->{custom_modes}{api} = 'hardware::devices::polycom::trio::restapi::custom::api';
