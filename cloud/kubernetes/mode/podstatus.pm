@@ -114,9 +114,12 @@ sub custom_ready_calc {
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
     $self->{result_values}->{ready} = $options{new_datas}->{$self->{instance} . '_containers_ready'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_containers_total'};
-    return 0 if ($self->{result_values}->{total} == 0);
-
-    $self->{result_values}->{prct_ready} = $self->{result_values}->{ready} * 100 / $self->{result_values}->{total};
+    
+    if ($self->{result_values}->{total} == 0) {
+        $self->{result_values}->{prct_ready} = 0;
+    } else {
+        $self->{result_values}->{prct_ready} = $self->{result_values}->{ready} * 100 / $self->{result_values}->{total};
+    }
     
     return 0;
 }
@@ -267,7 +270,7 @@ sub manage_selection {
             name => $pod->{metadata}->{name},
             namespace => $pod->{metadata}->{namespace},
             status => $pod->{status}->{phase},
-            containers_total => scalar(@{$pod->{status}->{containerStatuses}}),
+            containers_total => defined(scalar(@{$pod->{status}->{containerStatuses}})) ? scalar(@{$pod->{status}->{containerStatuses}}) : 0,
             containers_ready => 0,
             restarts_total => 0,
         };
