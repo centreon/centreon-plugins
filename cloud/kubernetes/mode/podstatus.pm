@@ -33,22 +33,14 @@ sub custom_pod_status_output {
         $self->{result_values}->{status});
 }
 
-sub custom_pod_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{namespace} = $options{new_datas}->{$self->{instance} . '_namespace'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-
-    return 0;
-}
-
 sub custom_container_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("Status is '%s', State is '%s'",
+    return sprintf(
+        "Status is '%s', State is '%s'",
         $self->{result_values}->{status},
-        $self->{result_values}->{state});
+        $self->{result_values}->{state}
+    );
 }
 
 sub custom_container_status_calc {
@@ -56,7 +48,7 @@ sub custom_container_status_calc {
 
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{state} = ($options{new_datas}->{$self->{instance} . '_state'} == 1) ? "ready" : "not ready";
+    $self->{result_values}->{state} = ($options{new_datas}->{$self->{instance} . '_state'} == 1) ? 'ready' : 'not ready';
 
     return 0;
 }
@@ -78,7 +70,7 @@ sub custom_ready_perfdata {
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $total_options{total},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef
     );
 }
 
@@ -114,11 +106,31 @@ sub custom_ready_calc {
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
     $self->{result_values}->{ready} = $options{new_datas}->{$self->{instance} . '_containers_ready'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_containers_total'};
-    return 0 if ($self->{result_values}->{total} == 0);
 
-    $self->{result_values}->{prct_ready} = $self->{result_values}->{ready} * 100 / $self->{result_values}->{total};
-    
+    $self->{result_values}->{prct_ready} = 0;
+    if ($self->{result_values}->{total} > 0) {
+        $self->{result_values}->{prct_ready} = $self->{result_values}->{ready} * 100 / $self->{result_values}->{total};
+    }
+
     return 0;
+}
+
+sub prefix_pod_output {
+    my ($self, %options) = @_;
+
+    return "Pod '" . $options{instance_value}->{name} . "' ";
+}
+
+sub prefix_container_output {
+    my ($self, %options) = @_;
+
+    return "Container '" . $options{instance_value}->{name} . "' ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    return "Checking pod '" . $options{instance_value}->{name} . "'";
 }
 
 sub set_counters {
@@ -130,7 +142,7 @@ sub set_counters {
             group => [
                 { name => 'global',  type => 0, skipped_code => { -10 => 1 } },
                 { name => 'containers', display_long => 1, cb_prefix_output => 'prefix_container_output',
-                  message_multiple => 'All containers status are ok', type => 1, skipped_code => { -10 => 1 } },
+                  message_multiple => 'All containers status are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -141,95 +153,77 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_ready_calc'),
                 closure_custom_output => $self->can('custom_ready_output'),
                 closure_custom_perfdata => $self->can('custom_ready_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_ready_threshold'),
+                closure_custom_threshold_check => $self->can('custom_ready_threshold')
             }
         },
         { label => 'pod-status', set => {
                 key_values => [ { name => 'status' }, { name => 'name' }, { name => 'namespace' } ],
-                closure_custom_calc => $self->can('custom_pod_status_calc'),
                 closure_custom_output => $self->can('custom_pod_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'total-restarts-count', nlabel => 'restarts.total.count', set => {
                 key_values => [ { name => 'restarts_total' }, { name => 'name' } ],
                 output_template => 'Restarts: %d',
                 perfdatas => [
-                    { label => 'restarts_count', value => 'restarts_total', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' },
-                ],
+                    { label => 'restarts_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
-        },
-    ];    
+        }
+    ];
+
     $self->{maps_counters}->{containers} = [
         { label => 'container-status', set => {
                 key_values => [ { name => 'status' }, { name => 'state' } ],
                 closure_custom_calc => $self->can('custom_container_status_calc'),
                 closure_custom_output => $self->can('custom_container_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'restarts-count', nlabel => 'containers.restarts.count', set => {
                 key_values => [ { name => 'restarts' }, { name => 'perf' } ],
                 output_template => 'Restarts: %d',
                 perfdatas => [
-                    { label => 'restarts_count', value => 'restarts', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'perf' },
-                ],
+                    { label => 'restarts_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'perf' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_pod_output {
-    my ($self, %options) = @_;
-
-    return "Pod '" . $options{instance_value}->{name} . "' ";
-}
-
-sub prefix_container_output {
-    my ($self, %options) = @_;
-    
-    return "Container '" . $options{instance_value}->{name} . "' ";
-}
-
-sub long_output {
-    my ($self, %options) = @_;
-
-    return "Checking pod '" . $options{instance_value}->{name} . "'";
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "filter-name:s"                 => { name => 'filter_name' },
-        "filter-namespace:s"            => { name => 'filter_namespace' },
-        "extra-filter:s@"               => { name => 'extra_filter' },
-        "warning-pod-status:s"          => { name => 'warning_pod_status', default => '' },
-        "critical-pod-status:s"         => { name => 'critical_pod_status', default => '%{status} !~ /running/i' },
-        "warning-container-status:s"    => { name => 'warning_container_status', default => '' },
-        "critical-container-status:s"   => { name => 'critical_container_status', default => '%{status} !~ /running/i || %{state} !~ /^ready$/' },
-        "units:s"                       => { name => 'units', default => '%' },
+        'filter-name:s'               => { name => 'filter_name' },
+        'filter-namespace:s'          => { name => 'filter_namespace' },
+        'extra-filter:s@'             => { name => 'extra_filter' },
+        'warning-pod-status:s'        => { name => 'warning_pod_status', default => '' },
+        'critical-pod-status:s'       => { name => 'critical_pod_status', default => '%{status} !~ /running/i' },
+        'warning-container-status:s'  => { name => 'warning_container_status', default => '' },
+        'critical-container-status:s' => { name => 'critical_container_status', default => '%{status} !~ /running/i || %{state} !~ /^ready$/' },
+        'units:s'                     => { name => 'units', default => '%' }
     });
-   
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $self->{extra_filter} = {};
     foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
         next if ($filter !~ /(.*)=(.*)/);
         $self->{extra_filter}->{$1} = $2;
     }
-    
+
     $self->change_macros(macros => ['warning_pod_status', 'critical_pod_status',
         'warning_container_status', 'critical_container_status']);    
 }
@@ -240,7 +234,6 @@ sub manage_selection {
     $self->{pods} = {};
 
     my $results = $options{custom}->kubernetes_list_pods();
-    
     foreach my $pod (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $pod->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
@@ -267,9 +260,9 @@ sub manage_selection {
             name => $pod->{metadata}->{name},
             namespace => $pod->{metadata}->{namespace},
             status => $pod->{status}->{phase},
-            containers_total => scalar(@{$pod->{status}->{containerStatuses}}),
+            containers_total => defined($pod->{status}->{containerStatuses}) ? scalar(@{$pod->{status}->{containerStatuses}}) : 0,
             containers_ready => 0,
-            restarts_total => 0,
+            restarts_total => 0
         };
 
         foreach my $container (@{$pod->{status}->{containerStatuses}}) {
@@ -278,7 +271,7 @@ sub manage_selection {
                 status => keys %{$container->{state}},
                 state => $container->{ready},
                 restarts => $container->{restartCount},
-                perf => $pod->{metadata}->{name} . '_' . $container->{name},
+                perf => $pod->{metadata}->{name} . '_' . $container->{name}
             };
             $self->{pods}->{$pod->{metadata}->{uid}}->{global}->{containers_ready}++ if ($container->{ready});
             $self->{pods}->{$pod->{metadata}->{uid}}->{global}->{restarts_total} += $container->{restartCount};
