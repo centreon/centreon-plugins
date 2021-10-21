@@ -29,8 +29,10 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_pod_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("Status is '%s'",
-        $self->{result_values}->{status});
+    return sprintf(
+        "Status is '%s'",
+        $self->{result_values}->{status}
+    );
 }
 
 sub custom_container_status_output {
@@ -83,8 +85,10 @@ sub custom_ready_threshold {
         $threshold_value = $self->{result_values}->{prct_ready};
     }
     $exit = $self->{perfdata}->threshold_check(
-        value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                  { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]
+        value => $threshold_value, threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+        ]
     );
     return $exit;
 }
@@ -92,12 +96,12 @@ sub custom_ready_threshold {
 sub custom_ready_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Containers Ready: %s/%s (%.2f%%)",
+    return sprintf(
+        "Containers Ready: %s/%s (%.2f%%)",
         $self->{result_values}->{ready},
         $self->{result_values}->{total},
-        $self->{result_values}->{prct_ready});
-
-    return $msg;
+        $self->{result_values}->{prct_ready}
+    );
 }
 
 sub custom_ready_calc {
