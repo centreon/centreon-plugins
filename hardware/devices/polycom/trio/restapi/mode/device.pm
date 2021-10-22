@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -53,50 +53,49 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} =~ /error/i', set => {
                 key_values => [ { name => 'status' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'cpu-utilization-average', nlabel => 'device.cpu.utilization.average.percentage', set => {
                 key_values => [ { name => 'cpu_average' } ],
                 output_template => 'cpu average: %.2f%%',
                 perfdatas => [
-                    { value => 'cpu_average', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'memory-usage', nlabel => 'device.memory.usage.bytes', set => {
-                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' },
-                    { name => 'prct_free' }, { name => 'total' } ],
+                key_values => [
+                    { name => 'used' }, { name => 'free' }, { name => 'prct_used' },
+                    { name => 'prct_free' }, { name => 'total' }
+                ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { value => 'used', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'memory-usage-free', display_ok => 0, nlabel => 'device.memory.free.bytes', set => {
-                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' },
-                    { name => 'prct_free' }, { name => 'total' } ],
+                key_values => [
+                    { name => 'free' }, { name => 'used' }, { name => 'prct_used' },
+                    { name => 'prct_free' }, { name => 'total' }
+                ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { value => 'free', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'memory-usage-prct', display_ok => 0, nlabel => 'device.memory.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Memory Used: %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used', template => '%.2f', min => 0, max => 100,
-                      unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         }
     ];
@@ -106,20 +105,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /error/i' },
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -143,7 +132,7 @@ sub manage_selection {
 
     $result = $options{custom}->request_api(url_path => '/api/v1/mgmt/pollForStatus');
     return if (!defined($result->{data}->{State}));
-    
+
     $self->{global}->{status} = $result->{data}->{State};
 }
 

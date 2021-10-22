@@ -37,7 +37,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -45,34 +45,34 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total: d',
                 perfdatas => [
-                    { value => 'total', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'placed', nlabel => 'calls.placed.count', set => {
                 key_values => [ { name => 'placed' } ],
                 output_template => 'placed: %d',
                 perfdatas => [
-                    { value => 'placed', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'missed', nlabel => 'calls.missed.count', set => {
                 key_values => [ { name => 'missed' } ],
                 output_template => 'missed: %d',
                 perfdatas => [
-                    { value => 'missed', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'received', nlabel => 'calls.received.count', set => {
                 key_values => [ { name => 'received' } ],
                 output_template => 'received: %d',
                 perfdatas => [
-                    { value => 'received', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -81,7 +81,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
     });
 
