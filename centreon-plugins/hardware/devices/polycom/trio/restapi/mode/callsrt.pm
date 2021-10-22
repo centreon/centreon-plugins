@@ -54,6 +54,12 @@ sub custom_loss_output {
     );
 }
 
+sub prefix_channels_output {
+    my ($self, %options) = @_;
+
+    return "Channel '" . $options{instance_value}->{display} ."' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -67,8 +73,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 output_template => 'traffic in: %s %s/s',
                 perfdatas => [
-                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1  },
-                ],
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1  }
+                ]
             }
         },
         { label => 'channel-traffic-out', nlabel => 'call.channel.traffic.out.bytes', set => {
@@ -76,16 +82,16 @@ sub set_counters {
                 output_change_bytes => 1,
                 output_template => 'traffic out: %s %s/s',
                 perfdatas => [
-                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1  },
-                ],
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1  }
+                ]
             }
         },
         { label => 'channel-maxjitter', nlabel => 'call.channel.maxjitter.milliseconds', set => {
                 key_values => [ { name => 'max_jitter' }, { name => 'display' } ],
                 output_template => 'max jitter: %s ms',
                 perfdatas => [
-                    { template => '%d', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%d', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'channel-packetloss', nlabel => 'call.channel.packetloss.count', set => {
@@ -94,8 +100,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_loss_output'),
                 threshold_use => 'packets_loss',
                 perfdatas => [
-                    { value => 'packets_loss', template => '%d', min => 0, label_extra_instance => 1 }
-                ],
+                    { value => 'packets_loss', template => '%d', min => 0, label_extra_instance => 1 
+                ]
             }
         },
         { label => 'channel-packetloss-prct', nlabel => 'call.channel.packetloss.percentage', display_ok => 0, set => {
@@ -111,18 +117,11 @@ sub set_counters {
     ];
 }
 
-sub prefix_channels_output {
-    my ($self, %options) = @_;
-
-    return "Channel '" . $options{instance_value}->{display} ."' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
     });
 
