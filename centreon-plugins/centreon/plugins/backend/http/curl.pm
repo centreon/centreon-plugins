@@ -467,7 +467,7 @@ sub get_code {
 sub get_message {
     my ($self, %options) = @_;
 
-    return $http_code_explained->{$self->{response_code}};
+    return defined($http_code_explained->{$self->{response_code}}) ? $http_code_explained->{$self->{response_code}} : 'Unknown code';
 }
 
 sub get_certificate {
