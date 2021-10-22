@@ -31,12 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'dhcp-usage'       => 'network::infoblox::snmp::mode::dhcpusage',
-        'dns-usage'        => 'network::infoblox::snmp::mode::dnsusage',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'services'         => 'network::infoblox::snmp::mode::services',
-        'system'           => 'network::infoblox::snmp::mode::system'
+        'dhcp-usage'        => 'network::infoblox::snmp::mode::dhcpusage',
+        'dns-usage'         => 'network::infoblox::snmp::mode::dnsusage',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-dhcp-subnets' => 'network::infoblox::snmp::mode::listdhcpsubnets',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'services'          => 'network::infoblox::snmp::mode::services',
+        'system'            => 'network::infoblox::snmp::mode::system'
     };
 
     return $self;
