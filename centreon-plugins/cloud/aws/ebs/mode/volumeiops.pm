@@ -69,7 +69,7 @@ sub get_metrics_mapping {
                 },
                 unit      => ''
             },
-            VolumeQueueLength
+            VolumeQueueLength => {
                 output    => 'IOPS Queue Length',
                 label     => 'iops-queue-length',
                 nlabel    => {
