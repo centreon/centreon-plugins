@@ -24,18 +24,19 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 sub prefix_global_output {
     my ($self, %options) = @_;
     
-    return "Total ";
+    return 'Total ';
 }
 
 sub prefix_dhcp_output {
     my ($self, %options) = @_;
     
-    return "Subnet '" . $options{instance_value}->{display} . "' ";
+    return "Subnet '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -73,10 +74,10 @@ sub set_counters {
 
     $self->{maps_counters}->{dhcp} = [
         { label => 'subnet-used', nlabel => 'subnet.addresses.usage.percentage', set => {
-                key_values => [ { name => 'ibDHCPSubnetPercentUsed' }, { name => 'display' } ],
+                key_values => [ { name => 'subnet_used' }, { name => 'name' } ],
                 output_template => 'used: %.2f %%',
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         }
@@ -89,10 +90,23 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-name:s' => { name => 'filter_name' },
+        'cache'         => { name => 'cache' },
+        'cache-time:s'  => { name => 'cache_time', default => 180 }
     });
 
+    $self->{lcache} = centreon::plugins::statefile->new(%options);
+
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (defined($self->{option_results}->{cache})) {
+        $self->{lcache}->check_options(option_results => $self->{option_results});
+    }
 }
 
 my $mapping = {
@@ -107,32 +121,57 @@ my $mapping = {
     ibDhcpTotalNoOfOthers       => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.3.9' }
 };
 my $mapping2 = {
-    ibDHCPSubnetNetworkAddress  => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1.1' },
-    ibDHCPSubnetNetworkMask     => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1.2' },
-    ibDHCPSubnetPercentUsed     => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1.3' }
+    address => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1.1' }, # ibDHCPSubnetNetworkAddress
+    mask    => { oid => '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1.2' } # ibDHCPSubnetNetworkMask
 };
 
-my $oid_ibDHCPStatistics = '.1.3.6.1.4.1.7779.3.1.1.4.1.3';
 my $oid_ibDHCPSubnetEntry = '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1';
+my $oid_subnet_prct_used = '.1.3.6.1.4.1.7779.3.1.1.4.1.1.1.3'; # ibDHCPSubnetPercentUsed
+
+sub get_snmp_subnets {
+    my ($self, %options) = @_;
+
+    return $options{snmp}->get_table(
+        oid => $oid_ibDHCPSubnetEntry,
+        end => $mapping2->{mask}->{oid},
+        nothing_quit => 1
+    );
+}
+
+sub get_subnets {
+    my ($self, %options) = @_;
+
+    my $subnets;
+    if (defined($self->{option_results}->{cache})) {
+        my $has_cache_file = $self->{lcache}->read(statefile => 'infoblox_cache_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port());
+        my $infos = $self->{lcache}->get(name => 'infos');
+        if ($has_cache_file == 0 ||
+            !defined($infos->{updated}) ||
+            ((time() - $infos->{updated}) > (($self->{option_results}->{cache_time}) * 60))) {
+            $subnets = $self->get_snmp_subnets(snmp => $options{snmp});
+            $self->{lcache}->write(data => { updated => time(), snmp_result => $subnets });
+        } else {
+            $subnets = $infos->{snmp_result};
+        }
+    } else {
+        $subnets = $self->get_snmp_subnets(snmp => $options{snmp});
+    }
+
+    return $subnets;
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $oid_ibDHCPStatistics },
-            { oid => $oid_ibDHCPSubnetEntry }
-        ],
-        nothing_quit => 1
-    );
+    my $subnets = $self->get_subnets(snmp => $options{snmp});
 
     $self->{dhcp} = {};
-    foreach my $oid (keys %{$snmp_result->{$oid_ibDHCPSubnetEntry}}) {
-        next if ($oid !~ /^$mapping2->{ibDHCPSubnetNetworkAddress}->{oid}\.(.*)$/);
+    foreach my $oid (keys %$subnets) {
+        next if ($oid !~ /^$mapping2->{address}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{$oid_ibDHCPSubnetEntry}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $subnets, instance => $instance);
 
-        my $name = $result->{ibDHCPSubnetNetworkAddress} . '/' . $result->{ibDHCPSubnetNetworkMask};
+        my $name = $result->{address} . '/' . $result->{mask};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
@@ -140,12 +179,28 @@ sub manage_selection {
         }
 
         $self->{dhcp}->{$instance} = {
-            display => $name, 
+            name => $name, 
             %$result
         };
     }
 
-    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_ibDHCPStatistics}, instance => 0);
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping)) ],
+        instances => [0],
+        instance_regexp => '^(.*)$'
+    );
+    $options{snmp}->load(
+        oids => [$oid_subnet_prct_used],
+        instances => [ map($_, keys(%{$self->{dhcp}})) ],
+        instance_regexp => '^(.*)$'
+    );
+    my $snmp_result = $options{snmp}->get_leef();
+    foreach (keys %{$self->{dhcp}}) {
+        $self->{dhcp}->{$_}->{subnet_used} = $snmp_result->{ $oid_subnet_prct_used . '.' . $_ }
+            if (defined($snmp_result->{ $oid_subnet_prct_used . '.' . $_ }));
+    }
+
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
     
     $self->{cache_name} = 'infoblox_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
@@ -170,6 +225,14 @@ Example: --filter-counters='total-requests'
 =item B<--filter-name>
 
 Filter dhcp subnet name (can be a regexp).
+
+=item B<--cache>
+
+Use cache file to store subnets.
+
+=item B<--cache-time>
+
+Time in minutes before reloading cache file (default: 180).
 
 =item B<--warning-*>
 
