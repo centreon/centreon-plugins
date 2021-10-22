@@ -182,7 +182,7 @@ Path to the Tomcat Manager List (Default: Tomcat 7 '/manager/text/list')
 Tomcat 6: '/manager/list'
 Tomcat 7: '/manager/text/list'
 
-=item B<--fitler-name>
+=item B<--filter-name>
 
 Filter context name (regexp can be used)
 
