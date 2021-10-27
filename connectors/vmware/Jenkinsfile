@@ -41,10 +41,12 @@ try {
     }
   }
   stage('Delivery') {
-    sh 'setup_centreon_build.sh'
-    unstash "rpms-centos7"
-    unstash "rpms-centos8"
-    sh './centreon-build/jobs/vmware/vmware-delivery.sh'
+    node {
+      sh 'setup_centreon_build.sh'
+      unstash "rpms-centos7"
+      unstash "rpms-centos8"
+      sh './centreon-build/jobs/vmware/vmware-delivery.sh'
+    }
   }
 } catch(e) {
   if (env.BRANCH_NAME == 'master') {
