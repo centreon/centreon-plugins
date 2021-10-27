@@ -144,7 +144,6 @@ sub manage_selection {
             next;
         }
 
-        
         $self->{volumes}->{$instance} = {
             display => $name
         };
@@ -165,10 +164,10 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
         if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
             $result->{status} !~ /$self->{option_results}->{filter_status}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $self->{volumes}->{$_}->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $self->{volumes}->{$_}->{display} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $self->{volumes}->{$_}->{status} = $result->{status};
         $self->{volumes}->{$_}->{options} = $result->{options};
     }
