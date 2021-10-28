@@ -23,6 +23,7 @@ package database::redis::custom::perlmod;
 use strict;
 use warnings;
 use Redis;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -41,9 +42,11 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s' => { name => 'hostname' },
-            'port:s'     => { name => 'port' },
-            'password:s' => { name => 'password' }
+            'server:s'    => { name => 'server' },
+            'port:s'      => { name => 'port' },
+            'password:s'  => { name => 'password' },
+            'sentinel:s@' => { name => 'sentinel' },
+            'service:s'   => { name => 'service' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REDIS OPTIONS', once => 1);
@@ -64,16 +67,25 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = $self->{option_results}->{hostname};
-    $self->{port} = $self->{option_results}->{port};
-    $self->{password} = $self->{option_results}->{password};
+    $self->{server} = defined($self->{option_results}->{server}) && $self->{option_results}->{server} ne '' ? $self->{option_results}->{server} : '';
+    $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '' ? $self->{option_results}->{port} : 6379;
+    $self->{password} = defined($self->{option_results}->{password}) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : '';
+    $self->{sentinel} = [];
+    if (defined($self->{option_results}->{sentinel})) {
+        foreach my $addr (@{$self->{option_results}->{sentinel}}) {
+            next if ($addr eq '');
 
-    if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname argument.");
+            push @{$self->{sentinel}}, $addr . ($self->{port} ne '' ? ':' . $self->{port} : '') 
+        }
+    }
+    $self->{service} = defined($self->{option_results}->{server}) && $self->{option_results}->{service} ne '' ? $self->{option_results}->{service} : '';
+
+    if ($self->{server} eq '' && scalar(@{$self->{sentinel}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --server or --sentinel option.');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{port})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify port argument.");
+    if (scalar(@{$self->{sentinel}}) > 0 && $self->{service} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --service option.');
         $self->{output}->option_exit();
     }
 
@@ -82,25 +94,38 @@ sub check_options {
 
 sub get_connection_info {
     my ($self, %options) = @_;
-    
-    return $self->{hostname} . ":" . $self->{port};
+
+    my $id = '';
+    if ($self->{server} ne '') {
+        $id = $self->{server} . ':' . $self->{port};
+    } else {
+        foreach (@{$self->{sentinel}}) {
+            $id .= $_ . '-';
+        }
+    }
+    return md5_hex($id);
 }
 
 sub get_info {
     my ($self, %options) = @_;
 
-    $self->{redis} = Redis->new(server => $self->{hostname} . ":" . $self->{port});
-    if (defined($self->{password})) {
-        $self->{redis}->auth($self->{password});
+    my $redis;
+    if ($self->{server} ne '') {
+        $redis = Redis->new(server => $self->{hostname} . ":" . $self->{port});
+    } else {
+        $redis = Redis->new(sentinels => $self->{sentinel}, service => $self->{service});
+    }
+    if ($self->{password} ne '') {
+        $redis->auth($self->{password});
     }
     
-    my $response = $self->{redis}->info;
+    my $response = $redis->info();
     my $items;
-    foreach my $attributes (keys %{$response}) {
+    foreach my $attributes (keys %$response) {
         $items->{$attributes} = $response->{$attributes};
     }
 
-    $self->{redis}->quit();
+    $redis->quit();
 
     return $items;
 }
@@ -121,17 +146,25 @@ Redis perlmod
 
 =over 8
 
-=item B<--hostname>
+=item B<--server>
 
-Redis hostname.
+Redis server.
 
 =item B<--port>
 
-Redis port.
+Redis port (Default: 6379).
 
 =item B<--password>
 
-Redis password
+Redis password.
+
+=item B<--sentinel>
+
+Sentinel server. Alternative of server option. service option is required.
+
+=item B<--service>
+
+Service parameter.
 
 =back
 

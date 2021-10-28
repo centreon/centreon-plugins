@@ -29,7 +29,7 @@ use Digest::MD5 qw(md5_hex);
 sub prefix_output {
     my ($self, %options) = @_;
     
-    return 'Number of commands: ';
+    return 'Number of commands ';
 }
 
 sub set_counters {
@@ -78,7 +78,7 @@ sub manage_selection {
     my $results = $options{custom}->get_info();
     $self->{global} = {
         total_commands_processed    => $results->{total_commands_processed},
-        instantaneous_ops_per_sec   => $results->{instantaneous_ops_per_sec},
+        instantaneous_ops_per_sec   => $results->{instantaneous_ops_per_sec}
     };
 }
 
