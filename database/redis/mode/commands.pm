@@ -26,37 +26,37 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_output {
+    my ($self, %options) = @_;
+    
+    return 'Number of commands: ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
     ];
     
     $self->{maps_counters}->{global} = [
         { label => 'processed-commands', set => {
                 key_values => [ { name => 'total_commands_processed', diff => 1 } ],
-                output_template => 'Processed: %s',
+                output_template => 'processed: %s',
                 perfdatas => [
-                    { label => 'processed_commands', value => 'total_commands_processed', template => '%s', min => 0 },
-                ],
-            },
+                    { label => 'processed_commands', template => '%s', min => 0 }
+                ]
+            }
         },
         { label => 'ops-per-sec', set => {
                 key_values => [ { name => 'instantaneous_ops_per_sec' } ],
-                output_template => 'Processed per sec: %s',
+                output_template => 'processed per sec: %s',
                 perfdatas => [
-                    { label => 'ops_per_sec', value => 'instantaneous_ops_per_sec', template => '%s', min => 0, unit => 'ops/s' },
-                ],
-            },
-        },
+                    { label => 'ops_per_sec', template => '%s', min => 0, unit => 'ops/s' }
+                ]
+            }
+        }
     ];
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-    
-    return "Number of commands: ";
 }
 
 sub new {
@@ -64,10 +64,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-
-    $options{options}->add_options(arguments => 
-                    {
-                    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -75,7 +72,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "redis_" . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
+    $self->{cache_name} = 'redis_database_' . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     my $results = $options{custom}->get_info();

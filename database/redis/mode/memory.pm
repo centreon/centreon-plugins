@@ -28,16 +28,18 @@ use warnings;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label}, unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{label}, unit => 'B',
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
     my ($self, %options) = @_;
-    
+
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
     $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
@@ -51,12 +53,15 @@ sub custom_usage_threshold {
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
+
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    
-    my $msg = sprintf($self->{result_values}->{display}.": %s (%.2f%%)",
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used});
-    return $msg;
+
+    return sprintf(
+        "%s: %s (%.2f%%)",
+        $self->{result_values}->{display}
+        $total_used_value . " " . $total_used_unit,
+        $self->{result_values}->{prct_used}
+    );
 }
 
 sub custom_usage_calc {
@@ -73,6 +78,12 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_stats_output {
+    my ($self, %options) = @_;
+    
+    return 'Statistics: ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -84,7 +95,7 @@ sub set_counters {
         { name => 'startup', type => 0, skipped_code => { -10 => 1 } },
         { name => 'dataset', type => 0, skipped_code => { -10 => 1 } },
         { name => 'lua', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'stats', type => 0, cb_prefix_output => 'prefix_stats_output', skipped_code => { -10 => 1 } },
+        { name => 'stats', type => 0, cb_prefix_output => 'prefix_stats_output', skipped_code => { -10 => 1 } }
     ];
     
     $self->{maps_counters}->{used} = [
@@ -93,9 +104,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{rss} = [
@@ -104,9 +115,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{peak} = [
@@ -115,9 +126,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{overhead} = [
@@ -126,9 +137,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{startup} = [
@@ -137,9 +148,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{dataset} = [
@@ -148,9 +159,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{lua} = [
@@ -159,43 +170,37 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{stats} = [
         { label => 'fragmentation-ratio', set => {
                 key_values => [ { name => 'mem_fragmentation_ratio' } ],
-                output_template => 'Fragmentation ratio: %s',
+                output_template => 'fragmentation ratio: %s',
                 perfdatas => [
-                    { label => 'fragmentation_ratio', value => 'mem_fragmentation_ratio', template => '%s', min => 0 },
-                ],
-            },
+                    { label => 'fragmentation_ratio', template => '%s', min => 0 }
+                ]
+            }
         },
         { label => 'defrag-running', set => {
                 key_values => [ { name => 'active_defrag_running' } ],
-                output_template => 'Defragmentation running: %s',
+                output_template => 'defragmentation running: %s',
                 perfdatas => [
-                    { label => 'defrag_running', value => 'active_defrag_running', template => '%s', min => 0 },
-                ],
-            },
+                    { label => 'defrag_running', template => '%s', min => 0 }
+                ]
+            }
         },
         { label => 'lazyfree-pending-objects', set => {
                 key_values => [ { name => 'lazyfree_pending_objects' } ],
-                output_template => 'Lazyfree pending objects: %s',
+                output_template => 'lazyfree pending objects: %s',
                 perfdatas => [
-                    { label => 'lazyfree_pending_objects', value => 'lazyfree_pending_objects', template => '%s', min => 0 },
-                ],
-            },
-        },
+                    { label => 'lazyfree_pending_objects', template => '%s', min => 0 }
+                ]
+            }
+        }
     ];
-}
-
-sub prefix_stats_output {
-    my ($self, %options) = @_;
-    
-    return "Statistics: ";
 }
 
 sub new {
@@ -203,41 +208,42 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-
     $options{options}->add_options(arguments => {
-        "units:s"   => { name => 'units', default => '%' },
-        "free"      => { name => 'free' },
+        'units:s' => { name => 'units', default => '%' },
+        'free'    => { name => 'free' }
     });
 
     return $self;
 }
 
 my $metrics = {
-    used_memory             => { label => 'used', display => 'Used' },
-    used_memory_rss         => { label => 'rss', display => 'Rss' },
-    used_memory_peak        => { label => 'peak', display => 'Peak' },
-    used_memory_overhead    => { label => 'overhead', display => 'Overhead' },
-    used_memory_startup     => { label => 'startup', display => 'Startup' },
-    used_memory_dataset     => { label => 'dataset', display => 'Dataset' },
-    used_memory_lua         => { label => 'lua', display => 'Lua' },
+    used_memory          => { label => 'used', display => 'used' },
+    used_memory_rss      => { label => 'rss', display => 'rss' },
+    used_memory_peak     => { label => 'peak', display => 'peak' },
+    used_memory_overhead => { label => 'overhead', display => 'overhead' },
+    used_memory_startup  => { label => 'startup', display => 'startup' },
+    used_memory_dataset  => { label => 'dataset', display => 'dataset' },
+    used_memory_lua      => { label => 'lua', display => 'lua' }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $results = $options{custom}->get_info(); 
     foreach my $type (keys %$metrics) {
         next if (!defined($results->{$type}));
-        $self->{$metrics->{$type}->{label}} = { display => $metrics->{$type}->{display},
-                                                label   => $metrics->{$type}->{label},
-                                                used    => $results->{$type},
-                                                total   => $results->{total_system_memory} };
+        $self->{$metrics->{$type}->{label}} = {
+            display => $metrics->{$type}->{display},
+            label   => $metrics->{$type}->{label},
+            used    => $results->{$type},
+            total   => $results->{total_system_memory}
+        };
     }
 
     $self->{stats} = { 
         mem_fragmentation_ratio => $results->{mem_fragmentation_ratio},
         active_defrag_running => $results->{active_defrag_running},
-        lazyfree_pending_objects => $results->{lazyfree_pending_objects},
+        lazyfree_pending_objects => $results->{lazyfree_pending_objects}
     };
 }
 

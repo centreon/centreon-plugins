@@ -24,81 +24,76 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-    ];
-    
-    $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'progress_status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-        { label => 'changes', set => {
-                key_values => [ { name => 'rdb_changes_since_last_save' } ],
-                output_template => 'Number of changes since the last dump: %s',
-                perfdatas => [
-                    { label => 'changes', value => 'rdb_changes_since_last_save', template => '%s', min => 0 },
-                ],
-            },
-        },
-        { label => 'last-save', set => {
-                key_values => [ { name => 'rdb_last_save_time' }, { name => 'rdb_last_save_time_sec' } ],
-                output_template => 'Time since last successful save: %s',
-                perfdatas => [
-                    { label => 'last_save', value => 'rdb_last_save_time_sec', template => '%s', min => 0, unit => 's' },
-                ],
-            },
-        },
-        { label => 'save-size', set => {
-                key_values => [ { name => 'rdb_last_cow_size' } ],
-                output_template => 'Size of last save: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { label => 'save_size', value => 'rdb_last_cow_size', template => '%s', min => 0, unit => 'B' },
-                ],
-            },
-        },
-        { label => 'last-save-duration', set => {
-                key_values => [ { name => 'rdb_last_bgsave_time' } ],
-                output_template => 'Duration of last save: %s s',
-                perfdatas => [
-                    { label => 'last_save_duration', value => 'rdb_last_bgsave_time', template => '%s', min => 0, unit => 's' },
-                ],
-            },
-        },
-        { label => 'current-save-duration', set => {
-                key_values => [ { name => 'rdb_current_bgsave_time' } ],
-                output_template => 'Duration of current save: %s s',
-                perfdatas => [
-                    { label => 'current_save_duration', value => 'rdb_current_bgsave_time', template => '%s', min => 0, unit => 's' },
-                ],
-            },
-        },
-    ];
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("RDB save status is '%s' [progress status: %s]", $self->{result_values}->{status}, $self->{result_values}->{progress_status});
-    return $msg;
+    return sprintf("RDB save status is '%s' [progress status: %s]", $self->{result_values}->{status}, $self->{result_values}->{progress_status});
 }
 
-sub custom_status_calc {
+sub set_counters {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{progress_status} = $options{new_datas}->{$self->{instance} . '_progress_status'};
-    return 0;
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        {
+            label => 'status',
+            type => 2,
+            warning_default => '%{sync_status} =~ /in progress/i',
+            critical_default => '%{link_status} =~ /down/i',
+            set => {
+                key_values => [ { name => 'status' }, { name => 'progress_status' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'changes', set => {
+                key_values => [ { name => 'rdb_changes_since_last_save' } ],
+                output_template => 'number of changes since the last dump: %s',
+                perfdatas => [
+                    { label => 'changes', template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'last-save', set => {
+                key_values => [ { name => 'rdb_last_save_time' }, { name => 'rdb_last_save_time_sec' } ],
+                output_template => 'time since last successful save: %s',
+                perfdatas => [
+                    { label => 'last_save', template => '%s', min => 0, unit => 's' }
+                ]
+            }
+        },
+        { label => 'save-size', set => {
+                key_values => [ { name => 'rdb_last_cow_size' } ],
+                output_template => 'size of last save: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'save_size', template => '%s', min => 0, unit => 'B' }
+                ]
+            }
+        },
+        { label => 'last-save-duration', set => {
+                key_values => [ { name => 'rdb_last_bgsave_time' } ],
+                output_template => 'duration of last save: %s s',
+                perfdatas => [
+                    { label => 'last_save_duration', template => '%s', min => 0, unit => 's' }
+                ]
+            }
+        },
+        { label => 'current-save-duration', set => {
+                key_values => [ { name => 'rdb_current_bgsave_time' } ],
+                output_template => 'duration of current save: %s s',
+                perfdatas => [
+                    { label => 'current_save_duration', template => '%s', min => 0, unit => 's' }
+                ]
+            }
+        }
+    ];
 }
 
 sub new {
@@ -106,26 +101,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-
-     $options{options}->add_options(arguments => 
-                {
-                "warning-status:s"    => { name => 'warning_status', default => '%{sync_status} =~ /in progress/i' },
-                "critical-status:s"   => { name => 'critical_status', default => '%{link_status} =~ /down/i' },
-                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
 my %map_status = (
     0 => 'stopped',
-    1 => 'in progress',
+    1 => 'in progress'
 );
 
 sub manage_selection {
