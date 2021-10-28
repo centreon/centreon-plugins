@@ -42,11 +42,12 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'server:s'    => { name => 'server' },
-            'port:s'      => { name => 'port' },
-            'password:s'  => { name => 'password' },
-            'sentinel:s@' => { name => 'sentinel' },
-            'service:s'   => { name => 'service' }
+            'server:s'        => { name => 'server' },
+            'port:s'          => { name => 'port' },
+            'password:s'      => { name => 'password' },
+            'sentinel:s@'     => { name => 'sentinel' },
+            'sentinel-port:s' => { name => 'sentinel_port' },
+            'service:s'       => { name => 'service' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REDIS OPTIONS', once => 1);
@@ -68,14 +69,15 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{server} = defined($self->{option_results}->{server}) && $self->{option_results}->{server} ne '' ? $self->{option_results}->{server} : '';
-    $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '' ? $self->{option_results}->{port} : 6379;
+    $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} =~ /(\d+)/ ? $1 : 6379;
+    $self->{sentinel_port} = defined($self->{option_results}->{sentinel_port}) && $self->{option_results}->{sentinel_port} =~ /(\d+)/ ? $1 : 26379;
     $self->{password} = defined($self->{option_results}->{password}) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : '';
     $self->{sentinel} = [];
     if (defined($self->{option_results}->{sentinel})) {
         foreach my $addr (@{$self->{option_results}->{sentinel}}) {
             next if ($addr eq '');
 
-            push @{$self->{sentinel}}, $addr . ($self->{port} ne '' ? ':' . $self->{port} : '') 
+            push @{$self->{sentinel}}, $addr . ($self->{sentinel_port} ne '' ? ':' . $self->{sentinel_port} : '') 
         }
     }
     $self->{service} = defined($self->{option_results}->{service}) && $self->{option_results}->{service} ne '' ? $self->{option_results}->{service} : '';
@@ -161,6 +163,10 @@ Redis password.
 =item B<--sentinel>
 
 Sentinel server. Alternative of server option. service option is required.
+
+=item B<--sentinel-port>
+
+Sentinel port (Default: 26379).
 
 =item B<--service>
 

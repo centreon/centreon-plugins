@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::ssh;
 use centreon::plugins::misc;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -40,13 +41,19 @@ sub new {
     }
 
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => {                      
-            'hostname:s'        => { name => 'hostname' },
-            'timeout:s'         => { name => 'timeout' },
-            'command:s'         => { name => 'command' },
-            'command-path:s'    => { name => 'command_path' },
-            'command-options:s' => { name => 'command_options' },
-            'sudo:s'            => { name => 'sudo' }
+        $options{options}->add_options(arguments => {
+            'ssh-hostname:s'  => { name => 'ssh_hostname' },                
+            'server:s'        => { name => 'server' },
+            'port:s'          => { name => 'port' },
+            'username:s'      => { name => 'username' },
+            'password:s'      => { name => 'password' },
+            'sentinel:s@'     => { name => 'sentinel' },
+            'sentinel-port:s' => { name => 'sentinel_port' },
+            'service:s'       => { name => 'service' },
+            'tls'             => { name => 'tls' },
+            'cacert:s'        => { name => 'cacert' },
+            'insecure'        => { name => 'insecure' },
+            'timeout:s'       => { name => 'timeout' }
         });
     }
 
@@ -69,24 +76,58 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/) {
-        $self->{timeout} = $1;
+    $self->{ssh_hostname} = defined($self->{option_results}->{ssh_hostname}) && $self->{option_results}->{ssh_hostname} ne '' ? $self->{option_results}->{ssh_hostname} : '';
+    $self->{server} = defined($self->{option_results}->{server}) && $self->{option_results}->{server} ne '' ? $self->{option_results}->{server} : '';
+    $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '' ? $self->{option_results}->{port} : 6379;
+    $self->{sentinel_port} = defined($self->{option_results}->{sentinel_port}) && $self->{option_results}->{sentinel_port} =~ /(\d+)/ ? $1 : 26379;
+    $self->{username} = defined($self->{option_results}->{password}) && $self->{option_results}->{username} ne '' ? $self->{option_results}->{username} : '';
+    $self->{password} = defined($self->{option_results}->{password}) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : '';
+    $self->{timeout} = defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
+    $self->{tls} = defined($self->{option_results}->{tls}) ? 1 : 0;
+    $self->{insecure} = defined($self->{option_results}->{insecure}) ? 1 : 0;
+    $self->{cacert} = defined($self->{option_results}->{cacert}) && $self->{option_results}->{cacert} ne '' ? $self->{option_results}->{cacert} : '';
+    $self->{sentinel} = [];
+    if (defined($self->{option_results}->{sentinel})) {
+        foreach my $addr (@{$self->{option_results}->{sentinel}}) {
+            next if ($addr eq '');
+
+            push @{$self->{sentinel}}, $addr . ($self->{sentinel_port} ne '' ? ':' . $self->{sentinel_port} : '') 
+        }
     }
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+    $self->{service} = defined($self->{option_results}->{service}) && $self->{option_results}->{service} ne '' ? $self->{option_results}->{service} : '';
+
+    if ($self->{server} eq '' && scalar(@{$self->{sentinel}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --server or --sentinel option.');
+        $self->{output}->option_exit();
+    }
+    if (scalar(@{$self->{sentinel}}) > 0 && $self->{service} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --service option.');
+        $self->{output}->option_exit();
+    }
+    if ($self->{ssh_hostname} ne '') {
+        $self->{option_results}->{hostname} = $self->{ssh_hostname};
         $self->{ssh}->check_options(option_results => $self->{option_results});
+    }
+    if ($self->{username} ne '' && $self->{option_results}->{password} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --password option.');
+        $self->{output}->option_exit();
     }
 
     return 0;
 }
 
-sub get_identifier {
+sub get_connection_info {
     my ($self, %options) = @_;
 
-    my $id = defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me';
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $id .= ':' . $self->{ssh}->get_port();
+    my $id = '';
+    if ($self->{server} ne '') {
+        $id = $self->{server} . ':' . $self->{port};
+    } else {
+        foreach (@{$self->{sentinel}}) {
+            $id .= $_ . '-';
+        }
     }
-    return $id;
+    return md5_hex($id);
 }
 
 sub execute_command {
@@ -94,18 +135,17 @@ sub execute_command {
 
     my $timeout = $self->{timeout};
     if (!defined($timeout)) {
-        $timeout = defined($options{timeout}) ? $options{timeout} : 45;
+        $timeout = defined($options{timeout}) ? $options{timeout} : 10;
     }
-    my $command_options = defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : $options{command_options};
 
     my ($stdout, $exit_code);
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+    if ($self->{ssh_hostname} ne '') {
         ($stdout, $exit_code) = $self->{ssh}->execute(
-            hostname => $self->{option_results}->{hostname},
+            hostname => $self->{ssh_hostname},
             sudo => $self->{option_results}->{sudo},
-            command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $options{command},
-            command_path => defined($self->{option_results}->{command_path}) && $self->{option_results}->{command_path} ne '' ? $self->{option_results}->{command_path} : $options{command_path},
-            command_options => $command_options,
+            command => $options{command},
+            command_path => $options{command_path},
+            command_options => $options{command_options},
             timeout => $timeout,
             no_quit => $options{no_quit}
         );
@@ -114,9 +154,9 @@ sub execute_command {
             output => $self->{output},
             sudo => $self->{option_results}->{sudo},
             options => { timeout => $timeout },
-            command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $options{command},
-            command_path => defined($self->{option_results}->{command_path}) && $self->{option_results}->{command_path} ne '' ? $self->{option_results}->{command_path} : $options{command_path},
-            command_options => $command_options,
+            command => $options{command},
+            command_path => $options{command_path},
+            command_options =>  $options{command_options},
             no_quit => $options{no_quit}
         );
     }
@@ -126,43 +166,28 @@ sub execute_command {
     return ($stdout, $exit_code);
 }
 
-sub query {
+sub get_info {
     my ($self, %options) = @_;
 
-    my $command_options =
-        'graph - --start=' . $options{start} .
-        ' --end=' . $options{end} . 
-        ' --imgformat=JSON' .
-        ' DEF:v1="' . $options{rrd_file} . ':' . $options{ds_name} . ':AVERAGE"' .
-        ' LINE1:v1#00CC00:v1' .
-        ' VDEF:v1max=v1,MAXIMUM' .
-        ' VDEF:v1min=v1,MINIMUM' .
-        ' VDEF:v1avg=v1,AVERAGE' .
-        ' GPRINT:v1max:"MAX\:%6.2lf"' . 
-        ' GPRINT:v1min:"MIN\:%6.2lf"' .
-        ' GPRINT:v1avg:"AVG\:%6.2lf"';
+    my $command_options = "-h '" . $self->{server} . "' -p " . $self->{port};
+    $command_options .= ' --tls' if ($self->{tls} == 1);
+    $command_options .= " --cacert '" . $self->{cacert} . "'" if ($self->{cacert} ne '');
+    $command_options .= ' --insecure' if ($self->{insecure} == 1);
+    $command_options .= " --user '" . $self->{username} . "'" if ($self->{username} ne '');
+    $command_options .= " -a '" . $self->{password} . "'" if ($self->{password} ne '');
+    $command_options .= ' info';
     my ($stdout) = $self->execute_command(
-        command => 'rrdtool',
+        command => 'redis-cli',
         command_options => $command_options
     );
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->decode($stdout);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-
-    my $results = {};
-    foreach (@{$decoded->{meta}->{gprints}}) {
-        if (defined($_->{gprint}) && $_->{gprint} =~ /(MIN|MAX|AVG):\s*([0-9\.]+)/) {
-            $results->{ lc($1) } = $2;
+    my $items = {};
+    foreach my $line (split /\n/, $stdout) {
+        if ($line =~ /^(.*?):(.*)$/) {
+            $items->{$1} = $2;
         }
     }
-
-    return $results;
+    return $items;
 }
 
 1;
@@ -181,29 +206,53 @@ redis-cli.
 
 =over 8
 
-=item B<--hostname>
+=item B<--server>
 
-Hostname to query.
+Redis server.
+
+=item B<--port>
+
+Redis port (Default: 6379).
+
+=item B<--tls>
+
+Establish a secure TLS connection (redis-cli >= 6.x mandatory).
+
+=item B<--cacert>
+
+CA Certificate file to verify with (redis-cli >= 6.x mandatory).
+
+=item B<--insecure>
+
+Allow insecure TLS connection by skipping cert validation (Since redis-cli 6.2.0).
+
+=item B<--username>
+
+Redis username (redis-cli >= 6.x mandatory).
+
+=item B<--password>
+
+Redis password.
+
+=item B<--sentinel>
+
+Sentinel server. Alternative of server option. service option is required.
+
+=item B<--sentinel-port>
+
+Sentinel port (Default: 26379).
+
+=item B<--service>
+
+Service parameter.
+
+=item B<--ssh-hostname>
+
+Remote ssh redis-cli execution.
 
 =item B<--timeout>
 
-Timeout in seconds for the command (Default: 45). Default value can be override by the mode.
-
-=item B<--command>
-
-Command to get information. Used it you have output in a file.
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options.
-
-=item B<--sudo>
-
-sudo command.
+Timeout in seconds for the command (Default: 10).
 
 =back
 
