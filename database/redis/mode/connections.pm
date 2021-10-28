@@ -29,13 +29,13 @@ use Digest::MD5 qw(md5_hex);
 sub prefix_connections_output {
     my ($self, %options) = @_;
     
-    return 'Number of connections: ';
+    return 'Number of connections ';
 }
 
 sub prefix_traffic_output {
     my ($self, %options) = @_;
     
-    return 'Network usage: ';
+    return 'Network usage ';
 }
 
 sub set_counters {
@@ -47,40 +47,40 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{connections} = [
-        { label => 'received-connections', set => {
+        { label => 'received-connections', nlabel => 'connections.received.count', set => {
                 key_values => [ { name => 'total_connections_received', diff => 1 } ],
                 output_template => 'received: %s',
                 perfdatas => [
-                    { label => 'received_connections', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-        { label => 'rejected-connections', set => {
+        { label => 'rejected-connections', nlabel => 'connections.rejected.count', set => {
                 key_values => [ { name => 'rejected_connections', diff => 1 } ],
                 output_template => 'rejected: %s',
                 perfdatas => [
-                    { label => 'rejected_connections', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         }
     ];
 
     $self->{maps_counters}->{traffic} = [
-        { label => 'traffic-in', set => {
+        { label => 'traffic-in', nlabel => 'network.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'total_net_input_bytes', per_second => 1 } ],
                 output_template => 'traffic in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', template => '%d', min => 0, unit => 'b/s' },
+                    { template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         },
-        { label => 'traffic-out', set => {
+        { label => 'traffic-out', nlabel => 'network.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'total_net_output_bytes', per_second => 1 } ],
                 output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', template => '%d', min => 0, unit => 'b/s' }
+                    { template => '%d', min => 0, unit => 'b/s' }
                 ]
             }
         }
@@ -89,7 +89,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments =>  {});

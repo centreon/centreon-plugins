@@ -29,30 +29,30 @@ use Digest::MD5 qw(md5_hex);
 sub prefix_output {
     my ($self, %options) = @_;
     
-    return 'Number of commands ';
+    return 'Number of commands processed: ';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
+        { name => 'global', type => 0, message_separator => ' ', cb_prefix_output => 'prefix_output' }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'processed-commands', set => {
+        { label => 'processed-commands', nlabel => 'commands.processed.count', set => {
                 key_values => [ { name => 'total_commands_processed', diff => 1 } ],
-                output_template => 'processed: %s',
+                output_template => '%s',
                 perfdatas => [
-                    { label => 'processed_commands', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-        { label => 'ops-per-sec', set => {
+        { label => 'ops-per-sec', nlabel => 'commands.processed.persecond', set => {
                 key_values => [ { name => 'instantaneous_ops_per_sec' } ],
-                output_template => 'processed per sec: %s',
+                output_template => '%.2f/s',
                 perfdatas => [
-                    { label => 'ops_per_sec', template => '%s', min => 0, unit => 'ops/s' }
+                    { template => '%.2f', min => 0 }
                 ]
             }
         }
@@ -61,7 +61,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});

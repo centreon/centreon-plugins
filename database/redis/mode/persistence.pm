@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::cli::mode::persistence;
+package database::redis::mode::persistence;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -52,44 +52,44 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'changes', set => {
+        { label => 'changes', nlabel => 'rdb.changes.since_last_save.count', set => {
                 key_values => [ { name => 'rdb_changes_since_last_save' } ],
                 output_template => 'number of changes since the last dump: %s',
                 perfdatas => [
-                    { label => 'changes', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-        { label => 'last-save', set => {
+        { label => 'last-save', nlabel => 'rdb.last_successful_save.seconds',set => {
                 key_values => [ { name => 'rdb_last_save_time' }, { name => 'rdb_last_save_time_sec' } ],
                 output_template => 'time since last successful save: %s',
                 perfdatas => [
-                    { label => 'last_save', template => '%s', min => 0, unit => 's' }
+                    { value => 'rdb_last_save_time_sec', template => '%s', min => 0, unit => 's' }
                 ]
             }
         },
-        { label => 'save-size', set => {
+        { label => 'save-size', nlabel => 'rdb.last_save.size.bytes', set => {
                 key_values => [ { name => 'rdb_last_cow_size' } ],
                 output_template => 'size of last save: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'save_size', template => '%s', min => 0, unit => 'B' }
+                    { template => '%s', min => 0, unit => 'B' }
                 ]
             }
         },
-        { label => 'last-save-duration', set => {
+        { label => 'last-save-duration', nlabel => 'rdb.last_save.duration.seconds', set => {
                 key_values => [ { name => 'rdb_last_bgsave_time' } ],
                 output_template => 'duration of last save: %s s',
                 perfdatas => [
-                    { label => 'last_save_duration', template => '%s', min => 0, unit => 's' }
+                    { template => '%s', min => 0, unit => 's' }
                 ]
             }
         },
-        { label => 'current-save-duration', set => {
+        { label => 'current-save-duration', nlabel => 'rdb.current_save.duration.seconds', set => {
                 key_values => [ { name => 'rdb_current_bgsave_time' } ],
                 output_template => 'duration of current save: %s s',
                 perfdatas => [
-                    { label => 'current_save_duration', template => '%s', min => 0, unit => 's' }
+                    { template => '%s', min => 0, unit => 's' }
                 ]
             }
         }
@@ -98,7 +98,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});

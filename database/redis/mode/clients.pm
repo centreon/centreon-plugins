@@ -25,43 +25,49 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_output {
+    my ($self, %options) = @_;
+    
+    return 'Clients ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 }
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output', skipped_code => { -10 => 1 } }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'connected-clients', set => {
+        { label => 'connected-clients', nlabel => 'clients.connected.count', set => {
                 key_values => [ { name => 'connected_clients' } ],
-                output_template => 'connected clients: %s',
+                output_template => 'connected: %s',
                 perfdatas => [
-                    { label => 'connected_clients', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-        { label => 'blocked-clients', set => {
+        { label => 'blocked-clients', nlabel => 'clients.blocked.count', set => {
                 key_values => [ { name => 'blocked_clients' } ],
-                output_template => 'blocked clients: %s',
+                output_template => 'blocked: %s',
                 perfdatas => [
-                    { label => 'blocked_clients', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-        { label => 'client-longest-output-list', set => {
+        { label => 'client-longest-output-list', nlabel => 'clients.longest_output_list.count', set => {
                 key_values => [ { name => 'client_longest_output_list' } ],
-                output_template => 'client longest output list: %s',
+                output_template => 'longest output list: %s',
                 perfdatas => [
                     { label => 'client_longest_output_list', template => '%s', min => 0 }
                 ]
             }
         },
-        { label => 'client-biggest-input-buf', set => {
+        { label => 'client-biggest-input-buf', nlabel => 'clients.biggest_input_buffer.count', set => {
                 key_values => [ { name => 'client_biggest_input_buf' } ],
                 output_template => 'client biggest input buffer: %s',
                 perfdatas => [
-                    { label => 'client_biggest_input_buf', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         }
@@ -70,7 +76,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});

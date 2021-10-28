@@ -78,7 +78,7 @@ sub check_options {
             push @{$self->{sentinel}}, $addr . ($self->{port} ne '' ? ':' . $self->{port} : '') 
         }
     }
-    $self->{service} = defined($self->{option_results}->{server}) && $self->{option_results}->{service} ne '' ? $self->{option_results}->{service} : '';
+    $self->{service} = defined($self->{option_results}->{service}) && $self->{option_results}->{service} ne '' ? $self->{option_results}->{service} : '';
 
     if ($self->{server} eq '' && scalar(@{$self->{sentinel}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --server or --sentinel option.');
@@ -111,7 +111,7 @@ sub get_info {
 
     my $redis;
     if ($self->{server} ne '') {
-        $redis = Redis->new(server => $self->{hostname} . ":" . $self->{port});
+        $redis = Redis->new(server => $self->{server} . ':' . $self->{port});
     } else {
         $redis = Redis->new(sentinels => $self->{sentinel}, service => $self->{service});
     }

@@ -61,57 +61,57 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'connected-slaves', set => {
+        { label => 'connected-slaves', nlabel => 'replication.slaves.connected.count', set => {
                 key_values => [ { name => 'connected_slaves' } ],
                 output_template => 'number of connected slaves: %s',
                 perfdatas => [
-                    { label => 'connected_slaves', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         }
     ];
 
     $self->{maps_counters}->{master} = [
-        {  label => 'master-repl-offset', set => {
+        {  label => 'master-repl-offset', nlabel => 'replication.master.offset.count', set => {
                 key_values => [ { name => 'master_repl_offset' } ],
-                output_template => 'master replication offset: %s s',
+                output_template => 'master replication offset: %s',
                 perfdatas => [
-                    { label => 'master_repl_offset', template => '%s', min => 0, unit => 's' }
+                    { template => '%s', min => 0 }
                 ]
             }
         }
     ];
 
     $self->{maps_counters}->{slave} = [
-        {  label => 'master-last-io', set => {
+        {  label => 'master-last-io', nlabel => 'replication.master.last_interaction.seconds', set => {
                 key_values => [ { name => 'master_last_io_seconds_ago' } ],
                 output_template => 'last interaction with master: %s s',
                 perfdatas => [
-                    { label => 'master_last_io', template => '%s', min => 0, unit => 's' }
+                    { template => '%s', min => 0, unit => 's' }
                 ]
             }
         },
-        {  label => 'slave-repl-offset', set => {
+        {  label => 'slave-repl-offset', nlabel => 'replication.slave.offset.count', set => {
                 key_values => [ { name => 'slave_repl_offset' } ],
                 output_template => 'slave replication offset: %s s',
                 perfdatas => [
-                    { label => 'slave_repl_offset', template => '%s', min => 0, unit => 's' }
+                    { template => '%s', min => 0 }
                 ]
             }
         },
-        {  label => 'slave-priority', set => {
+        {  label => 'slave-priority', nlabel => 'replication.slave.priority.count', set => {
                 key_values => [ { name => 'slave_priority' } ],
                 output_template => 'slave replication priority: %s',
                 perfdatas => [
-                    { label => 'slave_priority', value => 'slave_priority', template => '%s' }
+                    { template => '%s' }
                 ]
             }
         },
-        {  label => 'slave-read-only', set => {
+        {  label => 'slave-read-only', nlabel => 'replication.slave.readonly.count',set => {
                 key_values => [ { name => 'slave_read_only' } ],
-                output_template => 'Slave read only: %s',
+                output_template => 'slave readonly: %s',
                 perfdatas => [
-                    { label => 'slave_read_only', template => '%s' }
+                    { template => '%s' }
                 ]
             }
         }
@@ -120,7 +120,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});

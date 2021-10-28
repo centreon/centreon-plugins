@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::cli::mode::cpu;
+package database::redis::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,7 +29,7 @@ use Digest::MD5 qw(md5_hex);
 sub prefix_output {
     my ($self, %options) = @_;
 
-    return 'CPU usage: ';
+    return 'CPU usage ';
 }
 
 sub custom_usage_calc {
@@ -49,39 +49,39 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'sys', set => {
+        { label => 'sys', nlabel => 'cpu.system.usage.percentage', set => {
                 key_values => [ { name => 'used_cpu_sys', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_sys' },
                 output_template => 'system: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
                 perfdatas => [
-                    { label => 'sys', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' }
+                    { value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
-        { label => 'user', set => {
+        { label => 'user', nlabel => 'cpu.user.usage.percentage', set => {
                 key_values => [ { name => 'used_cpu_user', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_user' },
                 output_template => 'user: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
                 perfdatas => [
-                    { label => 'user', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' }
+                    { value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
-        { label => 'sys-children', set => {
+        { label => 'sys-children', nlabel => 'cpu.system.children.usage.percentage', set => {
                 key_values => [ { name => 'used_cpu_sys_children', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_sys_children' },
                 output_template => 'system children: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
                 perfdatas => [
-                    { label => 'sys_children', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' }
+                    { value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
-        { label => 'user-children', set => {
+        { label => 'user-children', nlabel => 'cpu.user.children.usage.percentage',  set => {
                 key_values => [ { name => 'used_cpu_user_children', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_user_children' },
                 output_template => 'user children: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
                 perfdatas => [
-                    { label => 'user_children', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' }
+                    { value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         }
@@ -90,7 +90,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
