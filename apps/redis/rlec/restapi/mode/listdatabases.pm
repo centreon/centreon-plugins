@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::restapi::mode::listshards;
+package apps::redis::rlec::restapi::mode::listdatabases;
 
 use base qw(centreon::plugins::mode);
 
@@ -30,9 +30,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -44,22 +43,25 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{shards} = $options{custom}->get(path => '/v1/shards');
+    $self->{databases} = $options{custom}->get(path => '/v1/bdbs');
 }
 
 sub run {
     my ($self, %options) = @_;
   
     $self->manage_selection(%options);
-    foreach my $shard_uid (sort keys %{$self->{shards}}) { 
-        $self->{output}->output_add(long_msg => '[uid = ' . $shard_uid . "] [role = '" . $self->{shards}->{$shard_uid}->{role} . "']" .
-            " [detailed_status = '" . $self->{shards}->{$shard_uid}->{detailed_status} . "']" .
-            " [status = '" . $self->{shards}->{$shard_uid}->{status} . "']"
+    foreach my $database_uid (sort keys %{$self->{databases}}) { 
+        $self->{output}->output_add(
+            long_msg => '[uid = ' . $database_uid . "] [name = '" . $self->{databases}->{$database_uid}->{name} . "']" .
+            " [type = '" . $self->{databases}->{$database_uid}->{type} . "']" .
+            " [status = '" . $self->{databases}->{$database_uid}->{status} . "']"
         );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List shards:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List databases:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -67,18 +69,19 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['uid', 'role', 'detailed_status', 'status']);
+    $self->{output}->add_disco_format(elements => ['uid', 'name', 'type', 'status']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $shard_uid (sort keys %{$self->{shards}}) {             
-        $self->{output}->add_disco_entry(role => $self->{shards}->{$shard_uid}->{role},
-            detailed_status => $self->{shards}->{$shard_uid}->{detailed_status},
-            status => $self->{shards}->{$shard_uid}->{status},
-            uid => $shard_uid,
+    foreach my $database_uid (sort keys %{$self->{databases}}) {             
+        $self->{output}->add_disco_entry(
+            name => $self->{databases}->{$database_uid}->{name},
+            type => $self->{databases}->{$database_uid}->{type},
+            status => $self->{databases}->{$database_uid}->{status},
+            uid => $database_uid
         );
     }
 }
@@ -89,7 +92,7 @@ __END__
 
 =head1 MODE
 
-List shards.
+List databases.
 
 =over 8
 

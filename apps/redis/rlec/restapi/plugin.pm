@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::restapi::plugin;
+package apps::redis::rlec::restapi::plugin;
 
 use strict;
 use warnings;
@@ -30,17 +30,17 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'databases-stats'    => 'apps::redis::restapi::mode::databasesstats',
-        'cluster-stats'      => 'apps::redis::restapi::mode::clusterstats',
-        'list-databases'     => 'apps::redis::restapi::mode::listdatabases',
-        'list-nodes'         => 'apps::redis::restapi::mode::listnodes',
-        'list-shards'        => 'apps::redis::restapi::mode::listshards',
-        'nodes-stats'        => 'apps::redis::restapi::mode::nodesstats',
-        'shards-stats'       => 'apps::redis::restapi::mode::shardsstats',
-    );
+    $self->{modes} = {
+        'databases-stats' => 'apps::redis::rlec::restapi::mode::databasesstats',
+        'cluster-stats'   => 'apps::redis::rlec::restapi::mode::clusterstats',
+        'list-databases'  => 'apps::redis::rlec::restapi::mode::listdatabases',
+        'list-nodes'      => 'apps::redis::rlec::restapi::mode::listnodes',
+        'list-shards'     => 'apps::redis::rlec::restapi::mode::listshards',
+        'nodes-stats'     => 'apps::redis::rlec::restapi::mode::nodesstats',
+        'shards-stats'    => 'apps::redis::rlec::restapi::mode::shardsstats'
+    };
 
-    $self->{custom_modes}{api} = 'apps::redis::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::redis::rlec::restapi::custom::api';
     return $self;
 }
 

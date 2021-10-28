@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::restapi::custom::api;
+package apps::redis::rlec::restapi::custom::api;
 
 use strict;
 use warnings;
@@ -81,7 +81,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
-
     if (!defined($self->{hostname}) ||
         scalar(@{$self->{option_results}->{hostname}}) == 0) {
         return 0;
@@ -130,8 +129,7 @@ sub get {
     $self->settings();
 
     my $response = $self->{http}->request(url_path => $options{path});
-    
-    my $content;
+        my $content;
     eval {
         $content = JSON::XS->new->utf8->decode($response);
     };
