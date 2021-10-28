@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::cli::plugin;
+package database::redis::plugin;
 
 use strict;
 use warnings;
@@ -30,17 +30,18 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'clients'     => 'apps::redis::cli::mode::clients',
-        'commands'    => 'apps::redis::cli::mode::commands',
-        'connections' => 'apps::redis::cli::mode::connections',
-        'cpu'         => 'apps::redis::cli::mode::cpu',
-        'memory'      => 'apps::redis::cli::mode::memory',
-        'persistence' => 'apps::redis::cli::mode::persistence',
-        'replication' => 'apps::redis::cli::mode::replication',
-    );
+    $self->{modes} = {
+        'clients'     => 'database::redis::mode::clients',
+        'commands'    => 'database::redis::mode::commands',
+        'connections' => 'database::redis::mode::connections',
+        'cpu'         => 'database::redis::mode::cpu',
+        'memory'      => 'database::redis::mode::memory',
+        'persistence' => 'database::redis::mode::persistence',
+        'replication' => 'database::redis::mode::replication'
+    };
 
-    $self->{custom_modes}{rediscli} = 'apps::redis::cli::custom::rediscli';
+    $self->{custom_modes}->{perlmod} = 'database::redis::custom::perlmod';
+    $self->{custom_modes}->{cli} = 'database::redis::custom::cli';
     return $self;
 }
 
@@ -50,4 +51,4 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Redis server through Perl Cli binding library.
+Check Redis database.

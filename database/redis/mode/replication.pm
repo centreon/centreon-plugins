@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::cli::mode::replication;
+package database::redis::mode::replication;
 
 use base qw(centreon::plugins::templates::counter);
 

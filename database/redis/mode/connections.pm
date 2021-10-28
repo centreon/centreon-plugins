@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::cli::mode::connections;
+package database::redis::mode::connections;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -72,8 +72,8 @@ sub set_counters {
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_in', template => '%d', min => 0, unit => 'b/s' },
-                ],
-            },
+                ]
+            }
         },
         { label => 'traffic-out', set => {
                 key_values => [ { name => 'total_net_output_bytes', per_second => 1 } ],

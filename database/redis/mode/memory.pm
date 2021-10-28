@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::cli::mode::memory;
+package database::redis::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::cli::custom::rediscli;
+package database::redis::custom::perlmod;
 
 use strict;
 use warnings;
@@ -46,7 +46,7 @@ sub new {
             'password:s' => { name => 'password' }
         });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'REDIS CLI OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'REDIS OPTIONS', once => 1);
 
     $self->{output} = $options{output};
 
@@ -111,13 +111,13 @@ __END__
 
 =head1 NAME
 
-REDIS CLI
+REDIS perlmod
 
 =head1 SYNOPSIS
 
-Redis Cli custom mode
+Redis perlmod
 
-=head1 REDIS CLI OPTIONS
+=head1 REDIS OPTIONS
 
 =over 8
 
