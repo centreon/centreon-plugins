@@ -166,15 +166,56 @@ sub execute_command {
     return ($stdout, $exit_code);
 }
 
+sub get_extra_options {
+    my ($self, %options) = @_;
+
+    my $options = '';
+    $options .= ' --tls' if ($self->{tls} == 1);
+    $options .= " --cacert '" . $self->{cacert} . "'" if ($self->{cacert} ne '');
+    $options .= ' --insecure' if ($self->{insecure} == 1);
+    $options .= " --user '" . $self->{username} . "'" if ($self->{username} ne '');
+    $options .= " -a '" . $self->{password} . "'" if ($self->{password} ne '');
+    return $options;
+}
+
+sub sentinels_get_master {
+    my ($self, %options) = @_;
+
+    my ($host, $port);
+    foreach my $addr (@{$self->{sentinel}}) {
+        my ($sentinel_host, $sentinel_port) = split(/:/, $addr);
+        my $command_options = "-h '" . $sentinel_host . "' -p " . (defined($sentinel_port) ? $sentinel_port : 26379);
+        $command_options .= ' sentinel get-master-addr-by-name ' . $self->{service};
+        my ($stdout, $exit_code) = $self->execute_command(
+            command => 'redis-cli',
+            command_options => $command_options,
+            no_quit => 1
+        );
+        next if ($exit_code != 0);
+        $host = $1 if ($stdout =~ /1\) "(.*?)"/m);
+        $port = $2 if ($stdout =~ /2\) "(\d+)"/m);
+        last if (defined($port));
+    }
+
+    if (!defined($port)) {
+        $self->{output}->add_option_msg(short_msg => 'Cannot find redis master (sentinels)');
+        $self->{output}->option_exit();
+    }
+    return ($host, $port);
+}
+
 sub get_info {
     my ($self, %options) = @_;
 
-    my $command_options = "-h '" . $self->{server} . "' -p " . $self->{port};
-    $command_options .= ' --tls' if ($self->{tls} == 1);
-    $command_options .= " --cacert '" . $self->{cacert} . "'" if ($self->{cacert} ne '');
-    $command_options .= ' --insecure' if ($self->{insecure} == 1);
-    $command_options .= " --user '" . $self->{username} . "'" if ($self->{username} ne '');
-    $command_options .= " -a '" . $self->{password} . "'" if ($self->{password} ne '');
+    my $command_options;
+    if ($self->{server} ne '') {
+        $command_options = "-h '" . $self->{server} . "' -p " . $self->{port};
+    } else {
+        my ($host, $port) = $self->sentinels_get_master();
+        $command_options = "-h '" . $host . "' -p " . $port;
+    }
+
+    $command_options .= $self->get_extra_options();
     $command_options .= ' info';
     my ($stdout) = $self->execute_command(
         command => 'redis-cli',
