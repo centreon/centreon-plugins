@@ -118,10 +118,10 @@ sub get_info {
     my ($self, %options) = @_;
 
     my $redis;
-    if ($self->{server} ne '') {
-        $redis = Redis->new(server => $self->{server} . ':' . $self->{port});
-    } else {
+    if (scalar(@{$self->{sentinel}}) > 0) {
         $redis = Redis->new(sentinels => $self->{sentinel}, service => $self->{service});
+    } else {
+        $redis = Redis->new(server => $self->{server} . ':' . $self->{port});
     }
     if ($self->{password} ne '') {
         $redis->auth($self->{password});

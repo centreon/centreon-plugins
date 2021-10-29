@@ -208,11 +208,11 @@ sub get_info {
     my ($self, %options) = @_;
 
     my $command_options;
-    if ($self->{server} ne '') {
-        $command_options = "-h '" . $self->{server} . "' -p " . $self->{port};
-    } else {
+    if (scalar(@{$self->{sentinel}}) > 0) {
         my ($host, $port) = $self->sentinels_get_master();
         $command_options = "-h '" . $host . "' -p " . $port;
+    } else {
+        $command_options = "-h '" . $self->{server} . "' -p " . $self->{port};
     }
 
     $command_options .= $self->get_extra_options();
