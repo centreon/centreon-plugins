@@ -44,6 +44,7 @@ sub new {
         $options{options}->add_options(arguments => {
             'server:s'        => { name => 'server' },
             'port:s'          => { name => 'port' },
+            'username:s'      => { name => 'username' },
             'password:s'      => { name => 'password' },
             'sentinel:s@'     => { name => 'sentinel' },
             'sentinel-port:s' => { name => 'sentinel_port' },
@@ -71,6 +72,7 @@ sub check_options {
     $self->{server} = defined($self->{option_results}->{server}) && $self->{option_results}->{server} ne '' ? $self->{option_results}->{server} : '';
     $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} =~ /(\d+)/ ? $1 : 6379;
     $self->{sentinel_port} = defined($self->{option_results}->{sentinel_port}) && $self->{option_results}->{sentinel_port} =~ /(\d+)/ ? $1 : 26379;
+    $self->{username} = defined($self->{option_results}->{username}) && $self->{option_results}->{username} ne '' ? $self->{option_results}->{username} : '';
     $self->{password} = defined($self->{option_results}->{password}) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : '';
     $self->{sentinel} = [];
     if (defined($self->{option_results}->{sentinel})) {
@@ -88,6 +90,10 @@ sub check_options {
     }
     if (scalar(@{$self->{sentinel}}) > 0 && $self->{service} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --service option.');
+        $self->{output}->option_exit();
+    }
+    if ($self->{username} ne '') {
+        $self->{output}->add_option_msg(short_msg => 'Unsupported --username option.');
         $self->{output}->option_exit();
     }
 
