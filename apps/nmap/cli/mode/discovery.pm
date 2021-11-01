@@ -78,10 +78,10 @@ sub define_type {
 
     return "unknown" unless (defined($options{desc}) && $options{desc} ne '');
     foreach (@$lookup_type) {
-        if ($options{vendor} =~ /$_->{re}/) {
+        if (defined($options{vendor}) && $options{vendor} =~ /$_->{re}/) {
             return $_->{type};
         }
-        if ($options{desc} =~ /$_->{re}/) {
+        if (defined($options{desc}) && $options{desc} =~ /$_->{re}/) {
             return $_->{type};
         }
     }
