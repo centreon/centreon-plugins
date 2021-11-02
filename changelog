@@ -1,3 +1,13 @@
+2021-11-02 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: IBM MQ Rest API
+ * Plugin added: HP Moonshot SNMP
+ * Plugin added: Dell PowerStore Rest API
+ * Plugin added: Cisco ESA Rest API
+ * Plugin added: Azure Compute Disks
+ * Plugin added: Azure Insights Metrics
+ * Plugin added: AS400 Connector
+ * Break: [fritzbox] refactoring
+
 2021-09-15 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Fortinet Fortiweb SNMP
  * Plugin added: Tplink SNMP
