@@ -53,7 +53,7 @@ sub check_options {
 }
 
 my $lookup_type = [
-    { type => 'cisco standard', re => qr/Cisco IOS Software/i },
+    { type => 'cisco standard', re => qr/Cisco/i },
     { type => 'emc data domain', re => qr/Data Domain/i },
     { type => 'sonicwall', re => qr/SonicWALL/i },
     { type => 'silverpeak', re => qr/Silver Peak/i },
@@ -70,6 +70,7 @@ my $lookup_type = [
     { type => 'macos', re => qr/Darwin/i },
     { type => 'hp-ux', re => qr/HP-UX/i },
     { type => 'freebsd', re => qr/FreeBSD/i },
+    { type => 'synology', re => qr/Synology/i }
 ];
 
 sub define_type {
@@ -77,7 +78,10 @@ sub define_type {
 
     return "unknown" unless (defined($options{desc}) && $options{desc} ne '');
     foreach (@$lookup_type) {
-        if ($options{desc} =~ /$_->{re}/) {
+        if (defined($options{vendor}) && $options{vendor} =~ /$_->{re}/) {
+            return $_->{type};
+        }
+        if (defined($options{desc}) && $options{desc} =~ /$_->{re}/) {
             return $_->{type};
         }
     }
@@ -125,7 +129,6 @@ sub run {
         $host{status} = $entry->{status}->{state};
         $host{os} = $entry->{os}->{osmatch}[0]->{name};
         $host{os_accuracy} = $entry->{os}->{osmatch}[0]->{accuracy};
-        $host{type} = $self->define_type(desc => $host{os});
         $host{ip} = undef;
         $host{addresses} = undef;
         $host{hostname} = undef;
@@ -149,6 +152,9 @@ sub run {
                 name => $port->{service}->{name}
             };
         }
+
+        $host{type} = $self->define_type(vendor => $host{vendor}, desc => $host{os});
+
         push @disco_data, \%host;
     }
     
