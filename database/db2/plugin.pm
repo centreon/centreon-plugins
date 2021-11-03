@@ -61,7 +61,7 @@ sub init {
         for (my $i = 0; $i < scalar(@{$options_result->{server}}); $i++) {
             next if ($options_result->{server}->[$i] eq '');
 
-            $self->{sqldefault}->{dbi}->[$i] = { data_source => 'DB2:PROTOCOL=TCPIP;hostname=' . $options_result->{server}->[$i] };
+            $self->{sqldefault}->{dbi}->[$i] = { data_source => 'DB2:PROTOCOL=TCPIP;HOSTNAME=' . $options_result->{server}->[$i] };
             if (!defined($options_result->{database}) || $options_result->{database} eq '') {
                 $self->{output}->add_option_msg(short_msg => 'Need to specify --database option');
                 $self->{output}->option_exit();
