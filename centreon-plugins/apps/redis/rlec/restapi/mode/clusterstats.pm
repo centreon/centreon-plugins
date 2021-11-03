@@ -18,22 +18,23 @@
 # limitations under the License.
 #
 
-package apps::redis::restapi::mode::clusterstats;
+package apps::redis::rlec::restapi::mode::clusterstats;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => $self->{result_values}->{perf}, unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{perf}, unit => 'B',
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -52,16 +53,17 @@ sub custom_usage_threshold {
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
+
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-    
-    my $msg = sprintf("%s usage: Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $self->{result_values}->{display}, 
-            $total_value . " " . $total_unit, 
-            $used_value . " " . $used_unit, $self->{result_values}->{prct_used}, 
-            $free_value . " " . $free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+
+    return sprintf(
+        "%s usage: Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $self->{result_values}->{display}, 
+        $total_value . " " . $total_unit, 
+        $used_value . " " . $used_unit, $self->{result_values}->{prct_used}, 
+        $free_value . " " . $free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -94,77 +96,82 @@ sub prefix_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All cluster counters are ok' },
+        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All cluster counters are ok' }
     ];
-    
+
     $self->{maps_counters}->{cluster} = [
         { label => 'cpu-system', set => {
                 key_values => [ { name => 'cpu_system' } ],
                 output_template => 'Cpu system: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_system', value => 'cpu_system', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'cpu_system', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'cpu-user', set => {
                 key_values => [ { name => 'cpu_user' } ],
                 output_template => 'Cpu user: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_user', value => 'cpu_user', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'cpu_user', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'memory', set => {
                 key_values => [ { name => 'free_memory' }, { name => 'total_memory' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Ram', label => 'memory', perf => 'memory', 
-                                                        free => 'free_memory', total => 'total_memory' },
+                closure_custom_calc_extra_options => {
+                    display => 'Ram', label => 'memory', perf => 'memory', 
+                    free => 'free_memory', total => 'total_memory'
+                },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'persistent-storage', set => {
                 key_values => [ { name => 'persistent_storage_free' }, { name => 'persistent_storage_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Persistent storage', label => 'persistent-storage', perf => 'persistent_storage', 
-                                                        free => 'persistent_storage_free', total => 'persistent_storage_size' },
+                closure_custom_calc_extra_options => {
+                    display => 'Persistent storage', label => 'persistent-storage', perf => 'persistent_storage', 
+                    free => 'persistent_storage_free', total => 'persistent_storage_size'
+                },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'ephemeral-storage', set => {
                 key_values => [ { name => 'ephemeral_storage_free' }, { name => 'ephemeral_storage_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Ephemeral storage', label => 'ephemeral-storage', perf => 'ephemeral_storage', 
-                                                        free => 'ephemeral_storage_free', total => 'ephemeral_storage_size' },
+                closure_custom_calc_extra_options => {
+                    display => 'Ephemeral storage', label => 'ephemeral-storage', perf => 'ephemeral_storage', 
+                    free => 'ephemeral_storage_free', total => 'ephemeral_storage_size'
+                },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'flash-storage', set => {
                 key_values => [ { name => 'bigstore_free' }, { name => 'bigstore_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Flash storage', label => 'flash-storage', perf => 'flash_storage', 
-                                                        free => 'bigstore_free', total => 'bigstore_size' },
+                closure_custom_calc_extra_options => {
+                    display => 'Flash storage', label => 'flash-storage', perf => 'flash_storage', 
+                    free => 'bigstore_free', total => 'bigstore_size'
+                },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'flash-iops', set => {
                 key_values => [ { name => 'bigstore_iops' } ],
                 output_template => 'Flash IOPS: %s ops/s',
                 perfdatas => [
-                    { label => 'flash_iops', value => 'bigstore_iops', template => '%s',
-                      min => 0, unit => 'ops/s' },
-                ],
+                    { label => 'flash_iops', template => '%s', min => 0, unit => 'ops/s' }
+                ]
             }
         },
         { label => 'flash-throughput', set => {
@@ -172,27 +179,24 @@ sub set_counters {
                 output_template => 'Flash throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'flash_throughput', value => 'bigstore_throughput', template => '%s',
-                      min => 0, unit => 'B/s' },
-                ],
+                    { label => 'flash_throughput', template => '%s', min => 0, unit => 'B/s' }
+                ]
             }
         },
         { label => 'connections', set => {
                 key_values => [ { name => 'conns' } ],
                 output_template => 'Connections: %s',
                 perfdatas => [
-                    { label => 'connections', value => 'conns', template => '%s',
-                      min => 0 },
-                ],
+                    { label => 'connections', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'requests', set => {
                 key_values => [ { name => 'total_req' } ],
                 output_template => 'Requests rate: %s ops/s',
                 perfdatas => [
-                    { label => 'requests', value => 'total_req', template => '%s',
-                      min => 0, unit => 'ops/s' },
-                ],
+                    { label => 'requests', template => '%s', min => 0, unit => 'ops/s' }
+                ]
             }
         },
         { label => 'traffic-in', set => {
@@ -200,19 +204,19 @@ sub set_counters {
                 output_template => 'Traffic In: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'ingress', template => '%d', min => 0, unit => 'b/s' },
-                ],
-            },
+                    { label => 'traffic_in', template => '%d', min => 0, unit => 'b/s' }
+                ]
+            }
         },
         { label => 'traffic-out', set => {
                 key_values => [ { name => 'egress' } ],
                 output_template => 'Traffic Out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'egress', template => '%d', min => 0, unit => 'b/s' },
-                ],
-            },
-        },
+                    { label => 'traffic_out', template => '%d', min => 0, unit => 'b/s' }
+                ]
+            }
+        }
     ];
 }
 
@@ -222,8 +226,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "units:s"   => { name => 'units', default => '%' },
-        "free"      => { name => 'free' },
+        'units:s' => { name => 'units', default => '%' },
+        'free'    => { name => 'free' }
     });
 
     return $self;
@@ -273,7 +277,7 @@ sub manage_selection {
         conns                       => $result->{conns},
         total_req                   => $result->{total_req},
         ingress                     => $result->{ingress_bytes} * 8,
-        egress                      => $result->{egress_bytes} * 8,
+        egress                      => $result->{egress_bytes} * 8
     };
 }
 

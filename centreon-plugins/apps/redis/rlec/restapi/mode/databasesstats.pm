@@ -18,23 +18,24 @@
 # limitations under the License.
 #
 
-package apps::redis::restapi::mode::databasesstats;
+package apps::redis::rlec::restapi::mode::databasesstats;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => $self->{result_values}->{perf}, unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{perf}, unit => 'B',
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -58,11 +59,12 @@ sub custom_usage_output {
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     
-    my $msg = sprintf("%s usage: Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $self->{result_values}->{display}, 
-            $total_value . " " . $total_unit, 
-            $used_value . " " . $used_unit, $self->{result_values}->{prct_used}, 
-            $free_value . " " . $free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "%s usage: Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $self->{result_values}->{display}, 
+        $total_value . " " . $total_unit, 
+        $used_value . " " . $used_unit, $self->{result_values}->{prct_used}, 
+        $free_value . " " . $free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -79,9 +81,9 @@ sub custom_usage_calc {
         $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
         $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
     } else {
-        $self->{result_values}->{used} = '0';
-        $self->{result_values}->{prct_used} = '0';
-        $self->{result_values}->{prct_free} = '0';
+        $self->{result_values}->{used} = 0;
+        $self->{result_values}->{prct_used} = 0;
+        $self->{result_values}->{prct_free} = 0;
     }
 
     return 0;
@@ -90,37 +92,26 @@ sub custom_usage_calc {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Status is '%s' [type: %s] [shard list: %s] [backup status: %s] [export status: %s] [import status: %s]", 
+    return sprintf(
+        "Status is '%s' [type: %s] [shard list: %s] [backup status: %s] [export status: %s] [import status: %s]", 
         $self->{result_values}->{status}, 
         $self->{result_values}->{type},
         $self->{result_values}->{shard_list}, 
         $self->{result_values}->{backup_status}, 
         $self->{result_values}->{export_status},
-        $self->{result_values}->{import_status});
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{backup_status} = $options{new_datas}->{$self->{instance} . '_backup_status'};
-    $self->{result_values}->{export_status} = $options{new_datas}->{$self->{instance} . '_export_status'};
-    $self->{result_values}->{import_status} = $options{new_datas}->{$self->{instance} . '_import_status'};
-    $self->{result_values}->{shard_list} = $options{new_datas}->{$self->{instance} . '_shard_list'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+        $self->{result_values}->{import_status}
+    );
 }
 
 sub custom_cpu_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("%s CPU usage (user/system): %s/%s %%", 
+    return sprintf(
+        "%s CPU usage (user/system): %s/%s %%", 
         $self->{result_values}->{cpu}, 
         $self->{result_values}->{user}, 
-        $self->{result_values}->{system});
-    return $msg;
+        $self->{result_values}->{system}
+    );
 }
 
 sub custom_cpu_calc {
@@ -136,13 +127,14 @@ sub custom_cpu_calc {
 sub custom_operations_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("%s operations rates (hits/misses/requests/responses): %s/%s/%s/%s ops/s", 
+    return sprintf(
+        "%s operations rates (hits/misses/requests/responses): %s/%s/%s/%s ops/s", 
         $self->{result_values}->{operation}, 
         $self->{result_values}->{hits}, 
         $self->{result_values}->{misses}, 
         $self->{result_values}->{req}, 
-        $self->{result_values}->{res});
-    return $msg;
+        $self->{result_values}->{res}
+    );
 }
 
 sub custom_operations_calc {
@@ -165,61 +157,72 @@ sub prefix_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'databases', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All databases counters are ok' },
+        { name => 'databases', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All databases counters are ok' }
     ];
-    
+
     $self->{maps_counters}->{databases} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'type' }, { name => 'backup_status' }, 
-                                { name => 'export_status' }, { name => 'import_status' }, { name => 'shard_list' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+        {
+            label => 'status', 
+            type => 2,
+            critical_default => '%{status} =~ /creation-failed/i || %{backup_status} =~ /failed/i || %{export_status} =~ /failed/i || %{import_status} =~ /failed/i',
+            set => {
+                key_values => [
+                    { name => 'status' }, { name => 'type' }, { name => 'backup_status' }, 
+                    { name => 'export_status' }, { name => 'import_status' }, { name => 'shard_list' }, { name => 'display' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'total-cpu', set => {
                 key_values => [ { name => 'shard_cpu_user' }, { name => 'shard_cpu_system' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_cpu_calc'),
-                closure_custom_calc_extra_options => { cpu => 'Total', user => 'shard_cpu_user', 
-                                system => 'shard_cpu_system', display => 'display' },
+                closure_custom_calc_extra_options => {
+                    cpu => 'Total', user => 'shard_cpu_user', 
+                    system => 'shard_cpu_system', display => 'display'
+                },
                 closure_custom_output => $self->can('custom_cpu_output'),
                 perfdatas => [
                     { label => 'total_cpu_user', value => 'user', template => '%s',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                     { label => 'total_cpu_system', value => 'system', template => '%s',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'fork-cpu', set => {
                 key_values => [ { name => 'fork_cpu_user' }, { name => 'fork_cpu_system' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_cpu_calc'),
-                closure_custom_calc_extra_options => { cpu => 'Fork', user => 'fork_cpu_user', 
-                                system => 'fork_cpu_system', display => 'display' },
+                closure_custom_calc_extra_options => {
+                    cpu => 'Fork', user => 'fork_cpu_user', 
+                    system => 'fork_cpu_system', display => 'display'
+                },
                 closure_custom_output => $self->can('custom_cpu_output'),
                 perfdatas => [
                     { label => 'fork_cpu_user', value => 'user', template => '%s',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                     { label => 'fork_cpu_system', value => 'system', template => '%s',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'main-thread-cpu', set => {
                 key_values => [ { name => 'main_thread_cpu_user' }, { name => 'main_thread_cpu_system' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_cpu_calc'),
-                closure_custom_calc_extra_options => { cpu => 'Main thread', user => 'main_thread_cpu_user', 
-                                system => 'main_thread_cpu_system', display => 'display' },
+                closure_custom_calc_extra_options => {
+                    cpu => 'Main thread', user => 'main_thread_cpu_user', 
+                    system => 'main_thread_cpu_system', display => 'display'
+                },
                 closure_custom_output => $self->can('custom_cpu_output'),
                 perfdatas => [
                     { label => 'main_thread_cpu_user', value => 'user', template => '%s',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                     { label => 'main_thread_cpu_system', value => 'system', template => '%s',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'memory', set => {
@@ -229,33 +232,37 @@ sub set_counters {
                                                         used => 'used_memory', total => 'memory_size' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'mem-frag-ratio', set => {
                 key_values => [ { name => 'mem_frag_ratio' }, { name => 'display' } ],
                 output_template => 'Memory fragmentation ratio: %s',
                 perfdatas => [
-                    { label => 'mem_frag_ratio', value => 'mem_frag_ratio', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'mem_frag_ratio', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'connections', set => {
                 key_values => [ { name => 'conns' }, { name => 'display' } ],
                 output_template => 'Connections: %s',
                 perfdatas => [
-                    { label => 'connections', value => 'conns', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'total-rates', set => {
-                key_values => [ { name => 'total_hits' }, { name => 'total_misses' }, 
-                                { name => 'total_req' }, { name => 'total_res' }, { name => 'display' } ],
+                key_values => [
+                    { name => 'total_hits' }, { name => 'total_misses' }, 
+                    { name => 'total_req' }, { name => 'total_res' }, { name => 'display' }
+                ],
                 closure_custom_calc => $self->can('custom_operations_calc'),
-                closure_custom_calc_extra_options => { operation => 'Total', hits => 'total_hits', misses => 'total_misses',
-                                req => 'total_req', res => 'total_res', display => 'display' },
+                closure_custom_calc_extra_options => {
+                    operation => 'Total', hits => 'total_hits', misses => 'total_misses',
+                    req => 'total_req', res => 'total_res', display => 'display'
+                },
                 closure_custom_output => $self->can('custom_operations_output'),
                 perfdatas => [
                     { label => 'total_hits', value => 'hits', template => '%s',
@@ -265,76 +272,84 @@ sub set_counters {
                     { label => 'total_req', value => 'req', template => '%s',
                       min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
                     { label => 'total_res', value => 'res', template => '%s',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'latency', set => {
                 key_values => [ { name => 'avg_latency' }, { name => 'display' } ],
                 output_template => 'Average latency: %.2f ms',
                 perfdatas => [
-                    { label => 'latency', value => 'avg_latency', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'other-rates', set => {
-                key_values => [ { name => 'other_hits' }, { name => 'other_misses' }, 
-                                { name => 'other_req' }, { name => 'other_res' }, { name => 'display' } ],
+                key_values => [
+                    { name => 'other_hits' }, { name => 'other_misses' }, 
+                    { name => 'other_req' }, { name => 'other_res' }, { name => 'display' }
+                ],
                 closure_custom_calc => $self->can('custom_operations_calc'),
-                closure_custom_calc_extra_options => { operation => 'Other', hits => 'other_hits', misses => 'other_misses',
-                                req => 'other_req', res => 'other_res', display => 'display' },
+                closure_custom_calc_extra_options => {
+                    operation => 'Other', hits => 'other_hits', misses => 'other_misses',
+                    req => 'other_req', res => 'other_res', display => 'display'
+                },
                 closure_custom_output => $self->can('custom_operations_output'),
                 perfdatas => [
                     { label => 'other_req', value => 'req', template => '%s',
                       min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
                     { label => 'other_res', value => 'res', template => '%s',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'other-latency', set => {
                 key_values => [ { name => 'avg_other_latency' }, { name => 'display' } ],
                 output_template => 'Other latency: %.2f ms',
                 perfdatas => [
-                    { label => 'other_latency', value => 'avg_other_latency', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'other_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'keys', set => {
                 key_values => [ { name => 'no_of_keys' }, { name => 'display' } ],
                 output_template => 'Total keys: %s',
                 perfdatas => [
-                    { label => 'keys', value => 'no_of_keys', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'keys', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'evicted-objects', set => {
                 key_values => [ { name => 'evicted_objects' }, { name => 'display' } ],
                 output_template => 'Evicted objects rate: %s evictions/sec',
                 perfdatas => [
-                    { label => 'evicted_objects', value => 'evicted_objects', template => '%s',
-                      min => 0, unit => 'evictions/sec', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'evicted_objects', template => '%s',
+                      min => 0, unit => 'evictions/sec', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'expired-objects', set => {
                 key_values => [ { name => 'expired_objects' }, { name => 'display' } ],
                 output_template => 'Expired objects rate: %s expirations/sec',
                 perfdatas => [
-                    { label => 'expired_objects', value => 'expired_objects', template => '%s',
-                      min => 0, unit => 'expirations/sec', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'expired_objects', template => '%s',
+                      min => 0, unit => 'expirations/sec', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'read-rates', set => {
-                key_values => [ { name => 'read_hits' }, { name => 'read_misses' }, 
-                                { name => 'read_req' }, { name => 'read_res' }, { name => 'display' } ],
+                key_values => [
+                    { name => 'read_hits' }, { name => 'read_misses' }, 
+                    { name => 'read_req' }, { name => 'read_res' }, { name => 'display' }
+                ],
                 closure_custom_calc => $self->can('custom_operations_calc'),
-                closure_custom_calc_extra_options => { operation => 'Read', hits => 'read_hits', misses => 'read_misses',
-                                req => 'read_req', res => 'read_res', display => 'display' },
+                closure_custom_calc_extra_options => {
+                    operation => 'Read', hits => 'read_hits', misses => 'read_misses',
+                    req => 'read_req', res => 'read_res', display => 'display'
+                },
                 closure_custom_output => $self->can('custom_operations_output'),
                 perfdatas => [
                     { label => 'read_hits', value => 'hits', template => '%s',
@@ -344,25 +359,29 @@ sub set_counters {
                     { label => 'read_req', value => 'req', template => '%s',
                       min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
                     { label => 'read_res', value => 'res', template => '%s',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'read-latency', set => {
                 key_values => [ { name => 'avg_read_latency' }, { name => 'display' } ],
                 output_template => 'Read latency: %.2f ms',
                 perfdatas => [
-                    { label => 'read_latency', value => 'avg_read_latency', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'read_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-rates', set => {
-                key_values => [ { name => 'write_hits' }, { name => 'write_misses' }, 
-                                { name => 'write_req' }, { name => 'write_res' }, { name => 'display' } ],
+                key_values => [
+                    { name => 'write_hits' }, { name => 'write_misses' }, 
+                    { name => 'write_req' }, { name => 'write_res' }, { name => 'display' }
+                ],
                 closure_custom_calc => $self->can('custom_operations_calc'),
-                closure_custom_calc_extra_options => { operation => 'Write', hits => 'write_hits', misses => 'write_misses',
-                                req => 'write_req', res => 'write_res', display => 'display' },
+                closure_custom_calc_extra_options => {
+                    operation => 'Write', hits => 'write_hits', misses => 'write_misses',
+                    req => 'write_req', res => 'write_res', display => 'display'
+                },
                 closure_custom_output => $self->can('custom_operations_output'),
                 perfdatas => [
                     { label => 'write_hits', value => 'hits', template => '%s',
@@ -372,17 +391,17 @@ sub set_counters {
                     { label => 'write_req', value => 'req', template => '%s',
                       min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
                     { label => 'write_res', value => 'res', template => '%s',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-latency', set => {
                 key_values => [ { name => 'avg_write_latency' }, { name => 'display' } ],
                 output_template => 'Write latency: %.2f ms',
                 perfdatas => [
-                    { label => 'write_latency', value => 'avg_write_latency', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'write_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'traffic-in', set => {
@@ -390,21 +409,21 @@ sub set_counters {
                 output_template => 'Traffic In: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'ingress', template => '%d', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            },
+                    { label => 'traffic_in', template => '%d', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
         },
         { label => 'traffic-out', set => {
                 key_values => [ { name => 'egress' }, { name => 'display' } ],
                 output_template => 'Traffic Out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'egress', template => '%d', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            },
-        },
+                    { label => 'traffic_out', template => '%d', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
     ];
 }
 
@@ -413,24 +432,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-database:s"     => { name => 'filter_database' },
-                                    "units:s"               => { name => 'units', default => '%' },
-                                    "free"                  => { name => 'free' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} =~ /creation-failed/i | %{backup_status} =~ /failed/i | 
-                                                                                                        %{export_status} =~ /failed/i | %{import_status} =~ /failed/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-database:s' => { name => 'filter_database' },
+        'units:s'           => { name => 'units', default => '%' },
+        'free'              => { name => 'free' }
+    });
    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -493,7 +501,7 @@ sub manage_selection {
             avg_read_latency            => defined($result2->{$database}->{avg_read_latency}) ? $result->{$database}->{avg_read_latency} * 1000 : '0',
             avg_write_latency           => defined($result2->{$database}->{avg_write_latency}) ? $result->{$database}->{avg_write_latency} * 1000 : '0',
             ingress                     => $result->{$database}->{ingress_bytes} * 8,
-            egress                      => $result->{$database}->{egress_bytes} * 8,
+            egress                      => $result->{$database}->{egress_bytes} * 8
         };
 
         if (scalar(keys %{$self->{databases}}) <= 0) {

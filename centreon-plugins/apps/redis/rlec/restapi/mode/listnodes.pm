@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::restapi::mode::listnodes;
+package apps::redis::rlec::restapi::mode::listnodes;
 
 use base qw(centreon::plugins::mode);
 
@@ -30,9 +30,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -55,8 +54,10 @@ sub run {
         $self->{output}->output_add(long_msg => '[uid = ' . $node_uid . "] [status = '" . $self->{nodes}->{$node_uid}->{status} . "']");
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List nodes:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List nodes:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -72,8 +73,9 @@ sub disco_show {
 
     $self->manage_selection(%options);
     foreach my $node_uid (sort keys %{$self->{nodes}}) {             
-        $self->{output}->add_disco_entry(status => $self->{nodes}->{$node_uid}->{status},
-            uid => $node_uid,
+        $self->{output}->add_disco_entry(
+            status => $self->{nodes}->{$node_uid}->{status},
+            uid => $node_uid
         );
     }
 }

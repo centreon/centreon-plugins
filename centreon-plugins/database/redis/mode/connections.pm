@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::cli::mode::connections;
+package database::redis::mode::connections;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,74 +26,73 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'connections', type => 0, cb_prefix_output => 'prefix_connections_output' },
-        { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output' },
-    ];
-    
-    $self->{maps_counters}->{connections} = [
-        { label => 'received-connections', set => {
-                key_values => [ { name => 'total_connections_received', diff => 1 } ],
-                output_template => 'Received: %s',
-                perfdatas => [
-                    { label => 'received_connections', template => '%s', min => 0 },
-                ],
-            },
-        },
-        { label => 'rejected-connections', set => {
-                key_values => [ { name => 'rejected_connections', diff => 1 } ],
-                output_template => 'Rejected: %s',
-                perfdatas => [
-                    { label => 'rejected_connections', template => '%s', min => 0 },
-                ],
-            },
-        },
-    ];
-
-    $self->{maps_counters}->{traffic} = [
-        { label => 'traffic-in', set => {
-                key_values => [ { name => 'total_net_input_bytes', per_second => 1 } ],
-                output_template => 'Traffic In: %s %s/s',
-                output_change_bytes => 2,
-                perfdatas => [
-                    { label => 'traffic_in', template => '%d', min => 0, unit => 'b/s' },
-                ],
-            },
-        },
-        { label => 'traffic-out', set => {
-                key_values => [ { name => 'total_net_output_bytes', per_second => 1 } ],
-                output_template => 'Traffic Out: %s %s/s',
-                output_change_bytes => 2,
-                perfdatas => [
-                    { label => 'traffic_out', template => '%d', min => 0, unit => 'b/s' },
-                ],
-            },
-        },
-    ];
-}
-
 sub prefix_connections_output {
     my ($self, %options) = @_;
     
-    return "Number of connections: ";
+    return 'Number of connections ';
 }
 
 sub prefix_traffic_output {
     my ($self, %options) = @_;
     
-    return "Network usage: ";
+    return 'Network usage ';
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'connections', type => 0, cb_prefix_output => 'prefix_connections_output' },
+        { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output' }
+    ];
+    
+    $self->{maps_counters}->{connections} = [
+        { label => 'received-connections', nlabel => 'connections.received.count', set => {
+                key_values => [ { name => 'total_connections_received', diff => 1 } ],
+                output_template => 'received: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'rejected-connections', nlabel => 'connections.rejected.count', set => {
+                key_values => [ { name => 'rejected_connections', diff => 1 } ],
+                output_template => 'rejected: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{traffic} = [
+        { label => 'traffic-in', nlabel => 'network.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'total_net_input_bytes', per_second => 1 } ],
+                output_template => 'traffic in: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%d', min => 0, unit => 'b/s' }
+                ]
+            }
+        },
+        { label => 'traffic-out', nlabel => 'network.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'total_net_output_bytes', per_second => 1 } ],
+                output_template => 'traffic out: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%d', min => 0, unit => 'b/s' }
+                ]
+            }
+        }
+    ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>  {
-    });
+    $options{options}->add_options(arguments =>  {});
 
     return $self;
 }
@@ -101,19 +100,17 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "redis_" . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
+    $self->{cache_name} = 'redis_database_' . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     my $results = $options{custom}->get_info();
-         
     $self->{connections} = { 
-        total_connections_received  => $results->{total_connections_received},
-        rejected_connections        => $results->{rejected_connections},
+        total_connections_received => $results->{total_connections_received},
+        rejected_connections       => $results->{rejected_connections}
     };
-
     $self->{traffic} = {
-        total_net_input_bytes   => $results->{total_net_input_bytes} * 8,
-        total_net_output_bytes  => $results->{total_net_output_bytes} * 8,
+        total_net_input_bytes  => $results->{total_net_input_bytes} * 8,
+        total_net_output_bytes => $results->{total_net_output_bytes} * 8
     };
 }
 

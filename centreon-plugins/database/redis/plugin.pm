@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::restapi::plugin;
+package database::redis::plugin;
 
 use strict;
 use warnings;
@@ -29,18 +29,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'databases-stats'    => 'apps::redis::restapi::mode::databasesstats',
-        'cluster-stats'      => 'apps::redis::restapi::mode::clusterstats',
-        'list-databases'     => 'apps::redis::restapi::mode::listdatabases',
-        'list-nodes'         => 'apps::redis::restapi::mode::listnodes',
-        'list-shards'        => 'apps::redis::restapi::mode::listshards',
-        'nodes-stats'        => 'apps::redis::restapi::mode::nodesstats',
-        'shards-stats'       => 'apps::redis::restapi::mode::shardsstats',
-    );
+    $self->{version} = '1.0';
+    $self->{modes} = {
+        'clients'     => 'database::redis::mode::clients',
+        'commands'    => 'database::redis::mode::commands',
+        'connections' => 'database::redis::mode::connections',
+        'cpu'         => 'database::redis::mode::cpu',
+        'memory'      => 'database::redis::mode::memory',
+        'persistence' => 'database::redis::mode::persistence',
+        'replication' => 'database::redis::mode::replication'
+    };
 
-    $self->{custom_modes}{api} = 'apps::redis::restapi::custom::api';
+    $self->{custom_modes}->{perlmod} = 'database::redis::custom::perlmod';
+    $self->{custom_modes}->{cli} = 'database::redis::custom::cli';
     return $self;
 }
 
@@ -50,6 +51,4 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check RedisLabs Enterprise Cluster through HTTP/REST API.
-
-=cut
+Check Redis database.
