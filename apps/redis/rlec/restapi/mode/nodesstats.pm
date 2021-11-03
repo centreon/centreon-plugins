@@ -18,23 +18,24 @@
 # limitations under the License.
 #
 
-package apps::redis::restapi::mode::nodesstats;
+package apps::redis::rlec::restapi::mode::nodesstats;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => $self->{result_values}->{perf}, unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{perf}, unit => 'B',
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -53,16 +54,17 @@ sub custom_usage_threshold {
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
+
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-    
-    my $msg = sprintf("%s usage: Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $self->{result_values}->{display}, 
-            $total_value . " " . $total_unit, 
-            $used_value . " " . $used_unit, $self->{result_values}->{prct_used}, 
-            $free_value . " " . $free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+
+    return sprintf(
+        "%s usage: Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $self->{result_values}->{display}, 
+        $total_value . " " . $total_unit, 
+        $used_value . " " . $used_unit, $self->{result_values}->{prct_used}, 
+        $free_value . " " . $free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -79,9 +81,9 @@ sub custom_usage_calc {
         $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
         $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
     } else {
-        $self->{result_values}->{used} = '0';
-        $self->{result_values}->{prct_used} = '0';
-        $self->{result_values}->{prct_free} = '0';
+        $self->{result_values}->{used} = 0;
+        $self->{result_values}->{prct_used} = 0;
+        $self->{result_values}->{prct_free} = 0;
     }
 
     return 0;
@@ -90,22 +92,13 @@ sub custom_usage_calc {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Status is '%s' [shard list: %s] [int addr: %s] [ext addr: %s]", 
+    return sprintf(
+        "Status is '%s' [shard list: %s] [int addr: %s] [ext addr: %s]", 
         $self->{result_values}->{status}, 
         $self->{result_values}->{shard_list}, 
         $self->{result_values}->{int_addr}, 
-        $self->{result_values}->{ext_addr});
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{shard_list} = $options{new_datas}->{$self->{instance} . '_shard_list'};
-    $self->{result_values}->{int_addr} = $options{new_datas}->{$self->{instance} . '_int_addr'};
-    $self->{result_values}->{ext_addr} = $options{new_datas}->{$self->{instance} . '_ext_addr'};
-    return 0;
+        $self->{result_values}->{ext_addr}
+    );
 }
 
 sub prefix_output {
@@ -118,101 +111,108 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_output', message_separator => ', ', message_multiple => 'All nodes counters are ok' },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_output', message_separator => ', ', message_multiple => 'All nodes counters are ok' }
     ];
     
     $self->{maps_counters}->{nodes} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} =~ /down/i', set => {
                 key_values => [ { name => 'status' }, { name => 'shard_list' }, { name => 'int_addr' }, { name => 'ext_addr' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'shard-count', set => {
                 key_values => [ { name => 'shard_count' }, { name => 'display' } ],
                 output_template => 'Shard count: %d',
                 perfdatas => [
-                    { label => 'shard_count', value => 'shard_count', template => '%d', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            },
+                    { label => 'shard_count', template => '%d', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
         },
         { label => 'uptime', set => {
                 key_values => [ { name => 'uptime' }, { name => 'uptime_sec' }, { name => 'display' } ],
                 output_template => 'Uptime: %s',
                 perfdatas => [
-                    { label => 'uptime', value => 'uptime_sec', template => '%d', 
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            },
+                    { label => 'uptime', template => '%d', 
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
         },
         { label => 'cpu-system', set => {
                 key_values => [ { name => 'cpu_system' }, { name => 'display' } ],
                 output_template => 'Cpu system: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_system', value => 'cpu_system', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu_system', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'cpu-user', set => {
                 key_values => [ { name => 'cpu_user' }, { name => 'display' } ],
                 output_template => 'Cpu user: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_user', value => 'cpu_user', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu_user', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'memory', set => {
                 key_values => [ { name => 'free_memory' }, { name => 'total_memory' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Ram', label => 'memory', perf => 'memory', 
-                                                        free => 'free_memory', total => 'total_memory' },
+                closure_custom_calc_extra_options => {
+                    display => 'Ram', label => 'memory', perf => 'memory', 
+                    free => 'free_memory', total => 'total_memory'
+                },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'persistent-storage', set => {
                 key_values => [ { name => 'persistent_storage_free' }, { name => 'persistent_storage_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Persistent storage', label => 'persistent-storage', perf => 'persistent_storage', 
-                                                        free => 'persistent_storage_free', total => 'persistent_storage_size' },
+                closure_custom_calc_extra_options => {
+                    display => 'Persistent storage', label => 'persistent-storage', perf => 'persistent_storage', 
+                    free => 'persistent_storage_free', total => 'persistent_storage_size'
+                },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'ephemeral-storage', set => {
                 key_values => [ { name => 'ephemeral_storage_free' }, { name => 'ephemeral_storage_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Ephemeral storage', label => 'ephemeral-storage', perf => 'ephemeral_storage', 
-                                                        free => 'ephemeral_storage_free', total => 'ephemeral_storage_size' },
+                closure_custom_calc_extra_options => {
+                    display => 'Ephemeral storage', label => 'ephemeral-storage', perf => 'ephemeral_storage', 
+                    free => 'ephemeral_storage_free', total => 'ephemeral_storage_size'
+                },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'flash-storage', set => {
                 key_values => [ { name => 'bigstore_free' }, { name => 'bigstore_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Flash storage', label => 'flash-storage', perf => 'flash_storage', 
-                                                        free => 'bigstore_free', total => 'bigstore_size' },
+                closure_custom_calc_extra_options => {
+                    display => 'Flash storage', label => 'flash-storage', perf => 'flash_storage', 
+                    free => 'bigstore_free', total => 'bigstore_size'
+                },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'flash-iops', set => {
                 key_values => [ { name => 'bigstore_iops' }, { name => 'display' } ],
                 output_template => 'Flash IOPS: %s ops/s',
                 perfdatas => [
-                    { label => 'flash_iops', value => 'bigstore_iops', template => '%s',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'flash_iops', template => '%s',
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'flash-throughput', set => {
@@ -220,8 +220,8 @@ sub set_counters {
                 output_template => 'Flash throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'flash_throughput', value => 'bigstore_throughput', template => '%s',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'flash_throughput', template => '%s',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' }
                 ],
             }
         },
@@ -229,18 +229,17 @@ sub set_counters {
                 key_values => [ { name => 'conns' }, { name => 'display' } ],
                 output_template => 'Connections: %s',
                 perfdatas => [
-                    { label => 'connections', value => 'conns', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'requests', set => {
                 key_values => [ { name => 'total_req' } ],
                 output_template => 'Requests rate: %s ops/s',
                 perfdatas => [
-                    { label => 'requests', value => 'total_req', template => '%s',
-                      min => 0, unit => 'ops/s' },
-                ],
+                    { label => 'requests', template => '%s', min => 0, unit => 'ops/s' }
+                ]
             }
         },
         { label => 'traffic-in', set => {
@@ -248,21 +247,21 @@ sub set_counters {
                 output_template => 'Traffic In: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'ingress', template => '%d', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            },
+                    { label => 'traffic_in', template => '%d', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
         },
         { label => 'traffic-out', set => {
                 key_values => [ { name => 'egress' }, { name => 'display' } ],
                 output_template => 'Traffic Out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'egress', template => '%d', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            },
-        },
+                    { label => 'traffic_out', template => '%d', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
     ];
 }
 
@@ -270,24 +269,14 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-node:s"     => { name => 'filter_node' },
-                                    "units:s"           => { name => 'units', default => '%' },
-                                    "free"              => { name => 'free' },
-                                    "warning-status:s"  => { name => 'warning_status', default => '' },
-                                    "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /down/i' },
-                                });
-   
+
+    $options{options}->add_options(arguments => {
+        'filter-node:s' => { name => 'filter_node' },
+        'units:s'       => { name => 'units', default => '%' },
+        'free'          => { name => 'free' }
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {

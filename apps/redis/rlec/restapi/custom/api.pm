@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::restapi::custom::api;
+package apps::redis::rlec::restapi::custom::api;
 
 use strict;
 use warnings;
@@ -76,17 +76,16 @@ sub check_options {
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
     $self->{interval} = (defined($self->{option_results}->{interval})) ? shift(@{$self->{option_results}->{interval}}) : '15min';
- 
+
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
-
     if (!defined($self->{hostname}) ||
         scalar(@{$self->{option_results}->{hostname}}) == 0) {
         return 0;
     }
-    
+
     return 1;
 }
 
@@ -114,13 +113,13 @@ sub settings {
 
 sub get_connection_info {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname} . ":" . $self->{port};
 }
 
 sub get_interval {
     my ($self, %options) = @_;
-    
+
     return $self->{interval};
 }
 
@@ -130,8 +129,7 @@ sub get {
     $self->settings();
 
     my $response = $self->{http}->request(url_path => $options{path});
-    
-    my $content;
+        my $content;
     eval {
         $content = JSON::XS->new->utf8->decode($response);
     };
@@ -156,7 +154,7 @@ sub get {
         }
         $return = $content;
     }
-    
+
     return $return;
 }
 

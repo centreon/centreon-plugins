@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::cli::plugin;
+package apps::redis::rlec::restapi::plugin;
 
 use strict;
 use warnings;
@@ -29,18 +29,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'clients'     => 'apps::redis::cli::mode::clients',
-        'commands'    => 'apps::redis::cli::mode::commands',
-        'connections' => 'apps::redis::cli::mode::connections',
-        'cpu'         => 'apps::redis::cli::mode::cpu',
-        'memory'      => 'apps::redis::cli::mode::memory',
-        'persistence' => 'apps::redis::cli::mode::persistence',
-        'replication' => 'apps::redis::cli::mode::replication',
-    );
+    $self->{version} = '0.1';
+    $self->{modes} = {
+        'databases-stats' => 'apps::redis::rlec::restapi::mode::databasesstats',
+        'cluster-stats'   => 'apps::redis::rlec::restapi::mode::clusterstats',
+        'list-databases'  => 'apps::redis::rlec::restapi::mode::listdatabases',
+        'list-nodes'      => 'apps::redis::rlec::restapi::mode::listnodes',
+        'list-shards'     => 'apps::redis::rlec::restapi::mode::listshards',
+        'nodes-stats'     => 'apps::redis::rlec::restapi::mode::nodesstats',
+        'shards-stats'    => 'apps::redis::rlec::restapi::mode::shardsstats'
+    };
 
-    $self->{custom_modes}{rediscli} = 'apps::redis::cli::custom::rediscli';
+    $self->{custom_modes}->{api} = 'apps::redis::rlec::restapi::custom::api';
     return $self;
 }
 
@@ -50,4 +50,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Redis server through Perl Cli binding library.
+Check RedisLabs Enterprise Cluster through HTTP/REST API.
+
+=cut
