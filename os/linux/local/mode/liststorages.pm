@@ -112,7 +112,7 @@ sub disco_show {
             name => $name,
             fs => $results->{$name}->{fs},
             type => $results->{$name}->{type},
-	    size => $results->{$name}->{size},
+            size => $results->{$name}->{size},
         );
     }
 }
