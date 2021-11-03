@@ -75,7 +75,7 @@ sub manage_selection {
             next;
         }
 
-        $results->{$mount} = { fs => $fs, type => $type };
+        $results->{$mount} = { fs => $fs, type => $type, size => $size };
     }
 
     return $results;
@@ -86,7 +86,7 @@ sub run {
 	
     my $results = $self->manage_selection(custom => $options{custom});
     foreach my $name (sort(keys %$results)) {
-        $self->{output}->output_add(long_msg => "'" . $name . "' [fs = " . $results->{$name}->{fs} . '] [type = ' . $results->{$name}->{type} . ']');
+        $self->{output}->output_add(long_msg => "'" . $name . "' [fs = " . $results->{$name}->{fs} . '] [type = ' . $results->{$name}->{type} . '] [size = ' . $results->{$name}->{size} . ']');
     }
     
     $self->{output}->output_add(
@@ -100,7 +100,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'fs', 'type']);
+    $self->{output}->add_disco_format(elements => ['name', 'fs', 'type', 'size']);
 }
 
 sub disco_show {
@@ -112,6 +112,7 @@ sub disco_show {
             name => $name,
             fs => $results->{$name}->{fs},
             type => $results->{$name}->{type},
+            size => $results->{$name}->{size},
         );
     }
 }
