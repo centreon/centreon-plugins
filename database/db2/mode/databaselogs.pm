@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::db2::mode::databaseusage;
+package database::db2::mode::databaselogs;
 
 use base qw(centreon::plugins::templates::counter);
 
