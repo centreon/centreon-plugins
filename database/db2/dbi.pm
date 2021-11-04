@@ -24,9 +24,22 @@ use base qw(centreon::plugins::dbi);
 
 use strict;
 use warnings;
+use POSIX qw(:signal_h);
+
+sub connect_db2 {
+    my ($self, %options) = @_;
+    
+    $self->{instance} = DBI->connect(
+        'DBI:' . $self->{data_source},
+        $self->{username},
+        $self->{password},
+        { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
+    );
+}
 
 sub connect {
     my ($self, %options) = @_;
+    my $dontquit = (defined($options{dontquit}) && $options{dontquit} == 1) ? 1 : 0;
 
     if ($self->{data_source} =~ /PROTOCOL=TCPIP/) {
         $self->{data_source} .= 'UID=' . $self->{username} . ';'
@@ -34,7 +47,45 @@ sub connect {
         $self->{data_source} .= 'PWD=' . $self->{password} . ';'
             if ($self->{data_source} !~ /PWD/ && defined($self->{password}));
     }
-    $self->SUPER::connect(%options);
+
+    # Set ENV
+    if (defined($self->{env})) {
+        foreach (keys %{$self->{env}}) {
+            $ENV{$_} = $self->{env}->{$_};
+        }
+    }
+
+    if (defined($self->{timeout})) {
+        my $mask = POSIX::SigSet->new(SIGALRM);
+        my $action = POSIX::SigAction->new(
+            sub { $self->handle_ALRM() },
+            $mask,
+        );
+        my $oldaction = POSIX::SigAction->new();
+        sigaction(SIGALRM, $action, $oldaction);
+        eval {
+            eval {
+                alarm($self->{timeout});
+                $self->connect_db2();
+            };
+            alarm(0);
+        };
+        sigaction(SIGALRM, $oldaction);
+    } else {
+        $self->connect_db2();
+    }
+
+    if (!defined($self->{instance})) {
+        my $err_msg = sprintf('Cannot connect: %s', defined($DBI::errstr) ? $DBI::errstr : '(no error string)');
+        if ($dontquit == 0) {
+            $self->{output}->add_option_msg(short_msg => $err_msg);
+            $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
+        }
+        return (-1, $err_msg);
+    }
+
+    $self->set_version();
+    return 0;
 }
 
 sub get_dbh {
