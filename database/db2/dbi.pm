@@ -37,6 +37,23 @@ sub connect {
     $self->SUPER::connect(%options);
 }
 
+sub get_dbh {
+    my ($self, %options) = @_;
+
+    return $self->{instance};
+}
+
+sub get_database_name {
+    my ($self, %options) = @_;
+
+    my $dbname = 'unknown';
+    $dbname = $1 if ($self->{data_source} =~ /DATABASE=([^;]*?)/i);
+    $dbname = $1 if ($self->{data_source} =~ /DBI:DB2:(.*)/);
+    $dbname =~ s/^\s+//g;
+    $dbname =~ s/\s+$//g;
+    return $dbname;
+}
+
 1;
 
 __END__
