@@ -32,12 +32,14 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'collection'               => 'centreon::common::protocols::sql::mode::collection',
-        'connection-time'          => 'centreon::common::protocols::sql::mode::connectiontime',
-        'connected-users'          => 'database::db2::mode::connectedusers'
+        'collection'      => 'centreon::common::protocols::sql::mode::collection',
+        'connection-time' => 'centreon::common::protocols::sql::mode::connectiontime',
+        'connected-users' => 'database::db2::mode::connectedusers',
+        'database-logs'   => 'database::db2::mode::databaselogs',
+        'database-usage'  => 'database::db2::mode::databaseusage'
     };
 
-     $self->{sql_modes}->{dbi} = 'database::db2::dbi';
+    $self->{sql_modes}->{dbi} = 'database::db2::dbi';
 
     return $self;
 }

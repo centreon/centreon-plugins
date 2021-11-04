@@ -20,59 +20,63 @@
 
 package database::db2::mode::connectedusers;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'connected', nlabel => 'users.connected.count', set => {
+                key_values => [ { name => 'connected' } ],
+                output_template => 'connected users: %d',
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        "warning:s"               => { name => 'warning', },
-        "critical:s"              => { name => 'critical', },
+
+    $options{options}->add_options(arguments => {
+        'filter-appl-name:s' => { name => 'filter_appl_name' }
     });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
+    $options{sql}->connect();
+    $options{sql}->query(query => q{
+        SELECT
+            appl_name
+        FROM
+            sysibmadm.applications
+    });
+
+    $self->{global} = { connected  => 0 };
+    while (my $row = $options{sql}->fetchrow_arrayref()) {
+        if (defined($self->{option_results}->{filter_appl_name}) && $self->{option_results}->{filter_appl_name} ne '' &&
+            $row->[0] !~ /$self->{option_results}->{filter_appl_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $row->[0] . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{global}->{connected}++;
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{SELECT COUNT(*) FROM v$session WHERE type = 'USER'});
-    my $users = $self->{sql}->fetchrow_array();
-    $self->{sql}->disconnect();
-
-    my $exit_code = $self->{perfdata}->threshold_check(value => $users, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("%i Connected user(s).", $users));
-    $self->{output}->perfdata_add(label => 'connected_users',
-                                  value => $users,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -81,17 +85,18 @@ __END__
 
 =head1 MODE
 
-Check Oracle connected users.
+Check connected users.
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-appl-name>
 
-Threshold warning.
+Filter users by application name (Can be a regex).
 
-=item B<--critical>
+=item B<--warning-*> B<--critical-*>
 
-Threshold critical.
+Thresholds.
+Can be: 'connected'.
 
 =back
 
