@@ -104,10 +104,10 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Jobs : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total', template => '%s', min => 0 },
-                ],
+                    { label => 'total', value => 'total', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{job} = [
@@ -151,25 +151,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-        'hostname:s'              => { name => 'hostname' },
-        'remote'                  => { name => 'remote' },
-        'ssh-option:s@'           => { name => 'ssh_option' },
-        'ssh-path:s'              => { name => 'ssh_path' },
-        'ssh-command:s'           => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'               => { name => 'timeout', default => 30 },
-        'sudo'                    => { name => 'sudo' },
-        'command:s'               => { name => 'command', default => 'bpdbjobs' },
-        'command-path:s'          => { name => 'command_path' },
-        'command-options:s'       => { name => 'command_options', default => '-report -most_columns' },
-        'exec-only'               => { name => 'exec_only' },
-        'filter-policy-name:s'    => { name => 'filter_policy_name' },
-        'filter-type:s'           => { name => 'filter_type' },
-        'filter-end-time:s'       => { name => 'filter_end_time', default => 86400 },
-        'filter-start-time:s'     => { name => 'filter_start_time' },
-        'ok-status:s'             => { name => 'ok_status', default => '%{status} == 0' },
-        'warning-status:s'        => { name => 'warning_status', default => '%{status} == 1' },
-        'critical-status:s'       => { name => 'critical_status', default => '%{status} > 1' }
+    $options{options}->add_options(arguments => {
+        'exec-only'            => { name => 'exec_only' },
+        'filter-policy-name:s' => { name => 'filter_policy_name' },
+        'filter-type:s'        => { name => 'filter_type' },
+        'filter-end-time:s'    => { name => 'filter_end_time', default => 86400 },
+        'filter-start-time:s'  => { name => 'filter_start_time' },
+        'ok-status:s'          => { name => 'ok_status', default => '%{status} == 0' },
+        'warning-status:s'     => { name => 'warning_status', default => '%{status} == 1' },
+        'critical-status:s'    => { name => 'critical_status', default => '%{status} > 1' }
     });
     
     return $self;
@@ -222,19 +212,15 @@ my %job_state = (
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "netbackup_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
+    $self->{cache_name} = 'netbackup_' . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_policy_name}) ? md5_hex($self->{option_results}->{filter_policy_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_start_time}) ? md5_hex($self->{option_results}->{filter_start_time}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{job_end_time}) ? md5_hex($self->{option_results}->{job_end_time}) : md5_hex('all'));
     
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'bpdbjobs',
+        command_options => '-report -most_columns'
     );
 
     if (defined($self->{option_results}->{exec_only})) {
@@ -304,48 +290,9 @@ __END__
 
 Check job status.
 
+Command used: bpdbjobs -report -most_columns
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'bpdbjobs').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-report -most_columns').
 
 =item B<--exec-only>
 

@@ -24,25 +24,23 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'drive', type => 0 }
     ];
-    
+
     $self->{maps_counters}->{drive} = [
         { label => 'cleaning', set => {
                 key_values => [ { name => 'num_cleaning' }, { name => 'total' } ],
                 output_template => '%d drives needs a reset mount time',
                 perfdatas => [
-                    { label => 'cleaning', value => 'num_cleaning', template => '%s', 
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'cleaning', template => '%s', min => 0, max => 'total' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -50,39 +48,28 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'tpconfig' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-l' },
-                                  "exec-only"         => { name => 'exec_only' },
-                                  "filter-name:s"     => { name => 'filter_name' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'exec-only'     => { name => 'exec_only' },
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
     return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    sudo => $self->{option_results}->{sudo},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'tpconfig',
+        command_options => '-l'
+    );
     
     if (defined($self->{option_results}->{exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
@@ -97,22 +84,22 @@ sub manage_selection {
     foreach my $line (@lines) {
         $line =~ /^(\S+)/;
         my $name = $1;
-        
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
         $self->{output}->output_add(long_msg => "drive '" . $name . "' checked.", debug => 1);
-        
+
         $self->{drive}->{total}++;
         if ($line =~ /NEEDS CLEANING/i) {
             $self->{drive}->{num_cleaning}++;
         }
     }
-    
+
     if (scalar(keys %{$self->{drive}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No drives found.");
+        $self->{output}->add_option_msg(short_msg => 'No drives found.');
         $self->{output}->option_exit();
     }
 }
@@ -125,48 +112,9 @@ __END__
 
 Check drive cleaning.
 
+Command used: tpconfig -l
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'tpconfig').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-l').
 
 =item B<--exec-only>
 
