@@ -99,7 +99,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'logs', type => 1, cb_prefix_output => 'prefix_log_output', message_multiple => 'All database logs are ok', }
+        { name => 'logs', type => 1, cb_prefix_output => 'prefix_log_output', message_multiple => 'All database logs are ok' }
     ];
 
     $self->{maps_counters}->{logs} = [

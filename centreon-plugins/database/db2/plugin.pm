@@ -36,7 +36,8 @@ sub new {
         'connection-time' => 'centreon::common::protocols::sql::mode::connectiontime',
         'connected-users' => 'database::db2::mode::connectedusers',
         'database-logs'   => 'database::db2::mode::databaselogs',
-        'database-usage'  => 'database::db2::mode::databaseusage'
+        'database-usage'  => 'database::db2::mode::databaseusage',
+        'tablespaces'     => 'database::db2::mode::tablespaces'
     };
 
     $self->{sql_modes}->{dbi} = 'database::db2::dbi';
