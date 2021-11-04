@@ -22,7 +22,7 @@ package apps::backup::netbackup::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -31,13 +31,15 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'dedup-status'     => 'apps::backup::netbackup::local::mode::dedupstatus',
-        'drive-cleaning'   => 'apps::backup::netbackup::local::mode::drivecleaning',
-        'drive-status'     => 'apps::backup::netbackup::local::mode::drivestatus',
-        'job-status'       => 'apps::backup::netbackup::local::mode::jobstatus',
-        'list-policies'    => 'apps::backup::netbackup::local::mode::listpolicies',
-        'tape-usage'       => 'apps::backup::netbackup::local::mode::tapeusage',
+        'dedup-status'   => 'apps::backup::netbackup::local::mode::dedupstatus',
+        'drive-cleaning' => 'apps::backup::netbackup::local::mode::drivecleaning',
+        'drive-status'   => 'apps::backup::netbackup::local::mode::drivestatus',
+        'job-status'     => 'apps::backup::netbackup::local::mode::jobstatus',
+        'list-policies'  => 'apps::backup::netbackup::local::mode::listpolicies',
+        'tape-usage'     => 'apps::backup::netbackup::local::mode::tapeusage'
     );
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }
