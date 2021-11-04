@@ -24,11 +24,10 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
-    
+
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
@@ -42,11 +41,13 @@ sub custom_usage_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label,
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label,
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -65,12 +66,13 @@ sub custom_usage_threshold {
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $self->{result_values}->{total},
-                   $self->{result_values}->{used}, $self->{result_values}->{prct_used},
-                   $self->{result_values}->{free}, $self->{result_values}->{prct_free});
-    return $msg;
+
+    return sprintf(
+        "Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $self->{result_values}->{total},
+        $self->{result_values}->{used}, $self->{result_values}->{prct_used},
+        $self->{result_values}->{free}, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -82,7 +84,7 @@ sub custom_usage_calc {
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
-    
+
     return 0;
 }
 
@@ -99,9 +101,9 @@ sub set_counters {
                 closure_custom_calc => \&custom_usage_calc,
                 closure_custom_output => \&custom_usage_output,
                 closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
+                closure_custom_threshold_check => \&custom_usage_threshold
             }
-        },
+        }
     ];
 }
 
@@ -109,39 +111,29 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        "hostname:s"        => { name => 'hostname' },
-        "remote"            => { name => 'remote' },
-        "ssh-option:s@"     => { name => 'ssh_option' },
-        "ssh-path:s"        => { name => 'ssh_path' },
-        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"         => { name => 'timeout', default => 30 },
-        "sudo"              => { name => 'sudo' },
-        "command:s"         => { name => 'command', default => 'vmquery' },
-        "command-path:s"    => { name => 'command_path' },
-        "command-options:s" => { name => 'command_options', default => '-a -w' },
-        "filter-scratch:s"  => { name => 'filter_scratch', default => 'scratch' },
-        "units:s"           => { name => 'units', default => '%' },
-        "free"              => { name => 'free' },
+
+    $options{options}->add_options(arguments => {
+        'filter-scratch:s'  => { name => 'filter_scratch', default => 'scratch' },
+        'units:s'           => { name => 'units', default => '%' },
+        'free'              => { name => 'free' }
     });
-    
+
     return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    sudo => $self->{option_results}->{sudo},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'vmquery',
+        command_options => '-a -w'
+    );
 
     if (defined($self->{option_results}->{exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
@@ -152,25 +144,25 @@ sub manage_selection {
     #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #000001  -       HCART2    000001L5          -                 -             NONE       -      -  -      ---                        VP-05WEEKS-EXT             9  VP-SCRATCH              1250       0          -  30/11/2012 15:30  29/02/2016 20:43  27/01/2013 17:57  02/03/2016 01:36  00/00/0000 00:00       0  -                          00/00/0000 00:00  00/00/0000 00:00  -       -             50  ---                      
     #000002  -       HCART2    000002L5          -                 XXX-NBU-XXX   TLD        0       8  -      000_00000_TLD              VP-SCRATCH                 4  VP-05WEEKS-EXT 
-    
+
     # Remove header
     $stdout =~ s/\x00//msg;
     $stdout =~ s/^.*?----.*?\n//ms;
     foreach my $line (split /\n/, $stdout) {
         $line =~ /^\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+(\S+)/;
         my ($robot_host, $robot_slot, $pool) = ($1, $2, $3);
-        
+
         next if ($robot_slot !~ /[0-9]/);
-        
+
         $self->{global}->{total}++;
         if (defined($self->{option_results}->{filter_scratch}) && $self->{option_results}->{filter_scratch} ne '' &&
             $pool !~ /$self->{option_results}->{filter_scratch}/i) {
             $self->{global}->{used}++;
         }
     }
-    
+
     if ($self->{global}->{total} == 0) {
-        $self->{output}->add_option_msg(short_msg => "No tape found.");
+        $self->{output}->add_option_msg(short_msg => 'No tape found.');
         $self->{output}->option_exit();
     }
 }
@@ -182,6 +174,8 @@ __END__
 =head1 MODE
 
 Check tapes available in library.
+
+Command used: vmquery -a -w
 
 =over 8
 
