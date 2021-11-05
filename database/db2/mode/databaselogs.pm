@@ -76,7 +76,7 @@ sub custom_usage_prct_perfdata {
         nlabel => $self->{nlabel},
         unit => '%',
         instances => [$self->{result_values}->{dbname}, $self->{result_values}->{partition}],
-        value => value => sprintf('%.2f', $self->{result_values}->{prct_used}),
+        value => sprintf('%.2f', $self->{result_values}->{prct_used}),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0,
