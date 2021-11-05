@@ -63,22 +63,29 @@ sub run {
     my ($exit, $msg_error) = $self->{sql}->connect(dontquit => 1);
     my $now2 = Time::HiRes::time();
     $self->{sql}->disconnect();
- 
+
     if ($exit == -1) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => $msg_error);
+        $self->{output}->output_add(
+            severity => 'CRITICAL',
+            short_msg => $msg_error
+        );
     } else {
 		my $milliseconds = $now2 - $now;
         $milliseconds = floor($milliseconds * 1000);
         my $exit_code = $self->{perfdata}->threshold_check(value => $milliseconds, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Connection established in %.3fs.", $milliseconds / 1000));
-        $self->{output}->perfdata_add(label => 'connection_time',
-                                      value => $milliseconds,
-                                      unit => 'ms',
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf("Connection established in %.3fs.", $milliseconds / 1000)
+        );
+        $self->{output}->perfdata_add(
+            label => 'connection_time',
+            nlabel => 'connection.time.milliseconds',
+            value => $milliseconds,
+            unit => 'ms',
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
     }
     
     $self->{output}->display();

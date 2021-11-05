@@ -33,7 +33,6 @@ sub custom_usage_output {
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
         'usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
-        $self->{result_values}->{partition},
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}

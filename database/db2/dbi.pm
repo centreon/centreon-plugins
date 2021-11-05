@@ -94,11 +94,17 @@ sub get_dbh {
     return $self->{instance};
 }
 
+sub fetchrow_arrayref {
+    my ($self, %options) = @_;
+
+    return $self->{statement_handle}->fetchrow_arrayref();
+}
+
 sub get_database_name {
     my ($self, %options) = @_;
 
     my $dbname = 'unknown';
-    $dbname = $1 if ($self->{data_source} =~ /DATABASE=([^;]*?)/i);
+    $dbname = $1 if ($self->{data_source} =~ /DATABASE=([^;]*)/i);
     $dbname = $1 if ($self->{data_source} =~ /DBI:DB2:(.*)/);
     $dbname =~ s/^\s+//g;
     $dbname =~ s/\s+$//g;
