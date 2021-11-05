@@ -77,7 +77,7 @@ sub custom_usage_prct_perfdata {
         nlabel => $self->{nlabel},
         unit => '%',
         instances => $self->{result_values}->{dbname},
-        value => $self->{result_values}->{prct_used},
+        value => sprintf('%.2f', $self->{result_values}->{prct_used}),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0,
@@ -139,7 +139,7 @@ sub manage_selection {
     $options{sql}->connect();
     my $dbh = $options{sql}->get_dbh();
 
-    my ($snapshot_timestamp, $db_size, $db_capacity) = (0, 0, 0);
+    my ($snapshot_timestamp, $db_size, $db_capacity) = ('', 0, 0);
     my $sth = $dbh->prepare(q{
         CALL SYSPROC.GET_DBSIZE_INFO(?, ?, ?, 0)
     });
@@ -147,7 +147,7 @@ sub manage_selection {
     $sth->bind_param_inout(2, \$db_size, 30, { db2_param_type=>SQL_PARAM_OUTPUT() });
     $sth->bind_param_inout(3, \$db_capacity, 30, { db2_param_type=>SQL_PARAM_OUTPUT() });
     $sth->execute();
-    if (!defined($snapshot_timestamp) || $snapshot_timestamp == 0) {
+    if (!defined($snapshot_timestamp) || $snapshot_timestamp eq '') {
         $self->{output}->add_option_msg(short_msg => 'Cannot execute query: ' . $dbh->errstr());
         $self->{output}->option_exit();
     }

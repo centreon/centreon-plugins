@@ -43,10 +43,54 @@ sub custom_usage_output {
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
         'space usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
-        $self->{result_values}->{partition},
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
+}
+
+sub custom_usage_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => 'B',
+        instances => [$self->{result_values}->{dbname}, $self->{result_values}->{tbsname}],
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0,
+        max => $self->{result_values}->{total}
+    );
+}
+
+sub custom_usage_free_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => 'B',
+        instances => [$self->{result_values}->{dbname}, $self->{result_values}->{tbsname}],
+        value => $self->{result_values}->{free},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0,
+        max => $self->{result_values}->{total}
+    );
+}
+
+sub custom_usage_prct_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => '%',
+        instances => [$self->{result_values}->{dbname}, $self->{result_values}->{tbsname}],
+        value => sprintf('%.2f', $self->{result_values}->{prct_used}),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0,
+        max => 100
     );
 }
 
@@ -66,7 +110,7 @@ sub set_counters {
         { name => 'tbs', type => 1, cb_prefix_output => 'prefix_tbs_output', message_multiple => 'All tablespaces are ok' }
     ];
 
-    $self->{maps_counters}->{logs} = [
+    $self->{maps_counters}->{tbs} = [
         {
             label => 'status',
             type => 2,
@@ -80,32 +124,29 @@ sub set_counters {
         },
         { label => 'space-usage', nlabel => 'tablespace.space.usage.bytes', set => {
                 key_values => [ 
-                    { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }
+                    { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' },
+                    { name => 'tbsname' }, { name => 'dbname' }
                 ],
                 closure_custom_output => $self->can('custom_usage_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'total', cast_int => 1, label_extra_instance => 1 }
-                ]
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         },
         { label => 'space-usage-free', nlabel => 'tablespace.space.free.bytes', display_ok => 0, set => {
                 key_values => [
-                    { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }
+                    { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' },
+                    { name => 'tbsname' }, { name => 'dbname' }
                 ],
                 closure_custom_output => $self->can('custom_usage_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'total', cast_int => 1, label_extra_instance => 1 }
-                ]
+                closure_custom_perfdata => $self->can('custom_usage_free_perfdata')
             }
         },
         { label => 'space-usage-prct', nlabel => 'tablespace.space.usage.percentage', display_ok => 0, set => {
                 key_values => [
-                    { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }
+                    { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' },
+                    { name => 'tbsname' }, { name => 'dbname' }
                 ],
                 closure_custom_output => $self->can('custom_usage_output'),
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
+                closure_custom_perfdata => $self->can('custom_usage_prct_perfdata')
             }
         }
     ];
@@ -189,6 +230,7 @@ sub manage_selection {
     });
 
     $self->{tbs} = {};
+    my $dbname = $options{sql}->get_database_name();
     while (my $row = $options{sql}->fetchrow_arrayref()) {
         my $type = $row->[1] =~ /^[dD]/ ? 'dms' : 'sms';
 
@@ -198,7 +240,7 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $row->[0] !~ /$self->{option_results}->{filter_type}/) {
+            $type !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping tablespace '" . $row->[0] . "': no matching filter.", debug => 1);
             next;
         }
@@ -210,7 +252,9 @@ sub manage_selection {
         }
 
         $self->{tbs}->{ $row->[0] } = {
+            dbname => $dbname,
             tbsname => $row->[0],
+            type => $type,
             state => $row->[2],
             total => $total,
             used => $used,
