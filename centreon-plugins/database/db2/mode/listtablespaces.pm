@@ -25,7 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my $order = ['name', 'type', 'datype'];
+my $order = ['name', 'type', 'datatype'];
 
 sub new {
     my ($class, %options) = @_;
@@ -59,7 +59,7 @@ sub manage_selection {
         $tablespaces->{ $row->[0] } = {
             name => $row->[0],
             type => $row->[1] =~ /^[dD]/ ? 'dms' : 'sms',
-            datatype => $row->[3]
+            datatype => $row->[2]
         };
     }
 
