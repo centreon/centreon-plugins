@@ -182,14 +182,20 @@ sub credentials {
     my $creds = {};
     if (defined($self->{token})) {
         $creds = {
-            header => ['Authorization: Bearer ' . $token]
+            header => ['Authorization: Bearer ' . $token],
+            unknown_status => '',
+            warning_status => '',
+            critical_status => ''
         };
     } else {
         $creds = {
             credentials => 1,
             basic => 1,
             username => $self->{api_username},
-            password => $self->{api_password}
+            password => $self->{api_password},
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
         };
     }
 
@@ -214,6 +220,7 @@ sub request_api {
         $content = $self->{http}->request(
             url_path => '/api/internal' . $options{endpoint},
             get_param => $options{get_param},
+            %$creds,
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status}
