@@ -33,7 +33,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{poller} = [
-        { label => 'delay', set => {
+        { label => 'delay', nlabel => 'centreon.poller.delay.seconds', set => {
                 key_values => [ { name => 'delay' }, { name => 'display' } ],
                 output_template => 'delay for last update is %d seconds',
                 perfdatas => [
@@ -53,7 +53,7 @@ sub prefix_poller_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {

@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-queue-cache', set => {
+        { label => 'total-queue-cache', nlabel => 'centreon.dsm.queue.cache.count', set => {
                 key_values => [ { name => 'total_queue_cache' } ],
                 output_template => 'Total current cache queue : %s',
                 perfdatas => [
@@ -42,7 +42,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-queue-lock', set => {
+        { label => 'total-queue-lock', nlabel => 'centreon.dsm.queue.lock.count', set => {
                 key_values => [ { name => 'total_queue_lock' } ],
                 output_template => 'Total current lock queue : %s',
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{host} = [
-        { label => 'host-queue-cache', set => {
+        { label => 'host-queue-cache', nlabel => 'centreon.dsm.host.queue.cache.count', set => {
                 key_values => [ { name => 'num' }, { name => 'display' } ],
                 output_template => 'current cache queue : %s',
                 perfdatas => [
@@ -72,7 +72,7 @@ sub prefix_host_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments =>
