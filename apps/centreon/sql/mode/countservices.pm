@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{poller} = [
-        { label => 'host', set => {
+        { label => 'host', nlabel => 'centreon.hosts.count', set => {
                 key_values => [ { name => 'hosts' }, { name => 'display' } ],
                 output_template => 'Number of hosts : %s',
                 perfdatas => [
@@ -42,7 +42,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'service', set => {
+        { label => 'service', nlabel => 'centreon.services.count', set => {
                 key_values => [ { name => 'services' }, { name => 'display' } ],
                 output_template => 'Number of services : %s',
                 perfdatas => [
@@ -62,7 +62,7 @@ sub prefix_poller_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
