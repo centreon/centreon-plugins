@@ -33,7 +33,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{poller} = [
-        { label => 'delay', nlabel => 'centreon.poller.delay', set => {
+        { label => 'delay', nlabel => 'centreon.poller.delay.seconds', set => {
                 key_values => [ { name => 'delay' }, { name => 'display' } ],
                 output_template => 'delay for last update is %d seconds',
                 perfdatas => [
