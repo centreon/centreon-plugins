@@ -29,7 +29,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' - ' },
+        { name => 'global', type => 0, message_separator => ' - ' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -37,26 +37,26 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total entries %s',
                 perfdatas => [
-                    { value => 'total', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'duplicate-macaddr', nlabel => 'arp.duplicate.macaddr.count', set => {
                 key_values => [ { name => 'duplicate_macaddress' } ],
                 output_template => 'duplicate mac address %s',
                 perfdatas => [
-                    { value => 'duplicate_macaddress', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'duplicate-ipaddr', nlabel => 'arp.duplicate.ipaddr.count', set => {
                 key_values => [ { name => 'duplicate_ipaddress' } ],
                 output_template => 'duplicate ip address %s',
                 perfdatas => [
-                    { value => 'duplicate_ipaddress', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -66,6 +66,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-macaddr:s' => { name => 'filter_macaddr' },
+        'filter-ipaddr:s'  => { name => 'filter_ipaddr' }
     });
 
     return $self;
@@ -97,13 +99,26 @@ sub check_arp {
     $self->{global} = { total => 0, duplicate_macaddress => 0, duplicate_ipaddress => 0 };
     my $duplicate = { mac => { }, ip => {} };
     foreach (keys %{$options{result}}) {
-        $self->{global}->{total}++;
         my $mac = join(':', unpack('(H2)*', $options{result}->{$_}));
         /^$options{oid}\.(\d+)\.(.*)$/;
-        $duplicate->{ip}->{$2} = [] if (!defined($duplicate->{ip}->{$2}));
-        push @{$duplicate->{ip}->{$2}}, $mac;
+        my $ipaddr = $2;
+
+        if (defined($self->{option_results}->{filter_macaddr}) && $self->{option_results}->{filter_macaddr} ne '' &&
+            $mac !~ /$self->{option_results}->{filter_macaddr}/) {
+            $self->{output}->output_add(long_msg => "skipping mac addr '" . $mac . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_ipaddr}) && $self->{option_results}->{filter_ipaddr} ne '' &&
+            $ipaddr !~ /$self->{option_results}->{filter_ipaddr}/) {
+            $self->{output}->output_add(long_msg => "skipping ip addr '" . $ipaddr . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{global}->{total}++;
+        $duplicate->{ip}->{$ipaddr} = [] if (!defined($duplicate->{ip}->{$ipaddr}));
+        push @{$duplicate->{ip}->{$ipaddr}}, $mac;
         $duplicate->{mac}->{$mac} = [] if (!defined($duplicate->{mac}->{$mac}));
-        push @{$duplicate->{mac}->{$mac}}, $2;
+        push @{$duplicate->{mac}->{$mac}}, $ipaddr;
     }
 
     $self->test_duplicate(duplicate => $duplicate);
@@ -145,6 +160,14 @@ __END__
 Check arp table.
 
 =over 8
+
+=item B<--filter-macaddr>
+
+Filter mac addresses (can be a regexp).
+
+=item B<--filter-ipaddr>
+
+Filter ip addresses (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
