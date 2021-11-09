@@ -164,25 +164,15 @@ sub connector_response_status {
 
     # Check response
     my $status = 'ok';
-    my $message;
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($self->{critical_connector_status}) && $self->{critical_connector_status} ne '' &&
-            $self->{output}->test_eval(test => $self->{critical_connector_status}, values => $self->{result})) {
-            $status = 'critical';
-        } elsif (defined($self->{warning_connector_status}) && $self->{warning_connector_status} ne '' &&
-                 $self->{output}->test_eval(test => $self->{warning_connector_status}, values => $self->{result})) {
-            $status = 'warning';
-        } elsif (defined($self->{unknown_connector_status}) && $self->{unknown_connector_status} ne '' &&
-                 $self->{output}->test_eval(test => $self->{unknown_connector_status}, values => $self->{result})) {
-            $status = 'unknown';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->add_option_msg(short_msg => 'filter connector status issue: ' . $message);
-        $self->{output}->option_exit();
+    if (defined($self->{critical_connector_status}) && $self->{critical_connector_status} ne '' &&
+        $self->{output}->test_eval(test => $self->{critical_connector_status}, values => $self->{result})) {
+        $status = 'critical';
+    } elsif (defined($self->{warning_connector_status}) && $self->{warning_connector_status} ne '' &&
+             $self->{output}->test_eval(test => $self->{warning_connector_status}, values => $self->{result})) {
+        $status = 'warning';
+    } elsif (defined($self->{unknown_connector_status}) && $self->{unknown_connector_status} ne '' &&
+             $self->{output}->test_eval(test => $self->{unknown_connector_status}, values => $self->{result})) {
+        $status = 'unknown';
     }
 
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {

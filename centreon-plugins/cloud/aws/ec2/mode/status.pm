@@ -43,23 +43,14 @@ sub prefix_metric_output {
 
 sub custom_status_threshold {
     my ($self, %options) = @_;
+
     my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
+        $status = 'critical';
+    } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
+        $status = 'warning';
     }
 
     return $status;

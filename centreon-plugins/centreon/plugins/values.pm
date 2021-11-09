@@ -257,7 +257,14 @@ sub eval {
         }
     } else {
         my $values = $self->{result_values};
-        $result = eval "$options{value}";
+        {
+            local $SIG{__WARN__} = sub {}; # ignore
+            
+            $result = eval "$options{value}";
+            if ($@) {
+                die 'Code evaluation error: ' . $@;
+            }
+        }
     }
 
     return $result;

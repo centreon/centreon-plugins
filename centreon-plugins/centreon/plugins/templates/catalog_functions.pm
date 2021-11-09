@@ -30,30 +30,21 @@ our @EXPORT_OK = qw(catalog_status_threshold catalog_status_threshold_ng catalog
 sub catalog_status_threshold {
     my ($self, %options) = @_;
     my $status = 'ok';
-    my $message;
 
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($self->{instance_mode}->{option_results}->{'ok_' . $label}) && $self->{instance_mode}->{option_results}->{'ok_' . $label} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'ok_' . $label})) {
-            $status = 'ok';
-        } elsif (defined($self->{instance_mode}->{option_results}->{'critical_' . $label}) && $self->{instance_mode}->{option_results}->{'critical_' . $label} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'critical_' . $label})) {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{'warning_' . $label}) && $self->{instance_mode}->{option_results}->{'warning_' . $label} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'warning_' . $label})) {
-            $status = 'warning';
-        } elsif (defined($self->{instance_mode}->{option_results}->{'unknown_' . $label}) && $self->{instance_mode}->{option_results}->{'unknown_' . $label} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'unknown_' . $label})) {
-            $status = 'unknown';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    my $label = $self->{label};
+    $label =~ s/-/_/g;
+    if (defined($self->{instance_mode}->{option_results}->{'ok_' . $label}) && $self->{instance_mode}->{option_results}->{'ok_' . $label} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{'ok_' . $label})) {
+        $status = 'ok';
+    } elsif (defined($self->{instance_mode}->{option_results}->{'critical_' . $label}) && $self->{instance_mode}->{option_results}->{'critical_' . $label} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{'critical_' . $label})) {
+        $status = 'critical';
+    } elsif (defined($self->{instance_mode}->{option_results}->{'warning_' . $label}) && $self->{instance_mode}->{option_results}->{'warning_' . $label} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{'warning_' . $label})) {
+        $status = 'warning';
+    } elsif (defined($self->{instance_mode}->{option_results}->{'unknown_' . $label}) && $self->{instance_mode}->{option_results}->{'unknown_' . $label} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{'unknown_' . $label})) {
+        $status = 'unknown';
     }
 
     return $status;
@@ -64,23 +55,15 @@ sub catalog_status_threshold_ng {
     my $status = 'ok';
     my $message;
 
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($self->{instance_mode}->{option_results}->{'critical-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}})) {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{'warning-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}})) {
-            $status = 'warning';
-        } elsif (defined($self->{instance_mode}->{option_results}->{'unknown-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'unknown-' . $self->{label}} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'unknown-' . $self->{label}})) {
-            $status = 'unknown';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    if (defined($self->{instance_mode}->{option_results}->{'critical-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}})) {
+        $status = 'critical';
+    } elsif (defined($self->{instance_mode}->{option_results}->{'warning-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}})) {
+        $status = 'warning';
+    } elsif (defined($self->{instance_mode}->{option_results}->{'unknown-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'unknown-' . $self->{label}} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{'unknown-' . $self->{label}})) {
+        $status = 'unknown';
     }
 
     return $status;

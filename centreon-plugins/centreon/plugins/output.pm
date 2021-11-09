@@ -928,9 +928,15 @@ sub test_eval {
             die 'Unsafe code evaluation: ' . $@;
         }
     } elsif (defined($options{values})) {
-        # unsafe code execution. don't need to check if it's safe (with no values)
         my $values = $options{values};
-        $result = eval "$options{test}";
+        {
+            local $SIG{__WARN__} = sub {}; # ignore
+
+            $result = eval "$options{test}";
+            if ($@) {
+                die 'Code evaluation error: ' . $@;
+            }
+        }
     }
 
     return $result;

@@ -33,27 +33,18 @@ use Digest::MD5 qw(md5_hex);
 sub custom_threshold_output {
     my ($self, %options) = @_; 
     my $status = 'ok';
-    my $message;
 
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
+    if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
+        $status = 'critical';
+    } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
+             $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
+        $status = 'warning';
+    }
 
-        if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-                 $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
-            $status = 'warning';
-        }
-
-        $self->{instance_mode}->{last_status} = 0;
-        if (eval "$self->{instance_mode}->{check_status}") {
-            $self->{instance_mode}->{last_status} = 1;
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    $self->{instance_mode}->{last_status} = 0;
+    if (eval "$self->{instance_mode}->{check_status}") {
+        $self->{instance_mode}->{last_status} = 1;
     }
 
     return $status;
@@ -1341,15 +1332,10 @@ sub add_result_global {
             admstatus => $self->{oid_adminstatus_mapping}->{ $self->{results}->{$self->{oid_adminstatus} . '.' . $_} }
         };
         foreach (('global_admin_up', 'global_admin_down', 'global_oper_up', 'global_oper_down')) {
-            eval {
-                local $SIG{__WARN__} = sub { return ; };
-                local $SIG{__DIE__} = sub { return ; };
-
-                if (defined($self->{option_results}->{$_ . '_rule'}) && $self->{option_results}->{$_ . '_rule'} ne '' &&
-                    $self->{output}->test_eval(test => $self->{option_results}->{$_ . '_rule'}, values => $values)) {
-                    $self->{global}->{$_}++;
-                }
-            };
+            if (defined($self->{option_results}->{$_ . '_rule'}) && $self->{option_results}->{$_ . '_rule'} ne '' &&
+                $self->{output}->test_eval(test => $self->{option_results}->{$_ . '_rule'}, values => $values)) {
+                $self->{global}->{$_}++;
+            }
         }
         $self->{global}->{total_port}++;
     }
