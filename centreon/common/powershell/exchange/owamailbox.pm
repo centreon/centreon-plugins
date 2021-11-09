@@ -74,22 +74,15 @@ sub check {
              centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
 
         $checked++;
-        my ($status, $message) = ('ok');
-        eval {
-            local $SIG{__WARN__} = sub { $message = $_[0]; };
-            local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-            if (defined($self->{option_results}->{critical}) && $self->{option_results}->{critical} ne '' &&
-                $self->{output}->test_eval(test => $self->{option_results}->{critical}, values => $self->{data})) {
-                $status = 'critical';
-            } elsif (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
-                     $self->{output}->test_eval(test => $self->{option_results}->{warning}, values => $self->{data})) {
-                $status = 'warning';
-            }
-        };
-        if (defined($message)) {
-            $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+        my $status = 'ok';
+        if (defined($self->{option_results}->{critical}) && $self->{option_results}->{critical} ne '' &&
+            $self->{output}->test_eval(test => $self->{option_results}->{critical}, values => $self->{data})) {
+            $status = 'critical';
+        } elsif (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
+                 $self->{output}->test_eval(test => $self->{option_results}->{warning}, values => $self->{data})) {
+            $status = 'warning';
         }
+
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $status,

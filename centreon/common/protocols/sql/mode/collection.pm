@@ -33,30 +33,21 @@ use Time::HiRes qw(gettimeofday tv_interval);
 sub custom_select_threshold {
     my ($self, %options) = @_;
     my $status = 'ok';
-    my $message;
 
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        our $expand = $self->{result_values}->{expand};
-        if (defined($self->{result_values}->{config}->{critical}) && $self->{result_values}->{config}->{critical} &&
-            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{critical})) {
-            $status = 'critical';
-        } elsif (defined($self->{result_values}->{config}->{warning}) && $self->{result_values}->{config}->{warning} ne '' &&
-            $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{warning})) {
-            $status = 'warning';
-        } elsif (defined($self->{result_values}->{config}->{unknown}) && $self->{result_values}->{config}->{unknown} &&
-            $self->{instance_mode}->reval($self->{result_values}->{config}->{unknown})) {
-            $status = 'unknown';
-        }
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
-            $self->{output}->option_exit();
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    our $expand = $self->{result_values}->{expand};
+    if (defined($self->{result_values}->{config}->{critical}) && $self->{result_values}->{config}->{critical} &&
+        $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{critical})) {
+        $status = 'critical';
+    } elsif (defined($self->{result_values}->{config}->{warning}) && $self->{result_values}->{config}->{warning} ne '' &&
+        $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{warning})) {
+        $status = 'warning';
+    } elsif (defined($self->{result_values}->{config}->{unknown}) && $self->{result_values}->{config}->{unknown} &&
+        $self->{instance_mode}->reval($self->{result_values}->{config}->{unknown})) {
+        $status = 'unknown';
+    }
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
+        $self->{output}->option_exit();
     }
 
     $self->{result_values}->{last_status} = $status;
