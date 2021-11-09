@@ -27,6 +27,7 @@ use warnings;
 
 sub custom_status_output {
     my ($self, %options) = @_;
+
     my $msg = 'Status : ' . $self->{result_values}->{linkstatus} . ' (oper: ' . $self->{result_values}->{opstatus} . ', ' . 'admin: ' . $self->{result_values}->{admstatus} . ')';
     if (defined($self->{instance_mode}->{option_results}->{add_duplex_status})) {
         $msg .= ' (duplex: ' . $self->{result_values}->{duplexstatus} . ')';
@@ -324,15 +325,10 @@ sub add_result_global {
             admstatus => $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $_}}
         };
         foreach (('global_link_up', 'global_link_down', 'global_admin_up', 'global_admin_down', 'global_oper_up', 'global_oper_down')) {
-            eval {
-                local $SIG{__WARN__} = sub { return ; };
-                local $SIG{__DIE__} = sub { return ; };
-
-                if (defined($self->{option_results}->{$_ . '_rule'}) && $self->{option_results}->{$_ . '_rule'} ne '' &&
-                    $self->{output}->test_eval(test => $self->{option_results}->{$_ . '_rule'}, values => $values)) {
-                    $self->{global}->{$_}++;
-                }
-            };
+            if (defined($self->{option_results}->{$_ . '_rule'}) && $self->{option_results}->{$_ . '_rule'} ne '' &&
+                $self->{output}->test_eval(test => $self->{option_results}->{$_ . '_rule'}, values => $values)) {
+                $self->{global}->{$_}++;
+            }
         }
         $self->{global}->{total_port}++;
     }

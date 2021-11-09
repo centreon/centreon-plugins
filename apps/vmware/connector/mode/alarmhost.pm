@@ -29,25 +29,16 @@ use centreon::plugins::statefile;
 
 sub custom_status_threshold {
     my ($self, %options) = @_;
+
     my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($self->{instance_mode}->{option_results}->{'critical-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}} ne '' &&
-            $self->eval(value => $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}})) {
-            $self->{instance_mode}->{host_critical}++;
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{'warning-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}} ne '' &&
-                 $self->eval(value => $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}})) {
-            $self->{instance_mode}->{host_warning}++;
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    if (defined($self->{instance_mode}->{option_results}->{'critical-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}} ne '' &&
+        $self->eval(value => $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}})) {
+        $self->{instance_mode}->{host_critical}++;
+        $status = 'critical';
+    } elsif (defined($self->{instance_mode}->{option_results}->{'warning-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}} ne '' &&
+             $self->eval(value => $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}})) {
+        $self->{instance_mode}->{host_warning}++;
+        $status = 'warning';
     }
 
     return $status;

@@ -383,26 +383,15 @@ sub request {
 
     # Check response
     my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($options{request}->{critical_status}) && $options{request}->{critical_status} ne '' &&
-            $self->{output}->test_eval(test => $options{request}->{critical_status}, values => { code => $self->{response_code} })) {
-            $status = 'critical';
-        } elsif (defined($options{request}->{warning_status}) && $options{request}->{warning_status} ne '' &&
-            $self->{output}->test_eval(test => $options{request}->{warning_status}, values => { code => $self->{response_code} })) {
-            $status = 'warning';
-        } elsif (defined($options{request}->{unknown_status}) && $options{request}->{unknown_status} ne '' &&
-            $self->{output}->test_eval(test => $options{request}->{unknown_status}, values => { code => $self->{response_code} })) {
-            $status = 'unknown';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->add_option_msg(short_msg => 'filter status issue: ' . $message);
-        $self->{output}->option_exit();
+    if (defined($options{request}->{critical_status}) && $options{request}->{critical_status} ne '' &&
+        $self->{output}->test_eval(test => $options{request}->{critical_status}, values => { code => $self->{response_code} })) {
+        $status = 'critical';
+    } elsif (defined($options{request}->{warning_status}) && $options{request}->{warning_status} ne '' &&
+        $self->{output}->test_eval(test => $options{request}->{warning_status}, values => { code => $self->{response_code} })) {
+        $status = 'warning';
+    } elsif (defined($options{request}->{unknown_status}) && $options{request}->{unknown_status} ne '' &&
+        $self->{output}->test_eval(test => $options{request}->{unknown_status}, values => { code => $self->{response_code} })) {
+        $status = 'unknown';
     }
 
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
