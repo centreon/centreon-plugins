@@ -26,6 +26,12 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_output {
+    my ($self, %options) = @_;
+    
+    return 'Client requests ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -36,46 +42,44 @@ sub set_counters {
         { label => 'hits', set => {
                 key_values => [ { name => 'client_http_requests', diff => 1 }, { name => 'client_http_hits', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'hits' },
-                output_template => 'Hits = %.2f %%', output_use => 'hits_prct',
+                output_template => 'hits: %.2f %%',
+                output_use => 'hits_prct', threshold_use => 'hits_prct',
                 perfdatas => [
-                    { label => 'hits', value => 'hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'hits', value => 'hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'partial-hits', set => {
                 key_values => [ { name => 'client_http_requests', diff => 1 }, { name => 'client_http_partial_hits', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'partial_hits' },
-                output_template => 'Partial Hits = %.2f %%', output_use => 'partial_hits_prct',
+                output_template => 'partial hits: %.2f %%',
+                output_use => 'partial_hits_prct', threshold_use => 'partial_hits_prct',
                 perfdatas => [
-                    { label => 'partial_hits', value => 'partial_hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'partial_hits', value => 'partial_hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'misses', set => {
                 key_values => [ { name => 'client_http_requests', diff => 1 }, { name => 'client_http_misses', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'misses' },
-                output_template => 'Misses = %.2f %%', output_use => 'misses_prct',
+                output_template => 'misses: %.2f %%',
+                output_use => 'misses_prct', threshold_use => 'misses_prct',
                 perfdatas => [
-                    { label => 'misses', value => 'misses_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'misses', value => 'misses_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'errors', set => {
                 key_values => [ { name => 'client_http_requests', diff => 1 }, { name => 'client_http_errors', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'errors' },
-                output_template => 'Errors = %.2f %%', output_use => 'errors_prct',
+                output_template => 'errors: %.2f %%',
+                output_use => 'errors_prct', threshold_use => 'errors_prct',
                 perfdatas => [
-                    { label => 'errors', value => 'errors_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'errors', value => 'errors_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_output {
-    my ($self, %options) = @_;
-    
-    return "Client Requests: ";
 }
 
 sub custom_data_calc {
@@ -96,11 +100,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -111,20 +113,27 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
-    my $result = $options{snmp}->get_leef(oids => ['.1.3.6.1.4.1.3417.2.11.3.1.1.1.0', 
-                                                   '.1.3.6.1.4.1.3417.2.11.3.1.1.2.0',
-                                                   '.1.3.6.1.4.1.3417.2.11.3.1.1.3.0',
-                                                   '.1.3.6.1.4.1.3417.2.11.3.1.1.4.0',
-                                                   '.1.3.6.1.4.1.3417.2.11.3.1.1.5.0'], nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(
+        oids => [
+            '.1.3.6.1.4.1.3417.2.11.3.1.1.1.0', 
+            '.1.3.6.1.4.1.3417.2.11.3.1.1.2.0',
+            '.1.3.6.1.4.1.3417.2.11.3.1.1.3.0',
+            '.1.3.6.1.4.1.3417.2.11.3.1.1.4.0',
+            '.1.3.6.1.4.1.3417.2.11.3.1.1.5.0'
+        ],
+        nothing_quit => 1
+    );
 
-    $self->{cache_name} = "bluecoat_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'bluecoat_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
-    
-    $self->{global} = { client_http_requests => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.1.0'},
-                        client_http_hits => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.2.0'},
-                        client_http_partial_hits => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.3.0'},
-                        client_http_misses => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.4.0'}, 
-                        client_http_errors => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.5.0'} };
+
+    $self->{global} = {
+        client_http_requests => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.1.0'},
+        client_http_hits => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.2.0'},
+        client_http_partial_hits => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.3.0'},
+        client_http_misses => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.4.0'}, 
+        client_http_errors => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.5.0'}
+    };
 }
 
 1;
