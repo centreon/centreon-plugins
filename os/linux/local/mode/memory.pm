@@ -29,19 +29,22 @@ sub custom_memory_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Ram total: %s %s used (-%s): %s %s (%.2f%%) free: %s %s (%.2f%%)',
+        'Ram total: %s %s used (-%s): %s %s (%.2f%%) free: %s %s (%.2f%%) available: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
         $self->{result_values}->{used_desc},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
         $self->{result_values}->{prct_used},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
-        $self->{result_values}->{prct_free}
+        $self->{result_values}->{prct_free},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{available}),
+        $self->{result_values}->{prct_available},
+
     );
 }
 
 sub custom_swap_output {
     my ($self, %options) = @_;
-    
+
     return sprintf(
         'Swap total: %s %s used: %s %s (%.2f%%) free: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
@@ -54,7 +57,7 @@ sub custom_swap_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'memory', type => 0, skipped_code => { -10 => 1 } },
         { name => 'swap', type => 0, skipped_code => { -10 => 1 } }
@@ -62,7 +65,7 @@ sub set_counters {
 
      $self->{maps_counters}->{memory} = [
         { label => 'memory-usage', nlabel => 'memory.usage.bytes', set => {
-                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' } ],
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' }, { name => 'available' }, { name => 'prct_available' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total', unit => 'B' }
@@ -70,7 +73,7 @@ sub set_counters {
             }
         },
         { label => 'memory-usage-free', nlabel => 'memory.free.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' } ],
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' }, { name => 'available' }, { name => 'prct_available' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total', unit => 'B' }
@@ -78,7 +81,23 @@ sub set_counters {
             }
         },
         { label => 'memory-usage-prct', nlabel => 'memory.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' } ],
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' }, { name => 'available' }, { name => 'prct_available' } ],
+                closure_custom_output => $self->can('custom_memory_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        },
+        { label => 'memory-available', nlabel => 'memory.available.bytes', display_ok => 0, set => {
+                key_values => [ { name => 'available' }, { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' }, { name => 'prct_available' } ],
+                closure_custom_output => $self->can('custom_memory_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', unit => 'B' }
+                ]
+            }
+        },
+        { label => 'memory-available-prct', nlabel => 'memory.available.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'prct_available' }, { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'used_desc' }, { name => 'available' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
@@ -176,6 +195,7 @@ sub manage_selection {
 
     # Buffer can be missing. In Openvz container for example.
     my $buffer_used = 0;
+    my $available = 0;
     my ($cached_used, $free, $total_size, $slab_used, $swap_total, $swap_free);
     foreach (split(/\n/, $stdout)) {
         if (/^MemTotal:\s+(\d+)/i) {
@@ -192,6 +212,8 @@ sub manage_selection {
             $swap_total = $1 * 1024;
         } elsif (/^SwapFree:\s+(\d+)/i) {
             $swap_free = $1 * 1024;
+        } elsif (/^MemAvailable:\s+(\d+)/i) {
+            $available = $1 * 1024;
         }
     }
 
@@ -218,13 +240,15 @@ sub manage_selection {
         prct_used => $nobuf_used * 100 / $total_size,
         prct_free => 100 - ($nobuf_used * 100 / $total_size),
         used_desc => $used_desc,
+        available => $available,
+        prct_available => $available * 100 / $total_size,
 
         buffer => $buffer_used,
         cache => $cached_used,
         slab => $slab_used
     };
 
-    if (defined($self->{option_results}->{check_swap}) && 
+    if (defined($self->{option_results}->{check_swap}) &&
         defined($swap_total) && $swap_total > 0) {
         $self->{swap} = {
             total => $swap_total,
@@ -255,10 +279,12 @@ Check swap also.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'memory-usage' (B), 'memory-usage-free' (B), 'memory-usage-prct' (%), 
+Can be: 'memory-usage' (B), 'memory-usage-free' (B), 'memory-usage-prct' (%),
+'memory-available' (B), 'memory-available-prct' (%),
 'swap' (B), 'swap-free' (B), 'swap-prct' (%),
 'buffer' (B), 'cached' (B), 'slab' (B).
 
 =back
 
 =cut
+
