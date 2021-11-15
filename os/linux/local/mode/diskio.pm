@@ -56,6 +56,12 @@ sub custom_utils_calc {
     return 0;
 }
 
+sub prefix_device_output {
+    my ($self, %options) = @_;
+    
+    return "Device '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -128,22 +134,17 @@ sub set_counters {
     ];
 }
 
-sub prefix_device_output {
-    my ($self, %options) = @_;
-    
-    return "Device '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-partition-name:s' => { name => 'filter_partition_name' },
-        'interrupt-frequency:s'   => { name => 'interrupt_frequency', default => 1000 },
-        'bytes-per-sector:s'      => { name => 'bytes_per_sector', default => 512 },
-        'skip'                    => { name => 'skip' }
+        'filter-partition-name:s'  => { name => 'filter_partition_name' },
+        'exclude-partition-name:s' => { name => 'exclude_partition_name' },
+        'interrupt-frequency:s'    => { name => 'interrupt_frequency', default => 1000 },
+        'bytes-per-sector:s'       => { name => 'bytes_per_sector', default => 512 },
+        'skip'                     => { name => 'skip' }
     });
 
     return $self;
@@ -175,6 +176,8 @@ sub manage_selection {
 
         next if (defined($self->{option_results}->{filter_partition_name}) && $self->{option_results}->{filter_partition_name} ne '' &&
             $partition_name !~ /$self->{option_results}->{filter_partition_name}/);
+        next if (defined($self->{option_results}->{exclude_partition_name}) && $self->{option_results}->{exclude_partition_name} ne '' &&
+            $partition_name =~ /$self->{option_results}->{exclude_partition_name}/);
 
         if (defined($self->{option_results}->{skip}) && $read_sector == 0 && $write_sector == 0) {
             $self->{output}->output_add(long_msg => "skipping device '" . $partition_name . "': no read/write IO.", debug => 1);
@@ -223,47 +226,6 @@ Command used: tail -n +1 /proc/stat /proc/diskstats 2>&1
 
 =over 8
 
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'tail').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-n +1 /proc/stat /proc/diskstats 2>&1').
-
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
@@ -273,6 +235,10 @@ Can be: 'read-usage', 'write-usage', 'read-time', 'write-time',
 =item B<--filter-partition-name>
 
 Filter partition name (regexp can be used).
+
+=item B<--exclude-partition-name>
+
+Exclude partition name (regexp can be used).
 
 =item B<--bytes-per-sector>
 

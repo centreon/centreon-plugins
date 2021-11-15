@@ -128,9 +128,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-state:s'     => { name => 'filter_state', },
-        'filter-interface:s' => { name => 'filter_interface' },
-        'no-loopback'        => { name => 'no_loopback' }
+        'filter-state:s'      => { name => 'filter_state', },
+        'filter-interface:s'  => { name => 'filter_interface' },
+        'exclude-interface:s' => { name => 'exclude_interface' },
+        'no-loopback'         => { name => 'no_loopback' }
     });
 
     return $self;
@@ -188,6 +189,8 @@ sub do_selection {
             $states !~ /$self->{option_results}->{filter_state}/);
         next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
             $interface_name !~ /$self->{option_results}->{filter_interface}/);
+        next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
+            $interface_name =~ /$self->{option_results}->{exclude_interface}/);
 
         $self->{interface}->{$interface_name} = {
             display => $interface_name,
@@ -232,47 +235,6 @@ Command used: /sbin/ip -s addr 2>&1
 
 =over 8
 
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'ip').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/sbin').
-
-=item B<--command-options>
-
-Command options (Default: '-s addr 2>&1').
-
 =item B<--warning-*>
 
 Threshold warning in percent of total packets. Can be:
@@ -286,6 +248,10 @@ in-error, out-error, in-discard, out-discard
 =item B<--filter-interface>
 
 Filter interface name (regexp can be used).
+
+=item B<--exclude-interface>
+
+Exclude interface name (regexp can be used).
 
 =item B<--filter-state>
 
