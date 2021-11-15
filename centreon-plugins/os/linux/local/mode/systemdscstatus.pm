@@ -39,14 +39,20 @@ sub custom_status_output {
     );
 }
 
+sub prefix_sc_output {
+    my ($self, %options) = @_;
+
+    return "Service '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'sc', type => 1, cb_prefix_output => 'prefix_sc_output', message_multiple => 'All services are ok' }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'total-running', nlabel => 'systemd.services.running.count', set => {
                 key_values => [ { name => 'running' }, { name => 'total' } ],
@@ -81,6 +87,7 @@ sub set_counters {
             }
         }
     ];
+
     $self->{maps_counters}->{sc} = [
         { label => 'status', type => 2, critical_default => '%{active} =~ /failed/i', set => {
                 key_values => [ { name => 'load' }, { name => 'active' },  { name => 'sub' }, { name => 'boot' }, { name => 'display' } ],
@@ -98,16 +105,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-name:s'  => { name => 'filter_name' },
+        'exclude-name:s' => { name => 'exclude_name' }
     });
 
     return $self;
-}
-
-sub prefix_sc_output {
-    my ($self, %options) = @_;
-
-    return "Service '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
@@ -125,13 +127,12 @@ sub manage_selection {
     #brandbot.service                                                      loaded    inactive dead    Flexible Branding Service
     while ($stdout =~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/msig) {
         my ($name, $load, $active, $sub) = ($1, $2, $3, lc($4));
-        
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
-            next;
-        }
-        
+
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $name !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne '' &&
+            $name =~ /$self->{option_results}->{exclude_name}/);
+
         $self->{sc}->{$name} = { display => $name, load => $load, active => $active, sub => $sub, boot => '-' };
         $self->{global}->{$sub} += 1 if (defined($self->{global}->{$sub}));
         $self->{global}->{total} += 1;
@@ -171,6 +172,10 @@ Command used: 'systemctl -a --no-pager --no-legend' and 'systemctl list-unit-fil
 =item B<--filter-name>
 
 Filter service name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude service name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
