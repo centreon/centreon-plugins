@@ -69,7 +69,18 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{version} = $options{custom}->request(endpoint => '/version');
+    my $result = $options{custom}->request(endpoint => '/version');
+    if (defined($result->{version})) {
+        $self->{version} = $result->{version};
+    } elsif (defined($result->{data}) && defined($result->{data}->{version})) {
+        $self->{version} = $result->{data};
+    } else {
+        $self->{version} = {
+            version => 'unknown',
+            repoid => 'unknown',
+            release => 'unknown'
+        };
+    }
 }
 
 1;
