@@ -38,20 +38,82 @@ sub custom_status_output {
 sub custom_av_output {
     my ($self, %options) = @_;
 
+    my $update = $self->{result_values}->{av_lastupdate_time};
+    if ($update ne 'unknown') {
+        $update = centreon::plugins::misc::change_seconds(value => $self->{result_values}->{av_lastupdate_time})
+    }
     return sprintf(
         "antivirus version '%s', last update %s",
         $self->{result_values}->{av_version},
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{av_lastupdate_time})
+        $update
+    );
+}
+
+sub custom_av_perfdata {
+    my ($self, %options) = @_;
+
+    return if ($self->{result_values}->{av_lastupdate_time} eq 'unknown');
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => 's',
+        value => $self->{result_values}->{av_lastupdate_time},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_av_threshold {
+    my ($self, %options) = @_;
+
+    return 'ok' if ($self->{result_values}->{av_lastupdate_time} eq 'unknown');
+    return $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{av_lastupdate_time},
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
     );
 }
 
 sub custom_threat_output {
     my ($self, %options) = @_;
 
+    my $update = $self->{result_values}->{threat_lastupdate_time};
+    if ($update ne 'unknown') {
+        $update = centreon::plugins::misc::change_seconds(value => $self->{result_values}->{threat_lastupdate_time})
+    }
     return sprintf(
         "threat version '%s', last update %s",
         $self->{result_values}->{threat_version},
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{threat_lastupdate_time})
+        $update
+    );
+}
+
+sub custom_threat_perfdata {
+    my ($self, %options) = @_;
+
+    return if ($self->{result_values}->{threat_lastupdate_time} eq 'unknown');
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => 's',
+        value => $self->{result_values}->{threat_lastupdate_time},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_threat_threshold {
+    my ($self, %options) = @_;
+
+    return 'ok' if ($self->{result_values}->{threat_lastupdate_time} eq 'unknown');
+    return $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{threat_lastupdate_time},
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+        ]
     );
 }
 
@@ -73,17 +135,15 @@ sub set_counters {
         { label => 'av-update', nlabel => 'system.antivirus.lastupdate.time.seconds', set => {
                 key_values => [ { name => 'av_lastupdate_time' }, { name => 'av_version' } ],
                 closure_custom_output => $self->can('custom_av_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, unit => 's' }
-                ]
+                closure_custom_perfdata => $self->can('custom_av_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_av_threshold')
             }
         },
         { label => 'threat-update', nlabel => 'system.threat.lastupdate.time.seconds', set => {
                 key_values => [ { name => 'threat_lastupdate_time' }, { name => 'threat_version' } ],
                 closure_custom_output => $self->can('custom_threat_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, unit => 's' }
-                ]
+                closure_custom_perfdata => $self->can('custom_threat_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_threat_threshold')
             }
         },
         { label => 'sessions-traffic', nlabel => 'system.sessions.traffic.count', set => {
@@ -129,7 +189,7 @@ sub get_diff_time {
     my ($self, %options) = @_;
 
     # '2019/10/15 12:03:58 BST'
-    return if ($options{time} !~ /^\s*(\d{4})\/(\d{2})\/(\d{2})\s+(\d+):(\d+):(\d+)\s+(\S+)/);
+    return 'unknown' if ($options{time} !~ /^\s*(\d{4})\/(\d{2})\/(\d{2})\s+(\d+):(\d+):(\d+)\s+(\S+)/);
 
     my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     my $dt = DateTime->new(
@@ -150,11 +210,11 @@ sub manage_selection {
     my $result = $options{custom}->execute_command(command => 'show system info');
 
     $self->{system} = {
-        av_lastupdate_time     => $self->get_diff_time(time => $result->{system}->{'av-release-date'}),
-        threat_lastupdate_time => $self->get_diff_time(time => $result->{system}->{'threat-release-date'}),
+        av_lastupdate_time     => defined($result->{system}->{'av-release-date'}) ? $self->get_diff_time(time => $result->{system}->{'av-release-date'}) : 'unknown',
+        threat_lastupdate_time => defined($result->{system}->{'threat-release-date'}) ? $self->get_diff_time(time => $result->{system}->{'threat-release-date'}) : 'unknown',
         av_version     => $result->{system}->{'av-version'},
         threat_version => $result->{system}->{'threat-version'},
-        oper_mode      => $result->{system}->{'operational-mode'},
+        oper_mode      => $result->{system}->{'operational-mode'}
     };
 
     #Device is up          : 40 days 5 hours 53 mins 12 sec
@@ -172,7 +232,7 @@ sub manage_selection {
         $self->{system}->{active_sessions} = $1;
     }
 
-    $self->{cache_name} = "paloalto_" . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
+    $self->{cache_name} = 'paloalto_' . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
