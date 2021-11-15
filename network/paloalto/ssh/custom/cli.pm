@@ -78,7 +78,7 @@ sub check_options {
 sub get_hostname {
     my ($self, %options) = @_;
 
-    return $self->{option_results}->{hostname};
+    return defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'local';
 }
 
 ##############
