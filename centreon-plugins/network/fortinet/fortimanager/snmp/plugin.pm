@@ -30,12 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'           => 'network::fortinet::fortimanager::snmp::mode::cpu',
         'device-status' => 'network::fortinet::fortimanager::snmp::mode::devicestatus',
         'disk'          => 'network::fortinet::fortimanager::snmp::mode::disk',
-        'memory'        => 'network::fortinet::fortimanager::snmp::mode::memory',
-    );
+        'memory'        => 'network::fortinet::fortimanager::snmp::mode::memory'
+    };
 
     return $self;
 }
