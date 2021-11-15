@@ -136,11 +136,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-state:s'     => { name => 'filter_state', },
-        'filter-interface:s' => { name => 'filter_interface' },
-        'units:s'            => { name => 'units', default => 'b/s' },
-        'speed:s'            => { name => 'speed' },
-        'no-loopback'        => { name => 'no_loopback' }
+        'filter-state:s'      => { name => 'filter_state', },
+        'filter-interface:s'  => { name => 'filter_interface' },
+        'exclude-interface:s' => { name => 'exclude_interface' },
+        'units:s'             => { name => 'units', default => 'b/s' },
+        'speed:s'             => { name => 'speed' },
+        'no-loopback'         => { name => 'no_loopback' }
     });
     
     return $self;
@@ -201,6 +202,8 @@ sub do_selection {
             $states !~ /$self->{option_results}->{filter_state}/);
         next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
             $interface_name !~ /$self->{option_results}->{filter_interface}/);
+         next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
+            $interface_name =~ /$self->{option_results}->{exclude_interface}/);
 
         $self->{interface}->{$interface_name} = {
             display => $interface_name,
@@ -285,6 +288,10 @@ Percent can be used only if --speed is set.
 =item B<--filter-interface>
 
 Filter interface name (regexp can be used).
+
+=item B<--exclude-interface>
+
+Exclude interface name (regexp can be used).
 
 =item B<--filter-state>
 

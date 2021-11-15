@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_inodes_output {
+    my ($self, %options) = @_;
+
+    return "Inodes partition '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -45,21 +51,17 @@ sub set_counters {
     ];
 }
 
-sub prefix_inodes_output {
-    my ($self, %options) = @_;
-
-    return "Inodes partition '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-type:s'       => { name => 'filter_type', },
-        'filter-fs:s'         => { name => 'filter_fs', },
-        'filter-mountpoint:s' => { name => 'filter_mountpoint' }
+        'filter-type:s'        => { name => 'filter_type' },
+        'filter-fs:s'          => { name => 'filter_fs' },
+        'exclude-fs:s'         => { name => 'exclude_fs' },
+        'filter-mountpoint:s'  => { name => 'filter_mountpoint' },
+        'exclude-mountpoint:s' => { name => 'exclude_mountpoint' }
     });
 
     return $self;
@@ -82,10 +84,14 @@ sub manage_selection {
 
         next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
             $fs !~ /$self->{option_results}->{filter_fs}/);
+        next if (defined($self->{option_results}->{exclude_fs}) && $self->{option_results}->{exclude_fs} ne '' &&
+            $fs =~ /$self->{option_results}->{exclude_fs}/);
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $type !~ /$self->{option_results}->{filter_type}/);
         next if (defined($self->{option_results}->{filter_mountpoint}) && $self->{option_results}->{filter_mountpoint} ne '' &&
             $mount !~ /$self->{option_results}->{filter_mountpoint}/);
+        next if (defined($self->{option_results}->{exclude_mountpoint}) && $self->{option_results}->{exclude_mountpoint} ne '' &&
+            $mount =~ /$self->{option_results}->{exclude_mountpoint}/);
 
         $percent =~ s/%//g;
         next if ($percent eq '-');
@@ -125,6 +131,10 @@ Threshold critical in percent.
 
 Filter filesystem mount point (regexp can be used).
 
+=item B<--exclude-mountpoint>
+
+Exclude filesystem mount point (regexp can be used).
+
 =item B<--filter-type>
 
 Filter filesystem type (regexp can be used).
@@ -132,6 +142,10 @@ Filter filesystem type (regexp can be used).
 =item B<--filter-fs>
 
 Filter filesystem (regexp can be used).
+
+=item B<--exclude-fs>
+
+Exclude filesystem (regexp can be used).
 
 =back
 

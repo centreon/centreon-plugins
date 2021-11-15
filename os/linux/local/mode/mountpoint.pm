@@ -40,11 +40,11 @@ sub prefix_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'mountpoints', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All mount points options are ok' }
     ];
-    
+
     $self->{maps_counters}->{mountpoints} = [
         {
             label => 'status',
@@ -66,9 +66,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-device:s'       => { name => 'filter_device' },
-        'filter-mountpoint:s'   => { name => 'filter_mountpoint' },
-        'filter-type:s'         => { name => 'filter_type' }
+        'filter-device:s'      => { name => 'filter_device' },
+        'exclude-device:s'     => { name => 'exclude_device' },
+        'filter-mountpoint:s'  => { name => 'filter_mountpoint' },
+        'exclude-mountpoint:s' => { name => 'exclude_mountpoint' },
+        'filter-type:s'        => { name => 'filter_type' }
     });
 
     return $self;
@@ -90,21 +92,16 @@ sub manage_selection {
         next if ($line !~ /^\s*(.*?)\s+on\s+(.*?)\s+type\s+(\S+)\s+\((.*)\)/);
         my ($device, $mountpoint, $type, $options) = ($1, $2, $3, $4);
         
-        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $type !~ /$self->{option_results}->{filter_type}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $mountpoint . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_device}) && $self->{option_results}->{filter_device} ne '' &&
-            $device !~ /$self->{option_results}->{filter_device}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $mountpoint . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_mountpoint}) && $self->{option_results}->{filter_mountpoint} ne '' &&
-            $mountpoint !~ /$self->{option_results}->{filter_mountpoint}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $mountpoint . "': no matching filter.", debug => 1);
-            next;
-        }
+        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+            $type !~ /$self->{option_results}->{filter_type}/);
+        next if (defined($self->{option_results}->{filter_device}) && $self->{option_results}->{filter_device} ne '' &&
+            $device !~ /$self->{option_results}->{filter_device}/);
+        next if (defined($self->{option_results}->{exclude_device}) && $self->{option_results}->{exclude_device} ne '' &&
+            $device =~ /$self->{option_results}->{exclude_device}/);
+        next if (defined($self->{option_results}->{filter_mountpoint}) && $self->{option_results}->{filter_mountpoint} ne '' &&
+            $mountpoint !~ /$self->{option_results}->{filter_mountpoint}/);
+        next if (defined($self->{option_results}->{exclude_mountpoint}) && $self->{option_results}->{exclude_mountpoint} ne '' &&
+            $mountpoint =~ /$self->{option_results}->{exclude_mountpoint}/);
 
         $self->{mountpoints}->{$mountpoint} = {
             display => $mountpoint,
@@ -112,7 +109,7 @@ sub manage_selection {
             options => $options
         };
     }
-    
+
     if (scalar(keys %{$self->{mountpoints}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No mount points found');
         $self->{output}->option_exit();
@@ -135,9 +132,17 @@ Command used: mount 2>&1
 
 Filter mount point name (Can use regexp).
 
+=item B<--exclude-mountpoint>
+
+Exclude mount point name (Can use regexp).
+
 =item B<--filter-device>
 
 Filter device name (Can use regexp).
+
+=item B<--exclude-device>
+
+Exclude device name (Can use regexp).
 
 =item B<--filter-type>
 

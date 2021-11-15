@@ -167,15 +167,17 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-command:s' => { name => 'filter_command' },
-        'filter-arg:s'     => { name => 'filter_arg' },
-        'filter-state:s'   => { name => 'filter_state' },
-        'filter-ppid:s'	   => { name => 'filter_ppid' },
-        'add-cpu'          => { name => 'add_cpu' },
-        'add-memory'       => { name => 'add_memory' },
-        'add-disk-io'      => { name => 'add_disk_io' },
-        'page-size:s'      => { name => 'page_size', default => 4096 },
-        'clock-ticks:s'    => { name => 'clock_ticks', default => 100 }
+        'filter-command:s'  => { name => 'filter_command' },
+        'exclude-command:s' => { name => 'exclude_command' },
+        'filter-arg:s'      => { name => 'filter_arg' },
+        'exclude-arg:s'     => { name => 'exclude_arg' },
+        'filter-state:s'    => { name => 'filter_state' },
+        'filter-ppid:s'	    => { name => 'filter_ppid' },
+        'add-cpu'           => { name => 'add_cpu' },
+        'add-memory'        => { name => 'add_memory' },
+        'add-disk-io'       => { name => 'add_disk_io' },
+        'page-size:s'       => { name => 'page_size', default => 4096 },
+        'clock-ticks:s'     => { name => 'clock_ticks', default => 100 }
     });
 
     return $self;
@@ -218,8 +220,12 @@ sub parse_output {
 
         next if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
             $cmd !~ /$self->{option_results}->{filter_command}/);
+        next if (defined($self->{option_results}->{exclude_command}) && $self->{option_results}->{exclude_command} ne '' &&
+            $cmd =~ /$self->{option_results}->{exclude_command}/);
         next if (defined($self->{option_results}->{filter_arg}) && $self->{option_results}->{filter_arg} ne '' &&
             $args !~ /$self->{option_results}->{filter_arg}/);
+        next if (defined($self->{option_results}->{exclude_arg}) && $self->{option_results}->{exclude_arg} ne '' &&
+            $args =~ /$self->{option_results}->{exclude_arg}/);
         next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
             $state_map->{$state} !~ /$self->{option_results}->{filter_state}/i);
         next if (defined($self->{option_results}->{filter_ppid}) && $self->{option_results}->{filter_ppid} ne '' &&
@@ -390,9 +396,17 @@ Monitor disk I/O.
 
 Filter process commands (regexp can be used).
 
+=item B<--exclude-command>
+
+Exclude process commands (regexp can be used).
+
 =item B<--filter-arg>
 
 Filter process arguments (regexp can be used).
+
+=item B<--exclude-arg>
+
+Exclude process arguments (regexp can be used).
 
 =item B<--filter-ppid>
 

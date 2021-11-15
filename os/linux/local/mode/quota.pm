@@ -106,6 +106,12 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_quota_output {
+    my ($self, %options) = @_;
+    
+    return "Quota '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -133,12 +139,6 @@ sub set_counters {
     ];
 }
 
-sub prefix_quota_output {
-    my ($self, %options) = @_;
-    
-    return "Quota '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -160,7 +160,7 @@ sub manage_selection {
         command_options => '-a -i 2>&1',
         no_quit => 1
     );
-    
+
     #*** Report for user quotas on device /dev/xxxx
     #Block grace time: 7days; Inode grace time: 7days
     #                   Block limits                File limits
@@ -168,18 +168,18 @@ sub manage_selection {
     #----------------------------------------------------------------------
     #root      -- 20779412       0       0              5     0     0
     #apache    -- 5721908       0       0          67076     0     0
-    
+
     $self->{quota} = {};
     while ($stdout =~ /^\*\*\*.*?(\S+?)\n(.*?)(?=\*\*\*|\z)/msig) {
         my ($fs, $data) = ($1, $2);
-        
+
         while ($data =~ /^(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(.*?)\n/msig) {
             my ($user, $grace_on, $data_used, $data_soft, $data_hard, $usage) = ($1, $2, $3 * 1024, $4 * 1024, $5 * 1024, $6);
             my @values = split /\s+/, $usage;
-                        
+
             shift @values if ($usage =~ /^\+/);
             my ($inode_used, $inode_soft, $inode_hard) = (shift @values, shift @values, shift @values);
-            
+
             my $name = $user . '.' . $fs;
             if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
                 $user !~ /$self->{option_results}->{filter_user}/) {
@@ -191,7 +191,9 @@ sub manage_selection {
                 $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
                 next;
             }
-            
+            next if (defined($self->{option_results}->{exclude_fs}) && $self->{option_results}->{exclude_fs} ne '' &&
+                $fs =~ /$self->{option_results}->{exclude_fs}/);
+
             $self->{quota}->{$name} = {
                 display => $name,
                 data_used => $data_used, data_soft => $data_soft, data_hard => $data_hard,
@@ -233,6 +235,10 @@ Filter username (regexp can be used).
 =item B<--filter-fs>
 
 Filter filesystem (regexp can be used).
+
+=item B<--exclude-fs>
+
+Exclude filesystem (regexp can be used).
 
 =back
 
