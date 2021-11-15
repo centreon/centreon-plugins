@@ -318,7 +318,7 @@ Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total', 'expires', 'license-instances-usage', 'license-instances-free', 'license-instances-usage-prct'.
+Can be: 'total', 'expires', 'license-usage', 'license-free', 'license-usage-prct'.
 
 =back
 
