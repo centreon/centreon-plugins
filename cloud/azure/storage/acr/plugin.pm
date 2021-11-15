@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'storageused'   => 'cloud::azure::storage::acr::mode::storageused'
+        'storage-usage' => 'cloud::azure::storage::acr::mode::storageusage'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';

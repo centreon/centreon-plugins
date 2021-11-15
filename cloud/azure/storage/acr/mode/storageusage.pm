@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::acr::mode::storageused;
+package cloud::azure::storage::acr::mode::storageusage;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -30,9 +30,9 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'storageused' => {
-            'output' => 'Storage Used',
-            'label'  => 'storageused',
-            'nlabel' => 'storage.used',
+            'output' => 'Storage used',
+            'label'  => 'storage-used',
+            'nlabel' => 'azure.containerregistry.storage.used.bytes',
             'unit'   => 'B',
             'min'    => '0',
             'max'    => ''
@@ -106,15 +106,15 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::acr::plugin --mode=storageused --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::storage::acr::plugin --mode=storage-usage --custommode=api
 --resource=<acr_id> --resource-group=<resourcegroup_id> --aggregation='average'
---warning-storageused='450000000000' --warning-storageused='470000000000'
+--warning-storage-used='450000000000' --warning-storage-used='470000000000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::acr::plugin --mode=storageused --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::storage::acr::plugin --mode=storage-usage --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/microsoft..containerregistry/registries/<acr_id>'
---aggregation='average' --warning-storageused='450000000000' --warning-storageused='470000000000'
+--aggregation='average' --warning-storage-used='450000000000' --warning-storage-used='470000000000'
 
 Default aggregation: 'average'.
 
@@ -128,15 +128,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-storage-used>
 
-Warning threshold where '*' can be:
-'storageused'.
+Warning threshold.
 
-=item B<--critical-*>
+=item B<--critical-storage-used>
 
-Critical threshold where '*' can be:
-'storageused'.
+Critical threshold.
 
 =back
 
