@@ -78,7 +78,7 @@ sub check_options {
             $self->{output}->option_exit();
         }
         $self->{option_results}->{snmp_auth_protocol} = uc($self->{option_results}->{snmp_auth_protocol});
-        if ($options{option_results}->{snmp_auth_protocol} !~ /^(?:MD5|SHA|SHA224|SHA256|SHA384|SHA512)$/) {
+        if ($self->{option_results}->{snmp_auth_protocol} !~ /^(?:MD5|SHA|SHA224|SHA256|SHA384|SHA512)$/) {
             $self->{output}->add_option_msg(short_msg => 'Wrong authentication protocol.');
             $self->{output}->option_exit();
         }
@@ -94,7 +94,7 @@ sub check_options {
             $self->{output}->option_exit();
         }
         $self->{option_results}->{snmp_priv_protocol} = uc($self->{option_results}->{snmp_priv_protocol});
-        if ($options{option_results}->{snmp_priv_protocol} !~ /^(?:DES|AES|AES192|AES192C|AES256|AES256C)$/) {
+        if ($self->{option_results}->{snmp_priv_protocol} !~ /^(?:DES|AES|AES192|AES192C|AES256|AES256C)$/) {
             $self->{output}->add_option_msg(short_msg => 'Wrong privacy protocol.');
             $self->{output}->option_exit();
         }
