@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::plugins::passwordmgr::vault;
+package centreon::plugins::passwordmgr::hashicorpvault;
 
 use strict;
 use warnings;
@@ -313,6 +313,6 @@ Example:
 
 =head1 DESCRIPTION
 
-B<vault>.
+B<hashicorpvault>.
 
 =cut
