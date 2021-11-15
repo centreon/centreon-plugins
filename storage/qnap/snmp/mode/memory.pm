@@ -78,6 +78,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
+    $options{options}->add_options(arguments => {
+        'force-counters-legacy' => { name => 'force_counters_legacy' }
+    });
+
     return $self;
 }
 
@@ -166,9 +170,12 @@ sub manage_selection {
         ],
         nothing_quit => 1
     );
-    $self->check_memory(snmp => $options{snmp}, type => 'qts', snmp_result => $snmp_result);
-    $self->check_memory(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result);
-    $self->check_memory(snmp => $options{snmp}, type => 'es', snmp_result => $snmp_result, convert => 1);
+
+    if (!defined($self->{option_results}->{force_counters_legacy})) {
+        $self->check_memory(snmp => $options{snmp}, type => 'qts', snmp_result => $snmp_result);
+        $self->check_memory(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result);
+        $self->check_memory(snmp => $options{snmp}, type => 'es', snmp_result => $snmp_result, convert => 1);
+    }
     $self->check_memory(snmp => $options{snmp}, type => 'legacy', snmp_result => $snmp_result, convert => 1);
 }
 
@@ -182,6 +189,10 @@ Check memory.
 
 =over 8
 
+=item B<--force-counters-legacy>
+
+Force to use legacy counters. Should be used when EX/ES/QTS counters are buggy.
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
@@ -190,4 +201,3 @@ Can be: 'memory-usage' (B), 'memory-usage-free' (B), 'memory-usage-prct' (%).
 =back
 
 =cut
-    
