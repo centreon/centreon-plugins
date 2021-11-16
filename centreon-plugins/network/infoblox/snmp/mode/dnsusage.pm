@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 sub prefix_dns_output {
@@ -131,14 +132,26 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-name:s' => { name => 'filter_name' },
+        'cache'         => { name => 'cache' },
+        'cache-time:s'  => { name => 'cache_time', default => 180 }
     });
+
+    $self->{lcache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (defined($self->{option_results}->{cache})) {
+        $self->{lcache}->check_options(option_results => $self->{option_results});
+    }
+}
+
 my $mapping = {
-    name     => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.1' }, # ibBindZoneName
     success  => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.2' }, # ibBindZoneSuccess
     referral => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.3' }, # ibBindZoneReferral
     nxrrset  => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.4' }, # ibBindZoneNxRRset
@@ -154,7 +167,38 @@ my $mapping2 = {
     dns_hit         => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.5' }, # ibDnsHitRatio
     dns_query       => { oid => '.1.3.6.1.4.1.7779.3.1.1.3.1.6' }  # ibDnsQueryRate
 };
-my $oid_ibZoneStatisticsEntry = '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1';
+my $oid_name = '.1.3.6.1.4.1.7779.3.1.1.3.1.1.1.1'; # ibBindZoneName
+
+sub get_snmp_zones {
+    my ($self, %options) = @_;
+
+    return $options{snmp}->get_table(
+        oid => $oid_name,
+        nothing_quit => 1
+    );
+}
+
+sub get_zones {
+    my ($self, %options) = @_;
+
+    my $zones;
+    if (defined($self->{option_results}->{cache})) {
+        my $has_cache_file = $self->{lcache}->read(statefile => 'infoblox_cache_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port());
+        my $infos = $self->{lcache}->get(name => 'infos');
+        if ($has_cache_file == 0 ||
+            !defined($infos->{updated}) ||
+            ((time() - $infos->{updated}) > (($self->{option_results}->{cache_time}) * 60))) {
+            $zones = $self->get_snmp_zones(snmp => $options{snmp});
+            $self->{lcache}->write(data => { infos => { updated => time(), snmp_result => $zones } });
+        } else {
+            $zones = $infos->{snmp_result};
+        }
+    } else {
+        $zones = $self->get_snmp_zones(snmp => $options{snmp});
+    }
+
+    return $zones;
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -172,22 +216,35 @@ sub manage_selection {
     $self->{aa} = $self->{global};
     $self->{naa} = $self->{global};
 
-    $snmp_result = $options{snmp}->get_table(oid => $oid_ibZoneStatisticsEntry);
+    my $zones = $self->get_zones(snmp => $options{snmp});
     $self->{dns} = {};
-    foreach my $oid (keys %{$snmp_result->{$oid_ibZoneStatisticsEntry}}) {
-        next if ($oid !~ /^$mapping->{ibBindZoneName}->{oid}\.(.*)$/);
+    foreach my $oid (keys %$zones) {
+        $oid =~ /^$oid_name\.(.*)$/;
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_ibZoneStatisticsEntry}, instance => $instance);
-
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{ibBindZoneName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{ibBindZoneName} . "': no matching filter.", debug => 1);
+            $zones->{$oid} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $zones->{$oid} . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{dns}->{$instance} = $result;
+        $self->{dns}->{$instance} = {
+            name => $zones->{$oid}
+        };
     }
-    
+
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping)) ],
+        instances => [ map($_, keys(%{$self->{dns}})) ],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef();
+    foreach my $instance (keys %{$self->{dns}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        foreach (keys %$result) {
+            $self->{dns}->{$instance}->{$_} = $result->{$_};
+        }
+    }
+
     $self->{cache_name} = 'infoblox_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
@@ -211,6 +268,14 @@ Example: --filter-counters='success'
 =item B<--filter-name>
 
 Filter dns zone name (can be a regexp).
+
+=item B<--cache>
+
+Use cache file to store dns zone.
+
+=item B<--cache-time>
+
+Time in minutes before reloading cache file (default: 180).
 
 =item B<--warning-*>
 
