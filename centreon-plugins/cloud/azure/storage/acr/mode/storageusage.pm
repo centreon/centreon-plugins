@@ -66,7 +66,7 @@ sub check_options {
     }
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
-    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.containerregistry\/registries\/(.*)$/) {
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.ContainerRegistry\/registries\/(.*)$/) {
         $resource_group = $1;
         $resource = $2;
     }
@@ -74,7 +74,7 @@ sub check_options {
     $self->{az_resource} = $resource;
     $self->{az_resource_group} = $resource_group;
     $self->{az_resource_type} = 'registries';
-    $self->{az_resource_namespace} = 'microsoft.containerregistry';
+    $self->{az_resource_namespace} = 'Microsoft.ContainerRegistry';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 3600;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT1H';
     $self->{az_aggregations} = ['average'];

@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'discovery'     => 'cloud::azure::storage::acr::mode::discovery',
         'storage-usage' => 'cloud::azure::storage::acr::mode::storageusage'
     };
 
