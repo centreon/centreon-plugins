@@ -30,13 +30,13 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    return 'state : ' . $self->{result_values}->{NbrState};
+    return 'state: ' . $self->{result_values}->{NbrState};
 }
 
 sub custom_change_output {
     my ($self, %options) = @_;
     
-    return 'Neighbors current : ' . $self->{result_values}->{Total} . ' (last : ' . $self->{result_values}->{TotalLast} . ')';
+    return 'Neighbors current: ' . $self->{result_values}->{Total} . ' (last: ' . $self->{result_values}->{TotalLast} . ')';
 }
 
 sub custom_change_calc {
@@ -64,7 +64,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'neighbors.total.count',set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'Total neighbors : %s',
+                output_template => 'Total neighbors: %s',
                 perfdatas => [
                     { label => 'total', template => '%s', min => 0 }
                 ]
@@ -99,22 +99,18 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
     });
-    
+
     return $self;
 }
 
 my %map_state = (
-    1 => 'down',
-    2 => 'attempt',
-    3 => 'init',
-    4 => 'twoWay',
-    5 => 'exchangeStart',
-    6 => 'exchange',
-    7 => 'loading',
-    8 => 'full'
+    1 => 'down', 2 => 'attempt',
+    3 => 'init', 4 => 'twoWay',
+    5 => 'exchangeStart', 6 => 'exchange',
+    7 => 'loading', 8 => 'full'
 );
 my $mapping = {
     NbrIpAddr   => { oid => '.1.3.6.1.2.1.14.10.1.1' },
@@ -127,24 +123,27 @@ my $oid_ospfNbrEntry = '.1.3.6.1.2.1.14.10.1';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{nb} = {};
     $self->{global} = { total => 0 };
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_ospfNbrEntry,
         nothing_quit => 1
     );
 
+    $self->{nb} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{NbrState}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        
+
+        $self->{nb}->{$instance} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        if (!defined($self->{nb}->{$instance}->{NbrIpAddr})) {
+            $instance =~ /^(.*)\.(\d+)$/;
+            $self->{nb}->{$instance}->{NbrIpAddr} = $1;
+        }
         $self->{global}->{total}++;
-        $self->{nb}->{$instance} = { %$result };
     }
 
     if (scalar(keys %{$self->{nb}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No neighbors found.");
+        $self->{output}->add_option_msg(short_msg => 'No neighbors found.');
         $self->{output}->option_exit();
     }
 
