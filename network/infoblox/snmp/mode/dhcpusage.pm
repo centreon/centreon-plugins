@@ -149,7 +149,7 @@ sub get_subnets {
             !defined($infos->{updated}) ||
             ((time() - $infos->{updated}) > (($self->{option_results}->{cache_time}) * 60))) {
             $subnets = $self->get_snmp_subnets(snmp => $options{snmp});
-            $self->{lcache}->write(data => { updated => time(), snmp_result => $subnets });
+            $self->{lcache}->write(data => { infos => { updated => time(), snmp_result => $subnets } });
         } else {
             $subnets = $infos->{snmp_result};
         }
