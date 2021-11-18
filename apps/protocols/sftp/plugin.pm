@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::protocols::ftp::plugin;
+package apps::protocols::sftp::plugin;
 
 use strict;
 use warnings;
@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'commands'      => 'apps::protocols::ftp::mode::commands',
-        'date'          => 'apps::protocols::ftp::mode::date',
-        'filescount'    => 'apps::protocols::ftp::mode::filescount',
-        'login'         => 'apps::protocols::ftp::mode::login',
+        'commands'      => 'apps::protocols::sftp::mode::commands',
+        'date'          => 'apps::protocols::sftp::mode::date',
+        'filescount'    => 'apps::protocols::sftp::mode::filescount',
+        'login'         => 'apps::protocols::sftp::mode::login',
     );
 
     return $self;
@@ -46,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check an FTP server.
+Check an SFTP server.
 
 =cut
