@@ -33,6 +33,7 @@ sub new {
     $self->{modes} = {
         'alerts'           => 'network::cisco::vcs::restapi::mode::alerts',
         'calls'            => 'network::cisco::vcs::restapi::mode::calls',
+        'endpoints'        => 'network::cisco::vcs::restapi::mode::endpoints',
         'http-proxy-stats' => 'network::cisco::vcs::restapi::mode::httpproxystats',
         'zones'            => 'network::cisco::vcs::restapi::mode::zones'
     };
