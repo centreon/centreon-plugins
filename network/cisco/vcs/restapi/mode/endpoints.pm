@@ -31,8 +31,10 @@ sub custom_usage_output {
     return sprintf(
         'usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $self->{result_values}->{total},
-        $self->{result_values}->{used}, $self->{result_values}->{prct_used},
-        $self->{result_values}->{free}, $self->{result_values}->{prct_free}
+        $self->{result_values}->{used},
+        $self->{result_values}->{prct_used},
+        $self->{result_values}->{free},
+        $self->{result_values}->{prct_free}
     );
 }
 
@@ -109,15 +111,21 @@ sub manage_selection {
     );
     if (defined($results->{ResourceUsage}->{TPRoom}->{Current})) {
         $self->{endpoints}->{tproom}->{used} = $results->{ResourceUsage}->{TPRoom}->{Current}->{content};
-        $self->{endpoints}->{tproom}->{free} = 100 - $self->{endpoints}->{tproom}->{used};
+        $self->{endpoints}->{tproom}->{free} = $self->{endpoints}->{tproom}->{total} - $self->{endpoints}->{tproom}->{used};
         $self->{endpoints}->{tproom}->{prct_used} = $self->{endpoints}->{tproom}->{used} * 100 / $self->{endpoints}->{tproom}->{total};
         $self->{endpoints}->{tproom}->{prct_free} = 100 - $self->{endpoints}->{tproom}->{prct_used};
     }
     if (defined($results->{ResourceUsage}->{UserDevice}->{Current})) {
         $self->{endpoints}->{userdevice}->{used} = $results->{ResourceUsage}->{UserDevice}->{Current}->{content};
-        $self->{endpoints}->{userdevice}->{free} = 100 - $self->{endpoints}->{userdevice}->{used};
+        $self->{endpoints}->{userdevice}->{free} = $self->{endpoints}->{userdevice}->{total} - $self->{endpoints}->{userdevice}->{used};
         $self->{endpoints}->{userdevice}->{prct_used} = $self->{endpoints}->{userdevice}->{used} * 100 / $self->{endpoints}->{userdevice}->{total};
         $self->{endpoints}->{userdevice}->{prct_free} = 100 - $self->{endpoints}->{userdevice}->{prct_used};
+    }
+
+    if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '') {
+        foreach my $name (('tproom', 'userdevice')) {
+            delete $self->{endpoints}->{$name} if ($name !~ /$self->{option_results}->{filter_name}/);
+        }
     }
 }
 
