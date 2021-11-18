@@ -25,7 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use apps::protocols::ftp::lib::sftp;
+use apps::protocols::sftp::lib::sftp;
 
 sub new {
     my ($class, %options) = @_;
@@ -70,8 +70,7 @@ sub run {
     
     my $timing0 = [gettimeofday];
     
-    apps::protocols::ftp::lib::sftp::connect($self, connection_exit => 'critical');  
-    apps::protocols::ftp::lib::sftp::quit();
+    apps::protocols::sftp::lib::sftp::connect($self, connection_exit => 'critical');  
 
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     
