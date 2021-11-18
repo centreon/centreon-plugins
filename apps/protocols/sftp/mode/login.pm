@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::protocols::ftp::mode::login;
+package apps::protocols::sftp::mode::login;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use apps::protocols::ftp::lib::ftp;
+use apps::protocols::ftp::lib::sftp;
 
 sub new {
     my ($class, %options) = @_;
@@ -36,8 +36,7 @@ sub new {
          {
          "hostname:s"       => { name => 'hostname' },
          "port:s"           => { name => 'port', },
-         "ssl"              => { name => 'use_ssl' },
-         "ftp-options:s@"   => { name => 'ftp_options' },
+         "ssh-options:s@"   => { name => 'ssh_options' },
          "username:s"   => { name => 'username' },
          "password:s"   => { name => 'password' },
          "warning:s"    => { name => 'warning' },
@@ -71,8 +70,8 @@ sub run {
     
     my $timing0 = [gettimeofday];
     
-    apps::protocols::ftp::lib::ftp::connect($self, connection_exit => 'critical');  
-    apps::protocols::ftp::lib::ftp::quit();
+    apps::protocols::ftp::lib::sftp::connect($self, connection_exit => 'critical');  
+    apps::protocols::ftp::lib::sftp::quit();
 
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     
@@ -95,27 +94,21 @@ __END__
 
 =head1 MODE
 
-Check Connection (also login) to an FTP Server.
+Check Connection (also login) to an SFTP Server.
 
 =over 8
 
 =item B<--hostname>
 
-IP Addr/FQDN of the ftp host
+IP Addr/FQDN of the sftp host
 
 =item B<--port>
 
 Port used
 
-=item B<--ssl>
+=item B<--ssh-options>
 
-Use SSL connection
-Need Perl 'Net::FTPSSL' module
-
-=item B<--ftp-options>
-
-Add custom ftp options.
-Example: --ftp-options='Debug=1" --ftp-options='useSSL=1'
+Add custom ssh options.
 
 =item B<--username>
 
