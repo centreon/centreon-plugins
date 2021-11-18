@@ -28,7 +28,7 @@ use Net::SFTP::Foreign;
 my $sftp_handle;
 
 sub quit {
-    $sftp_handle->quit;
+    $sftp_handle->disconnect;
 }
 
 sub message {
