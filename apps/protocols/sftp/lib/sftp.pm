@@ -18,17 +18,17 @@
 # limitations under the License.
 #
 
-package apps::protocols::ftp::lib::ftp;
+package apps::protocols::sftp::lib::sftp;
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use Net::FTP;
+use Net::SFTP::Foreign;
 
-my $ftp_handle;
+my $sftp_handle;
 
 sub quit {
-    $ftp_handle->quit;
+    $sftp_handle->quit;
 }
 
 sub message {
