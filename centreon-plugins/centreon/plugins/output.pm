@@ -42,6 +42,7 @@ sub new {
         'change-perfdata:s@'      => { name => 'change_perfdata' },
         'extend-perfdata:s@'      => { name => 'extend_perfdata' },
         'extend-perfdata-group:s@'=> { name => 'extend_perfdata_group' },
+        'change-exit:s@'          => { name => 'change_exit' },
         'change-short-output:s@'  => { name => 'change_short_output' },
         'use-new-perfdata'        => { name => 'use_new_perfdata' },
         'filter-uom:s'            => { name => 'filter_uom' },
@@ -119,6 +120,16 @@ sub check_options {
         if ($self->{range_perfdata} !~ /^[012]$/) {
             $self->add_option_msg(short_msg => "Wrong range-perfdata option '" . $self->{range_perfdata} . "'");
             $self->option_exit();
+        }
+    }
+
+    if (defined($self->{option_results}->{change_exit})) {
+        $self->{change_exit} = {};
+        foreach (@{$self->{option_results}->{change_exit}}) {
+            my ($src, $dst) = split(/=/);
+            next if (!defined($src) || !defined($self->{errors}->{ uc($src) }));
+            next if (!defined($dst) || !defined($self->{errors}->{ uc($dst) }));
+            $self->{change_exit}->{uc($src)} = uc($dst);
         }
     }
 
@@ -642,10 +653,17 @@ sub exit {
     if ($self->{noexit_die} == 1) {
         die 'exit';
     }
+
+    my $exit;
     if (defined($options{exit_litteral})) {
-        exit $self->{errors}->{uc($options{exit_litteral})};
+        $exit = uc($options{exit_litteral});
+    } else {
+        $exit = $self->{myerrors}->{ $self->{global_status} };
     }
-    exit $self->{errors}->{$self->{myerrors}->{$self->{global_status}}};
+    if (defined($self->{change_exit}) && defined($self->{change_exit}->{$exit})) {
+        $exit = $self->{change_exit}->{$exit};
+    }
+    exit $self->{errors}->{$exit};
 }
 
 sub get_option {
@@ -1527,7 +1545,11 @@ Sum traffic by interface: --extend-perfdata-group='traffic_in_(.*),traffic_$1,su
 
 =item B<--change-short-output>
 
-Change short output display. --change-short-output=pattern~replace~modifier
+Change short output display: --change-short-output=pattern~replace~modifier
+
+=item B<--change-exit>
+
+Change exit code: --change-exit=unknown=critical
 
 =item B<--range-perfdata>
 
