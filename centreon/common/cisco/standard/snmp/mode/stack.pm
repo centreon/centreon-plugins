@@ -24,20 +24,18 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_stack_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Stack status is '%s'", $self->{result_values}->{stack_status});
-    return $msg;
+    return sprintf("Stack status is '%s'", $self->{result_values}->{stack_status});
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("State is '%s', Role is '%s'", $self->{result_values}->{state}, $self->{result_values}->{role});
-    return $msg;
+    return sprintf("state is '%s', role is '%s'", $self->{result_values}->{state}, $self->{result_values}->{role});
 }
 
 sub prefix_global_output {
@@ -49,7 +47,7 @@ sub prefix_global_output {
 sub prefix_status_output {
     my ($self, %options) = @_;
     
-    return "Member '" . $options{instance_value}->{id} . "' ";
+    return "Member '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -58,16 +56,15 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'stack', type => 0 },
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'members', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All stack members status are ok' },
+        { name => 'members', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All stack members status are ok' }
     ];
 
     $self->{maps_counters}->{stack} = [
-        { label => 'stack-status', threshold => 0, set => {
+        { label => 'stack-status', type => 2, critical_default => '%{stack_status} =~ /notredundant/', set => {
                 key_values => [ { name => 'stack_status' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_stack_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -75,114 +72,102 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'waiting', set => {
                 key_values => [ { name => 'waiting' } ],
-                output_template => 'Waiting: %d',
+                output_template => 'waiting: %d',
                 perfdatas => [
-                    { label => 'waiting', value => 'waiting', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'waiting', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'progressing', set => {
                 key_values => [ { name => 'progressing' } ],
-                output_template => 'Progressing: %d',
+                output_template => 'progressing: %d',
                 perfdatas => [
-                    { label => 'progressing', value => 'progressing', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'progressing', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'added', set => {
                 key_values => [ { name => 'added' } ],
-                output_template => 'Added: %d',
+                output_template => 'added: %d',
                 perfdatas => [
-                    { label => 'added', value => 'added', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'added', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'ready', set => {
                 key_values => [ { name => 'ready' } ],
-                output_template => 'Ready: %d',
+                output_template => 'ready: %d',
                 perfdatas => [
-                    { label => 'ready', value => 'ready', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'ready', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'sdm-mismatch', set => {
                 key_values => [ { name => 'sdmMismatch' } ],
-                output_template => 'SDM Mismatch: %d',
+                output_template => 'SDM mismatch: %d',
                 perfdatas => [
-                    { label => 'sdm_mismatch', value => 'sdmMismatch', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'sdm_mismatch', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'version-mismatch', set => {
                 key_values => [ { name => 'verMismatch' } ],
-                output_template => 'Version Mismatch: %d',
+                output_template => 'version mismatch: %d',
                 perfdatas => [
-                    { label => 'version_mismatch', value => 'verMismatch', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'version_mismatch', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'feature-mismatch', set => {
                 key_values => [ { name => 'featureMismatch' } ],
-                output_template => 'Feature Mismatch: %d',
+                output_template => 'feature mismatch: %d',
                 perfdatas => [
-                    { label => 'feature_mismatch', value => 'featureMismatch', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'feature_mismatch', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'new-master-init', set => {
                 key_values => [ { name => 'newMasterInit' } ],
-                output_template => 'New Master Init: %d',
+                output_template => 'new master init: %d',
                 perfdatas => [
-                    { label => 'new_master_init', value => 'newMasterInit', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'new_master_init', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'provisioned', set => {
                 key_values => [ { name => 'provisioned' } ],
-                output_template => 'Provisioned: %d',
+                output_template => 'provisioned: %d',
                 perfdatas => [
-                    { label => 'provisioned', value => 'provisioned', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'provisioned', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'invalid', set => {
                 key_values => [ { name => 'invalid' } ],
-                output_template => 'Invalid: %d',
+                output_template => 'invalid: %d',
                 perfdatas => [
-                    { label => 'invalid', value => 'invalid', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'invalid', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'removed', set => {
                 key_values => [ { name => 'removed' } ],
-                output_template => 'Removed: %d',
+                output_template => 'removed: %d',
                 perfdatas => [
-                    { label => 'removed', value => 'removed', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'removed', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
-    
+
     $self->{maps_counters}->{members} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'id' }, { name => 'role' }, { name => 'state' } ],
-                closure_custom_calc => \&catalog_status_calc,
+        { label => 'status', type => 2, critical_default => '%{state} !~ /ready/ && %{state} !~ /provisioned/', set => {
+                key_values => [ { name => 'name' }, { name => 'role' }, { name => 'state' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -190,22 +175,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => {
-        'warning-stack-status:s'    => { name => 'warning_stack_status', default => '' },
-        'critical-stack-status:s'   => { name => 'critical_stack_status', default => '%{stack_status} =~ /notredundant/' },
-        'warning-status:s'          => { name => 'warning_status', default => '' },
-        'critical-status:s'         => { name => 'critical_status', default => '%{state} !~ /ready/ && %{state} !~ /provisioned/' },
-    });
+
+    $options{options}->add_options(arguments => {});
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_stack_status', 'critical_stack_status', 'warning_status', 'critical_status']);
 }
 
 my %map_role = (
@@ -235,6 +208,7 @@ my $mapping = {
 my $oid_cswSwitchInfoEntry = '.1.3.6.1.4.1.9.9.500.1.2.1.1';
 
 my $oid_cswRingRedundant = '.1.3.6.1.4.1.9.9.500.1.1.3.0';
+my $oid_entPhysicalName = '.1.3.6.1.2.1.47.1.1.1.1.7';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -261,17 +235,29 @@ sub manage_selection {
     foreach my $oid (keys %$snmp_result) {
         next if($oid !~ /^$mapping->{cswSwitchRole}->{oid}\.(.*)$/);
         my $instance = $1;
-        
+
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        # .1001, .2001 the instance.
-        my $id = int(($instance - 1) / 1000);
-        $self->{members}->{$id} = {
-            id => $id,
+        $self->{members}->{$instance} = {
+            name => $instance,
             role => $result->{cswSwitchRole},
             state => $result->{cswSwitchState},
         };
-        $self->{global}->{$result->{cswSwitchState}}++;
+        $self->{global}->{ $result->{cswSwitchState} }++;
+    }
+
+    return if (scalar(keys %{$self->{members}}) <= 0);
+
+    $options{snmp}->load(
+        oids => [ $oid_entPhysicalName ],
+        instances => [ keys %{$self->{members}} ],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef();
+    foreach (keys %{$self->{members}}) {
+        if (defined($snmp_result->{ $oid_entPhysicalName . '.' . $_ }) && $snmp_result->{ $oid_entPhysicalName . '.' . $_ } ne '') {
+            $self->{members}->{$_}->{name} = $snmp_result->{ $oid_entPhysicalName . '.' . $_ };
+        }
     }
 }
 
@@ -304,12 +290,12 @@ Can used special variables like: %{stack_status}
 =item B<--warning-status>
 
 Set warning threshold for members status (Default: '').
-Can used special variables like: %{id}, %{role}, %{state}
+Can used special variables like: %{name}, %{role}, %{state}
 
 =item B<--critical-status>
 
 Set critical threshold for member status (Default: '%{state} !~ /ready/ && %{state} !~ /provisioned/').
-Can used special variables like: %{id}, %{role}, %{state}
+Can used special variables like: %{name}, %{role}, %{state}
 
 Role can be: 'master', 'member', 'notMember', 'standby'.
 
@@ -320,4 +306,3 @@ State can be: 'waiting', 'progressing', 'added',
 =back
 
 =cut
-    
