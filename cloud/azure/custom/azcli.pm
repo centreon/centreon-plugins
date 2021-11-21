@@ -448,8 +448,7 @@ sub azure_list_virtualnetworks_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "network vnet list --only-show-errors --output json";
-    $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
+    my $cmd_options = "network vnet list --resource-group '$options{resource_group}' --only-show-errors --output json ";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
     return $cmd_options; 
@@ -469,7 +468,7 @@ sub azure_list_vnet_peerings_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "network vnet peering list --resource-group '$options{resource_group}' --vnet-name '$options{vnet_name}' --only-show-errors --output json";
+    my $cmd_options = "network vnet peering list --resource-group '$options{resource_group}' --vnet-name '$options{resource}' --only-show-errors --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
     return $cmd_options; 
