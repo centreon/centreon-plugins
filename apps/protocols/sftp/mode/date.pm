@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::protocols::sftp::mode::filescount;
+package apps::protocols::sftp::mode::date;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use apps::protocols::sftp::lib::sftp;
-use File::Basename;
 use Fcntl ":mode";
 
 sub new {
@@ -38,16 +38,17 @@ sub new {
          "hostname:s"       => { name => 'hostname' },
          "port:s"           => { name => 'port', },
          "ssh-options:s@"   => { name => 'ssh_options' },
-         "directory:s@"     => { name => 'directory' },
-         "max-depth:s"  => { name => 'max_depth', default => 0 },
-         "username:s"   => { name => 'username' },
-         "password:s"   => { name => 'password' },
          "ssh-priv-key:s"   => { name => 'ssh_priv_key' },
          "passphrase:s" => { name => 'passphrase' },
+         "directory:s@"     => { name => 'directory' },
+         "file-only"    => { name => 'file_only' },
+         "file:s@"          => { name => 'file' },
+         "username:s"   => { name => 'username' },
+         "password:s"   => { name => 'password' },
          "warning:s"    => { name => 'warning' },
          "critical:s"   => { name => 'critical' },
-         "filter-file:s"    => { name => 'filter_file' },
-         "timeout:s"        => { name => 'timeout', default => '30' },
+         "timeout:s"    => { name => 'timeout', default => '30' },
+         "timezone:s"   => { name => 'timezone' },
          });
     return $self;
 }
@@ -68,85 +69,85 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
     }
-    $self->{ssl_or_not} = 'nossl';
-    if (defined($self->{option_results}->{use_ssl})) {
-        $self->{ssl_or_not} = 'ssl';
+
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+        centreon::plugins::misc::mymodule_load(module => 'DateTime',
+                                               error_msg => "Cannot load module 'DateTime'.");
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    my $cpt;
-    my @files;
-    my @array;
+    my %file_times = ();
 
     apps::protocols::sftp::lib::sftp::connect($self);
-    my $count = $self->countFiles();
+    my $current_time = time();
+    my $dirs = ['.'];
+    if (defined($self->{option_results}->{directory}) && scalar(@{$self->{option_results}->{directory}}) != 0) {
+        $dirs = $self->{option_results}->{directory};
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $count,
-                                                       threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Number of files : %s", $count));
-    $self->{output}->perfdata_add(label => 'files',
-                                  value => $count,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub countFiles {
-    my ($self) = @_;
-    my @listings;
-    my $count = 0;
-
-    if (!defined($self->{option_results}->{directory}) || scalar(@{$self->{option_results}->{directory}}) == 0) {
-        push @listings, [ { name => '.', level => 0 } ];
-    } else {
-        foreach my $dir (@{$self->{option_results}->{directory}}) {
-            push @listings, [ { name => $dir, level => 0 } ];
-        }
-    }
-
-    my @build_name = ();
-    foreach my $list (@listings) {
-        while (@$list) {
+        foreach my $dir (@$dirs) {
             my $files;
-            my $hash = pop @$list;
-            my $dir = $hash->{name};
-            my $level = $hash->{level};
 
             if (!($files = apps::protocols::sftp::lib::sftp::execute($self, command => 'ls', command_args => [$dir]))) {
-                # Cannot list we skip
-                next;
+                $self->{output}->output_add(severity => 'UNKNOWN',
+                                            short_msg => sprintf("Command 'ls' issue for directory '$dir': %s", apps::protocols::sftp::lib::sftp::message()));
+                $self->{output}->display();
+                $self->{output}->exit();
             }
-
-            foreach my $line (@$files) {
-                my ($rights, $filename) = ($line->{a}->{perm}, $line->{filename});
-                my $bname = basename($filename);
-                next if ($bname eq '.' || $bname eq '..');
-                my $name = $dir . '/' . $bname;
-
-                if (defined($self->{option_results}->{filter_file}) && $self->{option_results}->{filter_file} ne '' &&
-                    $name !~ /$self->{option_results}->{filter_file}/) {
-                    $self->{output}->output_add(long_msg => sprintf("Skipping '%s'", $name));
+            foreach my $file (@$files) {
+                my $time_result;
+                if (defined($self->{option_results}->{file_only}) && !S_ISREG($file->{a}->perm)) {
                     next;
                 }
-
-                if (S_ISDIR($rights)) {
-                    if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
-                        push @$list, { name => $name, level => $level + 1};
-                    }
-                } else {
-                    $self->{output}->output_add(long_msg => sprintf("Match '%s'", $name));
-                    $count++;
+                if (!($time_result = $file->{a}->mtime)) {
+                    next;
                 }
+                $file = $dir . '/' . $file->{filename} if ($file->{filename} !~ /^$dir/); # some sftp only give filename (not the complete path)
+
+                $file_times{$file} = $time_result;
             }
         }
     }
-    return $count;
+    foreach my $file (@{$self->{option_results}->{file}}) {
+        my $time_result;
+
+        if (!($time_result = apps::protocols::sftp::lib::sftp::execute($self, command => 'stat', command_args => [$file]))) {
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => sprintf("Command 'stat' issue for file '$file': %s", apps::protocols::sftp::lib::sftp::message()));
+            $self->{output}->display();
+            $self->{output}->exit();
+        }
+        $file_times{$file} = $time_result->{mtime};
+    }
+
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => "All file times are ok.");
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
+    foreach my $name (sort keys %file_times) {
+        my $diff_time = $current_time - $file_times{$name};
+
+        my $exit_code = $self->{perfdata}->threshold_check(value => $diff_time,
+                                                           threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $display_date = scalar(localtime($file_times{$name}));
+        if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+            $display_date = DateTime->from_epoch(epoch => $file_times{$name}, %$tz)->datetime()
+        }
+
+        $self->{output}->output_add(long_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, $display_date));
+        if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
+            $self->{output}->output_add(severity => $exit_code,
+                                        short_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, $display_date));
+        }
+        $self->{output}->perfdata_add(label => $name, unit => 's',
+                                      value => $diff_time,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                      );
+    }
+
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
@@ -155,7 +156,7 @@ __END__
 
 =head1 MODE
 
-Count files in an sftp directory (can be recursive).
+Check modified time of files.
 
 =over 8
 
@@ -166,6 +167,19 @@ IP Addr/FQDN of the sftp host
 =item B<--port>
 
 Port used
+
+=item B<--ssh-priv-key>
+
+Private keys for SSH connection.
+
+=item B<--passphrase>
+
+Passphrase for private keys.
+
+=item B<--ssh-options>
+
+SSH Options
+E.g --ssh-options='-v' for ssh verbose output
 
 =item B<--username>
 
@@ -182,36 +196,28 @@ Connection timeout in seconds (Default: 30)
 
 =item B<--warning>
 
-Threshold warning (number of files)
+Threshold warning in seconds for each files (diff time)
 
 =item B<--critical>
 
-Threshold critical (number of files)
+Threshold critical in seconds for each files (diff time)
 
 =item B<--directory>
 
-Check files in the directory (Multiple option)
+Check files in the directory (no recursive) (Multiple option)
 
-=item B<--max-depth>
+=itme B<--files-only>
 
-Don't check fewer levels (Default: '0'. Means current dir only).
+Check only files in directory
 
-=item B<--filter-file>
+=item B<--file>
 
-Filter files (can be a regexp. Directory is in the name).
+Check file (Multiple option)
 
-=item B<--ssh-priv-key>
+=item B<--timezone>
 
-Private keys for SSH connection.
-
-=item B<--passphrase>
-
-Passphrase for private keys.
-
-=item B<--ssh-options>
-
-SSH Options
-E.g --ssh-options='-v' for ssh verbose output
+Set the timezone of display date.
+Can use format: 'Europe/London' or '+0100'.
 
 =back
 
