@@ -74,6 +74,18 @@ sub custom_long_calc {
     return 0;
 }
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return "Total Job ";
+}
+
+sub prefix_job_output {
+    my ($self, %options) = @_;
+    
+    return "job '" . $options{instance_value}->{environment} . '/' . $options{instance_value}->{application} . '/' . $options{instance_value}->{name} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -176,18 +188,6 @@ sub check_options {
     $self->{statefile_cache_app}->check_options(%options);
     $self->{statefile_cache_env}->check_options(%options);
     $self->change_macros(macros => ['warning_status', 'critical_status', 'warning_long', 'critical_long']);
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return "Total Job ";
-}
-
-sub prefix_job_output {
-    my ($self, %options) = @_;
-    
-    return "job '" . $options{instance_value}->{environment} . '/' . $options{instance_value}->{application} . '/' . $options{instance_value}->{name} . "' ";
 }
 
 my %mapping_job_status = (
