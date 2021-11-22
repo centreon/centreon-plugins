@@ -18,14 +18,15 @@
 # limitations under the License.
 #
 
-package apps::protocols::sftp::mode::login;
+package apps::protocols::sftp::mode::filescount;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes qw(gettimeofday tv_interval);
 use apps::protocols::sftp::lib::sftp;
+use File::Basename;
+use Fcntl ":mode";
 
 sub new {
     my ($class, %options) = @_;
@@ -63,33 +64,89 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-
     if (!defined($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
+    }
+    $self->{ssl_or_not} = 'nossl';
+    if (defined($self->{option_results}->{use_ssl})) {
+        $self->{ssl_or_not} = 'ssl';
     }
 }
 
 sub run {
     my ($self, %options) = @_;
+    my $cpt;
+    my @files;
+    my @array;
 
-    my $timing0 = [gettimeofday];
+    apps::protocols::sftp::lib::sftp::connect($self);
+    my $count = $self->countFiles();
 
-    apps::protocols::sftp::lib::sftp::connect($self, connection_exit => 'critical');
+    my $exit_code = $self->{perfdata}->threshold_check(value => $count,
+                                                       threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
-    my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
-
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Response time %.3f ", $timeelapsed));
-    $self->{output}->perfdata_add(label => "time",
-                                  value => sprintf('%.3f', $timeelapsed),
+    $self->{output}->output_add(severity => $exit_code,
+                                short_msg => sprintf("Number of files : %s", $count));
+    $self->{output}->perfdata_add(label => 'files',
+                                  value => $count,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
-
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
     $self->{output}->display();
     $self->{output}->exit();
+}
+
+sub countFiles {
+    my ($self) = @_;
+    my @listings;
+    my $count = 0;
+
+    if (!defined($self->{option_results}->{directory}) || scalar(@{$self->{option_results}->{directory}}) == 0) {
+        push @listings, [ { name => '.', level => 0 } ];
+    } else {
+        foreach my $dir (@{$self->{option_results}->{directory}}) {
+            push @listings, [ { name => $dir, level => 0 } ];
+        }
+    }
+
+    my @build_name = ();
+    foreach my $list (@listings) {
+        while (@$list) {
+            my $files;
+            my $hash = pop @$list;
+            my $dir = $hash->{name};
+            my $level = $hash->{level};
+
+            if (!($files = apps::protocols::sftp::lib::sftp::execute($self, command => 'ls', command_args => [$dir]))) {
+                # Cannot list we skip
+                next;
+            }
+
+            foreach my $line (@$files) {
+                my ($rights, $filename) = ($line->{a}->{perm}, $line->{filename});
+                my $bname = basename($filename);
+                next if ($bname eq '.' || $bname eq '..');
+                my $name = $dir . '/' . $bname;
+
+                if (defined($self->{option_results}->{filter_file}) && $self->{option_results}->{filter_file} ne '' &&
+                    $name !~ /$self->{option_results}->{filter_file}/) {
+                    $self->{output}->output_add(long_msg => sprintf("Skipping '%s'", $name));
+                    next;
+                }
+
+                if (S_ISDIR($rights)) {
+                    if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
+                        push @$list, { name => $name, level => $level + 1};
+                    }
+                } else {
+                    $self->{output}->output_add(long_msg => sprintf("Match '%s'", $name));
+                    $count++;
+                }
+            }
+        }
+    }
+    return $count;
 }
 
 1;
@@ -98,7 +155,7 @@ __END__
 
 =head1 MODE
 
-Check Connection (also login) to an SFTP Server.
+Count files in an sftp directory (can be recursive).
 
 =over 8
 
@@ -109,10 +166,6 @@ IP Addr/FQDN of the sftp host
 =item B<--port>
 
 Port used
-
-=item B<--ssh-options>
-
-Add custom ssh options.
 
 =item B<--username>
 
@@ -129,11 +182,36 @@ Connection timeout in seconds (Default: 30)
 
 =item B<--warning>
 
-Threshold warning in seconds
+Threshold warning (number of files)
 
 =item B<--critical>
 
-Threshold critical in seconds
+Threshold critical (number of files)
+
+=item B<--directory>
+
+Check files in the directory (Multiple option)
+
+=item B<--max-depth>
+
+Don't check fewer levels (Default: '0'. Means current dir only).
+
+=item B<--filter-file>
+
+Filter files (can be a regexp. Directory is in the name).
+
+=item B<--ssh-priv-key>
+
+Private keys for SSH connection.
+
+=item B<--passphrase>
+
+Passphrase for private keys.
+
+=item B<--ssh-options>
+
+SSH Options
+E.g --ssh-options='-v' for ssh verbose output
 
 =back
 
