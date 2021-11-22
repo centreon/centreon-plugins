@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $self->{modes}} = {
+    $self->{modes} = {
         'job-status' => 'apps::vtom::restapi::mode::jobstatus'
     };
 
