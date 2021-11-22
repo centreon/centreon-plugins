@@ -18,20 +18,15 @@
 # limitations under the License.
 #
 
-package apps::protocols::ftp::mode::date;
+package apps::protocols::sftp::mode::date;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use apps::protocols::ftp::lib::ftp;
-
-# How much arguments i need and commands manages
-my %map_commands = (
-    mdtm  => { ssl => { name => '_mdtm'  }, nossl => { name => 'mdtm' } },
-    ls    => { ssl => { name => 'nlst' },   nossl => { name => 'ls'} },
-);
+use apps::protocols::sftp::lib::sftp;
+use Fcntl ":mode";
 
 sub new {
     my ($class, %options) = @_;
@@ -42,9 +37,11 @@ sub new {
          {
          "hostname:s"       => { name => 'hostname' },
          "port:s"           => { name => 'port', },
-         "ssl"              => { name => 'use_ssl' },
-         "ftp-options:s@"   => { name => 'ftp_options' },
+         "ssh-options:s@"   => { name => 'ssh_options' },
+         "ssh-priv-key:s"   => { name => 'ssh_priv_key' },
+         "passphrase:s" => { name => 'passphrase' },
          "directory:s@"     => { name => 'directory' },
+         "file-only"    => { name => 'file_only' },
          "file:s@"          => { name => 'file' },
          "username:s"   => { name => 'username' },
          "password:s"   => { name => 'password' },
@@ -72,11 +69,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
     }
-    $self->{ssl_or_not} = 'nossl';
-    if (defined($self->{option_results}->{use_ssl})) {
-        $self->{ssl_or_not} = 'ssl';
-    }
-    
+
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         centreon::plugins::misc::mymodule_load(module => 'DateTime',
                                                error_msg => "Cannot load module 'DateTime'.");
@@ -86,64 +79,61 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     my %file_times = ();
-    
-    apps::protocols::ftp::lib::ftp::connect($self);
+
+    apps::protocols::sftp::lib::sftp::connect($self);
     my $current_time = time();
     my $dirs = ['.'];
     if (defined($self->{option_results}->{directory}) && scalar(@{$self->{option_results}->{directory}}) != 0) {
         $dirs = $self->{option_results}->{directory};
-    }
-    foreach my $dir (@$dirs) {
-        my @files;
 
-        if (!(@files = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{ls}->{$self->{ssl_or_not}}->{name}, command_args => [$dir]))) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf("Command '$map_commands{ls}->{$self->{ssl_or_not}}->{name}' issue for directory '$dir': %s", apps::protocols::ftp::lib::ftp::message()));
-            apps::protocols::ftp::lib::ftp::quit();
-            $self->{output}->display();
-            $self->{output}->exit();
-        }
-        
-        foreach my $file (@files) {
-            my $time_result;
-            
-            $file = $dir . '/' . $file if ($file !~ /^$dir/); # some ftp only give filename (not the complete path)
-            if (!($time_result = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, command_args => [$file]))) {
-                # Sometime we can't have mtime for a directory
-                next;
+        foreach my $dir (@$dirs) {
+            my $files;
+
+            if (!($files = apps::protocols::sftp::lib::sftp::execute($self, command => 'ls', command_args => [$dir]))) {
+                $self->{output}->output_add(severity => 'UNKNOWN',
+                                            short_msg => sprintf("Command 'ls' issue for directory '$dir': %s", apps::protocols::sftp::lib::sftp::message()));
+                $self->{output}->display();
+                $self->{output}->exit();
             }
-            
-            $file_times{$file} = $time_result;
+            foreach my $file (@$files) {
+                my $time_result;
+                if (defined($self->{option_results}->{file_only}) && !S_ISREG($file->{a}->perm)) {
+                    next;
+                }
+                if (!($time_result = $file->{a}->mtime)) {
+                    next;
+                }
+                $file = $dir . '/' . $file->{filename} if ($file->{filename} !~ /^$dir/); # some sftp only give filename (not the complete path)
+
+                $file_times{$file} = $time_result;
+            }
         }
     }
     foreach my $file (@{$self->{option_results}->{file}}) {
         my $time_result;
-            
-        if (!($time_result = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, command_args => [$file]))) {
+
+        if (!($time_result = apps::protocols::sftp::lib::sftp::execute($self, command => 'stat', command_args => [$file]))) {
             $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => sprintf("Command '$map_commands{mdtm}->{$self->{ssl_or_not}}->{name}' issue for file '$file': %s", apps::protocols::ftp::lib::ftp::message()));
-            apps::protocols::ftp::lib::ftp::quit();
+                                    short_msg => sprintf("Command 'stat' issue for file '$file': %s", apps::protocols::sftp::lib::sftp::message()));
             $self->{output}->display();
             $self->{output}->exit();
         }
-        $file_times{$file} = $time_result;
+        $file_times{$file} = $time_result->{mtime};
     }
 
-    apps::protocols::ftp::lib::ftp::quit();
-
-    $self->{output}->output_add(severity => 'OK', 
+    $self->{output}->output_add(severity => 'OK',
                                 short_msg => "All file times are ok.");
     my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     foreach my $name (sort keys %file_times) {
         my $diff_time = $current_time - $file_times{$name};
 
-        my $exit_code = $self->{perfdata}->threshold_check(value => $diff_time, 
+        my $exit_code = $self->{perfdata}->threshold_check(value => $diff_time,
                                                            threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my $display_date = scalar(localtime($file_times{$name}));
         if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
             $display_date = DateTime->from_epoch(epoch => $file_times{$name}, %$tz)->datetime()
         }
-        
+
         $self->{output}->output_add(long_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, $display_date));
         if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit_code,
@@ -172,21 +162,24 @@ Check modified time of files.
 
 =item B<--hostname>
 
-IP Addr/FQDN of the ftp host
+IP Addr/FQDN of the sftp host
 
 =item B<--port>
 
 Port used
 
-=item B<--ssl>
+=item B<--ssh-priv-key>
 
-Use SSL connection
-Need Perl 'Net::FTPSSL' module
+Private keys for SSH connection.
 
-=item B<--ftp-options>
+=item B<--passphrase>
 
-Add custom ftp options.
-Example: --ftp-options='Debug=1" --ftp-options='useSSL=1'
+Passphrase for private keys.
+
+=item B<--ssh-options>
+
+SSH Options
+E.g --ssh-options='-v' for ssh verbose output
 
 =item B<--username>
 
@@ -195,6 +188,7 @@ Specify username for authentification
 =item B<--password>
 
 Specify password for authentification
+Need Perl 'IO::Pty' module
 
 =item B<--timeout>
 
@@ -211,6 +205,10 @@ Threshold critical in seconds for each files (diff time)
 =item B<--directory>
 
 Check files in the directory (no recursive) (Multiple option)
+
+=itme B<--files-only>
+
+Check only files in directory
 
 =item B<--file>
 
