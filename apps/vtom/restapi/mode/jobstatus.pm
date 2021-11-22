@@ -120,7 +120,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-error', nlabel => 'error.total.count', set => {
+        { label => 'total-error', nlabel => 'jobs.errors.total.count', set => {
                 key_values => [ { name => 'error' }, { name => 'total' } ],
                 output_template => 'error : %s',
                 perfdatas => [
@@ -128,7 +128,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-running', nlabel => 'running.total.count', set => {
+        { label => 'total-running', nlabel => 'jobs.running.total.count', set => {
                 key_values => [ { name => 'running' }, { name => 'total' } ],
                 output_template => 'running : %s',
                 perfdatas => [
@@ -136,7 +136,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-unplanned',  nlabel => 'unplanned.total.count', set => {
+        { label => 'total-unplanned',  nlabel => 'jobs.unplanned.total.count', set => {
                 key_values => [ { name => 'unplanned' }, { name => 'total' } ],
                 output_template => 'unplanned : %s',
                 perfdatas => [
@@ -144,7 +144,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-finished', nlabel => 'finished.total.count', set => {
+        { label => 'total-finished', nlabel => 'jobs.finished.total.count', set => {
                 key_values => [ { name => 'finished' }, { name => 'total' } ],
                 output_template => 'finished : %s',
                 perfdatas => [
@@ -152,7 +152,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-coming', nlabel => 'coming.total.count', set => {
+        { label => 'total-coming', nlabel => 'jobs.coming.total.count', set => {
                 key_values => [ { name => 'coming' }, { name => 'total' } ],
                 output_template => 'coming : %s',
                 perfdatas => [
