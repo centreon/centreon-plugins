@@ -187,7 +187,6 @@ sub check_options {
 
     $self->{statefile_cache_app}->check_options(%options);
     $self->{statefile_cache_env}->check_options(%options);
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'warning_long', 'critical_long']);
 }
 
 my %mapping_job_status = (
