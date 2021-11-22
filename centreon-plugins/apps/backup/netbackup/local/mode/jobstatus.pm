@@ -88,6 +88,24 @@ sub custom_frozen_calc {
     return 0;
 }
 
+sub policy_long_output {
+    my ($self, %options) = @_;
+
+    return "Checking policy '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_policy_output {
+    my ($self, %options) = @_;
+
+    return "Policy '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_job_output {
+    my ($self, %options) = @_;
+    
+    return "Job '" . $options{instance_value}->{display} . "' [Type: " . $options{instance_value}->{type} . "] [State: " . $options{instance_value}->{state} . "] " ;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -100,9 +118,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel = 'jobs.total.count', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'Total Jobs : %s',
+                output_template => 'total jobs : %s',
                 perfdatas => [
                     { label => 'total', value => 'total', template => '%s', min => 0 }
                 ]
@@ -170,24 +188,6 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->change_macros(macros => ['ok_status', 'warning_status', 'critical_status']);
-}
-
-sub policy_long_output {
-    my ($self, %options) = @_;
-
-    return "Checking policy '" . $options{instance_value}->{display} . "'";
-}
-
-sub prefix_policy_output {
-    my ($self, %options) = @_;
-
-    return "Policy '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_job_output {
-    my ($self, %options) = @_;
-    
-    return "Job '" . $options{instance_value}->{display} . "' [Type: " . $options{instance_value}->{type} . "] [State: " . $options{instance_value}->{state} . "] " ;
 }
 
 my %job_type = (
