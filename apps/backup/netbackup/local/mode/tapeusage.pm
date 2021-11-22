@@ -29,6 +29,7 @@ sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
     my $label = 'used';
+    my $nlabel = 'tape.usage.percentage.';
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
         $label = 'free';
@@ -43,6 +44,7 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         label => $label,
+        nlabel => $nlabel,
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -68,7 +70,7 @@ sub custom_usage_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        "total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
         $self->{result_values}->{total},
         $self->{result_values}->{used}, $self->{result_values}->{prct_used},
         $self->{result_values}->{free}, $self->{result_values}->{prct_free}

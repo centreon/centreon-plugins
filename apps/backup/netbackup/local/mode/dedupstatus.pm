@@ -63,9 +63,9 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'deduplication.disk.usage.percentage',set => {
                 key_values => [ { name => 'usage' }, { name => 'watermark' }, { name => 'display' } ],
-                output_template => 'Use: %s %%',
+                output_template => 'use: %s %%',
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
                 perfdatas => [
                     { label => 'used', template => '%s', 

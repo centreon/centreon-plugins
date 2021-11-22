@@ -33,7 +33,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{drive} = [
-        { label => 'cleaning', set => {
+        { label => 'cleaning', nlabel => 'drives.unclean.count', set => {
                 key_values => [ { name => 'num_cleaning' }, { name => 'total' } ],
                 output_template => '%d drives needs a reset mount time',
                 perfdatas => [
