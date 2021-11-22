@@ -31,7 +31,6 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'commands'      => 'apps::protocols::sftp::mode::commands',
         'date'          => 'apps::protocols::sftp::mode::date',
         'filescount'    => 'apps::protocols::sftp::mode::filescount',
         'login'         => 'apps::protocols::sftp::mode::login',
@@ -47,5 +46,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check an SFTP server.
+Need Perl 'Net::SFTP::Foreign' module
 
 =cut
