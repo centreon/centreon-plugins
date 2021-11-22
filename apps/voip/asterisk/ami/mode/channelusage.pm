@@ -42,7 +42,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'calls-active', nlabel => 'channels.calls.active.count', set => {
+        { label => 'calls-active', nlabel => 'calls.active.count', set => {
                 key_values => [ { name => 'calls_active' } ],
                 output_template => 'calls active: %s',
                 perfdatas => [
@@ -50,7 +50,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'extcalls-active', nlabel => 'channels.extcalls.active.count', set => {
+        { label => 'extcalls-active', nlabel => 'extcalls.active.count', set => {
                 key_values => [ { name => 'extcalls_active' } ],
                 output_template => 'external calls active: %s',
                 perfdatas => [
@@ -58,7 +58,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'calls-count', nlabel => 'channels.calls.active.count', set => {
+        { label => 'calls-count', nlabel => 'calls.processed.count', set => {
                 key_values => [ { name => 'calls_count', diff => 1 } ],
                 output_template => 'calls count: %s',
                 perfdatas => [
