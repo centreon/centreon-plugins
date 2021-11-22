@@ -32,68 +32,47 @@ sub quit {
 }
 
 sub message {
-    return $ftp_handle->message;
+    return $sftp_handle->error;
 }
 
 sub execute {
     my ($self, %options) = @_;
     my $command = $options{command};
-    
-    return $ftp_handle->$command(@{$options{command_args}});
+
+    return $sftp_handle->$command(@{$options{command_args}});
 }
 
 sub connect {
     my ($self, %options) = @_;
-    my %ftp_options = ();
-    
-    my $ftp_class = 'Net::FTP'; 
-    if (defined($self->{option_results}->{use_ssl})) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Net::FTPSSL',
-                                               error_msg => "Cannot load module 'Net::FTPSSL'.");
-        $ftp_class = 'Net::FTPSSL'; 
-    }
-    
+    my %sftp_options = ();
+
+    my $sftp_class = 'Net::SFTP::Foreign';
+
     my $connection_exit = defined($options{connection_exit}) ? $options{connection_exit} : 'unknown';
-    $ftp_options{Port} = $self->{option_results}->{port} if (defined($self->{option_results}->{port}));
-    $ftp_options{Timeout} = $self->{option_results}->{timeout} if (defined($self->{option_results}->{timeout}));
-    foreach my $option (@{$self->{option_results}->{ftp_options}}) {
-        my ($key, $value) = split /=/, $option;
-        if (defined($key) && defined($value)) {
-            $ftp_options{$key} = $value;
-        }
+    $sftp_options{port} = $self->{option_results}->{port} if (defined($self->{option_results}->{port}));
+    $sftp_options{timeout} = $self->{option_results}->{timeout} if (defined($self->{option_results}->{timeout}));
+    $sftp_options{user} = $self->{option_results}->{username} if (defined($self->{option_results}->{username}));
+    $sftp_options{password} = $self->{option_results}->{password} if (defined($self->{option_results}->{password}));
+    $sftp_options{key_path} = $self->{option_results}->{ssh_priv_key} if (defined($self->{option_results}->{ssh_priv_key}));
+    $sftp_options{passphrase} = $self->{option_results}->{passphrase} if (defined($self->{option_results}->{passphrase}));
+    my @ssh_options;
+    foreach my $option (@{$self->{option_results}->{ssh_options}}) {
+      my ($key, $value) = split / /, $option;
+      if (defined($value)) {
+        push @ssh_options, ( $key => $value );
+      } else {
+        push @ssh_options, "$key";
+      }
     }
-    
-    if (defined($self->{option_results}->{username}) && $self->{option_results}->{username} ne '' &&
-        !defined($self->{option_results}->{password})) {
-        $self->{output}->add_option_msg(short_msg => "Please set --password option.");
-        $self->{output}->option_exit();
-    }
-    
-    $ftp_handle = $ftp_class->new($self->{option_results}->{hostname},
-        %ftp_options
+
+    $sftp_handle = $sftp_class->new($self->{option_results}->{hostname},more=>[@ssh_options],
+        %sftp_options
     );
-    
-    
-    if (!defined($ftp_handle)) {
-        if (defined($self->{option_results}->{use_ssl})) {
-            $self->{output}->output_add(severity => $connection_exit,
-                                        short_msg => 'Unable to connect to FTP: ' . $Net::FTPSSL::ERRSTR);
-        } else {
-            $self->{output}->output_add(severity => $connection_exit,
-                                        short_msg => 'Unable to connect to FTP: ' . $@);
-        }
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-    
-    if (defined($self->{option_results}->{username}) && $self->{option_results}->{username} ne '') {
-        if (!$ftp_handle->login($self->{option_results}->{username}, $self->{option_results}->{password})) {
-            $self->{output}->output_add(severity => $connection_exit,
-                                        short_msg => 'Login failed: ' . $ftp_handle->message);
-            quit();
-            $self->{output}->display();
-            $self->{output}->exit();
-        }
+    if ($sftp_handle->error) {
+      $self->{output}->output_add(severity => $connection_exit,
+                                  short_msg => 'Unable to connect to FTP: ' . $sftp_handle->error);
+      $self->{output}->display();
+      $self->{output}->exit();
     }
 }
 
