@@ -376,7 +376,7 @@ sub run_instances {
         }
 
         my ($prefix_output, $suffix_output);
-        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$id})
+        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
             if (defined($options{config}->{cb_prefix_output}));
         $prefix_output = '' if (!defined($prefix_output));
         
@@ -456,8 +456,8 @@ sub run_group {
             $total_problems += $self->{lproblems};
             
             my $prefix_output;
-            $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$id})
-            if (defined($options{config}->{cb_prefix_output}));
+            $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
+                if (defined($options{config}->{cb_prefix_output}));
             $prefix_output = '' if (!defined($prefix_output));
             
             if ($multiple == 0 && (!defined($group->{display}) || $group->{display} != 0)) {
@@ -566,7 +566,7 @@ sub run_multiple_instances {
         }
 
         my ($prefix_output, $suffix_output);
-        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$id})
+        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
             if (defined($options{config}->{cb_prefix_output}));
         $prefix_output = '' if (!defined($prefix_output));
 
@@ -639,7 +639,7 @@ sub run_multiple {
 
         $self->{prefix_multiple_output} = '';
         $self->{prefix_multiple_output_done} = { ok => 0, warning => 0, critical => 0, unknown => 0 };
-        $self->{prefix_multiple_output} = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$instance})
+        $self->{prefix_multiple_output} = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $instance, instance_value => $self->{$options{config}->{name}}->{$instance})
              if (defined($options{config}->{cb_prefix_output}));
         my $indent_long_output = '';
         $indent_long_output = $options{config}->{indent_long_output}
