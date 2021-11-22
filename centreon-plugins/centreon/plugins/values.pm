@@ -195,13 +195,13 @@ sub perfdata {
         $template = $perf->{template} if (defined($perf->{template}));
         $label = $perf->{label} if (defined($perf->{label}));
         if (defined($perf->{min})) {
-            $min = ($perf->{min} =~ /[^0-9]/) ? $self->{result_values}->{$perf->{min}} : $perf->{min};
+            $min = ($perf->{min} =~ /[^0-9.-]/) ? $self->{result_values}->{$perf->{min}} : $perf->{min};
         }
         if (defined($perf->{max})) {
-            $max = ($perf->{max} =~ /[^0-9]/) ? $self->{result_values}->{$perf->{max}} : $perf->{max};
+            $max = ($perf->{max} =~ /[^0-9.-]/) ? $self->{result_values}->{$perf->{max}} : $perf->{max};
         }
         if (defined($perf->{threshold_total})) {
-            $th_total = ($perf->{threshold_total} =~ /[^0-9]/) ? $self->{result_values}->{$perf->{threshold_total}} : $perf->{threshold_total};
+            $th_total = ($perf->{threshold_total} =~ /[^0-9.-]/) ? $self->{result_values}->{$perf->{threshold_total}} : $perf->{threshold_total};
         }
         
         my $instances;
