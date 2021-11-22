@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -74,6 +74,18 @@ sub custom_long_calc {
     return 0;
 }
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return "Total Job ";
+}
+
+sub prefix_job_output {
+    my ($self, %options) = @_;
+    
+    return "job '" . $options{instance_value}->{environment} . '/' . $options{instance_value}->{application} . '/' . $options{instance_value}->{name} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -83,72 +95,71 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{job} = [
-        { label => 'status', threshold => 0, set => {
+        { 
+            label => 'status',
+            type => 2,
+            critical_default => '%{status} =~ /Error/i',
+            set => {
                 key_values => [ { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
                                 { name => 'application' }, { name => 'exit_code' }, { name => 'family' }, { name => 'information' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'long', threshold => 0, set => {
+        { label => 'long', type => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
                                 { name => 'application' }, { name => 'elapsed' }, { name => 'family' } ],
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-error', set => {
+        { label => 'total-error', nlabel => 'jobs.errors.total.count', set => {
                 key_values => [ { name => 'error' }, { name => 'total' } ],
-                output_template => 'Error : %s',
+                output_template => 'error : %s',
                 perfdatas => [
-                    { label => 'total_error', value => 'error', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_error', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-running', set => {
+        { label => 'total-running', nlabel => 'jobs.running.total.count', set => {
                 key_values => [ { name => 'running' }, { name => 'total' } ],
-                output_template => 'Running : %s',
+                output_template => 'running : %s',
                 perfdatas => [
-                    { label => 'total_running', value => 'running', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_running', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-unplanned', set => {
+        { label => 'total-unplanned',  nlabel => 'jobs.unplanned.total.count', set => {
                 key_values => [ { name => 'unplanned' }, { name => 'total' } ],
-                output_template => 'Unplanned : %s',
+                output_template => 'unplanned : %s',
                 perfdatas => [
-                    { label => 'total_unplanned', value => 'unplanned', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_unplanned', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-finished', set => {
+        { label => 'total-finished', nlabel => 'jobs.finished.total.count', set => {
                 key_values => [ { name => 'finished' }, { name => 'total' } ],
-                output_template => 'Finished : %s',
+                output_template => 'finished : %s',
                 perfdatas => [
-                    { label => 'total_finished', value => 'finished', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_finished', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-coming', set => {
+        { label => 'total-coming', nlabel => 'jobs.coming.total.count', set => {
                 key_values => [ { name => 'coming' }, { name => 'total' } ],
-                output_template => 'Coming : %s',
+                output_template => 'coming : %s',
                 perfdatas => [
-                    { label => 'total_coming', value => 'coming', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_coming', template => '%s', min => 0, max => 'total' },
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -157,18 +168,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-application:s"    => { name => 'filter_application' },
-                                  "filter-environment:s"    => { name => 'filter_environment' },
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "filter-family:s"         => { name => 'filter_family' },
-                                  "warning-status:s"        => { name => 'warning_status' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /Error/i' },
-                                  "warning-long:s"          => { name => 'warning_long' },
-                                  "critical-long:s"         => { name => 'critical_long' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-application:s"    => { name => 'filter_application' },
+        "filter-environment:s"    => { name => 'filter_environment' },
+        "filter-name:s"           => { name => 'filter_name' },
+        "filter-family:s"         => { name => 'filter_family' },
+        "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+    });
     $self->{statefile_cache_app} = centreon::plugins::statefile->new(%options);
     $self->{statefile_cache_env} = centreon::plugins::statefile->new(%options);
    
@@ -181,19 +187,6 @@ sub check_options {
 
     $self->{statefile_cache_app}->check_options(%options);
     $self->{statefile_cache_env}->check_options(%options);
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'warning_long', 'critical_long']);
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return "Total Job ";
-}
-
-sub prefix_job_output {
-    my ($self, %options) = @_;
-    
-    return "job '" . $options{instance_value}->{environment} . '/' . $options{instance_value}->{application} . '/' . $options{instance_value}->{name} . "' ";
 }
 
 my %mapping_job_status = (
