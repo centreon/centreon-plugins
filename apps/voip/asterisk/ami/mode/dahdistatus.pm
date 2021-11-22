@@ -24,21 +24,18 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf('status : %s', $self->{result_values}->{status});
-    return $msg;
+    return sprintf('status : %s', $self->{result_values}->{status});
 }
 
-sub custom_status_calc {
+sub prefix_dahdi_output {
     my ($self, %options) = @_;
     
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{description} = $options{new_datas}->{$self->{instance} . '_description'};
-    return 0;
+    return "Line '" . $options{instance_value}->{description} . "' ";
 }
 
 sub set_counters {
@@ -49,12 +46,16 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{dahdi} = [
-        { label => 'status', threshold => 0, set => {
+        { 
+            label => 'status', 
+            type => 2, 
+            warning_default => '%{status} =~ /UNCONFIGURED|YEL|BLU/i',
+            critical_default => '%{status} =~ /RED/i',
+            set => {
                 key_values => [ { name => 'description' }, { name => 'status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
     ];
@@ -65,27 +66,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-description:s"    => { name => 'filter_description' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /UNCONFIGURED|YEL|BLU/i' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /RED/i' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "filter-description:s" => { name => 'filter_description' }
+    });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_dahdi_output {
-    my ($self, %options) = @_;
-    
-    return "Line '" . $options{instance_value}->{description} . "' ";
 }
 
 sub manage_selection {

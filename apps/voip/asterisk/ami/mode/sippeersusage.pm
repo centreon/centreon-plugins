@@ -24,13 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf('status : %s', $self->{result_values}->{status});
-    return $msg;
+    return sprintf('status : %s', $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -39,6 +38,12 @@ sub custom_status_calc {
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
     return 0;
+}
+
+sub prefix_sip_output {
+    my ($self, %options) = @_;
+    
+    return "Peer '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -50,56 +55,61 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-peers', set => {
+        { label => 'total-peers', nlabel => 'sip.peers.total.count', set => {
                 key_values => [ { name => 'total_peers' } ],
-                output_template => 'Total Peers: %s',
+                output_template => 'total peers: %s',
                 perfdatas => [
-                    { label => 'total_peers', value => 'total_peers', template => '%s', min => 0 },
-                ],
+                    { label => 'total_peers', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'monitor-online-peers', set => {
+        { label => 'monitor-online-peers', nlabel => 'sip.peers.monitor.online.count', set => {
                 key_values => [ { name => 'monitor_online_peers' } ],
-                output_template => 'Monitor Online Peers: %s',
+                output_template => 'monitor online peers: %s',
                 perfdatas => [
-                    { label => 'monitor_online_peers', value => 'monitor_online_peers', template => '%s', min => 0 },
-                ],
+                    { label => 'monitor_online_peers', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'monitor-offline-peers', set => {
+        { label => 'monitor-offline-peers', nlabel => 'sip.peers.monitor.offline.count', set => {
                 key_values => [ { name => 'monitor_offline_peers' } ],
-                output_template => 'Monitor Offline Peers: %s',
+                output_template => 'monitor offline peers: %s',
                 perfdatas => [
-                    { label => 'monitor_offline_peers', value => 'monitor_offline_peers', template => '%s', min => 0 },
-                ],
+                    { label => 'monitor_offline_peers', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'unmonitor-online-peers', set => {
+        { label => 'unmonitor-online-peers', nlabel => 'sip.peers.unmonitor.online.count', set => {
                 key_values => [ { name => 'unmonitor_online_peers' } ],
-                output_template => 'Unmonitor Online Peers: %s',
+                output_template => 'unmonitor online peers: %s',
                 perfdatas => [
-                    { label => 'unmonitor_online_peers', value => 'unmonitor_online_peers', template => '%s', min => 0 },
-                ],
+                    { label => 'unmonitor_online_peers', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'unmonitor-offline-peers', set => {
+        { label => 'unmonitor-offline-peers', nlabel => 'sip.peers.unmonitor.offline.count', set => {
                 key_values => [ { name => 'unmonitor_offline_peers' } ],
-                output_template => 'Unmonitor Offline Peers: %s',
+                output_template => 'unmonitor offline peers: %s',
                 perfdatas => [
-                    { label => 'unmonitor_offline_peers', value => 'unmonitor_offline_peers', template => '%s', min => 0 },
-                ],
+                    { label => 'unmonitor_offline_peers', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
     $self->{maps_counters}->{sip} = [
-        { label => 'status', threshold => 0, set => {
+        { 
+            label => 'status', 
+            type => 2, 
+            warning_default => '%{status} =~ /LAGGED|UNKNOWN/i',
+            critical_default => '%{status} =~ /UNREACHABLE/i',
+            set => {
                 key_values => [ { name => 'name' }, { name => 'status' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -108,27 +118,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{status} =~ /LAGGED|UNKNOWN/i' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /UNREACHABLE/i' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "filter-name:s" => { name => 'filter_name' }
+    });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_sip_output {
-    my ($self, %options) = @_;
-    
-    return "Peer '" . $options{instance_value}->{name} . "' ";
 }
 
 sub manage_selection {
