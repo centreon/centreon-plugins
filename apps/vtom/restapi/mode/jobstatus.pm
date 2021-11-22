@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -83,22 +83,26 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{job} = [
-        { label => 'status', threshold => 0, set => {
+        { 
+            label => 'status',
+            type => 2,
+            critical_default => '%{status} =~ /Error/i',
+            set => {
                 key_values => [ { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
                                 { name => 'application' }, { name => 'exit_code' }, { name => 'family' }, { name => 'information' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        { label => 'long', threshold => 0, set => {
+        { label => 'long', type => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
                                 { name => 'application' }, { name => 'elapsed' }, { name => 'family' } ],
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
     ];
@@ -157,18 +161,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-application:s"    => { name => 'filter_application' },
-                                  "filter-environment:s"    => { name => 'filter_environment' },
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "filter-family:s"         => { name => 'filter_family' },
-                                  "warning-status:s"        => { name => 'warning_status' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /Error/i' },
-                                  "warning-long:s"          => { name => 'warning_long' },
-                                  "critical-long:s"         => { name => 'critical_long' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-application:s"    => { name => 'filter_application' },
+        "filter-environment:s"    => { name => 'filter_environment' },
+        "filter-name:s"           => { name => 'filter_name' },
+        "filter-family:s"         => { name => 'filter_family' },
+        "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+    });
     $self->{statefile_cache_app} = centreon::plugins::statefile->new(%options);
     $self->{statefile_cache_env} = centreon::plugins::statefile->new(%options);
    
