@@ -29,10 +29,11 @@ sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
     my $label = 'used';
-    my $nlabel = 'tape.usage.percentage.';
+    my $nlabel = 'tape.usage.percentage';
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
         $label = 'free';
+        $nable = 'tape.free.usage.percentage';
         $value_perf = $self->{result_values}->{free};
     }
 
