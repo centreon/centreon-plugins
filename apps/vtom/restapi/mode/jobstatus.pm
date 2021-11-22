@@ -108,51 +108,46 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-error', set => {
+        { label => 'total-error', nlabel => 'error.total.count', set => {
                 key_values => [ { name => 'error' }, { name => 'total' } ],
-                output_template => 'Error : %s',
+                output_template => 'error : %s',
                 perfdatas => [
-                    { label => 'total_error', value => 'error', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_error', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-running', set => {
+        { label => 'total-running', nlabel => 'running.total.count', set => {
                 key_values => [ { name => 'running' }, { name => 'total' } ],
-                output_template => 'Running : %s',
+                output_template => 'running : %s',
                 perfdatas => [
-                    { label => 'total_running', value => 'running', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_running', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-unplanned', set => {
+        { label => 'total-unplanned',  nlabel => 'unplanned.total.count', set => {
                 key_values => [ { name => 'unplanned' }, { name => 'total' } ],
-                output_template => 'Unplanned : %s',
+                output_template => 'unplanned : %s',
                 perfdatas => [
-                    { label => 'total_unplanned', value => 'unplanned', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_unplanned', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-finished', set => {
+        { label => 'total-finished', nlabel => 'finished.total.count', set => {
                 key_values => [ { name => 'finished' }, { name => 'total' } ],
-                output_template => 'Finished : %s',
+                output_template => 'finished : %s',
                 perfdatas => [
-                    { label => 'total_finished', value => 'finished', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_finished', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
-        { label => 'total-coming', set => {
+        { label => 'total-coming', nlabel => 'coming.total.count', set => {
                 key_values => [ { name => 'coming' }, { name => 'total' } ],
-                output_template => 'Coming : %s',
+                output_template => 'coming : %s',
                 perfdatas => [
-                    { label => 'total_coming', value => 'coming', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_coming', template => '%s', min => 0, max => 'total' },
+                ]
             }
-        },
+        }
     ];
 }
 
