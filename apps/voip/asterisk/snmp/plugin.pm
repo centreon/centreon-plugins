@@ -31,9 +31,9 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'channel-usage'    => 'apps::voip::asterisk::snmp::mode::channelusage',
-    );
+    $self->{modes} = {
+        'channel-usage' => 'apps::voip::asterisk::snmp::mode::channelusage'
+    };
 
     return $self;
 }

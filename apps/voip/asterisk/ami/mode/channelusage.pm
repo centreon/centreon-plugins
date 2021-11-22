@@ -34,38 +34,38 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'channels-active', set => {
+        { label => 'channels-active', nlabel => 'channels.active.count', set => {
                 key_values => [ { name => 'channels_active' } ],
-                output_template => 'Channels Active: %s',
+                output_template => 'channels active: %s',
                 perfdatas => [
-                    { label => 'channels_active', value => 'channels_active', template => '%s', min => 0 },
-                ],
+                    { label => 'channels_active', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'calls-active', set => {
+        { label => 'calls-active', nlabel => 'channels.calls.active.count', set => {
                 key_values => [ { name => 'calls_active' } ],
-                output_template => 'Calls Active: %s',
+                output_template => 'calls active: %s',
                 perfdatas => [
-                    { label => 'calls_active', value => 'calls_active', template => '%s', min => 0 },
-                ],
+                    { label => 'calls_active', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'extcalls-active', set => {
+        { label => 'extcalls-active', nlabel => 'channels.extcalls.active.count', set => {
                 key_values => [ { name => 'extcalls_active' } ],
-                output_template => 'External Calls Active: %s',
+                output_template => 'external calls active: %s',
                 perfdatas => [
-                    { label => 'extcalls_active', value => 'extcalls_active', template => '%s', min => 0 },
-                ],
+                    { label => 'extcalls_active', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'calls-count', set => {
+        { label => 'calls-count', nlabel => 'channels.calls.active.count', set => {
                 key_values => [ { name => 'calls_count', diff => 1 } ],
-                output_template => 'Calls Count: %s',
+                output_template => 'calls count: %s',
                 perfdatas => [
-                    { label => 'calls_count', value => 'calls_count', template => '%s', min => 0 },
-                ],
+                    { label => 'calls_count', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
