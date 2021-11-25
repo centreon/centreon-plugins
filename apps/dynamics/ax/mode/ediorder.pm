@@ -39,7 +39,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-order-warning', nlabel => 'total.order.warning.count', set => {
+        { label => 'order-warning', nlabel => 'order.warning.count', set => {
                 key_values => [ { name => '2' } ],
                 output_template => 'warning: %d',
                 perfdatas => [
@@ -47,7 +47,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-order-critical', nlabel => 'total.order.critical.count', set => {
+        { label => 'order-critical', nlabel => 'order.critical.count', set => {
                 key_values => [ { name => '3' } ],
                 output_template => 'critical: %d',
                 perfdatas => [
@@ -158,7 +158,7 @@ Check EDI Orders execptions.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total-order-critical', 'total-order-warning'.
+Can be: 'order-critical', 'order-warning'.
 
 =item B<--timeframe>
 Set the timeframe to query in seconds (Default: 14400
