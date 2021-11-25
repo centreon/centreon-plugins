@@ -441,6 +441,7 @@ sub run_group {
             $self->{output}->output_add(
                 long_msg => $self->call_object_callback(
                     method_name => $options{config}->{cb_long_output},
+                    instance => $id,
                     instance_value => $self->{$options{config}->{name}}->{$id}
                 )
             );
@@ -632,6 +633,7 @@ sub run_multiple {
             $self->{output}->output_add(
                 long_msg => $self->call_object_callback(
                     method_name => $options{config}->{cb_long_output},
+                    instance => $instance,
                     instance_value => $self->{$options{config}->{name}}->{$instance}
                 )
             );
