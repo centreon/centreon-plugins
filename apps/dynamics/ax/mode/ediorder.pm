@@ -161,7 +161,7 @@ Thresholds.
 Can be: 'order-critical', 'order-warning'.
 
 =item B<--timeframe>
-Set the timeframe to query in seconds (Default: 14400
+Set the timeframe to query in seconds (Default: 14400).
 
 =item B<--filter-module>
 
