@@ -245,12 +245,12 @@ sub execute_command {
             'X-Requested-With: XMLHttpRequest',
             'Cookie: iPlanetDirectoryPro=' . $self->{session_id}
         ],
-        query_form_post => {
-            'name' => 'command',
-            'command' => $options{command},
-            'stream_output' => 'true',
-            'requestSequence' => Time::HiRes::time()
-        },
+        form => [
+            { copyname => 'name', copycontents => 'command' },
+            { copyname => 'command', copycontents => $options{command} },
+            { copyname => 'stream_output', copycontents => 'true' },
+            { copyname => 'requestSequence', copycontents => Time::HiRes::time() }
+        ],
         critical_status => '',
         warning_status => '',
         unknown_status => ''

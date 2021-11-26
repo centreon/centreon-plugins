@@ -23,6 +23,7 @@ package centreon::plugins::backend::http::curlconstants;
 use strict;
 use warnings;
 use Net::Curl::Easy qw(:constants);
+use Net::Curl::Form qw(:constants);
 
 sub get_constant_value {
     my (%options) = @_;
