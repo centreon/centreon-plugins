@@ -230,7 +230,7 @@ sub credentials {
     my ($self, %options) = @_;
 
     if (!defined($self->{session_id})) {
-        $self->{session_id} = $self->{login};
+        $self->{session_id} = $self->login();
     }
 }
 
