@@ -185,7 +185,7 @@ sub login {
         my $content = $self->{http}->request(
             method => 'POST',
             url_path => '/login',
-            query_form_post => { IDToken1 => $self->{api_username}, IDToken2 => $self->{api_password} },
+            post_param => ['IDToken1=' . $self->{api_username}, 'IDToken2=' . $self->{api_password}],
             critical_status => '',
             warning_status => '',
             unknown_status => ''
