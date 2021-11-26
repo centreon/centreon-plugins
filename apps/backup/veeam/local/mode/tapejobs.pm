@@ -162,7 +162,7 @@ sub manage_selection {
             next;
         }
         # Sometimes we may get such JSON: [{"lastResult":null,"name":null,"lastState":null,"type":null,"enabled":null}]
-        if (!defined($job->{name}) || $job->{name} eq 'null' ) {
+        if (!defined($job->{name})) {
             $self->{output}->output_add(long_msg => "skipping nulled job (empty json)", debug => 1);
             next;            
         }
