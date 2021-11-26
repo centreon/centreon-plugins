@@ -217,7 +217,7 @@ sub set_form {
     if (!defined($self->{form_loaded})) {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output},
-            module => 'Net::Curl::Form ',
+            module => 'Net::Curl::Form',
             error_msg => "Cannot load module 'Net::Curl::Form'."
         );
         $self->{form_loaded} = 1;
@@ -228,8 +228,8 @@ sub set_form {
         my %args = ();
         $args{ $self->{constant_cb}->(name => 'CURLFORM_COPYNAME()') } = $_->{copyname}
             if (defined($_->{copyname}));
-        $args{ $self->{constant_cb}->(name => 'CURLFORM_COPYCONTENTS()') } = $_->{copycontent}
-            if (defined($_->{copycontent}));
+        $args{ $self->{constant_cb}->(name => 'CURLFORM_COPYCONTENTS()') } = $_->{copycontents}
+            if (defined($_->{copycontents}));
         $form->add(%args);
     }
 

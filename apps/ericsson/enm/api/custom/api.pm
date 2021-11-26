@@ -107,27 +107,6 @@ sub get_hostname {
     return $self->{hostname};
 }
 
-sub get_cache_organizations {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    return $self->{cache_organizations};
-}
-
-sub get_cache_networks {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    return $self->{cache_networks};
-}
-
-sub get_cache_devices {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    return $self->{cache_devices};
-}
-
 sub build_options_for_httplib {
     my ($self, %options) = @_;
 
@@ -176,7 +155,7 @@ sub login {
     my $session_id = $self->{cache_token}->get(name => 'session_id');
     my $md5_secret_cache = $self->{cache_token}->get(name => 'md5_secret');
     my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
-
+    
     if ($has_cache_file == 0 ||
         !defined($session_id) ||
         (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
@@ -255,6 +234,7 @@ sub execute_command {
         warning_status => '',
         unknown_status => ''
     );
+
     # Maybe token is invalid. so we retry
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->clean_session();
