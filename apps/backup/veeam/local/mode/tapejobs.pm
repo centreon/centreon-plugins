@@ -161,6 +161,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter type.", debug => 1);
             next;
         }
+        # Sometimes we may get such JSON: [{"lastResult":null,"name":null,"lastState":null,"type":null,"enabled":null}]
+        if (!defined($job->{name}) || $job->{name} eq 'null' ) {
+            $self->{output}->output_add(long_msg => "skipping nulled job (empty json)", debug => 1);
+            next;            
+        }
 
         $self->{job}->{ $job->{name} } = {
             display => $job->{name},
@@ -170,6 +175,11 @@ sub manage_selection {
             last_state => $job_tape_state->{ $job->{lastState} }
         };
         $self->{global}->{total}++;
+
+        if (scalar(keys %{$self->{job}}) <= 0) {
+            $self->{output}->add_option_msg(short_msg => "No tape jobs found. Review filters. More infos with --debug option");
+            $self->{output}->option_exit();
+        }
     }
 }
 
