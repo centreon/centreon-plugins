@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -34,16 +34,6 @@ sub custom_status_output {
         $self->{result_values}->{provisioning_state},
         $self->{result_values}->{peer});
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{peering_state} = $options{new_datas}->{$self->{instance} . '_peering_state'};
-    $self->{result_values}->{provisioning_state} = $options{new_datas}->{$self->{instance} . '_provisioning_state'};
-    $self->{result_values}->{peer} = $options{new_datas}->{$self->{instance} . '_peer'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
 }
 
 sub prefix_peering_output {
@@ -60,15 +50,18 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{peerings} = [
-        { label => 'status', threshold => 0, set => {
+        { 
+            label => 'status', 
+            type => 2,
+            critical_default => '%{peering_state} ne "Connected" || %{provisioning_state} ne "Succeeded"',
+            set => {
                 key_values => [ { name => 'peering_state' }, { name => 'provisioning_state' }, { name => 'peer' },
                                 { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -77,14 +70,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "vnet-name:s"           => { name => 'vnet_name' },
-                                    "filter-name:s"         => { name => 'filter_name' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{peering_state} ne "Connected" || %{provisioning_state} ne "Succeeded"' },
-                                });
+    $options{options}->add_options(arguments => {
+        "resource-group:s"      => { name => 'resource_group' },
+        "resource:s"            => { name => 'resource' },
+        "filter-name:s"         => { name => 'filter_name' }
+    });
     
     return $self;
 }
@@ -93,16 +83,20 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --resource-group option");
+    if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{vnet_name}) || $self->{option_results}->{vnet_name} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --vnet-name option");
-        $self->{output}->option_exit();
+    my $resource = $self->{option_results}->{resource};
+    my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Network\/virtualNetworks\/(.*)$/) {
+        $resource_group = $1;
+        $resource = $2;
     }
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
+    $self->{az_resource} = $resource;
+    $self->{az_resource_group} = $resource_group;
+
 }
 
 sub manage_selection {
@@ -110,8 +104,8 @@ sub manage_selection {
 
     $self->{peerings} = {};
     my $peerings = $options{custom}->azure_list_vnet_peerings(
-        resource_group => $self->{option_results}->{resource_group},
-        vnet_name => $self->{option_results}->{vnet_name}
+        resource_group => $self->{az_resource_group},
+        resource => $self->{az_resource}
     );
     foreach my $peering (@{$peerings}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
@@ -144,8 +138,8 @@ __END__
 Check virtual network peerings status.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::azure::network::virtualnetwork::plugin --custommode=azcli --mode=peerings-status
---resource-group='MYRESOURCEGROUP' --vnet-name='MyVNetName' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::network::virtualnetwork::plugin --custommode=awscli --mode=peerings-status
+--resource-group='MYRESOURCEGROUP' --resource='MyVNetName' --verbose
 
 =over 8
 
@@ -153,7 +147,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::virtualnetwork::plugin 
 
 Set resource group (Required).
 
-=item B<--vnet-name>
+=item B<--resource>
 
 Set virtual network name (Required).
 
