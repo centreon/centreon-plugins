@@ -240,10 +240,18 @@ sub execute_command {
         $self->clean_session();
         $self->credentials();
         $response = $self->{http}->request(
-            url_path => $options{endpoint},
+            method => 'POST',
+            url_path => '/server-scripting/services/command',
             header => [
+                'Accept: application/vnd.com.ericsson.oss.scripting+text;VERSION="1"',
                 'X-Requested-With: XMLHttpRequest',
                 'Cookie: iPlanetDirectoryPro=' . $self->{session_id}
+            ],
+            form => [
+                { copyname => 'name', copycontents => 'command' },
+                { copyname => 'command', copycontents => $options{command} },
+                { copyname => 'stream_output', copycontents => 'true' },
+                { copyname => 'requestSequence', copycontents => Time::HiRes::time() }
             ],
             critical_status => '',
             warning_status => '',
@@ -281,6 +289,7 @@ sub get_command_output {
         # Maybe token is invalid. so we retry
         if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
             $self->clean_session();
+            $self->credentials();
             $response = $self->{http}->request(
                 method => 'GET',
                 url_path => '/server-scripting/services/command/output/' . $options{command_id} . '/stream?',

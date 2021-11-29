@@ -170,7 +170,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $nodes = $options{custom}->call_nodeSyncState();
+    my $nodes = $options{custom}->get_nodeSyncState();
     
     $self->{global} = { total => 0 };
     $self->{nodes} = {};
@@ -180,6 +180,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{exclude_node_id}) && $self->{option_results}->{exclude_node_id} ne '' &&
             $node->{NodeId} =~ /$self->{option_results}->{exclude_node_id}/);
 
+        $self->{global}->{total}++;
         $self->{nodes}->{ $node->{NodeId} } = {
             node_global => { node_id => $node->{NodeId}, sync_status => lc($node->{syncStatus}) },
             fru => {},
@@ -187,7 +188,7 @@ sub manage_selection {
         };
     }
 
-    my $frus = $options{custom}->call_fruState();
+    my $frus = $options{custom}->get_fruState();
     foreach my $fru (@$frus) {
         next if (defined($self->{option_results}->{filter_node_id}) && $self->{option_results}->{filter_node_id} ne '' &&
             $fru->{NodeId} !~ /$self->{option_results}->{filter_node_id}/);
@@ -208,7 +209,7 @@ sub manage_selection {
         };
     }
 
-    my $cells = $options{custom}->call_EUtranCellTDD();
+    my $cells = $options{custom}->get_EUtranCellTDD();
     foreach my $cell (@$cells) {
         next if (defined($self->{option_results}->{filter_node_id}) && $self->{option_results}->{filter_node_id} ne '' &&
             $cell->{NodeId} !~ /$self->{option_results}->{filter_node_id}/);
