@@ -574,9 +574,8 @@ sub azure_list_vpn_gateways {
 sub azure_list_virtualnetworks_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
-    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
-    $url .= "/providers/Microsoft.Network/virtualNetworks?api-version=" . $self->{api_version};
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
+        $options{resource_group} . "/providers/Microsoft.Network/virtualNetworks?api-version=" . $self->{api_version};
 
     return $url;
 }
@@ -593,10 +592,9 @@ sub azure_list_virtualnetworks {
 sub azure_list_vnet_peerings_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
-    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
-    $url .= "/providers/Microsoft.Network/virtualNetworks/" . $options{vnet_name} if (defined($options{vnet_name}) && $options{vnet_name} ne '');
-    $url .= "/virtualNetworkPeerings?api-version=" . $self->{api_version};
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
+        $options{resource_group} . "/providers/Microsoft.Network/virtualNetworks/" .
+        $options{resource} . "/virtualNetworkPeerings?api-version=" . $self->{api_version};
 
     return $url;
 }

@@ -31,11 +31,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments =>
-                                {
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "location:s"            => { name => 'location' },
-                                    "filter-name:s"         => { name => 'filter_name' },
-                                });
+        {
+            "resource-group:s"      => { name => 'resource_group' },
+            "location:s"            => { name => 'location' },
+            "filter-name:s"         => { name => 'filter_name' }
+        });
 
     return $self;
 }
@@ -43,6 +43,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --resource-group option");
+        $self->{output}->option_exit();
+    }
 }
 
 sub manage_selection {
