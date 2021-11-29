@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use Digest::MD5 qw(md5_hex);
 
 sub custom_role_output {
     my ($self, %options) = @_;
@@ -99,6 +100,7 @@ sub set_counters {
             type => 2,
             set => {
                 key_values => [ { name => 'role' }, { name => 'primaryMember' }, { name => 'standbyMember' }, { name => 'standbyId' } ],
+                closure_custom_calc => $self->can('custom_role_calc'),
                 closure_custom_output => $self->can('custom_role_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -138,7 +140,7 @@ sub set_counters {
     $self->{maps_counters}->{position} = [
          { label => 'log-gap', nlabel => 'hadr.instance.log.gap.bytes', set => {
                 key_values => [ { name => 'logGap' } ],
-                output_template => 'log gap: %s %s/s',
+                output_template => 'log gap: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
                     { template => '%d', unit => 'B', label_extra_instance => 1 }
@@ -150,7 +152,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {});
@@ -196,6 +198,9 @@ sub manage_selection {
         };
         $self->{global}->{standby_running}++;
     }
+
+    $self->{cache_name} = 'db2_' . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
