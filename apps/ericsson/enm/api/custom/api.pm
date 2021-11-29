@@ -351,10 +351,10 @@ sub parse_result {
 sub call_fruState {
     my ($self, %options) = @_;
 
-    my $datas = $self->bouchon(file => '/home/qgarnier/clients/hubone/ericson_enm/curls/FieldReplaceableUnit_state.txt');
-    #my $datas = $self->execute(
-    #    command => 'cmedit get * FieldReplaceableUnit.(administrativeState,availabilityStatus,faultIndicator,hwTestResult,maintenanceIndicator,operationalIndicator,operationalState,specialIndicator,statusIndicator,userLabel) -t'
-    #);
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/ericson_enm/curls/FieldReplaceableUnit_state.txt');
+    my $datas = $self->execute(
+        command => 'cmedit get * FieldReplaceableUnit.(administrativeState,availabilityStatus,faultIndicator,hwTestResult,maintenanceIndicator,operationalIndicator,operationalState,specialIndicator,statusIndicator,userLabel) -t'
+    );
 
     return $self->parse_result(result => $datas);
 }
@@ -362,10 +362,10 @@ sub call_fruState {
 sub call_nodeSyncState {
     my ($self, %options) = @_;
 
-    my $datas = $self->bouchon(file => '/home/qgarnier/clients/hubone/ericson_enm/curls/node_sync_state.txt');
-    #my $datas = $self->execute(
-    #    command => 'cmedit get * CmFunction.syncStatus -t'
-    #);
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/ericson_enm/curls/node_sync_state.txt');
+    my $datas = $self->execute(
+        command => 'cmedit get * CmFunction.syncStatus -t'
+    );
 
     return $self->parse_result(result => $datas);
 }
@@ -373,10 +373,10 @@ sub call_nodeSyncState {
 sub call_EUtranCellTDD {
     my ($self, %options) = @_;
 
-    my $datas = $self->bouchon(file => '/home/qgarnier/clients/hubone/ericson_enm/curls/cellule_tdd.txt');
-    #my $datas = $self->execute(
-    #    command => 'cmedit get * EUtranCellTDD.(operationalstate,administrativestate,availabilityStatus,userlabel) -t'
-    #);
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/ericson_enm/curls/cellule_tdd.txt');
+    my $datas = $self->execute(
+        command => 'cmedit get * EUtranCellTDD.(operationalstate,administrativestate,availabilityStatus,userlabel) -t'
+    );
 
     return $self->parse_result(result => $datas);
 }

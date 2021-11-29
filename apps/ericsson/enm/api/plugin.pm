@@ -31,9 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'cache'     => 'apps::ericsson::enm::api::mode::cache',
-        'discovery' => 'apps::ericsson::enm::api::mode::discovery',
-        'nodes'     => 'apps::ericsson::enm::api::mode::nodes'
+        'cache'              => 'apps::ericsson::enm::api::mode::cache',
+        'discovery'          => 'apps::ericsson::enm::api::mode::discovery',
+        'list-nodes-celltdd' => 'apps::ericsson::enm::api::mode::listnodescelltdd',
+        'list-nodes-fru'     => 'apps::ericsson::enm::api::mode::listnodesfru',
+        'nodes'              => 'apps::ericsson::enm::api::mode::nodes'
     };
 
     $self->{custom_modes}->{api} = 'apps::ericsson::enm::api::custom::api';
