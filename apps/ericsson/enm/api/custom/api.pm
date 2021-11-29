@@ -176,8 +176,8 @@ sub login {
             $self->{output}->option_exit();
         }
 
-        my (@cookies) = $self->{http}->get_header(name => 'Set-Cookie');
-        my $session_id = '';
+        my (@cookies) = $self->{http}->get_first_header(name => 'Set-Cookie');
+        $session_id = '';
         foreach my $cookie (@cookies) {
             $session_id = $1 if ($cookie =~ /^iPlanetDirectoryPro=(.+?);/);
         }
@@ -238,6 +238,7 @@ sub execute_command {
     # Maybe token is invalid. so we retry
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->clean_session();
+        $self->credentials();
         $response = $self->{http}->request(
             url_path => $options{endpoint},
             header => [
@@ -261,23 +262,10 @@ sub execute_command {
 sub get_command_output {
     my ($self, %options) = @_;
 
-    my $response = $self->{http}->request(
-        method => 'GET',
-        url_path => '/server-scripting/services/command/output/' . $options{command_id} . '/stream?',
-        header => [
-            'Accept: application/vnd.com.ericsson.oss.scripting.terminal+json;VERSION="3"',
-            'X-Requested-With: XMLHttpRequest',
-            'Cookie: iPlanetDirectoryPro=' . $self->{session_id}
-        ],
-        get_param => => ['_wait_milli=1000'],
-        critical_status => '',
-        warning_status => '',
-        unknown_status => ''
-    );
-    # Maybe token is invalid. so we retry
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        $self->clean_session();
-        $response = $self->{http}->request(
+    my $decoded;
+    my $elements = [];
+    while (1) {
+        my $response = $self->{http}->request(
             method => 'GET',
             url_path => '/server-scripting/services/command/output/' . $options{command_id} . '/stream?',
             header => [
@@ -290,19 +278,45 @@ sub get_command_output {
             warning_status => '',
             unknown_status => ''
         );
-    }
+        # Maybe token is invalid. so we retry
+        if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+            $self->clean_session();
+            $response = $self->{http}->request(
+                method => 'GET',
+                url_path => '/server-scripting/services/command/output/' . $options{command_id} . '/stream?',
+                header => [
+                    'Accept: application/vnd.com.ericsson.oss.scripting.terminal+json;VERSION="3"',
+                    'X-Requested-With: XMLHttpRequest',
+                    'Cookie: iPlanetDirectoryPro=' . $self->{session_id}
+                ],
+                get_param => => ['_wait_milli=1000'],
+                critical_status => '',
+                warning_status => '',
+                unknown_status => ''
+            );
+        }
 
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        $self->{output}->add_option_msg(short_msg => "get-command-output issue");
-        $self->{output}->option_exit();
-    }
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => 'get-command-output: cannot decode response');
-        $self->{output}->option_exit();
+        if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+            $self->{output}->add_option_msg(short_msg => "get-command-output issue");
+            $self->{output}->option_exit();
+        }
+
+        my $json;
+        eval {
+            $json = JSON::XS->new->utf8->decode($response);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => 'get-command-output: cannot decode response');
+            $self->{output}->option_exit();
+        }
+        #_response_status = FETCHING, COMPLETE
+        if ($json->{_response_status} eq 'COMPLETE') {
+            $decoded = $json;
+            unshift @{$decoded->{output}->{_elements}}, @$elements;
+            last;
+        } else {
+            push @$elements, @{$json->{output}->{_elements}};
+        }
     }
 
     return $decoded;
@@ -317,37 +331,54 @@ sub execute {
     return $self->get_command_output(command_id => $command_id);
 }
 
+sub parse_result {
+    my ($self, %options) = @_;
+
+    my $results = [];
+    foreach my $group (@{$options{result}->{output}->{_elements}}) {
+        foreach my $entry (@{$group->{_elements}}) {
+            my $h = {};
+            foreach (@{$entry->{_elements}}) {
+                $h->{ $_->{_label}->[0] } = $_->{value};
+            }
+            push @$results, $h;
+        }
+    }
+
+    return $results;
+}
+
 sub call_fruState {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_organization_orgs.txt');
-    my $datas = $self->execute(
-        command => 'cmedit get * FieldReplaceableUnit.(administrativeState,availabilityStatus,faultIndicator,hwTestResult,maintenanceIndicator,operationalIndicator,operationalState,specialIndicator,statusIndicator) -t'
-    );
+    my $datas = $self->bouchon(file => '/home/qgarnier/clients/hubone/ericson_enm/curls/FieldReplaceableUnit_state.txt');
+    #my $datas = $self->execute(
+    #    command => 'cmedit get * FieldReplaceableUnit.(administrativeState,availabilityStatus,faultIndicator,hwTestResult,maintenanceIndicator,operationalIndicator,operationalState,specialIndicator,statusIndicator,userLabel) -t'
+    #);
 
-    return $datas;
+    return $self->parse_result(result => $datas);
 }
 
 sub call_nodeSyncState {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_organization_orgs.txt');
-    my $datas = $self->execute(
-        command => 'cmedit get * CmFunction.syncStatus -t'
-    );
+    my $datas = $self->bouchon(file => '/home/qgarnier/clients/hubone/ericson_enm/curls/node_sync_state.txt');
+    #my $datas = $self->execute(
+    #    command => 'cmedit get * CmFunction.syncStatus -t'
+    #);
 
-    return $datas;
+    return $self->parse_result(result => $datas);
 }
 
 sub call_EUtranCellTDD {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/bpce/Plugin Versa V0/cleans/vnms_organization_orgs.txt');
-    my $datas = $self->execute(
-        command => 'cmedit get * EUtranCellTDD.(operationalstate,administrativestate,availabilityStatus,userlabel) -t'
-    );
+    my $datas = $self->bouchon(file => '/home/qgarnier/clients/hubone/ericson_enm/curls/cellule_tdd.txt');
+    #my $datas = $self->execute(
+    #    command => 'cmedit get * EUtranCellTDD.(operationalstate,administrativestate,availabilityStatus,userlabel) -t'
+    #);
 
-    return $datas;
+    return $self->parse_result(result => $datas);
 }
 
 sub cache_fruState {
