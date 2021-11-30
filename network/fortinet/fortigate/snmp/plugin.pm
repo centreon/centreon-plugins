@@ -44,6 +44,7 @@ sub new {
         'sessions'            => 'centreon::common::fortinet::fortigate::snmp::mode::sessions',
         'signatures'          => 'centreon::common::fortinet::fortigate::snmp::mode::signatures',
         'uptime'              => 'snmp_standard::mode::uptime',
+        'sdwan'               => 'centreon::common::fortinet::fortigate::snmp::mode::sdwan',
         'vdom-usage'          => 'centreon::common::fortinet::fortigate::snmp::mode::vdomusage',
         'virus'               => 'centreon::common::fortinet::fortigate::snmp::mode::virus',
         'vpn'                 => 'centreon::common::fortinet::fortigate::snmp::mode::vpn'

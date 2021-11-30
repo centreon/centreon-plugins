@@ -1,0 +1,295 @@
+#
+# Copyright 2021 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+package centreon::common::fortinet::fortigate::snmp::mode::sdwan;
+
+use base qw(centreon::plugins::templates::counter);
+
+use strict;
+use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use Digest::MD5 qw(md5_hex);
+
+sub prefix_traffic_output {
+    my ($self, %options) = @_;
+
+    return 'traffic ';
+}
+
+sub sdwan_long_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "checking sd-wan '%s' [vdom: %s] [interface: %s]",
+        $options{instance_value}->{name},
+        $options{instance_value}->{vdom},
+        $options{instance_value}->{ifName}
+    );
+}
+
+sub prefix_sdwan_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "sd-wan '%s' [vdom: %s] [interface: %s] ",
+        $options{instance_value}->{name},
+        $options{instance_value}->{vdom},
+        $options{instance_value}->{ifName}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'sdwan', type => 3, cb_prefix_output => 'prefix_sdwan_output', cb_long_output => 'sdwan_long_output',
+          indent_long_output => '    ', message_multiple => 'All sd-wan links are ok',
+            group => [
+                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } },
+                { name => 'latency', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'jitter', type => 0, skipped_code => { -10 => 1 } }
+            ]
+        }
+    ];
+
+    $self->{maps_counters}->{status} = [
+        {
+            label => 'status',
+            type => 2,
+            critical_default => '%{state} eq "down"',
+            set => {
+                key_values => [ { name => 'state' }, { name => 'vdom' }, { name => 'ifName' }, { name => 'name' }, { name => 'id' } ],
+                output_template => 'state: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{traffic} = [
+        { label => 'traffic-in', nlabel => 'sdwan.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'in', per_second => 1 } ],
+                output_template => 'in: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'traffic-out', nlabel => 'sdwan.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'out', per_second => 1 } ],
+                output_template => 'out: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'traffic-bi', nlabel => 'sdwan.traffic.bi.bitspersecond', set => {
+                key_values => [ { name => 'bi', per_second => 1 } ],
+                output_template => 'bi: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{latency} = [
+        { label => 'latency', nlabel => 'sdwan.latency.milliseconds', set => {
+                key_values => [ { name => 'latency' } ],
+                output_template => 'latency: %sms',
+                perfdatas => [
+                    { template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{jitter} = [
+        { label => 'jitter', nlabel => 'sdwan.jitter.milliseconds', set => {
+                key_values => [ { name => 'jitter' } ],
+                output_template => 'jitter: %sms',
+                perfdatas => [
+                    { template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
+    bless $self, $class;
+
+    $options{options}->add_options(arguments => {
+        'filter-id:s'   => { name => 'filter_id' },
+        'filter-name:s' => { name => 'filter_name' },
+        'filter-vdom:s' => { name => 'filter_vdom' }
+    });
+
+    return $self;
+}
+
+my $mapping_status = { 0 => 'up', 1 => 'down' };
+
+my $mapping = {
+    state       => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.4', map => $mapping_status }, # fgVWLHealthCheckLinkState
+    latency     => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.5' }, # fgVWLHealthCheckLinkLatency
+    jitter      => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.6' }, # fgVWLHealthCheckLinkJitter
+    vdom        => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.10' }, # fgVWLHealthCheckLinkVdom
+    traffic_in  => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.11' }, # fgVWLHealthCheckLinkBandwidthIn
+    traffic_out => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.12' }, # fgVWLHealthCheckLinkBandwidthOut
+    traffic_bi  => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.13' }, # fgVWLHealthCheckLinkBandwidthBi
+    ifName      => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.14' }  # fgVWLHealthCheckLinkIfName
+};
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+     $self->{cache_name} = 'fortinet_fortigate_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+        md5_hex(
+            (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : 'all') . '_' .
+            (defined($self->{option_results}->{filter_id}) ? md5_hex($self->{option_results}->{filter_id}) : 'all') . '_' .
+            (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : 'all') . '_' .
+            (defined($self->{option_results}->{filter_vdom}) ? md5_hex($self->{option_results}->{filter_vdom}) : 'all')
+        );
+
+    if ($options{snmp}->is_snmpv1()) {
+        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
+        $self->{output}->option_exit();
+    }
+
+    my $oid_name = '.1.3.6.1.4.1.12356.101.4.9.2.1.2'; # fgVWLHealthCheckLinkName
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_name,
+        nothing_quit => 1
+    );
+
+    $self->{sdwan} = {};
+    foreach (keys %$snmp_result) {
+        /^$oid_name\.(.*)$/;
+        my $id = $1;
+
+        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
+            $id !~ /$self->{option_results}->{filter_id}/) {
+            $self->{output}->output_add(long_msg => "skipping sd-wan '" . $snmp_result->{$_} . "'.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $snmp_result->{$_} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping sd-wan '" . $snmp_result->{$_} . "'.", debug => 1);
+            next;
+        }
+
+        $self->{sdwan}->{ $snmp_result->{$_} } = {
+            id => $id,
+            name => $snmp_result->{$_}
+        };
+    }
+
+    return if (scalar(keys %{$self->{sdwan}}) <= 0);
+
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping)) ],
+        instances => [ map($_->{id}, values(%{$self->{sdwan}})) ],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef();
+    foreach (keys %{$self->{sdwan}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $self->{sdwan}->{$_}->{id});
+
+        if (defined($self->{option_results}->{filter_vdom}) && $self->{option_results}->{filter_vdom} ne '' &&
+            $result->{vdom} !~ /$self->{option_results}->{filter_vdom}/) {
+            $self->{output}->output_add(long_msg => "skipping sd-wan '" . $_ . "'.", debug => 1);
+            next;
+        }
+
+        $self->{sdwan}->{$_}->{vdom} = $result->{vdom};
+        $self->{sdwan}->{$_}->{ifName} = $result->{ifName};
+
+        $self->{sdwan}->{$_}->{status} = {
+            state => $result->{state},
+            name => $_,
+            id => $self->{sdwan}->{$_}->{id},
+            vdom => $result->{vdom},
+            ifName => $result->{ifName}
+        };
+
+        $self->{sdwan}->{$_}->{traffic} = {
+            in => $result->{traffic_in} * 1000 * 1000,
+            out => $result->{traffic_out} * 1000 * 1000,
+            bi => $result->{traffic_bi} * 1000 * 1000,
+        };
+
+        $self->{sdwan}->{$_}->{jitter} = { jitter => $result->{jitter} };
+        $self->{sdwan}->{$_}->{latency} = { latency => $result->{latency} };
+    }
+}
+
+1;
+
+__END__
+
+=head1 MODE
+
+Check sd-wan links.
+
+=over 8
+
+=item B<--filter-id>
+
+Filter sd-wan links by ID (can be a regexp).
+
+=item B<--filter-name>
+
+Filter sd-wan links by name (can be a regexp).
+
+=item B<--filter-vdom>
+
+Filter sd-wan links by vdom name (can be a regexp).
+
+=item B<--unknown-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
+
+=item B<--warning-status>
+
+Set warning threshold for status.
+Can used special variables like: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{state} eq "down"').
+Can used special variables like: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'traffic-in', 'traffic-out', 'traffic-bi',
+'latency', 'jitter'.
+
+=back
+
+=cut
