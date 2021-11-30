@@ -86,52 +86,102 @@ sub set_counters {
 
     $self->{maps_counters}->{traffic} = [
         { label => 'traffic-in', nlabel => 'sdwan.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'in', per_second => 1 } ],
+                key_values => [ { name => 'in', per_second => 1 }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'in: %s %s/s',
                 output_change_bytes => 2,
-                perfdatas => [
-                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
-                ]
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'b/s',
+                        instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
+                        value => sprintf('%.2f', $self->{result_values}->{in}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
+                    );
+                }
             }
         },
         { label => 'traffic-out', nlabel => 'sdwan.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'out', per_second => 1 } ],
+                key_values => [ { name => 'out', per_second => 1 }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'out: %s %s/s',
                 output_change_bytes => 2,
-                perfdatas => [
-                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
-                ]
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'b/s',
+                        instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
+                        value => sprintf('%.2f', $self->{result_values}->{out}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
+                    );
+                }
             }
         },
         { label => 'traffic-bi', nlabel => 'sdwan.traffic.bi.bitspersecond', set => {
-                key_values => [ { name => 'bi', per_second => 1 } ],
+                key_values => [ { name => 'bi', per_second => 1 }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'bi: %s %s/s',
                 output_change_bytes => 2,
-                perfdatas => [
-                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
-                ]
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'b/s',
+                        instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
+                        value => sprintf('%.2f', $self->{result_values}->{bi}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
+                    );
+                }
             }
         }
     ];
 
     $self->{maps_counters}->{latency} = [
         { label => 'latency', nlabel => 'sdwan.latency.milliseconds', set => {
-                key_values => [ { name => 'latency' } ],
+                key_values => [ { name => 'latency' }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'latency: %sms',
-                perfdatas => [
-                    { template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1 }
-                ]
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'ms',
+                        instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
+                        value => sprintf('%.2f', $self->{result_values}->{latency}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
+                    );
+                }
             }
         }
     ];
 
     $self->{maps_counters}->{jitter} = [
         { label => 'jitter', nlabel => 'sdwan.jitter.milliseconds', set => {
-                key_values => [ { name => 'jitter' } ],
+                key_values => [ { name => 'jitter' }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'jitter: %sms',
-                perfdatas => [
-                    { template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1 }
-                ]
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'ms',
+                        instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
+                        value => sprintf('%.2f', $self->{result_values}->{jitter}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
+                    );
+                }
             }
         }
     ];
@@ -202,7 +252,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{sdwan}->{ $snmp_result->{$_} } = {
+        $self->{sdwan}->{ $id } = {
             id => $id,
             name => $snmp_result->{$_}
         };
@@ -212,16 +262,16 @@ sub manage_selection {
 
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping)) ],
-        instances => [ map($_->{id}, values(%{$self->{sdwan}})) ],
+        instances => [ map($_, keys(%{$self->{sdwan}})) ],
         instance_regexp => '^(.*)$'
     );
     $snmp_result = $options{snmp}->get_leef();
     foreach (keys %{$self->{sdwan}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $self->{sdwan}->{$_}->{id});
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
 
         if (defined($self->{option_results}->{filter_vdom}) && $self->{option_results}->{filter_vdom} ne '' &&
             $result->{vdom} !~ /$self->{option_results}->{filter_vdom}/) {
-            $self->{output}->output_add(long_msg => "skipping sd-wan '" . $_ . "'.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping sd-wan '" . $self->{sdwan}->{$_}->{name} . "'.", debug => 1);
             next;
         }
 
@@ -230,20 +280,33 @@ sub manage_selection {
 
         $self->{sdwan}->{$_}->{status} = {
             state => $result->{state},
-            name => $_,
+            name => $self->{sdwan}->{$_}->{name},
             id => $self->{sdwan}->{$_}->{id},
             vdom => $result->{vdom},
             ifName => $result->{ifName}
         };
 
         $self->{sdwan}->{$_}->{traffic} = {
+            name => $self->{sdwan}->{$_}->{name},
+            vdom => $result->{vdom},
+            ifName => $result->{ifName},
             in => $result->{traffic_in} * 1000 * 1000,
             out => $result->{traffic_out} * 1000 * 1000,
             bi => $result->{traffic_bi} * 1000 * 1000,
         };
 
-        $self->{sdwan}->{$_}->{jitter} = { jitter => $result->{jitter} };
-        $self->{sdwan}->{$_}->{latency} = { latency => $result->{latency} };
+        $self->{sdwan}->{$_}->{jitter} = {
+            name => $self->{sdwan}->{$_}->{name},
+            vdom => $result->{vdom},
+            ifName => $result->{ifName},
+            jitter => $result->{jitter}
+        };
+        $self->{sdwan}->{$_}->{latency} = {
+            name => $self->{sdwan}->{$_}->{name},
+            vdom => $result->{vdom},
+            ifName => $result->{ifName},
+            latency => $result->{latency}
+        };
     }
 }
 
