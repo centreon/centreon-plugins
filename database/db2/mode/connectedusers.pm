@@ -50,7 +50,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-appl-name:s' => { name => 'filter_appl_name' }
+        'filter-appl-name:s'  => { name => 'filter_appl_name' },
+        'exclude-appl-name:s' => { name => 'exclude_appl_name' }
     });
 
     return $self;
@@ -74,6 +75,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $row->[0] . "': no matching filter.", debug => 1);
             next;
         }
+        if (defined($self->{option_results}->{exclude_appl_name}) && $self->{option_results}->{exclude_appl_name} ne '' &&
+            $row->[0] =~ /$self->{option_results}->{exclude_appl_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $row->[0] . "': no matching filter.", debug => 1);
+            next;
+        }
 
         $self->{global}->{connected}++;
     }
@@ -92,6 +98,10 @@ Check connected users.
 =item B<--filter-appl-name>
 
 Filter users by application name (Can be a regex).
+
+=item B<--exclude-appl-name>
+
+Exclude users by application name (Can be a regex).
 
 =item B<--warning-*> B<--critical-*>
 

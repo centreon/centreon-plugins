@@ -37,6 +37,7 @@ sub new {
         'connected-users'  => 'database::db2::mode::connectedusers',
         'database-logs'    => 'database::db2::mode::databaselogs',
         'database-usage'   => 'database::db2::mode::databaseusage',
+        'hadr'             => 'database::db2::mode::hadr',
         'list-tablespaces' => 'database::db2::mode::listtablespaces',
         'tablespaces'      => 'database::db2::mode::tablespaces'
     };
