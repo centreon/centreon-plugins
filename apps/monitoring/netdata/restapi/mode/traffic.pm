@@ -114,12 +114,14 @@ sub manage_selection {
             $count++;
         }
 
+        my $speed = defined($int->{speed}) ? $int->{speed} * 1000 * 1000 : '';
+        $speed = $self->{option_results}->{speed}
+            if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '');
         $self->{interfaces}->{ $int->{name} } = {
             display => $int->{name},
             traffic_in => $metrics->{received} * 1000,
             traffic_out => $metrics->{sent} * 1000,
-            speed => defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' ?
-                $self->{option_results}->{speed} : $int->{speed} * 1000 * 1000
+            speed => $speed
         };
     }
 
