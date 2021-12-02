@@ -90,7 +90,7 @@ sub execute_command {
 
     $self->{ssh_commands} = 
         "set cli op-command-xml-output on\n" .
-        $options{command} . "\n";
+        $options{command} . "\nexit\n";
 
     my $stdout;
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
@@ -100,8 +100,7 @@ sub execute_command {
             command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{ssh_commands},
             command_path => $self->{option_results}->{command_path},
             command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef,
-            timeout => $self->{option_results}->{timeout},
-            cmd_exit => !defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '' ? "exit\n" : undef
+            timeout => $self->{option_results}->{timeout}
         );
     } else {
         if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
