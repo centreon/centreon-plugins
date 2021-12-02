@@ -64,7 +64,7 @@ sub init_custom {
 
     $self->{results} = $options{custom}->request_api(
         endpoint => '/api/rest/hardware',
-        get_param => ['select=*']
+        get_param => ['select=*', 'offset=0', 'limit=2000']
     );
 }
 
