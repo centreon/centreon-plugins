@@ -218,6 +218,7 @@ sub collect_sql_tables {
         $options{sql}->query(query => $table->{query});
         $self->add_builtin(name => 'sqlExecutionTime.' . $table->{name}, value => tv_interval($timing0, [gettimeofday]));
 
+        $self->{sql_collected}->{tables}->{ $table->{name} } = {};
         my $i = 0;
         while (my $entry = $options{sql}->fetchrow_hashref()) {
             my $instance = $i;
