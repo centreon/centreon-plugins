@@ -125,29 +125,6 @@ sub settings {
     $self->{settings_done} = 1;
 }
 
-sub bouchon {
-    my ($self, %options) = @_;
-
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, '<', $options{file}) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $options{file} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-    eval {
-        $content = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-
-    return $content;
-}
-
 sub login {
     my ($self, %options) = @_;
 
@@ -360,7 +337,6 @@ sub parse_result {
 sub call_fruState {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/ericson_enm/curls/FieldReplaceableUnit_state.txt');
     my $datas = $self->execute(
         command => 'cmedit get * FieldReplaceableUnit.(administrativeState,availabilityStatus,faultIndicator,hwTestResult,maintenanceIndicator,operationalIndicator,operationalState,specialIndicator,statusIndicator,userLabel) -t'
     );
@@ -371,7 +347,6 @@ sub call_fruState {
 sub call_nodeSyncState {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/ericson_enm/curls/node_sync_state.txt');
     my $datas = $self->execute(
         command => 'cmedit get * CmFunction.syncStatus -t'
     );
@@ -382,7 +357,6 @@ sub call_nodeSyncState {
 sub call_EUtranCellTDD {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/ericson_enm/curls/cellule_tdd.txt');
     my $datas = $self->execute(
         command => 'cmedit get * EUtranCellTDD.(operationalstate,administrativestate,availabilityStatus,userlabel) -t'
     );
