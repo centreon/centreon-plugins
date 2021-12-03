@@ -202,6 +202,7 @@ sub request {
     if (defined($request_options->{get_params})) {
         $uri->query_form($request_options->{get_params});
     }
+
     $req = HTTP::Request->new($request_options->{method}, $uri);
 
     my $content_type_forced = 0;
@@ -219,6 +220,11 @@ sub request {
         $uri_post->query_form($request_options->{post_params});
         $req->content_type('application/x-www-form-urlencoded');
         $req->content($uri_post->query);
+    }
+
+    if (defined($request_options->{form})) {
+        $self->{output}->add_option_msg(short_msg => 'unsupported form param');
+        $self->{output}->option_exit();
     }
 
     if (defined($request_options->{credentials}) && defined($request_options->{ntlmv2})) {
