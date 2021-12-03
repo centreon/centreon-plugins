@@ -18,17 +18,45 @@
 # limitations under the License.
 #
 
-package centreon::plugins::backend::http::curlconstants;
+package apps::ericsson::enm::api::mode::cache;
+
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Net::Curl::Easy qw(:constants);
-use Net::Curl::Form qw(:constants);
 
-sub get_constant_value {
-    my (%options) = @_;
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
 
-    return eval $options{name};
+    $options{options}->add_options(arguments => {});
+
+    return $self;
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $options{custom}->cache_fruState();
+    $options{custom}->cache_nodeSyncState();
+    $options{custom}->cache_EUtranCellTDD();
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'Cache files created successfully'
+    );
 }
 
 1;
+
+__END__
+
+=head1 MODE
+
+Create cache files (other modes could use it with --cache-use option).
+
+=over 8
+
+=back
+
+=cut
