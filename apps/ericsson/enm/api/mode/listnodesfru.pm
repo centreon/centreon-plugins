@@ -31,7 +31,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'add-extra-attrs' => { name => 'add_extra_attrs' }
+        'add-extra-attrs'  => { name => 'add_extra_attrs' },
+        'filter-node-id:s' => { name => 'filter_node_id' }
     });
 
     return $self;
@@ -48,6 +49,9 @@ sub manage_selection {
     my $frus = $options{custom}->call_fruState();
     my $results = [];
     foreach my $fru (@$frus) {
+        next if (defined($self->{option_results}->{filter_node_id}) && $self->{option_results}->{filter_node_id} ne '' &&
+            $fru->{NodeId} !~ /$self->{option_results}->{filter_node_id}/);
+
         my $attr = { node_id => $fru->{NodeId}, fru_id => $fru->{FieldReplaceableUnitId} };
         if (defined($self->{option_results}->{add_extra_attrs})) {
             $attr->{label} = defined($fru->{userLabel}) && $fru->{userLabel} ne 'null' ? $fru->{userLabel} : '';
@@ -116,6 +120,10 @@ __END__
 List nodes field replaceable units.
 
 =over 8
+
+=item B<--filter-node-id>
+
+Filter field replaceable units by node id (can be a regexp).
 
 =item B<--add-extra-attrs>
 

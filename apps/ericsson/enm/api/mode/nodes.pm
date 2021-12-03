@@ -252,11 +252,11 @@ Filter nodes by id (can be a regexp).
 
 =item B<--filter-fru-id>
 
-Filter tdd cells by id (can be a regexp).
+Filter field replaceable units by id (can be a regexp).
 
 =item B<--filter-cell-tdd-id>
 
-Filter field replaceable units by id (can be a regexp).
+Filter tdd cells by id (can be a regexp).
 
 =item B<--unknown-node-sync-status>
 
