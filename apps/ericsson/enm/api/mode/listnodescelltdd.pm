@@ -31,7 +31,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'add-extra-attrs' => { name => 'add_extra_attrs' }
+        'add-extra-attrs'  => { name => 'add_extra_attrs' },
+        'filter-node-id:s' => { name => 'filter_node_id' }
     });
 
     return $self;
@@ -48,6 +49,9 @@ sub manage_selection {
     my $cells = $options{custom}->call_EUtranCellTDD();
     my $results = [];
     foreach my $cell (@$cells) {
+        next if (defined($self->{option_results}->{filter_node_id}) && $self->{option_results}->{filter_node_id} ne '' &&
+            $cell->{NodeId} !~ /$self->{option_results}->{filter_node_id}/);
+
         my $attr = { node_id => $cell->{NodeId}, cell_tdd_id => $cell->{EUtranCellTDDId} };
         if (defined($self->{option_results}->{add_extra_attrs})) {
             $attr->{label} = defined($cell->{userLabel}) && $cell->{userLabel} ne 'null' ? $cell->{userLabel} : '';
@@ -116,6 +120,10 @@ __END__
 List nodes cells tdd.
 
 =over 8
+
+=item B<--filter-node-id>
+
+Filter tdd cells by node id (can be a regexp).
 
 =item B<--add-extra-attrs>
 
