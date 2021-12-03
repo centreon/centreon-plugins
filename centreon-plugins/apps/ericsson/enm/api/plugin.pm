@@ -33,6 +33,7 @@ sub new {
     $self->{modes} = {
         'cache'              => 'apps::ericsson::enm::api::mode::cache',
         'discovery'          => 'apps::ericsson::enm::api::mode::discovery',
+        'list-nodes'         => 'apps::ericsson::enm::api::mode::listnodes',
         'list-nodes-celltdd' => 'apps::ericsson::enm::api::mode::listnodescelltdd',
         'list-nodes-fru'     => 'apps::ericsson::enm::api::mode::listnodesfru',
         'nodes'              => 'apps::ericsson::enm::api::mode::nodes'
