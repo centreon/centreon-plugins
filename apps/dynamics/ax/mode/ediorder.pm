@@ -60,16 +60,15 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "timeframe:s"             => { name => 'timeframe', default => '14400' },
-                                  "filter-module:s"         => { name => 'filter_module' },
-                                  "filter-company:s"        => { name => 'filter_company' },
-                                  "filter-portname:s"       => { name => 'filter_portname' }
-                                });
+
+    $options{options}->add_options(arguments => { 
+        'timeframe:s'       => { name => 'timeframe', default => 14400 },
+        'filter-module:s'   => { name => 'filter_module' },
+        'filter-company:s'  => { name => 'filter_company' },
+        'filter-portname:s' => { name => 'filter_portname' }
+    });
 
     return $self;
 }
@@ -80,29 +79,30 @@ sub manage_selection {
     # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
-    my $query = " SELECT
-                   [AIFEXCEPTIONMAP].[MESSAGEID],
-                   [SYSEXCEPTIONTABLE].[EXCEPTION],
-                   [SYSEXCEPTIONTABLE].[DESCRIPTION],
-                   [SYSEXCEPTIONTABLE].[MODULE],
-                   convert(char(19), [SYSEXCEPTIONTABLE].[CREATEDDATETIME], 120) CREATEDDATETIME,
-                   [AIFEXCEPTIONMAP].[PORTNAME],
-                   [AIFMESSAGELOG].[COMPANY]
-               FROM [MicrosoftDynamicsAX].[dbo].[SYSEXCEPTIONTABLE]
-                   Inner join [MicrosoftDynamicsAX].[dbo].[AIFEXCEPTIONMAP] on SYSEXCEPTIONTABLE.RECID = AIFEXCEPTIONMAP.EXCEPTIONID
-                   Inner join [MicrosoftDynamicsAX].[dbo].[AIFDOCUMENTLOG] on AIFEXCEPTIONMAP.MESSAGEID = AIFDOCUMENTLOG.MESSAGEID
-                   Inner join [MicrosoftDynamicsAX].[dbo].[AIFMESSAGELOG] on AIFDOCUMENTLOG.MESSAGEID = AIFMESSAGELOG.MESSAGEID
-               WHERE [SYSEXCEPTIONTABLE].[CREATEDDATETIME] > (DATEADD(SECOND,-" . $self->{option_results}->{timeframe} . ",SYSDATETIME()))";
+    my $query = "
+        SELECT
+            [AIFEXCEPTIONMAP].[MESSAGEID],
+            [SYSEXCEPTIONTABLE].[EXCEPTION],
+            [SYSEXCEPTIONTABLE].[DESCRIPTION],
+            [SYSEXCEPTIONTABLE].[MODULE],
+            convert(char(19), [SYSEXCEPTIONTABLE].[CREATEDDATETIME], 120) CREATEDDATETIME,
+            [AIFEXCEPTIONMAP].[PORTNAME],
+            [AIFMESSAGELOG].[COMPANY]
+        FROM [MicrosoftDynamicsAX].[dbo].[SYSEXCEPTIONTABLE]
+            Inner join [MicrosoftDynamicsAX].[dbo].[AIFEXCEPTIONMAP] on SYSEXCEPTIONTABLE.RECID = AIFEXCEPTIONMAP.EXCEPTIONID
+            Inner join [MicrosoftDynamicsAX].[dbo].[AIFDOCUMENTLOG] on AIFEXCEPTIONMAP.MESSAGEID = AIFDOCUMENTLOG.MESSAGEID
+            Inner join [MicrosoftDynamicsAX].[dbo].[AIFMESSAGELOG] on AIFDOCUMENTLOG.MESSAGEID = AIFMESSAGELOG.MESSAGEID
+        WHERE [SYSEXCEPTIONTABLE].[CREATEDDATETIME] > (DATEADD(SECOND,-" . $self->{option_results}->{timeframe} . ",SYSDATETIME()))";
 
-      if(defined($self->{option_results}->{filter_module}) && $self->{option_results}->{filter_module} ne '') {
-          $query = $query . " AND [SYSEXCEPTIONTABLE].[MODULE] LIKE '$self->{option_results}->{filter_module}'";
-      }
-      if(defined($self->{option_results}->{filter_company}) && $self->{option_results}->{filter_company} ne '') {
-          $query = $query . " AND [AIFMESSAGELOG].[COMPANY] LIKE '$self->{option_results}->{filter_company}'";
-      }
-      if(defined($self->{option_results}->{filter_portname}) && $self->{option_results}->{filter_portname} ne '') {
-          $query = $query . " AND [AIFEXCEPTIONMAP].[PORTNAME] LIKE '$self->{option_results}->{filter_portname}'";
-      }
+    if(defined($self->{option_results}->{filter_module}) && $self->{option_results}->{filter_module} ne '') {
+        $query = $query . " AND [SYSEXCEPTIONTABLE].[MODULE] LIKE '$self->{option_results}->{filter_module}'";
+    }
+    if(defined($self->{option_results}->{filter_company}) && $self->{option_results}->{filter_company} ne '') {
+        $query = $query . " AND [AIFMESSAGELOG].[COMPANY] LIKE '$self->{option_results}->{filter_company}'";
+    }
+    if(defined($self->{option_results}->{filter_portname}) && $self->{option_results}->{filter_portname} ne '') {
+        $query = $query . " AND [AIFEXCEPTIONMAP].[PORTNAME] LIKE '$self->{option_results}->{filter_portname}'";
+    }
     $query = $query . " ORDER BY [AIFEXCEPTIONMAP].[MESSAGEID] ";
     $self->{sql}->connect();
     $self->{sql}->query(query => $query );
@@ -161,6 +161,7 @@ Thresholds.
 Can be: 'order-critical', 'order-warning'.
 
 =item B<--timeframe>
+
 Set the timeframe to query in seconds (Default: 14400).
 
 =item B<--filter-module>
