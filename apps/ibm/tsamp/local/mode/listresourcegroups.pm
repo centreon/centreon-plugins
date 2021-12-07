@@ -49,7 +49,7 @@ sub manage_selection {
     );
 
     my $rg = [];
-    while ($stdout =~ /^(.*)\s+IBM.ResourceGroup:(.*?)\s+.*?Nominal=(.*)\s*$/mig) {
+    while ($stdout =~ /^(\S.*)\s+IBM.ResourceGroup:(.*?)\s+.*?Nominal=(.*)\s*$/mig) {
         my ($name, $opState, $nominalState) = ($2, lc($1), lc($3));
         
         push @$rg, { name => $name, state => $opState, nominal => $nominalState };
