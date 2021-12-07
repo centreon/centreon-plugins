@@ -120,7 +120,7 @@ sub manage_selection {
     };
 
     $self->{rg} = {};
-    while ($stdout =~ /^(.*)\s+IBM.ResourceGroup:(.*?)\s+.*?Nominal=(.*)\s*$/mig) {
+    while ($stdout =~ /^(\S.*)\s+IBM.ResourceGroup:(.*?)\s+.*?Nominal=(.*)\s*$/mig) {
         my ($name, $opState, $nominalState) = ($2, lc($1), lc($3));
         if (defined($self->{option_results}->{filter_rg_name}) && $self->{option_results}->{filter_rg_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_rg_name}/) {
