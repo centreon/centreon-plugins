@@ -66,7 +66,7 @@ sub manage_selection {
     my $oid_advaInventoryEntry = '.1.3.6.1.4.1.2544.1.11.7.10.1.1';
     my $snmp_result = $self->{snmp}->get_table(
         oid => $oid_advaInventoryEntry, 
-        begin => $mapping->{advaInventoryAidString}->{oid}, 
+        start => $mapping->{advaInventoryAidString}->{oid}, 
         end => $mapping->{advaInventoryUnitName}->{oid}
     );
     

@@ -33,7 +33,7 @@ my $oid_scEnclFanEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.20.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_scEnclFanEntry, begin => $mapping->{scEnclFanStatus}->{oid}, end => $mapping->{scEnclFanLocation}->{oid} };
+    push @{$self->{request}}, { oid => $oid_scEnclFanEntry, start => $mapping->{scEnclFanStatus}->{oid}, end => $mapping->{scEnclFanLocation}->{oid} };
 }
 
 sub check {
