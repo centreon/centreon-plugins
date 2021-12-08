@@ -33,7 +33,7 @@ my $oid_scVolumeEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.26.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_scVolumeEntry, begin => $mapping->{scVolumeStatus}->{oid}, end => $mapping->{scVolumeName}->{oid} };
+    push @{$self->{request}}, { oid => $oid_scVolumeEntry, start => $mapping->{scVolumeStatus}->{oid}, end => $mapping->{scVolumeName}->{oid} };
 }
 
 sub check {

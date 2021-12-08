@@ -55,7 +55,7 @@ my $oid_enclEntry = '.1.3.6.1.4.1.789.1.21.1.2.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_enclEntry, begin => $mapping->{enclTempSensorsPresent}->{oid}, end => $mapping->{enclTempSensorsUnderTempWarnThr}->{oid} };
+    push @{$self->{request}}, { oid => $oid_enclEntry, start => $mapping->{enclTempSensorsPresent}->{oid}, end => $mapping->{enclTempSensorsUnderTempWarnThr}->{oid} };
 }
 
 sub check {

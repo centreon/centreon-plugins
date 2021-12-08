@@ -42,7 +42,7 @@ my $oid_boxServicesFansEntry = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.6.1'
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_boxServicesFansEntry, begin => $mapping->{boxServicesFanItemState}->{oid} };
+    push @{$self->{request}}, { oid => $oid_boxServicesFansEntry, start => $mapping->{boxServicesFanItemState}->{oid} };
 }
 
 sub check {

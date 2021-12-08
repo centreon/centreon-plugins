@@ -33,7 +33,7 @@ my $oid_scCacheEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.28.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_scCacheEntry, begin => $mapping->{scCacheStatus}->{oid}, end => $mapping->{scCacheName}->{oid} };
+    push @{$self->{request}}, { oid => $oid_scCacheEntry, start => $mapping->{scCacheStatus}->{oid}, end => $mapping->{scCacheName}->{oid} };
 }
 
 sub check {
