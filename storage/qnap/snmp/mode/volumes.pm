@@ -131,7 +131,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'   => { name => 'filter_name' }
+        'filter-name:s'          => { name => 'filter_name' },
+         'force-counters-legacy' => { name => 'force_counters_legacy' }
     });
 
     return $self;
@@ -228,15 +229,18 @@ sub manage_selection {
 
     $self->{volumes} = {};
 
-    my $snmp_result = $options{snmp}->get_table(
-        oid => '.1.3.6.1.4.1.55062.1.10.9' # volumeTable
-    );
-    return if ($self->check_volumes(snmp => $options{snmp}, type => 'qts', snmp_result => $snmp_result));
+    my $snmp_result;
+    if (!defined($self->{option_results}->{force_counters_legacy})) {
+        $snmp_result = $options{snmp}->get_table(
+            oid => '.1.3.6.1.4.1.55062.1.10.9' # volumeTable
+        );
+        return if ($self->check_volumes(snmp => $options{snmp}, type => 'qts', snmp_result => $snmp_result));
 
-    $snmp_result = $options{snmp}->get_table(
-        oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.2.3.2' # volumeTable
-    );
-    return if ($self->check_volumes(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result));
+        $snmp_result = $options{snmp}->get_table(
+            oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.2.3.2' # volumeTable
+        );
+        return if ($self->check_volumes(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result));
+    }
 
     $snmp_result = $options{snmp}->get_table(
         oid => '.1.3.6.1.4.1.24681.1.2.17', # systemVolumeTable
@@ -258,6 +262,10 @@ Check volumes.
 =item B<--filter-name>
 
 Filter volumes by name (can be a regexp).
+
+=item B<--force-counters-legacy>
+
+Force to use legacy counters. Should be used when EX/QTS counters are buggy.
 
 =item B<--unknown-volume-status>
 
