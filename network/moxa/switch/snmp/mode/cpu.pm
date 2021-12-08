@@ -25,101 +25,101 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+    
+    return 'cpu average usage: ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'cpu', type => 0, cb_prefix_output => 'prefix_cpu_output' }
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_cpu_output' }
     ];
     
-    $self->{maps_counters}->{cpu} = [
-        { label => '5s', set => {
-                key_values => [ { name => 'cpuLoading5s' } ],
-                output_template => '5 seconds : %.2f %%',
+    $self->{maps_counters}->{global} = [
+        { label => 'cpu-utilization-5s', nlabel => 'cpu.utilization.5s.percentage', set => {
+                key_values => [ { name => 'cpu_load5s' } ],
+                output_template => '%.2f %% (5s)',
                 perfdatas => [
-                    { label => 'cpu_5s', value => 'cpuLoading5s', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100 }
+                ]
             }
         },
-        { label => '30s', set => {
-                key_values => [ { name => 'cpuLoading30s' } ],
-                output_template => '30 seconds : %.2f %%',
+        { label => 'cpu-utilization-1m', nlabel => 'cpu.utilization.1m.percentage', set => {
+                key_values => [ { name => 'cpu_load1m' } ],
+                output_template => '%.2f %% (1m)',
                 perfdatas => [
-                    { label => 'cpu_30s', value => 'cpuLoading30s', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100 }
+                ]
             }
         },
-        { label => '300s', set => {
-                key_values => [ { name => 'cpuLoading300s' } ],
-                output_template => '300 seconds : %.2f %%',
+        { label => 'cpu-utilization-5m', nlabel => 'cpu.utilization.5m.percentage', set => {
+                key_values => [ { name => 'cpu_load5m' } ],
+                output_template => '%.2f %% (5m)',
                 perfdatas => [
-                    { label => 'cpu_300s', value => 'cpuLoading300s', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100 }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_cpu_output {
-    my ($self, %options) = @_;
-    
-    return "CPU Usage ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { });
+
     return $self;
 }
 
-my $mappings = {
+my $mapping = {
     iks6726a    => {
-        cpuLoading5s        => { oid => '.1.3.6.1.4.1.8691.7.116.1.53' },
-        cpuLoading30s       => { oid => '.1.3.6.1.4.1.8691.7.116.1.54' },
-        cpuLoading300s      => { oid => '.1.3.6.1.4.1.8691.7.116.1.55' },
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.116.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.116.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.116.1.55' }
+    },
+    eds405a => {
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.6.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.6.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.6.1.55' }
     },
     edsp506e => {
-        cpuLoading5s        => { oid => '.1.3.6.1.4.1.8691.7.162.1.53' },
-        cpuLoading30s       => { oid => '.1.3.6.1.4.1.8691.7.162.1.54' },
-        cpuLoading300s      => { oid => '.1.3.6.1.4.1.8691.7.162.1.55' },
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.162.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.162.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.162.1.55' }
     },
     edsp506a => {
-        cpuLoading5s        => { oid => '.1.3.6.1.4.1.8691.7.41.1.53' },
-        cpuLoading30s       => { oid => '.1.3.6.1.4.1.8691.7.41.1.54' },
-        cpuLoading300s      => { oid => '.1.3.6.1.4.1.8691.7.41.1.55' },
-    },
-};
-
-my $oids = {
-    iks6726a => '.1.3.6.1.4.1.8691.7.116.1',
-    edsp506e => '.1.3.6.1.4.1.8691.7.162.1',
-    edsp506a => '.1.3.6.1.4.1.8691.7.41.1',
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.41.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.41.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.41.1.55' }
+    }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ { oid => $oids->{iks6726a}, start => $mappings->{iks6726a}->{cpuLoading5s}->{oid}, end => $mappings->{iks6726a}->{cpuLoading300s}->{oid} },
-                                                                   { oid => $oids->{edsp506e}, start => $mappings->{edsp506e}->{cpuLoading5s}->{oid}, end => $mappings->{edsp506e}->{cpuLoading300s}->{oid} },
-                                                                   { oid => $oids->{edsp506a}, start => $mappings->{edsp506a}->{cpuLoading5s}->{oid}, end => $mappings->{edsp506a}->{cpuLoading300s}->{oid} } ]);
 
-    foreach my $equipment (keys %{$oids}) {
-        next if (!%{$snmp_result->{$oids->{$equipment}}});
-        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment}, results => $snmp_result->{$oids->{$equipment}}, instance => 0);
-        $self->{cpu} = { 
-            cpuLoading5s => $result->{cpuLoading5s},
-            cpuLoading30s => $result->{cpuLoading30s},
-            cpuLoading300s => $result->{cpuLoading300s},
-        };
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            map(
+                $_->{oid} . '.0',
+                values(%{$mapping->{iks6726a}}),
+                values(%{$mapping->{eds405a}}),
+                values(%{$mapping->{edsp506e}}),
+                values(%{$mapping->{edsp506a}})
+            )
+        ],
+        nothing_quit => 1
+    );
+
+    foreach (keys %$mapping) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$_}, results => $snmp_result, instance => 0);
+        next if (!defined($result->{cpu_load5m}));
+        $self->{global} = $result;
+        last;
     }
 }
 
@@ -136,17 +136,12 @@ Check CPU usage
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^(30s|300s)$'
+Example: --filter-counters='1m|5m'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: '5s', '30s', '300s'
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: '5s', '30s', '300s'
+Thresholds.
+Can be: 'cpu-utilization-1s', 'cpu-utilization-1m', 'cpu-utilization-5m'.
 
 =back
 
