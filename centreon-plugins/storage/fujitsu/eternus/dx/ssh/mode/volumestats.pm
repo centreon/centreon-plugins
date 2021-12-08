@@ -26,6 +26,12 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+sub prefix_volume_output {
+    my ($self, %options) = @_;
+    
+    return "Volume '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -38,45 +44,45 @@ sub set_counters {
                 key_values => [ { name => 'read_iops' }, { name => 'display' } ],
                 output_template => 'Read IOPS : %d',
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'read_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-iops', nlabel => 'volume.io.write.usage.iops', set => {
                 key_values => [ { name => 'write_iops' }, { name => 'display' } ],
                 output_template => 'Write IOPS : %d',
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_iops', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'write_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'read-traffic', nlabel => 'volume.traffic.read.usage.bitspersecond', set => {
                 key_values => [ { name => 'read_throughput' }, { name => 'display' } ],
                 output_template => 'Read Traffic : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'read_throughput', value => 'read_throughput', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'read_throughput', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-traffic', nlabel => 'volume.traffic.write.usage.bitspersecond', set => {
                 key_values => [ { name => 'write_throughput' }, { name => 'display' } ],
                 output_template => 'Write Traffic : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'write_throughput', value => 'write_throughput', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'write_throughput', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'read-response-time', nlabel => 'volume.io.read.time.response.milliseconds', set => {
                 key_values => [ { name => 'read_response_time' }, { name => 'display' } ],
                 output_template => 'Read Response Time : %d ms',
                 perfdatas => [
-                    { label => 'read_response_time', value => 'read_response_time', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'read_response_time', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-response-time', nlabel => 'volume.io.write.time.response.milliseconds', set => {
@@ -92,45 +98,39 @@ sub set_counters {
                 key_values => [ { name => 'read_processing_time' }, { name => 'display' } ],
                 output_template => 'Read Processing Time : %d ms',
                 perfdatas => [
-                    { label => 'read_processing_time', value => 'read_processing_time', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'read_processing_time', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-processing-time', nlabel => 'volume.io.write.time.processing.milliseconds', set => {
                 key_values => [ { name => 'write_processing_time' }, { name => 'display' } ],
                 output_template => 'Write Processing Time : %d ms',
                 perfdatas => [
-                    { label => 'write_processing_time', value => 'write_processing_time', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'write_processing_time', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'read-cache-hit-rate', nlabel => 'volume.io.read.cache.hits.percentage', set => {
                 key_values => [ { name => 'read_cache_hit_rate' }, { name => 'display' } ],
                 output_template => 'Read Cache Hit Rate : %d %%',
                 perfdatas => [
-                    { label => 'read_cache_hit_rate', value => 'read_cache_hit_rate', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'read_cache_hit_rate', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-cache-hit-rate', nlabel => 'volume.io.write.cache.hits.percentage', set => {
                 key_values => [ { name => 'write_cache_hit_rate' }, { name => 'display' } ],
                 output_template => 'Write Cache Hit Rate : %d %%',
                 perfdatas => [
-                    { label => 'write_cache_hit_rate', value => 'write_cache_hit_rate', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'write_cache_hit_rate', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_volume_output {
-    my ($self, %options) = @_;
-    
-    return "Volume '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -139,15 +139,15 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "hostname:s"              => { name => 'hostname' },
-        "ssh-option:s@"           => { name => 'ssh_option' },
-        "ssh-path:s"              => { name => 'ssh_path' },
-        "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"               => { name => 'timeout', default => 30 },
-        "command:s"               => { name => 'command', default => 'show' },
-        "command-path:s"          => { name => 'command_path' },
-        "command-options:s"       => { name => 'command_options', default => ' performance -type host-io' },
-        "filter-name:s"           => { name => 'filter_name' },
+        'hostname:s'        => { name => 'hostname' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'command:s'         => { name => 'command', default => 'show' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => ' performance -type host-io' },
+        'filter-name:s'     => { name => 'filter_name' }
     });
 
     return $self;
@@ -173,7 +173,7 @@ sub manage_selection {
         command_path => $self->{option_results}->{command_path},
         command_options => $self->{option_results}->{command_options}
     );
-    
+
     #Volume                                 IOPS(IOPS)            Throughput(MB/s)      Response Time(msec.)   Processing Time(msec.)  Cache Hit Rate(%)
     #No.   Name                             Read     / Write      Read     / Write      Read     / Write       Read     / Write        Read     / Write    / Prefetch
     #----- -------------------------------- ---------- ---------- ---------- ---------- ---------- ----------  ---------- ----------   ---------- ---------- ----------
@@ -202,11 +202,13 @@ sub manage_selection {
         }
         next if (/----|Name/i);
         my $value = centreon::plugins::misc::trim($_);
-        my @matches = split /\s+/, $value;
-            
+        my @matches = split(/\s+/, $value);
+
+        next if (!defined($matches[1]));
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $matches[1] !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $matches[1] . "': no matching filter name.");
+            $self->{output}->output_add(long_msg => "Skipping  '" . $matches[1] . "': no matching filter name.", debug => 1);
             next;
         }
         
