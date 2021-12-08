@@ -94,6 +94,8 @@ sub connect {
         $self->{output}->add_option_msg(short_msg => sprintf("auth issue: %s", defined($msg_error) && $msg_error ne '' ? $msg_error : 'pubkey issue'));
         $self->{output}->option_exit();
     }
+
+    $self->{connected} = 1;
 }
 
 sub execute {
