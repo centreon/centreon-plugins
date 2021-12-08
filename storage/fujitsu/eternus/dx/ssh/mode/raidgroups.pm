@@ -100,7 +100,7 @@ sub set_counters {
                 output_template => 'Status : %s', output_error_template => 'Status : %s',
                 output_use => 'status',
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => $self->can('custom_threshold_output')
             }
         },
         { label => 'usage', nlabel => 'raidgroup.space.usage.bytes', set => {
@@ -108,9 +108,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 }
 
