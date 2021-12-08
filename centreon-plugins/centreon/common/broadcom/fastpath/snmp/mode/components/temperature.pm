@@ -37,7 +37,7 @@ my $oid_boxServicesTempSensorsEntry = '.1.3.6.1.4.1.4413.1.1.43.1.8.1';
 sub load {
     my ($self) = @_;
 
-    push @{$self->{request}}, { oid => $oid_boxServicesTempSensorsEntry, begin => $mapping->{boxServicesTempSensorState}->{oid}, end => $mapping->{boxServicesTempSensorTemperature}->{oid} };
+    push @{$self->{request}}, { oid => $oid_boxServicesTempSensorsEntry, start => $mapping->{boxServicesTempSensorState}->{oid}, end => $mapping->{boxServicesTempSensorTemperature}->{oid} };
 }
 
 sub check {

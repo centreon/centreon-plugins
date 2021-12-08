@@ -33,7 +33,7 @@ my $oid_scDiskEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.14.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_scDiskEntry, begin => $mapping->{scDiskStatus}->{oid}, end => $mapping->{scDiskNamePosition}->{oid} };
+    push @{$self->{request}}, { oid => $oid_scDiskEntry, start => $mapping->{scDiskStatus}->{oid}, end => $mapping->{scDiskNamePosition}->{oid} };
 }
 
 sub check {

@@ -55,7 +55,7 @@ my $oid_enclTable = '.1.3.6.1.4.1.789.1.21.1.2';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_enclTable, begin => $mapping->{enclVoltSensorsPresent}->{oid}, end => $mapping->{enclVoltSensorsUnderVoltWarnThr}->{oid} };
+    push @{$self->{request}}, { oid => $oid_enclTable, start => $mapping->{enclVoltSensorsPresent}->{oid}, end => $mapping->{enclVoltSensorsUnderVoltWarnThr}->{oid} };
 }
 
 sub check {

@@ -33,7 +33,7 @@ my $oid_scEnclEntry = '.1.3.6.1.4.1.674.11000.2000.500.1.2.15.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_scEnclEntry, begin => $mapping->{scEnclStatus}->{oid}, end => $mapping->{scEnclName}->{oid} };
+    push @{$self->{request}}, { oid => $oid_scEnclEntry, start => $mapping->{scEnclStatus}->{oid}, end => $mapping->{scEnclName}->{oid} };
 }
 
 sub check {

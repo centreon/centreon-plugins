@@ -41,7 +41,7 @@ my $oid_boxServicesPowSuppliesEntry = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_boxServicesPowSuppliesEntry, begin => $mapping->{boxServicesPowSupplyItemState}->{oid} };
+    push @{$self->{request}}, { oid => $oid_boxServicesPowSuppliesEntry, start => $mapping->{boxServicesPowSupplyItemState}->{oid} };
 }
 
 sub check {
