@@ -59,7 +59,7 @@ sub set_system {
     };
 
     $self->{components_path} = 'storage::nimble::restapi::mode::components';
-    $self->{components_module} = ['disk', 'fan', 'temperature', 'psu'];
+    $self->{components_module} = ['disk', 'fan', 'psu', 'temperature'];
 }
 
 sub new {

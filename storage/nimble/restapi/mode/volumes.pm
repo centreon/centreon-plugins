@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -50,11 +50,16 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{volumes} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2,
+            warning_default => '%{space_usage_level} =~ /warning/',
+            critical_default => '%{state} !~ /online/i || %{space_usage_level} =~ /critical/',
+            set => {
                 key_values => [ { name => 'state' }, { name => 'space_usage_level' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'space-usage', nlabel => 'volume.space.usage.bytes', set => {
@@ -102,17 +107,17 @@ sub set_counters {
         },
         { label => 'read-latency', nlabel => 'volume.io.read.latency.milliseconds', set => {
                 key_values => [ { name => 'read_latency' } ],
-                output_template => 'read latency: %s ms',
+                output_template => 'read latency: %.3f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                    { template => '%.3f', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'write-latency', nlabel => 'volume.io.write.latency.milliseconds', set => {
                 key_values => [ { name => 'write_latency' } ],
-                output_template => 'write latency: %s ms',
+                output_template => 'write latency: %.3f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                    { template => '%.3f', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -125,20 +130,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{space_usage_level} =~ /warning/' },
-        'critical-status:s' => { name => 'critical_status', default => '%{state} !~ /online/i || %{space_usage_level} =~ /critical/' }
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 sub manage_selection {
@@ -163,13 +158,13 @@ sub manage_selection {
             write => $_->{avg_stats_last_5mins}->{write_throughput},
             read_iops => $_->{avg_stats_last_5mins}->{read_iops},
             write_iops => $_->{avg_stats_last_5mins}->{write_iops},
-            read_latency => $_->{avg_stats_last_5mins}->{read_latency},
-            write_latency => $_->{avg_stats_last_5mins}->{write_latency}
+            read_latency => $_->{avg_stats_last_5mins}->{read_latency} / 1000,
+            write_latency => $_->{avg_stats_last_5mins}->{write_latency} / 1000
         };
     }
     
     if (scalar(keys %{$self->{volumes}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No volumes found");
+        $self->{output}->add_option_msg(short_msg => 'No volumes found');
         $self->{output}->option_exit();
     }
 }
