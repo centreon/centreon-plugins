@@ -38,38 +38,38 @@ sub set_counters {
                 key_values => [ { name => 'read_iops' }, { name => 'display' } ],
                 output_template => 'Read IOPS : %d',
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'read_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-iops', nlabel => 'port.io.write.usage.iops', set => {
                 key_values => [ { name => 'write_iops' }, { name => 'display' } ],
                 output_template => 'Write IOPS : %d',
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_iops', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'write_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'read-traffic', nlabel => 'port.traffic.read.usage.bitspersecond', set => {
                 key_values => [ { name => 'read_traffic' }, { name => 'display' } ],
                 output_template => 'Read Traffic : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'read_traffic', value => 'read_traffic', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'read_traffic', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-traffic', nlabel => 'port.traffic.write.usage.bitspersecond', set => {
                 key_values => [ { name => 'write_traffic' }, { name => 'display' } ],
                 output_template => 'Write Traffic : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'write_traffic', value => 'write_traffic', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'write_traffic', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -130,7 +130,7 @@ sub manage_selection {
     foreach (split /\n/, $stdout) {
         next if ($_ !~ /^(.*?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/);
         my ($port_name, $port_read_iops, $port_write_iops, $port_read_traffic, $port_write_traffic) = ($1, $2, $3, $4, $5);
-            
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $port_name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $port_name . "': no matching filter name.");

@@ -26,6 +26,12 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+    
+    return "CPU '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -38,18 +44,12 @@ sub set_counters {
                 key_values => [ { name => 'usage' }, { name => 'display' } ],
                 output_template => 'Usage : %d %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'usage', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_cpu_output {
-    my ($self, %options) = @_;
-    
-    return "CPU '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {

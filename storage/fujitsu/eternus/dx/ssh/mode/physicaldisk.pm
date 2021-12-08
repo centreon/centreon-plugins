@@ -41,7 +41,7 @@ my $thresholds = {
         ['Not Available', 'CRITICAL'],
         ['Broken', 'CRITICAL'],
         ['Not Exist', 'CRITICAL'],
-        ['Unknown', 'UNKNOWN'],
+        ['Unknown', 'UNKNOWN']
     ],
 };
 
@@ -50,20 +50,20 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"              => { name => 'hostname' },
-                                  "ssh-option:s@"           => { name => 'ssh_option' },
-                                  "ssh-path:s"              => { name => 'ssh_path' },
-                                  "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"               => { name => 'timeout', default => 30 },
-                                  "command:s"               => { name => 'command', default => 'show' },
-                                  "command-path:s"          => { name => 'command_path' },
-                                  "command-options:s"       => { name => 'command_options', default => 'disks' },
-                                  "filter:s@"               => { name => 'filter' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                  "no-component:s"          => { name => 'no_component' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "hostname:s"              => { name => 'hostname' },
+        "ssh-option:s@"           => { name => 'ssh_option' },
+        "ssh-path:s"              => { name => 'ssh_path' },
+        "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"               => { name => 'timeout', default => 30 },
+        "command:s"               => { name => 'command', default => 'show' },
+        "command-path:s"          => { name => 'command_path' },
+        "command-options:s"       => { name => 'command_options', default => 'disks' },
+        "filter:s@"               => { name => 'filter' },
+        "threshold-overload:s@"   => { name => 'threshold_overload' },
+        "no-component:s"          => { name => 'no_component' }
+    });
+
     $self->{no_components} = undef;
     return $self;
 }
