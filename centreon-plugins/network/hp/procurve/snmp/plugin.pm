@@ -33,7 +33,7 @@ sub new {
     $self->{modes} = {
         'cpu'              => 'network::hp::procurve::snmp::mode::cpu',
         'environment'      => 'network::hp::procurve::snmp::mode::environment',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'interfaces'       => 'network::hp::procurve::snmp::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'network::hp::procurve::snmp::mode::memory',
         'virtual-chassis'  => 'network::hp::procurve::snmp::mode::virtualchassis'
