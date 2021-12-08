@@ -131,8 +131,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'          => { name => 'filter_name' },
-         'force-counters-legacy' => { name => 'force_counters_legacy' }
+        'filter-name:s'         => { name => 'filter_name' },
+        'force-counters-legacy' => { name => 'force_counters_legacy' }
     });
 
     return $self;
