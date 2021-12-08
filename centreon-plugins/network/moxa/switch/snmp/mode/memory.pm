@@ -25,94 +25,111 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub custom_usage_output {
+sub custom_memory_usage_output {
     my ($self, %options) = @_;
-    
+
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    
-    my $msg = sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                      $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used});
-    return $msg;
+    return sprintf(
+        "memory usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'memory', type => 0 },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
-    
-    $self->{maps_counters}->{memory} = [
-        { label => 'usage', set => {
-                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'total' }, { name => 'prct_used' }  ],
-                closure_custom_output => $self->can('custom_usage_output'),
-                threshold_use => 'prct_used',
+
+    $self->{maps_counters}->{global} = [
+        { label => 'memory-usage', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_memory_usage_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used', template => '%.2f',
-                      threshold_total => 'total', cast_int => 1,
-                      min => 0, max => 'total', unit => 'B' },
-                ],
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
             }
         },
+        { label => 'memory-usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_memory_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
+            }
+        },
+        { label => 'memory-usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'free' }, { name => 'used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_memory_usage_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
-my $mappings = {
-    iks6726a    => {
-        totalMemory     => { oid => '.1.3.6.1.4.1.8691.7.116.1.56' },
-        freeMemory      => { oid => '.1.3.6.1.4.1.8691.7.116.1.57' },
-        usedMemory      => { oid => '.1.3.6.1.4.1.8691.7.116.1.58' },
+my $mapping = {
+    iks6726a => {
+        total => { oid => '.1.3.6.1.4.1.8691.7.116.1.56' },
+        free  => { oid => '.1.3.6.1.4.1.8691.7.116.1.57' },
+        used  => { oid => '.1.3.6.1.4.1.8691.7.116.1.58' }
+    },
+    eds405a => {
+        total => { oid => '.1.3.6.1.4.1.8691.7.6.1.56' },
+        free  => { oid => '.1.3.6.1.4.1.8691.7.6.1.57' },
+        used  => { oid => '.1.3.6.1.4.1.8691.7.6.1.58' }
     },
     edsp506e => {
-        totalMemory     => { oid => '.1.3.6.1.4.1.8691.7.162.1.56' },
-        freeMemory      => { oid => '.1.3.6.1.4.1.8691.7.162.1.57' },
-        usedMemory      => { oid => '.1.3.6.1.4.1.8691.7.162.1.58' },
+        total => { oid => '.1.3.6.1.4.1.8691.7.162.1.56' },
+        free  => { oid => '.1.3.6.1.4.1.8691.7.162.1.57' },
+        used  => { oid => '.1.3.6.1.4.1.8691.7.162.1.58' }
     },
     edsp506a => {
-        totalMemory     => { oid => '.1.3.6.1.4.1.8691.7.41.1.56' },
-        freeMemory      => { oid => '.1.3.6.1.4.1.8691.7.41.1.57' },
-        usedMemory      => { oid => '.1.3.6.1.4.1.8691.7.41.1.58' },
-    },
-};
-
-my $oids = {
-    iks6726a => '.1.3.6.1.4.1.8691.7.116.1',
-    edsp506e => '.1.3.6.1.4.1.8691.7.162.1',
-    edsp506a => '.1.3.6.1.4.1.8691.7.41.1',
+        total => { oid => '.1.3.6.1.4.1.8691.7.41.1.56' },
+        free  => { oid => '.1.3.6.1.4.1.8691.7.41.1.57' },
+        used  => { oid => '.1.3.6.1.4.1.8691.7.41.1.58' }
+    }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
    
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ { oid => $oids->{iks6726a}, start => $mappings->{iks6726a}->{totalMemory}->{oid}, end => $mappings->{iks6726a}->{usedMemory}->{oid} },
-                                                                   { oid => $oids->{edsp506e}, start => $mappings->{edsp506e}->{totalMemory}->{oid}, end => $mappings->{edsp506e}->{usedMemory}->{oid} },
-                                                                   { oid => $oids->{edsp506a}, start => $mappings->{edsp506a}->{totalMemory}->{oid}, end => $mappings->{edsp506a}->{usedMemory}->{oid} } ]);
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            map(
+                $_->{oid} . '.0',
+                values(%{$mapping->{iks6726a}}),
+                values(%{$mapping->{eds405a}}),
+                values(%{$mapping->{edsp506e}}),
+                values(%{$mapping->{edsp506a}})
+            )
+        ],
+        nothing_quit => 1
+    );
 
-    foreach my $equipment (keys %{$oids}) {
-        next if (!%{$snmp_result->{$oids->{$equipment}}});
-        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment}, results => $snmp_result->{$oids->{$equipment}}, instance => 0);
-        $self->{memory} = { 
-            used => $result->{usedMemory},
-            free => $result->{freeMemory},
-            total => $result->{totalMemory},
-            prct_used => $result->{usedMemory} * 100 / $result->{totalMemory},
-        };
+    foreach (keys %$mapping) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$_}, results => $snmp_result, instance => 0);
+        next if (!defined($result->{total}));
+        $self->{global} = $result;
+        $self->{global}->{prct_used} = $result->{used} * 100 / $result->{total};
+        $self->{global}->{prct_free} = $result->{free} * 100 / $result->{total};
+        last;
     }
 }
 
@@ -126,18 +143,10 @@ Check memory usage
 
 =over 8
 
-=item B<--filter-counters>
+=item B<--warning-*> B<--critical-*>
 
-Only display some counters (regexp can be used).
-Example: --filter-counters='^(memory)$'
-
-=item B<--warning-usage>
-
-Threshold warning.
-
-=item B<--critical-usage>
-
-Threshold critical.
+Thresholds.
+Can be: 'memory-usage-prct', 'memory-usage', 'memory-usage-free',
 
 =back
 
