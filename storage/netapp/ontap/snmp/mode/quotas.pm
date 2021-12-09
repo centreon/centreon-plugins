@@ -31,20 +31,20 @@ sub prefix_quota_output {
     
     return sprintf(
         "Quota '%s%s%s%s' ",
-        $options{instance_value}->{vserver} ne '' ? $options{instance_value}->{vserver} . '/' : '',
-        $options{instance_value}->{volume},
-        $options{instance_value}->{qtree} ne '' ? '/' . $options{instance_value}->{qtree} : '',
-        $self->{duplicated}->{$options{instance_value}->{vserver} . $options{instance_value}->{volume} . $options{instance_value}->{qtree} } > 1 ? '/' . $options{instance_value}->{index} : ''
+        $options{instance_value}->{vserver} ne '' ? 'vserver:' . $options{instance_value}->{vserver} . ',' : '',
+        'volume:' . $options{instance_value}->{volume},
+        $options{instance_value}->{qtree} ne '' ? ',' . 'qtree:' . $options{instance_value}->{qtree} : '',
+        $self->{duplicated}->{$options{instance_value}->{vserver} . $options{instance_value}->{volume} . $options{instance_value}->{qtree} } > 1 ? ',index:' . $options{instance_value}->{index} : ''
     );
 }
 
 sub custom_space_usage_perfdata {
     my ($self, %options) = @_;
     
-    my $instances = [$self->{result_values}->{volume}];
-    unshift @$instances, $self->{result_values}->{vserver} if ($self->{result_values}->{vserver} ne '');
-    push @$instances, $self->{result_values}->{qtree} if ($self->{result_values}->{qtree} ne '');
-    push @$instances, $self->{result_values}->{index}
+    my $instances = ['volume:' . $self->{result_values}->{volume}];
+    unshift @$instances, 'vserver:' . $self->{result_values}->{vserver} if ($self->{result_values}->{vserver} ne '');
+    push @$instances, 'qtree:' . $self->{result_values}->{qtree} if ($self->{result_values}->{qtree} ne '');
+    push @$instances, 'index:' . $self->{result_values}->{index}
         if ($self->{instance_mode}->{duplicated}->{ $self->{result_values}->{vserver} . $self->{result_values}->{volume} . $self->{result_values}->{qtree} } > 1);
 
     my $warn_label = 'warning-'. $self->{thlabel};
@@ -67,10 +67,10 @@ sub custom_space_usage_perfdata {
 sub custom_space_usage_free_perfdata {
     my ($self, %options) = @_;
     
-    my $instances = [$self->{result_values}->{volume}];
-    unshift @$instances, $self->{result_values}->{vserver} if ($self->{result_values}->{vserver} ne '');
-    push @$instances, $self->{result_values}->{qtree} if ($self->{result_values}->{qtree} ne '');
-    push @$instances, $self->{result_values}->{index}
+    my $instances = ['volume:' . $self->{result_values}->{volume}];
+    unshift @$instances, 'vserver:' . $self->{result_values}->{vserver} if ($self->{result_values}->{vserver} ne '');
+    push @$instances, 'qtree:' . $self->{result_values}->{qtree} if ($self->{result_values}->{qtree} ne '');
+    push @$instances, 'index:' . $self->{result_values}->{index}
         if ($self->{instance_mode}->{duplicated}->{ $self->{result_values}->{vserver} . $self->{result_values}->{volume} . $self->{result_values}->{qtree} } > 1);
 
     $self->{output}->perfdata_add(
@@ -87,11 +87,11 @@ sub custom_space_usage_free_perfdata {
 
 sub custom_space_usage_prct_perfdata {
     my ($self, %options) = @_;
-    
-    my $instances = [$self->{result_values}->{volume}];
-    unshift @$instances, $self->{result_values}->{vserver} if ($self->{result_values}->{vserver} ne '');
-    push @$instances, $self->{result_values}->{qtree} if ($self->{result_values}->{qtree} ne '');
-    push @$instances, $self->{result_values}->{index}
+
+    my $instances = ['volume:' . $self->{result_values}->{volume}];
+    unshift @$instances, 'vserver:' . $self->{result_values}->{vserver} if ($self->{result_values}->{vserver} ne '');
+    push @$instances, 'qtree:' . $self->{result_values}->{qtree} if ($self->{result_values}->{qtree} ne '');
+    push @$instances, 'index:' . $self->{result_values}->{index}
         if ($self->{instance_mode}->{duplicated}->{ $self->{result_values}->{vserver} . $self->{result_values}->{volume} . $self->{result_values}->{qtree} } > 1);
 
     $self->{output}->perfdata_add(
@@ -331,6 +331,7 @@ sub manage_selection {
     $self->{duplicated} = {};
 
     my $infos = $self->get_informations(snmp => $options{snmp});
+    # theres are differents types: user, group and qtree
     $self->{quotas} = {};
     foreach my $oid (keys %$infos) {
         next if ($oid !~ /^$mapping_infos->{qtree}->{oid}\.(\d+)\.(\d+)$/);
