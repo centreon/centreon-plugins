@@ -87,7 +87,7 @@ sub custom_space_usage_free_perfdata {
 
 sub custom_space_usage_prct_perfdata {
     my ($self, %options) = @_;
-    
+
     my $instances = ['volume:' . $self->{result_values}->{volume}];
     unshift @$instances, 'vserver:' . $self->{result_values}->{vserver} if ($self->{result_values}->{vserver} ne '');
     push @$instances, 'qtree:' . $self->{result_values}->{qtree} if ($self->{result_values}->{qtree} ne '');
