@@ -50,7 +50,7 @@ sub new {
         'partnerstatus'      => 'storage::netapp::ontap::snmp::mode::partnerstatus',
         'plexes'             => 'storage::netapp::ontap::snmp::mode::plexes',
         'psu'                => 'storage::netapp::ontap::snmp::mode::psu',
-        'qtree-usage'        => 'storage::netapp::ontap::snmp::mode::qtreeusage',
+        'quotas'             => 'storage::netapp::ontap::snmp::mode::quotas',
         'share-calls'        => 'storage::netapp::ontap::snmp::mode::sharecalls',
         'shelf'              => 'storage::netapp::ontap::snmp::mode::shelf',
         'sis'                => 'storage::netapp::ontap::snmp::mode::sis',
