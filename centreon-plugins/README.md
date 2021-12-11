@@ -22,21 +22,21 @@ You can monitor many systems:
 
 ## Basic Usage
 
-We'll use a basic example to show you how to monitor a system. I have finished the install section and i want to monitor a Linux in SNMP.
-First, i need to find the plugin to use in the list:
+We'll use a basic example to show you how to monitor a system. I have finished the install section and I want to monitor a Linux in SNMP.
+First, I need to find the plugin to use in the list:
 
     $ perl centreon_plugins.pl --list-plugin | grep -i linux | grep 'PLUGIN'
     PLUGIN: os::linux::local::plugin
     PLUGIN: os::linux::snmp::plugin
 
-It seems that 'os::linux::snmp::plugin' is the good one. So i verify with the option ``--help`` to be sure:
+It seems that 'os::linux::snmp::plugin' is the good one. So I verify with the option ``--help`` to be sure:
 
     $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --help
     ...
     Plugin Description:
       Check Linux operating systems in SNMP.
 
-It's exactly what i need. Now i'll add the option ``--list-mode`` to know what can i do with it:
+It's exactly what I need. Now I'll add the option ``--list-mode`` to know what can I do with it:
 
     $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --list-mode
     ...
@@ -69,7 +69,7 @@ It's not working because some options are missing. I can have a description of t
 
     $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=load --help
 
-Eventually, i have to configure some SNMP options:
+Eventually, I have to configure some SNMP options:
 
     $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=load --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
     OK: Load average: 0.00, 0.00, 0.00 | 'load1'=0.00;;;0; 'load5'=0.00;;;0; 'load15'=0.00;;;0;
@@ -79,7 +79,7 @@ I can set threshold with options ``--warning`` and ``--critical``:
     $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=load --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --warning=1,2,3 --critical=2,3,4
     OK: Load average: 0.00, 0.00, 0.00 | 'load1'=0.00;0:1;0:2;0; 'load5'=0.00;0:2;0:3;0; 'load15'=0.00;0:3;0:4;0;
 
-For more information or help, please read 'doc/en/user/guide.rst'.
+For more information or help, please read ['doc/en/user/guide.rst'](./doc/en/user/guide.rst).
 
 <!-- URL AND IMAGES FOR SHIELDS -->
 [contributors-shield]: https://img.shields.io/github/contributors/centreon/centreon-plugins?color=%2384BD00&label=CONTRIBUTORS&style=for-the-badge
