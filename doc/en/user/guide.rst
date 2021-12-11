@@ -59,15 +59,15 @@ To use 'memcached' functionality, you need to install the following CPAN module 
 Basic Usage
 ***********
 
-We'll use a basic example to show you how to monitor a system. I have finished the install section and i want to monitor a Linux in SNMP.
-First, i need to find the plugin to use in the list:
+We'll use a basic example to show you how to monitor a system. I have finished the install section and I want to monitor a Linux in SNMP.
+First, I need to find the plugin to use in the list:
 ::
 
   $ perl centreon_plugins.pl --list-plugin | grep -i linux | grep 'PLUGIN'
   PLUGIN: os::linux::local::plugin
   PLUGIN: os::linux::snmp::plugin
 
-It seems that 'os::linux::snmp::plugin' is the good one. So i verify with the option ``--help`` to be sure:
+It seems that 'os::linux::snmp::plugin' is the good one. So I verify with the option ``--help`` to be sure:
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --help
@@ -75,7 +75,7 @@ It seems that 'os::linux::snmp::plugin' is the good one. So i verify with the op
   Plugin Description:
     Check Linux operating systems in SNMP.
 
-It's exactly what i need. Now i'll the option ``--list-mode`` to know what can i do with it:
+It's exactly what I need. Now I'll the option ``--list-mode`` to know what can I do with it:
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --list-mode
@@ -110,7 +110,7 @@ It's not working because some options are missing. I can have a description of t
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=load --help
 
-Eventually, i have to configure some SNMP options:
+Eventually, I have to configure some SNMP options:
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=load --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
@@ -127,7 +127,7 @@ FAQ
 ***
 
 --------------------
-What can i monitor ?
+What can I monitor ?
 --------------------
 
 The option ``--list-plugin`` can be used to get the list of plugins and a short description.
@@ -409,34 +409,34 @@ Headers of the table mean:
 +-------------+--------------------+-------+----------+---------+--------+--------+-------+-------+----------+--------------+-------------------------------------------------------------+------------------------------------------------------------------------+
 
 ----------------------------
-How can i remove perfdatas ?
+How can I remove perfdatas ?
 ----------------------------
 
-For example, i check TCP connections from a linux in SNMP with following command:
+For example, I check TCP connections from a linux in SNMP with following command:
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=tcpcon --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
   OK: Total connections: 1 | 'total'=1;;;0; 'con_closed'=0;;;0; 'con_closeWait'=0;;;0; '  con_synSent'=0;;;0; 'con_established'=1;;;0; 'con_timeWait'=0;;;0; 'con_lastAck'=0;;;0  ; 'con_listen'=5;;;0; 'con_synReceived'=0;;;0; 'con_finWait1'=0;;;0; 'con_finWait2'=0;  ;;0; 'con_closing'=0;;;0;
 
-There are too many perfdatas and i want to keep 'total' perfdata only. I use the option ``--filter-perfdata='total'``:
+There are too many perfdatas and I want to keep 'total' perfdata only. I use the option ``--filter-perfdata='total'``:
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=tcpcon --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --filter-perfdata='total'
   OK: Total connections: 1 | 'total'=1;;;0;
 
-I can use regexp in ``--filter-perfdata`` option. So, i can exclude perfdata beginning by 'total':
+I can use regexp in ``--filter-perfdata`` option. So, I can exclude perfdata beginning by 'total':
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=tcpcon --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --filter-perfdata='^(?!(total))'
   OK: Total connections: 1 | 'con_closed'=0;;;0; 'con_closeWait'=0;;;0; 'con_synSent'=0;;;0; 'con_established'=1;;;0; 'con_timeWait'=0;;;0; 'con_lastAck'=0;;;0; 'con_listen'=5;;;0; 'con_synReceived'=0;;;0; 'con_finWait1'=0;;;0; 'con_finWait2'=0;;;0; 'con_closing'=0;;;0;
 
 ------------------------------------------------
-How can i set threshold: critical if value < X ?
+How can I set threshold: critical if value < X ?
 ------------------------------------------------
 
 "centreon-plugins" can manage Nagios threshold ranges: https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
 
-For example, i want to check that 'crond' is running (if there is less than 1 process, critical). I have two ways:
+For example, I want to check that 'crond' is running (if there is less than 1 process, critical). I have two ways:
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=processcount --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --process-name=crond --critical=1:
@@ -446,7 +446,7 @@ For example, i want to check that 'crond' is running (if there is less than 1 pr
   CRITICAL: Number of current processes running: 0 | 'nbproc'=0;;@0:0;0;
 
 ------------------------------------------
-How can i check a generic SNMP OID value ?
+How can I check a generic SNMP OID value ?
 ------------------------------------------
 
 There is a generic SNMP plugin to check it. An example to get 'SysUptime' SNMP OID:
@@ -455,7 +455,7 @@ There is a generic SNMP plugin to check it. An example to get 'SysUptime' SNMP O
   $ perl centreon_plugins.pl --plugin=apps::protocols::snmp::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
 
 ----------------------------------------
-How can i check ipv6 equipment in SNMP ?
+How can I check ipv6 equipment in SNMP ?
 ----------------------------------------
 
 To check ipv6 equipment, use the following syntax (``udp6:[xxxx]``):
@@ -490,7 +490,7 @@ What does ``--dyn-mode`` option do ?
 ------------------------------------
 
 With the option, you can used a mode with a plugin. It commonly used for database checks.
-For example, i have an application which stores some monitoring information on a database. The developer can use another plugin to create the check (no need to do the SQL connections,... It saves time):
+For example, I have an application which stores some monitoring information on a database. The developer can use another plugin to create the check (no need to do the SQL connections,... It saves time):
 ::
 
   $ perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=apps::centreon::mysql::mode::pollerdelay --host=10.30.3.75 --username='test' --password='testpw' --verbose
@@ -502,7 +502,7 @@ For example, i have an application which stores some monitoring information on a
   A mode using the following system must notice it (in the help description). So you should open the file with an editor and read at the end the description.
 
 ------------------------------------
-How can i check the plugin version ?
+How can I check the plugin version ?
 ------------------------------------
 
 You can check the version of plugins and modes with option ``--version``:
@@ -523,7 +523,7 @@ For example, we want to execute the mode only if the version >= 2.x:
   UNKNOWN: Not good version for plugin mode. Excepted at least: 2.x. Get: 1.0
 
 -------------------------------------
-Can i have one standalone Perl file ?
+Can I have one standalone Perl file ?
 -------------------------------------
 
 We have done some tests and it will cost around 4% more of execution time. We are going to create a standalone Linux SNMP plugin.
