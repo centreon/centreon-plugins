@@ -117,7 +117,7 @@ sub manage_selection {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'systemctl',
-        command_options => '-a --no-pager --no-legend'
+        command_options => '-a --no-pager --no-legend --plain'
     );
 
     $self->{global} = { running => 0, exited => 0, failed => 0, dead => 0, total => 0 };
@@ -145,12 +145,15 @@ sub manage_selection {
 
     ($stdout) = $options{custom}->execute_command(
         command => 'systemctl',
-        command_options => 'list-unit-files --no-pager --no-legend'
+        command_options => 'list-unit-files --no-pager --no-legend --plain'
     );
-    #runlevel4.target                              enabled 
-    #runlevel5.target                              static  
-    #runlevel6.target                              disabled
-    while ($stdout =~ /^(.*?)\s+(\S+)\s*$/msig) {
+    # vendor preset is a new column
+    #UNIT FILE                 STATE           VENDOR PRESET
+    #runlevel4.target          enabled 
+    #runlevel5.target          static  
+    #runlevel6.target          disabled
+    #irqbalance.service        enabled         enabled
+    while ($stdout =~ /^(.*?)\s+(\S+)\s*/msig) {
         my ($name, $boot) = ($1, $2);
         next if (!defined($self->{sc}->{$name}));
         $self->{sc}->{$name}->{boot} = $boot;
