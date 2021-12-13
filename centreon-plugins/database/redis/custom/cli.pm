@@ -185,6 +185,7 @@ sub sentinels_get_master {
     foreach my $addr (@{$self->{sentinel}}) {
         my ($sentinel_host, $sentinel_port) = split(/:/, $addr);
         my $command_options = "-h '" . $sentinel_host . "' -p " . (defined($sentinel_port) ? $sentinel_port : 26379);
+        $command_options .= ' --no-raw';
         $command_options .= ' sentinel get-master-addr-by-name ' . $self->{service};
         my ($stdout, $exit_code) = $self->execute_command(
             command => 'redis-cli',
@@ -193,7 +194,7 @@ sub sentinels_get_master {
         );
         next if ($exit_code != 0);
         $host = $1 if ($stdout =~ /1\) "(.*?)"/m);
-        $port = $2 if ($stdout =~ /2\) "(\d+)"/m);
+        $port = $1 if ($stdout =~ /2\) "(\d+)"/m);
         last if (defined($port));
     }
 
@@ -221,6 +222,11 @@ sub get_info {
         command => 'redis-cli',
         command_options => $command_options
     );
+
+    if ($stdout =~ /^NOPERM/m) {
+        $self->{output}->add_option_msg(short_msg => 'Permissions issue');
+        $self->{output}->option_exit();
+    }
 
     my $items = {};
     foreach my $line (split /\n/, $stdout) {
