@@ -1,13 +1,15 @@
-2021-11-XX Quentin Garnier <qgarnier@centreon.com>
+2021-12-15 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: IBM DB2
  * Plugin added: Wallix Bastion SNMP
  * Plugin added: pdu Gude SNMP
  * Plugin added: Nvidia gpu smi
  * Plugin added: Ericsson ENMP API
+ * Plugin added: Netgear Sseries SNMP
  * Core: add strong snmp authentication (net-snmp 5.9.1)
  * Core: add HashiCorpVault password manager
  * Mode added: [fortigate/snmp] 'sdwan'
  * Break: [redis] refactoring
+ * Break: [netapp/ontap/snmp] 'qtree-usage' mode renamed 'quotas'
 
 2021-11-02 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: IBM MQ Rest API
