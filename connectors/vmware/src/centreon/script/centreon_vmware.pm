@@ -54,7 +54,7 @@ BEGIN {
 use base qw(centreon::vmware::script);
 use vars qw(%centreon_vmware_config);
 
-my $VERSION = '3.2.1';
+my $VERSION = '3.2.2';
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 
 my @load_modules = (
@@ -74,6 +74,7 @@ my @load_modules = (
     'centreon::vmware::cmddiscovery',
     'centreon::vmware::cmdgetmap',
     'centreon::vmware::cmdhealthhost',
+    'centreon::vmware::cmdlicenses',
     'centreon::vmware::cmdlimitvm',
     'centreon::vmware::cmdlistclusters',
     'centreon::vmware::cmdlistdatacenters',
@@ -89,6 +90,7 @@ my @load_modules = (
     'centreon::vmware::cmdstatuscluster',
     'centreon::vmware::cmdstatushost',
     'centreon::vmware::cmdstatusvm',
+    'centreon::vmware::cmdstoragehost',
     'centreon::vmware::cmdswaphost',
     'centreon::vmware::cmdswapvm',
     'centreon::vmware::cmdthinprovisioningvm',
