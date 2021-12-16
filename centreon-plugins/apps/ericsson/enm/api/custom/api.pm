@@ -45,13 +45,13 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
-            'hostname:s'             => { name => 'hostname' },
-            'port:s'                 => { name => 'port' },
-            'proto:s'                => { name => 'proto' },
-            'api-username:s'         => { name => 'api_username' },
-            'api-password:s'         => { name => 'api_password' },
-            'timeout:s'              => { name => 'timeout' },
-            'cache-use'              => { name => 'cache_use' }
+            'hostname:s'     => { name => 'hostname' },
+            'port:s'         => { name => 'port' },
+            'proto:s'        => { name => 'proto' },
+            'api-username:s' => { name => 'api_username' },
+            'api-password:s' => { name => 'api_password' },
+            'timeout:s'      => { name => 'timeout' },
+            'cache-use'      => { name => 'cache_use' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -132,7 +132,7 @@ sub login {
     my $session_id = $self->{cache_token}->get(name => 'session_id');
     my $md5_secret_cache = $self->{cache_token}->get(name => 'md5_secret');
     my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
-    
+
     if ($has_cache_file == 0 ||
         !defined($session_id) ||
         (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
@@ -180,6 +180,7 @@ sub clean_session {
 
     my $datas = { updated => time() };
     $self->{cache_token}->write(data => $datas);
+    $self->{session_id} = undef;
 }
 
 sub credentials {
