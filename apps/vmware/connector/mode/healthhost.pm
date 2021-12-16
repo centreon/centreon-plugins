@@ -64,7 +64,7 @@ sub set_counters {
             ]
         }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'total-problems', nlabel => 'host.health.problems.current.count', set => {
                 key_values => [ { name => 'total_problems' }, { name => 'total' } ],
@@ -76,7 +76,7 @@ sub set_counters {
             }
         }
     ];
-    
+
     $self->{maps_counters}->{global_host} = [
         {
             label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
@@ -89,12 +89,12 @@ sub set_counters {
             }
         }
     ];
-    
+
     $self->{maps_counters}->{global_problems} = [
         { label => 'ok', threshold => 0, set => {
                 key_values => [ { name => 'ok' } ],
                 output_template => '%s health checks are green',
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub { return 0; }
             }
         },
         { label => 'problems', nlabel => 'host.health.problems.current.count', set => {
@@ -125,7 +125,7 @@ sub set_counters {
             }
         },
     ];
-    
+
     $self->{maps_counters}->{global_summary} = [
         { label => 'global-summary', threshold => 0, set => {
                 key_values => [ { name => 'type' }, { name => 'name' }, { name => 'summary' } ],
@@ -197,7 +197,7 @@ sub manage_selection {
                 ok => 0, total_problems => 0, red => 0, yellow => 0, total => 0
             }
         };
-        
+
         my $i = 0;
         foreach (('memory_info', 'cpu_info', 'sensor_info', 'storage_info')) {
             if (defined($response->{data}->{$host_id}->{$_})) {
