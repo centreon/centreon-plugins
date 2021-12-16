@@ -61,7 +61,7 @@ sub custom_ledger_output {
     );
 }
 
-sub prefix_output_leger {
+sub prefix_output_ledger {
     my ($self, %options) = @_;
 
     return "Ledger metrics '";
