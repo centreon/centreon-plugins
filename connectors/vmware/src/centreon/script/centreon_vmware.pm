@@ -162,6 +162,11 @@ sub init {
 
     $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %centreon_vmware_config};
 
+    foreach my $name (keys %{$self->{centreon_vmware_config}->{vsphere_server}}) {
+        my $iname = lc($name);
+        $self->{centreon_vmware_config}->{vsphere_server}->{$iname} = delete $self->{centreon_vmware_config}->{vsphere_server}->{$name};
+    }
+
     ##### Load modules
     $self->load_module(@load_modules);
 
@@ -354,20 +359,27 @@ sub request_dynamic {
     my $container = md5_hex($options{result}->{vsphere_address} . $options{result}->{vsphere_username} . $options{result}->{vsphere_password});
     # Need to create fork
     if (!defined($self->{centreon_vmware_config}->{vsphere_server}->{$container})) {
-        $self->{centreon_vmware_config}->{vsphere_server}->{$container} = { url => 'https://' . $options{result}->{vsphere_address} . '/sdk',
-                                                                         username => $options{result}->{vsphere_username},
-                                                                         password => $options{result}->{vsphere_password},
-                                                                         last_request => time() };
-        $self->{logger}->writeLogError(sprintf("Dynamic creation: identity = %s [address: %s] [username: %s] [password: %s]", 
-                                               $container, $options{result}->{vsphere_address}, $options{result}->{vsphere_username}, $options{result}->{vsphere_password}));
+        $self->{centreon_vmware_config}->{vsphere_server}->{$container} = {
+            url => 'https://' . $options{result}->{vsphere_address} . '/sdk',
+            username => $options{result}->{vsphere_username},
+            password => $options{result}->{vsphere_password},
+            last_request => time()
+        };
+        $self->{logger}->writeLogError(
+            sprintf(
+                "Dynamic creation: identity = %s [address: %s] [username: %s] [password: %s]", 
+                $container, $options{result}->{vsphere_address}, $options{result}->{vsphere_username}, $options{result}->{vsphere_password}
+            )
+        );
         $centreon_vmware->create_vsphere_child(vsphere_name => $container, dynamic => 1);
     }
     
-    return if ($self->waiting_ready(container => $container, manager => $options{manager},
-                                    identity => $options{identity}) == 0);
-    
+    return if ($self->waiting_ready(
+        container => $container, manager => $options{manager},
+        identity => $options{identity}) == 0);
+
     $self->{centreon_vmware_config}->{vsphere_server}->{$container}->{last_request} = time();
-    
+
     my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
     my $msg = zmq_msg_init_data("server-" . $container);
     zmq_msg_send($msg, $frontend, $flag);
@@ -395,36 +407,39 @@ sub request {
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
-    if (!defined($self->{modules_registry}->{$result->{command}})) {
+    if (!defined($self->{modules_registry}->{ $result->{command} })) {
         centreon::vmware::common::set_response(code => 1, short_message => "Unknown method name '$result->{command}'");
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
-    if ($self->{modules_registry}->{$result->{command}}->checkArgs(manager => $options{manager},
-                                                                   arguments => $result)) {
+    if ($self->{modules_registry}->{ $result->{command} }->checkArgs(
+            manager => $options{manager},
+            arguments => $result)) {
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
-    
+
     # Mode dynamic
     if (defined($result->{vsphere_address}) && $result->{vsphere_address} ne '') {
         $self->request_dynamic(result => $result, %options);
         return ;
     }
-    
-    if (!defined($self->{centreon_vmware_config}->{vsphere_server}->{$result->{container}})) {
+
+    $result->{container} = lc($result->{container});
+    if (!defined($self->{centreon_vmware_config}->{vsphere_server}->{ $result->{container} })) {
         centreon::vmware::common::set_response(code => 1, short_message => "Unknown container name '$result->{container}'");
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
 
-    return if ($self->waiting_ready(container => $result->{container}, manager => $options{manager},
-                                    identity => $options{identity}) == 0);
+    return if ($self->waiting_ready(
+        container => $result->{container}, manager => $options{manager},
+        identity => $options{identity}) == 0);
     
-    $self->{counter_stats}->{$result->{container}}++;
-    
+    $self->{counter_stats}->{ $result->{container} }++;
+
     my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
-    my $msg = zmq_msg_init_data("server-" . $result->{container});
+    my $msg = zmq_msg_init_data('server-' . $result->{container});
     zmq_msg_send($msg, $frontend, $flag);
     zmq_msg_close($msg);
     $msg = zmq_msg_init_data('REQCLIENT ' . $options{data});
@@ -447,9 +462,11 @@ sub repserver {
 
     $result->{identity} =~ /^client-(.*)$/;
     my $identity = 'client-' . pack('H*', $1);
-    
-    centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, 
-        identity => $identity, force_response => $options{data});
+
+    centreon::vmware::common::response(
+        token => 'RESPSERVER', endpoint => $frontend, 
+        identity => $identity, force_response => $options{data}
+    );
 }
 
 sub router_event {
@@ -459,12 +476,12 @@ sub router_event {
         zmq_msg_recv($msg, $frontend, ZMQ_DONTWAIT);
         my $identity = zmq_msg_data($msg);
         zmq_msg_close($msg);
-        
+
         $msg = zmq_msg_init();
         zmq_msg_recv($msg, $frontend, ZMQ_DONTWAIT);
         my $data = zmq_msg_data($msg);
         zmq_msg_close($msg);
-        
+
         centreon::vmware::common::init_response();
         if ($centreon_vmware->{stop} != 0) {
             # We quit so we say we're leaving ;)
@@ -518,7 +535,7 @@ sub create_vsphere_child {
             modules_registry => $self->{modules_registry},
             config => $self->{centreon_vmware_config},
             logger => $self->{logger},
-            vsan_enabled => $self->{vsan_enabled},
+            vsan_enabled => $self->{vsan_enabled}
         );
         $connector->run();
         exit(0);
