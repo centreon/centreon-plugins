@@ -553,7 +553,13 @@ sub search_entities {
         }
         return $results;
     } else {
-        my ($status, $views) = find_entity_views(connector => $options{command}->{connector}, view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter});
+        my ($status, $views) = find_entity_views(
+            connector => $options{command}->{connector},
+            view_type => $options{view_type},
+            properties => $options{properties},
+            filter => $options{filter},
+            empty_continue => $options{command}->{empty_continue}
+        );
         return $views;
     }
 }
@@ -585,6 +591,9 @@ sub find_entity_views {
     }
     if (!defined($entity_views) || scalar(@$entity_views) == 0) {
         my $status = 0;
+        if (defined($options{empty_continue})) {
+            return (1, []);
+        }
         if (!defined($options{output_message}) || $options{output_message} != 0) {
             set_response(code => 1, short_message => "Cannot find '$options{view_type}' object");
         }
