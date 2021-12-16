@@ -49,8 +49,10 @@ sub run {
     my $self = shift;
 
     my $filters = $self->build_filter(label => 'name', search_option => 'esx_hostname', is_regexp => 'filter');    
-    my @properties = ('name', 'runtime.healthSystemRuntime.hardwareStatusInfo', 'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo', 
-                      'runtime.connectionState');
+    my @properties = (
+        'name', 'runtime.healthSystemRuntime.hardwareStatusInfo', 'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo', 
+        'runtime.connectionState'
+    );
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
     return if (!defined($result));
     
@@ -95,7 +97,8 @@ sub run {
             foreach (@$numericSensorInfo) {
                 push @{$data->{$entity_value}->{sensor_info}}, {
                     status => $_->healthState->key, 
-                    type => $_->sensorType, name => $_->name, summary => $_->healthState->summary,
+                    type => $_->sensorType, name => $_->name,
+                    summary => $_->healthState->summary,
                     current_reading =>  $_->currentReading,
                     power10 => $_->unitModifier,
                     unit => $_->baseUnits
@@ -103,7 +106,7 @@ sub run {
             }
         }
     }
-    
+
     centreon::vmware::common::set_response(data => $data);
 }
 
