@@ -33,8 +33,9 @@ sub new {
     $self->{modes} = {
         'alarm-datacenter'     => 'apps::vmware::connector::mode::alarmdatacenter',
         'alarm-host'           => 'apps::vmware::connector::mode::alarmhost',
-        'countvm-host'         => 'apps::vmware::connector::mode::countvmhost', 
-        'cpu-host'             => 'apps::vmware::connector::mode::cpuhost', 
+        'countvm-host'         => 'apps::vmware::connector::mode::countvmhost',
+        'cpu-cluster'          => 'apps::vmware::connector::mode::cpucluster',
+        'cpu-host'             => 'apps::vmware::connector::mode::cpuhost',
         'cpu-vm'               => 'apps::vmware::connector::mode::cpuvm',
         'datastore-countvm'    => 'apps::vmware::connector::mode::datastorecountvm',
         'datastore-host'       => 'apps::vmware::connector::mode::datastorehost',
