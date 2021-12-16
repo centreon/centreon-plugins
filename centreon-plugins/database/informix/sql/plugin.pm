@@ -32,7 +32,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    $self->{modes}} = {
+    $self->{modes} = {
         'archivelevel0'    => 'database::informix::sql::mode::archivelevel0',
         'collection'       => 'centreon::common::protocols::sql::mode::collection',
         'checkpoints'      => 'database::informix::sql::mode::checkpoints',
