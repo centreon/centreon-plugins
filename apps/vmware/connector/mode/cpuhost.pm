@@ -52,7 +52,7 @@ sub set_counters {
             ]
         }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         {
             label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
@@ -86,7 +86,7 @@ sub set_counters {
             }
         }
     ];
-    
+
     $self->{maps_counters}->{cpu} = [
         { label => 'cpu', nlabel => 'host.core.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
