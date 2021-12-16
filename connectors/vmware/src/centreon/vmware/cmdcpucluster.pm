@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-package centreon::vmware::cmdcpuhost;
+package centreon::vmware::cmdcpucluster;
 
 use base qw(centreon::vmware::cmdbase);
 
@@ -29,7 +29,7 @@ sub new {
     my $self = $class->SUPER::new(%options);
     bless $self, $class;
     
-    $self->{commandName} = 'cpuhost';
+    $self->{commandName} = 'cpucluster';
     
     return $self;
 }
@@ -37,8 +37,8 @@ sub new {
 sub checkArgs {
     my ($self, %options) = @_;
 
-    if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
-        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: esx hostname cannot be null");
+    if (defined($options{arguments}->{cluster_name}) && $options{arguments}->{cluster_name} eq '') {
+        centreon::vmware::common::set_response(code => 100, short_message => 'Argument error: cluster name cannot be null');
         return 1;
     }
 
@@ -53,15 +53,15 @@ sub run {
         return ;
     }
 
-    my $filters = $self->build_filter(label => 'name', search_option => 'esx_hostname', is_regexp => 'filter');
-    my @properties = ('name', 'runtime.connectionState', 'summary.hardware.numCpuCores', 'summary.hardware.cpuMhz');
-    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
-    return if (!defined($result));
+    my $filters = $self->build_filter(label => 'name', search_option => 'cluster_name', is_regexp => 'filter');
+    my @properties = ('name');
+    my $views = centreon::vmware::common::search_entities(command => $self, view_type => 'ClusterComputeResource', properties => \@properties, filter => $filters);
+    return if (!defined($views));
 
     my @instances = ('*');
     my $values = centreon::vmware::common::generic_performance_values_historic(
         $self->{connector},
-        $result, 
+        $views, 
         [
             { label => 'cpu.usage.average',    'instances' => \@instances},
             { label => 'cpu.usagemhz.average', 'instances' => \@instances}
@@ -75,35 +75,21 @@ sub run {
 
     my $interval_min = centreon::vmware::common::get_interval_min(
         speriod => $self->{connector}->{perfcounter_speriod}, 
-        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift}
+        sampling_period => $self->{sampling_period},
+        time_shift => $self->{time_shift}
     );
 
     my $data = {};
-    foreach my $entity_view (@$result) {
-        my $entity_value = $entity_view->{mo_ref}->{value};
-        $data->{$entity_value} = { name => $entity_view->{name}, state => $entity_view->{'runtime.connectionState'}->val };
-        next if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0);
+    foreach my $view (@$views) {
+        my $entity_value = $view->{mo_ref}->{value};
+        $data->{$entity_value} = { name => $view->{name} };
 
         my $total_cpu_average = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"} * 0.01));
         my $total_cpu_mhz_average = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}));
-        
+
         $data->{$entity_value}->{'interval_min'} = $interval_min;
         $data->{$entity_value}->{'cpu.usage.average'} = $total_cpu_average;
         $data->{$entity_value}->{'cpu.usagemhz.average'} = $total_cpu_mhz_average;
-        $data->{$entity_value}->{'numCpuCores'} = $entity_view->{'summary.hardware.numCpuCores'};
-        $data->{$entity_value}->{'cpuMhz'} = $entity_view->{'summary.hardware.cpuMhz'};
-        $data->{$entity_value}->{'cpu'} = {};
-
-        foreach my $id (sort { my ($cida, $cia) = split /:/, $a;
-                       my ($cidb, $cib) = split /:/, $b;
-                                   $cia = -1 if (!defined($cia) || $cia eq "");
-                                   $cib = -1 if (!defined($cib) || $cib eq "");
-                       $cia <=> $cib} keys %{$values->{$entity_value}}) {
-            my ($counter_id, $instance) = split /:/, $id;
-            if ($instance ne "") {
-                $data->{$entity_value}->{cpu}->{$instance} = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$id}) * 0.01);
-            }
-        }
     }
     
     centreon::vmware::common::set_response(data => $data);

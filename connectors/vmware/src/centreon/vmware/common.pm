@@ -486,6 +486,7 @@ sub cache_perf_counters {
             $obj_vmware->{perfcounter_speriod} = 20;
         }
     };
+
     if ($@) {
         $obj_vmware->{logger}->writeLogError("'" . $obj_vmware->{whoaim} . "' $@");
         return 1;

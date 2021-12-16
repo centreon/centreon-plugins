@@ -61,6 +61,7 @@ my @load_modules = (
     'centreon::vmware::cmdalarmdatacenter',
     'centreon::vmware::cmdalarmhost',
     'centreon::vmware::cmdcountvmhost',
+    'centreon::vmware::cmdcpucluster',
     'centreon::vmware::cmdcpuhost',
     'centreon::vmware::cmdcpuvm',
     'centreon::vmware::cmddatastorecountvm',
