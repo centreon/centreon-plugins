@@ -31,20 +31,21 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "vm-hostname:s"           => { name => 'vm_hostname' },
-        "filter"                  => { name => 'filter' },
-        "scope-datacenter:s"      => { name => 'scope_datacenter' },
-        "scope-cluster:s"         => { name => 'scope_cluster' },
-        "scope-host:s"            => { name => 'scope_host' },
-        "filter-description:s"    => { name => 'filter_description' },
-        "filter-os:s"             => { name => 'filter_os' },
-        "filter-uuid:s"           => { name => 'filter_uuid' },
-        "display-description"     => { name => 'display_description' },
-        "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-        "tools-notinstalled-status:s" => { name => 'tools_notinstalled_status', default => 'critical' },
-        "tools-notrunning-status:s"   => { name => 'tools_notrunning_status', default => 'critical' },
-        "tools-notup2date-status:s"   => { name => 'tools_notupd2date_status', default => 'warning' },
-        "nopoweredon-skip"            => { name => 'nopoweredon_skip' }
+        'vm-hostname:s'           => { name => 'vm_hostname' },
+        'filter'                  => { name => 'filter' },
+        'scope-datacenter:s'      => { name => 'scope_datacenter' },
+        'scope-cluster:s'         => { name => 'scope_cluster' },
+        'scope-host:s'            => { name => 'scope_host' },
+        'filter-description:s'    => { name => 'filter_description' },
+        'filter-os:s'             => { name => 'filter_os' },
+        'filter-uuid:s'           => { name => 'filter_uuid' },
+        'display-description'     => { name => 'display_description' },
+        'disconnect-status:s'     => { name => 'disconnect_status', default => 'unknown' },
+        'tools-notinstalled-status:s' => { name => 'tools_notinstalled_status', default => 'critical' },
+        'tools-notrunning-status:s'   => { name => 'tools_notrunning_status', default => 'critical' },
+        'tools-notup2date-status:s'   => { name => 'tools_notupd2date_status', default => 'warning' },
+        'nopoweredon-skip'            => { name => 'nopoweredon_skip' },
+        'empty-continue'              => { name => 'empty_continue' }
     });
     
     return $self;
@@ -239,6 +240,10 @@ Status if VM disconnected (default: 'unknown').
 =item B<--nopoweredon-skip>
 
 Skip check if VM is not poweredOn.
+
+=item B<--empty-continue>
+
+Ask to the connector that an empty response is ok. 
 
 =item B<--display-description>
 
