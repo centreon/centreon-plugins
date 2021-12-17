@@ -58,13 +58,12 @@ sub run {
     my $views = centreon::vmware::common::search_entities(command => $self, view_type => 'ClusterComputeResource', properties => \@properties, filter => $filters);
     return if (!defined($views));
 
-    my @instances = ('*');
     my $values = centreon::vmware::common::generic_performance_values_historic(
         $self->{connector},
-        $views, 
+        $views,
         [
-            { label => 'cpu.usage.average',    'instances' => \@instances},
-            { label => 'cpu.usagemhz.average', 'instances' => \@instances}
+            { label => 'cpu.usage.average',    instances => [''] },
+            { label => 'cpu.usagemhz.average', instances => [''] }
         ],
         $self->{connector}->{perfcounter_speriod},
         sampling_period => $self->{sampling_period},
@@ -84,8 +83,8 @@ sub run {
         my $entity_value = $view->{mo_ref}->{value};
         $data->{$entity_value} = { name => $view->{name} };
 
-        my $total_cpu_average = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"} * 0.01));
-        my $total_cpu_mhz_average = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}));
+        my $total_cpu_average = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{ $self->{connector}->{perfcounter_cache}->{'cpu.usage.average'}->{key} . ':' } * 0.01));
+        my $total_cpu_mhz_average = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{ $self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{key} . ':' }));
 
         $data->{$entity_value}->{'interval_min'} = $interval_min;
         $data->{$entity_value}->{'cpu.usage.average'} = $total_cpu_average;

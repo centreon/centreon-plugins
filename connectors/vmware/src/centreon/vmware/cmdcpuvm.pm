@@ -66,23 +66,29 @@ sub run {
     return if (!defined($result));
 
     my @instances = ('*');
-    my $values = centreon::vmware::common::generic_performance_values_historic($self->{connector},
-                        $result, 
-                        [{'label' => 'cpu.usage.average', 'instances' => \@instances},
-                         {'label' => 'cpu.usagemhz.average', 'instances' => \@instances},
-                         {'label' => 'cpu.ready.summation', 'instances' => \@instances}],
-                        $self->{connector}->{perfcounter_speriod},
-                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
-                        skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
+    my $values = centreon::vmware::common::generic_performance_values_historic(
+        $self->{connector},
+        $result, 
+        [
+            {'label' => 'cpu.usage.average', 'instances' => \@instances},
+            {'label' => 'cpu.usagemhz.average', 'instances' => \@instances},
+            {'label' => 'cpu.ready.summation', 'instances' => \@instances}
+        ],
+        $self->{connector}->{perfcounter_speriod},
+        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
+        skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1
+    );
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
     
     my $interval_sec = $self->{connector}->{perfcounter_speriod};
     if (defined($self->{sampling_period}) && $self->{sampling_period} ne '') {
         $interval_sec = $self->{sampling_period};
     }
-    my $interval_min = centreon::vmware::common::get_interval_min(speriod => $self->{connector}->{perfcounter_speriod}, 
-                                                                  sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift});
-    
+    my $interval_min = centreon::vmware::common::get_interval_min(
+        speriod => $self->{connector}->{perfcounter_speriod}, 
+        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift}
+    );
+
     my $data = {};
     foreach my $entity_view (@$result) {
         my $entity_value = $entity_view->{mo_ref}->{value};
