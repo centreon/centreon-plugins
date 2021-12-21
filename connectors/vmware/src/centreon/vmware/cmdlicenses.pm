@@ -48,8 +48,16 @@ sub run {
     my $data = {};
     if (defined($entries->licenses)) {
         foreach my $license (@{$entries->licenses}) {
-            use Data::Dumper;
-            print Data::Dumper::Dumper($license);
+            $data->{ $license->{name} } = {
+                total => $license->{total},
+                used => $license->{used},
+                edition => $license->{editionKey}
+            };
+            foreach my $prop (@{$license->{properties}}) {
+                if ($prop->{key} eq 'expirationMinutes') {
+                    $data->{ $license->{name} }->{expiration_minutes} = $prop->{value};
+                }
+            }
         }
     }
 
