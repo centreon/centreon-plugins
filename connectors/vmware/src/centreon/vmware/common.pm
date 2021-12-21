@@ -45,7 +45,7 @@ sub init_response {
     my (%options) = @_;
 
     $manager_response->{code} = 0;
-    $manager_response->{vmware_connector_version} = '3.2.1';
+    $manager_response->{vmware_connector_version} = '3.2.2';
     $manager_response->{short_message} = 'OK';
     $manager_response->{extra_message} = '';
     $manager_response->{identity} = $options{identity} if (defined($options{identity}));
@@ -486,6 +486,7 @@ sub cache_perf_counters {
             $obj_vmware->{perfcounter_speriod} = 20;
         }
     };
+
     if ($@) {
         $obj_vmware->{logger}->writeLogError("'" . $obj_vmware->{whoaim} . "' $@");
         return 1;
@@ -552,7 +553,13 @@ sub search_entities {
         }
         return $results;
     } else {
-        my ($status, $views) = find_entity_views(connector => $options{command}->{connector}, view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter});
+        my ($status, $views) = find_entity_views(
+            connector => $options{command}->{connector},
+            view_type => $options{view_type},
+            properties => $options{properties},
+            filter => $options{filter},
+            empty_continue => $options{command}->{empty_continue}
+        );
         return $views;
     }
 }
@@ -584,6 +591,9 @@ sub find_entity_views {
     }
     if (!defined($entity_views) || scalar(@$entity_views) == 0) {
         my $status = 0;
+        if (defined($options{empty_continue})) {
+            return (1, []);
+        }
         if (!defined($options{output_message}) || $options{output_message} != 0) {
             set_response(code => 1, short_message => "Cannot find '$options{view_type}' object");
         }

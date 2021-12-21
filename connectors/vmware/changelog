@@ -1,3 +1,11 @@
+2021-12-21 Quentin Garnier <qgarnier@centreon.com> - 3.2.2
+ * Enhancement: add 'storage-host'
+ * Enhancement: add 'cpu-cluster' (issue #90)
+ * Enhancement: add 'licenses'
+ * Enhancement: add refresh capability for datastore-usage (issue #96)
+ * Enhancement: container label in configuration is case-insensitive (issue #83)
+ * Enhancement: add capability to use empty-continue option (issue #77)
+
 2020-11-03 Quentin Garnier <qgarnier@centreon.com> - 3.2.1
  * Fix: daemon cannot start (issue #92)
 

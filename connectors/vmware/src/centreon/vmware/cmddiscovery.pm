@@ -112,9 +112,11 @@ sub run {
         foreach my $cluster (@$clusters) {
             next if (!$cluster->{'host'});
 
-            my @properties = ('name', 'vm', 'config.virtualNicManagerInfo.netConfig', 'config.product.version',
+            my @properties = (
+                'name', 'vm', 'config.virtualNicManagerInfo.netConfig', 'config.product.version',
                 'config.product.productLineId', 'hardware.systemInfo.vendor', 'hardware.systemInfo.model',
-                'hardware.systemInfo.uuid', 'runtime.powerState', 'runtime.inMaintenanceMode', 'runtime.connectionState');
+                'hardware.systemInfo.uuid', 'runtime.powerState', 'runtime.inMaintenanceMode', 'runtime.connectionState'
+            );
 
             my $esxs = centreon::vmware::common::get_views($self->{connector}, \@{$cluster->host}, \@properties);
             next if (!defined($esxs));
@@ -122,7 +124,7 @@ sub run {
             foreach my $esx (@$esxs) {
                 my %esx;
 
-                $esx{type} = "esx";
+                $esx{type} = 'esx';
                 $esx{name} = $esx->name;
                 $esx{os} = $esx->{'config.product.productLineId'} . ' ' . $esx->{'config.product.version'};
                 $esx{hardware} = $esx->{'hardware.systemInfo.vendor'} . ' ' . $esx->{'hardware.systemInfo.model'};

@@ -88,6 +88,10 @@ sub run {
 
         next if (centreon::vmware::common::is_accessible(accessible => $entity_view->summary->accessible) == 0);
 
+        if (defined($self->{refresh})) {
+            $entity_view->RefreshDatastore();
+        }
+
         # capacity 0...
         if ($entity_view->summary->capacity <= 0) {
             $data->{$entity_value}->{size} = 0;

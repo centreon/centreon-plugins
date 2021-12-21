@@ -31,7 +31,7 @@ sub new {
 
     $self->{logger} = $options{logger};
     $self->{global_case_insensitive} = defined($options{case_insensitive}) ? $options{case_insensitive} : 0;
-    
+
     return $self;
 }
 
@@ -55,7 +55,7 @@ sub class_handle_ALRM {
 
 sub handle_ALRM {
     my $self = shift;
-    
+
     $self->{logger}->writeLogError('Child process autokill!!');
     exit(0);
 }
@@ -80,12 +80,12 @@ sub set_connector {
 
 sub initArgs {
     my ($self, %options) = @_;
-    
+
     foreach (keys %{$options{arguments}}) {
         $self->{$_} = $options{arguments}->{$_};
     }
     centreon::vmware::common::init_response(identity => $options{arguments}->{identity});
-    
+
     if ($self->{global_case_insensitive} == 0 && defined($self->{case_insensitive})) {
         $self->{global_case_insensitive} = 1;
     }
