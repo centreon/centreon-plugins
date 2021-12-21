@@ -24,18 +24,96 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc;
+use POSIX;
 
-sub custom_status_output {
+my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
+my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
+
+sub custom_expires_perfdata {
     my ($self, %options) = @_;
 
-    return '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
+        unit => $self->{instance_mode}->{option_results}->{unit},
+        instances => $self->{result_values}->{name},
+        value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
 }
 
-sub custom_device_output {
+sub custom_expires_threshold {
     my ($self, %options) = @_;
 
-    return sprintf("%s %s device connected",  $self->{result_values}->{device_connected}, $self->{instance_mode}->{option_results}->{device});
+    return $self->{perfdata}->threshold_check(
+        value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
+}
+
+sub custom_expires_output {
+    my ($self, %options) = @_;
+
+    my $msg;
+    if ($self->{result_values}->{expires_seconds} == 0) {
+        $msg = 'expired';
+    } else {
+        $msg = 'expires in ' . $self->{result_values}->{expires_human};
+    }
+    return $msg;
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my $msg;
+    if ($self->{result_values}->{total} <= 0) {
+        $msg = sprintf('used: %s (unlimited)', $self->{result_values}->{used});
+    } else {
+        $msg = sprintf(
+            "total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
+            $self->{result_values}->{total}, 
+            $self->{result_values}->{used}, $self->{result_values}->{prct_used},
+            $self->{result_values}->{free}, $self->{result_values}->{prct_free}
+        );
+    }
+    return $msg;
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
+    $self->{result_values}->{edition} = $options{new_datas}->{$self->{instance} . '_edition'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
+
+    if ($self->{result_values}->{total} == 0) {
+        return -10 if ($options{extra_options}->{label} ne 'usage');
+        return 0;
+    }
+
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+
+    return 0;
+}
+
+sub prefix_license_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "License '%s' [edition: %s] ",
+        $options{instance},
+        $options{instance_value}->{edition}
+    );
 }
 
 sub set_counters {
@@ -43,100 +121,186 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' }
+        { name => 'licenses', type => 1, cb_prefix_output => 'prefix_license_output', message_multiple => 'All licenses are ok', skipped_code => { -10 => 1 } }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-device-connected', nlabel => 'vm.devices.connected.count', set => {
-                key_values => [ { name => 'device_connected' } ],
-                closure_custom_output => $self->can('custom_device_output'),
+        { label => 'total-licenses', nlabel => 'licenses.total.count', set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'Number of licenses: %s',
                 perfdatas => [
-                    { label => 'total_device_connected', template => '%s',
-                      min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         }
     ];
     
-    $self->{maps_counters}->{vm} = [
-        {
-            label => 'status', type => 2, unknown_default => '%{connection_state} !~ /^connected$/i',
-            set => {
-                key_values => [ { name => 'connection_state' }, { name => 'power_state' } ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
+    $self->{maps_counters}->{licenses} = [
+        { label => 'usage', nlabel => 'license.usage.count', set => {
+                key_values => [
+                    { name => 'edition' }, { name => 'name' }, { name => 'used' }, { name => 'total' }
+                ],
+                closure_custom_calc_extra_options => { label => 'usage' },
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_threshold_check => sub {
+                    my ($self, %options) = @_;
+
+                    return $self->{perfdata}->threshold_check(
+                        value => $self->{result_values}->{used}, threshold => [
+                            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
+                        ]
+                    );
+                },
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                     $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        instances => $self->{result_values}->{name},
+                        value => $self->{result_values}->{used},
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0,
+                        max => $self->{result_values}->{total} > 0 ? $self->{result_values}->{total} : undef
+                    );
+                }
             }
         },
-        { label => 'device-connected', nlabel => 'vm.devices.connected.count', set => {
-                key_values => [ { name => 'device_connected' }, { name => 'display' } ],
-                oclosure_custom_output => $self->can('custom_device_output'),
-                perfdatas => [
-                    { label => 'device_connected', template => '%s',
-                      min => 0, label_extra_instance => 1 }
-                ]
+        { label => 'usage-free', nlabel => 'license.free.count', display_ok => 0, set => {
+                key_values => [
+                    { name => 'edition' }, { name => 'name' }, { name => 'used' }, { name => 'total' }
+                ],
+                closure_custom_calc_extra_options => { label => 'free' },
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_threshold_check => sub {
+                    my ($self, %options) = @_;
+
+                    return $self->{perfdata}->threshold_check(
+                        value => $self->{result_values}->{free}, threshold => [
+                            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+                        ]
+                    );
+                },
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        instances => $self->{result_values}->{name},
+                        value => $self->{result_values}->{free},
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0,
+                        max => $self->{result_values}->{total}
+                    );
+                }
+            }
+        },
+        { label => 'usage-prct', nlabel => 'license.usage.percentage', display_ok => 0, set => {
+                key_values => [
+                    { name => 'edition' }, { name => 'name' }, { name => 'used' }, { name => 'total' }
+                ],
+                closure_custom_calc_extra_options => { label => 'prct' },
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_threshold_check => sub {
+                    my ($self, %options) = @_;
+
+                    return $self->{perfdata}->threshold_check(
+                        value => $self->{result_values}->{prct_used}, threshold => [
+                            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+                        ]
+                    );
+                },
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => '%',
+                        instances => $self->{result_values}->{name},
+                        value => $self->{result_values}->{prct_used},
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0, max => 100
+                    );
+                }
+            }
+        },
+        { label => 'expires', nlabel => 'license.expires', set => {
+                key_values      => [ { name => 'expires_seconds' }, { name => 'expires_human' }, { name => 'name' } ],
+                closure_custom_output => $self->can('custom_expires_output'),
+                closure_custom_perfdata => $self->can('custom_expires_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_expires_threshold')
             }
         }
     ];
-}
-
-sub prefix_vm_output {
-    my ($self, %options) = @_;
-
-    my $msg = "Virtual machine '" . $options{instance_value}->{display} . "'";
-    if (defined($options{instance_value}->{config_annotation})) {
-        $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
-    }
-    $msg .= ' : ';
-
-    return $msg;
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "vm-hostname:s"         => { name => 'vm_hostname' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "scope-cluster:s"       => { name => 'scope_cluster' },
-        "scope-host:s"          => { name => 'scope_host' },
-        "filter-description:s"  => { name => 'filter_description' },
-        "filter-os:s"           => { name => 'filter_os' },
-        "filter-uuid:s"         => { name => 'filter_uuid' },
-        "display-description"   => { name => 'display_description' },
-        "device:s"              => { name => 'device' }
+        'filter-name:s'     => { name => 'filter_name' },
+        'exclude-name:s'    => { name => 'exclude_name' },
+        'filter-edition:s'  => { name => 'filter_edition' },
+        'exclude-edition:s' => { name => 'exclude_edition' },
+        'unit:s'            => { name => 'unit', default => 'd' }
     });
 
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
+        $self->{option_results}->{unit} = 'd';
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = { device_connected => 0 };
-    $self->{vm} = {};
     my $response = $options{custom}->execute(
         params => $self->{option_results},
         command => 'licenses'
     );
 
-    foreach my $vm_id (keys %{$response->{data}}) {
-        my $vm_name = $response->{data}->{$vm_id}->{name};
-        $self->{vm}->{$vm_name} = {
-            display => $vm_name, 
-            connection_state => $response->{data}->{$vm_id}->{connection_state},
-            power_state => $response->{data}->{$vm_id}->{power_state},
-            device_connected => $response->{data}->{$vm_id}->{total_device_connected}
+    $self->{global} = { total => 0 };
+    $self->{licenses} = {};
+    foreach my $name (keys %{$response->{data}}) {
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $name !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne '' &&
+            $name =~ /$self->{option_results}->{exclude_name}/);
+        next if (defined($self->{option_results}->{filter_edition}) && $self->{option_results}->{filter_edition} ne '' &&
+            $response->{data}->{$name}->{edition} !~ /$self->{option_results}->{filter_edition}/);
+        next if (defined($self->{option_results}->{exclude_edition}) && $self->{option_results}->{exclude_edition} ne '' &&
+            $response->{data}->{$name}->{edition} =~ /$self->{option_results}->{exclude_edition}/);
+        next if (!defined($response->{data}->{$name}->{used}) && !defined($response->{data}->{$name}->{expiration_minutes}));
+
+        $self->{licenses}->{$name} = {
+            name => $name,
+            edition => $response->{data}->{$name}->{edition},
+            total => $response->{data}->{$name}->{total},
+            used => $response->{data}->{$name}->{used}
         };
-
-        if (defined($self->{option_results}->{display_description})) {
-            $self->{vm}->{$vm_name}->{config_annotation} = $options{custom}->strip_cr(value => $response->{data}->{$vm_id}->{'config.annotation'});
+        if (defined($response->{data}->{$name}->{expiration_minutes})) {
+            $self->{licenses}->{$name}->{expires_seconds} = $response->{data}->{$name}->{expiration_minutes} * 60;
+            $self->{licenses}->{$name}->{expires_human} = centreon::plugins::misc::change_seconds(
+                value => $self->{licenses}->{$name}->{expires_seconds}
+            );
         }
-
-        $self->{global}->{device_connected} += $self->{vm}->{$vm_name}->{device_connected};
+        $self->{global}->{total}++;
     }
 }
 
@@ -146,71 +310,35 @@ __END__
 
 =head1 MODE
 
-Check virtual machine device connected.
+Check licenses.
 
 =over 8
 
-=item B<--vm-hostname>
+=item B<--filter-name>
 
-VM hostname to check.
-If not set, we check all VMs.
+Filter licenses by name (can be a regexp).
 
-=item B<--filter>
+=item B<--exclude-name>
 
-VM hostname is a regexp.
+Exclude licenses by name (can be a regexp).
 
-=item B<--filter-description>
+=item B<--filter-edition>
 
-Filter also virtual machines description (can be a regexp).
+Filter licenses by edition name (can be a regexp).
 
-=item B<--filter-os>
+=item B<--exclude-edition>
 
-Filter also virtual machines OS name (can be a regexp).
+Exclude licenses by edition name (can be a regexp).
 
-=item B<--scope-datacenter>
+=item B<--unit>
 
-Search in following datacenter(s) (can be a regexp).
+Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
+'h' for hours, 'd' for days, 'w' for weeks. Default is days.
 
-=item B<--scope-cluster>
+=item B<--warning-*> B<--critical-*>
 
-Search in following cluster(s) (can be a regexp).
-
-=item B<--scope-host>
-
-Search in following host(s) (can be a regexp).
-
-=item B<--display-description>
-
-Display virtual machine description.
-
-=item B<--device>
-
-Device to check (Required) (Example: --device='VirtualCdrom').
-
-=item B<--unknown-status>
-
-Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/i').
-Can used special variables like: %{connection_state}
-
-=item B<--warning-status>
-
-Set warning threshold for status (Default: '').
-Can used special variables like: %{connection_state}
-
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '').
-Can used special variables like: %{connection_state}
-
-=item B<--warning-*>
-
-Threshold warning.
-Can be: 'total-device-connected', 'device-connected'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'total-device-connected', 'device-connected'.
+Thresholds.
+Can be: 'total-licenses', 'usage', 'usage-free', 'usage-prct', 'expires'.
 
 =back
 
