@@ -33,20 +33,64 @@ sub custom_status_output {
     return 'accessible ' . $self->{result_values}->{accessible};
 }
 
+sub prefix_datastore_output {
+    my ($self, %options) = @_;
+
+    return "Datastore '" . $options{instance_value}->{display} . "' : ";
+}
+
+sub datastore_long_output {
+    my ($self, %options) = @_;
+
+    return "checking datastore '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_vm_output {
+    my ($self, %options) = @_;
+
+    return "virtual machine '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_global_iops_output {
+    my ($self, %options) = @_;
+
+    return 'Total ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'global_iops', type => 0, cb_prefix_output => 'prefix_global_iops_output', skipped_code => { -10 => 1 } },
         { name => 'datastore', type => 3, cb_prefix_output => 'prefix_datastore_output', cb_long_output => 'datastore_long_output', indent_long_output => '    ', message_multiple => 'All datastores are ok', 
             group => [
-                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'global_iops', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'ds_global', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'ds_global_iops', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'vm', cb_prefix_output => 'prefix_vm_output',  message_multiple => 'All virtual machines IOPs are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
-    
-    $self->{maps_counters}->{global} = [
+
+    $self->{maps_counters}->{global_iops} = [
+        { label => 'read-total', nlabel => 'datastores.read.usage.iops', set => {
+                key_values => [ { name => 'read' } ],
+                output_template => 'read: %s iops',
+                perfdatas => [
+                    { label => 'total_riops', template => '%s', unit => 'iops', min => 0 }
+                ]
+            }
+        },
+        { label => 'write-total', nlabel => 'datastores.write.usage.iops', set => {
+                key_values => [ { name => 'write' } ],
+                output_template => 'write: %s iops',
+                perfdatas => [
+                    { label => 'total_wiops', template => '%s', unit => 'iops', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{ds_global} = [
         {
             label => 'status', type => 2, unknown_default => '%{accessible} !~ /^true|1$/i', 
             set => {
@@ -58,7 +102,7 @@ sub set_counters {
         }
     ];
     
-    $self->{maps_counters}->{global_iops} = [
+    $self->{maps_counters}->{ds_global_iops} = [
         { label => 'read', nlabel => 'datastore.read.usage.iops', set => {
                 key_values => [ { name => 'read' } ],
                 output_template => '%s read iops',
@@ -101,24 +145,6 @@ sub set_counters {
     ];
 }
 
-sub prefix_datastore_output {
-    my ($self, %options) = @_;
-
-    return "Datastore '" . $options{instance_value}->{display} . "' : ";
-}
-
-sub datastore_long_output {
-    my ($self, %options) = @_;
-
-    return "checking datastore '" . $options{instance_value}->{display} . "'";
-}
-
-sub prefix_vm_output {
-    my ($self, %options) = @_;
-
-    return "virtual machine '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -152,24 +178,28 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
+    $self->{global_iops} = { write => 0, read => 0 };
     foreach my $ds_id (keys %{$response->{data}}) {
         my $ds_name = $response->{data}->{$ds_id}->{name};
         $self->{datastore}->{$ds_name} = { display => $ds_name, 
             vm => {}, 
-            global => {
-                accessible => $response->{data}->{$ds_id}->{accessible},    
+            ds_global => {
+                accessible => $response->{data}->{$ds_id}->{accessible}
             },
-            global_iops => {
+            ds_global_iops => {
                 write => $response->{data}->{$ds_id}->{'disk.numberWrite.summation'},
-                read => $response->{data}->{$ds_id}->{'disk.numberRead.summation'},
-            }, 
+                read => $response->{data}->{$ds_id}->{'disk.numberRead.summation'}
+            }
         };
-        
+
+        $self->{global_iops}->{write} += $response->{data}->{$ds_id}->{'disk.numberWrite.summation'};
+        $self->{global_iops}->{read} += $response->{data}->{$ds_id}->{'disk.numberRead.summation'};
+
         foreach my $vm_name (sort keys %{$response->{data}->{$ds_id}->{vm}}) {
             $self->{datastore}->{$ds_name}->{vm}->{$vm_name} = { 
-                display => $vm_name, 
+                display => $vm_name,
                 write => $response->{data}->{$ds_id}->{vm}->{$vm_name}->{'disk.numberWrite.summation'},
-                read => $response->{data}->{$ds_id}->{vm}->{$vm_name}->{'disk.numberRead.summation'},
+                read => $response->{data}->{$ds_id}->{vm}->{$vm_name}->{'disk.numberRead.summation'}
             };
         }
     }
@@ -216,15 +246,11 @@ Can used special variables like: %{accessible}
 Set critical threshold for status (Default: '').
 Can used special variables like: %{accessible}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'read', 'write', 'read-vm', 'write-vm'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'read', 'write', 'read-vm', 'write-vm'.
+Thresholds.
+Can be: 'read-total', 'write-total',
+'read', 'write', 'read-vm', 'write-vm'.
 
 =back
 

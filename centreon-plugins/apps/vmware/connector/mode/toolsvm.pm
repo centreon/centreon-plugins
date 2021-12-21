@@ -31,20 +31,21 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "vm-hostname:s"           => { name => 'vm_hostname' },
-        "filter"                  => { name => 'filter' },
-        "scope-datacenter:s"      => { name => 'scope_datacenter' },
-        "scope-cluster:s"         => { name => 'scope_cluster' },
-        "scope-host:s"            => { name => 'scope_host' },
-        "filter-description:s"    => { name => 'filter_description' },
-        "filter-os:s"             => { name => 'filter_os' },
-        "filter-uuid:s"           => { name => 'filter_uuid' },
-        "display-description"     => { name => 'display_description' },
-        "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-        "tools-notinstalled-status:s"   => { name => 'tools_notinstalled_status', default => 'critical' },
-        "tools-notrunning-status:s"     => { name => 'tools_notrunning_status', default => 'critical' },
-        "tools-notup2date-status:s"     => { name => 'tools_notupd2date_status', default => 'warning' },
-        "nopoweredon-skip"              => { name => 'nopoweredon_skip' },
+        'vm-hostname:s'           => { name => 'vm_hostname' },
+        'filter'                  => { name => 'filter' },
+        'scope-datacenter:s'      => { name => 'scope_datacenter' },
+        'scope-cluster:s'         => { name => 'scope_cluster' },
+        'scope-host:s'            => { name => 'scope_host' },
+        'filter-description:s'    => { name => 'filter_description' },
+        'filter-os:s'             => { name => 'filter_os' },
+        'filter-uuid:s'           => { name => 'filter_uuid' },
+        'display-description'     => { name => 'display_description' },
+        'disconnect-status:s'     => { name => 'disconnect_status', default => 'unknown' },
+        'tools-notinstalled-status:s' => { name => 'tools_notinstalled_status', default => 'critical' },
+        'tools-notrunning-status:s'   => { name => 'tools_notrunning_status', default => 'critical' },
+        'tools-notup2date-status:s'   => { name => 'tools_notupd2date_status', default => 'warning' },
+        'nopoweredon-skip'            => { name => 'nopoweredon_skip' },
+        'empty-continue'              => { name => 'empty_continue' }
     });
     
     return $self;
@@ -88,21 +89,27 @@ sub display_verbose {
 sub run {
     my ($self, %options) = @_;
     
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'toolsvm');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'toolsvm'
+    );
 
     my $multiple = 0;
     if (scalar(keys %{$response->{data}}) > 1) {
         $multiple = 1;
     }
     if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                               short_msg => 'All VMTools are OK');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'All VMTools are OK'
+        );
     } else {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'VMTools are OK');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'VMTools are OK'
+        );
     }
-    
+
     my %not_installed = ();
     my %not_running = ();
     my %not_up2date = ();
@@ -113,14 +120,16 @@ sub run {
             my $output = "VM '" . $vm_name . "' not connected. Current Connection State: '$response->{data}->{$vm_id}->{connection_state}'.";
             if ($multiple == 0 ||  
                 !$self->{output}->is_status(value => $self->{option_results}->{disconnect_status}, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $self->{option_results}->{disconnect_status},
-                                            short_msg => $output);
+                $self->{output}->output_add(
+                    severity => $self->{option_results}->{disconnect_status},
+                    short_msg => $output
+                );
             }
             next;
         }
     
         next if (defined($self->{option_results}->{nopoweredon_skip}) && 
-                 $options{custom}->vm_is_running(power => $response->{data}->{$vm_id}->{power_state}) == 0);
+            $options{custom}->vm_is_running(power => $response->{data}->{$vm_id}->{power_state}) == 0);
         
         next if (!defined($response->{data}->{$vm_id}->{tools_status}));
         
@@ -133,26 +142,32 @@ sub run {
             $not_up2date{$vm_name} = defined($response->{data}->{$vm_id}->{'config.annotation'}) ? $response->{data}->{$vm_id}->{'config.annotation'} : '';
         }
     }
-    
+
     if (scalar(keys %not_up2date) > 0 && 
         !$self->{output}->is_status(value => $self->{option_results}->{tools_notupd2date_status}, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $self->{option_results}->{tools_notupd2date_status},
-                                               short_msg => sprintf('%d VM with VMTools not up-to-date', scalar(keys %not_up2date)));
+        $self->{output}->output_add(
+            severity => $self->{option_results}->{tools_notupd2date_status},
+            short_msg => sprintf('%d VM with VMTools not up-to-date', scalar(keys %not_up2date))
+        );
         $self->display_verbose(label => 'vmtools not up-to-date:', vms => \%not_up2date, custom => $options{custom});
     }
     if (scalar(keys %not_running) > 0 &&
         !$self->{output}->is_status(value => $self->{option_results}->{tools_notrunning_status}, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $self->{option_results}->{tools_notrunning_status},
-                                               short_msg => sprintf('%d VM with VMTools not running', scalar(keys %not_running)));
+        $self->{output}->output_add(
+            severity => $self->{option_results}->{tools_notrunning_status},
+            short_msg => sprintf('%d VM with VMTools not running', scalar(keys %not_running))
+        );
         $self->display_verbose(label => 'vmtools not running:', vms => \%not_running, custom => $options{custom});
     }
     if (scalar(keys %not_installed) > 0 &&
         !$self->{output}->is_status(value => $self->{option_results}->{tools_notinstalled_status}, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $self->{option_results}->{tools_notinstalled_status},
-                                               short_msg => sprintf('%d VM with VMTools not installed', scalar(keys %not_installed)));
+        $self->{output}->output_add(
+            severity => $self->{option_results}->{tools_notinstalled_status},
+            short_msg => sprintf('%d VM with VMTools not installed', scalar(keys %not_installed))
+        );
         $self->display_verbose(label => 'vmtools not installed:', vms => \%not_installed, custom => $options{custom});
     }
-    
+
     if ($multiple == 1) {
         my $total = scalar(keys %not_up2date) + scalar(keys %not_running) + scalar(keys %not_installed);
         $self->{output}->perfdata_add(
@@ -174,7 +189,7 @@ sub run {
             min => 0, max => $total
         );
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -225,6 +240,10 @@ Status if VM disconnected (default: 'unknown').
 =item B<--nopoweredon-skip>
 
 Skip check if VM is not poweredOn.
+
+=item B<--empty-continue>
+
+Ask to the connector that an empty response is ok. 
 
 =item B<--display-description>
 

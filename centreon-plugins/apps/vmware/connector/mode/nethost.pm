@@ -58,7 +58,7 @@ sub custom_traffic_output {
 
     my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic}, network => 1);
     return sprintf(
-        "traffic %s : %s/s (%.2f %%)",
+        "traffic %s: %s/s (%.2f %%)",
         $self->{result_values}->{label_ref}, $value . $unit, $self->{result_values}->{traffic_prct}
     );
 }
@@ -79,7 +79,7 @@ sub custom_dropped_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'packets %s dropped : %.2f %% (%d/%d packets)',
+        'packets %s dropped: %.2f %% (%d/%d packets)',
         $self->{result_values}->{label_ref}, 
         $self->{result_values}->{dropped_prct},
         $self->{result_values}->{dropped}, $self->{result_values}->{packets}
@@ -131,7 +131,7 @@ sub set_counters {
     $self->{maps_counters}->{global_host} = [
         { label => 'host-traffic-in', nlabel => 'host.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_in' } ],
-                output_template => 'host traffic in : %s %s/s',
+                output_template => 'host traffic in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'host_traffic_in', template => '%s',
@@ -141,7 +141,7 @@ sub set_counters {
         },
         { label => 'host-traffic-out', nlabel => 'host.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_out' } ],
-                output_template => 'host traffic out : %s %s/s',
+                output_template => 'host traffic out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'host_traffic_out', template => '%s',
@@ -154,17 +154,17 @@ sub set_counters {
     $self->{maps_counters}->{vswitch} = [
         { label => 'vswitch-traffic-in', nlabel => 'host.vswitch.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_in' } ],
-                output_template => 'traffic in : %s %s/s',
+                output_template => 'traffic in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'vswitch_traffic_in', template => '%s',
-                      unit => 'b/s', min => 0, label_extra_instance => 1 },
-                ],
+                      unit => 'b/s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'vswitch-traffic-out', nlabel => 'host.vswitch.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_out' } ],
-                output_template => 'traffic out : %s %s/s',
+                output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'vswitch_traffic_out', template => '%s',
@@ -262,12 +262,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'esx-hostname:s'     => { name => 'esx_hostname' },
-        'nic-name:s'         => { name => 'nic_name' },
-        'filter'             => { name => 'filter' },
-        'scope-datacenter:s' => { name => 'scope_datacenter' },
-        'scope-cluster:s'    => { name => 'scope_cluster' },
-        'no-proxyswitch'     => { name => 'no_proxyswitch' }
+        'esx-hostname:s'        => { name => 'esx_hostname' },
+        'nic-name:s'            => { name => 'nic_name' },
+        'filter'                => { name => 'filter' },
+        'scope-datacenter:s'    => { name => 'scope_datacenter' },
+        'scope-cluster:s'       => { name => 'scope_cluster' },
+        'no-proxyswitch'        => { name => 'no_proxyswitch' },
+        'filter-vswitch-name:s' => { name => 'filter_vswitch_name' }
     });
 
     return $self;
@@ -284,21 +285,36 @@ sub manage_selection {
 
     foreach my $host_id (keys %{$response->{data}}) {
         my $host_name = $response->{data}->{$host_id}->{name};
-        $self->{host}->{$host_name} = { display => $host_name, 
+        $self->{host}->{$host_name} = {
+            display => $host_name,
             global => {
-                state => $response->{data}->{$host_id}->{state},    
+                state => $response->{data}->{$host_id}->{state}
             },
             global_host => {
                 traffic_in => 0,
                 traffic_out => 0
             }
         };
-        
+
         foreach my $pnic_name (sort keys %{$response->{data}->{$host_id}->{pnic}}) {
             $self->{host}->{$host_name}->{pnic} = {} if (!defined($self->{host}->{$host_name}->{pnic}));
+
             next if (defined($self->{option_results}->{nic_name}) && $self->{option_results}->{nic_name} ne '' &&
                 $pnic_name !~ /$self->{option_results}->{nic_name}/);
-            
+
+            my $filtered = 1;
+            if (defined($self->{option_results}->{filter_vswitch_name}) && $self->{option_results}->{filter_vswitch_name} ne '') {
+                $filtered = 0;
+                foreach my $vswitch_name (keys %{$response->{data}->{$host_id}->{vswitch}}) {
+                    next if (!defined($response->{data}->{$host_id}->{vswitch}->{$vswitch_name}->{pnic}));
+                    next if ($vswitch_name !~ /$self->{option_results}->{filter_vswitch_name}/);
+                    foreach (@{$response->{data}->{$host_id}->{vswitch}->{$vswitch_name}->{pnic}}) {
+                        $filtered = 1 if ($_ eq $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{key});
+                    }
+                }
+            }
+            next if ($filtered == 0);
+
             $self->{host}->{$host_name}->{pnic}->{$pnic_name} = { 
                 display     => $pnic_name,
                 status      => $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{status} ,
@@ -310,9 +326,9 @@ sub manage_selection {
                 dropped_in  => $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.droppedRx.summation'},
                 dropped_out => $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.droppedTx.summation'}
             };
-            
+
             next if (!defined($response->{data}->{$host_id}->{pnic}->{$pnic_name}->{speed}));
-            
+
             foreach my $vswitch_name (keys %{$response->{data}->{$host_id}->{vswitch}}) {
                 next if (!defined($response->{data}->{$host_id}->{vswitch}->{$vswitch_name}->{pnic}));
                 foreach (@{$response->{data}->{$host_id}->{vswitch}->{$vswitch_name}->{pnic}}) {
@@ -326,7 +342,7 @@ sub manage_selection {
                     }
                 }
             }
-            
+
             $self->{host}->{$host_name}->{global_host}->{traffic_in} += $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.received.average'}
                 if (defined($response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.received.average'}));
             $self->{host}->{$host_name}->{global_host}->{traffic_out} += $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.transmitted.average'}
@@ -366,6 +382,11 @@ Search in following cluster(s) (can be a regexp).
 
 ESX nic to check.
 If not set, we check all nics.
+
+=item B<--filter-vswitch-name>
+
+Filter vswitch by name.
+It monitors only ESX nic that belongs to the filtered vswitches.
 
 =item B<--unknown-status>
 

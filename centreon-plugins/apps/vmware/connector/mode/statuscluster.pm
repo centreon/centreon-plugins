@@ -97,7 +97,7 @@ sub manage_selection {
     foreach my $cluster_id (keys %{$response->{data}}) {
         my $cluster_name = $response->{data}->{$cluster_id}->{name};
         $self->{cluster}->{$cluster_name} = {
-            display => $cluster_name, 
+            display => $cluster_name,
             overall_status => $response->{data}->{$cluster_id}->{overall_status},
             vsan_status => defined($response->{data}->{$cluster_id}->{vsan_cluster_status}) ? $response->{data}->{$cluster_id}->{vsan_cluster_status} : '',
             ha_enabled => defined($response->{data}->{$cluster_id}->{ha_enabled}) ? $response->{data}->{$cluster_id}->{ha_enabled} : '',

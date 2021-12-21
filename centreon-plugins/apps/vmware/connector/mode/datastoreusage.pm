@@ -151,7 +151,8 @@ sub new {
         'scope-datacenter:s' => { name => 'scope_datacenter' },
         'filter-host:s'      => { name => 'filter_host' },
         'units:s'            => { name => 'units', default => '' },
-        'free'               => { name => 'free' }
+        'free'               => { name => 'free' },
+        'refresh'            => { name => 'refresh' }
     });
 
     return $self;
@@ -258,6 +259,10 @@ Search in following datacenter(s) (can be a regexp).
 =item B<--filter-host>
 
 Filter datastores attached to hosts (can be a regexp).
+
+=item B<--refresh>
+
+Explicitly ask vmware to refreshes free-space and capacity values (slower).
 
 =item B<--unknown-status>
 
