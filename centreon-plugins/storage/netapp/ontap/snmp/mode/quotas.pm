@@ -361,6 +361,11 @@ sub manage_selection {
     my $multi = 1;
     $multi = 1024 unless defined($self->{option_results}->{not_kbytes});
 
+    if (scalar(keys %{$self->{quotas}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No quota found');
+        $self->{output}->option_exit();
+    }
+
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping_datas)) ],
         instances => [ map($_, keys(%{$self->{quotas}})) ],
@@ -379,11 +384,6 @@ sub manage_selection {
             $soft_limit = $result->{threshold};
         }
         $self->{quotas}->{$instance}->{soft_limit} = $soft_limit;
-    }
-
-    if (scalar(keys %{$self->{quotas}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No quota found");
-        $self->{output}->option_exit();
     }
 }
 
