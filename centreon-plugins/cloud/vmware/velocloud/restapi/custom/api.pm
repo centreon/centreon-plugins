@@ -415,9 +415,9 @@ sub get_links_qoe {
         query_form_post => {
             enterpriseId => int($self->{entreprise_id}),
             edgeId => $options{edge_id},
-            debug => 'false',
-            individualScores => 'false',
-            maxSamples => '15',
+            debug => \0,
+            individualScores => \0,
+            maxSamples => 15,
             interval => {
                 start => $start_time
             }
