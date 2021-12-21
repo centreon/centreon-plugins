@@ -51,91 +51,6 @@ sub custom_summary_output {
     return $msg;
 }
 
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'host', type => 3, cb_prefix_output => 'prefix_host_output', cb_long_output => 'host_long_output', indent_long_output => '    ', message_multiple => 'All ESX hosts are ok', 
-            group => [
-                { name => 'global_host', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'global_problems', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'global_summary', type => 1 }
-            ]
-        }
-    ];
-    
-    $self->{maps_counters}->{global} = [
-        { label => 'total-problems', nlabel => 'host.health.problems.current.count', set => {
-                key_values => [ { name => 'total_problems' }, { name => 'total' } ],
-                output_template => '%s total health issue(s) found',
-                perfdatas => [
-                    { label => 'total_problems', template => '%s',
-                      min => 0, max => 'total' }
-                ]
-            }
-        }
-    ];
-    
-    $self->{maps_counters}->{global_host} = [
-        {
-            label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
-            set => {
-                key_values => [ { name => 'state' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        }
-    ];
-    
-    $self->{maps_counters}->{global_problems} = [
-        { label => 'ok', threshold => 0, set => {
-                key_values => [ { name => 'ok' } ],
-                output_template => '%s health checks are green',
-                closure_custom_perfdata => sub { return 0; },
-            }
-        },
-        { label => 'problems', nlabel => 'host.health.problems.current.count', set => {
-                key_values => [ { name => 'total_problems' }, { name => 'total' } ],
-                output_template => '%s total health issue(s) found',
-                perfdatas => [
-                    { label => 'problems', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 }
-                ]
-            }
-        },
-        { label => 'problems-yellow', nlabel => 'host.health.yellow.current.count', set => {
-                key_values => [ { name => 'yellow' }, { name => 'total' } ],
-                output_template => '%s yellow health issue(s) found',
-                perfdatas => [
-                    { label => 'problems_yellow', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 }
-                ]
-            }
-        },
-        { label => 'problems-red', nlabel => 'host.health.red.current.count', set => {
-                key_values => [ { name => 'red' }, { name => 'total' } ],
-                output_template => '%s red health issue(s) found',
-                perfdatas => [
-                    { label => 'problems_red', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 }
-                ]
-            }
-        },
-    ];
-    
-    $self->{maps_counters}->{global_summary} = [
-        { label => 'global-summary', threshold => 0, set => {
-                key_values => [ { name => 'type' }, { name => 'name' }, { name => 'summary' } ],
-                closure_custom_output => $self->can('custom_summary_output'),
-                closure_custom_perfdata => sub { return 0; }
-            }
-        }
-    ];
-}
-
 sub prefix_host_output {
     my ($self, %options) = @_;
 
@@ -160,9 +75,144 @@ sub prefix_cpu_output {
     return "cpu '" . $options{instance_value}->{display} . "' ";
 }
 
+sub prefix_sensor_output {
+    my ($self, %options) = @_;
+
+    return "sensor '" . $options{instance} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'host', type => 3, cb_prefix_output => 'prefix_host_output', cb_long_output => 'host_long_output', indent_long_output => '    ', message_multiple => 'All ESX hosts are ok', 
+            group => [
+                { name => 'global_host', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_problems', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_summary', type => 1 },
+                { name => 'sensors_temp', display_long => 1, cb_prefix_output => 'prefix_sensor_output', message_multiple => 'temperature sensors are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'sensors_fan', display_long => 1, cb_prefix_output => 'prefix_sensor_output', message_multiple => 'fan sensors are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'sensors_voltage', display_long => 1, cb_prefix_output => 'prefix_sensor_output', message_multiple => 'voltage sensors are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'sensors_power', display_long => 1, cb_prefix_output => 'prefix_sensor_output', message_multiple => 'power sensors are ok', type => 1, skipped_code => { -10 => 1 } }
+            ]
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'total-problems', nlabel => 'host.health.problems.current.count', set => {
+                key_values => [ { name => 'total_problems' }, { name => 'total' } ],
+                output_template => '%s total health issue(s) found',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{global_host} = [
+        {
+            label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
+            set => {
+                key_values => [ { name => 'state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{global_problems} = [
+        { label => 'ok', threshold => 0, set => {
+                key_values => [ { name => 'ok' } ],
+                output_template => '%s health checks are green',
+                closure_custom_perfdata => sub { return 0; }
+            }
+        },
+        { label => 'problems', nlabel => 'host.health.problems.current.count', set => {
+                key_values => [ { name => 'total_problems' }, { name => 'total' } ],
+                output_template => '%s total health issue(s) found',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'problems-yellow', nlabel => 'host.health.yellow.current.count', set => {
+                key_values => [ { name => 'yellow' }, { name => 'total' } ],
+                output_template => '%s yellow health issue(s) found',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'problems-red', nlabel => 'host.health.red.current.count', set => {
+                key_values => [ { name => 'red' }, { name => 'total' } ],
+                output_template => '%s red health issue(s) found',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{global_summary} = [
+        { label => 'global-summary', threshold => 0, set => {
+                key_values => [ { name => 'type' }, { name => 'name' }, { name => 'summary' } ],
+                closure_custom_output => $self->can('custom_summary_output'),
+                closure_custom_perfdata => sub { return 0; }
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{sensors_temp} = [
+        { label => 'sensor-temperature', nlabel => 'host.sensor.temperature.celsius', set => {
+                key_values => [ { name => 'value' } ],
+                output_template => 'temperature: %s C',
+                perfdatas => [
+                    { template => '%s', unit => 'C', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{sensors_fan} = [
+        { label => 'sensor-fan', nlabel => 'host.sensor.fan.speed.rpm', set => {
+                key_values => [ { name => 'value' } ],
+                output_template => 'fan speed: %s rpm',
+                perfdatas => [
+                    { template => '%s', unit => 'rpm', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{sensors_voltage} = [
+        { label => 'sensor-voltage', nlabel => 'host.sensor.voltage.volt', set => {
+                key_values => [ { name => 'value' } ],
+                output_template => 'voltage: %s V',
+                perfdatas => [
+                    { template => '%s', unit => 'V', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{sensors_power} = [
+        { label => 'sensor-power', nlabel => 'host.sensor.power.watt', set => {
+                key_values => [ { name => 'value' } ],
+                output_template => 'power: %s W',
+                perfdatas => [
+                    { template => '%s', unit => 'W', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -195,9 +245,10 @@ sub manage_selection {
             global_summary => {},
             global_problems => {
                 ok => 0, total_problems => 0, red => 0, yellow => 0, total => 0
-            }
+            },
+            sensors_temp => {}
         };
-        
+
         my $i = 0;
         foreach (('memory_info', 'cpu_info', 'sensor_info', 'storage_info')) {
             if (defined($response->{data}->{$host_id}->{$_})) {
@@ -218,6 +269,24 @@ sub manage_selection {
                 }
 
                 $i++;
+            }
+        }
+
+        if (defined($response->{data}->{$host_id}->{sensor_info})) {
+            foreach my $entry (@{$response->{data}->{$host_id}->{sensor_info}}) {
+                next if ($entry->{current_reading} == 0);
+
+                $entry->{current_reading} *= 10 ** $entry->{power10};
+                $entry->{name} =~ s/\s---\s.+//;
+                if (lc($entry->{type}) eq 'temperature' && $entry->{unit} =~ /Degrees\s+C/i) {
+                    $self->{host}->{$host_name}->{sensors_temp}->{ $entry->{name} } = { value => $entry->{current_reading} };
+                } elsif (lc($entry->{type}) eq 'fan' && $entry->{unit} =~ /rpm/i) {
+                    $self->{host}->{$host_name}->{sensors_fan}->{ $entry->{name} } = { value => $entry->{current_reading} };
+                } elsif (lc($entry->{type}) eq 'voltage' && $entry->{unit} =~ /volts/i) {
+                    $self->{host}->{$host_name}->{sensors_voltage}->{ $entry->{name} } = { value => $entry->{current_reading} };
+                } elsif (lc($entry->{type}) eq 'power' && $entry->{unit} =~ /watts/i) {
+                    $self->{host}->{$host_name}->{sensors_power}->{ $entry->{name} } = { value => $entry->{current_reading} };
+                }
             }
         }
 
@@ -272,15 +341,11 @@ Can used special variables like: %{status}
 Set critical threshold for status (Default: '').
 Can used special variables like: %{status}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'total-problems', 'problems', 'problems-yellow', 'problems-red'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'total-problems', 'problems', 'problems-yellow', 'problems-red'.
+Thresholds.
+Can be: 'total-problems', 'problems', 'problems-yellow', 'problems-red',
+'sensor-temperature', 'sensor-fan', 'sensor-voltage', 'sensor-power'.
 
 =back
 

@@ -86,7 +86,7 @@ sub check_options {
     $self->{vsphere_username} = (defined($self->{option_results}->{vsphere_username})) ? shift(@{$self->{option_results}->{vsphere_username}}) : undef;
     $self->{vsphere_password} = (defined($self->{option_results}->{vsphere_password})) ? shift(@{$self->{option_results}->{vsphere_password}}) : undef;
     $self->{sampling_period} = (defined($self->{option_results}->{sampling_period})) ? shift(@{$self->{option_results}->{sampling_period}}) : undef;
-    $self->{time_shift} = (defined($self->{option_results}->{sampling_period})) ? shift(@{$self->{option_results}->{time_shift}}) : 0;
+    $self->{time_shift} = (defined($self->{option_results}->{time_shift})) ? shift(@{$self->{option_results}->{time_shift}}) : 0;
     $self->{unknown_connector_status} = (defined($self->{option_results}->{unknown_connector_status})) ? $self->{option_results}->{unknown_connector_status} : '%{code} < 0 || (%{code} > 0 && %{code} < 200)';
     $self->{warning_connector_status} = (defined($self->{option_results}->{warning_connector_status})) ? $self->{option_results}->{warning_connector_status} : '';
     $self->{critical_connector_status} = (defined($self->{option_results}->{critical_connector_status})) ? $self->{option_results}->{critical_connector_status} : '';
@@ -221,7 +221,7 @@ sub strip_cr {
 
 sub execute {
     my ($self, %options) = @_;
-    
+
     $self->add_params(%options);
     
     # Build request

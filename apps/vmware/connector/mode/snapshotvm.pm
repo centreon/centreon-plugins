@@ -43,10 +43,11 @@ sub new {
         'display-description'   => { name => 'display_description' },
         'check-consolidation'   => { name => 'check_consolidation' },
         'nopoweredon-skip'      => { name => 'nopoweredon_skip' },
+        'empty-continue'        => { name => 'empty_continue' },
         'warning:s'             => { name => 'warning' },
         'critical:s'            => { name => 'critical' },
         'disconnect-status:s'   => { name => 'disconnect_status', default => 'unknown' },
-        'unit:s'                => { name => 'unit', default => 's' },
+        'unit:s'                => { name => 'unit', default => 's' }
     });
     
     return $self;
@@ -80,9 +81,11 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'snapshotvm');
-    
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'snapshotvm'
+    );
+
     my $multiple = 0;
     my %vm_consolidate = ();
     my %vm_errors = (warning => {}, critical => {}); 
@@ -90,28 +93,34 @@ sub run {
         $multiple = 1;
     }
     if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                               short_msg => sprintf("All snapshots are ok"));
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => sprintf("All snapshots are ok")
+        );
     } else {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("Snapshot(s) OK"));
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => sprintf("Snapshot(s) OK")
+        );
     }
     foreach my $vm_id (sort keys %{$response->{data}}) {
         my $vm_name = $response->{data}->{$vm_id}->{name};
-        
+
         if ($options{custom}->entity_is_connected(state => $response->{data}->{$vm_id}->{connection_state}) == 0) {
             my $output = "VM '" . $vm_name . "' not connected. Current Connection State: '$response->{data}->{$vm_id}->{connection_state}'.";
             if ($multiple == 0 ||  
                 !$self->{output}->is_status(value => $self->{option_results}->{disconnect_status}, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $self->{option_results}->{disconnect_status},
-                                            short_msg => $output);
+                $self->{output}->output_add(
+                    severity => $self->{option_results}->{disconnect_status},
+                    short_msg => $output
+                );
             }
             next;
         }
     
         next if (defined($self->{option_results}->{nopoweredon_skip}) && 
                  $options{custom}->vm_is_running(power => $response->{data}->{$vm_id}->{power_state}) == 0);
-    
+
         if (defined($self->{check_consolidation}) && defined($response->{data}->{$vm_id}->{consolidation_needed}) && $response->{data}->{$vm_id}->{consolidation_needed} == 1) {
             $vm_consolidate{$response->{data}->{$vm_id}->{name}} = 1;
         }
@@ -119,15 +128,17 @@ sub run {
         foreach (@{$response->{data}->{$vm_id}->{snapshosts}}) {
             my $create_time = Date::Parse::str2time($_->{create_time});
             if (!defined($create_time)) {
-                $self->{output}->output_add(severity => 'UNKNOWN',
-                                            short_msg => "Can't Parse date '" . $_->{create_time} . "' for vm '" . $vm_name . "'");
+                $self->{output}->output_add(
+                    severity => 'UNKNOWN',
+                    short_msg => "Can't Parse date '" . $_->{create_time} . "' for vm '" . $vm_name . "'"
+                );
                 next;
             }
-            
+
             my $diff_time = time() - $create_time;
             my $days = int($diff_time / 60 / 60 / 24);
             my $exit = $self->{perfdata}->threshold_check(value => ($diff_time / $unitdiv->{$self->{option_results}->{unit}}->[1]), threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-            
+
             my $prefix_msg = "'$vm_name'";
             if (defined($self->{display_description}) && defined($response->{data}->{$vm_id}->{'config.annotation'}) &&
                 $response->{data}->{$vm_id}->{'config.annotation'} ne '') {
@@ -187,7 +198,7 @@ sub run {
             )
         );
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -246,6 +257,10 @@ Status if VM disconnected (default: 'unknown').
 =item B<--nopoweredon-skip>
 
 Skip check if VM is not poweredOn.
+
+=item B<--empty-continue>
+
+Ask to the connector that an empty response is ok. 
 
 =item B<--unit>
 
