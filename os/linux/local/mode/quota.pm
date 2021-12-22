@@ -203,9 +203,6 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{quota}}) <= 0) {
-        if ($exit_code != 0) {
-            $self->{output}->output_add(long_msg => "command output:" . $stdout);
-        }
         $self->{output}->add_option_msg(short_msg => "No quota found (filters or command issue)");
         $self->{output}->option_exit();
     }

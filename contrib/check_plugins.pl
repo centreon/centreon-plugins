@@ -38,6 +38,22 @@ sub check_directory {
     closedir $dh;
 }
 
+sub check_custommode {
+    my (%options) = @_;
+
+    my $cmodes = `$options{bin} --plugin=$options{plugin} --list-custommode`;
+    if ($cmodes !~ /Custom Modes Available:\n(.*)/ms) {
+        print "    mode: $options{mode}, result=$cmodes";
+        return ;
+    }
+        
+    foreach my $cmode (split /\n/, $1) {
+        $cmode =~ s/\s+//g;
+        my $result = `$options{bin} --plugin=$options{plugin} --custommode=$cmode --mode=$options{mode}`;
+        print "    mode: $options{mode}, custommode: $cmode, result=$result";
+    }
+}
+
 my $plugin = "$FindBin::Bin/../centreon_plugins.pl";
 check_directory("$FindBin::Bin/..");
 
@@ -49,11 +65,17 @@ foreach my $plugin_path (@$plugins) {
         foreach my $mode (split /\n/, $1) {
             $mode =~ s/\s+//g;
             my $result = `$plugin --plugin=$plugin_path --mode=$mode`;
-            print "    mode: $mode, result=$result";
+            if ($result =~ /Need to specify '--custommode'/i) {
+                check_custommode(bin => $plugin, plugin => $plugin_path, mode => $mode);
+            } else {
+                print "    mode: $mode, result=$result";
+            }
         }
     } else {
         print "error: $modes\n";
     }
+
+    print "\n";
 }
 
 exit(0);

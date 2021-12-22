@@ -38,10 +38,9 @@ sub new {
         'exceptions'      => 'cloud::azure::management::applicationinsights::mode::exceptions',
         'external-calls'  => 'cloud::azure::management::applicationinsights::mode::externalcalls',
         'io-operations'   => 'cloud::azure::management::applicationinsights::mode::iooperations',
-        'health'          => 'cloud::azure::management::applicationinsights::mode::health',
         'memory'          => 'cloud::azure::management::applicationinsights::mode::memory',
         'page-views'      => 'cloud::azure::management::applicationinsights::mode::pageviews',
-        'requests'        => 'cloud::azure::management::applicationinsights::mode::requests',
+        'requests'        => 'cloud::azure::management::applicationinsights::mode::requests'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
