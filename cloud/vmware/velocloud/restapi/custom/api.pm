@@ -215,9 +215,6 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-    if (!defined($self->{session_cookie})) {
-        $self->get_session_cookie(statefile => $self->{cache_cookie});
-    }
 
     my $encoded_form_post;
     if (defined($options{query_form_post})) {
@@ -230,45 +227,53 @@ sub request_api {
         }
     }
 
-    my ($content) = $self->{http}->request(
-        method => $options{method},
-        url_path => $self->{api_path} . $options{endpoint},
-        query_form_post => $encoded_form_post,
-        unknown_status => '',
-        warning_status => '',
-        critical_status => ''
-    );
+    my $loop = 0;
+    while (1) {
+        if (!defined($self->{session_cookie})) {
+            $self->get_session_cookie(statefile => $self->{cache_cookie});
+        }
 
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        $self->clean_session(statefile => $self->{cache_cookie});
-        $self->get_session_cookie(statefile => $self->{cache_cookie});
-        ($content) = $self->{http}->request(
+        my ($content) = $self->{http}->request(
             method => $options{method},
             url_path => $self->{api_path} . $options{endpoint},
             query_form_post => $encoded_form_post,
-            unknown_status => '',
-            warning_status => '',
-            critical_status => ''
+            unknown_status => $loop > 0 ? $self->{unknown_http_status} : '',
+            warning_status => $loop > 0 ? $self->{warning_http_status} : '',
+            critical_status => $loop > 0 ? $self->{critical_http_status} : ''
         );
-    }
+        $loop++;
+        if ($loop == 5) {
+            $self->{output}->add_option_msg(short_msg => 'cannot get valid data');
+            $self->{output}->option_exit();
+        }
 
-    my $decoded = $self->json_decode(content => $content);
-    if (!defined($decoded)) {
-        $self->{output}->add_option_msg(short_msg => 'error while retrieving data (add --debug option for detailed message)');
-        $self->{output}->option_exit();
-    }
-    if (ref($decoded) ne 'ARRAY' && defined($decoded->{error})) {
-        $self->{output}->add_option_msg(
-            short_msg => sprintf(
-                "API returned error code '%s', message '%s'",
-                $decoded->{error}->{code},
-                $decoded->{error}->{message}
-            )
-        );
-        $self->{output}->option_exit();
-    }
+        if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+            $self->clean_session(statefile => $self->{cache_cookie});
+            next;
+        }
 
-    return $decoded;
+        my $decoded = $self->json_decode(content => $content);
+        if (!defined($decoded)) {
+            $self->{output}->add_option_msg(short_msg => 'error while retrieving data (add --debug option for detailed message)');
+            $self->{output}->option_exit();
+        }
+        if (ref($decoded) ne 'ARRAY' && defined($decoded->{error})) {
+            if ($decoded->{error}->{code} == -32000) {
+                $self->clean_session(statefile => $self->{cache_cookie});
+                next;
+            }
+            $self->{output}->add_option_msg(
+                short_msg => sprintf(
+                    "API returned error code '%s', message '%s'",
+                    $decoded->{error}->{code},
+                    $decoded->{error}->{message}
+                )
+            );
+            $self->{output}->option_exit();
+        }
+
+        return $decoded;
+    }
 }
 
 sub get_entreprise_id {
