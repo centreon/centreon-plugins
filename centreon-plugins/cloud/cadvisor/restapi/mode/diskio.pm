@@ -112,7 +112,7 @@ sub manage_selection {
         my $read_io = {};
         my $write_io = {};
 
-        if (keys $first_stat->{diskio}) {
+        if (defined($first_stat->{diskio})) {
             $self->{containers}->{$container_id} = {
                 node_name           => $result->{$container_id}->{NodeName},
                 display             => defined($self->{option_results}->{use_name}) ? $name : $container_id,

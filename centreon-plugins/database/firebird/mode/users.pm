@@ -24,18 +24,16 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use DBD::Firebird;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' }
+    });
 
     return $self;
 }
@@ -56,13 +54,10 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
 
-    $self->{sql}->connect();
-    
-    $self->{sql}->query(query => q{SELECT COUNT(MON$USER) FROM MON$ATTACHMENTS WHERE MON$ATTACHMENT_ID <> CURRENT_CONNECTION});
-    my $result = $self->{sql}->fetchrow_array();
+    $options{sql}->connect();
+    $options{sql}->query(query => q{SELECT COUNT(MON$USER) FROM MON$ATTACHMENTS WHERE MON$ATTACHMENT_ID <> CURRENT_CONNECTION});
+    my $result = $options{sql}->fetchrow_array();
 
     if (!defined($result)) {
         $self->{output}->add_option_msg(short_msg => "Cannot get users.");
@@ -72,13 +67,17 @@ sub run {
     my $exit_code = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my $msg = sprintf("%d user(s) connect to database", $result);
     
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => $msg);
-    $self->{output}->perfdata_add(label => 'users', value => $result,
-                                  nlabel => 'users.count',
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
+    $self->{output}->output_add(
+        severity => $exit_code,
+        short_msg => $msg
+    );
+    $self->{output}->perfdata_add(
+        label => 'users', value => $result,
+        nlabel => 'users.count',
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0
+    );
 
     $self->{output}->display();
     $self->{output}->exit();

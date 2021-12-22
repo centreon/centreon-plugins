@@ -118,7 +118,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel = 'jobs.total.count', set => {
+        { label => 'total', nlabel => 'jobs.total.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total jobs : %s',
                 perfdatas => [

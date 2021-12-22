@@ -59,7 +59,7 @@ sub new {
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
-    
+
     return $self;
 }
 
@@ -231,7 +231,7 @@ sub get_host_statistics {
 sub cache_hosts {
     my ($self, %options) = @_;
 
-    $self->{cache_hosts} = centreon::plugins::statefile->new(%options);
+    $self->{cache_hosts} = centreon::plugins::statefile->new(output => $self->{output});
     $self->{cache_hosts}->check_options(option_results => $self->{option_results});
     my $has_cache_file = $self->{cache_hosts}->read(statefile => 'cache_ovirt_hosts_' . md5_hex($self->{hostname}) . '_' . md5_hex($self->{api_username}));
     my $timestamp_cache = $self->{cache_hosts}->get(name => 'last_timestamp');

@@ -82,7 +82,7 @@ sub check {
         
         $checked++;
 
-        my $status = 'ok'
+        my $status = 'ok';
         if (defined($self->{option_results}->{critical}) && $self->{option_results}->{critical} ne '' &&
             $self->{output}->test_eval(test => $self->{option_results}->{critical}, values => $self->{data})) {
             $status = 'critical';
