@@ -40,14 +40,13 @@ sub new {
         'oraclejvmgc'         => 'apps::kingdee::eas::mode::oraclejvmgc',
         'ibmjvmgc'            => 'apps::kingdee::eas::mode::ibmjvmgc',
         'ormrpc'              => 'apps::kingdee::eas::mode::ormrpc',
-        'easlicense'          => 'apps::kingdee::eas::mode::easlicense',
         'activeusers'         => 'apps::kingdee::eas::mode::activeusers',
         'oracleversion'       => 'apps::kingdee::eas::mode::oracleversion',
         'oraclesession'       => 'apps::kingdee::eas::mode::oraclesession',
         'oracletable'         => 'apps::kingdee::eas::mode::oracletable',
         'oraclerecyclebin'    => 'apps::kingdee::eas::mode::oraclerecyclebin',
         'oracleksqltemptable' => 'apps::kingdee::eas::mode::oracleksqltemptable',
-        'oracleredolog'       => 'apps::kingdee::eas::mode::oracleredolog',
+        'oracleredolog'       => 'apps::kingdee::eas::mode::oracleredolog'
     );
 
     $self->{custom_modes}{api} = 'apps::kingdee::eas::custom::api';
