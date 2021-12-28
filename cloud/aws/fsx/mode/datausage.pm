@@ -116,7 +116,6 @@ sub check_options {
             push @{$self->{aws_instance}}, $instance;
         }
     }
-
 }
 
 sub manage_selection {
