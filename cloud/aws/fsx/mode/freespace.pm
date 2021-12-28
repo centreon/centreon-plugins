@@ -76,8 +76,6 @@ sub check_options {
             push @{$self->{aws_instance}}, $instance;
         }
     }
-
-    $self->{aws_statistics} = ['Average'];
 }
 
 sub manage_selection {

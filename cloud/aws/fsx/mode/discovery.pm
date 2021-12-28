@@ -64,7 +64,7 @@ sub run {
         $fsx{dns_name} = $fsx_instance->{DNSName};
         $fsx{creation_time} = $fsx_instance->{CreationTime};
         $fsx{lifecycle} = $fsx_instance->{Lifecycle};
-        $fsx{type} = $fsx_instance->{FileSystemType};
+        $fsx{fsx_type} = $fsx_instance->{FileSystemType};
         foreach my $tag (@{$instance->{Tags}}) {
             push @{$fsx{tags}}, { key => $tag->{Key}, value => $tag->{Value} };
         }

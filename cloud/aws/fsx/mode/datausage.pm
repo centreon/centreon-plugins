@@ -117,7 +117,6 @@ sub check_options {
         }
     }
 
-    $self->{aws_statistics} = ['Sum'];
 }
 
 sub manage_selection {
@@ -165,7 +164,7 @@ Check FSx FileSystem Data consumption metrics.
 
 Example:
 perl centreon_plugins.pl --plugin=cloud::aws::fsx::plugin --custommode=awscli --mode=datausage --region='eu-west-1'
---name='fs-1234abcd' --filter-metric='DataReadIOBytes' --warning-data-read-bytes='5' --verbose
+--name='fs-1234abcd' --filter-metric='DataReadIOBytes' --statistic='sum' --warning-data-read-bytes='5' --verbose
 
 See 'https://docs.aws.amazon.com/efs/latest/ug/efs-metrics.html' for more information.
 
@@ -182,7 +181,7 @@ Can be: DataReadBytes, DataWriteBytes, DataReadOperations, DataWriteOperations, 
 
 =item B<--statistic>
 
-Set the metric calculation method (Default: Sum)
+Set the metric calculation method (Only Sum is relevant).
 
 =item B<--warning-$metric$>
 
