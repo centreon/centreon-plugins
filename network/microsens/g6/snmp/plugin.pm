@@ -34,8 +34,10 @@ sub new {
         'hardware'        => 'network::microsens::g6::snmp::mode::hardware',
         'interfaces'      => 'network::microsens::g6::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-sfp'        => 'network::microsens::g6::snmp::mode::listsfp',
         'load'            => 'network::microsens::g6::snmp::mode::load',
         'memory'          => 'network::microsens::g6::snmp::mode::memory',
+        'sfp'             => 'network::microsens::g6::snmp::mode::sfp',
         'uptime'          => 'network::microsens::g6::snmp::mode::uptime'
     };
 
