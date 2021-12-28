@@ -55,10 +55,6 @@ sub snmp_execute {
     $self->{option_results}->{add_name_instance} = 1;
 
     $self->{snmp} = $options{snmp};
-    $self->{results} = $self->{snmp}->get_multiple_table(
-        oids => $self->{request},
-        return_type => 1
-    );
 }
 
 1;
@@ -104,7 +100,6 @@ use warnings;
 use centreon::plugins::misc;
 
 my $mapping = {
-    sensorReading  => { oid => '.1.3.6.1.4.1.21317.1.3.1.2' },
     lncThreshold   => { oid => '.1.3.6.1.4.1.21317.1.3.1.5' },
     lcThreshold    => { oid => '.1.3.6.1.4.1.21317.1.3.1.6' },
     uncThreshold   => { oid => '.1.3.6.1.4.1.21317.1.3.1.8' },
@@ -112,11 +107,7 @@ my $mapping = {
     sensorIDString => { oid => '.1.3.6.1.4.1.21317.1.3.1.13' }
 };
 
-sub load {
-    my ($self) = @_;
-    
-    push @{$self->{request}}, values(%$mapping);
-}
+sub load {}
 
 sub check {
     my ($self) = @_;
@@ -125,11 +116,26 @@ sub check {
     $self->{components}->{sensor} = { name => 'sensors', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'sensor'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}})) {
-        next if ($oid !~ /^$mapping->{sensorIDString}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+    my $sensorReading = '.1.3.6.1.4.1.21317.1.3.1.2';
+    my $snmp_result = $self->{snmp}->get_table(oid => $sensorReading);
+    return if (scalar(keys %$snmp_result) <= 0);
 
+    my $instances = [];
+    foreach (keys %$snmp_result) {
+        push @$instances, $1 if (/^$sensorReading\.(.*)$/);
+    }
+    $self->{snmp}->load(
+        oids => [map($_->{oid}, values(%$mapping))],
+        instances => $instances
+    );
+    my $results = $self->{snmp}->get_leef();
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
+        next if ($oid !~ /^$sensorReading\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+
+        $result->{sensorReading} = $snmp_result->{$oid};
         $result->{sensorIDString} = centreon::plugins::misc::trim($result->{sensorIDString});
         next if ($result->{sensorIDString} eq '');
         next if ($result->{sensorReading} =~ /^0\.0+$/ && $result->{lncThreshold} =~ /^0\.0+$/);
