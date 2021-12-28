@@ -332,10 +332,10 @@ sub parse_crm {
             if ($lines[$i] !~ /partition with quorum$/) {
                 $self->{cluster}->{global}->{quorum}->{quorum_status} = 'noQuorum';
             }
-        } elsif ($lines[$i] =~ /^(offline|online):\s*\[\s*(.*?)\s*\]/i) {
+        } elsif ($lines[$i] =~ /^(?:(?:\s*\*\s*)?(offline|online)):\s*\[\s*(.*?)\s*\]/i) {
             my @nodes = split(/\s+/, $2);
             $self->{cluster}->{global}->{nodes}->{lc($1)} = scalar(@nodes);
-            $self->{cluster}->{global}->{nodes}->{lc($1) . '_names'} = ' ' . join(' ',  @nodes);
+            $self->{cluster}->{global}->{nodes}->{lc($1) . '_names'} = join(' ',  @nodes);
         } elsif ($lines[$i] =~ /^node\s+(\S+?):\s*standby/i) {
             $self->{cluster}->{global}->{nodes}->{standby}++;
             $self->{cluster}->{global}->{nodes}->{standby_names} .= ' ' . $1;
