@@ -30,7 +30,8 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'redis-clusters' => 'apps::redis::sentinel::mode::redisclusters'
+        'redis-clusters' => 'apps::redis::sentinel::mode::redisclusters',
+        'list-clusters'  => 'apps::redis::sentinel::mode::listclusters'
     };
 
     $self->{custom_modes}->{cli} = 'apps::redis::sentinel::custom::cli';
@@ -43,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Redis database.
+Check Redis sentinel.
 
 =cut
