@@ -249,8 +249,7 @@ Can used special variables like: %{status}, %{cluster_name}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be:  'redis-ping-ok-latency', 'redis-sdown', 'redis-odown', 
-'slave-repl-offset-stddev', 'slaves-detected'.
+Can be:  'sentinel-ping-ok-latency', 'sentinels-sdown', 'sentinels-odown', 'sentinels-detected'.
 
 =back
 
