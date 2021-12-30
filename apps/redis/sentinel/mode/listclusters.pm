@@ -43,20 +43,22 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{nodes} = $options{custom}->get(path => '/v1/nodes');
+    return $options{custom}->command(command => 'sentinel masters');
 }
 
 sub run {
     my ($self, %options) = @_;
   
-    $self->manage_selection(%options);
-    foreach my $node_uid (sort keys %{$self->{nodes}}) { 
-        $self->{output}->output_add(long_msg => '[uid = ' . $node_uid . "] [status = '" . $self->{nodes}->{$node_uid}->{status} . "']");
+    my $results = $self->manage_selection(%options);
+    foreach my $entry (@$results) {
+        $self->{output}->output_add(
+            long_msg => '[name: ' . $entry->{name} . ']'
+        );
     }
     
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List nodes:'
+        short_msg => 'List clusters:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -65,17 +67,16 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['uid', 'status']);
+    $self->{output}->add_disco_format(elements => ['name']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $node_uid (sort keys %{$self->{nodes}}) {             
+    my $results = $self->manage_selection(%options);
+    foreach my $entry (@$results) {           
         $self->{output}->add_disco_entry(
-            status => $self->{nodes}->{$node_uid}->{status},
-            uid => $node_uid
+            name => $entry->{name}
         );
     }
 }
@@ -86,7 +87,7 @@ __END__
 
 =head1 MODE
 
-List nodes.
+List clusters.
 
 =over 8
 
