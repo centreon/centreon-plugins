@@ -113,26 +113,6 @@ sub execute_command {
     $command_options .= $self->get_extra_options();
     $command_options .= ' --no-raw ' . $options{command};
 
-    my $file = '';
-    if ($options{command} =~ /sentinel masters/) {
-        $file = '/home/qgarnier/clients/plugins/sentinel/sentinel_redis_masters.txt';
-    } elsif ($options{command} =~ /sentinel replicas/) {
-        $file = '/home/qgarnier/clients/plugins/sentinel/sentinel_redis_replicas.txt';
-    } elsif ($options{command} =~ /sentinel sentinels/) {
-        $file = '/home/qgarnier/clients/plugins/sentinel/sentinel_sentinels.txt';
-    } elsif ($options{command} =~ /sentinel CKQUORUM/) {
-        $file = '/home/qgarnier/clients/plugins/sentinel/sentinel_ckquorum.txt';
-    }
-    my $toto = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $file : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-    return $toto;    
-
     my $timeout = $self->{timeout};
     if (!defined($timeout)) {
         $timeout = defined($options{timeout}) ? $options{timeout} : 10;

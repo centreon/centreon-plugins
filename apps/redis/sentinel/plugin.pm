@@ -30,8 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'redis-clusters' => 'apps::redis::sentinel::mode::redisclusters',
-        'list-clusters'  => 'apps::redis::sentinel::mode::listclusters'
+        'redis-clusters'    => 'apps::redis::sentinel::mode::redisclusters',
+        'list-clusters'     => 'apps::redis::sentinel::mode::listclusters',
+        'sentinel-clusters' => 'apps::redis::sentinel::mode::sentinelclusters'
     };
 
     $self->{custom_modes}->{cli} = 'apps::redis::sentinel::custom::cli';

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::redis::sentinel::mode::redisclusters;
+package apps::redis::sentinel::mode::sentinelclusters;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -30,9 +30,8 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "status: %s [role: %s]",
-        $self->{result_values}->{status},
-        $self->{result_values}->{role}
+        "status: %s",
+        $self->{result_values}->{status}
     );
 }
 
@@ -57,7 +56,7 @@ sub prefix_instance_output {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'number of ';
+    return 'number of sentinels ';
 }
 
 sub set_counters {
@@ -67,32 +66,32 @@ sub set_counters {
         { name => 'clusters', type => 3, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All clusters are ok', 
             group => [
                 { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-                { name => 'stddev', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'instances', type => 1, display_long => 1, cb_prefix_output => 'prefix_instance_output', message_multiple => 'All redis instances are ok', skipped_code => { -10 => 1 } }
+                { name => 'quorum', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'instances', type => 1, display_long => 1, cb_prefix_output => 'prefix_instance_output', message_multiple => 'All sentinel instances are ok', skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'slaves-detected', nlabel => 'cluster.redis.slaves.detected.count', set => {
-                key_values => [ { name => 'num_slaves' } ],
-                output_template => 'detected slaves: %s',
+        { label => 'sentinels-detected', nlabel => 'cluster.sentinels.detected.count', set => {
+                key_values => [ { name => 'num_sentinels' } ],
+                output_template => 'detected: %s',
                 perfdatas => [
                     { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'redis-sdown', nlabel => 'cluster.redis.subjectively_down.count', set => {
+        { label => 'sentinels-sdown', nlabel => 'cluster.sentinels.subjectively_down.count', set => {
                 key_values => [ { name => 'sdown' } ],
-                output_template => 'subjectively down instances: %s',
+                output_template => 'subjectively down: %s',
                 perfdatas => [
                     { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'redis-odown', nlabel => 'cluster.redis.objectively_down.count', set => {
+        { label => 'sentinels-odown', nlabel => 'cluster.sentinels.objectively_down.count', set => {
                 key_values => [ { name => 'odown' } ],
-                output_template => 'objectively down instances: %s',
+                output_template => 'objectively down: %s',
                 perfdatas => [
                     { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
@@ -100,13 +99,16 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{stddev} = [
-        { label => 'slave-repl-offset-stddev', nlabel => 'cluster.redis.slave_replication_offset.stddev.count', set => {
-                key_values => [ { name => 'stddev_repl_offset' } ],
-                output_template => 'slave replication offset standard deviation: %.2f',
-                perfdatas => [
-                    { template => '%.2f' }
-                ]
+    $self->{maps_counters}->{quorum} = [
+        {
+            label => 'quorum-status',
+            type => 2,
+            critical_default => '%{status} =~ /noQuorum/',
+            set => {
+                key_values => [ { name => 'status' }, { name => 'cluster_name' } ],
+                output_template => 'quorum status: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -118,16 +120,14 @@ sub set_counters {
             critical_default => '%{status} =~ /o_down|s_down|master_down|disconnected/i',
             set => {
                 key_values => [
-                    { name => 'status' }, { name => 'role' }, 
-                    { name => 'address' }, { name => 'port' }, 
-                    { name => 'cluster_name' }
+                    { name => 'status' }, { name => 'address' }, { name => 'port' }, { name => 'cluster_name' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'redis-ping-ok-latency', nlabel => 'cluster.redis.ping_ok.latency.milliseconds', set => {
+        { label => 'sentinel-ping-ok-latency', nlabel => 'cluster.sentinel.ping_ok.latency.milliseconds', set => {
                 key_values => [ { name => 'ping_ok_latency' } ],
                 output_template => 'last ok ping: %s ms',
                 perfdatas => [
@@ -158,37 +158,13 @@ sub add_instance {
         cluster_name => $options{cluster_name},
         address => $options{entry}->{ip},
         port => $options{entry}->{port},
-        role => $options{entry}->{'role-reported'},
         status => $options{entry}->{flags},
-        ping_ok_latency => $options{entry}->{'last-ok-ping-reply'},
-        slave_repl_offset => $options{entry}->{'slave-repl-offset'}
+        ping_ok_latency => $options{entry}->{'last-ok-ping-reply'}
     };
     $self->{clusters}->{ $options{cluster_name} }->{global}->{sdown}++
         if ($options{entry}->{flags} =~ /s_down/);
     $self->{clusters}->{ $options{cluster_name} }->{global}->{odown}++
         if ($options{entry}->{flags} =~ /o_down/);
-}
-
-sub stddev {
-    my ($self, %options) = @_;
-
-    my $total = 0;
-    my $num = 0;
-    foreach my $entry (values %{$self->{clusters}->{ $options{cluster_name} }->{instances}}) {
-        next if (!defined($entry->{slave_repl_offset}));
-        $total += $entry->{slave_repl_offset};
-        $num++;
-    }
-
-    return if ($num <= 1);
-
-    my $mean = $total / $num;
-    $total = 0;
-    foreach my $entry (values %{$self->{clusters}->{ $options{cluster_name} }->{instances}}) {
-        next if (!defined($entry->{slave_repl_offset}));
-        $total += ($mean - $entry->{slave_repl_offset}) ** 2;
-    }
-    $self->{clusters}->{ $options{cluster_name} }->{stddev} = { stddev_repl_offset => sqrt($total / $num) };
 }
 
 sub manage_selection {
@@ -202,25 +178,28 @@ sub manage_selection {
             && $entry->{name} !~ /$self->{option_results}->{filter_cluster_name}/);
 
         $self->{clusters}->{ $entry->{name} } = {
-            global => { num_slaves => $entry->{'num-slaves'}, odown => 0, sdown => 0 },
+            global => { num_sentinels => $entry->{'num-other-sentinels'}, odown => 0, sdown => 0 },
+            quorum => { status => 'unknown', cluster_name => $entry->{name} },
             instances => {}
         };
-        $self->add_instance(cluster_name => $entry->{name}, entry => $entry);
 
-        my $replicas = $options{custom}->command(command => 'sentinel replicas ' . $entry->{name});
-        foreach (@$replicas) {
-            $self->add_instance(cluster_name => $entry->{name}, entry => $_);
+        my $quorum = $options{custom}->ckquorum(command => 'sentinel ckquorum ' . $entry->{name});
+        if ($quorum =~ /OK \d+ usable Sentinels/m) {
+            $self->{clusters}->{ $entry->{name} }->{quorum}->{status} = 'ok';
+        } elsif ($quorum =~ /NOQUORUM \d+ usable Sentinels/m) {
+            $self->{clusters}->{ $entry->{name} }->{quorum}->{status} = 'noQuorum';
         }
 
-        $self->stddev(cluster_name => $entry->{name});
+        my $sentinels = $options{custom}->command(command => 'sentinel sentinels ' . $entry->{name});
+        foreach (@$sentinels) {
+            $self->add_instance(cluster_name => $entry->{name}, entry => $_);
+        }
     }
 
     if (scalar(keys %{$self->{clusters}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No redis cluster found.");
+        $self->{output}->add_option_msg(short_msg => "No sentinel cluster found.");
         $self->{output}->option_exit();
     }
-
-    
 }
 
 1;
@@ -229,7 +208,7 @@ __END__
 
 =head1 MODE
 
-Check redis clusters informations.
+Check sentinel clusters informations.
 
 =over 8
 
@@ -240,17 +219,32 @@ Filter clusters by name (Can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{status}, %{role}, %{address}, %{port}, %{cluster_name}
+Can used special variables like: %{status}, %{address}, %{port}, %{cluster_name}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{role}, %{address}, %{port}, %{cluster_name}
+Can used special variables like: %{status}, %{address}, %{port}, %{cluster_name}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /o_down|s_down|master_down|disconnected/i').
-Can used special variables like: %{status}, %{role}, %{address}, %{port}, %{cluster_name}
+Can used special variables like: %{status}, %{address}, %{port}, %{cluster_name}
+
+=item B<--unknown-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{status}, %{address}, %{port}, %{cluster_name}
+
+=item B<--warning-quorum-status>
+
+Set warning threshold for quorum status.
+Can used special variables like: %{status}, %{address}, %{port}, %{cluster_name}
+
+=item B<--critical-quorum-status>
+
+Set critical threshold for quorum status (Default: '%{status} =~ /noQuorum/').
+Can used special variables like: %{status}, %{cluster_name}
 
 =item B<--warning-*> B<--critical-*>
 
