@@ -30,14 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'cpu'               => 'cloud::azure::compute::aks::mode::cpu',
-        'discovery'         => 'cloud::azure::compute::aks::mode::discovery',
-        'storage'         => 'cloud::azure::compute::aks::mode::storage',
-        'traffic'           => 'cloud::azure::compute::aks::mode::traffic',
-        'allocatablecpucores' => 'cloud::azure::compute::aks::mode::allocatablecpucores',
-        'allocatablememory'  => 'cloud::azure::compute::aks::mode::allocatablememory',
-        'unneedednodes'     => 'cloud::azure::compute::aks::mode::unneedednodes'
+    %{ $self->{modes} } = (        
+	'allocatableresources'  => 'cloud::azure::compute::aks::mode::allocatableresources',
+        'cpu'                   => 'cloud::azure::compute::aks::mode::cpu',
+        'discovery'             => 'cloud::azure::compute::aks::mode::discovery',
+        'storage'               => 'cloud::azure::compute::aks::mode::storage',
+        'traffic'               => 'cloud::azure::compute::aks::mode::traffic',
+        'unneedednodes'         => 'cloud::azure::compute::aks::mode::unneedednodes'
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';

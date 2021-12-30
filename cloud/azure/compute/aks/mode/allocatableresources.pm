@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::compute::aks::mode::allocatablecpucores;
+package cloud::azure::compute::aks::mode::allocatableresources;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,11 +29,18 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'kube_node_status_allocatable_cpu_cores' => {
+	    'kube_node_status_allocatable_cpu_cores' => {
             'output' => 'Allocatable CPU Cores',
             'label'  => 'allocatable-cpu-cores',
             'nlabel' => 'aks.node.allocatable.cpu.cores',
             'unit'   => '',
+            'min'    => '0',
+        },
+        'kube_node_status_allocatable_memory_bytes' => {
+            'output' => 'Allocatable Memory Bytes',
+            'label'  => 'allocatable-memory-bytes',
+            'nlabel' => 'aks.node.allocatable.memory.bytes',
+            'unit'   => 'B',
             'min'    => '0',
         }
     };
@@ -101,20 +108,20 @@ __END__
 
 =head1 MODE
 
-Check remaining Azure Kubernetes Cluster Allocatable CPU cores.
+Check remaining Azure Kubernetes Cluster Allocatable Memory in Bytes.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatablecpucores --custommode=api
---resource=<cluster_id> --resource-group=<resourcegroup_id> --warning-allocatable-cpu-cores=10: --critical-allocatable-cpu-cores=5:
+perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatablememory --custommode=api
+--resource=<cluster_id> --resource-group=<resourcegroup_id> --warning-allocatable-memory-bytes=16GB: --critical-allocatable-memory-bytes=8GB:
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatablecpucores --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatablememory --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ContainerService/managedClusters/<cluster_id>' 
---warning-allocatable-cpu-cores=10: --critical-allocatable-cpu-cores=5:
+--warning-allocatable-memory-bytes=16GB: --critical-allocatable-memory-bytes=8GB:
 
 =over 8
 
@@ -126,15 +133,25 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
+=item B<--warning-allocatable-memory-bytes>
+
+Set warning threshold for remaining allocatable memory in bytes.
+It is a range, set 16GB: to get WARNING if there are less than 16GB allocatable left.
+
+=item B<--critical-allocatable-memory-bytes>
+
+Set critical threshold for remaining allocatable memory in bytes.
+It is a range, set 8GB: to get CRITICAL if there are less than 8GB allocatable left.
+
 =item B<--warning-allocatable-cpu-cores>
 
-Set warning threshold for number of remaining allocatable CPU Cores. 
+Set warning threshold for number of remaining allocatable CPU Cores.
 It is a range, set 10: to get WARNING if there are less than 10 CPU cores allocatable remaining.
 
 =item B<--critical-allocatable-cpu-cores>
 
 Set critical threshold for number of remaining allocatable CPU Cores.
-It is a range, set 5: to get CRITICAL if there are less than 10 CPU cores allocatable remaining.
+It is a range, set 5: to get CRITICAL if there are less than 5 CPU cores allocatable remaining.
 
 =back
 
