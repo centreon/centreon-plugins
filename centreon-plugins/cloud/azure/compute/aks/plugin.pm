@@ -25,22 +25,22 @@ use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{ $self->{modes} } = (        
-	'allocatableresources'  => 'cloud::azure::compute::aks::mode::allocatableresources',
+    $self->{modes} = {        
+        'allocatable-resources' => 'cloud::azure::compute::aks::mode::allocatableresources',
         'cpu'                   => 'cloud::azure::compute::aks::mode::cpu',
         'discovery'             => 'cloud::azure::compute::aks::mode::discovery',
         'storage'               => 'cloud::azure::compute::aks::mode::storage',
         'traffic'               => 'cloud::azure::compute::aks::mode::traffic',
-        'unneedednodes'         => 'cloud::azure::compute::aks::mode::unneedednodes'
-    );
+        'unneeded-nodes'        => 'cloud::azure::compute::aks::mode::unneedednodes'
+    };
 
-    $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
-    $self->{custom_modes}{api} = 'cloud::azure::custom::api';
+    $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
+    $self->{custom_modes}->{api} = 'cloud::azure::custom::api';
     return $self;
 }
 
