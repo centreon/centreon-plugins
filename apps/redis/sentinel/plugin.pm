@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::redis::plugin;
+package apps::redis::sentinel::plugin;
 
 use strict;
 use warnings;
@@ -29,19 +29,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
-        'clients'     => 'database::redis::mode::clients',
-        'commands'    => 'database::redis::mode::commands',
-        'connections' => 'database::redis::mode::connections',
-        'cpu'         => 'database::redis::mode::cpu',
-        'memory'      => 'database::redis::mode::memory',
-        'persistence' => 'database::redis::mode::persistence',
-        'replication' => 'database::redis::mode::replication'
+        'redis-clusters' => 'apps::redis::sentinel::mode::redisclusters'
     };
 
-    $self->{custom_modes}->{perlmod} = 'database::redis::custom::perlmod';
-    $self->{custom_modes}->{cli} = 'database::redis::custom::cli';
+    $self->{custom_modes}->{cli} = 'apps::redis::sentinel::custom::cli';
     return $self;
 }
 
