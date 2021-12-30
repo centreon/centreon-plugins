@@ -23,7 +23,7 @@ package hardware::server::dell::ome_modular::snmp::mode::components::chassis;
 use strict;
 use warnings;
 
-# In MIB 'MX7000-OME-M-v2'
+# In MIB 'DELL-MM-MIB-SMIv2'
 my $mapping = {
     dmmPowerWattsReading => { oid => '.1.3.6.1.4.1.674.10892.6.4.1.1.9', section => 'power', label => 'power', unit => 'watt' },
 };

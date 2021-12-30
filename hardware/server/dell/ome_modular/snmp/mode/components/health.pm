@@ -32,7 +32,7 @@ my %map_health_status = (
     6 => 'nonRecoverable',
 );
 
-# In MIB 'MX7000-OME-M-v2'
+# In MIB 'DELL-MM-MIB-SMIv2'
 my $mapping = {
     dmmIOMCurrStatus   => { oid => '.1.3.6.1.4.1.674.10892.6.3.1.1', map => \%map_health_status, descr => 'IOM status' },
     dmmRedCurrStatus   => { oid => '.1.3.6.1.4.1.674.10892.6.3.1.2', map => \%map_health_status, descr => 'Redundancy status' },
