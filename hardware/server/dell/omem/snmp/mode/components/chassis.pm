@@ -1,0 +1,82 @@
+#
+# Copyright 2021 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+package hardware::server::dell::omem::snmp::mode::components::chassis;
+
+use strict;
+use warnings;
+
+my $mapping = {
+    wattsReading => { oid => '.1.3.6.1.4.1.674.10892.6.4.1.1.9' } # dmmPowerWattsReading
+};
+
+sub load {
+    my ($self) = @_;
+
+    push @{$self->{request}}, { oid => $mapping->{wattsReading}->{oid} };
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking chassis");
+    $self->{components}->{chassis} = {name => 'chassis', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'chassis'));
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $mapping->{wattsReading}->{oid} }})) {
+        $oid =~ /^$mapping->{wattsReading}->{oid}\.(.*)$/;
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{wattsReading}->{oid} }, instance => $instance);
+
+        next if ($self->check_filter(section => 'chassis', instance => $instance));
+        $self->{components}->{chassis}->{total}++;
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "chassis '%s' power %s W [instance: %s]",
+                $instance,
+                $result->{wattsReading},
+                $instance
+            )
+        );
+        
+        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'chassis.power', instance => $instance, value => $result->{wattsReading});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "chassis '%s' power is %s W",
+                    $instance,
+                    $result->{wattsReading}
+                )
+            );
+        }
+        $self->{output}->perfdata_add(
+            nlabel => 'hardware.chassis.power.watt',
+            unit => 'W',
+            instances => $instance,
+            value => $result->{wattsReading},
+            warning => $warn,
+            critical => $crit
+        );
+    }
+}
+
+1;
