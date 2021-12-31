@@ -34,6 +34,7 @@ sub new {
         'allocatable-resources' => 'cloud::azure::compute::aks::mode::allocatableresources',
         'cpu'                   => 'cloud::azure::compute::aks::mode::cpu',
         'discovery'             => 'cloud::azure::compute::aks::mode::discovery',
+	'health'		=> 'cloud::azure::compute::aks::mode::health',
         'storage'               => 'cloud::azure::compute::aks::mode::storage',
         'traffic'               => 'cloud::azure::compute::aks::mode::traffic',
         'unneeded-nodes'        => 'cloud::azure::compute::aks::mode::unneedednodes'
