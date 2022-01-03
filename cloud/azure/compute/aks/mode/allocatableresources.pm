@@ -100,18 +100,18 @@ __END__
 
 =head1 MODE
 
-Check remaining Azure Kubernetes Cluster Allocatable Memory in Bytes.
+Check remaining Azure Kubernetes Cluster Allocatable CPU Cores and Memory in Bytes.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatablememory --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatable-resources --custommode=api
 --resource=<cluster_id> --resource-group=<resourcegroup_id> --warning-allocatable-memory-bytes=16GB: --critical-allocatable-memory-bytes=8GB:
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatablememory --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::compute::aks::plugin --mode=allocatable-resources --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.ContainerService/managedClusters/<cluster_id>' 
 --warning-allocatable-memory-bytes=16GB: --critical-allocatable-memory-bytes=8GB:
 
