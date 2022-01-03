@@ -212,6 +212,8 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/infos_ok/simplivity/hosts.json';
     } elsif ($options{endpoint} =~ /\/omnistack_clusters/) {
         $file = '/home/qgarnier/clients/plugins/infos_ok/simplivity/omnistack_clusters.json';
+    } elsif ($options{endpoint} =~ /\/virtual_machines/) {
+        $file = '/home/qgarnier/clients/plugins/infos_ok/simplivity/virtual_machines.json';
     }
     my $content = do {
         local $/ = undef;
@@ -291,6 +293,15 @@ sub get_omnistack_clusters {
 
     return $self->request_api(
         endpoint => '/api/omnistack_clusters',
+        get_param => ['show_optional_fields=true', 'offset=0', 'limit=5000']
+    );
+}
+
+sub get_virtual_machines {
+    my ($self, %options) = @_;
+
+    return $self->request_api(
+        endpoint => '/api/virtual_machines',
         get_param => ['show_optional_fields=true', 'offset=0', 'limit=5000']
     );
 }

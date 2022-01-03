@@ -19,12 +19,13 @@
 # Authors : Roman Morandell - ivertix
 #
 
-package apps::virtualization::hpe::simplivity::restapi::mode::omnistackclusters;
+package apps::virtualization::hpe::simplivity::restapi::mode::virtualmachines;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_space_usage_output {
     my ($self, %options) = @_;
@@ -40,26 +41,20 @@ sub custom_space_usage_output {
     );
 }
 
-sub prefix_ratio_output {
-    my ($self, %options) = @_;
-
-    return 'ratio ';
-}
-
-sub cluster_long_output {
+sub vm_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking cluster '%s'",
-        $options{instance},
+        "checking virtual machine '%s'",
+        $options{instance}
     );
 }
 
-sub prefix_cluster_output {
+sub prefix_vm_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "cluster '%s' ",
+        "virtual machine '%s' ",
         $options{instance}
     );
 }
@@ -68,16 +63,31 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'clusters', type => 3, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All omnistack clusters are ok',
+        { name => 'vm', type => 3, cb_prefix_output => 'prefix_vm_output', cb_long_output => 'vm_long_output', indent_long_output => '    ', message_multiple => 'All virtual machines are ok',
             group => [
-                { name => 'ratio', type => 0, cb_prefix_output => 'prefix_ratio_output', skipped_code => { -10 => 1 } },
+                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'space', type => 0, skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
+    $self->{maps_counters}->{status} = [
+        {
+            label => 'ha-status',
+            type => 2,
+            unknown_default => '%{ha_status} =~ /unknown/',
+            warning_default => '%{ha_status} =~ /degraded/',
+            set => {
+                key_values => [ { name => 'ha_status' }, { name => 'vm_name' } ],
+                output_template => 'high-availability status: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
     $self->{maps_counters}->{space} = [
-         { label => 'space-usage', nlabel => 'omnistack_cluster.space.usage.bytes', set => {
+         { label => 'space-usage', nlabel => 'virtual_machine.space.usage.bytes', set => {
                 key_values => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
                 closure_custom_output => $self->can('custom_space_usage_output'),
                 perfdatas => [
@@ -85,7 +95,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'space-usage-free', nlabel => 'omnistack_cluster.space.free.bytes', display_ok => 0, set => {
+        { label => 'space-usage-free', nlabel => 'virtual_machine.space.free.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
                 closure_custom_output => $self->can('custom_space_usage_output'),
                 perfdatas => [
@@ -93,38 +103,11 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'space-usage-prct', nlabel => 'omnistack_cluster.space.usage.percentage', display_ok => 0, set => {
+        { label => 'space-usage-prct', nlabel => 'virtual_machine.space.usage.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' } ],
                 closure_custom_output => $self->can('custom_space_usage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
-                ]
-            }
-        }
-    ];
-
-    $self->{maps_counters}->{ratio} = [
-        { label => 'ratio-deduplication', nlabel => 'omnistack_cluster.ratio.deduplication.count', set => {
-                key_values => [ { name => 'deduplication' } ],
-                output_template => 'deduplication: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
-                ]
-            }
-        },
-        { label => 'ratio-compression', nlabel => 'omnistack_cluster.ratio.compression.count', set => {
-                key_values => [ { name => 'compression' } ],
-                output_template => 'compression: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
-                ]
-            }
-        },
-        { label => 'ratio-efficiency', nlabel => 'omnistack_cluster.ratio.efficiency.count', set => {
-                key_values => [ { name => 'efficiency' } ],
-                output_template => 'efficiency: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -137,7 +120,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-vm-name:s' => { name => 'filter_vm_name' }
     });
 
     return $self;
@@ -146,33 +129,29 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $clusters = $options{custom}->get_omnistack_clusters();
+    my $vms = $options{custom}->get_virtual_machines();
 
-    $self->{clusters} = {};
-    foreach my $cluster (@{$clusters->{omnistack_clusters}}) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $cluster->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $cluster->{name}  . "': no matching filter.", debug => 1);
+    $self->{vm} = {};
+    foreach my $vm (@{$vms->{virtual_machines}}) {
+        if (defined($self->{option_results}->{filter_vm_name}) && $self->{option_results}->{filter_vm_name} ne '' &&
+            $vm->{name} !~ /$self->{option_results}->{filter_vm_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $vm->{name}  . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{clusters}->{ $cluster->{name} } = {
-            ratio => {},
+        $self->{vm}->{ $vm->{id} . ':' . $vm->{name} } = {
+            status => {
+                vm_name => $vm->{id} . ':' . $vm->{name},
+                ha_status => lc($vm->{ha_status})
+            },
             space => {
-                total_space => $cluster->{allocated_capacity},
-                used_space => $cluster->{used_capacity},
-                free_space => $cluster->{allocated_capacity} - $cluster->{used_capacity},
-                prct_used_space => $cluster->{used_capacity} * 100 / $cluster->{allocated_capacity},
-                prct_free_space => 100 - ($cluster->{used_capacity} * 100 / $cluster->{allocated_capacity})
+                total_space => $vm->{hypervisor_allocated_capacity},
+                used_space => $vm->{hypervisor_allocated_capacity} - $vm->{hypervisor_free_space},
+                free_space => $vm->{hypervisor_free_space},
+                prct_used_space => ($vm->{hypervisor_allocated_capacity} - $vm->{hypervisor_free_space}) * 100 / $vm->{hypervisor_allocated_capacity},
+                prct_free_space => $vm->{hypervisor_free_space} * 100 / $vm->{hypervisor_allocated_capacity}
             }
         };
-
-        $self->{clusters}->{ $cluster->{name} }->{ratio}->{efficiency} = $1
-            if ($cluster->{efficiency_ratio} =~ /^\s*([0-9\.]+)\s*:/);
-        $self->{clusters}->{ $cluster->{name} }->{ratio}->{deduplication} = $1
-            if ($cluster->{deduplication_ratio} =~ /^\s*([0-9\.]+)\s*:/);
-        $self->{clusters}->{ $cluster->{name} }->{ratio}->{compression} = $1
-            if ($cluster->{compression_ratio} =~ /^\s*([0-9\.]+)\s*:/);
     }
 }
 
@@ -183,19 +162,33 @@ __END__
 
 =head1 MODE
 
-Check omnistack clusters.
+Check virtual machines.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter clusters by name.
+Filter virtual machines by virtual machine name.
+
+=item B<--unknown-ha-status>
+
+Set unknown threshold for status (Default: '%{status} =~ /unknown/').
+Can used special variables like: %{ha_status}, %{vm_name}
+
+=item B<--warning-ha-status>
+
+Set warning threshold for status (Default: '%{status} =~ /degraded/').
+Can used special variables like: %{ha_status}, %{vm_name}
+
+=item B<--critical-ha-status>
+
+Set critical threshold for status.
+Can used special variables like: %{ha_status}, %{vm_name}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'space-usage', 'space-usage-free', 'space-usage-prct',
-'ratio-compression', 'ratio-deduplication', 'ratio-efficiency'.
+Can be: 'space-usage', 'space-usage-free', 'space-usage-prct'.
 
 =back
 
