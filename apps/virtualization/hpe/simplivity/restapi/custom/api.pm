@@ -210,6 +210,8 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/infos_ok/simplivity/hardware.json';
     } elsif ($options{endpoint} =~ /\/hosts/) {
         $file = '/home/qgarnier/clients/plugins/infos_ok/simplivity/hosts.json';
+    } elsif ($options{endpoint} =~ /\/omnistack_clusters/) {
+        $file = '/home/qgarnier/clients/plugins/infos_ok/simplivity/omnistack_clusters.json';
     }
     my $content = do {
         local $/ = undef;
@@ -280,7 +282,16 @@ sub get_host_hardware {
 
     return $self->request_api(
         endpoint => '/api/hosts/' . $options{id} . '/hardware',
-        get_param => ['show_optional_fields=true']
+        get_param => []
+    );
+}
+
+sub get_omnistack_clusters {
+    my ($self, %options) = @_;
+
+    return $self->request_api(
+        endpoint => '/api/omnistack_clusters',
+        get_param => ['show_optional_fields=true', 'offset=0', 'limit=5000']
     );
 }
 

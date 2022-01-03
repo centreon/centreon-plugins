@@ -31,7 +31,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'hosts' => 'apps::virtualization::hpe::simplivity::restapi::mode::hosts'
+        'hosts'              => 'apps::virtualization::hpe::simplivity::restapi::mode::hosts',
+        'list-hosts'         => 'apps::virtualization::hpe::simplivity::restapi::mode::listhosts',
+        'omnistack-clusters' => 'apps::virtualization::hpe::simplivity::restapi::mode::omnistackclusters'
     };
 
     $self->{custom_modes}->{api} = 'apps::virtualization::hpe::simplivity::restapi::custom::api';

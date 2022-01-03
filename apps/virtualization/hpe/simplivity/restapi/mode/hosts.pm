@@ -44,7 +44,7 @@ sub host_long_output {
 
     return sprintf(
         "checking host '%s'",
-        $options{instance},
+        $options{instance}
     );
 }
 
@@ -53,7 +53,7 @@ sub prefix_host_output {
 
     return sprintf(
         "host '%s' ",
-        $options{instance},
+        $options{instance}
     );
 }
 
