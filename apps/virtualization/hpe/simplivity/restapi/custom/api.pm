@@ -205,26 +205,6 @@ sub get_auth_token {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /\/hardware/) {
-        $file = '/home/qgarnier/clients/plugins/infos_ok/simplivity/hardware.json';
-    } elsif ($options{endpoint} =~ /\/hosts/) {
-        $file = '/home/qgarnier/clients/plugins/infos_ok/simplivity/hosts.json';
-    } elsif ($options{endpoint} =~ /\/omnistack_clusters/) {
-        $file = '/home/qgarnier/clients/plugins/infos_ok/simplivity/omnistack_clusters.json';
-    } elsif ($options{endpoint} =~ /\/virtual_machines/) {
-        $file = '/home/qgarnier/clients/plugins/infos_ok/simplivity/virtual_machines.json';
-    }
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $file : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     $self->settings();
     if (!defined($self->{access_token})) {
         $self->get_auth_token(statefile => $self->{cache});
@@ -249,14 +229,13 @@ sub request_api {
             warning_status => '', unknown_status => '', critical_status => ''
         );
     }
-=cut
 
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
         $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
         $self->{output}->option_exit();
     }
-=pod
+
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         my $message = 'api request error';
         if (defined($decoded->{message})) {
@@ -265,7 +244,6 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => $message);
         $self->{output}->option_exit();
     }
-=cut
 
     return $decoded;
 }
