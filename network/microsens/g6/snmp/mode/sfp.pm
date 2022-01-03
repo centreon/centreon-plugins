@@ -39,7 +39,7 @@ sub sfp_long_output {
 sub prefix_sfp_output {
     my ($self, %options) = @_;
 
-    return return sprintf(
+    return sprintf(
         "sfp port '%s'%s ",
         $options{instance},
         $options{instance_value}->{location} ne '' ? ' [location: ' . $options{instance_value}->{location} . ']' : ''
