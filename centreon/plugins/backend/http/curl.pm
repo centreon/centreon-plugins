@@ -104,6 +104,7 @@ my $http_code_explained = {
     415 => 'Unsupported Media Type',
     416 => 'Requested Range Not Satisfiable',
     417 => 'Expectation Failed',
+    450 => 'Timeout reached', # custom code
     500 => 'Internal Server Error',
     501 => 'Not Implemented',
     502 => 'Bad Gateway',
@@ -400,15 +401,26 @@ sub request {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CERTINFO'), parameter => 1);
     }
 
+    $self->{response_code} = undef;
     eval {
         $self->{curl_easy}->perform();
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => 'curl perform error : ' . $@);
-        $self->{output}->option_exit();
+        if (ref($@) eq "Net::Curl::Easy::Code") {
+            my $num = $@;
+            if ($num == $self->{constant_cb}->(name => 'CURLE_OPERATION_TIMEDOUT')) {
+                $self->{response_code} = 450;
+            }
+        }
+
+        if (!defined($self->{response_code})) {
+            $self->{output}->add_option_msg(short_msg => 'curl perform error : ' . $@);
+            $self->{output}->option_exit();
+        }
     }
 
-    $self->{response_code} = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_RESPONSE_CODE'));
+    $self->{response_code} = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_RESPONSE_CODE'))
+        if (!defined($self->{response_code}));
 
     # Check response
     my $status = 'ok';

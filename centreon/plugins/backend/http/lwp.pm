@@ -255,17 +255,28 @@ sub request {
 
     $self->{response} = $self->{ua}->request($req);
 
+    $self->{response_code} = $self->{response}->code();
+    $self->{response_message} = $self->{response}->message();
+    $self->{headers} = $self->{response}->headers();
+
+    if ($self->{response_code} == 500) {
+        my $client_warning = $self->get_header(name => 'Client-Warning');
+        if (defined($client_warning) && $client_warning eq 'Internal response') {
+            $self->{response_code} = 450;
+            $self->{response_message} = 'Timeout reached';
+        }
+    }
+
     # Check response
     my $status = 'ok';
-    my $code = $self->{response}->code();
     if (defined($request_options->{critical_status}) && $request_options->{critical_status} ne '' &&
-        $self->{output}->test_eval(test => $request_options->{critical_status}, values => { code => $code })) {
+        $self->{output}->test_eval(test => $request_options->{critical_status}, values => { code => $self->{response_code} })) {
         $status = 'critical';
     } elsif (defined($request_options->{warning_status}) && $request_options->{warning_status} ne '' &&
-        $self->{output}->test_eval(test => $request_options->{warning_status}, values => { code => $code })) {
+        $self->{output}->test_eval(test => $request_options->{warning_status}, values => { code => $self->{response_code} })) {
         $status = 'warning';
     } elsif (defined($request_options->{unknown_status}) && $request_options->{unknown_status} ne '' &&
-        $self->{output}->test_eval(test => $request_options->{unknown_status}, values => { code => $code })) {
+        $self->{output}->test_eval(test => $request_options->{unknown_status}, values => { code => $self->{response_code} })) {
         $status = 'unknown';
     }
 
@@ -284,7 +295,6 @@ sub request {
         $self->{output}->exit();
     }
 
-    $self->{headers} = $self->{response}->headers();
     return $self->{response}->content;
 }
 
@@ -327,13 +337,13 @@ sub get_header {
 sub get_code {
     my ($self, %options) = @_;
 
-    return $self->{response}->code();
+    return $self->{response_code};
 }
 
 sub get_message {
     my ($self, %options) = @_;
 
-    return $self->{response}->message();
+    return $self->{response_message};
 }
 
 sub get_certificate {
