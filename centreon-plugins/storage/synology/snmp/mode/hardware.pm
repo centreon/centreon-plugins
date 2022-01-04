@@ -28,6 +28,8 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:disk.badsectors)$';
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
@@ -69,7 +71,7 @@ sub set_system {
     };
     
     $self->{components_path} = 'storage::synology::snmp::mode::components';
-    $self->{components_module} = ['psu', 'fan', 'disk', 'raid', 'system'];
+    $self->{components_module} = ['disk', 'fan', 'psu', 'raid', 'system'];
 
     $self->{request_leef} = [];
 }
@@ -88,7 +90,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -102,7 +104,7 @@ __END__
 
 =head1 MODE
 
-Check hardware (SYNOLOGY-SYSTEM-MIB, SYNOLOGY-RAID-MIB) (Fans, Power Supplies, Disk status, Raid status, System status).
+Check hardware.
 
 =over 8
 
@@ -126,6 +128,16 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='psu,CRITICAL,^(?!(on)$)'
+
+=item B<--warning>
+
+Set warning threshold for 'disk.badsectors' (syntax: type,regexp,threshold)
+Example: --warning='disk.badsectors,.*,30'
+
+=item B<--critical>
+
+Set critical threshold for 'disk.badsectors' (syntax: type,regexp,threshold)
+Example: --critical='disk.badsectors,.*,50'
 
 =back
 
