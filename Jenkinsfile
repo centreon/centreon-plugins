@@ -20,9 +20,11 @@ stage('Source') {
     withSonarQubeEnv('SonarQubeDev') {
       sh './centreon-build/jobs/plugins/plugins-analysis.sh'
     }
-    def qualityGate = waitForQualityGate()
-    if (qualityGate.status != 'OK') {
-      currentBuild.result = 'FAIL'
+    timeout(time: 10, unit: 'MINUTES') {
+      def qualityGate = waitForQualityGate()
+      if (qualityGate.status != 'OK') {
+        currentBuild.result = 'FAIL'
+      }
     }
   }
 }
