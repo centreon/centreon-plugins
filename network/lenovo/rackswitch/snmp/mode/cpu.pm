@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use network::lenovo::rackswitch::snmp::mode::resources;
 
 sub prefix_cpu_output {
     my ($self, %options) = @_;
@@ -77,9 +78,12 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_cpu5s = '.1.3.6.1.4.1.20301.2.7.18.1.2.2.8.0'; # mpCpuStatsUtil5SecondsRev
-    my $oid_cpu1m = '.1.3.6.1.4.1.20301.2.7.18.1.2.2.9.0'; # mpCpuStatsUtil1MinuteRev
-    my $oid_cpu5m = '.1.3.6.1.4.1.20301.2.7.18.1.2.2.10.0'; # mpCpuStatsUtil5MinutesRev
+    my $branch = network::lenovo::rackswitch::snmp::mode::resources::find_rackswitch_branch(
+        output => $self->{output}, snmp => $options{snmp}
+    );
+    my $oid_cpu5s = $branch . '.1.2.2.8.0'; # mpCpuStatsUtil5SecondsRev
+    my $oid_cpu1m = $branch . '.1.2.2.9.0'; # mpCpuStatsUtil1MinuteRev
+    my $oid_cpu5m = $branch . '.1.2.2.10.0'; # mpCpuStatsUtil5MinutesRev
     my $snmp_result = $options{snmp}->get_leef(
         oids => [$oid_cpu5s, $oid_cpu1m, $oid_cpu5m],
         nothing_quit => 1

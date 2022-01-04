@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use network::lenovo::rackswitch::snmp::mode::resources;
 
 sub prefix_sensor_output {
     my ($self, %options) = @_;
@@ -100,9 +101,12 @@ sub manage_selection {
         1 => 'ok', 2 => 'noncritical', 3 => 'critical'
     };
 
-    my $oid_fan_speed = '.1.3.6.1.4.1.20301.2.7.18.1.3.1.13.0'; # hwFanSpeed
-    my $oid_temp_sensors = '.1.3.6.1.4.1.20301.2.7.18.1.3.1.14.0'; # hwTempSensors
-    my $oid_health_status = '.1.3.6.1.4.1.20301.2.7.18.1.3.1.15.0'; # hwGlobalHealthStatus
+    my $branch = network::lenovo::rackswitch::snmp::mode::resources::find_rackswitch_branch(
+        output => $self->{output}, snmp => $options{snmp}
+    );
+    my $oid_fan_speed = $branch . '.1.3.1.13.0'; # hwFanSpeed
+    my $oid_temp_sensors = $branch . '.1.3.1.14.0'; # hwTempSensors
+    my $oid_health_status = $branch . '.1.3.1.15.0'; # hwGlobalHealthStatus
     my $snmp_result = $options{snmp}->get_leef(
         oids => [$oid_fan_speed, $oid_temp_sensors, $oid_health_status],
         nothing_quit => 1

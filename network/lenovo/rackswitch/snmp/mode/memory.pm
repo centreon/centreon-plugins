@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use network::lenovo::rackswitch::snmp::mode::resources;
 
 sub custom_usage_output {
     my ($self, %options) = @_;
@@ -89,8 +90,11 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    my $oid_total = '.1.3.6.1.4.1.20301.2.7.18.1.2.12.1.0'; # totalMemoryStats
-    my $oid_free = '.1.3.6.1.4.1.20301.2.7.18.1.2.12.2.0'; # memoryFreeStats
+    my $branch = network::lenovo::rackswitch::snmp::mode::resources::find_rackswitch_branch(
+        output => $self->{output}, snmp => $options{snmp}
+    );
+    my $oid_total = $branch . '.1.2.12.1.0'; # totalMemoryStats
+    my $oid_free = $branch . '.1.2.12.2.0'; # memoryFreeStats
     my $snmp_result = $options{snmp}->get_leef(
         oids => [ $oid_total, $oid_free ],
         nothing_quit => 1

@@ -34,7 +34,7 @@ my $branches = {
     'g8052'   => '.1.3.6.1.4.1.26543.2.7.7',
     'g8264cs' => '.1.3.6.1.4.1.20301.2.7.15',
     # g8264cs_sif not same oids
-    'g8254'   => '.1.3.6.1.4.1.26543.2.7.6' # there is some extra stack OIDs
+    'g8254'   => '.1.3.6.1.4.1.26543.2.7.6', # there is some extra stack OIDs
     'g8272'   => '.1.3.6.1.4.1.19046.2.7.24',
     'g8296'   => '.1.3.6.1.4.1.19046.2.7.22',
     'g8332'   => '.1.3.6.1.4.1.20301.2.7.16'
@@ -42,26 +42,18 @@ my $branches = {
 };
 
 sub find_rackswitch_branch {
-    my ($self, %options) = @_;
+    my (%options) = @_;
 
-    my $oid_sysDescr = '.1.3.6.1.4.1.19046.2.7.24.1.1.1.10.0';
+    my $oid_software = '1.1.1.10.0';
     my $snmp_result = $options{snmp}->get_leef(
-        oids => [ $oid_sysDescr ],
-        nothing_quit => 1
+        oids => [ map($_ . '.' . $oid_software, values(%$branches)) ]
     );
-    my $branch;
-    foreach my $re (keys %$regexp_gude_branch) {
-        if ($snmp_result->{$oid_sysDescr} =~ /$re/) {
-            $branch = $regexp_gude_branch->{$re};
-            last;
-        }
-    }
-    if (!defined($branch)) {
-        $self->{output}->add_option_msg(short_msg => 'unsupported device: ' . $snmp_result->{$oid_sysDescr});
-        $self->{output}->option_exit();
+    foreach (keys %$snmp_result) {
+        return $1 if (defined($snmp_result->{$_}) && /^(.*)\.$oid_software/);
     }
 
-    return $branch;
+    $options{output}->add_option_msg(short_msg => 'unsupported device');
+    $options{output}->option_exit();
 }
 
 1;
