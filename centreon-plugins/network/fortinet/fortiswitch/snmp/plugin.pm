@@ -48,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check FortiManager in SNMP.
+Check Fortinet FortiSwitch in SNMP.
 
 =cut
