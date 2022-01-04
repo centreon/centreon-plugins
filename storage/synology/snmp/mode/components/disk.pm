@@ -32,49 +32,78 @@ my $map_disk_status = {
 };
 
 my $mapping = {
-    synoDiskdiskName   => { oid => '.1.3.6.1.4.1.6574.2.1.1.2' },
-    synoDiskdiskStatus => { oid => '.1.3.6.1.4.1.6574.2.1.1.5', map => $map_disk_status }
+    status     => { oid => '.1.3.6.1.4.1.6574.2.1.1.5', map => $map_disk_status }, # synoDiskdiskStatus
+    badSectors => { oid => '.1.3.6.1.4.1.6574.2.1.1.9' }  # diskBadSector
 };
-my $oid_synoDisk = '.1.3.6.1.4.1.6574.2.1.1';
+my $oid_diskName = '.1.3.6.1.4.1.6574.2.1.1.2'; # synoDiskdiskName
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, {
-        oid => $oid_synoDisk,
-        start => $mapping->{synoDiskdiskName}->{oid},
-        end => $mapping->{synoDiskdiskStatus}->{oid}
-    };
+    push @{$self->{request}}, { oid => $oid_diskName };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking disk");
-    $self->{components}->{disk} = {name => 'disk', total => 0, skip => 0};
+    $self->{components}->{disk} = { name => 'disk', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'disk'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_synoDisk}})) {
-        next if ($oid !~ /^$mapping->{synoDiskdiskStatus}->{oid}\.(\d+)/);
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_synoDisk}, instance => $instance);
+    my $instances = [];
+    foreach (keys %{$self->{results}->{$oid_diskName}}) {
+        push @$instances, $1 if (/^$oid_diskName\.(.*)$/);
+    }
 
+    return if (scalar(@$instances) <= 0);
+
+    $self->{snmp}->load(
+        oids => [map($_->{oid}, values(%$mapping))],
+        instances => $instances
+    );
+    my $results = $self->{snmp}->get_leef();
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$results)) {
+        next if ($oid !~ /^$mapping->{status}->{oid}\.(\d+)/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+
+        my $name = $self->{results}->{$oid_diskName}->{$oid_diskName . '.' . $instance};
         next if ($self->check_filter(section => 'disk', instance => $instance));
         $self->{components}->{disk}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "disk '%s' status is %s [instance: %s]",
-                $result->{synoDiskdiskName}, $result->{synoDiskdiskStatus}, $instance
+                "disk '%s' status is %s [instance: %s%s]",
+                $name, $result->{status}, $instance,
+                defined($result->{badSectors}) ? ', bad sectors: ' . $result->{badSectors} : ''
             )
         );
-        my $exit = $self->get_severity(section => 'disk', value => $result->{synoDiskdiskStatus});
+        my $exit = $self->get_severity(section => 'disk', value => $result->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("Disk '%s' status is %s", $result->{synoDiskdiskName}, $result->{synoDiskdiskStatus})
+                short_msg => sprintf("Disk '%s' status is %s", $name, $result->{status})
             );
         }
+
+        next if (!defined($result->{badSectors}));
+
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'disk.badsectors', instance => $instance, value => $result->{badSectors});
+        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Disk '%s' has %s bad sector(s)", $name, $result->{badSectors})
+            );
+        }
+        $self->{output}->perfdata_add(
+            nlabel => 'hardware.disk.bad_sectors.count',
+            instances => $name,
+            value => $result->{badSectors},
+            warning => $warn,
+            critical => $crit,
+            min => 0
+        );
     }
 }
 
