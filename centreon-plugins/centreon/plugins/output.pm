@@ -515,20 +515,23 @@ sub output_txt {
 
     $self->output_txt_short(%options);
 
-    if ($force_ignore_perfdata == 1) {
-        print "\n";
-    } else {
-        print '|';
+    if ($force_ignore_perfdata == 0) {
+        my $pipe = 0;
         $self->change_perfdata();
         foreach my $perf (@{$self->{perfdatas}}) {
             next if ($self->filter_perfdata(perf => $perf));
             $perf->{unit} = '' if (defined($self->{option_results}->{filter_uom}) &&
                 $perf->{unit} !~ /$self->{option_results}->{filter_uom}/);
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
+            if ($pipe == 0) {
+                print '|';
+                $pipe = 1;
+            }
             print " '" . $perf->{label} . "'=" . $perf->{value} . $perf->{unit} . ';' . $perf->{warning} . ';' . $perf->{critical} . ';' . $perf->{min} . ';' . $perf->{max};
         }
-        print "\n";
     }
+
+    print "\n";
 
     if (defined($self->{option_results}->{verbose}) || $force_long_output == 1) {
         if (scalar(@{$self->{global_long_output}})) {
