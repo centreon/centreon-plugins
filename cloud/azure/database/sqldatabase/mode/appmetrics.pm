@@ -113,6 +113,9 @@ __END__
 
 Check Azure SQL Database app resource consumption (Serverless DB only).
 
+Metrics are only available for:
+- vCore based model - General purpose
+
 Example:
 
 Using resource name :

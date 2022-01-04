@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::database::sqldatabase::mode::storage;
+package cloud::azure::database::sqldatabase::mode::sessions;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -29,19 +29,10 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'storage' => {
-            'output' => 'Storage used ',
-            'label'  => 'usage-bytes',
-            'nlabel' => 'sqldatabase.storage.space.usage.bytes',
-            'unit'   => 'B',
-            'min'    => '0',
-            'max'    => ''
-        },
-        'storage_percent' => {
-            'output' => 'Storage used percent',
-            'label'  => 'usage-percent',
-            'nlabel' => 'sqldatabase.storage.space.usage.percentage',
-            'unit'   => '%',
+        'sessions_percent' => {
+            'output' => 'Sessions ',
+            'label'  => 'sessions',
+            'nlabel' => 'sqldatabase.sessions.count',
             'min'    => '0',
             'max'    => ''
         }
@@ -87,7 +78,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.Sql';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Maximum'];
+    $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -110,7 +101,7 @@ __END__
 
 =head1 MODE
 
-Check Azure SQL Database storage.
+Check opened session on Azure SQL Database.
 Metrics are available with:
 - Tier 'DTU based' - Basic, Standard, Premium
 - vCore based model - General purpose & Business critical
@@ -120,17 +111,17 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=storage --custommode=api
---resource=<database_name> --resource-group=<resourcegroup_id> --server=<server_name> --aggregation='maximum'
---warning-usage-percent='80'' --critical-usage-percent='90'
+perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=sessions --custommode=api
+--resource=<database_name> --resource-group=<resourcegroup_id> --server=<server_name> --aggregation='total'
+--critical-sessions='100'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=storage --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::sqldatabase::plugin --mode=sessions --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Sql/servers/<server_name>/databases/<database_name>'
---aggregation='maximum' --warning-usage-percent='80'' --critical-usage-percent='90'
+--aggregation='total' --critical-sessions='100'
 
-Default aggregation: 'maximum', other are not identified as relevant nor available by Microsoft. 
+Default aggregation: 'average', other are not identified as relevant nor available by Microsoft. 
 
 =over 8
 
@@ -146,13 +137,13 @@ Set resource group (Required if resource's name is used).
 
 Set server name (Required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-sessions>
 
-Warning threshold where '*' can be: 'usage-bytes','usage-percent'.
+Warning threshold. 
 
-=item B<--critical-*>
+=item B<--critical-sessions>
 
-Critical threshold  where '*' can be: 'usage-bytes','usage-percent'.
+Critical threshold.
 
 =back
 

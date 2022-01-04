@@ -32,9 +32,13 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'app-resources' => 'cloud::azure::database::sqldatabase::mode::appresources',
-        'discovery' => 'cloud::azure::database::sqldatabase::mode::discovery',
-        'health'    => 'cloud::azure::database::sqldatabase::mode::health',
-        'storage'   => 'cloud::azure::database::sqldatabase::mode::storage'
+        'connections'   => 'cloud::azure::database::sqldatabase::mode::connections',
+        'discovery'     => 'cloud::azure::database::sqldatabase::mode::discovery',
+        'deadlocks'     => 'cloud::azure::database::sqldatabase::mode::deadlocks',
+        'health'        => 'cloud::azure::database::sqldatabase::mode::health',
+        'sessions'      => 'cloud::azure::database::sqldatabase::mode::sessions',
+        'storage'       => 'cloud::azure::database::sqldatabase::mode::storage',
+        'workers'       => 'cloud::azure::database::sqldatabase::mode::workers'
     );
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
@@ -46,7 +50,7 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-        'api-version:s'  => { name => 'api_version', default => '2019-07-01' },
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
     });
 
     $self->SUPER::init(%options);
