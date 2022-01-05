@@ -49,6 +49,7 @@ sub get_metrics_mapping {
             'output' => 'Disk Read Operationss/sec',
             'label'  => 'disk-read-ops-persec',
             'nlabel' => 'disk.write.ops.persec',
+            'unit'   => 'B/s',
             'min'    => '0',
             'max'    => ''
         },
@@ -56,6 +57,7 @@ sub get_metrics_mapping {
             'output' => 'Disk Write Operations/sec',
             'label'  => 'disk-write-ops-persec',
             'nlabel' => 'disk.write.ops.persec',
+            'unit'   => 'B/s',
             'min'    => '0',
             'max'    => ''
         }       
