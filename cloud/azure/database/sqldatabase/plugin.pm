@@ -31,13 +31,18 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'database-size'     => 'cloud::azure::database::sqldatabase::mode::databasesize',
-        'database-status'   => 'cloud::azure::database::sqldatabase::mode::databasestatus',
-        'list-databases'    => 'cloud::azure::database::sqldatabase::mode::listdatabases',
+        'app-resources' => 'cloud::azure::database::sqldatabase::mode::appresources',
+        'connections'   => 'cloud::azure::database::sqldatabase::mode::connections',
+        'discovery'     => 'cloud::azure::database::sqldatabase::mode::discovery',
+        'deadlocks'     => 'cloud::azure::database::sqldatabase::mode::deadlocks',
+        'health'        => 'cloud::azure::database::sqldatabase::mode::health',
+        'sessions'      => 'cloud::azure::database::sqldatabase::mode::sessions',
+        'storage'       => 'cloud::azure::database::sqldatabase::mode::storage',
+        'workers'       => 'cloud::azure::database::sqldatabase::mode::workers'
     );
 
-    $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
-    $self->{custom_modes}{api} = 'cloud::azure::custom::api';
+    $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
+    $self->{custom_modes}->{api} = 'cloud::azure::custom::api';
     return $self;
 }
 
@@ -45,7 +50,7 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-        'api-version:s'  => { name => 'api_version', default => '2018-06-01-preview' },
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
     });
 
     $self->SUPER::init(%options);
@@ -57,6 +62,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure SQL Database.
+Check Microsoft Azure SQL Databases (Microsoft.Sql/Servers/Databases).
 
 =cut
