@@ -32,12 +32,12 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'discovery'     => 'cloud::azure::database::sqlserver::mode::discovery',
-        'list-servers'  => 'cloud::azure::database::sqlserver::mode::listservers',
-        'server-status' => 'cloud::azure::database::sqlserver::mode::serverstatus',
+        'health'        => 'cloud::azure::database::sqlserver::mode::health',
+        'list-servers'  => 'cloud::azure::database::sqlserver::mode::listservers'
     );
 
-    $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
-    $self->{custom_modes}{api} = 'cloud::azure::custom::api';
+    $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
+    $self->{custom_modes}->{api} = 'cloud::azure::custom::api';
     return $self;
 }
 
@@ -45,7 +45,7 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-        'api-version:s'  => { name => 'api_version', default => '2018-06-01-preview' },
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
     });
 
     $self->SUPER::init(%options);
