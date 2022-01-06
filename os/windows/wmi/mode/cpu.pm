@@ -134,7 +134,10 @@ sub manage_selection {
 
     my $WQL = 'select Name,PercentProcessorTime,Timestamp_Sys100NS from Win32_PerfRawData_PerfOS_Processor where Name != "_Total"';
 
-    my $result = $options{custom}->query(query => $WQL );
+    my ($result, $exit_code) = $options{custom}->execute_command(
+        query => $WQL,
+        no_quit => 1
+    );
     $result =~ s/\|/;/g;
 
     #

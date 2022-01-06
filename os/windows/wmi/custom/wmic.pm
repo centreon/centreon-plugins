@@ -20,6 +20,7 @@
 
 package os::windows::wmi::custom::wmic;
 
+use centreon::plugins::misc;
 use base qw(centreon::plugins::mode);
 
 use strict;
@@ -41,10 +42,15 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'  => { name => 'hostname' },
-            'username:s'  => { name => 'username' },
-            'password:s'  => { name => 'password' },
-            'namespace:s' => { name => 'namespace' },
+            'hostname:s'        => { name => 'hostname' },
+            'username:s'        => { name => 'username' },
+            'password:s'        => { name => 'password' },
+            'namespace:s'       => { name => 'namespace'},
+            'timeout:s'         => { name => 'timeout' },
+            'command:s'         => { name => 'command'},
+            'command-path:s'    => { name => 'command_path'},
+            'command-options:s' => { name => 'command_options' },
+            'sudo:s'            => { name => 'sudo' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM MODE OPTIONS', once => 1);
@@ -69,6 +75,9 @@ sub check_options {
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{namespace} = (defined($self->{option_results}->{namespace})) ? $self->{option_results}->{namespace} : 'root/cimv2';
+    $self->{command} = (defined($self->{option_results}->{command})) ? $self->{option_results}->{command} : 'wmic';
+    $self->{command_path} = (defined($self->{option_results}->{command_path})) ? $self->{option_results}->{command_path} : '/usr/bin/';
+    $self->{command_options} = (defined($self->{option_results}->{command_options})) ? $self->{option_results}->{command_options} : '';
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
@@ -84,41 +93,31 @@ sub get_hostname {
     return $self->{hostname};
 }
 
-sub build_options_for_wmic {
+sub  execute_command {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{username} = $self->{username};
-    $self->{option_results}->{password} = $self->{password};
-    $self->{option_results}->{namespace} = $self->{namespace};
+    my $timeout = $self->{timeout};
+    if (!defined($timeout)) {
+        $timeout = defined($options{timeout}) ? $options{timeout} : 45;
+    }
+    my $command_options = " -U '" . $self->{username} . "' --password='" . $self->{password} . "' --namespace='" . $self->{namespace}."' '//" . $self->{hostname} . "' '" . $options{query} . "'";
 
-}
+    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
+            output => $self->{output},
+            sudo => $self->{option_results}->{sudo},
+            options => { timeout => $timeout },
+            command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{command},
+            command_path => defined($self->{option_results}->{command_path}) && $self->{option_results}->{command_path} ne '' ? $self->{option_results}->{command_path} : $options{command_path},
+            command_options => $command_options,
+            no_quit => $options{no_quit}
+        );
 
-sub settings {
-    my ($self, %options) = @_;
-
-    $self->build_options_for_wmic();
-}
-
-sub request {
-    my ($self, %options) = @_;
-
-    $self->settings();
-    my $query = "wmic -U '" . $self->{username} . "' --password='" . $self->{password} . "' --namespace='" . $self->{namespace}."' '//" . $self->{hostname} . "' '" . $options{query} . "'";
-    my $result = `$query`;
-
-    if ($? != 0) {
+    $self->{output}->output_add(long_msg => "command response: $stdout", debug => 1);
+    if ($exit_code != 0) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
-
-    return $result;
-}
-
-sub query {
-    my ($self, %options) = @_;
-
-    return $self->request(query => $options{query});
+    return ($stdout, $exit_code);
 }
 
 sub get_identifier {
@@ -158,6 +157,24 @@ Specify username for authentication
 =item B<--password>
 
 Specify password for authentication
+
+=item B<--timeout>
+
+Timeout in seconds for the command (Default: 45). Default value can be override by the mode.
+
+=item B<--command>
+
+Command to get information (Default: wmic).
+
+=item B<--command-path>
+
+Command path (Default: /usr/bin/).
+
+=item B<--command-options>
+
+Command options.
+=item B<--sudo>
+sudo command.
 
 =back
 

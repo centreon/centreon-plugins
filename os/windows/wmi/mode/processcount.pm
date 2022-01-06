@@ -153,7 +153,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $WQL = 'select ExecutionState,Name,CommandLine,ExecutablePath,Handle from Win32_Process';
     if(defined($self->{option_results}->{process_name}) || $self->{option_results}->{process_name} ne '') {
@@ -163,7 +162,11 @@ sub run {
             $WQL .= ' where Name = "' . $self->{option_results}->{process_name} . '"';
         }
     }
-    my $result = $options{custom}->query(query => $WQL );
+#    my $result = $options{custom}->query(query => $WQL );
+    my ($result, $exit_code) = $options{custom}->execute_command(
+        query => $WQL,
+        no_quit => 1
+    );
     $result =~ s/\|/;/g;
 
     #

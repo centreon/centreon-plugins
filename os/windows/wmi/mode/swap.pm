@@ -58,7 +58,11 @@ sub run {
 
     my $WQL = 'Select Name,AllocatedBaseSize,CurrentUsage,PeakUsage from Win32_PageFileUsage';
 
-    my $result = $options{custom}->query(query => $WQL );
+#    my $result = $options{custom}->query(query => $WQL );
+    my ($result, $exit_code) = $options{custom}->execute_command(
+        query => $WQL,
+        no_quit => 1
+    );
     $result =~ s/\|/;/g;
 
     #

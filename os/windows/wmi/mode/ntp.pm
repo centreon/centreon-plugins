@@ -135,7 +135,10 @@ sub get_target_time {
     my ($self, %options) = @_;
     my $WQL = 'Select * from Win32_UTCTime';
 
-    my $result = $options{custom}->query(query => $WQL );
+    my ($result, $exit_code) = $options{custom}->execute_command(
+        query => $WQL,
+        no_quit => 1
+    );
     $result =~ s/\|/;/g;
     
     #

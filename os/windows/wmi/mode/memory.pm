@@ -133,7 +133,10 @@ sub manage_selection {
 
     my $WQL = 'Select Name,FreePhysicalMemory,TotalVisibleMemorySize from Win32_OperatingSystem';
 
-    my $result = $options{custom}->query(query => $WQL );
+    my ($result, $exit_code) = $options{custom}->execute_command(
+        query => $WQL,
+        no_quit => 1
+    );
     $result =~ s/\|/;/g;
 
     #

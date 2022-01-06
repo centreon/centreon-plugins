@@ -59,7 +59,10 @@ sub run {
 
     my $WQL = 'Select Frequency_Sys100NS,SystemUpTime,Timestamp_Object from Win32_PerfRawData_PerfOS_System';
 
-    my $result = $options{custom}->query(query => $WQL );
+    my ($result, $exit_code) = $options{custom}->execute_command(
+        query => $WQL,
+        no_quit => 1
+    );
     $result =~ s/\|/;/g;
 
     #

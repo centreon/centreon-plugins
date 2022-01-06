@@ -84,7 +84,10 @@ sub run {
 
 
     my $WQL = $self->manage_selection();
-    my $result = $options{custom}->query(query => $WQL );
+    my ($result, $exit_code) = $options{custom}->execute_command(
+        query => $WQL,
+        no_quit => 1
+    );
     $result =~ s/\|/;/g;
 
     #
@@ -191,7 +194,10 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my $WQL = $self->manage_selection(disco => 1);
-    my $result = $options{custom}->query(query => $WQL );
+    my ($result, $exit_code) = $options{custom}->execute_command(
+        query => $WQL,
+        no_quit => 1
+    );
     $result =~ s/\|/;/g;
 
     while ($result =~ /^(\d+);(\d+);(.*?);(\d+);(.*?)$/msg) {
