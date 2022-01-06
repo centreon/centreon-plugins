@@ -33,6 +33,7 @@ sub get_metrics_mapping {
             'output' => 'Sessions ',
             'label'  => 'sessions',
             'nlabel' => 'sqldatabase.sessions.count',
+            'unit'   => '',
             'min'    => '0',
             'max'    => ''
         }
