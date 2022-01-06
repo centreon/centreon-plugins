@@ -24,74 +24,52 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
+sub custom_status_threshold {
+    my ($self, %options) = @_;
+
+    my $status = catalog_status_threshold_ng($self, %options);
+    $self->{instance_mode}->{last_status} = $status;
+    return $status;
+}
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = "Status is '" . $self->{result_values}->{status} . "'";
+    my $msg = "status is '" . $self->{result_values}->{status} . "'";
+    if (!$self->{output}->is_status(value => $self->{instance_mode}->{last_status}, compare => 'ok', litteral => 1)) {
+        $msg .= sprintf(
+            ' [issue: %s %s]',
+            $self->{result_values}->{issue_startDateTime},
+            $self->{result_values}->{issue_title}
+        );
+    }
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{service_name} = $options{new_datas}->{$self->{instance} . '_service_name'};
-    $self->{result_values}->{feature_name} = ($options{new_datas}->{$self->{instance} . '_feature_name'}) ? $options{new_datas}->{$self->{instance} . '_feature_name'} : '';
-    return 0;
 }
 
 sub prefix_service_output {
     my ($self, %options) = @_;
     
-    return "Service '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_feature_output {
-    my ($self, %options) = @_;
-    
-    return "Feature '" . $options{instance_value}->{feature_name} . "' ";
-}
-
-sub long_output {
-    my ($self, %options) = @_;
-
-    return "Checking service '" . $options{instance_value}->{display} . "'";
+    return "Service '" . $options{instance_value}->{service_name} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'services', type => 3, cb_prefix_output => 'prefix_service_output', cb_long_output => 'long_output',
-          message_multiple => 'All services status are ok', indent_long_output => '    ',
-            group => [
-                { name => 'global',  type => 0, skipped_code => { -10 => 1 } },
-                { name => 'features', display_long => 1, cb_prefix_output => 'prefix_feature_output',
-                  message_multiple => 'All features status are ok', type => 1, skipped_code => { -10 => 1 } },
-            ]
-        }
+        { name => 'services', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'All services are ok' }
     ];
 
-    $self->{maps_counters}->{global} = [
-        { label => 'status', set => {
-                key_values => [ { name => 'status' }, { name => 'service_name' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+    $self->{maps_counters}->{services} = [
+        { label => 'status', type => 2, critical_default => '%{status} !~ /serviceOperational|serviceRestored/i', set => {
+                key_values => [
+                    { name => 'status' }, { name => 'service_name' },
+                    { name => 'issue_startDateTime' }, { name => 'issue_title' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
-            }
-        }
-    ];
-
-    $self->{maps_counters}->{features} = [
-        { label => 'status', set => {
-                key_values => [ { name => 'status' }, { name => 'service_name' }, { name => 'feature_name' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         }
     ];
@@ -103,47 +81,32 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-service-name:s"     => { name => 'filter_service_name' },
-        "filter-feature-name:s"     => { name => 'filter_feature_name' },
-        "warning-status:s"          => { name => 'warning_status' },
-        "critical-status:s"         => { name => 'critical_status', default => '%{status} !~ /Normal|Service Restored/i' },
+        'filter-service-name:s' => { name => 'filter_service_name' }
     });
     
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{services} = {};
+    my $results = $options{custom}->get_services_health();
 
-    my $results = $options{custom}->office_get_services_status();
-    
-    foreach my $service (@{$results->{value}}) {
+    $self->{services} = {};
+    foreach my $service (@$results) {
         if (defined($self->{option_results}->{filter_service_name}) && $self->{option_results}->{filter_service_name} ne '' &&
-            $service->{WorkloadDisplayName} !~ /$self->{option_results}->{filter_service_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $service->{WorkloadDisplayName} . "': no matching filter name.", debug => 1);
+            $service->{service} !~ /$self->{option_results}->{filter_service_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $service->{service} . "': no matching filter name.", debug => 1);
             next;
         }
-        $self->{services}->{$service->{Id}}->{display} = $service->{WorkloadDisplayName};
-        $self->{services}->{$service->{Id}}->{global}->{service_name} = $service->{WorkloadDisplayName};
-        $self->{services}->{$service->{Id}}->{global}->{status} = $service->{StatusDisplayName};
-        foreach my $feature (@{$service->{FeatureStatus}}) {
-            if (defined($self->{option_results}->{filter_feature_name}) && $self->{option_results}->{filter_feature_name} ne '' &&
-                $feature->{FeatureDisplayName} !~ /$self->{option_results}->{filter_feature_name}/) {
-                $self->{output}->output_add(long_msg => "skipping '" . $feature->{FeatureDisplayName} . "': no matching filter name.", debug => 1);
-                next;
-            }
-            $self->{services}->{$service->{Id}}->{features}->{$feature->{FeatureName}}->{service_name} = $service->{StatusDisplayName};
-            $self->{services}->{$service->{Id}}->{features}->{$feature->{FeatureName}}->{feature_name} = $feature->{FeatureDisplayName};
-            $self->{services}->{$service->{Id}}->{features}->{$feature->{FeatureName}}->{status} = $feature->{FeatureServiceStatusDisplayName};
+        $self->{services}->{ $service->{id} }->{service_name} = $service->{service};
+        $self->{services}->{ $service->{id} }->{status} = $service->{status};
+        $self->{services}->{ $service->{id} }->{issue_startDateTime} = '-';
+        $self->{services}->{ $service->{id} }->{issue_title} = '-';
+        if (defined($service->{issues}) && scalar(@{$service->{issues}}) > 0) {
+            my $issue = pop @{$service->{issues}};
+            $self->{services}->{ $service->{id} }->{issue_startDateTime} = $issue->{startDateTime};
+            $self->{services}->{ $service->{id} }->{issue_title} = $issue->{title};
         }
     }
 
@@ -159,24 +122,23 @@ __END__
 
 =head1 MODE
 
-Check services and features status.
+Check services status.
 
 =over 8
 
-=item B<--filter-*>
+=item B<--filter-service-name>
 
-Filter services and/or features.
-Can be: 'service-name', 'feature-name' (can be a regexp).
+Filter services (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{service_name}, %{feature_name}, %{status}
+Set warning threshold for status.
+Can used special variables like: %{service_name}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /Normal|Service Restored/i').
-Can used special variables like: %{service_name}, %{feature_name}, %{status}
+Set critical threshold for status (Default: '%{status} !~ /serviceOperational|serviceRestored/i').
+Can used special variables like: %{service_name}, %{status}
 
 =back
 

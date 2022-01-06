@@ -30,11 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-name:s"     => { name => 'filter_name' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
     return $self;
 }
 
@@ -46,18 +45,14 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->office_list_services();
+    my $results = $options{custom}->get_services_health();
+    foreach my $service (@$results) {
+        next if (defined($self->{option_results}->{filter_service_name}) && $self->{option_results}->{filter_service_name} ne '' &&
+            $service->{service} !~ /$self->{option_results}->{filter_service_name}/);
 
-    foreach my $service (@{$results->{value}}) {
-        if (defined($self->{option_results}->{filter_service_name}) && $self->{option_results}->{filter_service_name} ne '' &&
-            $service->{WorkloadDisplayName} !~ /$self->{option_results}->{filter_service_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $service->{WorkloadDisplayName} . "': no matching filter name.", debug => 1);
-            next;
-        }
-
-        $self->{services}->{$service->{Id}} = {
-            service_id => $service->{Id},
-            service_name => $service->{DisplayName},
+        $self->{services}->{ $service->{id} } = {
+            service_id => $service->{id},
+            service_name => $service->{service}
         }            
     }
 }
@@ -67,13 +62,19 @@ sub run {
   
     $self->manage_selection(%options);
     foreach my $service (sort keys %{$self->{services}}) { 
-        $self->{output}->output_add(long_msg => sprintf("[service_id = %s] [service_name = %s]",
-                                                         $self->{services}->{$service}->{service_id},
-                                                         $self->{services}->{$service}->{service_name}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "[service_id: %s] [service_name: %s]",
+                $self->{services}->{$service}->{service_id},
+                $self->{services}->{$service}->{service_name}
+            )
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List services:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List services:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -91,7 +92,7 @@ sub disco_show {
     foreach my $service (sort keys %{$self->{services}}) {             
         $self->{output}->add_disco_entry(
             service_id => $self->{services}->{$service}->{service_id},
-            service_name => $self->{services}->{$service}->{service_name},
+            service_name => $self->{services}->{$service}->{service_name}
         );
     }
 }
