@@ -32,14 +32,14 @@ sub get_metrics_mapping {
         'Network In Total' => {
             'output' => 'Network In Total',
             'label'  => 'traffic-in',
-            'nlabel' => 'vmss.traffic.in.bytes',
+            'nlabel' => 'traffic.in.bytes',
             'unit'   => 'B',
             'min'    => '0',
         },
         'Network Out Total' => {
             'output' => 'Network Out Total',
             'label'  => 'traffic-out',
-            'nlabel' => 'vmss.traffic.out.bytes',
+            'nlabel' => 'traffic.out.bytes',
             'unit'   => 'B',
             'min'    => '0',
         }
