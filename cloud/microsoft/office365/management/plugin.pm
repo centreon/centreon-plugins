@@ -25,17 +25,16 @@ use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'list-services'         => 'cloud::microsoft::office365::management::mode::listservices',
-        'service-status'        => 'cloud::microsoft::office365::management::mode::servicestatus',
-    );
+    $self->{modes} = {
+        'list-services'  => 'cloud::microsoft::office365::management::mode::listservices',
+        'service-status' => 'cloud::microsoft::office365::management::mode::servicestatus'
+    };
 
-    $self->{custom_modes}{managementapi} = 'cloud::microsoft::office365::custom::managementapi';
+    $self->{custom_modes}->{graphapi} = 'cloud::microsoft::office365::custom::graphapi';
     return $self;
 }
 

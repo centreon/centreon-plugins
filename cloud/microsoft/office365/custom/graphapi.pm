@@ -186,7 +186,7 @@ sub request_api_json {
 
     $self->settings();
 
-    my @results;
+    my $results = [];
     my %local_options = %options;
 
     while (1) {
@@ -208,13 +208,13 @@ sub request_api_json {
             $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
-        push @results, @{$decoded->{value}};
+        push @$results, @{$decoded->{value}};
 
         last if (!defined($decoded->{'@odata.nextLink'}));
         $local_options{full_url} = $decoded->{'@odata.nextLink'};
     }
 
-    return @results;
+    return $results;
 }
 
 sub request_api_csv {
@@ -447,6 +447,15 @@ sub teams_post_notification {
     my $encoded_data = JSON::XS->new->utf8->encode($options{json_request});
     my $full_url = $self->teams_post_notification_set_url(%options);
     my $response = $self->request_api_json(method => 'POST', full_url => $full_url, hostname => '', query_form_post => $encoded_data);
+
+    return $response;
+}
+
+sub get_services_health {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->{graph_endpoint} . '/v1.0/admin/serviceAnnouncement/healthOverviews';
+    my $response = $self->request_api_json(method => 'GET', full_url => $full_url, hostname => '', get_param => ['$expand=issues']);
 
     return $response;
 }
