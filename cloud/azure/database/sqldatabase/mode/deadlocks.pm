@@ -33,6 +33,7 @@ sub get_metrics_mapping {
             'output' => 'Deadlocks ',
             'label'  => 'deadlocks',
             'nlabel' => 'sqldatabase.deadlocks.count',
+            'unit'   => '',
             'min'    => '0',
             'max'    => ''
         }

@@ -33,6 +33,7 @@ sub get_metrics_mapping {
             'output' => 'Blocked by firewall ',
             'label'  => 'connection-blocked',
             'nlabel' => 'sqldatabase.connection.blocked.count',
+            'unit'   => '',
             'min'    => '0',
             'max'    => ''
         },
@@ -40,6 +41,7 @@ sub get_metrics_mapping {
             'output' => 'Connection failed ',
             'label'  => 'connection-failed',
             'nlabel' => 'sqldatabase.connection.failed.count',
+            'unit'   => '',
             'min'    => '0',
             'max'    => ''
         },
@@ -47,6 +49,7 @@ sub get_metrics_mapping {
             'output' => 'Connection successful ',
             'label'  => 'connection-successful',
             'nlabel' => 'sqldatabase.connection.successful.count',
+            'unit'   => '',
             'min'    => '0',
             'max'    => ''
         }

@@ -33,6 +33,7 @@ sub get_metrics_mapping {
             'output' => 'Workers ',
             'label'  => 'workers',
             'nlabel' => 'sqldatabase.workers.count',
+            'unit'   => '',
             'min'    => '0',
             'max'    => ''
         }
