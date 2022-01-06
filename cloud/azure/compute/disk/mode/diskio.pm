@@ -46,7 +46,7 @@ sub get_metrics_mapping {
             'max'    => ''
         }, 
         'Composite Disk Read Operations/sec' => {
-            'output' => 'Disk Read Operationss/sec',
+            'output' => 'Disk Read Operations/sec',
             'label'  => 'disk-read-ops-persec',
             'nlabel' => 'disk.write.ops.persec',
             'unit'   => '',
