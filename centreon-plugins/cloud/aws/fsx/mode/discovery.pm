@@ -56,7 +56,7 @@ sub run {
         command => 'describe-file-systems'
     );
 
-    foreach my $fs_instance (@{$fsx_instances->{FileSystems}}) {
+    foreach my $fsx_instance (@{$fsx_instances->{FileSystems}}) {
         next if (!defined($fsx_instance->{FileSystemId}));
         my %fsx;
         $fsx{type} = "fsx";
