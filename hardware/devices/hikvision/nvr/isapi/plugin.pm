@@ -30,7 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'   => 'hardware::devices::hikvision::nvr::isapi::mode::cpu'
+        'cpu'       => 'hardware::devices::hikvision::nvr::isapi::mode::cpu',
+        'device'    => 'hardware::devices::hikvision::nvr::isapi::mode::device',
+        'disks'     => 'hardware::devices::hikvision::nvr::isapi::mode::disks',
+        'memory'    => 'hardware::devices::hikvision::nvr::isapi::mode::memory',
+        'protocols' => 'hardware::devices::hikvision::nvr::isapi::mode::protocols',
+        'time'      => 'hardware::devices::hikvision::nvr::isapi::mode::time'
     };
 
     $self->{custom_modes}->{isapi} = 'hardware::devices::hikvision::nvr::isapi::custom::api';

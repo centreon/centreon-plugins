@@ -135,21 +135,6 @@ sub get_port {
 sub request_api {
     my ($self, %options) = @_;
 
-=pod
-    my $file;
-    if ($options{endpoint} =~ /System\/status/) {
-        $file = '/home/qgarnier/clients/plugins/hikvision/system_status.xml';
-    }
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $file : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-=cut
-
     $self->settings();
     my $content = $self->{http}->request(
         url_path => $options{endpoint},
