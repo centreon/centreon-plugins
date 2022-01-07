@@ -35,7 +35,8 @@ sub new {
         'disks'     => 'hardware::devices::hikvision::nvr::isapi::mode::disks',
         'memory'    => 'hardware::devices::hikvision::nvr::isapi::mode::memory',
         'protocols' => 'hardware::devices::hikvision::nvr::isapi::mode::protocols',
-        'time'      => 'hardware::devices::hikvision::nvr::isapi::mode::time'
+        'time'      => 'hardware::devices::hikvision::nvr::isapi::mode::time',
+        'uptime'    => 'hardware::devices::hikvision::nvr::isapi::mode::uptime'
     };
 
     $self->{custom_modes}->{isapi} = 'hardware::devices::hikvision::nvr::isapi::custom::api';
