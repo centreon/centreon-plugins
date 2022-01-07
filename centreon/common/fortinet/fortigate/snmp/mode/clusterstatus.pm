@@ -24,18 +24,42 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
+
     return sprintf(
         "status is '%s' [hostname: %s] [role: %s] [checksum: %s]",
         $self->{result_values}->{sync_status},
         $self->{result_values}->{hostname},
         $self->{result_values}->{role},
         $self->{result_values}->{checksum}
+    );
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Nodes ';
+}
+
+sub node_long_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "checking node '%s'",
+        $options{instance_value}->{serial}
+    );
+}
+
+sub prefix_node_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "node '%s' ",
+        $options{instance_value}->{serial}
     );
 }
 
@@ -56,32 +80,27 @@ sub custom_status_calc {
     return 0;
 }
 
-sub prefix_status_output {
-    my ($self, %options) = @_;
-
-    return "Node '" . $options{instance_value}->{serial} . "' ";
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Nodes ';
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All cluster nodes status are ok' }
+        { name => 'nodes', type => 3, cb_prefix_output => 'prefix_node_output', cb_long_output => 'node_long_output',
+          indent_long_output => '    ', message_multiple => 'All cluster nodes are ok',
+            group => [
+                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'cpu', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'memory', type => 0, skipped_code => { -10 => 1 } }
+            ]
+        }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-nodes', nlabel => 'cluster.nodes.total.count', display_ok => 0, set => {
+        { label => 'total-nodes', nlabel => 'cluster.nodes.count', set => {
                 key_values => [ { name => 'total_nodes' } ],
-                output_template => 'total nodes: %d',
+                output_template => 'total: %d',
                 perfdatas => [
-                    { label => 'total_nodes', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
@@ -89,35 +108,58 @@ sub set_counters {
                 key_values => [ { name => 'synchronized' } ],
                 output_template => 'synchronized: %d',
                 perfdatas => [
-                    { label => 'synchronized_nodes', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
-        { label => 'not-synchronized', nlabel => 'cluster.nodes.notsynchronized.count',set => {
-                key_values => [ { name => 'not_synchronized' } ],
-                output_template => 'not synchronized: %d',
+        { label => 'unsynchronized', nlabel => 'cluster.nodes.unsynchronized.count',set => {
+                key_values => [ { name => 'unsynchronized' } ],
+                output_template => 'unsynchronized: %d',
                 perfdatas => [
-                    { label => 'not_synchronized_nodes', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
         { label => 'total-checksums', nlabel => 'cluster.checksums.total.count', display_ok => 0, set => {
                 key_values => [ { name => 'total_checksums' } ],
-                output_template => 'total checksums: %d',
+                output_template => 'checksums: %d',
                 perfdatas => [
-                    { label => 'total_checksums', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         }
     ];
 
-    $self->{maps_counters}->{nodes} = [
-        { label => 'status', threshold => 0, set => {
+    $self->{maps_counters}->{status} = [
+        { label => 'status', type => 2, critical_default => '%{role} ne %{roleLast} or %{sync_status} =~ /unsynchronized/', set => {
                 key_values => [ { name => 'serial' }, { name => 'hostname' }, { name => 'sync_status' }, { name => 'role' }, { name => 'checksum' } ],
                 closure_custom_calc => \&custom_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{cpu} = [
+         { label => 'cpu-utilization', nlabel => 'node.cpu.utilization.percentage', set => {
+                key_values => [ { name => 'cpu_usage' }, { name => 'serial' } ],
+                output_template => 'cpu usage: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'serial' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{memory} = [
+         { label => 'memory-usage', nlabel => 'node.memory.usage.percentage', set => {
+                key_values => [ { name => 'memory_usage' }, { name => 'serial' } ],
+                output_template => 'memory used: %.2f %%',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'serial' }
+                ]
             }
         }
     ];
@@ -125,23 +167,14 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{role} ne %{roleLast} or %{sync_status} =~ /not synchronized/' },
         'one-node-status:s' => { name => 'one_node_status' } # not used, use --opt-exit instead
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 my $map_ha_mode = {
@@ -150,18 +183,18 @@ my $map_ha_mode = {
     3 => 'activePassive'
 };
 my $map_sync_status = {
-    0 => 'not synchronized',
+    0 => 'unsynchronized',
     1 => 'synchronized'
 };
 
 my $mapping = {
-    fgHaStatsSerial         => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.2' },
-    fgHaStatsHostname       => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.11' },
-    fgHaStatsSyncStatus     => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.12', map => $map_sync_status },
-    fgHaStatsGlobalChecksum => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.15' },
-    fgHaStatsMasterSerial   => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.16' }
+    cpuUsage       => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.3' }, # fgHaStatsCpuUsage
+    memUsage       => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.4' }, # fgHaStatsMemUsage
+    hostname       => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.11' }, # fgHaStatsHostname
+    syncStatus     => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.12', map => $map_sync_status }, # fgHaStatsSyncStatus
+    globalChecksum => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.15' }, # fgHaStatsGlobalChecksum
+    masterSerial   => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.16' } # fgHaStatsMasterSerial
 };
-my $oid_fgHaStatsEntry = '.1.3.6.1.4.1.12356.101.13.2.1.1';
 my $oid_fgHaSystemMode = '.1.3.6.1.4.1.12356.101.13.1.1.0';
 
 sub manage_selection {
@@ -174,41 +207,52 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    $self->{output}->output_add(short_msg => 'HA mode: ' . $map_ha_mode->{ $mode->{$oid_fgHaSystemMode} });
+    $self->{output}->output_add(short_msg => 'High-availibility mode: ' . $map_ha_mode->{ $mode->{$oid_fgHaSystemMode} });
 
+    my $oid_serial = '.1.3.6.1.4.1.12356.101.13.2.1.1.2'; # fgHaStatsSerial
     my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_fgHaStatsEntry,
+        oid => $oid_serial,
         nothing_quit => 1
     );
 
-    $self->{global} = { synchronized => 0, not_synchronized => 0, total_nodes => 0 };
+    $self->{global} = { synchronized => 0, unsynchronized => 0, total_nodes => 0 };
     $self->{nodes} = {};
-
-    my $checksums = {};
-    foreach my $oid (keys %$snmp_result) {
-        next if ($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
+    foreach (keys %$snmp_result) {
+        /^$oid_serial\.(.*)$/;
         my $instance = $1;
 
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $self->{nodes}->{$instance} = { serial => $snmp_result->{$_} };
+    }
 
-        $checksums->{$result->{fgHaStatsGlobalChecksum}} = 1;
-        $self->{nodes}->{$instance} = {
-            serial => $result->{fgHaStatsSerial},
-            hostname => $result->{fgHaStatsHostname},
-            sync_status => $result->{fgHaStatsSyncStatus},
-            role => ($result->{fgHaStatsMasterSerial} eq '' || $result->{fgHaStatsMasterSerial} =~ /$result->{fgHaStatsSerial}/) ? 'master' : 'slave',
-            checksum => $result->{fgHaStatsGlobalChecksum}
+    return if (scalar(keys %{$self->{nodes}}) <= 0);
+
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping)) ],
+        instances => [ map($_, keys(%{$self->{nodes}})) ],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef();
+
+    my $checksums = {};
+    foreach (keys %{$self->{nodes}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+
+        $checksums->{ $result->{globalChecksum} } = 1;
+        $self->{nodes}->{$_}->{status} = {
+            serial => $self->{nodes}->{$_}->{serial},
+            hostname => $result->{hostname},
+            sync_status => $result->{syncStatus},
+            role => ($result->{masterSerial} eq '' || $result->{masterSerial} =~ /$self->{nodes}->{$_}->{serial}/) ? 'master' : 'slave',
+            checksum => $result->{globalChecksum}
         };
-        $result->{fgHaStatsSyncStatus} =~ s/ /_/;
-        $self->{global}->{$result->{fgHaStatsSyncStatus}}++;
+        $self->{nodes}->{$_}->{cpu} = { cpu_usage => $result->{cpuUsage}, serial => $self->{nodes}->{$_}->{serial} };
+        $self->{nodes}->{$_}->{memory} = { memory_usage => $result->{memUsage}, serial => $self->{nodes}->{$_}->{serial} };
+
+        $self->{global}->{ $result->{syncStatus} }++;
         $self->{global}->{total_nodes}++;
     }
 
     $self->{global}->{total_checksums} = scalar(keys %$checksums);
-    if (scalar(keys %{$self->{nodes}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No cluster nodes found');
-        $self->{output}->option_exit();
-    }
 
     $self->{cache_name} = 'fortinet_fortigate_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
@@ -220,25 +264,25 @@ __END__
 
 =head1 MODE
 
-Check cluster status (FORTINET-FORTIGATE-MIB).
+Check cluster status.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
-
-Set thresholds.
-Can be: 'total-nodes', 'synchronized', 'not-synchronized',
-'total-checksums'.
-
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Set warning threshold for status.
 Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{role} ne %{roleLast} or %{sync_status} !~ /synchronized/').
+Set critical threshold for status (Default: '%{role} ne %{roleLast} or %{sync_status} =~ /unsynchronized/').
 Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
+
+=item B<--warning-*> B<--critical-*>
+
+Set thresholds.
+Can be: 'total-nodes', 'synchronized', 'unsynchronized',
+'total-checksums', 'cpu-utilization', 'memory-usage'.
 
 =back
 
