@@ -207,8 +207,9 @@ sub request_api {
 
     $self->settings();
     my $creds = $self->credentials();
+    my $api_version = defined($options{api_version}) ? $options{api_version} : 'internal';
     my ($content) = $self->{http}->request(
-        url_path => '/api/internal' . $options{endpoint},
+        url_path => '/api/' . $api_version . $options{endpoint},
         get_param => $options{get_param},
         %$creds
     );
@@ -218,7 +219,7 @@ sub request_api {
         $self->clean_token();
         $creds = $self->credentials();
         $content = $self->{http}->request(
-            url_path => '/api/internal' . $options{endpoint},
+            url_path => '/api/' . $api_version . $options{endpoint},
             get_param => $options{get_param},
             %$creds,
             unknown_status => $self->{unknown_http_status},
