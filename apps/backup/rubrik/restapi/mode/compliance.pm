@@ -30,8 +30,17 @@ sub prefix_global_output {
     
     my $prefix_output;
     
+    if ($self->{option_results}->{snapshot_range} eq 'LastSnapshot') {
+        $prefix_output = 'last snapshot';
+    } elsif ($self->{option_results}->{snapshot_range} eq 'Last2Snapshot') {
+        $prefix_output = 'last 2 snapshots';
+    } elsif ($self->{option_results}->{snapshot_range} eq 'Last3Snapshot') {
+        $prefix_output = 'last 3 snapshots';
+    } else {
+        $prefix_output = 'all snapshots';
+    }
     
-    return 'Backup objects ' . $prefix_output . ') ';
+    return 'Backup objects (based on ' . $prefix_output . ') ';
 }
 
 sub set_counters {
