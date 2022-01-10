@@ -306,11 +306,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-url:s'      => { name => 'filter_url' },
-        'filter-id:s'       => { name => 'filter_id' },
-        'units:s'           => { name => 'units', default => '%' },
-        'free'              => { name => 'free' },
-        'filter-counters:s' => { name => 'filter_counters', default => 'active-sites|total' }
+        'filter-url:s'       => { name => 'filter_url' },
+        'filter-id:s'        => { name => 'filter_id' },
+        'use-pseudonymize:s' => { name => 'use_pseudonymize' }
+        'units:s'            => { name => 'units', default => '%' },
+        'free'               => { name => 'free' },
+        'filter-counters:s'  => { name => 'filter_counters', default => 'active-sites|total' }
     });
 
     return $self;
@@ -318,7 +319,7 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     $self->{active} = { active => 0, total => 0, report_date => '' };
     $self->{global} = {
         storage_used_active => 0, storage_used_inactive => 0,
@@ -335,6 +336,11 @@ sub manage_selection {
     }
 
     foreach my $site (@{$results}, @{$results_daily}) {
+        if ($site->{'Site URL'} !~ /^(https|http):/ && !defined($self->{option_results}->{use_pseudonymize})) {
+            $self->{output}->add_option_msg(short_msg => "reports pseudonymize user-level information is enabled. use option --use-pseudonymize or disable it");
+            $self->{output}->option_exit();
+        }
+
         if (defined($self->{option_results}->{filter_url}) && $self->{option_results}->{filter_url} ne '' &&
             $site->{'Site URL'} !~ /$self->{option_results}->{filter_url}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site URL'} . "': no matching filter name.", debug => 1);
@@ -389,38 +395,31 @@ https://docs.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint
 
 =over 8
 
-=item B<--filter-*>
-
-Filter sites.
-Can be: 'url', 'id' (can be a regexp).
-
-=item B<--warning-*>
-
-Threshold warning.
-Can be: 'active-sites',
-'total-usage-active' (count), 'total-usage-inactive' (count),
-'total-file-count-active' (count), 'total-file-count-inactive' (count),
-'total-active-file-count' (count), 'total-visited-page-count' (count),
-'total-page-view-count' (count),
-'usage' (count), 'file-count' (count), 'active-file-count' (count),
-'visited-page-count' (count), 'page-view-count' (count).
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'active-sites',
-'total-usage-active' (count), 'total-usage-inactive' (count),
-'total-file-count-active' (count), 'total-file-count-inactive' (count),
-'total-active-file-count' (count), 'total-visited-page-count' (count),
-'total-page-view-count' (count),
-'usage' (count), 'file-count' (count), 'active-file-count' (count),
-'visited-page-count' (count), 'page-view-count' (count).
-
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example to hide per user counters: --filter-counters='active-sites|total'
 (Default: 'active-sites|total')
+
+=item B<--filter-*>
+
+Filter sites.
+Can be: 'url', 'id' (can be a regexp).
+
+=item B<--use-pseudonymize>
+
+Use pseudonymize user-level information. 
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'active-sites',
+'total-usage-active' (count), 'total-usage-inactive' (count),
+'total-file-count-active' (count), 'total-file-count-inactive' (count),
+'total-active-file-count' (count), 'total-visited-page-count' (count),
+'total-page-view-count' (count),
+'usage' (count), 'file-count' (count), 'active-file-count' (count),
+'visited-page-count' (count), 'page-view-count' (count).
 
 =item B<--units>
 
