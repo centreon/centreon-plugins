@@ -31,6 +31,7 @@ sub check_options {
 
     $self->{namespace} = 'Microsoft.Sql';
     $self->{type} = 'servers';
+    $self->{api_version} = '2021-04-01';
 }
 
 1;
