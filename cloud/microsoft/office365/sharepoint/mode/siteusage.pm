@@ -308,7 +308,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-url:s'       => { name => 'filter_url' },
         'filter-id:s'        => { name => 'filter_id' },
-        'use-pseudonymize:s' => { name => 'use_pseudonymize' }
+        'use-pseudonymize:s' => { name => 'use_pseudonymize' },
         'units:s'            => { name => 'units', default => '%' },
         'free'               => { name => 'free' },
         'filter-counters:s'  => { name => 'filter_counters', default => 'active-sites|total' }
