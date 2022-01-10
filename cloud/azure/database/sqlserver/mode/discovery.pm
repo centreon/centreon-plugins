@@ -31,7 +31,7 @@ sub check_options {
 
     $self->{namespace} = 'Microsoft.Sql';
     $self->{type} = 'servers';
-    $self->{api_version} = '2021-04-01';
+
 }
 
 1;
@@ -40,7 +40,7 @@ __END__
 
 =head1 MODE
 
-SQL Server discovery.
+SQL Server discovery. Only works with --api-version=2020-08-01 option. 
 
 =over 8
 
