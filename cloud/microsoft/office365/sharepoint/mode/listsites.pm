@@ -30,12 +30,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-url:s"      => { name => 'filter_url' },
-                                    "filter-id:s"       => { name => 'filter_id' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        'filter-url:s'       => { name => 'filter_url' },
+        'filter-id:s'        => { name => 'filter_id' },
+        'use-pseudonymize:s' => { name => 'use_pseudonymize' }
+    });
+
     return $self;
 }
 
@@ -48,8 +48,12 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->office_get_sharepoint_site_usage(param => "period='D7'");
+    foreach my $site (@$results) {
+        if ($site->{'Site URL'} !~ /^(https|http):/ && !defined($self->{option_results}->{use_pseudonymize})) {
+            $self->{output}->add_option_msg(short_msg => "reports pseudonymize user-level information is enabled. use option --use-pseudonymize or disable it");
+            $self->{output}->option_exit();
+        }
 
-    foreach my $site (@{$results}) {
         if (defined($self->{option_results}->{filter_url}) && $self->{option_results}->{filter_url} ne '' &&
             $site->{'Site URL'} !~ /$self->{option_results}->{filter_url}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site URL'} . "': no matching filter name.", debug => 1);
@@ -61,9 +65,9 @@ sub manage_selection {
             next;
         }
 
-        $self->{sites}->{$site->{'Site Id'}} = {
+        $self->{sites}->{ $site->{'Site Id'} } = {
             id => $site->{'Site Id'},
-            url => $site->{'Site URL'},
+            url => $site->{'Site URL'}
         }
     }
 }
@@ -73,13 +77,19 @@ sub run {
   
     $self->manage_selection(%options);
     foreach my $site (sort keys %{$self->{sites}}) { 
-        $self->{output}->output_add(long_msg => sprintf("[id = %s] [url = %s]",
-                                                         $self->{sites}->{$site}->{id},
-                                                         $self->{sites}->{$site}->{url}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "[id: %s] [url: %s]",
+                $self->{sites}->{$site}->{id},
+                $self->{sites}->{$site}->{url}
+            )
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List sites:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List sites:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -97,7 +107,7 @@ sub disco_show {
     foreach my $site (sort keys %{$self->{sites}}) {             
         $self->{output}->add_disco_entry(
             id => $self->{sites}->{$site}->{id},
-            url => $self->{sites}->{$site}->{url},
+            url => $self->{sites}->{$site}->{url}
         );
     }
 }
@@ -116,6 +126,10 @@ List sites.
 
 Filter sites.
 Can be: 'url', 'id' (can be a regexp).
+
+=item B<--use-pseudonymize>
+
+Use pseudonymize user-level information. 
 
 =back
 
