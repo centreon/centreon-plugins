@@ -61,7 +61,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', cb_init => 'skip_global' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'items', type => 1, cb_prefix_output => 'prefix_item_output', message_multiple => 'All items are ok' }
     ];
 
@@ -94,12 +94,6 @@ sub set_counters {
             }
         }
     ];
-}
-
-sub skip_global {
-    my ($self, %options) = @_;
-
-    scalar(keys %{$self->{items}}) == 1 ? return(1) : return(0);
 }
 
 sub new {
@@ -161,7 +155,7 @@ sub manage_selection {
         };
 
         $self->{global}->{ lc($item->{properties}->{lastBackupStatus}) }++
-            if (defined($item->{properties}->{lastBackupStatus}) && defined($self->{global}->{ lc($item->{properties}->{lastBackupStatus}) }));
+	  if (defined($item->{properties}->{lastBackupStatus}) && defined($self->{global}->{ lc($item->{properties}->{lastBackupStatus}) }));
     }
 
     if (scalar(keys %{$self->{items}}) <= 0) {
