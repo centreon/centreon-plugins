@@ -27,7 +27,7 @@ use network::alcatel::omniswitch::snmp::mode::components::resources qw(%oids $ma
 my %fan_status = (
     0 => 'noStatus',
     1 => 'notRunning',
-    2 => 'running',
+    2 => 'running'
 );
 
 sub load {}
@@ -38,7 +38,7 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking fan");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fan'));
-    
+
     my @instances = ();
     foreach my $key (keys %{$self->{results}->{$oids{common}->{entPhysicalClass}}}) {
         if ($self->{results}->{$oids{common}->{entPhysicalClass}}->{$key} == 7) {
@@ -46,20 +46,23 @@ sub check {
             push @instances, $1;
         }
     }
-    
+
     foreach my $instance (@instances) {
         next if (!defined($self->{results}->{entity}->{$oids{$self->{type}}{chasEntPhysAdminStatus} . '.' . $instance}));
-        
+
         my $result = $self->{snmp}->map_instance(mapping => $mapping->{$self->{type}}, results => $self->{results}->{entity}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'fan', instance => $instance));
         $self->{components}->{fan}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("fan '%s/%s' [instance: %s, admin status: %s] operationnal status is %s.",
-                                                        $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
-                                                        $result->{chasEntPhysAdminStatus}, $result->{chasEntPhysOperStatus})
-                                    );
-        
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s/%s' [instance: %s, admin status: %s] operationnal status is %s.",
+                $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
+                $result->{chasEntPhysAdminStatus}, $result->{chasEntPhysOperStatus}
+            )
+        );
+
         if ($result->{chasEntPhysPower} > 0) {
             $self->{output}->perfdata_add(
                 label => "power", unit => 'W',
@@ -72,22 +75,30 @@ sub check {
         
         my $exit = $self->get_severity(label => 'admin', section => 'fan.admin', value => $result->{chasEntPhysAdminStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("fan '%s/%s/%s' admin status is %s",
-                                                        $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
-                                                        $result->{chasEntPhysAdminStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "fan '%s/%s/%s' admin status is %s",
+                    $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
+                    $result->{chasEntPhysAdminStatus}
+                )
+            );
             next;
         }
 
         $exit = $self->get_severity(label => 'oper', section => 'fan.oper', value => $result->{chasEntPhysOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("fan '%s/%s/%s' operational status is %s",
-                                                        $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
-                                                        $result->{chasEntPhysOperStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "fan '%s/%s/%s' operational status is %s",
+                    $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
+                    $result->{chasEntPhysOperStatus}
+                )
+            );
         }
     }
-    
+
     foreach my $key (keys %{$self->{results}->{$oids{$self->{type}}->{alaChasEntPhysFanStatus}}}) {
         next if ($key !~ /^$oids{$self->{type}}->{alaChasEntPhysFanStatus}\.(.*?)\.(.*?)$/);
         my ($phys_index, $loc_index) = ($1, $2);
@@ -96,20 +107,27 @@ sub check {
                         $self->{results}->{entity}->{$oids{common}->{entPhysicalDescr} . '.' . $phys_index} : 'unknown';
         my $name  = defined($self->{results}->{entity}->{$oids{common}->{entPhysicalName} . '.' . $phys_index}) ? 
                         $self->{results}->{entity}->{$oids{common}->{entPhysicalName} . '.' . $phys_index} : 'unknown';
-        
+
         next if ($self->check_filter(section => 'fan', instance => $phys_index . '.' . $loc_index));
         $self->{components}->{fan}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("fan '%s/%s' [instance: %s] status is %s",
-                                                        $name, $descr, $phys_index . '.' . $loc_index, 
-                                                        $fan_status{$status})
-                                    );
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s/%s' [instance: %s] status is %s",
+                $name, $descr, $phys_index . '.' . $loc_index, 
+                $fan_status{$status}
+            )
+        );
         my $exit = $self->get_severity(label => 'fan', section => 'fan.status', value => $fan_status{$status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("fan '%s/%s/%s' status is %s",
-                                                        $name, $descr, $phys_index . '.' . $loc_index, 
-                                                        $fan_status{$status}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "fan '%s/%s/%s' status is %s",
+                    $name, $descr, $phys_index . '.' . $loc_index, 
+                    $fan_status{$status}
+                )
+            );
         }
     }
 }
