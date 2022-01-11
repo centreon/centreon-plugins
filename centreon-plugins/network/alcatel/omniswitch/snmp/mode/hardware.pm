@@ -33,7 +33,7 @@ sub set_system {
             ['^(reset|takeover|resetWithFabric|takeoverWithFabrc)$', 'WARNING'],
             ['^(powerOff)$', 'CRITICAL'],
             ['powerOn', 'OK'],
-            ['standby', 'OK'],
+            ['standby', 'OK']
         ],
         oper => [
             ['^(testing)$', 'WARNING'],
@@ -41,13 +41,13 @@ sub set_system {
             ['up', 'OK'],
             ['secondary', 'OK'],
             ['master', 'OK'],
-            ['idle', 'OK'],
+            ['idle', 'OK']
         ],
         fan => [
-            ['^noStatus$', 'UNKNOWN'],
+            ['noStatus', 'OK'],
             ['^notRunning$', 'CRITICAL'],
-            ['running', 'OK'],
-        ],
+            ['running', 'OK']
+        ]
     };
     
     $self->{components_path} = 'network::alcatel::omniswitch::snmp::mode::components';
@@ -61,7 +61,7 @@ sub snmp_execute {
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [ 
         { oid => $oids{common}->{entPhysicalClass} },
         { oid => $oids{aos6}->{alaChasEntPhysFanStatus} },
-        { oid => $oids{aos7}->{alaChasEntPhysFanStatus} },
+        { oid => $oids{aos7}->{alaChasEntPhysFanStatus} }
     ]);
     $self->{results}->{entity} = $self->{snmp}->get_multiple_table(oids => [ 
         { oid => $oids{common}->{entPhysicalDescr} },
@@ -71,7 +71,7 @@ sub snmp_execute {
         { oid => $oids{aos6}->{chasEntPhysPower} },
         { oid => $oids{aos7}->{chasEntPhysAdminStatus} },
         { oid => $oids{aos7}->{chasEntPhysOperStatus} },
-        { oid => $oids{aos7}->{chasEntPhysPower} },
+        { oid => $oids{aos7}->{chasEntPhysPower} }
     ], return_type => 1);
 
     $self->{type} = 'aos6';

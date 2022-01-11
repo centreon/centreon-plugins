@@ -49,11 +49,14 @@ sub check {
         next if ($self->check_filter(section => 'chassis', instance => $instance));
         $self->{components}->{chassis}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("chassis '%s/%s' [instance: %s, admin status: %s] operationnal status is %s.",
-                                                        $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
-                                                        $result->{chasEntPhysAdminStatus}, $result->{chasEntPhysOperStatus})
-                                    );
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "chassis '%s/%s' [instance: %s, admin status: %s] operationnal status is %s.",
+                $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
+                $result->{chasEntPhysAdminStatus}, $result->{chasEntPhysOperStatus}
+            )
+        );
+
         if ($result->{chasEntPhysPower} > 0) {
             $self->{output}->perfdata_add(
                 label => "power", unit => 'W',
@@ -66,19 +69,27 @@ sub check {
         
         my $exit = $self->get_severity(label => 'admin', section => 'chassis.admin', value => $result->{chasEntPhysAdminStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("chassis '%s/%s/%s' admin status is %s",
-                                                        $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
-                                                        $result->{chasEntPhysAdminStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "chassis '%s/%s/%s' admin status is %s",
+                    $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
+                    $result->{chasEntPhysAdminStatus}
+                )
+            );
             next;
         }
 
         $exit = $self->get_severity(label => 'oper', section => 'chassis.oper', value => $result->{chasEntPhysOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("chassis '%s/%s/%s' operational status is %s",
-                                                        $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
-                                                        $result->{chasEntPhysOperStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "chassis '%s/%s/%s' operational status is %s",
+                    $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
+                    $result->{chasEntPhysOperStatus}
+                )
+            );
         }
     }
 }
