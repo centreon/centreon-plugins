@@ -159,7 +159,7 @@ sub login {
             $self->{output}->add_option_msg(short_msg => "Openvpn management interface require a password. please set --omi-password option");
             $self->{output}->option_exit();
         }
-        $self->write_omi_protocol(cmd => $self->{omi_password});
+        $self->write_omi_protocol(cmd => $self->{omi_password} . "\n");
         $message = $self->read_omi_protocol(expected => '^(SUCCESS|ERROR):[^\n]*?\n');
         if ($message =~ /^ERROR:(.*)/m) {
             $self->{output}->add_option_msg(short_msg => "Password error [" . $1 . "]");
