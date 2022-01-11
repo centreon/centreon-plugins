@@ -123,22 +123,23 @@ sub manage_selection {
     my $chart_name = $self->{option_results}->{chart_name};
     my $stat = $self->{option_results}->{chart_statistics};
 
+    $self->{metrics}->{$chart_name} = {};
+    # we remove the first time value
+    shift @{$result->{labels}};
     foreach my $chart_value (@{$result->{data}}) {
+        shift(@$chart_value);
         foreach my $chart_label (@{$result->{labels}}) {
-            $self->{metrics}->{$chart_name}->{$chart_label} = shift @{$chart_value};
+            $self->{metrics}->{$chart_name}->{$chart_label} = shift(@$chart_value);
         }
     }
 
     foreach my $metric (keys %{$self->{metrics}->{$chart_name}}) {
-        next if ($metric eq 'time');
-        foreach my $value (values %{$self->{metrics}->{$chart_name}}) {
-            $self->{metric}->{$metric . '_' . $stat} = {
-                    display => $metric . '_' . $stat,
-                    value => $value,
-                    unit => $unit,
-                    perf_label => $metric . '_' . $stat
-            };
-        }
+        $self->{metric}->{$metric . '_' . $stat} = {
+            display => $metric . '_' . $stat,
+            value => $self->{metrics}->{$chart_name}->{$metric},
+            unit => $unit,
+            perf_label => $metric . '_' . $stat
+        };
     }
 };
 
