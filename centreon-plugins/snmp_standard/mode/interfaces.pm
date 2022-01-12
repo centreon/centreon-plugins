@@ -42,9 +42,10 @@ sub custom_threshold_output {
         $status = 'warning';
     }
 
-    $self->{instance_mode}->{last_status} = 0;
-    if (eval "$self->{instance_mode}->{check_status}") {
-        $self->{instance_mode}->{last_status} = 1;
+    $self->{instance_mode}->{last_status} = 1;
+    if (defined($self->{instance_mode}->{option_results}->{check_metrics}) && $self->{instance_mode}->{option_results}->{check_metrics} ne '' &&
+        !$self->eval(value => $self->{instance_mode}->{option_results}->{check_metrics})) {
+        $self->{instance_mode}->{last_status} = 0;
     }
 
     return $status;
@@ -798,7 +799,7 @@ sub check_oids_label {
     }
 }
 
-sub default_check_status {
+sub default_check_metrics {
     my ($self, %options) = @_;
 
     return '%{opstatus} eq "up"';
@@ -867,6 +868,7 @@ sub new {
         'add-duplex-status'        => { name => 'add_duplex_status' },
         'warning-status:s'         => { name => 'warning_status', default => $self->default_warning_status() },
         'critical-status:s'        => { name => 'critical_status', default => $self->default_critical_status() },
+        'check-metrics:s'          => { name => 'check_metrics', default => $self->default_check_metrics() },
         'global-admin-up-rule:s'   => { name => 'global_admin_up_rule', default => $self->default_global_admin_up_rule() },
         'global-oper-up-rule:s'    => { name => 'global_oper_up_rule', default => $self->default_global_oper_up_rule() },
         'global-admin-down-rule:s' => { name => 'global_admin_down_rule', default => $self->default_global_admin_down_rule() },
@@ -984,8 +986,7 @@ sub check_options {
     }
 
     $self->change_macros(macros => ['warning_status', 'critical_status']);
-    $self->{check_status} = $self->default_check_status();
-    $self->{check_status} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
+    $self->{option_results}->{check_metrics} =~ s/%\{(.*?)\}/\$values->{$1}/g;
 }
 
 sub get_display_value {
@@ -1570,6 +1571,10 @@ Check interface speed.
 =item B<--add-volume>
 
 Check interface data volume between two checks (not supposed to be graphed, useful for BI reporting).
+
+=item B<--check-metrics>
+
+If the expression is true, metrics are checked (Default: '%{opstatus} eq "up"').
 
 =item B<--warning-status>
 

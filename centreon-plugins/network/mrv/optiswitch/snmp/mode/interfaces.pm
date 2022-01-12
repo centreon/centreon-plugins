@@ -155,7 +155,7 @@ sub set_oids_cast {
     $self->{oid_ifHCOutBroadcastPkts} = '.1.3.6.1.4.1.6926.2.1.5.1.11';
 }
 
-sub default_check_status {
+sub default_check_metrics {
     my ($self, %options) = @_;
     
     return '%{opstatus} eq "enabled" and %{linkstatus} eq "true"';
@@ -455,6 +455,10 @@ Check interface speed.
 =item B<--add-volume>
 
 Check interface data volume between two checks (not supposed to be graphed, useful for BI reporting).
+
+=item B<--check-metrics>
+
+If the expression is true, metrics are checked (Default: '%{opstatus} eq "enabled" and %{linkstatus} eq "true"').
 
 =item B<--warning-status>
 
