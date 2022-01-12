@@ -316,6 +316,10 @@ Check interface traffic.
 
 Check interface optical.
 
+=item B<--check-metrics>
+
+If the expression is true, metrics are checked (Default: '%{opstatus} eq "up"').
+
 =item B<--warning-status>
 
 Set warning threshold for status.
