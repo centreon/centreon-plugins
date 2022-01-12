@@ -236,7 +236,7 @@ sub request {
         Authen::NTLM::ntlmv2(1);
     }
 
-    if (defined($request_options->{credentials}) && defined($request_options->{basic})) {
+    if (defined($request_options->{credentials}) && (defined($request_options->{basic}) || defined($request_options->{digest}))) {
         $req->authorization_basic($request_options->{username}, $request_options->{password});
     }
 
