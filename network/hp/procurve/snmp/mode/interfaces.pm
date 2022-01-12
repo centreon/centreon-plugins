@@ -174,6 +174,10 @@ Check interface data volume between two checks (not supposed to be graphed, usef
 
 Check power over thernet.
 
+=item B<--check-metrics>
+
+If the expression is true, metrics are checked (Default: '%{opstatus} eq "up"').
+
 =item B<--warning-status>
 
 Set warning threshold for status.

@@ -100,7 +100,7 @@ sub default_critical_status {
     return undef;
 }
 
-sub default_check_status {
+sub default_check_metrics {
     my ($self, %options) = @_;
     
     return '%{opstatus} eq "up" or %{opstatus} eq "inService"';
@@ -402,6 +402,10 @@ Check interface traffic.
 =item B<--add-errors>
 
 Check interface errors.
+
+=item B<--check-metrics>
+
+If the expression is true, metrics are checked (Default: '%{opstatus} eq "up" or %{opstatus} eq "inService"').
 
 =item B<--warning-status>
 
