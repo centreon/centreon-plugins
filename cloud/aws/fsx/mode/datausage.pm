@@ -58,7 +58,7 @@ sub get_metrics_mapping {
                     absolute => 'fsx.data.io.read.count',
                     per_second => 'fsx.data.io.read.persecond'
                 },
-                unit => 'B'
+                unit => 'count'
             },
             DataWriteOperations => {
                 output    => 'Data Write Ops',
