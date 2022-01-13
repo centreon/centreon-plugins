@@ -138,7 +138,7 @@ Grafana Rest API
 
 =head1 CUSTOM MODE OPTIONS
 
-Grafana Rest API
+WMIC 
 
 =over 8
 
@@ -173,6 +173,7 @@ Command path (Default: /usr/bin/).
 =item B<--command-options>
 
 Command options.
+
 =item B<--sudo>
 sudo command.
 

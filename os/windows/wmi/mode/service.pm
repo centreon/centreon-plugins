@@ -1,0 +1,251 @@
+#
+# Copyright 2021 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+package os::windows::wmi::mode::service;
+
+use base qw(centreon::plugins::mode);
+
+use strict;
+use warnings;
+
+my %map_operating_status = (
+    'OK'         => 'ok',
+    'Error'      => 'error',
+    'Degraded'   => 'degraded',
+    'Unknown'    => 'unknown',
+    'Pred Fail'  => 'pred-fail',
+    'Starting'   => 'starting',
+    'Stopping'   => 'stopping',
+    'Stressed'   => 'stressed',
+    'NonRecover' => 'non-recover',
+    'No contact' => 'no-contact',
+    'Lost Comm'  => 'lost-comm',
+);
+my %map_operating_state = (
+    'Stopped'          => 'stopped',
+    'Start Pending'    => 'start-pending',
+    'Stop Pending'     => 'stop-pending',
+    'Running'          => 'running',
+    'Continue Pending' => 'continue-pending',
+    'Pause Pending'    => 'pause-pending',
+    'Paused'           => 'paused',
+    'Unknown'          => 'unknown',
+);
+my %map_start_mode = (
+    'Boot'     => 'boot',
+    'System'   => 'system',
+    'Auto'     => 'auto',
+    'Manual'   => 'manual',
+    'Disabled' => 'disabled',
+);
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+    
+    $options{options}->add_options(arguments => { 
+        'warning:s'    => { name => 'warning', },
+        'critical:s'   => { name => 'critical', },
+        'service:s@'   => { name => 'service', },
+        'regexp'       => { name => 'use_regexp', },
+        'state:s'      => { name => 'state' },
+        'status:s'     => { name => 'status' },
+        'start-mode:s' => { name => 'start_mode'},
+    });
+
+    return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+
+    if (!defined($self->{option_results}->{service})) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify at least one '--service' option.");
+        $self->{output}->option_exit();
+    }
+    
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
+    }
+}
+
+sub run {
+    my ($self, %options) = @_;
+    
+    my $WQL = 'select name, displayname, Started, StartMode, State, Status FROM Win32_Service';
+    my ($result, $exit_code) = $options{custom}->execute_command(
+        query => $WQL,
+        no_quit => 1
+    );
+    $result =~ s/\|/;/g;
+
+    #
+    #CLASS: Win32_Service
+    #DisplayName;Name;Started;StartMode;State;Status
+    #NSClient++ Monitoring Agent;nscp;True;Auto;Running;OK
+    #
+    
+    my $services_match = {};
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'All service states are ok'
+    );
+    while ($result =~ /^(.*?);(.*?);(.*?);(.*?);(.*?);(.*?)$/msg) {
+        my ($svc_display, $svc_name, $svc_started, $svc_mode, $svc_operating_state, $svc_operating_status) = ($1, $2, $3, $4, $5, $6);
+        next if ($svc_mode =~ /StartMode/);
+
+        for (my $i = 0; $i < scalar(@{$self->{option_results}->{service}}); $i++) {
+            $services_match->{$i} = {} if (!defined($services_match->{$i}));
+            my $filter = $self->{option_results}->{service}->[$i];
+            if (defined($self->{option_results}->{use_regexp}) && $svc_name =~ /$filter/) {
+                $services_match->{$i}->{$svc_name} = {
+                    operating_state => $svc_operating_state,
+                    operating_status => $svc_operating_status,
+                    start_mode => $svc_mode
+                }
+            } elsif ($svc_name eq $filter) {
+                $services_match->{$i}->{$svc_name} = {
+                    operating_state => $svc_operating_state,
+                    operating_status => $svc_operating_status,
+                    start_mode => $svc_mode
+                }
+            }
+        }
+    }
+
+    for (my $i = 0; $i < scalar(@{$self->{option_results}->{service}}); $i++) {
+        my $numbers = 0;
+        my $svc_name_state_wrong = {};
+        foreach my $svc_name (keys %{$services_match->{$i}}) {
+            my $operating_state = $services_match->{$i}->{$svc_name}->{operating_state};
+            my $operating_status = $services_match->{$i}->{$svc_name}->{operating_status};
+            my $start_mode = $services_match->{$i}->{$svc_name}->{start_mode};
+
+            $self->{output}->output_add(long_msg => 
+                sprintf(
+                    "Service '%s' match (pattern: '%s') [operating state = %s, operating status = %s, start-mode = %s]", 
+                    $svc_name, $self->{option_results}->{service}->[$i],
+                    $map_operating_state{$operating_state},
+                    $map_operating_status{$operating_status},
+                    $map_start_mode{$start_mode}
+                )
+            );
+            next if (defined($self->{option_results}->{start_mode}) && $map_start_mode{$start_mode} !~ /$self->{option_results}->{start_mode}/);
+            if (defined($self->{option_results}->{state}) && $map_operating_state{$operating_state} !~ /$self->{option_results}->{state}/) {
+                delete $services_match->{$i}->{$svc_name};
+                $svc_name_state_wrong->{$svc_name} = $operating_state;
+                next;
+            }
+            if (defined($self->{option_results}->{status}) && $map_operating_status{$operating_status} !~ /$self->{option_results}->{status}/) {
+                delete $services_match->{$i}->{$svc_name};
+                $svc_name_state_wrong->{$svc_name} = $operating_status;
+                next;
+            }
+            $numbers++;
+        }
+        
+        my $exit = $self->{perfdata}->threshold_check(
+            value => $numbers, threshold => [
+                { label => 'critical', exit_litteral => 'critical' },
+                { label => 'warning', exit_litteral => 'warning' }
+            ]
+        );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Service pattern '%s': service list %s",
+                $self->{option_results}->{service}->[$i],
+                join(', ', keys %{$services_match->{$i}})
+            )
+        );
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            if (scalar(keys %$svc_name_state_wrong) > 0) {
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf(
+                        "Service pattern '%s' problem: %s [following services match but has the wrong state]",
+                        $self->{option_results}->{service}->[$i],
+                        join(', ', keys %$svc_name_state_wrong)
+                    )
+                );
+            } else {
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Service problem '%s'", $self->{option_results}->{service}->[$i])
+                );
+            }
+        }
+    }
+
+    $self->{output}->display();
+    $self->{output}->exit();
+}
+
+1;
+
+__END__
+
+=head1 MODE
+
+Check Windows Services in SNMP
+
+=over 8
+
+=item B<--warning>
+
+Threshold warning.
+
+=item B<--critical>
+
+Threshold critical.
+
+=item B<--service>
+
+Services to check. (can set multiple times)
+
+=item B<--regexp>
+
+Allows to use regexp to filter services.
+
+=item B<--state>
+
+Service state. (Regexp allowed)
+Example: 'stopped', 'running', 'paused', etc.
+
+=item B<--status>
+
+Service status. (Regexp allowed)
+Example: 'ok', 'error', 'degraded', etc.
+
+
+=item B<--start-mode>
+
+Start mode filer (Regexp allewed)
+Example: 'auto', 'manual', etc.
+
+=back
+
+=cut
