@@ -1,3 +1,17 @@
+2022-01-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: AWS FSx
+ * Plugin added: Azure Virtual Machine Scale Sets
+ * Plugin added: Barracuda Message Archiver SNMP
+ * Plugin added: Dell OME-M SNMP
+ * Plugin added: Fortinet FortiSwitch SNMP
+ * Plugin added: Hikvision NVR ISAPI
+ * Plugin added: Hikvision NVR SNMP
+ * Plugin added: HPE Simplivity Rest API
+ * Plugin added: Lenovo RackSwitch SNMP
+ * Plugin added: Microsens G6 SNMP
+ * Plugin added: Redis Sentinel
+ * Break: [mssql] 'backup-age'
+
 2021-12-15 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: IBM DB2
  * Plugin added: Wallix Bastion SNMP
