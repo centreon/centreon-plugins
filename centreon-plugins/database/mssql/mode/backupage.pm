@@ -158,6 +158,8 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $options{sql}->connect();
+
     my $query = q{
         SELECT
             a.name, 
@@ -194,7 +196,6 @@ sub manage_selection {
         };
     }
 
-    $options{sql}->connect();
     $options{sql}->query(query => $query);
     my $result = $options{sql}->fetchall_arrayref();
 
