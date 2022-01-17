@@ -29,8 +29,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
+        'collection'       => 'apps::protocols::http::mode::collection',
         'expected-content' => 'apps::protocols::http::mode::expectedcontent',
         'json-content'     => 'apps::protocols::http::mode::jsoncontent',
         'response'         => 'apps::protocols::http::mode::response',
