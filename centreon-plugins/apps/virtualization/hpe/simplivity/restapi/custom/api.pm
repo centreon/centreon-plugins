@@ -132,7 +132,6 @@ sub json_decode {
 sub build_options_for_httplib {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{hostname} = $self->{hostname};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
 }
@@ -167,6 +166,7 @@ sub get_auth_token {
         (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)) {
         my ($content) = $self->{http}->request(
             method => 'POST',
+            hostname => 'simplivity@' . $self->{hostname},
             url_path => '/api/oauth/token',
             post_param => [
                 'grant_type=password',
@@ -212,6 +212,7 @@ sub request_api {
 
     my $content = $self->{http}->request(
         method => 'GET',
+        hostname => $self->{hostname},
         url_path => $options{endpoint},
         get_param => $options{get_param},
         warning_status => '',
@@ -224,6 +225,8 @@ sub request_api {
         $self->clean_token(statefile => $self->{cache});
         $self->get_auth_token(statefile => $self->{cache});
         $content = $self->{http}->request(
+            method => 'GET',
+            hostname => $self->{hostname},
             url_path => $options{endpoint},
             get_param => $options{get_param},
             warning_status => '', unknown_status => '', critical_status => ''
