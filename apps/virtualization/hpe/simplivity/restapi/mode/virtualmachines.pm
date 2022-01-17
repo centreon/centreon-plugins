@@ -166,7 +166,7 @@ Check virtual machines.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--filter-vm-name>
 
 Filter virtual machines by virtual machine name.
 
