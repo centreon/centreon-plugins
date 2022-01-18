@@ -32,7 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
         'cpu'              => 'os::windows::wmi::mode::cpu',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'interfaces'       => 'os::windows::wmi::mode::interfaces',
         'files-date'       => 'os::windows::wmi::mode::filesdate',
         'files-size'       => 'os::windows::wmi::mode::filessize',
         'folder-date'      => 'os::windows::wmi::mode::folderdate',

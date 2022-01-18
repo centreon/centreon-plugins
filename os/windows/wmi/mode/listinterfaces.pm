@@ -36,7 +36,19 @@ sub set_status {
         'True' => 'up', 'False' => 'down'
     };
     $self->{opstatus_mapping} = {
-        0 => 'down', 1 => 'connecting', 2 => 'up', 3 => 'disconnecting', 4 => 'hardwareNotPresent', 5 => 'hardwareDisable', 6 => 'hardwarMalfunction', 7 => 'mediaDisconnect', 8 => 'auth', 9 => 'authSucceeded', 10 => 'ÁuthFailed', 11 => 'invalidAddress', 12 => 'credentialsRequired'
+        0  => 'down', 
+        1  => 'connecting', 
+        2  => 'up', 
+        3  => 'disconnecting', 
+        4  => 'hardwareNotPresent', 
+        5  => 'hardwareDisable', 
+        6  => 'hardwarMalfunction', 
+        7  => 'mediaDisconnect', 
+        8  => 'auth', 
+        9  => 'authSucceeded', 
+        10 => 'ÁuthFailed', 
+        11 => 'invalidAddress', 
+        12 => 'credentialsRequired'
     };
 }
 
@@ -110,7 +122,7 @@ sub run {
 
         my $interface_speed = 0;
         if ($self->{no_speed} == 0) {
-            $interface_speed = (defined($speed) && $speed ne '' && $speed == 0) ? '10000000' : $speed;
+            $interface_speed = (defined($speed) && $speed ne '' && $speed == 0) ? '0' : $speed;
         }
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
@@ -206,7 +218,7 @@ sub disco_show {
 
         my $interface_speed = 0;
         if ($self->{no_speed} == 0) {
-            $interface_speed = (defined($speed) && $speed ne '' && $speed == 0) ? '10000000' : $speed;
+            $interface_speed = (defined($speed) && $speed ne '' && $speed == 0) ? '0' : $speed;
         }
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
