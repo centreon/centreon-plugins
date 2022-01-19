@@ -18,33 +18,43 @@
 # limitations under the License.
 #
 
-package apps::vtom::restapi::plugin;
+package apps::vtom::restapi::mode::cache;
+
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{modes} = {
-        'cache'     => 'apps::vtom::restapi::mode::cache',
-        'jobs'      => 'apps::vtom::restapi::mode::jobs',
-        'list-jobs' => 'apps::vtom::restapi::mode::listjobs'
-    };
+    $options{options}->add_options(arguments => {});
 
-    $self->{custom_modes}->{api} = 'apps::vtom::restapi::custom::api';
     return $self;
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $options{custom}->cache_jobs();
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'Cache files created successfully'
+    );
 }
 
 1;
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Check VTOM software through HTTP/REST API.
+Create cache files (other modes could use it with --cache-use option).
+
+=over 8
+
+=back
 
 =cut

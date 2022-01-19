@@ -23,7 +23,9 @@ package apps::vtom::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
+use centreon::plugins::statefile;
 use JSON::XS;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -38,21 +40,28 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>  {
-            'hostname:s@' => { name => 'hostname' },
-            'port:s@'     => { name => 'port' },
-            'proto:s@'    => { name => 'proto' },
-            'username:s@' => { name => 'username' },
-            'password:s@' => { name => 'password' },
-            'timeout:s@'  => { name => 'timeout' }
+        $options{options}->add_options(arguments => {
+            'api-username:s'    => { name => 'api_username' },
+            'api-password:s'    => { name => 'api_password' },
+            'hostname:s'        => { name => 'hostname' },
+            'port:s'            => { name => 'port' },
+            'proto:s'           => { name => 'proto' },
+            'timeout:s'         => { name => 'timeout' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' },
+            'token:s'                => { name => 'token' },
+            'cache-use'              => { name => 'cache_use' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
+    $self->{cache_token} = centreon::plugins::statefile->new(%options);
+    $self->{cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -68,108 +77,237 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
-    $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : 30080;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
-    $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : '';
-    $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : '';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
- 
-    if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 30002;
+    $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
+    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{token} = $self->{option_results}->{token};
+
+    if (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{hostname}) ||
-        scalar(@{$self->{option_results}->{hostname}}) == 0) {
-        return 0;
+    $self->{cache_token}->check_options(option_results => $self->{option_results});
+    $self->{cache}->check_options(option_results => $self->{option_results});
+
+    return 0 if (defined($self->{token}) && $self->{token} ne '');
+
+    if ($self->{api_username} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-username option.');
+        $self->{output}->option_exit();
     }
-    return 1;
-}
+    if ($self->{api_password} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-password option.');
+        $self->{output}->option_exit();
+    }
 
-sub build_options_for_httplib {
-    my ($self, %options) = @_;
-
-    $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{port} = $self->{port};
-    $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{credentials} = 1;
-    $self->{option_results}->{basic} = 1;
-    $self->{option_results}->{username} = $self->{username};
-    $self->{option_results}->{password} = $self->{password};
+    return 0;
 }
 
 sub settings {
     my ($self, %options) = @_;
 
-    $self->build_options_for_httplib();
+    return if (defined($self->{settings_done}));
+    $self->{http}->add_header(key => 'Accept', value => 'application/json');
+    $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     $self->{http}->set_options(%{$self->{option_results}});
+    $self->{settings_done} = 1;
 }
 
-sub cache_environment {
+sub get_connection_info {
     my ($self, %options) = @_;
-    
-    my $has_cache_file = $options{statefile}->read(statefile => 'cache_vtom_env_' . $self->{hostname}  . '_' . $self->{port});
-    my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
-    my $environments = $options{statefile}->get(name => 'environments');
-    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time}) * 60))) {
-        $environments = {};
-        my $datas = { last_timestamp => time(), environments => $environments };
-        my $result = $self->get(path => '/api/environment/list');
-        if (defined($result->{result}->{rows})) {
-            foreach (@{$result->{result}->{rows}}) {
-                $environments->{$_->{id}} = $_->{name};
-            }
-        }
-        $options{statefile}->write(data => $datas);
-    }
-    
-    return $environments;
+
+    return $self->{option_results}->{hostname} . ':' . $self->{option_results}->{port};
 }
 
-sub cache_application {
+sub get_token {
     my ($self, %options) = @_;
-    
-    my $has_cache_file = $options{statefile}->read(statefile => 'cache_vtom_app_' . $self->{hostname}  . '_' . $self->{port});
-    my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
-    my $applications = $options{statefile}->get(name => 'applications');
-    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time}) * 60))) {
-        $applications = {};
-        my $datas = { last_timestamp => time(), applications => $applications };
-        my $result = $self->get(path => '/api/application/list');
-        if (defined($result->{result}->{rows})) {
-            foreach (@{$result->{result}->{rows}}) {
-                $applications->{$_->{id}} = { name => $_->{name}, envSId => $_->{envSId} };
-            }
+
+    my $has_cache_file = $self->{cache}->read(statefile => 'vtom_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
+    my $token = $self->{cache}->get(name => 'token');
+    my $expires_on = $self->{cache}->get(name => 'expires_on');
+    my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
+    my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
+
+    if ($has_cache_file == 0 ||
+        !defined($token) ||
+        (time() > $expires_on) ||
+        (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
+        ) {
+        my $json_request = {
+            grant_type => 'password',
+            username => $self->{api_username},
+            password => $self->{api_password},
+            tokenLifetime => 7200,
+            tokenRefresh => \0
+        };
+        my $encoded;
+        eval {
+            $encoded = encode_json($json_request);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
+            $self->{output}->option_exit();
         }
-        $options{statefile}->write(data => $datas);
+
+        $self->settings();
+        my $content = $self->{http}->request(
+            method => 'POST',
+            url_path => '/vtom/public/auth/1.0/authorize',
+            query_form_post => $encoded,
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        );
+
+        my $decoded;
+        eval {
+            $decoded = JSON::XS->new->utf8->decode($content);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+            $self->{output}->option_exit();
+        }
+
+        $token = $decoded->{access_token};
+        my $datas = {
+            updated => time(),
+            token => $token,
+            md5_secret => $md5_secret,
+            expires_on => time() + $decoded->{expires_in}
+        };
+        $self->{cache}->write(data => $datas);
     }
-    
-    return $applications;
+
+    return $token;
 }
 
-sub get {
+sub clean_token {
+    my ($self, %options) = @_;
+
+    my $datas = { updated => time() };
+    $self->{cache}->write(data => $datas);
+}
+
+sub credentials {
+    my ($self, %options) = @_;
+
+    my $creds = {};
+    if (defined($self->{token}) && $self->{token} ne '') {
+        $creds = {
+            header => ['X-API-KEY: ' . $self->{token}],
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        };
+    } else {
+        my $token = $self->get_token();
+        $creds = {
+            header => ['X-API-KEY: ' . $token],
+            unknown_status => '',
+            warning_status => '',
+            critical_status => ''
+        };
+    }
+
+    return $creds;
+}
+
+sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
+    my $creds = $self->credentials();
+    my ($content) = $self->{http}->request(
+        url_path => $options{endpoint},
+        get_param => $options{get_param},
+        %$creds
+    );
 
-    my $response = $self->{http}->request(url_path => $options{path},
-                                          critical_status => '', warning_status => '');
-    my $content;
+    # Maybe token is invalid. so we retry
+    if (defined($self->{token}) && $self->{token} ne '' && $self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+        $self->clean_token();
+        $creds = $self->credentials();
+        $content = $self->{http}->request(
+            url_path => $options{endpoint},
+            get_param => $options{get_param},
+            %$creds,
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        );
+    }
+
+    if (!defined($content) || $content eq '') {
+        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+        $self->{output}->option_exit();
+    }
+
+    my $decoded;
     eval {
-        $content = JSON::XS->new->utf8->decode($response);
+        $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
-    if (defined($content->{errmsg})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get data: " . $content->{errmsg});
+
+    return $decoded;
+}
+
+sub write_cache_file {
+    my ($self, %options) = @_;
+
+    $self->{cache}->read(statefile => 'cache_vtom_' . md5_hex($self->get_connection_info()) . '_' . $options{statefile});
+    $self->{cache}->write(data => {
+        update_time => time(),
+        response => $options{response}
+    });
+}
+
+sub get_cache_file_response {
+    my ($self, %options) = @_;
+
+    $self->{cache}->read(statefile => 'cache_vtom_' . md5_hex($self->get_connection_info()) . '_' . $options{statefile});
+    my $response = $self->{cache}->get(name => 'response');
+    if (!defined($response)) {
+        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
         $self->{output}->option_exit();
     }
-    
-    return $content;
+    return $response;
+}
+
+sub call_jobs {
+    my ($self, %options) = @_;
+
+    return $self->request_api(
+        endpoint => '/vtom/public/monitoring/1.0/jobs/status'
+    );
+}
+
+sub cache_jobs {
+    my ($self, %options) = @_;
+
+    my $datas = $self->call_jobs();
+    $self->write_cache_file(
+        statefile => 'jobsStatus',
+        response => $datas
+    );
+
+    return $datas;
+}
+
+sub get_jobs {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(statefile => 'jobsStatus')
+        if (defined($self->{option_results}->{cache_use}));
+    return $self->call_jobs();
 }
 
 1;
@@ -178,39 +316,41 @@ __END__
 
 =head1 NAME
 
-VTOM REST API
-
-=head1 SYNOPSIS
-
-VTOM Rest API custom mode
+VTOM Rest API
 
 =head1 REST API OPTIONS
+
+VTOM Rest API
 
 =over 8
 
 =item B<--hostname>
 
-VTOM hostname.
+Set hostname.
 
 =item B<--port>
 
-Port used (Default: 30080)
+Port used (Default: 30002)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (Default: 'https')
 
-=item B<--username>
+=item B<--api-username>
 
-VTOM username.
+API username.
 
-=item B<--password>
+=item B<--api-password>
 
-VTOM password.
+API password.
+
+=item B<--token>
+
+Use token authentication directly.
 
 =item B<--timeout>
 
-Set HTTP timeout
+Set timeout in seconds (Default: 30).
 
 =back
 
