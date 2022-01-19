@@ -380,7 +380,8 @@ Can used special variables like: %{name}, %{status}, %{elapsed}, %{application}
 
 Thresholds.
 Can be: 'running', 'errors', 'waiting',
-'finished', 'notscheduled', 'descheduled'.
+'finished', 'notscheduled', 'descheduled',
+'success-prct'.
 
 =back
 
