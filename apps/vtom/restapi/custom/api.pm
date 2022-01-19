@@ -130,7 +130,7 @@ sub get_token {
 
     my $has_cache_file = $self->{cache}->read(statefile => 'vtom_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
     my $token = $self->{cache}->get(name => 'token');
-    my $expires_on = $options{statefile}->get(name => 'expires_on');
+    my $expires_on = $self->{cache}->get(name => 'expires_on');
     my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
     my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
 
@@ -143,7 +143,7 @@ sub get_token {
             grant_type => 'password',
             username => $self->{api_username},
             password => $self->{api_password},
-            tokenLifetime => 0,
+            tokenLifetime => 7200,
             tokenRefresh => \0
         };
         my $encoded;
@@ -179,7 +179,7 @@ sub get_token {
             updated => time(),
             token => $token,
             md5_secret => $md5_secret,
-            expires_on => time() + $decoded->{expires_in},
+            expires_on => time() + $decoded->{expires_in}
         };
         $self->{cache}->write(data => $datas);
     }
