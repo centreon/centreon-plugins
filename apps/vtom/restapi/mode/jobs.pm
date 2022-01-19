@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::vtom::restapi::mode::jobstatus;
+package apps::vtom::restapi::mode::jobs;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -30,26 +30,13 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 
 sub custom_status_output {
     my ($self, %options) = @_;
+
     my $msg = 'status : ' . $self->{result_values}->{status};
     if ($self->{result_values}->{information} ne '') {
         $msg .= ' [information: ' . $self->{result_values}->{information} . ']';
     }
 
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{environment} = $options{new_datas}->{$self->{instance} . '_environment'};
-    $self->{result_values}->{application} = $options{new_datas}->{$self->{instance} . '_application'};
-    $self->{result_values}->{exit_code} = $options{new_datas}->{$self->{instance} . '_exit_code'};
-    $self->{result_values}->{family} = $options{new_datas}->{$self->{instance} . '_family'};
-    $self->{result_values}->{information} = $options{new_datas}->{$self->{instance} . '_information'};
-    
-    return 0;
 }
 
 sub custom_long_output {
@@ -91,7 +78,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
-        { name => 'job', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', , skipped_code => { -11 => 1 } },
+        { name => 'job', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', , skipped_code => { -11 => 1 } }
     ];
     
     $self->{maps_counters}->{job} = [
@@ -100,23 +87,26 @@ sub set_counters {
             type => 2,
             critical_default => '%{status} =~ /Error/i',
             set => {
-                key_values => [ { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
-                                { name => 'application' }, { name => 'exit_code' }, { name => 'family' }, { name => 'information' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                key_values => [
+                    { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
+                    { name => 'application' }, { name => 'exit_code' }, { name => 'family' }, { name => 'information' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'long', type => 2, set => {
-                key_values => [ { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
-                                { name => 'application' }, { name => 'elapsed' }, { name => 'family' } ],
+                key_values => [
+                    { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
+                    { name => 'application' }, { name => 'elapsed' }, { name => 'family' }
+                ],
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -124,7 +114,7 @@ sub set_counters {
                 key_values => [ { name => 'error' }, { name => 'total' } ],
                 output_template => 'error : %s',
                 perfdatas => [
-                    { label => 'total_error', template => '%s', min => 0, max => 'total' }
+                    { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
@@ -132,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'running' }, { name => 'total' } ],
                 output_template => 'running : %s',
                 perfdatas => [
-                    { label => 'total_running', template => '%s', min => 0, max => 'total' }
+                    { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
@@ -140,7 +130,7 @@ sub set_counters {
                 key_values => [ { name => 'unplanned' }, { name => 'total' } ],
                 output_template => 'unplanned : %s',
                 perfdatas => [
-                    { label => 'total_unplanned', template => '%s', min => 0, max => 'total' }
+                    { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
@@ -148,7 +138,7 @@ sub set_counters {
                 key_values => [ { name => 'finished' }, { name => 'total' } ],
                 output_template => 'finished : %s',
                 perfdatas => [
-                    { label => 'total_finished', template => '%s', min => 0, max => 'total' }
+                    { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
@@ -156,7 +146,7 @@ sub set_counters {
                 key_values => [ { name => 'coming' }, { name => 'total' } ],
                 output_template => 'coming : %s',
                 perfdatas => [
-                    { label => 'total_coming', template => '%s', min => 0, max => 'total' },
+                    { template => '%s', min => 0, max => 'total' }
                 ]
             }
         }
@@ -165,7 +155,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
