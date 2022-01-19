@@ -27,13 +27,15 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use Digest::MD5;
+use DateTime;
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    if ($self->{result_values}->{information} ne '') {
-        $msg .= ' [information: ' . $self->{result_values}->{information} . ']';
+    my $msg = 'status: ' . $self->{result_values}->{status};
+    if ($self->{result_values}->{message} ne '') {
+        $msg .= ' [message: ' . $self->{result_values}->{message} . ']';
     }
 
     return $msg;
@@ -41,9 +43,8 @@ sub custom_status_output {
 
 sub custom_long_output {
     my ($self, %options) = @_;
-    my $msg = 'started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
 
-    return $msg;
+    return 'started since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
 }
 
 sub custom_long_calc {
@@ -54,8 +55,7 @@ sub custom_long_calc {
     $self->{result_values}->{environment} = $options{new_datas}->{$self->{instance} . '_environment'};
     $self->{result_values}->{application} = $options{new_datas}->{$self->{instance} . '_application'};
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
-    $self->{result_values}->{family} = $options{new_datas}->{$self->{instance} . '_family'};
-    
+
     return -11 if ($self->{result_values}->{status} !~ /Running/i);
 
     return 0;
@@ -64,13 +64,18 @@ sub custom_long_calc {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return "Total Job ";
+    return 'Number of jobs ';
 }
 
 sub prefix_job_output {
     my ($self, %options) = @_;
     
-    return "job '" . $options{instance_value}->{environment} . '/' . $options{instance_value}->{application} . '/' . $options{instance_value}->{name} . "' ";
+    return sprintf(
+        "job '%s/%s/%s' ",
+        $options{instance_value}->{environment},
+        $options{instance_value}->{application},
+        $options{instance_value}->{name}
+    );
 }
 
 sub set_counters {
@@ -78,10 +83,10 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
-        { name => 'job', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', , skipped_code => { -11 => 1 } }
+        { name => 'jobs', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', , skipped_code => { -10 => 1, -11 => 1 } }
     ];
     
-    $self->{maps_counters}->{job} = [
+    $self->{maps_counters}->{jobs} = [
         { 
             label => 'status',
             type => 2,
@@ -89,7 +94,7 @@ sub set_counters {
             set => {
                 key_values => [
                     { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
-                    { name => 'application' }, { name => 'exit_code' }, { name => 'family' }, { name => 'information' }
+                    { name => 'application' }, { name => 'exit_code' }, { name => 'message' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -99,7 +104,7 @@ sub set_counters {
         { label => 'long', type => 2, set => {
                 key_values => [
                     { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
-                    { name => 'application' }, { name => 'elapsed' }, { name => 'family' }
+                    { name => 'application' }, { name => 'elapsed' }
                 ],
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
@@ -110,41 +115,49 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-error', nlabel => 'jobs.errors.total.count', set => {
-                key_values => [ { name => 'error' }, { name => 'total' } ],
-                output_template => 'error : %s',
-                perfdatas => [
-                    { template => '%s', min => 0, max => 'total' }
-                ]
-            }
-        },
-        { label => 'total-running', nlabel => 'jobs.running.total.count', set => {
+        { label => 'running', nlabel => 'jobs.running.count', set => {
                 key_values => [ { name => 'running' }, { name => 'total' } ],
-                output_template => 'running : %s',
+                output_template => 'running: %s',
                 perfdatas => [
                     { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
-        { label => 'total-unplanned',  nlabel => 'jobs.unplanned.total.count', set => {
-                key_values => [ { name => 'unplanned' }, { name => 'total' } ],
-                output_template => 'unplanned : %s',
+        { label => 'errors', nlabel => 'jobs.errors.count', set => {
+                key_values => [ { name => 'error' }, { name => 'total' } ],
+                output_template => 'errors: %s',
                 perfdatas => [
                     { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
-        { label => 'total-finished', nlabel => 'jobs.finished.total.count', set => {
+        { label => 'waiting',  nlabel => 'jobs.waiting.count', set => {
+                key_values => [ { name => 'waiting' }, { name => 'total' } ],
+                output_template => 'waiting: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total' }
+                ]
+            }
+        },
+        { label => 'finished', nlabel => 'jobs.finished.count', set => {
                 key_values => [ { name => 'finished' }, { name => 'total' } ],
-                output_template => 'finished : %s',
+                output_template => 'finished: %s',
                 perfdatas => [
                     { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
-        { label => 'total-coming', nlabel => 'jobs.coming.total.count', set => {
-                key_values => [ { name => 'coming' }, { name => 'total' } ],
-                output_template => 'coming : %s',
+        { label => 'notscheduled', nlabel => 'jobs.notscheduled.count', set => {
+                key_values => [ { name => 'notscheduled' }, { name => 'total' } ],
+                output_template => 'not scheduled: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total' }
+                ]
+            }
+        },
+        { label => 'descheduled', nlabel => 'jobs.descheduled.count', set => {
+                key_values => [ { name => 'descheduled' }, { name => 'total' } ],
+                output_template => 'descheduled: %s',
                 perfdatas => [
                     { template => '%s', min => 0, max => 'total' }
                 ]
@@ -159,15 +172,14 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-application:s"    => { name => 'filter_application' },
-        "filter-environment:s"    => { name => 'filter_environment' },
-        "filter-name:s"           => { name => 'filter_name' },
-        "filter-family:s"         => { name => 'filter_family' },
-        "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+        'filter-application:s' => { name => 'filter_application' },
+        'filter-environment:s' => { name => 'filter_environment' },
+        'filter-name:s'        => { name => 'filter_name' },
+        'timezone:s'           => { name => 'timezone' }
     });
-    $self->{statefile_cache_app} = centreon::plugins::statefile->new(%options);
-    $self->{statefile_cache_env} = centreon::plugins::statefile->new(%options);
-   
+
+    $self->{cache_status} = centreon::plugins::statefile->new(%options);
+
     return $self;
 }
 
@@ -175,81 +187,83 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{statefile_cache_app}->check_options(%options);
-    $self->{statefile_cache_env}->check_options(%options);
+    $self->{cache_status}->check_options(%options);
 }
-
-my %mapping_job_status = (
-    R => 'Running',
-    U => 'Unplanned',
-    F => 'Finished',
-    W => 'Coming',
-    E => 'Error',
-);
 
 sub manage_selection {
     my ($self, %options) = @_;
- 
-    my $environments = $options{custom}->cache_environment(statefile => $self->{statefile_cache_env}, 
-                                                           reload_cache_time => $self->{option_results}->{reload_cache_time});
-    my $applications = $options{custom}->cache_application(statefile => $self->{statefile_cache_app}, 
-                                                           reload_cache_time => $self->{option_results}->{reload_cache_time});
-                                                           
-    $self->{job} = {};
-    $self->{global} = { total => 0, running => 0, unplanned => 0, finished => 0, coming => 0, error => 0 };
-    my $path = '/api/job/getAll';
-    if (defined($self->{option_results}->{filter_application}) && $self->{option_results}->{filter_application} ne '') {
-        $path = '/api/job/list?applicationName=' . $self->{option_results}->{filter_application};
-    }
-     if (defined($self->{option_results}->{filter_environment}) && $self->{option_results}->{filter_environment} ne '') {
-        $path = '/api/job/list?environmentName=' . $self->{option_results}->{filter_environment};
-    }
-    my $result = $options{custom}->get(path => $path);
-    my $entries = defined($result->{result}) && ref($result->{result}) eq 'ARRAY' ? 
-        $result->{result} : (defined($result->{result}->{rows}) ? 
-            $result->{result}->{rows} : []);
+
+    my $jobs = $options{custom}->get_jobs();
+
+    $self->{cache_status}->read(
+        statefile => 'vtom_' . Digest::MD5::md5_hex(
+            $options{custom}->get_connection_info() . '_' . 
+            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
+            (defined($self->{option_results}->{filter_application}) ? $self->{option_results}->{filter_application} : '') . '_' .
+            (defined($self->{option_results}->{filter_environment}) ? $self->{option_results}->{filter_environment} : '') . '_' .
+            (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '')
+        )
+    );
 
     my $current_time = time();
-    foreach my $entry (@{$entries}) {
-        my $application_sid = defined($entry->{applicationSId}) ? $entry->{applicationSId} : 
-            (defined($entry->{appSId}) ? $entry->{appSId} : undef);
-        my $application = defined($application_sid) && defined($applications->{$application_sid}) ?
-            $applications->{$application_sid}->{name} : 'unknown';
-        my $environment = defined($application_sid) && defined($applications->{$application_sid}) && defined($environments->{$applications->{$application_sid}->{envSId}}) ?
-            $environments->{$applications->{$application_sid}->{envSId}} : 'unknown';
-        my $display = $environment . '/' . $application . '/' . $entry->{name};
-        
+    $self->{global} = { total => 0, running => 0, waiting => 0, finished => 0, error => 0, notscheduled => 0, descheduled => 0 };
+    $self->{jobs} = {};
+    my $i = 0;
+    foreach my $job (@$jobs) {        
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $display !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $display . "': no matching filter.", debug => 1);
+            $job->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $job->{name} . "': no matching filter.", debug => 1);
             next;
         }
-        my $family = defined($entry->{family}) ? $entry->{family} : '-';
-        if (defined($self->{option_results}->{filter_family}) && $self->{option_results}->{filter_family} ne '' &&
-            $family !~ /$self->{option_results}->{filter_family}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $family . "': no matching filter.", debug => 1);
+        if (defined($self->{option_results}->{filter_application}) && $self->{option_results}->{filter_application} ne '' &&
+            $job->{application} !~ /$self->{option_results}->{filter_application}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $job->{name} . "': no matching filter.", debug => 1);
             next;
         }
-        
+        if (defined($self->{option_results}->{filter_environment}) && $self->{option_results}->{filter_environment} ne '' &&
+            $job->{environment} !~ /$self->{option_results}->{filter_environment}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $job->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
 
-        my $information = defined($entry->{information}) ? $entry->{information} : '';
-        $information =~ s/\|/-/msg;
-        
-        $self->{global}->{total} += 1;
-        $self->{global}->{lc($mapping_job_status{$entry->{status}})} += 1;
-        $self->{job}->{$entry->{id}} = { 
-            name => $entry->{name}, 
-            status => $mapping_job_status{$entry->{status}}, information => $information,
-            exit_code => defined($entry->{retcode}) ? $entry->{retcode} : '-',
-            family => $family, application => $application, environment => $environment,
-            elapsed => defined($entry->{timeBegin}) ? ( $current_time - $entry->{timeBegin}) : undef,
+        my $elapsed;
+        # 2022-01-18 01:08:33
+        if (defined($job->{beginDateTime}) && $job->{beginDateTime} =~ /^(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)$/) {
+            my $tz = {};
+            if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+                $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
+            }
+            my $dt = DateTime->new(
+                year => $1,
+                month => $2,
+                day => $3,
+                hour => $4,
+                minute => $5,
+                second => $6,
+                %$tz
+            );
+            $elapsed = $current_time - $dt->epoch();
+        }
+
+        my $message = defined($job->{message}) ? $job->{message} : '';
+        $message =~ s/\|/-/msg;
+
+        $self->{global}->{total}++;
+        $self->{global}->{ lc($job->{status}) }++;
+        $self->{jobs}->{$i} = { 
+            name => $job->{name},
+            application => $job->{application},
+            environment => $job->{environment}, 
+            status => lc($job->{status}),
+            message => $message,
+            exit_code => defined($job->{returnCode}) ? $job->{returnCode} : '-',
+            elapsed => $elapsed
         };
+        $i++;
     }
-    
-    if (scalar(keys %{$self->{job}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No job found.");
-        $self->{output}->option_exit();
-    }
+
+    my $datas = {};
+    $self->{cache_status}->write(data => $datas);
 }
 
 1;
@@ -258,9 +272,14 @@ __END__
 
 =head1 MODE
 
-Check job status.
+Check jobs.
 
 =over 8
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='total-error'
 
 =item B<--filter-environment>
 
@@ -274,54 +293,36 @@ Filter application name (cannot be a regexp).
 
 Filter name (can be a regexp).
 
-=item B<--filter-family>
+=item B<--timezone>
 
-Filter family (can be a regexp).
-
-=item B<--filter-counters>
-
-Only display some counters (regexp can be used).
-Example: --filter-counters='^total-error$'
-
-=item B<--warning-*>
-
-Threshold warning.
-Can be: 'total-error', 'total-running', 'total-unplanned',
-'total-finished', 'total-coming'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'total-error', 'total-running', 'total-unplanned',
-'total-finished', 'total-coming'.
+Override the timezone of distant equipment.
+Can use format: 'Europe/London' or '+0100'.
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: -)
-Can used special variables like: %{name}, %{status}, 
-%{exit_code}, %{family}, %{information}, %{environment}, %{application}
+Can used special variables like: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{exit_code} =~ /Error/i').
-Can used special variables like: %{name}, %{status}, 
-%{exit_code}, %{family}, %{information}, %{environment}, %{application}
+Can used special variables like: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs (Default: none)
-Can used special variables like: %{name}, %{status}, %{elapsed}, 
-%{family}, %{environment}, %{application}
+Can used special variables like: %{name}, %{status}, %{elapsed}, %{application}
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs (Default: none).
-Can used special variables like: %{name}, %{status}, %{elapsed}, 
-%{family}, %{environment}, %{application}
+Can used special variables like: %{name}, %{status}, %{elapsed}, %{application}
 
-=item B<--reload-cache-time>
+=item B<--warning-*> B<--critical-*>
 
-Time in seconds before reloading cache file (default: 180).
+Thresholds.
+Can be: 'running', 'errors', 'waiting',
+'finished', 'notscheduled', 'descheduled'.
 
 =back
 
