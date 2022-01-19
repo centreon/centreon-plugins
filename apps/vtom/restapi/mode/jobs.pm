@@ -61,6 +61,21 @@ sub custom_long_calc {
     return 0;
 }
 
+sub custom_success_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => '%',
+        instances => [$self->{result_values}->{environment}, $self->{result_values}->{application}, $self->{result_values}->{name}],
+        value => $self->{result_values}->{success},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0,
+        max => 100
+    );
+}
+
 sub prefix_global_output {
     my ($self, %options) = @_;
 
@@ -110,6 +125,15 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+         { label => 'success-prct', nlabel => 'job.success.percentage', set => {
+                key_values => [
+                    { name => 'success' }, { name => 'name' },
+                    { name => 'environment' }, { name => 'application' }
+                ],
+                output_template => 'success: %.2f %%',
+                closure_custom_perfdata => $self->can('custom_success_perfdata')
             }
         }
     ];
@@ -190,6 +214,32 @@ sub check_options {
     $self->{cache_status}->check_options(%options);
 }
 
+sub get_success {
+    my ($self, %options) = @_;
+
+    if (!defined($options{history}->{ $options{id} })) {
+        $options{history}->{ $options{id} } = { lastEndDateTime => '', status => [] };
+    }
+
+    if ($options{job}->{status} =~ /finished|errors/i) {
+        if ($options{history}->{ $options{id} }->{lastEndDateTime} ne $options{job}->{endDateTime}) {
+            push @{$options{history}->{ $options{id} }->{status}}, $options{job}->{status};
+            $options{history}->{ $options{id} }->{lastEndDateTime} = $options{job}->{endDateTime};
+        }
+    }
+
+    return undef if (scalar(@{$options{history}->{ $options{id} }->{status}}) <= 0);
+    shift @{$options{history}->{ $options{id} }->{status}}
+        if (scalar(@{$options{history}->{ $options{id} }->{status}}) > 10);
+    my $success = 0;
+    foreach (@{$options{history}->{ $options{id} }->{status}}) {
+        $success++ if (/finished/i);
+    }
+
+    $success = $success * 100 / scalar(@{$options{history}->{ $options{id} }->{status}});
+    return $success;
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -204,12 +254,15 @@ sub manage_selection {
             (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '')
         )
     );
+    my $history = $self->{cache_status}->get(name => 'history');
+    $history = {} if (!defined($history));
 
     my $current_time = time();
     $self->{global} = { total => 0, running => 0, waiting => 0, finished => 0, error => 0, notscheduled => 0, descheduled => 0 };
     $self->{jobs} = {};
-    my $i = 0;
-    foreach my $job (@$jobs) {        
+    foreach my $job (@$jobs) {
+        my $id = $job->{environment} . '/' . $job->{application} . '/' . $job->{name};
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $job->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $job->{name} . "': no matching filter.", debug => 1);
@@ -248,22 +301,27 @@ sub manage_selection {
         my $message = defined($job->{message}) ? $job->{message} : '';
         $message =~ s/\|/-/msg;
 
+        my $success = $self->get_success(
+            id => $id,
+            job => $job,
+            history => $history
+        );
+
         $self->{global}->{total}++;
         $self->{global}->{ lc($job->{status}) }++;
-        $self->{jobs}->{$i} = { 
+        $self->{jobs}->{$id} = { 
             name => $job->{name},
             application => $job->{application},
             environment => $job->{environment}, 
             status => lc($job->{status}),
             message => $message,
             exit_code => defined($job->{returnCode}) ? $job->{returnCode} : '-',
-            elapsed => $elapsed
+            elapsed => $elapsed,
+            success => $success
         };
-        $i++;
     }
 
-    my $datas = {};
-    $self->{cache_status}->write(data => $datas);
+    $self->{cache_status}->write(data => $history);
 }
 
 1;
@@ -295,7 +353,7 @@ Filter name (can be a regexp).
 
 =item B<--timezone>
 
-Override the timezone of distant equipment.
+Set date timezone.
 Can use format: 'Europe/London' or '+0100'.
 
 =item B<--warning-status>
