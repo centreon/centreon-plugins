@@ -96,7 +96,7 @@ sub get_target_time {
         $self->{output}->option_exit();
     }
 
-    my $tz = $7;
+    my $tz = { time_zone => $7 };
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     }
@@ -108,7 +108,7 @@ sub get_target_time {
         hour => $4,
         minute => $5,
         second => $6,
-        time_zone => $7
+        %$tz
     );
 
     return ($dt->epoch(), $result->{localTime});
