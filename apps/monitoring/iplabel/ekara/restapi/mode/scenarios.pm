@@ -1,5 +1,5 @@
 #
-# Copyright 2021 Centreon (http://www.centreon.com/)
+# Copyright 2022 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -53,7 +53,7 @@ sub prefix_scenario_output {
 sub prefix_steps_output {
     my ($self, %options) = @_;
 
-    return "Step '" . $options{instance_value}->{display} . "': ";
+    return sprintf("Step: %s, last exec: %s, ", $options{instance_value}->{display}, $options{instance_value}->{last_exec});
 }
 
 
@@ -63,7 +63,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'scenarios', type => 3, cb_prefix_output => 'prefix_scenario_output', cb_long_output => 'prefix_scenario_output', indent_long_output => '    ', message_multiple => 'All scenarios are ok',
             group => [
-                { name => 'global', type => 0 },
+                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'steps', display_long => 1, cb_prefix_output => 'prefix_steps_output',  message_multiple => 'All steps are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
@@ -88,12 +88,36 @@ sub set_counters {
                     { template => '%s', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
+        },
+        { label => 'time-total-allsteps', nlabel => 'scenario.execution.availability.percentage', set => {
+                key_values => [ { name => 'time_total_allsteps' }, { name => 'display' } ],
+                output_template => 'time total all steps: %sms',
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'time-interaction', nlabel => 'scenario.execution.availability.percentage', set => {
+                key_values => [ { name => 'time_interaction' }, { name => 'display' } ],
+                output_template => 'time interaction: %sms',
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 }
+                ]
+            }
         }
     ];
     $self->{maps_counters}->{steps} = [
         { label => 'time-step',  nlabel => 'transaction.duration.milliseconds', set => {
-                key_values => [ { name => 'time_step' }, { name => 'display' } ],
-                output_template => 'duration: %s ms',
+                key_values => [ { name => 'time_step' }, { name => 'display' }, { name => 'last_exec' } ],
+                output_template => 'time step: %s ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+         { label => 'time-total',  nlabel => 'transaction.duration.milliseconds', set => {
+                key_values => [ { name => 'time_total' }, { name => 'display' }, { name => 'last_exec' } ],
+                output_template => 'time total: %s ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
@@ -111,6 +135,7 @@ sub new {
         'filter-id:s'      => { name => 'filter_id' },
         'filter-name:s'    => { name => 'filter_name' },
         'filter-status:s@' => { name => 'filter_status' },
+        'filter-type:s'    => { name => 'filter_type' },
         'interval:s'       => { name => 'interval'}
     });
 
@@ -150,7 +175,7 @@ sub manage_selection {
         post_body => $status_filter
     );
 
-    $self->{scenario} = {};
+    #$self->{scenario} = {};
     my $time = time();
     my $end_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time));
     foreach (@$results) {
@@ -161,7 +186,7 @@ sub manage_selection {
         }
         if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
             $_->{scenarioId} !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioId} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
             next;
         }
 
@@ -174,17 +199,23 @@ sub manage_selection {
                 'to=' . $end_date
             ]
         );
-        my $start_time = str2time($_->{startTime}, 'GMT');
+
+        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+            $scenario_detail->{infos}->{plugin_id} !~ /$self->{option_results}->{filter_type}/i) {
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
+            next;
+        }
+
         $self->{scenarios}->{ $_->{scenarioName} } = {
             display => $_->{scenarioName},
             global => {
                 display => $_->{scenarioName},
                 id => $_->{scenarioId},
-                #start_time => POSIX::strftime('%d-%m-%Y %H:%M:%S', localtime($start_time)),
                 num_status => $_->{currentStatus},
                 status => $status_mapping->{$_->{currentStatus}},
             }
         };
+
         foreach my $kpi (@{$scenario_detail->{kpis}}) {
             $self->{scenarios}->{ $_->{scenarioName} }->{global}->{$kpi->{label}} = $kpi->{value};
         }
@@ -196,14 +227,11 @@ sub manage_selection {
         }
 
         foreach my $step_metrics (@{$scenario_detail->{results}}) {
+            my $exec_time = str2time($step_metrics->{planningTime}, 'GMT');
             $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{ $step_metrics->{metric} } = $step_metrics->{value};
+            $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S', localtime($exec_time));
             $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{display} = $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} };
         }
-
-        # }
-        # foreach my $sites (@{$scenario_detail->{siteIds}}) {
-        #     $self->{scenarios}->{ $_->{scenarioName} }->{sites}->{$sites->} = $kpi->{value};
-        # }
 
     }
     use Data::Dumper; print Dumper($self->{scenarios});
@@ -245,6 +273,11 @@ Filter by numeric status (can be multiple).
 8 => 'Degraded'
 
 Example: --filter-status='1,2'
+
+=item B<--filter-type>
+
+Filter by scenario type.
+Can be: 'WEB', 'HTTPR', 'BROWSER PAGE LOAD'
 
 =item B<--warning-*> B<--critical-*>
 
