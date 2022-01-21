@@ -47,7 +47,7 @@ sub custom_date_output {
 sub prefix_scenario_output {
     my ($self, %options) = @_;
 
-    return "Scenario '" . $options{instance_value}->{display} . "': ";
+    return sprintf("Scenario '%s': ", $options{instance_value}->{display});
 }
 
 sub prefix_steps_output {

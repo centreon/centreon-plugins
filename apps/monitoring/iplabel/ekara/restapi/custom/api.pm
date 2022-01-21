@@ -43,14 +43,14 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-username:s'         => { name => 'api_username' },
-            'api-password:s'         => { name => 'api_password' },
-            'hostname:s'             => { name => 'hostname' },
-            'port:s'                 => { name => 'port' },
-            'proto:s'                => { name => 'proto' },
-            'timeout:s'              => { name => 'timeout' },
-            'url-path:s'             => { name => 'url_path' },
-            'authent-endpoint'       => { name => 'authent_endpoint' }
+            'api-username:s'   => { name => 'api_username' },
+            'api-password:s'   => { name => 'api_password' },
+            'hostname:s'       => { name => 'hostname' },
+            'port:s'           => { name => 'port' },
+            'proto:s'          => { name => 'proto' },
+            'timeout:s'        => { name => 'timeout' },
+            'url-path:s'       => { name => 'url_path' },
+            'authent-endpoint' => { name => 'authent_endpoint' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
