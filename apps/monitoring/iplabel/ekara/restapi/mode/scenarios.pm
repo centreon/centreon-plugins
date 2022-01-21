@@ -53,7 +53,7 @@ sub prefix_scenario_output {
 sub prefix_steps_output {
     my ($self, %options) = @_;
 
-    return sprintf("Step: %s, last exec: %s, ", $options{instance_value}->{display}, $options{instance_value}->{last_exec});
+    return sprintf("  Step: %s, last exec: %s, ", $options{instance_value}->{display}, $options{instance_value}->{last_exec});
 }
 
 
@@ -70,7 +70,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status',
+        { label => 'scenario-status',
             type => 2,
             warning_default => '%{status} !~ "Success"',
             critical_default => '%{status} =~ "Failure"',
@@ -81,7 +81,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'availability', nlabel => 'scenario.execution.availability.percentage', set => {
+        { label => 'availability', nlabel => 'scenario.availability.percentage', set => {
                 key_values => [ { name => 'availability' }, { name => 'display' } ],
                 output_template => 'availability: %s%%',
                 perfdatas => [
@@ -89,7 +89,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'time-total-allsteps', nlabel => 'scenario.execution.availability.percentage', set => {
+        { label => 'time-total-allsteps', nlabel => 'scenario.time.allsteps.total.milliseconds', set => {
                 key_values => [ { name => 'time_total_allsteps' }, { name => 'display' } ],
                 output_template => 'time total all steps: %sms',
                 perfdatas => [
@@ -97,7 +97,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'time-interaction', nlabel => 'scenario.execution.availability.percentage', set => {
+        { label => 'time-interaction', nlabel => 'scenario.time.interaction.milliseconds', set => {
                 key_values => [ { name => 'time_interaction' }, { name => 'display' } ],
                 output_template => 'time interaction: %sms',
                 perfdatas => [
@@ -107,7 +107,7 @@ sub set_counters {
         }
     ];
     $self->{maps_counters}->{steps} = [
-        { label => 'time-step',  nlabel => 'transaction.duration.milliseconds', set => {
+        { label => 'time-step',  nlabel => 'scenario.step.time.milliseconds', set => {
                 key_values => [ { name => 'time_step' }, { name => 'display' }, { name => 'last_exec' } ],
                 output_template => 'time step: %s ms',
                 perfdatas => [
@@ -115,7 +115,7 @@ sub set_counters {
                 ]
             }
         },
-         { label => 'time-total',  nlabel => 'transaction.duration.milliseconds', set => {
+         { label => 'time-total',  nlabel => 'scenario.steps.time.total.milliseconds', set => {
                 key_values => [ { name => 'time_total' }, { name => 'display' }, { name => 'last_exec' } ],
                 output_template => 'time total: %s ms',
                 perfdatas => [
@@ -136,7 +136,7 @@ sub new {
         'filter-name:s'    => { name => 'filter_name' },
         'filter-status:s@' => { name => 'filter_status' },
         'filter-type:s'    => { name => 'filter_type' },
-        'interval:s'       => { name => 'interval'}
+        'timeframe:s'      => { name => 'timeframe'}
     });
 
     return $self;
@@ -146,7 +146,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : '900';
+    $self->{timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : '900';
 }
 
 my $status_mapping = {
@@ -175,8 +175,8 @@ sub manage_selection {
         post_body => $status_filter
     );
 
-    #$self->{scenario} = {};
     my $time = time();
+    my $start_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time - $self->{timeframe}));
     my $end_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time));
     foreach (@$results) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -190,7 +190,6 @@ sub manage_selection {
             next;
         }
 
-        my $start_date = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($time - $self->{interval}));
         my $scenario_detail = $options{custom}->request_api(
             endpoint => '/results-api/results/' . $_->{scenarioId},
             method => 'POST',
@@ -229,12 +228,12 @@ sub manage_selection {
         foreach my $step_metrics (@{$scenario_detail->{results}}) {
             my $exec_time = str2time($step_metrics->{planningTime}, 'GMT');
             $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{ $step_metrics->{metric} } = $step_metrics->{value};
-            $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S', localtime($exec_time));
+            $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{last_exec} = POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($exec_time));
             $self->{scenarios}->{ $_->{scenarioName} }->{steps}->{ $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} } }->{display} = $self->{scenarios}->{ $_->{scenarioName} }->{steps_index}->{ $step_metrics->{stepId} };
         }
 
     }
-    use Data::Dumper; print Dumper($self->{scenarios});
+
     if (scalar(keys %{$self->{scenarios}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No scenario found");
         $self->{output}->option_exit();
@@ -250,6 +249,11 @@ __END__
 Check IP Label Ekara scenarios.
 
 =over 8
+
+=item B<--timeframe>
+
+Set timeframe period in seconds. (Default: 900)
+Example: --timeframe='3600' will check the last hour
 
 =item B<--filter-id>
 
@@ -279,10 +283,24 @@ Example: --filter-status='1,2'
 Filter by scenario type.
 Can be: 'WEB', 'HTTPR', 'BROWSER PAGE LOAD'
 
+=item B<--warning-scenario-status>
+
+Warning threshold for scenario status (Default: '%{status} !~ "Success"').
+Syntax: --warning-scenario-status='%{status} =~ "xxx"'
+
+=item B<--critical-scenario-status>
+
+Critical threshold for scenario status (Default: '%{status} =~ "Failure"').
+Syntax: --critical-scenario-status='%{status} =~ "xxx"'
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'success-rate' (%) 'sla-availability' (%), 'performance' (ms).
+Common: 'availability' (%),
+For WEB scenarios: 'time-total-allsteps' (ms), 'time-step' (ms),
+For HTTPR scenarios: 'time-total' (ms),
+FOR BPL scenarios: 'time-interaction' (ms), 'time-total' (ms).
+
 
 =back
 
