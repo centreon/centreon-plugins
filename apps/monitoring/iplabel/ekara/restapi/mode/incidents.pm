@@ -160,7 +160,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : '900';
+    $self->{timeframe} = defined($self->{option_results}->{timeframe})  && $self->{option_results}->{timeframe} ne '' ? $self->{option_results}->{timeframe} : '900';
 }
 
 my $status_mapping = {
@@ -212,6 +212,7 @@ sub manage_selection {
             ],
             post_body => $scenarios_list
         );
+
     }
 
     $self->{global}->{total} = 0;
