@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_pod_status_output {
     my ($self, %options) = @_;
@@ -66,7 +66,6 @@ sub custom_ready_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => 'containers_ready',
         nlabel => 'containers.ready.count',
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
@@ -160,39 +159,37 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_ready_threshold')
             }
         },
-        { label => 'pod-status', set => {
+        { label => 'pod-status', type => 2, critical_default => '%{status} !~ /running/i', set => {
                 key_values => [ { name => 'status' }, { name => 'name' }, { name => 'namespace' } ],
                 closure_custom_output => $self->can('custom_pod_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'total-restarts-count', nlabel => 'restarts.total.count', set => {
                 key_values => [ { name => 'restarts_total' }, { name => 'name' } ],
                 output_template => 'Restarts: %d',
                 perfdatas => [
-                    { label => 'restarts_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         }
     ];
 
     $self->{maps_counters}->{containers} = [
-        { label => 'container-status', set => {
-                key_values => [ { name => 'status' }, { name => 'state' } ],
+        { label => 'container-status', type => 2, critical_default => '%{status} !~ /running/i || %{state} !~ /^ready$/', set => {
+                key_values => [ { name => 'status' }, { name => 'state' }, { name => 'name' } ],
                 closure_custom_calc => $self->can('custom_container_status_calc'),
                 closure_custom_output => $self->can('custom_container_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'restarts-count', nlabel => 'containers.restarts.count', set => {
                 key_values => [ { name => 'restarts' }, { name => 'perf' } ],
                 output_template => 'Restarts: %d',
                 perfdatas => [
-                    { label => 'restarts_count', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'perf' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'perf' }
                 ]
             }
         }
@@ -205,14 +202,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'               => { name => 'filter_name' },
-        'filter-namespace:s'          => { name => 'filter_namespace' },
-        'extra-filter:s@'             => { name => 'extra_filter' },
-        'warning-pod-status:s'        => { name => 'warning_pod_status', default => '' },
-        'critical-pod-status:s'       => { name => 'critical_pod_status', default => '%{status} !~ /running/i' },
-        'warning-container-status:s'  => { name => 'warning_container_status', default => '' },
-        'critical-container-status:s' => { name => 'critical_container_status', default => '%{status} !~ /running/i || %{state} !~ /^ready$/' },
-        'units:s'                     => { name => 'units', default => '%' }
+        'filter-name:s'      => { name => 'filter_name' },
+        'filter-namespace:s' => { name => 'filter_namespace' },
+        'extra-filter:s@'    => { name => 'extra_filter' },
+        'units:s'            => { name => 'units', default => '%' }
     });
 
     return $self;
@@ -227,9 +220,6 @@ sub check_options {
         next if ($filter !~ /(.*)=(.*)/);
         $self->{extra_filter}->{$1} = $2;
     }
-
-    $self->change_macros(macros => ['warning_pod_status', 'critical_pod_status',
-        'warning_container_status', 'critical_container_status']);    
 }
 
 sub manage_selection {
