@@ -210,7 +210,7 @@ sub manage_selection {
         $self->{nodes}->{$node->{metadata}->{name}} = {
             display => $node->{metadata}->{name},
             pods_allocatable => $node->{status}->{allocatable}->{pods},
-            cpu_allocatable => $self->to_bytes(value => $node->{status}->{allocatable}->{cpu}),
+            cpu_allocatable => $self->to_core(value => $node->{status}->{allocatable}->{cpu}),
             memory_allocatable => $self->to_bytes(value => $node->{status}->{capacity}->{memory}),
         }            
     }
@@ -238,15 +238,19 @@ sub to_bytes {
     my ($self, %options) = @_;
 
     my $value = $options{value};
-    
-    if ($value =~ /(\d+)Ki$/) {
+
+    if ($value =~ /(\d+)m$/) {
+        $value = $1 / 1000;
+    } elsif ($value =~ /(\d+)Ki?$/) {
         $value = $1 * 1024;
-    } elsif ($value =~ /(\d+)Mi$/) {
+    } elsif ($value =~ /(\d+)Mi?$/) {
         $value = $1 * 1024 * 1024;
-    } elsif ($value =~ /(\d+)Gi$/) {
+    } elsif ($value =~ /(\d+)Gi?$/) {
         $value = $1 * 1024 * 1024 * 1024;
-    } elsif ($value =~ /(\d+)Ti$/) {
+    } elsif ($value =~ /(\d+)Ti?$/) {
         $value = $1 * 1024 * 1024 * 1024 * 1024;
+    } elsif ($value =~ /(\d+)Pi?$/) {
+        $value = $1 * 1024 * 1024 * 1024 * 1024 * 1024;
     }
 
     return $value;
