@@ -98,6 +98,12 @@ sub custom_pods_calc {
     return 0;
 }
 
+sub prefix_node_output {
+    my ($self, %options) = @_;
+
+    return "Node '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -112,9 +118,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_cpu_calc'),
                 closure_custom_calc_extra_options => { flavor => 'requests' },
                 closure_custom_output => $self->can('custom_cpu_output'),
+                threshold_use => 'cpu_requests_prct',
                 perfdatas => [
-                    { label => 'cpu_requests', value => 'cpu_requests_prct',
-                      template => '%.2f', min => 0, max => '100', unit => '%',
+                    { value => 'cpu_requests_prct', template => '%.2f', min => 0, max => '100', unit => '%',
                       label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -124,9 +130,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_cpu_calc'),
                 closure_custom_calc_extra_options => { flavor => 'limits' },
                 closure_custom_output => $self->can('custom_cpu_output'),
+                threshold_use => 'cpu_limits_prct',
                 perfdatas => [
-                    { label => 'cpu_limits', value => 'cpu_limits_prct',
-                      template => '%.2f', min => 0, max => '100', unit => '%',
+                    { value => 'cpu_limits_prct', template => '%.2f', min => 0, max => '100', unit => '%',
                       label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -136,8 +142,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_memory_calc'),
                 closure_custom_calc_extra_options => { flavor => 'requests' },
                 closure_custom_output => $self->can('custom_memory_output'),
+                threshold_use => 'memory_requests_prct',
                 perfdatas => [
-                    { label => 'memory_requests', value => 'memory_requests_prct',
+                    { value => 'memory_requests_prct',
                       template => '%.2f', min => 0, max => '100', unit => '%',
                       label_extra_instance => 1, instance_use => 'display' }
                 ]
@@ -148,8 +155,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_memory_calc'),
                 closure_custom_calc_extra_options => { flavor => 'limits' },
                 closure_custom_output => $self->can('custom_memory_output'),
+                threshold_use => 'memory_limits_prct',
                 perfdatas => [
-                    { label => 'memory_limits', value => 'memory_limits_prct',
+                    { value => 'memory_limits_prct',
                       template => '%.2f', min => 0, max => '100', unit => '%',
                       label_extra_instance => 1, instance_use => 'display' }
                 ]
@@ -159,20 +167,14 @@ sub set_counters {
                 key_values => [ { name => 'pods_allocatable' }, { name => 'pods_allocated' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_pods_calc'),
                 closure_custom_output => $self->can('custom_pods_output'),
+                threshold_use => 'pods_allocated_prct',
                 perfdatas => [
-                    { label => 'allocated_pods', value => 'pods_allocated_prct',
-                      template => '%.2f', min => 0, max => '100', unit => '%',
+                    { value => 'pods_allocated_prct', template => '%.2f', min => 0, max => '100', unit => '%',
                       label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
     ];
-}
-
-sub prefix_node_output {
-    my ($self, %options) = @_;
-
-    return "Node '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -181,8 +183,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
-        "units:s"       => { name => 'units', default => '%' }, # Keep compat
+        'filter-name:s' => { name => 'filter_name' },
+        'units:s'       => { name => 'units', default => '%' } # Keep compat
     });
    
     return $self;
