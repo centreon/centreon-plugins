@@ -180,7 +180,7 @@ sub set_counters {
 
     $self->{maps_counters}->{containers} = [
         { label => 'container-status', set => {
-                key_values => [ { name => 'status' }, { name => 'state' } ],
+                key_values => [ { name => 'status' }, { name => 'state' }, { name => 'name' } ],
                 closure_custom_calc => $self->can('custom_container_status_calc'),
                 closure_custom_output => $self->can('custom_container_status_output'),
                 closure_custom_perfdata => sub { return 0; },
