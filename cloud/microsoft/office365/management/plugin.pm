@@ -30,8 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'list-services'  => 'cloud::microsoft::office365::management::mode::listservices',
-        'service-status' => 'cloud::microsoft::office365::management::mode::servicestatus'
+        'app-credentials' => 'cloud::microsoft::office365::management::mode::appcredentials',
+        'list-services'   => 'cloud::microsoft::office365::management::mode::listservices',
+        'service-status'  => 'cloud::microsoft::office365::management::mode::servicestatus'
     };
 
     $self->{custom_modes}->{graphapi} = 'cloud::microsoft::office365::custom::graphapi';
