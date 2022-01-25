@@ -29,8 +29,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
+        'cluster'         => 'network::watchguard::snmp::mode::cluster',
         'cpu'             => 'network::watchguard::snmp::mode::cpu',
         'hardware'        => 'snmp_standard::mode::hardwaredevice',
         'interfaces'      => 'snmp_standard::mode::interfaces',
@@ -44,7 +44,7 @@ sub new {
         'swap'            => 'snmp_standard::mode::swap',
         'system'          => 'network::watchguard::snmp::mode::system',
         'time'            => 'snmp_standard::mode::ntp',
-        'uptime'         => 'snmp_standard::mode::uptime'
+        'uptime'          => 'snmp_standard::mode::uptime'
     };
 
     return $self;
