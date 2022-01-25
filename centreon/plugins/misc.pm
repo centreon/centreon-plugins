@@ -373,7 +373,7 @@ sub change_seconds {
     ];
     my %values = ('y' => 1, 'M' => 2, 'w' => 3, 'd' => 4, 'h' => 5, 'm' => 6, 's' => 7);
     my $sign = '';
-    if ($options{value} <= 0) {
+    if ($options{value} < 0) {
         $sign = '-';
         $options{value} = abs($options{value});
     }

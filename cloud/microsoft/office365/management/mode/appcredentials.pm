@@ -38,6 +38,7 @@ sub custom_expires_perfdata {
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
         unit => $self->{instance_mode}->{option_results}->{unit},
+        instances => [$self->{result_values}->{app_name}, $self->{result_values}->{id}],
         value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -102,14 +103,17 @@ sub set_counters {
 
     $self->{maps_counters}->{password} = [
         { label => 'password-status', type => 2, critical_default => '%{status} =~ /expired/i', set => {
-                key_values => [ { name => 'status' }, { name => 'id' }, { name => 'app_name' } ],
+                key_values => [ { name => 'status' }, { name => 'app_name' }, { name => 'id' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'password-expires', nlabel => 'application.password.expires', set => {
-                key_values      => [ { name => 'expires_seconds' }, { name => 'expires_human' } ],
+                key_values => [
+                    { name => 'expires_seconds' }, { name => 'expires_human' },
+                    { name => 'app_name' }, { name => 'id' }
+                ],
                 output_template => 'expires in %s',
                 output_use => 'expires_human',
                 closure_custom_perfdata => $self->can('custom_expires_perfdata'),
@@ -120,14 +124,17 @@ sub set_counters {
 
     $self->{maps_counters}->{key} = [
         { label => 'key-status', type => 2, critical_default => '%{status} =~ /expired/i', set => {
-                key_values => [ { name => 'status' }, { name => 'id' }, { name => 'app_name' } ],
+                key_values => [ { name => 'status' }, { name => 'app_name' }, { name => 'id' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'key-expires', nlabel => 'application.key.expires', set => {
-                key_values      => [ { name => 'expires_seconds' }, { name => 'expires_human' } ],
+                key_values => [
+                    { name => 'expires_seconds' }, { name => 'expires_human' },
+                    { name => 'app_name' }, { name => 'id' }
+                ],
                 output_template => 'expires in %s',
                 output_use => 'expires_human',
                 closure_custom_perfdata => $self->can('custom_expires_perfdata'),
@@ -176,7 +183,9 @@ sub add_credential {
     my $elapsed = $dt->epoch() - time();
     $elapsed = 0 if ($elapsed < 0);
 
-    $self->{applications}->{ $options{app} }->{ $options{type} } = {
+    $self->{applications}->{ $options{app} }->{ $options{type} }->{ $options{id} } = {
+        app_name => $self->{applications}->{ $options{app} }->{name},
+        id => $options{id},
         status => $elapsed == 0 ? 'expired' : 'valid',
         expires_seconds => $elapsed,
         expires_human => centreon::plugins::misc::change_seconds(
