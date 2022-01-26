@@ -53,6 +53,7 @@ sub new {
             'use-extra-cache'           => { name => 'use_extra_cache' },
             'reload-extra-cache-time:s' => { name => 'reload_extra_cache_time' },
             'trace-api:s'               => { name => 'trace_api' },
+            'trace-api-response:s'      => { name => 'trace_api_response' },
             'api-requests-disabled'     => { name => 'api_requests_disabled' }
         });
     }
@@ -141,6 +142,13 @@ sub trace_api {
     my $date_end = POSIX::strftime('%Y%m%d %H:%M:%S', localtime($time_end));
     $date_end .= sprintf('.%03d', ($time_end - int($time_end)) * 1000);
     print FH "$date_start - $date_end - $$ - $self->{api_token} - $options{url} - $options{code}\n";
+    if (defined($self->{option_results}->{trace_api_response})) {
+        if ($self->{option_results}->{trace_api_response} =~ /(\d+)/ && length($options{response}) < $1) {
+            print FH $options{response} . "\n";
+        } else {
+            print FH $options{response} . "\n";
+        }
+    }
     close FH;
 }
 
@@ -253,7 +261,7 @@ sub request_api {
         );
 
         my $code = $self->{http}->get_code();
-        $self->trace_api(time_start => $time_start, url => $hostname . '/api/v1' . $options{endpoint}, code => $code) 
+        $self->trace_api(time_start => $time_start, url => $hostname . '/api/v1' . $options{endpoint}, code => $code, response => $response) 
             if (defined($self->{option_results}->{trace_api}));
 
         return [] if ($code == 403 && $self->{ignore_permission_errors} == 1);
