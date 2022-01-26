@@ -26,20 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub custom_temp_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
-        unit => '%',
-        instances => [$self->{result_values}->{name}, $self->{result_values}->{aggregate}],
-        value => $self->{result_values}->{resync},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min => 0, max => 100
-    );
-}
-
 sub plex_long_output {
     my ($self, %options) = @_;
 
