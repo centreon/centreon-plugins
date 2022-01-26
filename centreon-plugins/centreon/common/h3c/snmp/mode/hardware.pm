@@ -31,7 +31,6 @@ sub set_system {
     
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
     
-    $self->{cb_hook1} = 'init_cache';
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
@@ -40,82 +39,84 @@ sub set_system {
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
             ['psuError', 'CRITICAL'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         fan => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
             ['fanError', 'CRITICAL'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         sensor => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
             ['sensorError', 'CRITICAL'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         other => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         unknown => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         chassis => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         backplane => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         container => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         module => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         port => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         stack => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
-            ['hardwareFaulty', 'CRITICAL'],
+            ['hardwareFaulty', 'CRITICAL']
         ],
         cpu => [
             ['notSupported', 'WARNING'],
             ['normal', 'OK'],
             ['entityAbsent', 'OK'],
-            ['hardwareFaulty', 'CRITICAL'],
-        ],
+            ['hardwareFaulty', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'centreon::common::h3c::snmp::mode::components';
-    $self->{components_module} = ['chassis', 'backplane', 'container', 'psu', 'fan', 'sensor',
-        'module', 'port', 'stack', 'cpu', 'other', 'unknown'];
-    
+    $self->{components_module} = [
+        'chassis', 'backplane', 'container', 'psu', 'fan', 'sensor',
+        'module', 'port', 'stack', 'cpu', 'other', 'unknown'
+    ];
+
     $self->{mapping_name} = {
         1 => 'other', 2 => 'unknown', 3 => 'chassis', 4 => 'backplane', 5 => 'container', 6 => 'psu', 
         7 => 'fan', 8 => 'sensor', 9 => 'module', 10 => 'port', 11 => 'stack', 12 => 'cpu'
@@ -133,37 +134,30 @@ my $oid_hh3cEntityExtErrorStatus = '.1.3.6.1.4.1.25506.2.6.1.1.1.1.19';
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
+    push @{$self->{request}},
+        { oid => $oid_h3cEntityExtErrorStatus },
+        { oid => $oid_hh3cEntityExtErrorStatus };
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
-    $self->write_cache();
-    
+    $self->get_physical();
+
     $self->{branch} = $oid_hh3cEntityExtStateEntry;
     if (defined($self->{results}->{$oid_h3cEntityExtErrorStatus}) && scalar(keys %{$self->{results}->{$oid_h3cEntityExtErrorStatus}}) > 0) {
         $self->{branch} = $oid_h3cEntityExtStateEntry;
     }
 }
 
-sub init_cache {
-    my ($self, %options) = @_;
-
-    $self->{request} = [ 
-                        { oid => $oid_h3cEntityExtErrorStatus },
-                        { oid => $oid_hh3cEntityExtErrorStatus },
-                       ];
-    $self->check_cache(%options);
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                  "short-name"              => { name => 'short_name' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'reload-cache-time:s' => { name => 'reload_cache_time', default => 180 },
+        'short-name'          => { name => 'short_name' }
+    });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);    
     return $self;
@@ -184,27 +178,23 @@ my $oid_entPhysicalContainedIn = '.1.3.6.1.2.1.47.1.1.1.1.4';
 my $oid_entPhysicalClass = '.1.3.6.1.2.1.47.1.1.1.1.5';
 my $oid_entPhysicalName = '.1.3.6.1.2.1.47.1.1.1.1.7';
 
-sub check_cache {
+sub get_physical {
     my ($self, %options) = @_;
 
-    $self->{hostname} = $options{snmp}->get_hostname();
-    $self->{snmp_port} = $options{snmp}->get_port();
-    
     # init cache file
-    $self->{write_cache} = 0;
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_h3c_entity_' . $self->{hostname}  . '_' . $self->{snmp_port});
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_h3c_entity_' . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port());
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
     if ($has_cache_file == 0 ||
         !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60)) && $self->{option_results}->{reload_cache_time} != '-1') {
-        push @{$self->{request}}, { oid => $oid_entPhysicalEntry, start => $oid_entPhysicalDescr, end => $oid_entPhysicalName };
-        $self->{write_cache} = 1;
-    }
-}
-
-sub write_cache {
-    my ($self, %options) = @_;
-    
-    if ($self->{write_cache} == 1) {
+        $self->{results}->{$oid_entPhysicalEntry} = $self->{snmp}->get_multiple_table(
+            oids => [
+                { oid => $oid_entPhysicalDescr },
+                { oid => $oid_entPhysicalContainedIn },
+                { oid => $oid_entPhysicalClass },
+                { oid => $oid_entPhysicalName }
+            ],
+            return_type => 1
+        );
         my $datas = {};
         $datas->{last_timestamp} = time();
         $datas->{oids} = $self->{results}->{$oid_entPhysicalEntry};
@@ -222,13 +212,13 @@ sub get_short_name {
 
 sub get_long_name {
     my ($self, %options) = @_;
-    
+
     my @names = ($self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalDescr . '.' . $options{instance}});
     my %loop = ($options{instance} => 1);
     my $child = $self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalContainedIn . '.' . $options{instance}};
     while (1) {
         last if (!defined($child) || defined($loop{$child}) || !defined($self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalDescr . '.' . $child}));
-        
+
         unshift @names, $self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalDescr . '.' . $child};
         $loop{$child} = 1;
         $child = $self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalContainedIn . '.' . $child};
@@ -256,8 +246,10 @@ sub load_components {
     foreach (keys %{$self->{mapping_name}}) {
         if ($self->{mapping_name}->{$_} =~ /$self->{option_results}->{component}/) {
             my $mod_name = $self->{components_path} . "::" . $self->{mapping_component}->{$_};
-            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
-                                                   error_msg => "Cannot load module '$mod_name'.");
+            centreon::plugins::misc::mymodule_load(
+                output => $self->{output}, module => $mod_name,
+                error_msg => "Cannot load module '$mod_name'."
+            );
             $self->{loaded} = 1;
         }
     }
