@@ -34,7 +34,7 @@ sub custom_duration_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel},
+        nlabel => 'backup.time.last.duration.seconds',
         unit => 's',
         instances => [$self->{result_values}->{name}, $self->{result_values}->{type}],
         value => $self->{result_values}->{duration_seconds},
@@ -48,7 +48,7 @@ sub custom_backup_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
+        nlabel => 'backup.time.last.execution.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
         unit => $self->{instance_mode}->{option_results}->{unit},
         instances => [$self->{result_values}->{name}, $self->{result_values}->{type}],
         value => floor($self->{result_values}->{exec_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
@@ -115,14 +115,14 @@ sub set_counters {
 
     foreach ('full', 'incremental', 'log') {
         $self->{maps_counters}->{$_} = [
-            { label => $_ . '-last-execution', nlabel => 'backup.time.last.execution', set => {
+            { label => $_ . '-last-execution', set => {
                     key_values      => [ { name => 'exec_seconds' }, { name => 'exec_human' }, { name => 'name' }, { name => 'type' } ],
                     closure_custom_output => $self->can('custom_backup_output'),
                     closure_custom_perfdata => $self->can('custom_backup_perfdata'),
                     closure_custom_threshold_check => $self->can('custom_backup_threshold')
                 }
             },
-            { label => $_ . '-last-duration', nlabel => 'backup.time.last.duration.seconds', set => {
+            { label => $_ . '-last-duration', set => {
                     key_values => [ { name => 'duration_seconds' }, { name => 'duration_human' }, { name => 'name' }, { name => 'type' } ],
                     output_template => 'duration time: %s',
                     output_use => 'duration_human',
