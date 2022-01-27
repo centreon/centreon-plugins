@@ -55,8 +55,9 @@ sub check {
     return if ($self->check_filter(section => 'amperage'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_amperageProbeTableEntry}})) {
-        next if ($oid !~ /^$mapping->{amperageProbeStatus}->{oid}\.(.*)$/);
-        my $instance = $1;
+        next if ($oid !~ /^$mapping->{amperageProbeStatus}->{oid}\.(\d+)\.(\d+)$/);
+        my $instance = $1 . '.' . $2;
+        my $chassis_name = $self->get_chassis_name(id => $1);
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_amperageProbeTableEntry}, instance => $instance);
         
         next if ($self->check_filter(section => 'amperage', instance => $instance, name => $result->{amperageProbeLocationName}));
@@ -72,7 +73,7 @@ sub check {
         $result->{amperageProbeReading} = (defined($result->{amperageProbeReading})) ? $result->{amperageProbeReading} / $divisor : 'unknown';
         $self->{output}->output_add(
             long_msg => sprintf(
-                "amperage '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
+                "amperage '%s' status is '%s' [instance: %s] [state: %s] [value: %s]",
                 $result->{amperageProbeLocationName}, $result->{amperageProbeStatus}, $instance, 
                 $result->{amperageProbeStateSettings}, $result->{amperageProbeReading}
             )
@@ -137,9 +138,9 @@ sub check {
                 );
             }
             $self->{output}->perfdata_add(
-                label => 'amperage', unit => $unit,
                 nlabel => 'hardware.probe.amperage.' . ($unit eq 'A' ? 'ampere' : 'watt'),
-                instances =>  $result->{amperageProbeLocationName},
+                unit => $unit,
+                instances =>  [$chassis_name, $result->{amperageProbeLocationName}],
                 value => $result->{amperageProbeReading},
                 warning => $warn,
                 critical => $crit

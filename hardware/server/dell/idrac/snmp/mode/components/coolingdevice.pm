@@ -54,17 +54,18 @@ sub check {
     return if ($self->check_filter(section => 'coolingdevice'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_coolingDeviceTableEntry}})) {
-        next if ($oid !~ /^$mapping->{coolingDeviceStatus}->{oid}\.(.*)$/);
-        my $instance = $1;
+        next if ($oid !~ /^$mapping->{coolingDeviceStatus}->{oid}\.(\d+)\.(\d+)$/);
+        my $instance = $1 . '.' . $2;
+        my $chassis_name = $self->get_chassis_name(id => $1);
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_coolingDeviceTableEntry}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'coolingdevice', instance => $instance, name => $result->{coolingDeviceLocationName}));
         $self->{components}->{coolingdevice}->{total}++;
 
         $result->{coolingDeviceReading} = (defined($result->{coolingDeviceReading})) ? $result->{coolingDeviceReading} : 'unknown';
         $self->{output}->output_add(
             long_msg => sprintf(
-                "cooling device '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
+                "cooling device '%s' status is '%s' [instance: %s] [state: %s] [value: %s]",
                 $result->{coolingDeviceLocationName}, $result->{coolingDeviceStatus}, $instance, 
                 $result->{coolingDeviceStateSettings}, $result->{coolingDeviceReading}
             )
@@ -126,12 +127,12 @@ sub check {
                 );
             }
             $self->{output}->perfdata_add(
-                label => 'fan', unit => 'rpm',
                 nlabel => 'hardware.fan.speed.rpm',
-                instances => $result->{coolingDeviceLocationName},
+                unit => 'rpm',
+                instances => [$chassis_name, $result->{coolingDeviceLocationName}],
                 value => $result->{coolingDeviceReading},
                 warning => $warn,
-                critical => $crit,
+                critical => $crit
             );
         }
     }

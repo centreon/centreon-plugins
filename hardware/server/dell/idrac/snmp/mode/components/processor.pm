@@ -58,7 +58,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "processor '%s' status is '%s' [instance = %s] [state = %s]",
+                "processor '%s' status is '%s' [instance: %s] [state: %s]",
                 $result->{processorDeviceFQDD}, $result->{processorDeviceStatus}, $instance, 
                 $result->{processorDeviceStateSettings}
             )

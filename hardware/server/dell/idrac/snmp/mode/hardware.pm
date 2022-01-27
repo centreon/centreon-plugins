@@ -94,23 +94,49 @@ sub set_system {
 
     $self->{components_path} = 'hardware::server::dell::idrac::snmp::mode::components';
     $self->{components_module} = [
-        'amperage', 'coolingdevice', 'coolingunit', 'enclosure',
+        'amperage', 'coolingdevice', 'coolingunit', 'enclosure', 'health', 
         'fru', 'memory', 'network', 'pci', 'pdisk',
         'processor', 'psu', 'punit', 'slot', 'storagebattery',
         'storagectrl', 'systembattery', 'temperature', 'voltage', 'vdisk'
     ];
 }
 
+my $oid_chassisName = '.1.3.6.1.4.1.674.10892.5.4.300.10.1.7';
+
 sub snmp_execute {
     my ($self, %options) = @_;
 
     $self->{snmp} = $options{snmp};
+    push @{$self->{request}}, { oid => $oid_chassisName };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+}
+
+sub get_chassis_name {
+    my ($self, %options) = @_;
+
+    my $name = 'unknown';
+    if (defined($self->{results}->{$oid_chassisName}->{ $oid_chassisName . '.' . $options{id} })) {
+        $name = $self->{results}->{$oid_chassisName}->{ $oid_chassisName . '.' . $options{id} }
+    }
+
+    return $name;
+}
+
+sub get_chassis_instances {
+    my ($self, %options) = @_;
+
+    my $instances = [];
+    foreach (keys %{$self->{results}->{$oid_chassisName}}) {
+        /\.(\d+)$/;
+        push @$instances, $1;
+    }
+
+    return $instances;
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -132,7 +158,7 @@ Check hardware components.
 
 Which component to check (Default: '.*').
 Can be: 'amperage', 'coolingdevice', 'coolingunit', 'enclosure', 
-'fru', 'memory', 'network', 'pci', 'pdisk', 
+'health', 'fru', 'memory', 'network', 'pci', 'pdisk', 
 'processor', 'psu', 'punit', 'slot', 'storagebattery', 
 'storagectrl', 'systembattery', 'temperature', 'voltage', 'vdisk'.
 
@@ -169,4 +195,3 @@ Example: --critical='temperature,.*,40'
 =back
 
 =cut
-    

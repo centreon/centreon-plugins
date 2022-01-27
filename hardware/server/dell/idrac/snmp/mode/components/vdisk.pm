@@ -53,7 +53,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "virtual disk '%s' state is '%s' [instance = %s]",
+                "virtual disk '%s' state is '%s' [instance: %s]",
                 $result->{virtualDiskFQDD}, $result->{virtualDiskState}, $instance
             )
         );

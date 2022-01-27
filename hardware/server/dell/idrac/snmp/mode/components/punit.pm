@@ -58,7 +58,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "power unit '%s' status is '%s' [instance = %s] [state = %s]",
+                "power unit '%s' status is '%s' [instance: %s] [state: %s]",
                 $result->{powerUnitName}, $result->{powerUnitStatus}, $instance, 
                 $result->{powerUnitStateSettings}
             )

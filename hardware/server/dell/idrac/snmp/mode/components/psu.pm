@@ -57,7 +57,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "power supply '%s' status is '%s' [instance = %s]",
+                "power supply '%s' status is '%s' [instance: %s]",
                 $result->{powerSupplyLocationName}, $result->{powerSupplyStatus}, $instance
             )
         );
