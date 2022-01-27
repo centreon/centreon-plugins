@@ -53,7 +53,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "storage controller '%s' status is '%s' [instance = %s]",
+                "storage controller '%s' status is '%s' [instance: %s]",
                 $result->{controllerFQDD}, $result->{controllerComponentStatus}, $instance
             )
         );

@@ -58,7 +58,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "system battery '%s' status is '%s' [instance = %s] [state = %s]",
+                "system battery '%s' status is '%s' [instance: %s] [state: %s]",
                 $result->{systemBatteryLocationName},
                 $result->{systemBatteryStatus}, $instance, 
                 $result->{systemBatteryStateSettings}

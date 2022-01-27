@@ -58,7 +58,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "enclosure '%s' status is '%s' [instance = %s] [state = %s]",
+                "enclosure '%s' status is '%s' [instance: %s] [state: %s]",
                 $result->{enclosureName}, $result->{enclosureRollUpStatus}, $instance, 
                 $result->{enclosureState}
             )

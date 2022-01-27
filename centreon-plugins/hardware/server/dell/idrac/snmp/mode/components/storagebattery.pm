@@ -53,7 +53,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "storage battery '%s' status is '%s' [instance = %s]",
+                "storage battery '%s' status is '%s' [instance: %s]",
                 $result->{batteryFQDD}, $result->{batteryComponentStatus}, $instance
             )
         );

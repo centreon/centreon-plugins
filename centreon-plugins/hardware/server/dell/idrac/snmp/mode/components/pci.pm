@@ -58,7 +58,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "pci '%s' status is '%s' [instance = %s] [state = %s]",
+                "pci '%s' status is '%s' [instance: %s] [state: %s]",
                 $result->{pCIDeviceDescriptionName}, $result->{pCIDeviceStatus}, $instance, 
                 $result->{pCIDeviceStateSettings}
             )

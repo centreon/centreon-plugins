@@ -57,7 +57,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "network '%s' status is '%s' [instance = %s]",
+                "network '%s' status is '%s' [instance: %s]",
                 $result->{networkDeviceProductName}, $result->{networkDeviceStatus}, $instance
             )
         );

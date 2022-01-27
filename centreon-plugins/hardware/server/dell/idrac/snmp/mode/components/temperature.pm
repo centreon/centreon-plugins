@@ -62,8 +62,9 @@ sub check {
     return if ($self->check_filter(section => 'temperature'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_temperatureProbeTableEntry}})) {
-        next if ($oid !~ /^$mapping->{temperatureProbeStatus}->{oid}\.(.*)$/);
-        my $instance = $1;
+        next if ($oid !~ /^$mapping->{temperatureProbeStatus}->{oid}\.(\d+)\.(\d+)$/);
+        my $instance = $1 . '.' . $2;
+        my $chassis_name = $self->get_chassis_name(id => $1);
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_temperatureProbeTableEntry}, instance => $instance);
         
         next if ($self->check_filter(section => 'temperature', instance => $instance, name => $result->{temperatureProbeLocationName}));
@@ -72,7 +73,7 @@ sub check {
         $result->{temperatureProbeReading} = (defined($result->{temperatureProbeReading})) ? $result->{temperatureProbeReading} / 10 : 'unknown';
         $self->{output}->output_add(
             long_msg => sprintf(
-                "temperature '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
+                "temperature '%s' status is '%s' [instance: %s] [state: %s] [value: %s]",
                 $result->{temperatureProbeLocationName}, $result->{temperatureProbeStatus}, $instance, 
                 $result->{temperatureProbeStateSettings}, $result->{temperatureProbeReading}
             )
@@ -140,9 +141,9 @@ sub check {
                 );
             }
             $self->{output}->perfdata_add(
-                label => 'temp', unit => 'C',
                 nlabel => 'hardware.probe.temperature.celsius',
-                instances => $result->{temperatureProbeLocationName},
+                unit => 'C',
+                instances => [$chassis_name, $result->{temperatureProbeLocationName}],
                 value => $result->{temperatureProbeReading},
                 warning => $warn,
                 critical => $crit

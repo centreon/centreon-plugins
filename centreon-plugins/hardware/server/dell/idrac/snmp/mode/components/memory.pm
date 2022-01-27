@@ -58,7 +58,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "memory '%s' status is '%s' [instance = %s] [state = %s]",
+                "memory '%s' status is '%s' [instance: %s] [state: %s]",
                 $result->{memoryDeviceLocationName}, $result->{memoryDeviceStatus}, $instance, 
                 $result->{memoryDeviceStateSettings}
             )
