@@ -20,62 +20,103 @@
 
 package database::oracle::mode::rmanbackupproblems;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return sprintf(
+        'During the last %s days, number of backups ',
+        $options{instance_value}->{retention}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'completed', nlabel => 'rman.backups.completed.count', set => {
+                key_values => [ { name => 'completed' } ],
+                output_template => 'completed: %s',
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        },
+        { label => 'failed', nlabel => 'rman.backups.failed.count', set => {
+                key_values => [ { name => 'failed' } ],
+                output_template => 'failed: %s',
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        },
+        { label => 'completed-warnings', nlabel => 'rman.backups.completed_with_warnings.count', set => {
+                key_values => [ { name => 'completed_with_warnings' } ],
+                output_template => 'completed with warnings: %s',
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        },
+        { label => 'completed-errors', nlabel => 'rman.backups.completed_with_errors.count', set => {
+                key_values => [ { name => 'completed_with_errors' } ],
+                output_template => 'completed with errors: %s',
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "warning:s"       => { name => 'warning', },
-        "critical:s"      => { name => 'critical', },
-        "retention:s"     => { name => 'retention', default => 3 },
+        'retention:s' => { name => 'retention', default => 3 }
     });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
+    $options{sql}->connect();
+    my $query = q{
+        SELECT status, COUNT(*) as num
+        FROM v$rman_status 
+        WHERE operation = 'BACKUP' AND status NOT IN ('RUNNING', 'RUNNING WITH WARNINGS', 'RUNNING WITH ERRORS')
+            AND start_time > sysdate-} . $self->{option_results}->{retention} . q{
+        GROUP BY status
+    };
+
+    $options{sql}->query(query => $query);
+    my $result = $options{sql}->fetchall_arrayref();
+    $options{sql}->disconnect();
+
+    $self->{global} = {
+        retention => $self->{option_results}->{retention},
+        completed => 0,
+        failed => 0,
+        completed_with_warnings => 0,
+        completed_with_errors => 0
+    };
+    foreach my $row (@$result) {
+        my $status = lc($row->[0]);
+        $status =~ s/\s+/_/g;
+        $self->{global}->{$status} += $row->[1];
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-
-    $self->{sql}->connect();
-    my $retention = $self->{option_results}->{retention};
-    my $query = q{SELECT COUNT(*) FROM v$rman_status WHERE operation = 'BACKUP' AND status != 'COMPLETED' AND status != 'RUNNING' AND start_time > sysdate-} . $retention;
-    $self->{sql}->query(query => $query);
-    my $rman_backup_problems = $self->{sql}->fetchrow_array();
-    $self->{sql}->disconnect();
-
-    my $exit_code = $self->{perfdata}->threshold_check(value => $rman_backup_problems, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("rman had %i problems during the last %i days", $rman_backup_problems, $self->{option_results}->{retention}));
-    $self->{output}->perfdata_add(label => 'rman_backup_problems',
-                                  value => $rman_backup_problems,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -88,17 +129,14 @@ Check Oracle rman backup problems.
 
 =over 8
 
-=item B<--warning>
-
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
-
 =item B<--retention>
 
-Retention in days (default : 3).
+Retention in days (default: 3).
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'completed', 'failed', 'completed-warnings', 'completed-errors'.
 
 =back
 
