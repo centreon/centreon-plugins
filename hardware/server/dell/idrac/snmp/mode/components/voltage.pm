@@ -54,8 +54,9 @@ sub check {
     return if ($self->check_filter(section => 'voltage'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_voltageProbeTableEntry}})) {
-        next if ($oid !~ /^$mapping->{voltageProbeStatus}->{oid}\.(.*)$/);
-        my $instance = $1;
+        next if ($oid !~ /^$mapping->{voltageProbeStatus}->{oid}\.(\d+)\.(\d+)$/);
+        my $instance = $1 . '.' . $2;
+        my $chassis_name = $self->get_chassis_name(id => $1);
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_voltageProbeTableEntry}, instance => $instance);
 
         next if ($self->check_filter(section => 'voltage', instance => $instance, name => $result->{voltageProbeLocationName}));
@@ -64,7 +65,7 @@ sub check {
         $result->{voltageProbeReading} = (defined($result->{voltageProbeReading})) ? $result->{voltageProbeReading} / 1000 : 'unknown';
         $self->{output}->output_add(
             long_msg => sprintf(
-                "voltage '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
+                "voltage '%s' status is '%s' [instance: %s] [state: %s] [value: %s]",
                 $result->{voltageProbeLocationName}, $result->{voltageProbeStatus}, $instance, 
                 $result->{voltageProbeStateSettings}, $result->{voltageProbeReading}
             )
@@ -132,9 +133,9 @@ sub check {
                 );
             }
             $self->{output}->perfdata_add(
-                label => 'voltage', unit => 'V',
                 nlabel => 'hardware.probe.voltage.volt',
-                instances => $result->{voltageProbeLocationName},
+                unit => 'V',
+                instances => [$chassis_name, $result->{voltageProbeLocationName}],
                 value => $result->{voltageProbeReading},
                 warning => $warn,
                 critical => $crit

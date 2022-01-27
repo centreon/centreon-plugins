@@ -73,7 +73,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "physical disk '%s' status is '%s' [instance = %s] [state = %s] [smart alert = %s]",
+                "physical disk '%s' status is '%s' [instance: %s] [state: %s] [smart alert: %s]",
                 $result->{physicalDiskFQDD}, $result->{physicalDiskComponentStatus}, $instance, 
                 $result->{physicalDiskState}, $result->{physicalDiskSmartAlertIndication}
             )

@@ -57,7 +57,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "slot '%s' status is '%s' [instance = %s]",
+                "slot '%s' status is '%s' [instance: %s]",
                 $result->{systemSlotSlotExternalSlotName}, $result->{systemSlotStatus}, $instance
             )
         );

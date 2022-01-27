@@ -57,7 +57,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "fru '%s' status is '%s' [instance = %s]",
+                "fru '%s' status is '%s' [instance: %s]",
                 $result->{fruSerialNumberName}, $result->{fruInformationStatus}, $instance, 
             )
         );

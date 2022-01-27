@@ -58,7 +58,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "cooling unit '%s' status is '%s' [instance = %s] [state = %s]",
+                "cooling unit '%s' status is '%s' [instance: %s] [state: %s]",
                 $result->{coolingUnitName}, $result->{coolingUnitStatus}, $instance, 
                 $result->{coolingUnitStateSettings}
             )
