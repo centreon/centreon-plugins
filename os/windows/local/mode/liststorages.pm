@@ -77,14 +77,6 @@ sub manage_selection {
 
         $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
     }
-
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
-    );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(
             severity => 'OK',
@@ -105,6 +97,13 @@ sub manage_selection {
 
     return $decoded;
 }
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
 
 sub run {
     my ($self, %options) = @_;

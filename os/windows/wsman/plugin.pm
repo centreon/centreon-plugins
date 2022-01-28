@@ -31,8 +31,21 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+        'cpu'              => 'os::windows::wsman::mode::cpu',
+        'folder-date'      => 'os::windows::wsman::mode::folderdate',
+        'folder-size'      => 'os::windows::wsman::mode::foldersize',
+        'interfaces'       => 'os::windows::wsman::mode::interfaces',
+        'list-interfaces'  => 'os::windows::wsman::mode::listinterfaces',
+        'list-processes'   => 'os::windows::wsman::mode::listprocesses',
         'list-services'    => 'os::windows::wsman::mode::listservices',
+        'list-storages'    => 'os::windows::wsman::mode::liststorages',
+        'memory'           => 'os::windows::wsman::mode::memory',
+        'processcount'     => 'os::windows::wsman::mode::processcount',
         'service'          => 'os::windows::wsman::mode::service',
+        'storage'          => 'os::windows::wsman::mode::storage',
+        'swap'             => 'os::windows::wsman::mode::swap',
+        'time'             => 'os::windows::wsman::mode::ntp',
+        'uptime'           => 'os::windows::wsman::mode::uptime',
     );
 
     return $self;
