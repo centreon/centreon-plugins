@@ -29,12 +29,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "warning:s"               => { name => 'warning', },
-        "critical:s"              => { name => 'critical', },
-        "exclude:s"               => { name => 'exclude', },
-        "exclude-user:s"          => { name => 'exclude_user', },
+        'warning:s'      => { name => 'warning' },
+        'critical:s'     => { name => 'critical' },
+        'exclude:s'      => { name => 'exclude' },
+        'exclude-user:s' => { name => 'exclude_user' }
     });
 
     return $self;
@@ -56,13 +56,11 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
 
-    $self->{sql}->connect();
+    $options{sql}->connect();
 
     my $query;
-    if ($self->{sql}->is_version_minimum(version => '9.2')) {
+    if ($options{sql}->is_version_minimum(version => '9.2')) {
         $query = q{
 SELECT pg_database.datname, pgsa.datid, pgsa.pid, pgsa.usename, pgsa.client_addr, pgsa.query AS current_query, pgsa.state AS state,
        CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
@@ -79,42 +77,55 @@ FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.d
 ORDER BY pgsa.query_start, pgsa.procpid DESC
 };
     }
-    
-    $self->{sql}->query(query => $query);
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "All databases queries time are ok.");
+    $options{sql}->query(query => $query);
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'All databases queries time are ok.'
+    );
     my $dbquery = {};
-    while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        if (!defined($dbquery->{$row->{datname}})) {
-            $dbquery->{$row->{datname}} = { total => 0, code => {} };
-        }
-        next if (!defined($row->{datid}) || $row->{datid} eq ''); # No joint
-        
+    while ((my $row = $options{sql}->fetchrow_hashref())) {
         if (defined($self->{option_results}->{exclude}) && $row->{datname} !~ /$self->{option_results}->{exclude}/) {
             next;
         }
+
+        if (!defined($dbquery->{$row->{datname}})) {
+            $dbquery->{ $row->{datname} } = { total => 0, code => {} };
+        }
+        next if (!defined($row->{datid}) || $row->{datid} eq ''); # No joint
+
         if (defined($self->{option_results}->{exclude_user}) && $row->{usename} !~ /$self->{option_results}->{exclude_user}/) {
             next;
         }
-        
+
         my $exit_code = $self->{perfdata}->threshold_check(value => $row->{seconds}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(long_msg => sprintf("Request from client '%s' too long (%d sec) on database '%s': %s",
-                                                            $row->{client_addr}, $row->{seconds}, $row->{datname}, $row->{current_query}));
-            $dbquery->{$row->{datname}}->{total}++;
-            $dbquery->{$row->{datname}}->{code}->{$exit_code}++;
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "Request from client '%s' too long (%d sec) on database '%s': %s",
+                    $row->{client_addr}, $row->{seconds}, $row->{datname}, $row->{current_query}
+                )
+            );
+            $dbquery->{ $row->{datname} }->{total}++;
+            $dbquery->{ $row->{datname} }->{code}->{$exit_code}++;
         }
     }
-    
+
     foreach my $dbname (keys %$dbquery) {
-        $self->{output}->perfdata_add(label => $dbname . '_qtime_num',
-                                      value => $dbquery->{$dbname}->{total},
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => $dbname . '_qtime_num',
+            value => $dbquery->{$dbname}->{total},
+            min => 0
+        );
         foreach my $exit_code (keys %{$dbquery->{$dbname}->{code}}) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("%d request exceed " . lc($exit_code) . " threshold on database '%s'",
-                                                             $dbquery->{$dbname}->{code}->{$exit_code}, $dbname));
+            $self->{output}->output_add(
+                severity => $exit_code,
+                short_msg => sprintf(
+                    "%d request exceed " . lc($exit_code) . " threshold on database '%s'",
+                    $dbquery->{$dbname}->{code}->{$exit_code}, $dbname
+                )
+            );
         }
     }
 
