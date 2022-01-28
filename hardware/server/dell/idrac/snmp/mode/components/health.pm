@@ -68,7 +68,7 @@ sub check {
             next if (!defined($result->{$_}));
 
             my $name = $chassis_name . ':' . $mapping_health->{$_}->{label};
-            next if ($self->check_filter(section => 'health', instance => $instance));
+            next if ($self->check_filter(section => 'health', instance => $instance, name => $name));
             $self->{components}->{health}->{total}++;
 
             $self->{output}->output_add(
