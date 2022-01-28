@@ -296,6 +296,8 @@ sub manage_selection {
                 %$tz
             );
             $elapsed = $current_time - $dt->epoch();
+        } elsif (defined($job->{duration})) {
+            $elsapsed = $job->{duration};
         }
 
         my $message = defined($job->{message}) ? $job->{message} : '';
