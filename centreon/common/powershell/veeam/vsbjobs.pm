@@ -47,8 +47,17 @@ Try {
 
     $items = New-Object System.Collections.Generic.List[Hashtable];
 
+    $sessions = @{}
+    Get-VSBSession | Sort CreationTimeUTC -Descending | ForEach-Object {
+        if ($null -eq $sessions[$_.jobId]) {
+            $sessions[$_.jobId] = @{}
+            $sessions[$_.jobId].result = $_.Result.value__
+            $sessions[$_.jobId].creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $sessions[$_.jobId].endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+        }
+    }
+
     $jobs = Get-VSBJob
-    $sessions = Get-VSBSession
     foreach ($job in $jobs) {
         $item = @{}
         $item.name = $job.Name
@@ -57,11 +66,10 @@ Try {
         $item.creationTimeUTC = ""
         $item.endTimeUTC = ""
 
-        $last = $sessions | Where {$_.jobId -eq $job.Id.Guid} | Sort CreationTimeUTC -Descending | Select -First 1
-        if ($null -ne $last) {
-            $item.result = $last.Result.value__
-            $item.creationTimeUTC = (get-date -date $last.creationTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
-            $item.endTimeUTC = (get-date -date $last.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+        if ($null -ne $sessions[$job.Id.Guid]) {
+            $item.result = $sessions[$job.Id.Guid].result
+            $item.creationTimeUTC = $sessions[$job.Id.Guid].creationTimeUTC
+            $item.endTimeUTC = $sessions[$job.Id.Guid].endTimeUTC
         }
 
         $items.Add($item)
