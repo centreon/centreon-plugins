@@ -213,26 +213,23 @@ sub call_jobs {
     $results = defined($results->{result}) && ref($results->{result}) eq 'ARRAY' ? $results->{result} :
             (defined($results->{result}->{rows}) ? $results->{result}->{rows} : []);
 
-    if (defined($results->{result}->{rows})) {
-        my $current_time = time();
-
-        foreach (@$results) {
-            my $applicationId = defined($_->{applicationSId}) ? $_->{applicationSId} : 
-                (defined($_->{appSId}) ? $_->{appSId} : undef);
-            my $application = defined($applicationId) && defined($app->{$applicationId}) ?
-                $app->{$applicationId}->{application} : 'unknown';
-            my $environment = defined($applicationId) && defined($app->{$applicationId}) ?
-                $app->{$applicationId}->{environment} : 'unknown';
-            push @$jobs, {
-                application => $application,
-                environment => $environment,
-                name => $_->{name},
-                returnCode => $_->{retcode},
-                status => $mapping_job_status->{ $_->{status} },
-                message => $_->{information},
-                duration => defined($_->{timeBegin}) ? ( $current_time - $_->{timeBegin}) : undef
-            };
-        }
+    my $current_time = time();
+    foreach (@$results) {
+        my $applicationId = defined($_->{applicationSId}) ? $_->{applicationSId} : 
+            (defined($_->{appSId}) ? $_->{appSId} : undef);
+        my $application = defined($applicationId) && defined($app->{$applicationId}) ?
+            $app->{$applicationId}->{application} : 'unknown';
+        my $environment = defined($applicationId) && defined($app->{$applicationId}) ?
+            $app->{$applicationId}->{environment} : 'unknown';
+        push @$jobs, {
+            application => $application,
+            environment => $environment,
+            name => $_->{name},
+            returnCode => $_->{retcode},
+            status => $mapping_job_status->{ $_->{status} },
+            message => $_->{information},
+            duration => defined($_->{timeBegin}) ? ( $current_time - $_->{timeBegin}) : undef
+        };
     }
 
     return $jobs;
