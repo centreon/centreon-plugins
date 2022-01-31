@@ -34,7 +34,8 @@ sub new {
         'job-status' => 'apps::backup::veeam::local::mode::jobstatus',
         'licenses'   => 'apps::backup::veeam::local::mode::licenses',
         'list-jobs'  => 'apps::backup::veeam::local::mode::listjobs',
-        'tape-jobs'  => 'apps::backup::veeam::local::mode::tapejobs'
+        'tape-jobs'  => 'apps::backup::veeam::local::mode::tapejobs',
+        'vsb-jobs'   => 'apps::backup::veeam::local::mode::vsbjobs'
     };
 
     return $self;

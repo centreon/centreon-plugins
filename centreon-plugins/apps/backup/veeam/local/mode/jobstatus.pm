@@ -113,7 +113,7 @@ sub new {
         'filter-start-time:s' => { name => 'filter_start_time' },
         'ok-status:s'         => { name => 'ok_status', default => '' },
         'warning-status:s'    => { name => 'warning_status', default => '' },
-        'critical-status:s'   => { name => 'critical_status', default => '%{is_running} == 0 and not %{status} =~ /Success/i' },
+        'critical-status:s'   => { name => 'critical_status', default => '%{is_running} == 0 and not %{status} =~ /success/i' },
         'warning-long:s'      => { name => 'warning_long' },
         'critical-long:s'     => { name => 'critical_long' }
     });
