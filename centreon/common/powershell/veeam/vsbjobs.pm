@@ -49,27 +49,28 @@ Try {
 
     $sessions = @{}
     Get-VSBSession | Sort CreationTimeUTC -Descending | ForEach-Object {
-        if ($null -eq $sessions[$_.jobId]) {
-            $sessions[$_.jobId] = @{}
-            $sessions[$_.jobId].result = $_.Result.value__
-            $sessions[$_.jobId].creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
-            $sessions[$_.jobId].endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+        $jobId = $_.jobId.toString()
+        if (-not $sessions.ContainsKey($jobId)) {
+            $sessions[$jobId] = @{}
+            $sessions[$jobId].result = $_.Result.value__
+            $sessions[$jobId].creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $sessions[$jobId].endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
         }
     }
 
-    $jobs = Get-VSBJob
-    foreach ($job in $jobs) {
+    Get-VSBJob | ForEach-Object {
         $item = @{}
-        $item.name = $job.Name
-        $item.type = $job.JobType.value__
+        $item.name = $_.Name
+        $item.type = $_.JobType.value__
         $item.result = -10
         $item.creationTimeUTC = ""
         $item.endTimeUTC = ""
 
-        if ($null -ne $sessions[$job.Id.Guid]) {
-            $item.result = $sessions[$job.Id.Guid].result
-            $item.creationTimeUTC = $sessions[$job.Id.Guid].creationTimeUTC
-            $item.endTimeUTC = $sessions[$job.Id.Guid].endTimeUTC
+        $guid = $_.Id.Guid.toString()
+        if ($sessions.ContainsKey($guid)) {
+            $item.result = $sessions[$guid].result
+            $item.creationTimeUTC = $sessions[$guid].creationTimeUTC
+            $item.endTimeUTC = $sessions[$guid].endTimeUTC
         }
 
         $items.Add($item)

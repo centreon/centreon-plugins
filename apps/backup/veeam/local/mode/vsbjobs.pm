@@ -35,6 +35,7 @@ sub custom_status_output {
 
     return sprintf(
         'last status: %s [duration: %s]',
+        $self->{result_values}->{status},
         centreon::plugins::misc::change_seconds(value => $self->{result_values}->{duration})
     );
 }
@@ -43,7 +44,7 @@ sub prefix_job_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "SureBackup job '%s' [type: %s] " 
+        "SureBackup job '%s' [type: %s] ",
         $options{instance_value}->{name},
         $options{instance_value}->{type}
     );
@@ -182,7 +183,11 @@ sub manage_selection {
 
     $self->{global} = { detected => 0, success => 0, failed => 0, warning => 0 };
     $self->{jobs} = {};
+    my $current_time = time();
     foreach my $job (@$decoded) {
+        $job->{creationTimeUTC} =~ s/,/\./;
+        $job->{endTimeUTC} =~ s/,/\./;
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $job->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter.", debug => 1);
