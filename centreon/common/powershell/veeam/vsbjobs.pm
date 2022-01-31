@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::veeam::jobstatus;
+package centreon::common::powershell::veeam::vsbjobs;
 
 use strict;
 use warnings;
@@ -47,13 +47,12 @@ Try {
 
     $items = New-Object System.Collections.Generic.List[Hashtable];
 
-    $jobs = Get-VBRJob
-    $sessions = Get-VBRBackupSession
+    $jobs = Get-VSBJob
+    $sessions = Get-VSBSession
     foreach ($job in $jobs) {
         $item = @{}
         $item.name = $job.Name
         $item.type = $job.JobType.value__
-        $item.isRunning = $job.isRunning
         $item.result = -10
         $item.creationTimeUTC = ""
         $item.endTimeUTC = ""
@@ -87,6 +86,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to get veeam job status informations.
+Method to get veeam SureBackup jobs informations.
 
 =cut
