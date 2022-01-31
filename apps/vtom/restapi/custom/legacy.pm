@@ -208,7 +208,7 @@ sub call_jobs {
 
     my $jobs = [];
     $results = $self->request_api(
-        endpoint => '/api/job/getAll'
+        endpoint => '/api/job/list'
     );
     if (defined($results->{result}->{rows})) {
         my $current_time = time();
