@@ -97,10 +97,11 @@ $job_type = {
 };
 
 $job_result = {
-    0 => 'Success',
-    1 => 'Warning',
-    2 => 'Failed',
-    -1 => 'None'
+    0 => 'success',
+    1 => 'warning',
+    2 => 'failed',
+    -1 => 'none',
+    -10 => 'never'
 };
 
 $job_tape_type = {
@@ -114,7 +115,7 @@ $job_tape_type = {
 };
 
 $job_tape_result = {
-    0 => 'None', 1 => 'Success', 2 => 'Warning', 3 => 'Failed'
+    0 => 'none', 1 => 'success', 2 => 'warning', 3 => 'failed'
 };
 
 $job_tape_state = {

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::veeam::jobstatus;
+package centreon::common::powershell::veeam::vsbjobs;
 
 use strict;
 use warnings;
@@ -48,8 +48,8 @@ Try {
     $items = New-Object System.Collections.Generic.List[Hashtable];
 
     $sessions = @{}
-    Get-VBRBackupSession | Sort CreationTimeUTC -Descending | ForEach-Object {
-		$jobId = $_.jobId.toString()
+    Get-VSBSession | Sort CreationTimeUTC -Descending | ForEach-Object {
+        $jobId = $_.jobId.toString()
         if (-not $sessions.ContainsKey($jobId)) {
             $sessions[$jobId] = @{}
             $sessions[$jobId].result = $_.Result.value__
@@ -58,16 +58,15 @@ Try {
         }
     }
 
-    Get-VBRJob | ForEach-Object {
+    Get-VSBJob | ForEach-Object {
         $item = @{}
         $item.name = $_.Name
         $item.type = $_.JobType.value__
-        $item.isRunning = $_.isRunning
         $item.result = -10
         $item.creationTimeUTC = ""
         $item.endTimeUTC = ""
 
-		$guid = $_.Id.Guid.toString()
+        $guid = $_.Id.Guid.toString()
         if ($sessions.ContainsKey($guid)) {
             $item.result = $sessions[$guid].result
             $item.creationTimeUTC = $sessions[$guid].creationTimeUTC
@@ -96,6 +95,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to get veeam job status informations.
+Method to get veeam SureBackup jobs informations.
 
 =cut
