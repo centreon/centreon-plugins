@@ -210,6 +210,9 @@ sub call_jobs {
     $results = $self->request_api(
         endpoint => '/api/job/list'
     );
+    $results = defined($results->{result}) && ref($results->{result}) eq 'ARRAY' ? $results->{result} :
+            (defined($results->{result}->{rows}) ? $results->{result}->{rows} : []);
+
     if (defined($results->{result}->{rows})) {
         my $current_time = time();
 
