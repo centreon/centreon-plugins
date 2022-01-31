@@ -110,12 +110,12 @@ sub settings {
 
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-    $self->{http}->set_options(%{$self->{option_results}});
     $self->{settings_done} = 1;
     $self->{option_results}->{credentials} = 1;
     $self->{option_results}->{basic} = 1;
     $self->{option_results}->{username} = $self->{api_username};
     $self->{option_results}->{password} = $self->{api_password};
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub get_connection_info {
