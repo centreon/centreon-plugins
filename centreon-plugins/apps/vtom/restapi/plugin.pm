@@ -36,6 +36,7 @@ sub new {
     };
 
     $self->{custom_modes}->{api} = 'apps::vtom::restapi::custom::api';
+    $self->{custom_modes}->{legacy} = 'apps::vtom::restapi::custom::legacy';
     return $self;
 }
 
