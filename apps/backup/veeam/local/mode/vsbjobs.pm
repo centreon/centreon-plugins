@@ -73,7 +73,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'jobs-detected', nlabel => 'sure_backup.jobs.success.count', set => {
+        { label => 'jobs-success', nlabel => 'sure_backup.jobs.success.count', set => {
                 key_values => [ { name => 'success' } ],
                 output_template => 'success: %s',
                 perfdatas => [
