@@ -136,7 +136,7 @@ sub custom_metric_calc {
         $change_bytes_network = $config_data->{formatting}->{change_bytes_network};
     }
 
-    if ($change_bytes) {
+    if ($change_bytes || $change_bytes_network) {
         ($self->{result_values}->{value}, $self->{result_values}->{unit}) = $self->{perfdata}->change_bytes(
             value => $self->{result_values}->{value},
             network => defined($change_bytes_network) && $change_bytes_network ? 1 : undef
