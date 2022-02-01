@@ -1,0 +1,181 @@
+#
+# Copyright 2022 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+package os::windows::wsman::mode::memory;
+
+use base qw(centreon::plugins::templates::counter);
+
+use strict;
+use warnings;
+
+sub custom_usage_perfdata {
+    my ($self, %options) = @_;
+
+    my ($label, $nlabel) = ('used', $self->{nlabel});
+    my $value_perf = $self->{result_values}->{used};
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
+        ($label, $nlabel) = 'memory.free.bytes';
+        $value_perf = $self->{result_values}->{free};
+    }
+
+    my %total_options = ();
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(
+        label => $label,
+        nlabel => $self->{nlabel},
+        value => $value_perf, unit => 'B',
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
+}
+
+sub custom_usage_threshold {
+    my ($self, %options) = @_;
+
+    my ($exit, $threshold_value);
+    $threshold_value = $self->{result_values}->{used};
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_used};
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    }
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Total: %s%s Used: %s%s (%.2f%%) Free: %s%s (%.2f%%)",
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}), $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}), $self->{result_values}->{prct_free}
+    );
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+    $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
+
+    return 0;
+}
+
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+
+    return 'Ram ';
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'memory', type => 0, cb_prefix_output => 'prefix_memory_output' }
+    ];
+
+    $self->{maps_counters}->{memory} = [
+        { label => 'memory', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'total' }  ],
+                closure_custom_calc => \&custom_usage_calc,
+                closure_custom_output => \&custom_usage_output,
+                closure_custom_perfdata => \&custom_usage_perfdata,
+                closure_custom_threshold_check => \&custom_usage_threshold
+            }
+        }
+    ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+
+    $options{options}->add_options(arguments => {
+        'units:s' => { name => 'units', default => '%' },
+        'free'    => { name => 'free' }
+    });
+
+    return $self;
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+    $self->{wsman} = $options{wsman};
+
+    my ($total_bytes, $used_bytes, $free_bytes);
+
+    $self->{result} = $self->{wsman}->request(
+        uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
+        wql_filter => "Select Name,FreePhysicalMemory,TotalVisibleMemorySize from Win32_OperatingSystem",
+        result_type => 'hash',
+        hash_key => 'Name'
+    );
+
+    foreach my $name (sort(keys %{$self->{result}})) {
+        $free_bytes = $self->{result}->{$name}->{FreePhysicalMemory} * 1024;
+        $total_bytes = $self->{result}->{$name}->{TotalVisibleMemorySize} * 1024;
+        $used_bytes = $total_bytes - $free_bytes;
+    }
+    $self->{memory} = { used => $used_bytes, total => $total_bytes };
+
+}
+
+1;
+
+__END__
+
+=head1 MODE
+
+Check memory usage
+
+=over 8
+
+=item B<--units>
+
+Units of thresholds (Default: '%') ('%', 'absolute').
+
+=item B<--free>
+
+Thresholds are on free space left.
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'memory'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'memory'.
+
+=back
+
+=cut

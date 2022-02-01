@@ -1,5 +1,5 @@
 #
-# Copyright 2022 Centreon (http://www.centreon.com/)
+# Copyright 2021 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,11 +29,23 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'list-services'    => 'os::windows::wsman::mode::listservices',
-        'service'          => 'os::windows::wsman::mode::service',
-    );
+    $self->{modes} = {
+        'cpu'             => 'os::windows::wsman::mode::cpu',
+        'folder-date'     => 'os::windows::wsman::mode::folderdate',
+        'folder-size'     => 'os::windows::wsman::mode::foldersize',
+        'interfaces'      => 'os::windows::wsman::mode::interfaces',
+        'list-interfaces' => 'os::windows::wsman::mode::listinterfaces',
+        'list-processes'  => 'os::windows::wsman::mode::listprocesses',
+        'list-services'   => 'os::windows::wsman::mode::listservices',
+        'list-storages'   => 'os::windows::wsman::mode::liststorages',
+        'memory'          => 'os::windows::wsman::mode::memory',
+        'pages'           => 'os::windows::wsman::mode::pages',
+        'processcount'    => 'os::windows::wsman::mode::processcount',
+        'service'         => 'os::windows::wsman::mode::service',
+        'storages'        => 'os::windows::wsman::mode::storages',
+        'time'            => 'os::windows::wsman::mode::time',
+        'uptime'          => 'os::windows::wsman::mode::uptime'
+    };
 
     return $self;
 }
