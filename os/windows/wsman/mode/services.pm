@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::windows::wsman::mode::service;
+package os::windows::wsman::mode::services;
 
 use base qw(centreon::plugins::mode);
 
@@ -35,7 +35,7 @@ sub new {
         'critical'   => { name => 'critical' },
         'services:s' => { name => 'services' },
         'auto'       => { name => 'auto' },
-        'exclude:s'  => { name => 'exclude' },
+        'exclude:s'  => { name => 'exclude' }
     });
 
     $self->{service_rules} = {};
@@ -111,8 +111,10 @@ sub check_auto {
     
         $self->{output}->output_add(long_msg => "Service '" . $self->{result}->{$name}->{Name} . "' state: " . $self->{result}->{$name}->{State});
         if ($self->{result}->{$name}->{State} !~ /^running$/i) {
-            $self->{output}->output_add(severity => $self->{threshold},
-                                        short_msg => "Service '" . $self->{result}->{$name}->{Name} . "' is " . $self->{result}->{$name}->{State});
+            $self->{output}->output_add(
+                severity => $self->{threshold},
+                short_msg => "Service '" . $self->{result}->{$name}->{Name} . "' is " . $self->{result}->{$name}->{State}
+            );
         }
     }
 }
@@ -128,20 +130,26 @@ sub check {
     );
     foreach my $name (sort(keys %{$self->{service_rules}})) {
         if (!defined($self->{result}->{$name})) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => "Service '" . $name . "' not found");
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => "Service '" . $name . "' not found"
+            );
             next;
         }
         
         $self->{output}->output_add(long_msg => "Service '" . $name . "' state: " . $self->{result}->{$name}->{State});
         if ($self->{service_rules}->{$name}->{operator} eq '=' && 
             lc($self->{result}->{$name}->{State}) eq $self->{service_rules}->{$name}->{state}) {
-            $self->{output}->output_add(severity => $self->{threshold},
-                                        short_msg => "Service '" . $self->{result}->{$name}->{Name} . "' is " . $self->{result}->{$name}->{State});
+            $self->{output}->output_add(
+                severity => $self->{threshold},
+                short_msg => "Service '" . $self->{result}->{$name}->{Name} . "' is " . $self->{result}->{$name}->{State}
+            );
         } elsif ($self->{service_rules}->{$name}->{operator} eq '!=' && 
                  lc($self->{result}->{$name}->{State}) ne $self->{service_rules}->{$name}->{state}) {
-            $self->{output}->output_add(severity => $self->{threshold},
-                                        short_msg => "Service '" . $self->{result}->{$name}->{Name} . "' is " . $self->{result}->{$name}->{State});
+            $self->{output}->output_add(
+                severity => $self->{threshold},
+                short_msg => "Service '" . $self->{result}->{$name}->{Name} . "' is " . $self->{result}->{$name}->{State}
+            );
         }
     }
 }
@@ -150,8 +158,10 @@ sub run {
     my ($self, %options) = @_;
     $self->{wsman} = $options{wsman};
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All service states are ok');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'All service states are ok'
+    );
     if (defined($self->{option_results}->{auto})) {
         $self->check_auto();
     } else {

@@ -40,8 +40,8 @@ sub new {
         'list-storages'   => 'os::windows::wsman::mode::liststorages',
         'memory'          => 'os::windows::wsman::mode::memory',
         'pages'           => 'os::windows::wsman::mode::pages',
-        'processcount'    => 'os::windows::wsman::mode::processcount',
-        'service'         => 'os::windows::wsman::mode::service',
+        'processes'       => 'os::windows::wsman::mode::processes',
+        'services'        => 'os::windows::wsman::mode::services',
         'storages'        => 'os::windows::wsman::mode::storages',
         'time'            => 'os::windows::wsman::mode::time',
         'uptime'          => 'os::windows::wsman::mode::uptime'

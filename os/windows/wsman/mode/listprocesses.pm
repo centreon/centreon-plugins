@@ -3,7 +3,7 @@
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
-# servic performance.
+# service performance.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,11 +29,8 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
-        'filter-pid:s'  => { name => 'filter_pid' },
-    });
+
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -43,55 +40,31 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-my %map_status = (
+my @labels = ('name', 'pid', 'status'); 
+my %map_process_status = (
     0 => 'running',
-    1 => 'other',
-    2 => 'ready',
-    3 => 'running',
-    4 => 'blocked',
+    1 => 'other', 
+    2 => 'ready', 
+    3 => 'running', 
+    4 => 'blocked'
 );
 
 sub manage_selection {
     my ($self, %options) = @_;
-    $self->{wsman} = $options{wsman};
 
-    $self->{result} = $self->{wsman}->request(
+    my $entries = $options{wsman}->request(
         uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
-        wql_filter => "select ExecutionState,Name,CommandLine,ExecutablePath,Handle from Win32_Process",
-        result_type => 'hash',
-        hash_key => 'Name'
-    );    
+        wql_filter => 'select Name,ExecutionState,CommandLine,ExecutablePath,Handle from Win32_Process',
+        result_type => 'array'
+    );
 
-    #
-    #CLASS: Win32_Process
-    #CommandLine;ExecutablePath;ExecutionState;Handle;Name
-    #C:\\Windows\\system32\\svchost.exe -k DcomLaunch -p;C:\\Windows\\system32\\svchost.exe;0;864;svchost.exe
-    #"fontdrvhost.exe";C:\\Windows\\system32\\fontdrvhost.exe;0;884;fontdrvhost.exe
-    #"fontdrvhost.exe";C:\\Windows\\system32\\fontdrvhost.exe;0;892;fontdrvhost.exe
-    #C:\\Windows\\system32\\svchost.exe -k RPCSS -p;C:\\Windows\\system32\\svchost.exe;0;964;svchost.exe
-    #
-
-    my $results = {};
-    foreach my $proc_name (sort(keys %{$self->{result}})) {
-        my $status = (!defined($self->{result}->{$proc_name}->{ExecutionState}) || $self->{result}->{$proc_name}->{ExecutionState} eq '') ? '0' : $self->{result}->{$proc_name}->{ExecutionState};
-        my $pid = $self->{result}->{$proc_name}->{Handle};
-        my $name = $self->{result}->{$proc_name}->{Name};
-        next if ($name =~ /System Idle Process/);
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_pid}) && $self->{option_results}->{filter_pid} ne '' &&
-            $pid != $self->{option_results}->{filter_pid}) {
-            $self->{output}->output_add(long_msg => "skipping '" . $pid . "': no matching filter.", debug => 1);
-            next;
-        }
-
-        $results->{$pid} = { 
-            name   => $name, 
-            status => $status,
-            pid    => $pid 
+    my $results = [];
+    foreach (@$entries) {
+        my $status = (!defined($_->{ExecutionState}) || $_->{ExecutionState} eq '') ? 0 : $_->{ExecutionState};
+        push @$results, {
+            name => $_->{Name},
+            status => $map_process_status{$status},
+            pid => $_->{Handle}
         };
     }
 
@@ -100,12 +73,11 @@ sub manage_selection {
 
 sub run {
     my ($self, %options) = @_;
-  
-    my $results = $self->manage_selection(%options);
-    foreach (sort keys %$results) {
-        $self->{output}->output_add(long_msg => '[name = ' . $results->{$_}->{name} .
-            "] [status = " . $map_status{$results->{$_}->{status}} .
-            "] [pid = " . $results->{$_}->{pid} ."]"
+
+    my $results = $self->manage_selection(wsman => $options{wsman});
+    foreach my $entry (@$results) {
+        $self->{output}->output_add(long_msg => 
+            join('', map("[$_: " . $entry->{$_} . ']', @labels))
         );
     }
 
@@ -119,23 +91,18 @@ sub run {
 
 sub disco_format {
     my ($self, %options) = @_;
-    
-    $self->{output}->add_disco_format(elements => ['name', 'status', 'pid']);
+
+    $self->{output}->add_disco_format(elements => [@labels]);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $results = $self->manage_selection(%options);
-    foreach (sort keys %$results) {
-        $self->{output}->add_disco_entry(
-            name   => $results->{$_}->{name},
-            status => $map_status{$results->{$_}->{status}},
-            pid    => $results->{$_}->{pid}
-        );
+    my $results = $self->manage_selection(wsman => $options{wsman});
+    foreach my $entry (@$results) {
+        $self->{output}->add_disco_entry(%$entry);
     }
 }
-
 1;
 
 __END__
@@ -145,14 +112,6 @@ __END__
 List processes.
 
 =over 8
-
-=item B<--filter-name>
-
-Filter by process name (can be a regexp).
-
-=item B<--filter-pid>
-
-Filter by process id.
 
 =back
 

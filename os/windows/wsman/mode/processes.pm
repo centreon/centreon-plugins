@@ -18,33 +18,24 @@
 # limitations under the License.
 #
 
-package os::windows::wsman::mode::processcount;
+package os::windows::wsman::mode::processes;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
-
-my %map_process_status = (
-    0 => 'running',
-    1 => 'other', 
-    2 => 'ready', 
-    3 => 'running', 
-    4 => 'blocked',
-);
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'process-status:s'        => { name => 'process_status', default => 'running' },
-        'process-name:s'          => { name => 'process_name' },
-        'regexp-name'             => { name => 'regexp_name' },
-        'warning:s'               => { name => 'warning' },
-        'critical:s'              => { name => 'critical' },
+        'process-status:s' => { name => 'process_status', default => 'running' },
+        'process-name:s'   => { name => 'process_name' },
+        'regexp-name'      => { name => 'regexp_name' },
+        'warning:s'        => { name => 'warning' },
+        'critical:s'       => { name => 'critical' }
     });
 
     return $self;
@@ -63,25 +54,33 @@ sub check_options {
         $self->{output}->option_exit();
     }
 }
+
+my %map_process_status = (
+    0 => 'running',
+    1 => 'other', 
+    2 => 'ready', 
+    3 => 'running', 
+    4 => 'blocked'
+);
+
 sub run {
     my ($self, %options) = @_;
-    $self->{wsman} = $options{wsman};
 
-    my $WQL = 'select ExecutionState,Name,CommandLine,ExecutablePath,Handle from Win32_Process';
-    if(defined($self->{option_results}->{process_name}) && $self->{option_results}->{process_name} ne '') {
-        if(defined($self->{option_results}->{regexp_name})) {
+    my $WQL = 'select Name,ExecutionState,CommandLine,ExecutablePath,Handle from Win32_Process';
+    if (defined($self->{option_results}->{process_name}) && $self->{option_results}->{process_name} ne '') {
+        if (defined($self->{option_results}->{regexp_name})) {
             $WQL .= ' where Name like "' . $self->{option_results}->{process_name} . '"';
         } else {
             $WQL .= ' where Name = "' . $self->{option_results}->{process_name} . '"';
         }
     }
 
-    $self->{result} = $self->{wsman}->request(
+    my $results = $options{wsman}->request(
         uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
         wql_filter => $WQL,
-        result_type => 'hash',
-        hash_key => 'Name'
+        result_type => 'array'
     );
+
     #
     #CLASS: Win32_Process
     #CommandLine;ExecutablePath;ExecutionState;Handle;Name
@@ -90,32 +89,40 @@ sub run {
     #"fontdrvhost.exe";C:\\Windows\\system32\\fontdrvhost.exe;0;892;fontdrvhost.exe
     #C:\\Windows\\system32\\svchost.exe -k RPCSS -p;C:\\Windows\\system32\\svchost.exe;0;964;svchost.exe
     #
-    my $count = 0;
-    foreach my $proc_name (sort(keys %{$self->{result}})) {
-       my $status = (!defined($self->{result}->{$proc_name}->{ExecutionState}) || $self->{result}->{$proc_name}->{ExecutionState} eq '') ? '0' : $self->{result}->{$proc_name}->{ExecutionState};
-       my $pid  = $self->{result}->{$proc_name}->{Handle};
-       my $name = $self->{result}->{$proc_name}->{Name};
-       $count++;
-       my $long_msg = sprintf("Process '%s'", $pid);
-       $long_msg .= sprintf(" [status: %s]", $map_process_status{$status});
-       $long_msg .= sprintf(" [name: %s]", $name);
-       $self->{output}->output_add(long_msg => $long_msg);
-
+    my $detected = 0;
+    foreach (@$results) {
+        my $status = (!defined($_->{ExecutionState}) || $_->{ExecutionState} eq '') ? 0 : $_->{ExecutionState};
+        $self->{output}->output_add(long_msg =>
+            sprintf(
+                "Process %s [status: %s] [name: %s]",
+                $_->{Handle},
+                $map_process_status{$status},
+                $_->{Name}
+            )
+        );
+        $detected++;
     }
     
-    my $num_processes_match = $count;
-    my $exit = $self->{perfdata}->threshold_check(value => $num_processes_match, 
-                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, 
-                                                                 { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => "Number of current processes running: $num_processes_match");
-    $self->{output}->perfdata_add(label => 'nbproc',
-                                  value => $num_processes_match,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $detected, 
+        threshold => [
+            { label => 'critical', exit_litteral => 'critical' }, 
+            { label => 'warning', exit_litteral => 'warning' }
+        ]
+    );
 
-    
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => "Number of current processes: $detected"
+    );
+    $self->{output}->perfdata_add(
+        nlabel => 'processes.detected.count',
+        value => $detected,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -146,11 +153,11 @@ name (with option --process-name).
 
 =item B<--warning>
 
-Threshold warning of matching processes count.
+Threshold warning of matching processes detected.
 
 =item B<--critical>
 
-Threshold critical of matching processes count.
+Threshold critical of matching processes detected.
 
 =back
 

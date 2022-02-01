@@ -101,7 +101,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(wsman => $options{wsman});
-    foreach (sort keys %$results) {        
+    foreach (sort keys %$results) {
         $self->{output}->add_disco_entry(
             %{$results->{$_}}
         );
