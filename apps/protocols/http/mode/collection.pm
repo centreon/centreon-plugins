@@ -151,6 +151,21 @@ sub check_options {
     $self->{http_cache}->check_options(option_results => $self->{option_results});
 }
 
+sub slurp_file {
+    my ($self, %options) = @_;
+
+    my $content = do {
+        local $/ = undef;
+        if (!open my $fh, '<', $options{file}) {
+            $self->{output}->add_option_msg(short_msg => "Could not open file $options{file}: $!");
+            $self->{output}->option_exit();
+        }
+        <$fh>;
+    };
+
+    return $content;
+}
+
 sub read_config {
     my ($self, %options) = @_;
 
@@ -158,14 +173,7 @@ sub read_config {
     if ($self->{option_results}->{config} =~ /\n/m || ! -f "$self->{option_results}->{config}") {
         $content = $self->{option_results}->{config};
     } else {
-        $content = do {
-            local $/ = undef;
-            if (!open my $fh, '<', $self->{option_results}->{config}) {
-                $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{config} : $!");
-                $self->{output}->option_exit();
-            }
-            <$fh>;
-        };
+        $content = $self->slurp_file(file => $self->{option_results}->{config});
     }
 
     eval {
@@ -202,6 +210,45 @@ sub validate_name {
     }
 }
 
+sub get_payload {
+    my ($self, %options) = @_;
+
+    return if (!defined($options{rq}->{payload}) || !defined($options{rq}->{payload}->{type}));
+
+    if ($options{rq}->{payload}->{type} !~ /^(?:file|data|json)$/) {
+        $self->{output}->add_option_msg(short_msg => "type attribute is wrong [http > requests > $options{rq}->{name} > payload]");
+        $self->{output}->option_exit();
+    }
+
+    if (!defined($options{rq}->{payload}->{value})) {
+        $self->{output}->add_option_msg(short_msg => "value attribute is missing [http > requests > $options{rq}->{name} > payload]");
+        $self->{output}->option_exit();
+    }
+
+    my $content;
+    if ($options{rq}->{payload}->{type} eq 'file') {
+        if (ref($options{rq}->{payload}->{value}) ne '' || $options{rq}->{payload}->{value} eq '') {
+            $self->{output}->add_option_msg(short_msg => "value attribute is wrong [http > requests > $options{rq}->{name} > payload]");
+            $self->{output}->option_exit();
+        }
+
+        $content = $self->slurp_file(file => $options{rq}->{payload}->{value});
+    } elsif ($options{rq}->{payload}->{type} eq 'data') {
+        $content = $options{rq}->{payload}->{value};
+    } elsif ($options{rq}->{payload}->{type} eq 'json') {
+        eval {
+            $content = JSON::XS->new->encode($options{rq}->{payload}->{value});
+        };
+        if ($@) {
+            $self->{output}->output_add(long_msg => "json payload error: $@", debug => 1);
+            $self->{output}->add_option_msg(short_msg => "cannot encode json payload [http > requests > $options{rq}->{name} > payload]");
+            $self->{output}->option_exit();
+        }
+    }
+
+    return $content;
+}
+
 sub call_http {
     my ($self, %options) = @_;
 
@@ -222,6 +269,8 @@ sub call_http {
         };
     }
 
+    my $post_param = $self->get_payload(rq => $options{rq});
+
     my $http = centreon::plugins::http->new(noptions => 1, output => $self->{output});
 
     my $timing0 = [gettimeofday];
@@ -235,6 +284,7 @@ sub call_http {
         header => $options{rq}->{headers},
         timeout => $options{rq}->{timeout},
         get_param => $options{rq}->{get_params},
+        query_form_post => $post_param,
         insecure => $options{rq}->{insecure},
         unknown_status => '',
         warning_status => '',
