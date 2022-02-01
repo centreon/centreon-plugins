@@ -42,8 +42,8 @@ sub custom_cpu_avg_calc {
            #
            #Cal Method ref: http://technet.microsoft.com/en-us/library/cc757283%28WS.10%29.aspx
            #
-           $total_cpu += ( 1 - ( $options{new_datas}->{$prefix . '_PercentProcessorTime'} - $options{old_datas}->{$prefix . '_PercentProcessorTime'} ) /
-                               ( $options{new_datas}->{$prefix . '_Timestamp_Sys100NS'} - $options{old_datas}->{$prefix . '_Timestamp_Sys100NS'} ) ) * 100;
+           $total_cpu += (1 - ( $options{new_datas}->{$prefix . '_PercentProcessorTime'} - $options{old_datas}->{$prefix . '_PercentProcessorTime'} ) /
+                ( $options{new_datas}->{$prefix . '_Timestamp_Sys100NS'} - $options{old_datas}->{$prefix . '_Timestamp_Sys100NS'} ) ) * 100;
            $count++;
         }
     }
@@ -65,11 +65,17 @@ sub custom_cpu_core_calc {
     #Core Calc: (1 - (270377812500 - 247044062500) /
     #                           (132846755243261461 - 132846731625406368)  ) * 100 =  1.20292504074261
     #
-    my $core_usage = ( 1 - ( $options{new_datas}->{$self->{instance} . '_PercentProcessorTime'} - $options{old_datas}->{$self->{instance} . '_PercentProcessorTime'} ) /
-                           ( $options{new_datas}->{$self->{instance} . '_Timestamp_Sys100NS'} - $options{old_datas}->{$self->{instance} . '_Timestamp_Sys100NS'} ) ) * 100;
+    my $core_usage = (1 - ( $options{new_datas}->{$self->{instance} . '_PercentProcessorTime'} - $options{old_datas}->{$self->{instance} . '_PercentProcessorTime'} ) /
+        ( $options{new_datas}->{$self->{instance} . '_Timestamp_Sys100NS'} - $options{old_datas}->{$self->{instance} . '_Timestamp_Sys100NS'} ) ) * 100;
     $self->{result_values}->{prct_used} = $core_usage;
 
     return 0;
+}
+
+sub prefix_cpu_core_output {
+    my ($self, %options) = @_;
+
+    return "CPU '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -88,7 +94,7 @@ sub set_counters {
                 output_template => 'CPU(s) average usage is %.2f %%',
                 output_use => 'prct_used', threshold_use => 'prct_used',
                 perfdatas => [
-                    { label => 'total_cpu_avg', value => 'prct_used', template => '%.2f',
+                    { value => 'prct_used', template => '%.2f',
                       min => 0, max => 100, unit => '%' }
                 ]
             }
@@ -101,10 +107,10 @@ sub set_counters {
                     { name => 'PercentProcessorTime', diff => 1 }, { name => 'Timestamp_Sys100NS', diff => 1 }, { name => 'display' }
                 ],
                 closure_custom_calc => $self->can('custom_cpu_core_calc'),
-                output_template => 'usage : %.2f %%',
+                output_template => 'usage: %.2f %%',
                 output_use => 'prct_used', threshold_use => 'prct_used',
                 perfdatas => [
-                    { label => 'cpu', value => 'prct_used', template => '%.2f',
+                    { value => 'prct_used', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
@@ -112,15 +118,9 @@ sub set_counters {
     ];
 }
 
-sub prefix_cpu_core_output {
-    my ($self, %options) = @_;
-
-    return "CPU '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -131,30 +131,28 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    $self->{wsman} = $options{wsman};
  
-    $self->{result} = $self->{wsman}->request(
+    my $results = $options{wsman}->request(
         uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
         wql_filter => "select Name,PercentProcessorTime,Timestamp_Sys100NS from Win32_PerfRawData_PerfOS_Processor where Name != '_Total'",
-        result_type => 'hash',
-        hash_key => 'Name'
+        result_type => 'array'
     );
 
     $self->{cpu_avg} = {};
     $self->{cpu_core} = {};
-    foreach my $name (sort(keys %{$self->{result}})) {
-       my $cpu_number = $self->{result}->{$name}->{Name};
+    foreach (@$results) {
+       my $cpu_number = $_->{Name};
 
        $self->{cpu_core}->{$cpu_number} = {
            display => $cpu_number,
-           PercentProcessorTime => $self->{result}->{$name}->{PercentProcessorTime},
-           Timestamp_Sys100NS => $self->{result}->{$name}->{Timestamp_Sys100NS}
+           PercentProcessorTime => $_->{PercentProcessorTime},
+           Timestamp_Sys100NS => $_->{Timestamp_Sys100NS}
        };
-       $self->{cpu_avg}->{'cpu' . $cpu_number . '_PercentProcessorTime'} = $self->{result}->{$name}->{PercentProcessorTime};
-       $self->{cpu_avg}->{'cpu' . $cpu_number . '_Timestamp_Sys100NS'} = $self->{result}->{$name}->{Timestamp_Sys100NS};
+       $self->{cpu_avg}->{'cpu' . $cpu_number . '_PercentProcessorTime'} = $_->{PercentProcessorTime};
+       $self->{cpu_avg}->{'cpu' . $cpu_number . '_Timestamp_Sys100NS'} = $_->{Timestamp_Sys100NS};
     }
 
-    $self->{cache_name} = 'cache_windows_wsman_' . $options{wsman}->get_hostname() . '_' . $options{wsman}->get_port  . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'windows_wsman_' . $options{wsman}->get_hostname() . '_' . $options{wsman}->get_port  . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
@@ -164,8 +162,7 @@ __END__
 
 =head1 MODE
 
-Check system CPUs (need '/proc/stat' file).
-Command used: cat /proc/stat 2>&1
+Check processor usage.
 
 =over 8
 

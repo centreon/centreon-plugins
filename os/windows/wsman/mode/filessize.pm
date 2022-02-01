@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::windows::wsman::mode::foldersize;
+package os::windows::wsman::mode::filessize;
 
 use base qw(centreon::plugins::mode);
 
@@ -28,7 +28,7 @@ use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -38,7 +38,7 @@ sub new {
         'critical-total:s' => { name => 'critical_total' },
         'all-files'        => { name => 'all_files' },
         'filter-plugin:s'  => { name => 'filter_plugin' },
-        'folder:s'         => { name => 'folder' },
+        'folder:s'         => { name => 'folder' }
     });
 
     return $self;
@@ -71,25 +71,21 @@ sub check_options {
 
     #### Create file path
     $self->{option_results}->{folder} =~ s/\//\\\\/g;
-
 }
 
 sub run {
     my ($self, %options) = @_;
-    $self->{wsman} = $options{wsman};
 
-    my $total_size = 0;
-    my $exit_code;
+    my ($total_size, $exit_code) = (0);
 
     $self->{option_results}->{folder} =~ /^(..)(.*)$/;
     my ($drive, $path) = ($1, $2);
     my $WQL = 'Select name,filesize from CIM_DataFile where drive = "' . $drive . '" AND path = "' . $path . '"';
 
-    $self->{result} = $self->{wsman}->request(
+    my $results = $options{wsman}->request(
         uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
         wql_filter => $WQL,
-        result_type => 'hash',
-        hash_key => 'Name'
+        result_type => 'array'
     );
     #
     #CLASS: CIM_DataFile
@@ -103,21 +99,22 @@ sub run {
     
     $self->{output}->output_add(
         severity => 'OK', 
-        short_msg => "All file/directory sizes are ok."
+        short_msg => "All file sizes are ok."
     );
-    if(!defined($self->{result}) || $self->{result} eq '') {
+    if (!defined($results) || scalar(@$results) <= 0) {
         $self->{output}->output_add(
-        severity => 'UNKNOWN',
-        short_msg => 'No file found.'
+            severity => 'UNKNOWN',
+            short_msg => 'No file found.'
         );
     }
-    foreach my $folder (sort(keys %{$self->{result}})) {
-        my $size = $self->{result}->{$folder}->{FileSize};
-        my $name = centreon::plugins::misc::trim($self->{result}->{$folder}->{Name});
+
+    foreach (@$results) {
+        my $size = $_->{FileSize};
+        my $name = centreon::plugins::misc::trim($_->{Name});
         
-        next if (defined($self->{option_results}->{filter_plugin}) && $self->{option_results}->{filter_plugin} ne '' &&
-                 $name !~ /$self->{option_results}->{filter_plugin}/);
-        
+        next if (defined($self->{option_results}->{filter_filename}) && $self->{option_results}->{filter_filename} ne '' &&
+            $name !~ /$self->{option_results}->{filter_filename}/);
+
         $total_size += $size;
         my $exit_code = $self->{perfdata}->threshold_check(
             value => $size, 
@@ -132,7 +129,9 @@ sub run {
             );
         }
         $self->{output}->perfdata_add(
-            label => $name, unit => 'B',
+            nlabel => 'file.size.bytes',
+            unit => 'B',
+            instances => $name,
             value => $size,
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_one'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_one'),
@@ -154,7 +153,8 @@ sub run {
         );
     }
     $self->{output}->perfdata_add(
-        label => 'total', unit => 'B',
+        nlabel => 'files.size.bytes',
+        unit => 'B',
         value => $total_size,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_total'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_total'),
@@ -178,7 +178,11 @@ Check size of files/directories.
 =item B<--folder>
 
 Folder to check. (No WQL wildcard allowed)
-Ex: 'C;/Users/Administrator/'.
+Ex: 'C:/Users/Administrator/'.
+
+=item B<--filter-filename>
+
+Filter files by name.
 
 =item B<--warning-one>
 
@@ -195,11 +199,6 @@ Threshold warning in bytes for all files/directories.
 =item B<--critical-total>
 
 Threshold critical in bytes for all files/directories.
-
-=item B<--filter-plugin>
-
-Filter files/directories in the plugin. Values from exclude files/directories are counted in parent directories!!!
-Perl Regexp can be used.
 
 =back
 

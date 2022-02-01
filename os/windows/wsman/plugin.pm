@@ -31,8 +31,8 @@ sub new {
 
     $self->{modes} = {
         'cpu'             => 'os::windows::wsman::mode::cpu',
-        'folder-date'     => 'os::windows::wsman::mode::folderdate',
-        'folder-size'     => 'os::windows::wsman::mode::foldersize',
+        'files-date'      => 'os::windows::wsman::mode::filesdate',
+        'files-size'      => 'os::windows::wsman::mode::filessize',
         'interfaces'      => 'os::windows::wsman::mode::interfaces',
         'list-interfaces' => 'os::windows::wsman::mode::listinterfaces',
         'list-processes'  => 'os::windows::wsman::mode::listprocesses',
