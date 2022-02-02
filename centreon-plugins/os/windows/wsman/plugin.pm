@@ -40,6 +40,7 @@ sub new {
         'list-storages'   => 'os::windows::wsman::mode::liststorages',
         'memory'          => 'os::windows::wsman::mode::memory',
         'pages'           => 'os::windows::wsman::mode::pages',
+        'pending-reboot'  => 'os::windows::wsman::mode::pendingreboot',
         'processes'       => 'os::windows::wsman::mode::processes',
         'services'        => 'os::windows::wsman::mode::services',
         'storages'        => 'os::windows::wsman::mode::storages',
