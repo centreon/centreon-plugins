@@ -305,11 +305,11 @@ sub execute_powershell {
     my ($self, %options) = @_;
 
     my $chunk = 8000;
-    my $filename = $options{label} . '-' . sprintf("%08X", rand(0xFFFFFFFF)) . '.bat';
+    my $filename = 'C:/Windows/Temp/' . $options{label} . '-' . sprintf("%08X", rand(0xFFFFFFFF)) . '.bat';
     my $commands = [
         {
             label => 'prev1-' . $options{label},
-            value => 'if not exist "C:\\temp\\" mkdir C:\\temp'
+            value => 'if not exist "C:/Windows/Temp/" mkdir C:/Windows/Temp'
         },
         {
             label => 'prev2-' . $options{label},
