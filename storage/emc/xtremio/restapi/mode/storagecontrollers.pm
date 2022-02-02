@@ -132,7 +132,7 @@ sub run {
                                 short_msg => 'All Storage Controllers are OK');
 
     foreach my $item (@items) {
-        next if ($self->check_filter(section => 'storage-controller', instance => $item));
+        next if ($self->check_filter(section => 'storage-controllers', instance => $item));
         my $details = $xtremio->get_details(url  => $urlbase,
                                             obj  => 'storage-controllers',
                                             name => $item);

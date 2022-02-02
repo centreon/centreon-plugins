@@ -107,7 +107,7 @@ sub run {
         
     my $urlbase = '/api/json/types/';
     my @items = $xtremio->get_items(url => $urlbase,
-                                    obj => 'storage-controllers');
+                                    obj => 'data-protection-groups');
 
     my @sensors = ('dpg-state', 'protection-state', 'rebuild-in-progress', 'ssd-preparation-in-progress', 'rebalance-progress');
 
