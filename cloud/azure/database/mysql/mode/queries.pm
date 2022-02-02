@@ -100,7 +100,8 @@ __END__
 
 =head1 MODE
 
-Check Azure Database for MySQL network usage.
+Check Azure Database for MySQL queries.
+This is only available for the resource type flexibleServers.
 
 Example:
 
