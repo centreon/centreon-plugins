@@ -35,6 +35,7 @@ sub new {
         'hardware'        => 'network::viptela::snmp::mode::hardware',
         'interfaces'      => 'network::viptela::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'memory'          => 'network::viptela::snmp::mode::memory',
         'uptime'          => 'network::viptela::snmp::mode::uptime'
     };
 
