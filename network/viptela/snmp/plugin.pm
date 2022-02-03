@@ -30,6 +30,8 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'cpu'             => 'network::viptela::snmp::mode::cpu',
+        'disk'            => 'network::viptela::snmp::mode::disk',
         'hardware'        => 'network::viptela::snmp::mode::hardware',
         'interfaces'      => 'network::viptela::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
