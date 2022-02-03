@@ -211,11 +211,17 @@ sub prefix_interface_output {
     return "Interface '" . $options{instance_value}->{display} . "' ";
 }
 
+sub skip_counters {
+    my ($self, %options) = @_;
+
+    return (defined($self->{option_results}->{$options{filter}})) ? 0 : 1;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } },
+        { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', cb_init_counters => 'skip_counters', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{interfaces} = [
@@ -394,6 +400,10 @@ __END__
 Check interfaces.
 
 =over 8
+
+=item B<--add-traffic>
+
+Check interface traffic.
 
 =item B<--add-errors>
 
