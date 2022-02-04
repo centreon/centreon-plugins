@@ -182,7 +182,7 @@ sub manage_selection {
                 speed_events => $json->{$entry}->{event_processing_speed},
                 queued_events => $json->{$entry}->{queued_events},
                 unacknowledged_events => $json->{$entry}->{bbdo_unacknowledged_events},
-                queue_file_enabled => defined($json->{$entry}->{queue_file_enabled}) ? $json->{$entry}->{queue_file_enabled} : '-',
+                queue_file_enabled => defined($json->{$entry}->{queue_file_enabled}) ? $json->{$entry}->{queue_file_enabled} ? 'yes' : 'no' : '-',
             };
         }
     }
