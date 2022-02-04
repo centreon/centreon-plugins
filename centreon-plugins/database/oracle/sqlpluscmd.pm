@@ -456,6 +456,10 @@ Use a local connexion, don't need listener.
 
 Exit code for DB Errors (default: unknown)
 
+=item B<--timeout>
+
+Timeout in seconds for commands
+
 =back
 
 =head1 DESCRIPTION
