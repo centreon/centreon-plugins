@@ -201,7 +201,7 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_end_time}) && $self->{option_results}->{filter_end_time} =~ /[0-9]+/ &&
-            $job->{endTimeUTC} =~ /[0-9]+/ && $job->{endTimeUTC} < $current_time - $self->{option_results}->{filter_end_time}) {
+            $job->{endTimeUTC} =~ /[0-9]+/ && $job->{endTimeUTC} > 0 && $job->{endTimeUTC} < $current_time - $self->{option_results}->{filter_end_time}) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': end time too old.", debug => 1);
             next;
         }
