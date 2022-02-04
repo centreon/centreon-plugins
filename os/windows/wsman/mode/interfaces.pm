@@ -409,26 +409,10 @@ Check interface traffic.
 
 Check interface errors.
 
-=item B<--warning-in>
-
-Threshold warning in percent for 'in' traffic.
-
-=item B<--critical-in>
-
-Threshold critical in percent for 'in' traffic.
-
-=item B<--warning-out>
-
-Threshold warning in percent for 'out' traffic.
-
-=item B<--critical-out>
-
-Threshold critical in percent for 'out' traffic.
-
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'in-error', 'in-discard', 'out-error', 'out-discard',
+Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 
 =item B<--units-traffic>
 
