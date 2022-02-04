@@ -355,7 +355,7 @@ sub do_selection {
     $self->{interfaces} = {};
     foreach (@$results) {
         next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
-            $self->{interface} !~ /$self->{option_results}->{filter_interface}/);
+            $_->{Name} !~ /$self->{option_results}->{filter_interface}/);
          next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
             $_->{Name} =~ /$self->{option_results}->{exclude_interface}/);
 
