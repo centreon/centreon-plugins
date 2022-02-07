@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'probeagentcurrentendpointstatebyprofileresourceid' => {
             'output' => 'Endpoint Status',
             'label'  => 'endpoint-status',
-            'nlabel' => 'trafficmanager.endpoint.status',
+            'nlabel' => 'trafficmanager.endpoint.status.count',
             'unit'   => '',
             'min'    => '0',
             'max'    => '1'
