@@ -50,11 +50,8 @@ sub new {
             'timeout:s'                 => { name => 'timeout' },
             'reload-cache-time:s'       => { name => 'reload_cache_time' },
             'ignore-permission-errors'  => { name => 'ignore_permission_errors' },
-            'use-extra-cache'           => { name => 'use_extra_cache' },
-            'reload-extra-cache-time:s' => { name => 'reload_extra_cache_time' },
-            'trace-api:s'               => { name => 'trace_api' },
-            'trace-api-response:s'      => { name => 'trace_api_response' },
-            'api-requests-disabled'     => { name => 'api_requests_disabled' }
+            'timespan:s'                => { name => 'timespan' },
+            'cache-use'                 => { name => 'cache_use' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -62,17 +59,12 @@ sub new {
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
-    $self->{cache_checked} = 0;
-    $self->{cache_extra_checked} = 0;
-    $self->{cached} = {
-        updated => 0,
+
+    $self->{datas} = {
         uplink_statuses => {},
-        uplinks_loss_latency => {},
-        devices_statuses => {},
-        devices_connection_stats => {},
-        devices_performance => {},
-        devices_clients => {}
+        uplinks_loss_latency => {}
     };
+    $self->{devices_connection_stats} = {};
 
     return $self;
 }
@@ -96,6 +88,7 @@ sub check_options {
     $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 180;
     $self->{reload_extra_cache_time} = (defined($self->{option_results}->{reload_extra_cache_time})) ? $self->{option_results}->{reload_extra_cache_time} : 10;
     $self->{ignore_permission_errors} = (defined($self->{option_results}->{ignore_permission_errors})) ? 1 : 0;
+    $self->{timespan} = (defined($self->{option_results}->{timespan})) ? $self->{option_results}->{timespan} : 300;
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -106,19 +99,8 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (defined($self->{option_results}->{trace_api})) {
-        centreon::plugins::misc::mymodule_load(
-            output => $self->{output},
-            module => 'Time::HiRes',
-            error_msg => "Cannot load module 'Time::HiRes'."
-        );
-        centreon::plugins::misc::mymodule_load(
-            output => $self->{output},
-            module => 'POSIX',
-            error_msg => "Cannot load module 'POSIX'."
-        );
-    }
-
+    # we force to use storable module
+    $self->{option_results}->{statefile_storable} = 1;
     $self->{cache}->check_options(option_results => $self->{option_results});
     return 0;
 }
@@ -129,92 +111,26 @@ sub get_token {
     return md5_hex($self->{api_token});
 }
 
-sub trace_api {
-    my ($self, %options) = @_;
-
-    my $trace_file = $self->{option_results}->{trace_api} ne '' ? $self->{option_results}->{trace_api} : '/tmp/cisco_meraki_plugins.trace';
-    open(FH, '>>', $trace_file) or return ;
-
-    my $date_start = POSIX::strftime('%Y%m%d %H:%M:%S', localtime($options{time_start}));
-    $date_start .= sprintf('.%03d', ($options{time_start} - int($options{time_start})) * 1000);
-
-    my $time_end = Time::HiRes::time();
-    my $date_end = POSIX::strftime('%Y%m%d %H:%M:%S', localtime($time_end));
-    $date_end .= sprintf('.%03d', ($time_end - int($time_end)) * 1000);
-    print FH "$date_start - $date_end - $$ - $self->{api_token} - $options{url} - $options{code}\n";
-    if (defined($self->{option_results}->{trace_api_response})) {
-        if ($self->{option_results}->{trace_api_response} =~ /(\d+)/ && length($options{response}) < $1) {
-            print FH $options{response} . "\n";
-        } else {
-            print FH $options{response} . "\n";
-        }
-    }
-    close FH;
-}
-
 sub get_shard_hostname {
     my ($self, %options) = @_;
 
     my $organization_id = $options{organization_id};
     my $network_id = $options{network_id};
-    if (defined($options{serial}) && defined($self->{cache_devices}->{ $options{serial} })) {
-        $network_id = $self->{cache_devices}->{ $options{serial} }->{networkId};
+    if (defined($options{serial}) && defined($self->{datas}->{devices}->{ $options{serial} })) {
+        $network_id = $self->{datas}->{devices}->{ $options{serial} }->{networkId};
     }
-    if (defined($network_id) && defined($self->{cache_networks}->{$network_id})) {
-        $organization_id = $self->{cache_networks}->{$network_id}->{organizationId};
+    if (defined($network_id) && defined($self->{datas}->{networks}->{$network_id})) {
+        $organization_id = $self->{datas}->{networks}->{$network_id}->{organizationId};
     }
 
     if (defined($organization_id)) {
-        if (defined($self->{cache_organizations}->{$organization_id})
-            && $self->{cache_organizations}->{$organization_id}->{url} =~ /^(?:http|https):\/\/(.*?)\//) {
+        if (defined($self->{datas}->{orgs}->{$organization_id})
+            && $self->{datas}->{orgs}->{$organization_id}->{url} =~ /^(?:http|https):\/\/(.*?)\//) {
             return $1;
         }
     }
 
     return undef;
-}
-
-sub get_cache_organizations {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    return $self->{cache_organizations};
-}
-
-sub get_cache_networks {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    return $self->{cache_networks};
-}
-
-sub get_organization {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    my $organization_id;
-    if (defined($options{network_id})) {
-        $organization_id = $self->{cache_networks}->{ $options{network_id} }->{organizationId};
-    }
-    my $organization;
-    $organization = $self->{cache_organizations}->{$organization_id}
-        if (defined($organization_id) && defined($self->{cache_organizations}->{$organization_id}));
-
-    return $organization;
-}
-
-sub get_organization_id {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    return $self->{cache_networks}->{ $options{network_id} }->{organizationId};
-}
-
-sub get_cache_devices {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    return $self->{cache_devices};
 }
 
 sub build_options_for_httplib {
@@ -261,8 +177,6 @@ sub request_api {
         );
 
         my $code = $self->{http}->get_code();
-        $self->trace_api(time_start => $time_start, url => $hostname . '/api/v1' . $options{endpoint}, code => $code, response => $response) 
-            if (defined($self->{option_results}->{trace_api}));
 
         return [] if ($code == 403 && $self->{ignore_permission_errors} == 1);
         return undef if (defined($options{ignore_codes}) && defined($options{ignore_codes}->{$code}));
@@ -290,93 +204,248 @@ sub request_api {
     }
 }
 
-sub cache_meraki_entities {
+sub write_cache_file {
     my ($self, %options) = @_;
 
-    return if ($self->{cache_checked} == 1);
+    $self->{cache}->read(statefile => 'cache_meraki_' . md5_hex($self->{api_token}));
+    $self->{cache}->write(data => {
+        update_time => time(),
+        response => $self->{datas}
+    });
+}
 
-    $self->{cache_checked} = 1;
-    my $has_cache_file = $self->{cache}->read(statefile => 'cache_cisco_meraki_' . $self->get_token());
-    my $timestamp_cache = $self->{cache}->get(name => 'last_timestamp');
-    $self->{cache_organizations} = $self->{cache}->get(name => 'organizations');
-    $self->{cache_networks} = $self->{cache}->get(name => 'networks');
-    $self->{cache_devices} = $self->{cache}->get(name => 'devices');
+sub get_cache_file_response {
+    my ($self, %options) = @_;
 
-    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{reload_cache_time}) * 60))) {
-        $self->{cache_organizations} = $self->get_organizations(
-            disable_cache => 1
-        );
-        $self->{cache_networks} = $self->get_networks(
-            organizations => [keys %{$self->{cache_organizations}}],
-            disable_cache => 1
-        );
-        $self->{cache_devices} = $self->get_devices(
-            organizations => [keys %{$self->{cache_organizations}}],
-            disable_cache => 1
-        );
-
-        $self->{cache}->write(data => {
-            last_timestamp => time(),
-            organizations => $self->{cache_organizations},
-            networks => $self->{cache_networks},
-            devices => $self->{cache_devices}
-        });
+    $self->{cache}->read(statefile => 'cache_meraki_' . md5_hex($self->{api_token}));
+    $self->{datas} = $self->{cache}->get(name => 'response');
+    if (!defined($self->{datas})) {
+        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
+        $self->{output}->option_exit();
     }
+
+    return $self->{datas};
+}
+
+sub call_datas {
+    my ($self, %options) = @_;
+
+    $self->get_organizations();
+    $self->get_networks(orgs => [keys %{$self->{datas}->{orgs}}]);
+    $self->get_devices(orgs => [keys %{$self->{datas}->{orgs}}]);
+    $self->get_organization_device_statuses(orgs => [keys %{$self->{datas}->{orgs}}]);
+    
+    if (defined($options{cache})) {
+        foreach my $orgId (keys %{$self->{datas}->{orgs}}) {
+            $self->get_network_device_uplink(orgId => $orgId);
+        }
+        foreach my $orgId (keys %{$self->{datas}->{orgs}}) {
+            $self->get_organization_uplink_loss_and_latency(orgId => $orgId);
+        }
+    }
+}
+
+sub cache_datas {
+    my ($self, %options) = @_;
+
+    $self->call_datas(cache => 1);
+    $self->write_cache_file();
+
+    return $self->{datas};
+}
+
+sub get_datas {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response() if (defined($self->{option_results}->{cache_use}));
+    $self->call_datas();
+    return $self->{datas};
 }
 
 sub get_organizations {
     my ($self, %options) = @_;
 
-    $self->cache_meraki_entities();
-    return $self->{cache_organizations} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
     my $datas = $self->request_api(endpoint => '/organizations');
-    my $results = {};
+    $self->{datas}->{orgs} = {};
     if (defined($datas)) {
-        $results->{$_->{id}} = $_ foreach (@$datas);
+        foreach (@$datas) {
+            $self->{datas}->{orgs}->{ $_->{id} } = {
+                name => $_->{name},
+                url => $_->{url}
+            };
+        }
     }
 
-    return $results;
+    return $self->{datas}->{orgs};
 }
 
 sub get_networks {
     my ($self, %options) = @_;
 
-    $self->cache_meraki_entities();
-    return $self->{cache_networks} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
-
-    my $results = {};
-    foreach my $id (keys %{$self->{cache_organizations}}) {
+    $self->{datas}->{networks} = {};
+    foreach my $id (@{$options{orgs}}) {
         my $datas = $self->request_api(
             endpoint => '/organizations/' . $id . '/networks',
             hostname => $self->get_shard_hostname(organization_id => $id)
         );
         if (defined($datas)) {
-            $results->{ $_->{id} } = $_ foreach (@$datas);
+            foreach (@$datas) {
+                if (defined($options{extended})) {
+                    $self->{datas}->{networks}->{ $_->{id} } = $_;
+                }  else {
+                    $self->{datas}->{networks}->{ $_->{id} } = {
+                        name => $_->{name},
+                        organizationId => $_->{organizationId}
+                    };
+                }
+            }
         }
     }
 
-    return $results;
+    return $self->{datas}->{networks};
 }
 
 sub get_devices {
     my ($self, %options) = @_;
 
-    $self->cache_meraki_entities();
-    return $self->{cache_devices} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
-
-    my $results = {};
-    foreach my $id (keys %{$self->{cache_organizations}}) {
+    $self->{datas}->{devices} = {};
+    foreach my $id (@{$options{orgs}}) {
         my $datas = $self->request_api(
             endpoint => '/organizations/' . $id . '/devices',
             hostname => $self->get_shard_hostname(organization_id => $id)
         );
         if (defined($datas)) {
-            $results->{ $_->{serial} } = $_ foreach (@$datas);
+             foreach (@$datas) {
+                if (defined($options{extended})) {
+                    $self->{datas}->{devices}->{ $_->{serial} } = $_;
+                    $self->{datas}->{devices}->{ $_->{serial} }->{orgId} = $id;
+                } else {
+                    $self->{datas}->{devices}->{ $_->{serial} } = {
+                        name => $_->{name},
+                        networkId => $_->{networkId},
+                        orgId => $id,
+                        tags => $_->{tags},
+                        model => $_->{model}
+                    };
+                }
+            }
         }
     }
 
-    return $results;
+    return $self->{datas}->{devices};
 }
+
+sub get_organization_device_statuses {
+    my ($self, %options) = @_;
+
+    $self->{datas}->{devices_status} =  {};
+    foreach my $id (@{$options{orgs}}) {
+        my $datas = $self->request_api(
+            endpoint => '/organizations/' . $id . '/devices/statuses',
+            hostname => $self->get_shard_hostname(organization_id => $id)
+        );
+        foreach (@$datas) {
+            if (defined($options{extended})) {
+                $self->{datas}->{devices_status}->{ $_->{serial} } = $_;
+            } else {
+                $self->{datas}->{devices_status}->{ $_->{serial} } = {
+                    status => $_->{status}
+                };
+            }
+        }
+    }
+
+    return $self->{datas}->{devices_status};
+}
+
+sub get_network_device_uplink {
+    my ($self, %options) = @_;
+
+    if (!defined($self->{datas}->{uplink_statuses}->{ $options{orgId} })) {
+        $self->{datas}->{uplink_statuses}->{ $options{orgId} } = {};
+        my $datas = $self->request_api(
+            endpoint => '/organizations/' . $options{orgId} . '/uplinks/statuses',
+            hostname => $self->get_shard_hostname(organization_id => $options{orgId})
+        );
+        foreach (@$datas) {
+            $self->{datas}->{uplink_statuses}->{ $options{orgId} }->{ $_->{serial} } = $_->{uplinks};
+        }
+    }
+
+    return defined($options{serial}) ?
+        $self->{datas}->{uplink_statuses}->{ $options{orgId} }->{ $options{serial} } :
+        $self->{datas}->{uplink_statuses}->{ $options{orgId} };
+}
+
+sub get_organization_uplink_loss_and_latency {
+    my ($self, %options) = @_;
+
+    if (!defined($self->{datas}->{uplinks_loss_latency}->{ $options{orgId} })) {
+        $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} } = {};
+        my $datas = $self->request_api(
+            endpoint => '/organizations/' . $options{orgId} . '/devices/uplinksLossAndLatency?timespan=' . $self->{timespan},
+            hostname => $self->get_shard_hostname(organization_id => $options{orgId})
+        );
+        foreach (@$datas) {
+            $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} } = {}
+                if (!defined($self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }));
+            $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }->{ $_->{uplink} } = $_;
+        }
+    }
+
+    return defined($options{serial}) ?
+        $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $options{serial} } :
+        $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} };
+}
+
+sub get_device_clients {
+    my ($self, %options) = @_;
+
+    return $self->request_api(
+        endpoint => '/devices/' . $options{serial} . '/clients?timespan=' . $self->{timespan},
+        hostname => $self->get_shard_hostname(serial => $options{serial})
+    )
+}
+
+sub get_device_switch_port_statuses {
+    my ($self, %options) = @_;
+
+    return $self->request_api(
+        endpoint => '/devices/' . $options{serial} . '/switchPortStatuses?timespan=' . $self->{timespan},
+        hostname => $self->get_shard_hostname(serial => $options{serial})
+    );
+}
+
+sub get_network_device_connection_stats {
+    my ($self, %options) = @_;
+
+    if (!defined($self->{devices_connection_stats}->{ $options{network_id} })) {
+        $self->{devices_connection_stats}->{ $options{network_id} } = {};
+        my $datas = $self->request_api(
+            endpoint => '/networks/' . $options{network_id} . '/wireless/devices/connectionStats?timespan=' . $self->{timespan},
+            hostname => $self->get_shard_hostname(network_id => $options{network_id})
+        );
+        foreach (@$datas) {
+            $self->{devices_connection_stats}->{ $options{network_id} }->{ $_->{serial} } = $_->{connectionStats};
+        }
+    }
+
+    return defined($options{serial}) ?
+        $self->{devices_connection_stats}->{ $options{network_id} }->{ $options{serial} } :
+        $self->{devices_connection_stats}->{ $options{network_id} };
+}
+
+sub get_network_device_performance {
+    my ($self, %options) = @_;
+
+    $self->request_api(
+        endpoint => '/devices/' . $options{serial} . '/appliance/performance',
+        hostname => $self->get_shard_hostname(network_id => $options{network_id}),
+        ignore_codes => { 400 => 1, 204 => 1 }
+    );
+}
+
+#===================
 
 sub filter_organizations {
     my ($self, %options) = @_;
@@ -423,32 +492,6 @@ sub get_networks_clients {
     );
 }
 
-sub get_organization_device_statuses {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    $self->load_extra_cache();
-    return $self->{cached}->{devices_statuses}->{data} if (defined($self->{cached}->{devices_statuses}->{data}));
-
-    $self->{cached}->{updated} = 1;
-    $self->{cached}->{devices_statuses} = {
-        update_time => time(),
-        data => {}
-    };
-    foreach my $id (keys %{$self->{cache_organizations}}) {
-        my $datas = $self->request_api(
-            endpoint => '/organizations/' . $id . '/devices/statuses',
-            hostname => $self->get_shard_hostname(organization_id => $id)
-        );
-        foreach (@$datas) {
-            $self->{cached}->{devices_statuses}->{data}->{ $_->{serial} } = $_;
-            $self->{cached}->{devices_statuses}->{data}->{organizationId} = $id;
-        }
-    }
-
-    return $self->{cached}->{devices_statuses}->{data};
-}
-
 sub get_organization_api_requests_overview {
     my ($self, %options) = @_;
 
@@ -466,189 +509,6 @@ sub get_organization_api_requests_overview {
     }
 
     return $results;
-}
-
-sub get_network_device_connection_stats {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    $self->load_extra_cache();
-    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
-    $timespan = 1 if ($timespan <= 0);
-
-    if (!defined($self->{cached}->{devices_connection_stats}->{ $options{network_id} })) {
-        $self->{cached}->{updated} = 1;
-        $self->{cached}->{devices_connection_stats}->{ $options{network_id} } = {
-            update_time => time(),
-            data => $self->request_api(
-                endpoint => '/networks/' . $options{network_id} . '/wireless/devices/connectionStats?timespan=' . $options{timespan},
-                hostname => $self->get_shard_hostname(network_id => $options{network_id})
-            )
-        };
-    }
-
-    my $result;
-    foreach (@{$self->{cached}->{devices_connection_stats}->{ $options{network_id} }->{data}}) {
-        if ($_->{serial} eq $options{serial}) {
-            $result = $_->{connectionStats};
-            last;
-        }
-    }
-
-    return $result;
-}
-
-sub get_network_device_uplink {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    $self->load_extra_cache();
-
-    if (!defined($self->{cached}->{uplink_statuses}->{ $options{organization_id} })) {
-        $self->{cached}->{updated} = 1;
-        $self->{cached}->{uplink_statuses}->{ $options{organization_id} } = {
-            update_time => time(),
-            data => $self->request_api(
-                endpoint => '/organizations/' . $options{organization_id} . '/uplinks/statuses',
-                hostname => $self->get_shard_hostname(organization_id => $options{organization_id})
-            )
-        };
-    }
-
-    my $result;
-    foreach (@{$self->{cached}->{uplink_statuses}->{ $options{organization_id} }->{data}}) {
-        if ($_->{serial} eq $options{serial}) {
-            $result = $_->{uplinks};
-            last;
-        }
-    }
-
-    return $result;
-}
-
-sub get_device_clients {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    $self->load_extra_cache();
-    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
-    $timespan = 1 if ($timespan <= 0);
-
-    if (!defined($self->{cached}->{devices_clients}->{ $options{serial} })) {
-        $self->{cached}->{updated} = 1;
-        # 400 = feature not supported. 204 = no content
-        $self->{cached}->{devices_clients}->{ $options{serial} } = {
-            update_time => time(),
-            data => $self->request_api(
-                endpoint => '/devices/' . $options{serial} . '/clients?timespan=' . $options{timespan},
-                hostname => $self->get_shard_hostname(serial => $options{serial})
-            )
-        };
-    }
-
-    return $self->{cached}->{devices_clients}->{ $options{serial} }->{data};
-}
-
-sub get_device_switch_port_statuses {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
-    $timespan = 1 if ($timespan <= 0);
-
-    return $self->request_api(
-        endpoint => '/devices/' . $options{serial} . '/switchPortStatuses?timespan=' . $options{timespan},
-        hostname => $self->get_shard_hostname(serial => $options{serial})
-    );
-}
-
-sub get_network_device_performance {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    $self->load_extra_cache();
-
-    if (!defined($self->{cached}->{devices_performance}->{ $options{serial} })) {
-        $self->{cached}->{updated} = 1;
-        # 400 = feature not supported. 204 = no content
-        $self->{cached}->{devices_performance}->{ $options{serial} } = {
-            update_time => time(),
-            data => $self->request_api(
-                endpoint => '/devices/' . $options{serial} . '/appliance/performance',
-                hostname => $self->get_shard_hostname(network_id => $options{network_id}),
-                ignore_codes => { 400 => 1, 204 => 1 }
-            )
-        };
-    }
-
-    return $self->{cached}->{devices_performance}->{ $options{serial} }->{data};
-}
-
-sub get_organization_uplink_loss_and_latency {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    $self->load_extra_cache();
-
-    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
-    $timespan = 1 if ($timespan <= 0);
-
-    if (!defined($self->{cached}->{uplinks_loss_latency}->{ $options{organization_id} })) {
-        $self->{cached}->{updated} = 1;
-        $self->{cached}->{uplinks_loss_latency}->{ $options{organization_id} } = {
-            update_time => time(),
-            data => $self->request_api(
-                endpoint => '/organizations/' . $options{organization_id} . '/devices/uplinksLossAndLatency?timespan=' . $options{timespan},
-                hostname => $self->get_shard_hostname(organization_id => $options{organization_id})
-            )
-        };
-    }
-
-    my $result = {};
-    if (defined($self->{cached}->{uplinks_loss_latency}->{ $options{organization_id} }->{data})) {
-        foreach (@{$self->{cached}->{uplinks_loss_latency}->{ $options{organization_id} }->{data}}) {
-            if ($options{serial} eq $_->{serial}) {
-                $result->{ $_->{uplink} } = $_;
-            }
-        }
-    }
-
-    return $result;
-}
-
-sub load_extra_cache {
-    my ($self, %options) = @_;
-
-    return if (!defined($self->{option_results}->{use_extra_cache}));
-    return if ($self->{cache_extra_checked} == 1);
-
-    $self->{cache_extra_checked} = 1;
-    my $has_cache_file = $self->{cache}->read(statefile => 'cache_extra_cisco_meraki_' . $self->get_token());
-    my $cached = $self->{cache}->get(name => 'cached');
-    $self->{cached} = $cached if (defined($cached));
-    if (defined($self->{cached}->{devices_statuses}->{update_time}) && ((time() - $self->{cached}->{devices_statuses}->{update_time}) > ($self->{reload_extra_cache_time} * 60))) {
-        $self->{cached}->{devices_statuses} = {};
-    }
-
-    foreach my $entry (('uplink_statuses', 'uplinks_loss_latency', 'devices_connection_stats', 'devices_performance', 'devices_clients')) {
-        next if (!defined($self->{cached}->{$entry}));
-
-        foreach (keys %{$self->{cached}->{$entry}}) {
-            if ((time() - $self->{cached}->{$entry}->{$_}->{update_time}) > ($self->{reload_extra_cache_time} * 60)) {
-                delete $self->{cached}->{$entry}->{$_};
-            }
-        }
-    }
-}
-
-sub close_extra_cache {
-    my ($self, %options) = @_;
-
-    return if (!defined($self->{option_results}->{use_extra_cache}));
-    if ($self->{cached}->{updated} == 1) {
-        $self->{cached}->{updated} = 0;
-        $self->{cache}->write(data => { cached => $self->{cached} });
-    }
 }
 
 1;
@@ -686,10 +546,6 @@ Meraki api token.
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--reload-cache-time>
-
-Time in minutes before reloading cache file (default: 180).
 
 =item B<--ignore-permission-errors>
 

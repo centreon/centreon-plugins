@@ -60,10 +60,13 @@ sub discovery_devices {
     my ($self, %options) = @_;
 
     my $devices = $options{custom}->get_devices(
-        organizations => [keys %{$options{organizations}}],
-        disable_cache => 1
+        orgs => [keys %{$options{organizations}}],
+        extended => 1
     );
-    my $devices_statuses = $options{custom}->get_organization_device_statuses();
+    my $devices_statuses = $options{custom}->get_organization_device_statuses(
+        orgs => [keys %{$options{organizations}}],
+        extended => 1
+    );
 
     my @results;
     foreach (values %$devices) {
@@ -72,9 +75,9 @@ sub discovery_devices {
         next if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '' &&
             (!defined($_->{tags}) || $_->{tags} !~ /$self->{option_results}->{filter_tags}/));
         next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
-            $options{networks}->{ $_->{networkId} }->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
+            $_->{orgId} !~ /$self->{option_results}->{filter_organization_id}/);
         next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
-            $options{organizations}->{ $options{networks}->{ $_->{networkId} }->{organizationId} }->{name} !~ /$self->{option_results}->{filter_organization_name}/);
+            $options{organizations}->{ $_->{orgId} }->{name} !~ /$self->{option_results}->{filter_organization_name}/);
 
         my $node = {
             name => $_->{name},
@@ -93,7 +96,7 @@ sub discovery_devices {
             lan_ip => $_->{lanIp},
             network_id => $_->{networkId},
             network_name => $options{networks}->{ $_->{networkId} }->{name},
-            organization_name => $options{organizations}->{ $options{networks}->{ $_->{networkId} }->{organizationId} }->{name},
+            organization_name => $options{organizations}->{ $_->{orgId} }->{name},
             configuration_updated_at => $_->{configurationUpdatedAt},
             last_reported_at => $devices_statuses->{ $_->{serial} }->{lastReportedAt}
         };
@@ -144,11 +147,10 @@ sub run {
 
     $disco_stats->{start_time} = time();
 
-    my $organizations = $options{custom}->get_organizations(disable_cache => 1);
-    
+    my $organizations = $options{custom}->get_organizations();
     my $networks = $options{custom}->get_networks(
-        organizations => [keys %{$organizations}],
-        disable_cache => 1
+        orgs => [keys %{$organizations}],
+        extended => 1
     );
 
     if ($self->{option_results}->{resource_type} eq 'network') {
