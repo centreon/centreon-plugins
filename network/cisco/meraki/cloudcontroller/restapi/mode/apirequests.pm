@@ -38,8 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_200' }, { name => 'display' } ],
                 output_template => 'code 200: %s',
                 perfdatas => [
-                    { value => 'requests_200',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -47,8 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_404' }, { name => 'display' } ],
                 output_template => 'code 404: %s',
                 perfdatas => [
-                    { value => 'requests_404',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -56,8 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_429' }, { name => 'display' } ],
                 output_template => 'code 429: %s',
                 perfdatas => [
-                    { value => 'requests_429',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -72,7 +69,7 @@ sub prefix_organization_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -85,23 +82,18 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'meraki_' . $self->{mode} . '_' . $options{custom}->get_token()  . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_organization_name}) ? md5_hex($self->{option_results}->{filter_organization_name}) : md5_hex('all'));
-    my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
-    my $timespan = 300;
-    $timespan = time() - $last_timestamp if (defined($last_timestamp));
-
-    my $cache_organizations = $options{custom}->get_cache_organizations();
-    my $api_requests = $options{custom}->get_organization_api_requests_overview(timespan => $timespan, filter_name => $self->{option_results}->{filter_organization_name});
+    my $orgs = $options{custom}->get_organizations();
 
     $self->{organizations} = {};
-    foreach my $id (keys %$api_requests) {
-        $self->{organizations}->{$id} = {
-            display => $cache_organizations->{$id}->{name},
-            requests_200 => defined($api_requests->{$id}->{responseCodeCounts}->{200}) ? $api_requests->{$id}->{responseCodeCounts}->{200} : 0,
-            requests_404 => defined($api_requests->{$id}->{responseCodeCounts}->{404}) ? $api_requests->{$id}->{responseCodeCounts}->{404} : 0,
-            requests_429 => defined($api_requests->{$id}->{responseCodeCounts}->{429}) ? $api_requests->{$id}->{responseCodeCounts}->{429} : 0,
+    foreach my $orgId (keys %$orgs) {
+        next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
+            $orgs->{orgId}->{name} !~ /$self->{option_results}->{filter_organization_name}/);
+        my $api_requests = $options{custom}->get_organization_api_requests_overview(orgs => [$orgId]);
+        $self->{organizations}->{$orgId} = {
+            display => $orgs->{$orgId}->{name},
+            requests_200 => defined($api_requests->{$orgId}->{responseCodeCounts}->{200}) ? $api_requests->{$orgId}->{responseCodeCounts}->{200} : 0,
+            requests_404 => defined($api_requests->{$orgId}->{responseCodeCounts}->{404}) ? $api_requests->{$orgId}->{responseCodeCounts}->{404} : 0,
+            requests_429 => defined($api_requests->{$orgId}->{responseCodeCounts}->{429}) ? $api_requests->{$orgId}->{responseCodeCounts}->{429} : 0
         };
     }
 

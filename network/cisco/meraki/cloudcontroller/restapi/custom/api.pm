@@ -232,9 +232,14 @@ sub call_datas {
 
     $self->get_organizations();
     $self->get_networks(orgs => [keys %{$self->{datas}->{orgs}}]);
-    $self->get_devices(orgs => [keys %{$self->{datas}->{orgs}}]);
-    $self->get_organization_device_statuses(orgs => [keys %{$self->{datas}->{orgs}}]);
-    
+
+    if (!defined($options{skipDevices})) {
+        $self->get_devices(orgs => [keys %{$self->{datas}->{orgs}}]);
+    }
+    if (!defined($options{skipDevicesStatus})) {
+        $self->get_organization_device_statuses(orgs => [keys %{$self->{datas}->{orgs}}]);
+    }
+
     if (defined($options{cache})) {
         foreach my $orgId (keys %{$self->{datas}->{orgs}}) {
             $self->get_network_device_uplink(orgId => $orgId);
@@ -258,7 +263,7 @@ sub get_datas {
     my ($self, %options) = @_;
 
     return $self->get_cache_file_response() if (defined($self->{option_results}->{cache_use}));
-    $self->call_datas();
+    $self->call_datas(%options);
     return $self->{datas};
 }
 
@@ -445,30 +450,22 @@ sub get_network_device_performance {
     );
 }
 
-#===================
-
-sub filter_organizations {
+sub get_organization_api_requests_overview {
     my ($self, %options) = @_;
-
-    my $organization_ids = [];
-    foreach (values %{$self->{cache_organizations}}) {
-        if (!defined($options{filter_name}) || $options{filter_name} eq '') {
-            push @$organization_ids, $_->{id};
-        } elsif ($_->{name} =~ /$options{filter_name}/) {
-            push @$organization_ids, $_->{id};
-        }
+    
+    my $results = {};
+    foreach my $id (@{$options{orgs}}) {
+        $results->{$id} = $self->request_api(
+            endpoint => '/organizations/' . $id . '/apiRequests/overview?timespan=' . $self->{timespan},
+            hostname => $self->get_shard_hostname(organization_id => $id)
+        );
     }
 
-    return $organization_ids;
+    return $results;
 }
 
 sub get_networks_connection_stats {
     my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-
-    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
-    $timespan = 1 if ($timespan <= 0);
 
     return $self->request_api(
         endpoint => '/networks/' . $options{network_id},
@@ -480,35 +477,11 @@ sub get_networks_connection_stats {
 sub get_networks_clients {
     my ($self, %options) = @_;
 
-    $self->cache_meraki_entities();
-
-    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
-    $timespan = 1 if ($timespan <= 0);
-
     return $self->request_api(
-        endpoint => '/networks/' . $options{network_id} . '/clients?timespan=' . $options{timespan},
+        endpoint => '/networks/' . $options{network_id} . '/clients?timespan=' . $self->{timespan},
         hostname => $self->get_shard_hostname(network_id => $options{network_id}),
         ignore_codes => { 400 => 1 }
     );
-}
-
-sub get_organization_api_requests_overview {
-    my ($self, %options) = @_;
-
-    $self->cache_meraki_entities();
-    my $organization_ids = $self->filter_organizations(filter_name => $options{filter_name});
-    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
-    $timespan = 1 if ($timespan <= 0);
-    
-    my $results = {};
-    foreach my $id (@$organization_ids) {
-        $results->{$id} = $self->request_api(
-            endpoint => '/organizations/' . $id . '/apiRequests/overview?timespan=' . $options{timespan},
-            hostname => $self->get_shard_hostname(organization_id => $id)
-        );
-    }
-
-    return $results;
 }
 
 1;

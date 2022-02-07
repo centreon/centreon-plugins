@@ -50,15 +50,15 @@ sub manage_selection {
 
     my $organizations = $options{custom}->get_organizations();
     my $networks = $options{custom}->get_networks(
-        orgs => [keys %{$organizations}],
+        orgs => [keys %$organizations],
         extended => 1
     );
     my $devices = $options{custom}->get_devices(
-        orgs => [keys %{$organizations}],
+        orgs => [keys %$organizations],
         extended => 1
     );
     my $devices_statuses = $options{custom}->get_organization_device_statuses(
-        orgs => [keys %{$organizations}],
+        orgs => [keys %$organizations],
         extended => 1
     );
 
