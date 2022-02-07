@@ -312,7 +312,6 @@ sub add_connection_stats {
     my ($self, %options) = @_;
 
     my $connections = $options{custom}->get_network_device_connection_stats(
-        timespan => $options{timespan},
         serial => $options{serial},
         network_id => $options{network_id}
     );
@@ -330,7 +329,6 @@ sub add_clients {
     my ($self, %options) = @_;
 
     my $clients = $options{custom}->get_device_clients(
-        timespan => $options{timespan},
         serial => $options{serial}
     );
 
@@ -353,7 +351,7 @@ sub add_uplink {
 
     my $links = $options{custom}->get_network_device_uplink(
         serial => $options{serial},
-        organization_id => $options{organization_id}
+        orgId => $options{orgId}
     );
 
     if (defined($links)) {
@@ -371,11 +369,9 @@ sub add_uplink {
 sub add_uplink_loss_latency {
     my ($self, %options) = @_;
 
-    # 5 minutes max timespan
     my $links = $options{custom}->get_organization_uplink_loss_and_latency(
-        timespan => 300,
         serial => $options{serial},
-        organization_id => $options{custom}->get_organization_id(network_id => $options{network_id})
+        orgId => $options{orgId}
     );
 
     return if (!defined($links));
@@ -422,7 +418,6 @@ sub add_switch_port_statuses {
     my ($self, %options) = @_;
 
     my $ports = $options{custom}->get_device_switch_port_statuses(
-        timespan => $options{timespan},
         serial => $options{serial}
     );
 
@@ -443,54 +438,14 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cache_name} = 'meraki_' . $self->{mode} . '_' . $options{custom}->get_token()  . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_device_name}) ? md5_hex($self->{option_results}->{filter_device_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_network_id}) ? md5_hex($self->{option_results}->{filter_network_id}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_organization_id}) ? md5_hex($self->{option_results}->{filter_organization_id}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_organization_name}) ? md5_hex($self->{option_results}->{filter_organization_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_tags}) ? md5_hex($self->{option_results}->{filter_tags}) : md5_hex('all'));
-    my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
-    my $timespan = 300;
-    $timespan = time() - $last_timestamp if (defined($last_timestamp));
-
-    my $cache_devices = $options{custom}->get_cache_devices();
-    my $devices = {};
-    foreach (values %$cache_devices) {
-        if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_device_name}/) {
-            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
-            $_->{networkId} !~ /$self->{option_results}->{filter_network_id}/) {
-            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '') {
-            my $tags;
-            $tags = join(' ', @{$_->{tags}}) if (defined($_->{tags}));
-            if (!defined($tags) || $tags !~ /$self->{option_results}->{filter_tags}/) {
-                $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
-                next;
-            }
-        }
-        
-        my $organization = $options{custom}->get_organization(network_id => $_->{networkId});
-        if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
-            $organization->{id} !~ /$self->{option_results}->{filter_organization_id}/) {
-            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
-            $organization->{name} !~ /$self->{option_results}->{filter_organization_name}/) {
-            $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
-            next;
-        }
-
-        $devices->{ $_->{serial} } = { model => $_->{model}, organization_id => $organization->{id} };
-    }
-
-    my $device_statuses = $options{custom}->get_organization_device_statuses();
+        md5_hex(
+            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : 'all') . '_' .
+            (defined($self->{option_results}->{filter_device_name}) ? $self->{option_results}->{filter_device_name} : 'all') . '_' .
+            (defined($self->{option_results}->{filter_network_id}) ? $self->{option_results}->{filter_network_id} : 'all') . '_' .
+            (defined($self->{option_results}->{filter_organization_id}) ? $self->{option_results}->{filter_organization_id} : 'all') . '_' .
+            (defined($self->{option_results}->{filter_organization_name}) ? $self->{option_results}->{filter_organization_name} : 'all') . '_' .
+            (defined($self->{option_results}->{filter_tags}) ? $self->{option_results}->{filter_tags} : 'all')
+        );
 
     #                   | /clients | /connectionStats | /performance | /uplink | /uplinksLossAndLatency | /switchPortStatuses
     #-------------------|----------|---------------------------------|---------|------------------------|-----------------------
@@ -500,72 +455,86 @@ sub manage_selection {
     # MX [appliance]    |    X     |                  |      X       |    X    |            X           |
     # MR [wireless]     |    X     |         X        |              |    X    |                        |
 
+    my $datas = $options{custom}->get_datas();
+
     $self->{global} = { total => 0, online => 0, offline => 0, alerting => 0, offline_prct => 0, online_prct => 0 };
     $self->{devices} = {};
-    foreach my $serial (keys %$devices) {
+    foreach my $serial (keys %{$datas->{devices}}) {
+        next if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
+            $datas->{devices}->{$serial}->{name} !~ /$self->{option_results}->{filter_device_name}/);
+        next if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
+            $datas->{devices}->{$serial}->{networkId} !~ /$self->{option_results}->{filter_network_id}/);
+
+        if (defined($self->{option_results}->{filter_tags}) && $self->{option_results}->{filter_tags} ne '') {
+            my $tags;
+            $tags = join(' ', @{$datas->{devices}->{$serial}->{tags}}) if (defined($datas->{devices}->{$serial}->{tags}));
+            if (!defined($tags) || $tags !~ /$self->{option_results}->{filter_tags}/) {
+                next;
+            }
+        }
+        next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
+            $datas->{devices}->{$serial}->{orgId} !~ /$self->{option_results}->{filter_organization_id}/);
+        next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
+            $datas->{orgs}->{ $datas->{devices}->{$serial}->{orgId} }->{name} !~ /$self->{option_results}->{filter_organization_name}/);
+
         $self->{devices}->{$serial} = {
-            display => $cache_devices->{$serial}->{name},
+            display => $datas->{devices}->{$serial}->{name},
             device_status => {
-                display => $cache_devices->{$serial}->{name},
-                status => $device_statuses->{$serial}->{status}
+                display => $datas->{devices}->{$serial}->{name},
+                status => $datas->{devices_status}->{$serial}->{status}
             },
             device_links => {},
             device_ports => {}
         };
 
-        if (!defined($self->{option_results}->{skip_connections}) && $devices->{$serial}->{model} =~ /^(?:MG|MR)/) {
+        if (!defined($self->{option_results}->{skip_connections}) && $datas->{devices}->{$serial}->{model} =~ /^(?:MG|MR)/) {
             $self->add_connection_stats(
                 custom => $options{custom},
-                timespan => $timespan,
                 serial => $serial,
-                name => $cache_devices->{$serial}->{name},
-                network_id => $cache_devices->{$serial}->{networkId}
+                name => $datas->{devices}->{$serial}->{name},
+                network_id => $datas->{devices}->{$serial}->{networkId}
             );
         }
-        if (!defined($self->{option_results}->{skip_clients}) && $devices->{$serial}->{model} =~ /^(?:MS|MG|MR|MX)/) {
+        if (!defined($self->{option_results}->{skip_clients}) && $datas->{devices}->{$serial}->{model} =~ /^(?:MS|MG|MR|MX)/) {
             $self->add_clients(
                 custom => $options{custom},
-                timespan => $timespan,
                 serial => $serial,
-                name => $cache_devices->{$serial}->{name}
+                name => $datas->{devices}->{$serial}->{name}
             );
         }
-        if ($devices->{$serial}->{model} =~ /^(?:MV|MS|MG|MR|MX)/) {
+        if ($datas->{devices}->{$serial}->{model} =~ /^(?:MV|MS|MG|MR|MX)/) {
             $self->add_uplink(
                 custom => $options{custom},
                 serial => $serial,
-                name => $cache_devices->{$serial}->{name},
-                organization_id => $devices->{$serial}->{organization_id}
+                name => $datas->{devices}->{$serial}->{name},
+                orgId => $datas->{devices}->{$serial}->{orgId}
             );
         }
-        if (defined($self->{option_results}->{add_switch_ports}) && $devices->{$serial} =~ /^MS/) {
+        if (defined($self->{option_results}->{add_switch_ports}) && $datas->{devices}->{$serial}->{model} =~ /^MS/) {
             $self->add_switch_port_statuses(
                 custom => $options{custom},
-                timespan => $timespan,
                 serial => $serial
             );
         }
-        if ($devices->{$serial}->{model} =~ /^MX/) {
+        if ($datas->{devices}->{$serial}->{model} =~ /^MX/) {
             $self->add_performance(
                 custom => $options{custom},
                 serial => $serial,
-                name => $cache_devices->{$serial}->{name},
-                network_id => $cache_devices->{$serial}->{networkId}
+                name => $datas->{devices}->{$serial}->{name},
+                network_id => $datas->{devices}->{$serial}->{networkId}
             ) if (!defined($self->{option_results}->{skip_performance}));
+
             $self->add_uplink_loss_latency(
                 custom => $options{custom},
-                timespan => $timespan,
                 serial => $serial,
-                network_id => $cache_devices->{$serial}->{networkId}
+                orgId => $datas->{devices}->{$serial}->{orgId}
             );
         }
 
         $self->{global}->{total}++;
-        $self->{global}->{ lc($device_statuses->{$serial}->{status}) }++
-            if (defined($self->{global}->{ lc($device_statuses->{$serial}->{status}) }));
+        $self->{global}->{ lc($datas->{devices_status}->{$serial}->{status}) }++
+            if (defined($self->{global}->{ lc($datas->{devices_status}->{$serial}->{status}) }));
     }
-
-    $options{custom}->close_extra_cache();
 
     if (scalar(keys %{$self->{devices}}) <= 0) {
         $self->{output}->output_add(short_msg => 'no devices found');
