@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use JSON;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -35,21 +35,19 @@ sub custom_status_output {
     if ($self->{result_values}->{type} eq 'input') {
         $msg = sprintf("state : %s", $self->{result_values}->{state});
     } else {
-        $msg = sprintf("state : %s [status : %s] [queue file enabled : %s]", 
-            $self->{result_values}->{state},  $self->{result_values}->{status}, $self->{result_values}->{queue_file_enabled});
+        $msg = sprintf(
+            "state : %s [status : %s] [queue file enabled : %s]", 
+            $self->{result_values}->{state},  $self->{result_values}->{status}, $self->{result_values}->{queue_file_enabled}
+        );
     }
     return $msg;
 }
 
-sub custom_status_calc {
+
+sub prefix_endpoint_output {
     my ($self, %options) = @_;
-    
-    $self->{result_values}->{queue_file_enabled} = $options{new_datas}->{$self->{instance} . '_queue_file_enabled'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+
+    return "Endpoint $options{instance_value}->{type} '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -60,12 +58,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{endpoint} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i', set => {
                 key_values => [ { name => 'queue_file_enabled' }, { name => 'state' }, { name => 'status' }, { name => 'type' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'speed-events', set => {
@@ -73,8 +70,8 @@ sub set_counters {
                 output_template => 'Speed Events: %s/s',
                 perfdatas => [
                     { label => 'speed_events', value => 'speed_events', template => '%s', 
-                      unit => 'events/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'events/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'queued-events', set => {
@@ -82,8 +79,8 @@ sub set_counters {
                 output_template => 'Queued Events: %s',
                 perfdatas => [
                     { label => 'queued_events', value => 'queued_events', template => '%s', 
-                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'unacknowledged-events', set => {
@@ -91,10 +88,10 @@ sub set_counters {
                 output_template => 'Unacknowledged Events: %s',
                 perfdatas => [
                     { label => 'unacknowledged_events', value => 'unacknowledged_events', template => '%s', 
-                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -112,9 +109,7 @@ sub new {
         'ssh-command:s'        => { name => 'ssh_command', default => 'ssh' },
         'timeout:s'            => { name => 'timeout', default => 30 },
         'sudo'                 => { name => 'sudo' },
-        'filter-name:s'        => { name => 'filter_name' },
-        'warning-status:s'     => { name => 'warning_status', default => '' },
-        'critical-status:s'    => { name => 'critical_status', default => '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i' },
+        'filter-name:s'        => { name => 'filter_name' }
     });
 
     return $self;
@@ -128,13 +123,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set broker-stats-file option.");
         $self->{output}->option_exit();
     }
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_endpoint_output {
-    my ($self, %options) = @_;
-
-    return "Endpoint $options{instance_value}->{type} '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
@@ -174,6 +162,10 @@ sub manage_selection {
             my $type = 'output';
             $type = 'input' if (!defined($json->{$entry}->{status}));
 
+            my $queue_enabled = '-';
+            if (defined($json->{$entry}->{queue_file_enabled})) {
+                $queue_enabled = $json->{$entry}->{queue_file_enabled} ? 'yes' : 'no';
+            }
             $self->{endpoint}->{$endpoint} = {
                 display => $endpoint,
                 state => $state,
@@ -182,7 +174,7 @@ sub manage_selection {
                 speed_events => $json->{$entry}->{event_processing_speed},
                 queued_events => $json->{$entry}->{queued_events},
                 unacknowledged_events => $json->{$entry}->{bbdo_unacknowledged_events},
-                queue_file_enabled => defined($json->{$entry}->{queue_file_enabled}) ? $json->{$entry}->{queue_file_enabled} : '-',
+                queue_file_enabled => $queue_enabled
             };
         }
     }
