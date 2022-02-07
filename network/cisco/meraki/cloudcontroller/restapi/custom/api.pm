@@ -542,6 +542,10 @@ Set HTTP timeout
 
 Ignore permission errors (403 status code).
 
+=item B<--cache-use>
+
+Use the cache file (created with cache mode).
+
 =back
 
 =head1 DESCRIPTION
