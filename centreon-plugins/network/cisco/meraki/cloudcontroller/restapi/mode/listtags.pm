@@ -48,14 +48,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $organizations = $options{custom}->get_organizations(disable_cache => 1);
+    my $organizations = $options{custom}->get_organizations();
     my $networks = $options{custom}->get_networks(
-        organizations => [keys %$organizations],
-        disable_cache => 1
+        orgs => [keys %$organizations]
     );
     my $devices = $options{custom}->get_devices(
-        organizations => [keys %$organizations],
-        disable_cache => 1
+        orgs => [keys %$organizations]
     );
 
     my $results = {};
@@ -64,9 +62,9 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
             $devices->{$_}->{networkId} !~ /$self->{option_results}->{filter_network_id}/);
         next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
-            $networks->{ $devices->{$_}->{networkId} }->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
+            $devices->{$_}->{orgId} !~ /$self->{option_results}->{filter_organization_id}/);
 
-        my $organization_name = $organizations->{ $networks->{ $devices->{$_}->{networkId} }->{organizationId} }->{name};
+        my $organization_name = $organizations->{ $devices->{$_}->{orgId} }->{name};
         next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
             $organization_name !~ /$self->{option_results}->{filter_organization_name}/);
 
