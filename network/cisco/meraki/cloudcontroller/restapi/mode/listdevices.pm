@@ -48,17 +48,20 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $organizations = $options{custom}->get_organizations(disable_cache => 1);
+    my $organizations = $options{custom}->get_organizations();
     my $networks = $options{custom}->get_networks(
-        organizations => [keys %$organizations],
-        disable_cache => 1
+        orgs => [keys %{$organizations}],
+        extended => 1
     );
     my $devices = $options{custom}->get_devices(
-        organizations => [keys %$organizations],
-        disable_cache => 1
+        orgs => [keys %{$organizations}],
+        extended => 1
+    );
+    my $devices_statuses = $options{custom}->get_organization_device_statuses(
+        orgs => [keys %{$organizations}],
+        extended => 1
     );
 
-    my $devices_statuses = $options{custom}->get_organization_device_statuses();
     my $results = {};
     foreach (keys %$devices) {
         next if (defined($self->{option_results}->{filter_network_id}) && $self->{option_results}->{filter_network_id} ne '' &&
@@ -69,14 +72,15 @@ sub manage_selection {
             next if (!defined($tags) || $tags !~ /$self->{option_results}->{filter_tags}/);
         }
         next if (defined($self->{option_results}->{filter_organization_id}) && $self->{option_results}->{filter_organization_id} ne '' &&
-            $networks->{ $devices->{$_}->{networkId} }->{organizationId} !~ /$self->{option_results}->{filter_organization_id}/);
+            $devices->{$_}->{orgId} !~ /$self->{option_results}->{filter_organization_id}/);
 
-        my $organization_name = $organizations->{ $networks->{ $devices->{$_}->{networkId} }->{organizationId} }->{name};
+        my $organization_name = $organizations->{ $devices->{$_}->{orgId} }->{name};
         next if (defined($self->{option_results}->{filter_organization_name}) && $self->{option_results}->{filter_organization_name} ne '' &&
             $organization_name !~ /$self->{option_results}->{filter_organization_name}/);
 
         $results->{$_} = {
-            %{$devices->{$_}},
+            name => $devices->{$_}->{name},
+            tags => $devices->{$_}->{tags},
             status => $devices_statuses->{ $devices->{$_}->{serial} }->{status},
             public_ip => $devices_statuses->{ $devices->{$_}->{serial} }->{publicIp},
             network_name => $networks->{ $devices->{$_}->{networkId} }->{name},
@@ -129,7 +133,7 @@ sub disco_show {
             network_name => $_->{network_name},
             network_id => $_->{networkId},
             organization_name => $_->{organization_name},
-            tags => defined($_->{tags}) ? $_->{tags} : ''
+            tags => defined($_->{tags}) ? join(',', @{$_->{tags}}) : ''
         );
     }
 }
