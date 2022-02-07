@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'discovery'     => 'cloud::azure::network::trafficmanager::mode::discovery',
+        'discovery'      => 'cloud::azure::network::trafficmanager::mode::discovery',
         'endpointstatus' => 'cloud::azure::network::trafficmanager::mode::endpointstatus',
-        'health'        => 'cloud::azure::network::trafficmanager::mode::health',
-        'queries'      => 'cloud::azure::network::trafficmanager::mode::queries'
+        'health'         => 'cloud::azure::network::trafficmanager::mode::health',
+        'queries'        => 'cloud::azure::network::trafficmanager::mode::queries'
     };
 
     $self->{custom_modes}->{azcli} = 'cloud::azure::custom::azcli';
