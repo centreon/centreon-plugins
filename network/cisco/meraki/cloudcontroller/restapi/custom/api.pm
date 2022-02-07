@@ -152,8 +152,6 @@ sub settings {
 sub request_api {
     my ($self, %options) = @_;
 
-    return undef if (defined($self->{option_results}->{api_requests_disabled}));
-
     $self->settings();
 
     my $hostname = $self->{hostname};
@@ -165,12 +163,17 @@ sub request_api {
     #403: Forbidden- You don't have permission to do that.
     #404: Not found- No such URL, or you don't have access to the API or organization at all. 
     #429: Too Many Requests- You submitted more than 5 calls in 1 second to an Organization, triggering rate limiting. This also applies for API calls made across multiple organizations that triggers rate limiting for one of the organizations.
-    my $time_start;
+    my $results = [];
+    my ($full_url, $get_param);
+    if (defined($options{paginate})) {
+        $get_param = ['perPage=' . $options{paginate}];
+    }
     while (1) {
-        $time_start = Time::HiRes::time() if (defined($self->{option_results}->{trace_api}));
         my $response =  $self->{http}->request(
+            full_url => $full_url,
             hostname => $hostname,
             url_path => '/api/v1' . $options{endpoint},
+            get_param => $get_param,
             critical_status => '',
             warning_status => '',
             unknown_status => ''
@@ -198,6 +201,17 @@ sub request_api {
         if ($@) {
             $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
             $self->{output}->option_exit();
+        }
+
+        if (defined($options{paginate})) {
+            push @$results, @$content;
+
+            my ($link) = $self->{http}->get_header(name => 'Link');
+            return $results if (!defined($link) || $link !~ /,\s+<([^;]*?)>;\s+rel=next/);
+
+            $get_param = undef;
+            $full_url = $1;
+            next;
         }
 
         return ($content);
@@ -317,6 +331,7 @@ sub get_devices {
     foreach my $id (@{$options{orgs}}) {
         my $datas = $self->request_api(
             endpoint => '/organizations/' . $id . '/devices',
+            paginate => 1000, 
             hostname => $self->get_shard_hostname(organization_id => $id)
         );
         if (defined($datas)) {
@@ -347,6 +362,7 @@ sub get_organization_device_statuses {
     foreach my $id (@{$options{orgs}}) {
         my $datas = $self->request_api(
             endpoint => '/organizations/' . $id . '/devices/statuses',
+            paginate => 1000,
             hostname => $self->get_shard_hostname(organization_id => $id)
         );
         foreach (@$datas) {
@@ -370,6 +386,7 @@ sub get_network_device_uplink {
         $self->{datas}->{uplink_statuses}->{ $options{orgId} } = {};
         my $datas = $self->request_api(
             endpoint => '/organizations/' . $options{orgId} . '/uplinks/statuses',
+            paginate => 1000,
             hostname => $self->get_shard_hostname(organization_id => $options{orgId})
         );
         foreach (@$datas) {
@@ -389,6 +406,7 @@ sub get_organization_uplink_loss_and_latency {
         $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} } = {};
         my $datas = $self->request_api(
             endpoint => '/organizations/' . $options{orgId} . '/devices/uplinksLossAndLatency?timespan=' . $self->{timespan},
+            paginate => 1000,
             hostname => $self->get_shard_hostname(organization_id => $options{orgId})
         );
         foreach (@$datas) {
