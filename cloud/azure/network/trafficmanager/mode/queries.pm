@@ -30,9 +30,9 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'QpsByEndpoint' => {
-            'output' => 'Queries per second By Endpoint Count',
-            'label'  => 'queries-persecond-count',
-            'nlabel' => 'trafficmanager.queries.persecond.count',
+            'output' => 'Queries per second By Endpoint',
+            'label'  => 'queries-persecond',
+            'nlabel' => 'trafficmanager.queries.persecond',
             'unit'   => '',
             'min'    => '0',
             'max'    => ''
@@ -108,13 +108,13 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::trafficmanager::plugin --mode=queries --custommode=api
 --resource=<frontdoor_id> --resource-group=<resourcegroup_id> --aggregation='total'
---warning-queries-perseconds-count='3000' --critical-queries-perseconds-count='4000'
+--warning-queries-perseconds='3000' --critical-queries-perseconds='4000'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::trafficmanager::plugin --mode=queries --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/trafficmanagerprofiles/<frontdoor_id>'
---aggregation='total' --warning-queries-perseconds-count='3000' --critical-queries-perseconds-count='4000'
+--aggregation='total' --warning-queries-perseconds='3000' --critical-queries-perseconds='4000'
 
 Default aggregation: 'total' / 'minimum', 'maximum' and 'average' are valid.
 
@@ -130,11 +130,11 @@ Set resource group (Required if resource's name is used).
 
 =item B<--warning-*>
 
-=item B<--warning-queries-perseconds-count>
+=item B<--warning-queries-perseconds>
 
 Warning threshold.
 
-=item B<--critical-queries-perseconds-count>
+=item B<--critical-queries-perseconds>
 
 Critical threshold.
 
