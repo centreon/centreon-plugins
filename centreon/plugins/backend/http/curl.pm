@@ -194,7 +194,7 @@ sub set_auth {
             $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPAUTH'), parameter => $self->{constant_cb}->(name => 'CURLAUTH_BASIC'));
         } elsif (defined($options{request}->{ntlmv2})) {
             $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPAUTH'), parameter => $self->{constant_cb}->(name => 'CURLAUTH_NTLM'));
-        } if (defined($options{request}->{digest})) {
+        } elsif (defined($options{request}->{digest})) {
             $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPAUTH'), parameter => $self->{constant_cb}->(name => 'CURLAUTH_DIGEST'));
         }else {
             $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPAUTH'), parameter => $self->{constant_cb}->(name => 'CURLAUTH_ANY'));
