@@ -30,15 +30,16 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'              => 'network::viptela::snmp::mode::cpu',
-        'disk'             => 'network::viptela::snmp::mode::disk',
-        'gre-tunnels'      => 'network::viptela::snmp::mode::gretunnels',
-        'hardware'         => 'network::viptela::snmp::mode::hardware',
-        'interfaces'       => 'network::viptela::snmp::mode::interfaces',
-        'list-gre-tunnels' => 'network::viptela::snmp::mode::listgretunnels',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::viptela::snmp::mode::memory',
-        'uptime'           => 'network::viptela::snmp::mode::uptime'
+        'control-connections' => 'network::viptela::snmp::mode::controlconnections',
+        'cpu'                 => 'network::viptela::snmp::mode::cpu',
+        'disk'                => 'network::viptela::snmp::mode::disk',
+        'gre-tunnels'         => 'network::viptela::snmp::mode::gretunnels',
+        'hardware'            => 'network::viptela::snmp::mode::hardware',
+        'interfaces'          => 'network::viptela::snmp::mode::interfaces',
+        'list-gre-tunnels'    => 'network::viptela::snmp::mode::listgretunnels',
+        'list-interfaces'     => 'snmp_standard::mode::listinterfaces',
+        'memory'              => 'network::viptela::snmp::mode::memory',
+        'uptime'              => 'network::viptela::snmp::mode::uptime'
     };
 
     return $self;

@@ -291,7 +291,8 @@ Can used special variables like: %{adminState}, %{operState}, %{sourceIp}, %{des
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total-online', 'total-offline', 'total-resyncing', 'resyncing'.
+Can be: 'gretunnels-detected', 'gretunnels-up', 'gretunnels-down', 'gretunnels-invalid',
+'gretunnel-packets-in', 'gretunnel-packets-out'.
 
 =back
 
