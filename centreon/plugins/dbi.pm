@@ -224,18 +224,29 @@ sub connect {
     }
 
     $self->set_signal_handlers();
-    alarm($self->{timeout}) if (defined($self->{timeout}));
-    $self->{instance} = DBI->connect(
-        "DBI:". $self->{data_source},
-        $self->{username},
-        $self->{password},
-        { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
-    );
-    alarm(0) if (defined($self->{timeout}));
+    my $connect_error;
+    eval {
+        alarm($self->{timeout}) if (defined($self->{timeout}));
+        $self->{instance} = DBI->connect(
+            "DBI:". $self->{data_source},
+            $self->{username},
+            $self->{password},
+            { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
+        );
+        alarm(0) if (defined($self->{timeout}));
+    }
+    if ($@) {
+        $connect_error = $@;
+    }
+
     $self->prepare_destroy();
 
     if (!defined($self->{instance})) {
-        my $err_msg = sprintf('Cannot connect: %s', defined($DBI::errstr) ? $DBI::errstr : '(no error string)');
+        my $err_msg = sprintf(
+            'Cannot connect: %s',
+            defined($DBI::errstr) ? $DBI::errstr : 
+                (defined($connect_error) ? $connect_error : '(no error string)')
+        );
         if ($dontquit == 0) {
             $self->{output}->add_option_msg(short_msg => $err_msg);
             $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
