@@ -87,15 +87,6 @@ sub set_counters {
                     { template => '%d', min => 0, unit => 'B' }
                 ]
             }
-        },
-        { label => 'shared', nlabel => 'memory.shared.bytes', set => {
-                key_values => [ { name => 'memShared' } ],
-                output_template => 'Shared: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { template => '%d', min => 0, unit => 'B' }
-                ]
-            }
         }
     ];
 }
