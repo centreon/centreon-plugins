@@ -32,13 +32,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'warning-one:s'    => { name => 'warning_one' },
-        'critical-one:s'   => { name => 'critical_one' },
-        'warning-total:s'  => { name => 'warning_total' },
-        'critical-total:s' => { name => 'critical_total' },
-        'all-files'        => { name => 'all_files' },
-        'filter-plugin:s'  => { name => 'filter_plugin' },
-        'folder:s'         => { name => 'folder' }
+        'warning-one:s'     => { name => 'warning_one' },
+        'critical-one:s'    => { name => 'critical_one' },
+        'warning-total:s'   => { name => 'warning_total' },
+        'critical-total:s'  => { name => 'critical_total' },
+        'all-files'         => { name => 'all_files' },
+        'filter-filename:s' => { name => 'filter_filename' },
+        'folder:s'          => { name => 'folder' }
     });
 
     return $self;

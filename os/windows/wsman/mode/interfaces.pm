@@ -211,11 +211,17 @@ sub prefix_interface_output {
     return "Interface '" . $options{instance_value}->{display} . "' ";
 }
 
+sub skip_counters {
+    my ($self, %options) = @_;
+
+    return (defined($self->{option_results}->{$options{filter}})) ? 0 : 1;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } },
+        { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', cb_init_counters => 'skip_counters', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{interfaces} = [
@@ -349,7 +355,7 @@ sub do_selection {
     $self->{interfaces} = {};
     foreach (@$results) {
         next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
-            $self->{interface} !~ /$self->{option_results}->{filter_interface}/);
+            $_->{Name} !~ /$self->{option_results}->{filter_interface}/);
          next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
             $_->{Name} =~ /$self->{option_results}->{exclude_interface}/);
 
@@ -395,30 +401,18 @@ Check interfaces.
 
 =over 8
 
+=item B<--add-traffic>
+
+Check interface traffic.
+
 =item B<--add-errors>
 
 Check interface errors.
 
-=item B<--warning-in>
-
-Threshold warning in percent for 'in' traffic.
-
-=item B<--critical-in>
-
-Threshold critical in percent for 'in' traffic.
-
-=item B<--warning-out>
-
-Threshold warning in percent for 'out' traffic.
-
-=item B<--critical-out>
-
-Threshold critical in percent for 'out' traffic.
-
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'in-error', 'in-discard', 'out-error', 'out-discard',
+Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 
 =item B<--units-traffic>
 
