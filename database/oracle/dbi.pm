@@ -28,7 +28,7 @@ use POSIX qw(:signal_h);
 
 sub connect_oracle {
     my ($self, %options) = @_;
-    
+
     $self->{instance} = DBI->connect(
         'DBI:' . $self->{data_source},
         $self->{username},
@@ -55,6 +55,7 @@ sub connect {
         }
     }
 
+    my $connect_error;
     if (defined($self->{timeout})) {
         my $mask = POSIX::SigSet->new(SIGALRM);
         my $action = POSIX::SigAction->new(
@@ -69,14 +70,26 @@ sub connect {
                 $self->connect_oracle();
             };
             alarm(0);
+            if ($@) {
+                $connect_error = $@;
+            }
         };
         sigaction(SIGALRM, $oldaction);
     } else {
-        $self->connect_oracle();
+        eval {
+            $self->connect_oracle();
+        };
+        if ($@) {
+            $connect_error = $@;
+        }
     }
 
     if (!defined($self->{instance})) {
-        my $err_msg = sprintf('Cannot connect: %s', defined($DBI::errstr) ? $DBI::errstr : '(no error string)');
+        my $err_msg = sprintf(
+            'Cannot connect: %s',
+            defined($DBI::errstr) ? $DBI::errstr : 
+                (defined($connect_error) ? $connect_error : '(no error string)')
+        );
         if ($dontquit == 0) {
             $self->{output}->add_option_msg(short_msg => $err_msg);
             $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
