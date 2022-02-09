@@ -158,6 +158,20 @@ sub manage_selection {
         }
     );
     @result = $options{sql}->fetchrow_array();
+    if (!defined($result[0]) || $result[0] eq '') {
+        $options{sql}->query(
+            query => q{
+                SELECT 
+                  CEIL((SYSDATE - MAX(first_time)) * 24 * 60)
+                FROM
+                  v$archived_log
+                WHERE
+                  applied NOT IN ('NO') AND registrar = 'RFS'
+            }
+        );
+        @result = $options{sql}->fetchrow_array();
+    }
+
     $self->{global}->{lag_minutes} = defined($result[0]) && $result[0] ne '' ? $result[0] : -1;
 
     $options{sql}->disconnect();
