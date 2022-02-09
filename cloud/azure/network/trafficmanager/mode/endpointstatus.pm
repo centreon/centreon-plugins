@@ -76,7 +76,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.Network';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
-    $self->{az_aggregations} = ['Average'];
+    $self->{az_aggregations} = ['Maximum'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -115,7 +115,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::network::trafficmanager::plugin 
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.Network/trafficmanagerprofiles/<trafficmanagerprofiles_id>'
 --aggregation='average' --warning-endpoint-status='1:' --critical-endpoint-status='0.9:'
 
-Default aggregation: 'average' / 'minimum', 'maximum' and 'total' are valid.
+Default aggregation: 'maximum' / 'minimum', 'average' and 'total' are valid.
 
 =over 8
 
