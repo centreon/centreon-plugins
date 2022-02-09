@@ -38,16 +38,16 @@ sub set_counters {
                 key_values => [ { name => 'extends', per_second => 1 } ],
                 output_template => 'Extends : %.2f/s',
                 perfdatas => [
-                    { label => 'extends', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'extends', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'wraps', set => {
                 key_values => [ { name => 'wraps', per_second => 1 } ],
                 output_template => 'Wraps : %.2f/s',
                 perfdatas => [
-                    { label => 'wraps', template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { label => 'wraps', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'header-contention', set => {
@@ -55,8 +55,8 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_contention_calc'), closure_custom_calc_extra_options => { label_ref => 'header' },
                 output_template => 'Header Contention :  %.2f %%', output_use => 'header_prct', threshold_use => 'header_prct',
                 perfdatas => [
-                    { label => 'header_contention', value => 'header_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'header_contention', value => 'header_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'block-contention', set => {
@@ -64,8 +64,8 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_contention_calc'), closure_custom_calc_extra_options => { label_ref => 'block' },
                 output_template => 'Block Contention :  %.2f %%', output_use => 'block_prct', threshold_use => 'block_prct',
                 perfdatas => [
-                    { label => 'block_contention', value => 'block_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'block_contention', value => 'block_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'hit-ratio', set => {
@@ -73,10 +73,10 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_hitratio_calc'),
                 output_template => 'gets/waits Ratio :  %.2f %%', output_use => 'hit_ratio', threshold_use => 'hit_ratio',
                 perfdatas => [
-                    { label => 'hit_ratio', value => 'hit_ratio', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'hit_ratio', value => 'hit_ratio', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
 }
 
