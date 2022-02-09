@@ -234,7 +234,7 @@ sub connect {
             { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
         );
         alarm(0) if (defined($self->{timeout}));
-    }
+    };
     if ($@) {
         $connect_error = $@;
     }
