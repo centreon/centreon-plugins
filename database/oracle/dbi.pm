@@ -33,7 +33,7 @@ sub connect_oracle {
         'DBI:' . $self->{data_source},
         $self->{username},
         $self->{password},
-        { RaiseError => 0, Warn => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
+        { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
     );
 }
 
