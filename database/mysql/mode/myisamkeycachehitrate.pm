@@ -104,12 +104,16 @@ sub run {
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("myisam keycache hitrate at %.2f%%", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
                                     );
-        $self->{output}->perfdata_add(label => 'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), unit => '%',
+        $self->{output}->perfdata_add(label => 'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), 
+                                      nlabel => 'database.keycache.hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now') . '.percentage',
+                                      unit => '%',
                                       value => sprintf("%.2f", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
-        $self->{output}->perfdata_add(label => 'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : ''), unit => '%',
+        $self->{output}->perfdata_add(label => 'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : ''), 
+                                      nlabel => 'database.keycache.hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '') . '.percentage',
+                                      unit => '%',
                                       value => sprintf("%.2f", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
                                       min => 0);
     }

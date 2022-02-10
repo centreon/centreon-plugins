@@ -98,6 +98,7 @@ sub run {
                                         ($result - $old_val), ($new_datas->{last_timestamp} - $old_timestamp), $value)
                                     );
         $self->{output}->perfdata_add(label => 'slow_queries_rate',
+                                      nlabel => 'database.slowqueries.persecond',
                                       value => $value,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
