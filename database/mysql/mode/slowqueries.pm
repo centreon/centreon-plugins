@@ -28,7 +28,7 @@ use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments =>
@@ -90,15 +90,13 @@ sub run {
     $new_datas->{$name} = $result;
     my $old_val = $self->{statefile_cache}->get(name => $name);
     if (defined($old_val) && $result >= $old_val) {
-        my $value = sprintf("%.2f", ($result - $old_val) / ($new_datas->{last_timestamp} - $old_timestamp));
+        my $value = sprintf("%d", ($result - $old_val));
     
         my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("%d slow queries in %d seconds (%.2f/sec)", 
-                                        ($result - $old_val), ($new_datas->{last_timestamp} - $old_timestamp), $value)
-                                    );
-        $self->{output}->perfdata_add(label => 'slow_queries_rate',
-                                      nlabel => 'database.slowqueries.persecond',
+                                    short_msg => sprintf("%d slow queries since last check.", $value);
+        $self->{output}->perfdata_add(label => 'slow_queries_delta',
+                                      nlabel => 'database.slowqueries.delta',
                                       value => $value,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
@@ -121,17 +119,17 @@ __END__
 
 =head1 MODE
 
-Check average number of queries detected as "slow" (per seconds).
+Check number of slow queries since last check.
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in queries per seconds.
+Warning number for slow queries since last check.
 
 =item B<--critical>
 
-Threshold critical in queries per seconds.
+Critical number for slow queries since last check.
 
 =back
 
