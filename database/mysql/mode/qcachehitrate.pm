@@ -121,14 +121,14 @@ sub run {
                                     short_msg => sprintf("query cache hitrate at %.2f%%", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
                                     );
         $self->{output}->perfdata_add(label => 'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), 
-                                      nlabel => 'database.qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now') . '.percentage',
+                                      nlabel => 'database.qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '.average' : '.delta') . '.percentage',
                                       unit => '%',
                                       value => sprintf("%.2f", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
         $self->{output}->perfdata_add(label => 'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : ''), 
-                                      nlabel => 'database.qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '') . '.percentage',
+                                      nlabel => 'database.qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '.delta' : '.average') . '.percentage',
                                       unit => '%',
                                       value => sprintf("%.2f", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
                                       min => 0);
