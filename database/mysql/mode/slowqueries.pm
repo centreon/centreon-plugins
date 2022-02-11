@@ -90,7 +90,7 @@ sub run {
     $new_datas->{$name} = $result;
     my $old_val = $self->{statefile_cache}->get(name => $name);
     if (defined($old_val) && $result >= $old_val) {
-        my $value = sprintf("%d", ($result - $old_val));
+        my $value = ($result - $old_val);
     
         my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
