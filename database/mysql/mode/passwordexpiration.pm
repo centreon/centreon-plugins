@@ -45,13 +45,13 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'users', type => 2, format_output => '%s user(s) detected', display_counter_problem => { label => 'users', nlabel => 'database.users.count', min => 0 },
+        { name => 'users', type => 2, format_output => '%s user(s) detected', display_counter_problem => { label => 'users', min => 0 },
           group => [ { name => 'user', skipped_code => { -11 => 1 } } ] 
         }
     ];
 
     $self->{maps_counters}->{user} = [
-        { label => 'status', nlabel => 'database.users.password.status', type => 2, critical_default => '%{expire} ne "never" and %{expire_time} == 0', set => {
+        { label => 'status', type => 2, critical_default => '%{expire} ne "never" and %{expire_time} == 0', set => {
                 key_values => [
                     { name => 'user' }, { name => 'expire' },
                     { name => 'expire_time' }, { name => 'password_last_changed' }
