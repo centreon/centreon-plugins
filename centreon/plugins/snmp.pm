@@ -987,7 +987,7 @@ Max repetitions value (default: 50) (only for SNMP v2 and v3).
 
 =item B<--subsetleef>
 
-How many oid values per SNMP request (default: 50) (for get_leef method. Be cautious whe you set it. Prefer to let the default value).
+How many oid values per SNMP request (default: 50) (for get_leef method. Be cautious when you set it. Prefer to let the default value).
 
 =item B<--snmp-autoreduce>
  
