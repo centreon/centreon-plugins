@@ -33,10 +33,15 @@ my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m 
 sub custom_duration_perfdata {
     my ($self, %options) = @_;
 
+    my $instances = [ $self->{result_values}->{name} ];
+    if (defined($self->{result_values}->{type})) {
+        push @$instances, $self->{result_values}->{type};
+    }
+
     $self->{output}->perfdata_add(
         nlabel => 'backup.time.last.duration.seconds',
         unit => 's',
-        instances => [$self->{result_values}->{name}, $self->{result_values}->{type}],
+        instances => $instances,
         value => $self->{result_values}->{duration_seconds},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -47,10 +52,15 @@ sub custom_duration_perfdata {
 sub custom_backup_perfdata {
     my ($self, %options) = @_;
 
+    my $instances = [ $self->{result_values}->{name} ];
+    if (defined($self->{result_values}->{type})) {
+        push @$instances, $self->{result_values}->{type};
+    }
+
     $self->{output}->perfdata_add(
         nlabel => 'backup.time.last.execution.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
         unit => $self->{instance_mode}->{option_results}->{unit},
-        instances => [$self->{result_values}->{name}, $self->{result_values}->{type}],
+        instances => $instances,
         value => floor($self->{result_values}->{exec_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -106,10 +116,28 @@ sub set_counters {
         {
             name => 'databases', type => 3, cb_prefix_output => 'prefix_database_output', cb_long_output => 'database_long_output', indent_long_output => '    ', message_multiple => 'All databases are ok',
             group => [
+                { name => 'all', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'full', type => 0, cb_prefix_output => 'prefix_full_output', skipped_code => { -10 => 1 } },
                 { name => 'incremental', type => 0, cb_prefix_output => 'prefix_incremental_output', skipped_code => { -10 => 1 } },
                 { name => 'log', type => 0, cb_prefix_output => 'prefix_log_output', skipped_code => { -10 => 1 } }
             ]
+        }
+    ];
+
+    $self->{maps_counters}->{all} = [
+        { label => 'last-execution', set => {
+                key_values      => [ { name => 'exec_seconds' }, { name => 'exec_human' }, { name => 'name' } ],
+                closure_custom_output => $self->can('custom_backup_output'),
+                closure_custom_perfdata => $self->can('custom_backup_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_backup_threshold')
+            }
+        },
+        { label => 'last-duration', set => {
+                key_values => [ { name => 'duration_seconds' }, { name => 'duration_human' }, { name => 'name' } ],
+                output_template => 'duration time: %s',
+                output_use => 'duration_human',
+                closure_custom_perfdata => $self->can('custom_duration_perfdata')
+            }
         }
     ];
 
@@ -207,6 +235,7 @@ sub manage_selection {
             $row->[0] !~ /$self->{option_results}->{filter_name}/);
         if (!defined($self->{databases}->{ $row->[0] })) {
             $self->{databases}->{ $row->[0] } = {
+                all => { exec_seconds => -1, exec_human => '', name => $row->[0] },
                 full => { exec_seconds => -1, exec_human => '', type => 'full', name => $row->[0] },
                 incremental => { exec_seconds => -1, exec_human => '', type => 'incremental', name => $row->[0] },
                 log => { exec_seconds => -1, exec_human => '', type => 'log', name => $row->[0] }
@@ -214,6 +243,23 @@ sub manage_selection {
         }
 
         next if (!defined($map_type->{ $row->[4] }));
+
+        if ($row->[4] =~ /D|I/) {
+            if (defined($row->[2]) && (
+                $self->{databases}->{ $row->[0] }->{all}->{exec_seconds} == -1 ||
+                $self->{databases}->{ $row->[0] }->{all}->{exec_seconds} > $row->[2])) {
+                $self->{databases}->{ $row->[0] }->{all}->{exec_seconds} = $row->[2];
+                $self->{databases}->{ $row->[0] }->{all}->{exec_human} = centreon::plugins::misc::change_seconds(
+                    value => $row->[2]
+                );
+                if (defined($row->[3])) {
+                    $self->{databases}->{ $row->[0] }->{all}->{duration_seconds} = $row->[3];
+                    $self->{databases}->{ $row->[0] }->{all}->{duration_human} = centreon::plugins::misc::change_seconds(
+                        value => $row->[3]
+                    );
+                }
+            }
+        }
 
         if (defined($row->[2])) {
             $self->{databases}->{ $row->[0] }->{ $map_type->{ $row->[4] } }->{exec_seconds} = $row->[2];
@@ -236,6 +282,8 @@ sub manage_selection {
                  $self->{databases}->{$_}->{full}->{exec_seconds} < $self->{databases}->{$_}->{incremental}->{exec_seconds})) {
                 $self->{databases}->{$_}->{incremental}->{exec_seconds} = $self->{databases}->{$_}->{full}->{exec_seconds};
                 $self->{databases}->{$_}->{incremental}->{exec_human} = $self->{databases}->{$_}->{full}->{exec_human};
+                $self->{databases}->{$_}->{incremental}->{duration_seconds} = $self->{databases}->{$_}->{full}->{duration_seconds};
+                $self->{databases}->{$_}->{incremental}->{duration_human} = $self->{databases}->{$_}->{full}->{duration_human};
             }
         }
     }
@@ -267,7 +315,8 @@ Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'incremental-last-execution', 'incremental-last-duration',
+Can be: 'last-execution', 'last-duration',
+'incremental-last-execution', 'incremental-last-duration',
 'full-last-execution', 'full-last-duration',
 'log-last-execution', 'log-last-duration'.
 
