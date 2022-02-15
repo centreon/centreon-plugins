@@ -79,7 +79,9 @@ sub run {
     
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => $msg);
-    $self->{output}->perfdata_add(label => 'uptime', unit => 's',
+    $self->{output}->perfdata_add(label => 'uptime', 
+                                  nlabel => 'database.uptime.seconds',
+                                  unit => 's',
                                   value => $value,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
