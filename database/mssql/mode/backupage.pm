@@ -139,8 +139,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' },
-        'unit:s'        => { name => 'unit', default => 'd' }
+        'filter-name:s'         => { name => 'filter_name' },
+        'unit:s'                => { name => 'unit', default => 'd' },
+        'full-as-incremental:s' => { name => 'full_as_incremental' }
     });
 
     return $self;
@@ -227,6 +228,17 @@ sub manage_selection {
             );
         }
     }
+
+    if (defined($self->{option_results}->{full_as_incremental})) {
+        foreach (keys %{$self->{databases}}) {
+            if ($self->{databases}->{$_}->{full}->{exec_seconds} != -1 && 
+                ($self->{databases}->{$_}->{incremental}->{exec_seconds} == -1 || 
+                 $self->{databases}->{$_}->{full}->{exec_seconds} < $self->{databases}->{$_}->{incremental}->{exec_seconds})) {
+                $self->{databases}->{$_}->{incremental}->{exec_seconds} = $self->{databases}->{$_}->{full}->{exec_seconds};
+                $self->{databases}->{$_}->{incremental}->{exec_human} = $self->{databases}->{$_}->{full}->{exec_human};
+            }
+        }
+    }
 }
 
 1;
@@ -242,6 +254,10 @@ Check MSSQL backup.
 =item B<--filter-name>
 
 Filter databases by name.
+
+=item B<--full-as-incremental>
+
+Last incremental backup time uses last full backup time only if full is newer than incremental.
 
 =item B<--unit>
 
