@@ -86,6 +86,7 @@ sub run {
     );
     $self->{output}->perfdata_add(
         label => 'open_files',
+        nlabel => 'database.open.files.count',
         value => $open_files,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $open_files_limit, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $open_files_limit, cast_int => 1),
