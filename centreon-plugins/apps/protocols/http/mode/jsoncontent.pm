@@ -29,6 +29,7 @@ use centreon::plugins::http;
 use centreon::plugins::misc;
 use JSON::Path;
 use JSON;
+$JSON::Path::Safe = 0;
 
 sub new {
     my ($class, %options) = @_;
