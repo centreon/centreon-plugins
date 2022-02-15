@@ -32,6 +32,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use JSON::XS;
 use XML::LibXML::Simple;
 use JSON::Path;
+$JSON::Path::Safe = 0;
 
 sub custom_select_threshold {
     my ($self, %options) = @_;
