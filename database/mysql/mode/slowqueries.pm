@@ -93,14 +93,18 @@ sub run {
         my $value = ($result - $old_val);
     
         my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("%d slow queries since last check.", $value);
-        $self->{output}->perfdata_add(label => 'slow_queries_delta',
-                                      nlabel => 'database.slowqueries.delta',
-                                      value => $value,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf("%d slow queries since last check.", $value)
+        );
+        $self->{output}->perfdata_add(
+            label => 'slow_queries_delta',
+            nlabel => 'database.slowqueries.delta',
+            value => $value,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
     }
     
     $self->{statefile_cache}->write(data => $new_datas); 
