@@ -156,10 +156,9 @@ Filter messages with severity less than to X.
 
 Display messages in verbose output.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-messages> B<--critical-messages>
 
 Thresholds.
-Can be: 'total'.
 
 =back
 
