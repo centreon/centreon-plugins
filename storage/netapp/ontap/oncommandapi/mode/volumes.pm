@@ -383,10 +383,10 @@ sub manage_selection {
                 $self->{volumes}->{ $volume->{key} }->{iops}->{write} = sprintf('%.2f', $metric->{samples}->[0]->{value}) if ($metric->{name} eq 'write_ops');
                 $self->{volumes}->{ $volume->{key} }->{iops}->{other} = sprintf('%.2f', $metric->{samples}->[0]->{value}) if ($metric->{name} eq 'other_ops');
                 
-                $self->{volumes}->{ $volume->{key} }->{latency}->{avg} = sprintf('%.2f', $metric->{samples}->[0]->{value}) if ($metric->{name} eq 'avg_latency');
-                $self->{volumes}->{ $volume->{key} }->{latency}->{read} = sprintf('%.2f', $metric->{samples}->[0]->{value}) if ($metric->{name} eq 'read_latency');
-                $self->{volumes}->{ $volume->{key} }->{latency}->{write} = sprintf('%.2f', $metric->{samples}->[0]->{value}) if ($metric->{name} eq 'write_latency');
-                $self->{volumes}->{ $volume->{key} }->{latency}->{other} = sprintf('%.2f', $metric->{samples}->[0]->{value}) if ($metric->{name} eq 'other_latency');
+                $self->{volumes}->{ $volume->{key} }->{latency}->{avg} = sprintf('%.2f', $metric->{samples}->[0]->{value} / 1000) if ($metric->{name} eq 'avg_latency');
+                $self->{volumes}->{ $volume->{key} }->{latency}->{read} = sprintf('%.2f', $metric->{samples}->[0]->{value} / 1000) if ($metric->{name} eq 'read_latency');
+                $self->{volumes}->{ $volume->{key} }->{latency}->{write} = sprintf('%.2f', $metric->{samples}->[0]->{value} / 1000) if ($metric->{name} eq 'write_latency');
+                $self->{volumes}->{ $volume->{key} }->{latency}->{other} = sprintf('%.2f', $metric->{samples}->[0]->{value} / 1000) if ($metric->{name} eq 'other_latency');
             }
         }
     }
