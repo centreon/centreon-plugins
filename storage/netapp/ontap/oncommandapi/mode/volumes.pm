@@ -162,7 +162,7 @@ sub set_counters {
         {
             label => 'status',
             type => 2,
-            critical_default => '%{state} !~ /running|online|none/i',
+            critical_default => '%{state} !~ /online/i',
             set => {
                 key_values => [ { name => 'state' }, { name => 'volumeName' }, { name => 'svmName' } ],
                 output_template => "state: %s",
@@ -442,7 +442,7 @@ Can used special variables like: %{state}, %{volumeName}, %{svmName}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} !~ /running|online|none/i').
+Set critical threshold for status (Default: '%{state} !~ /online/i').
 Can used special variables like: %{state}, %{volumeName}, %{svmName}
 
 =item B<--warning-*> B<--critical-*>

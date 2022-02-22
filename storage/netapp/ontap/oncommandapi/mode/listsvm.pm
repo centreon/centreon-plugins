@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::netapp::ontap::oncommandapi::mode::listvolumes;
+package storage::netapp::ontap::oncommandapi::mode::listsvm;
 
 use base qw(centreon::plugins::mode);
 
@@ -44,22 +44,14 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $svms = $options{custom}->get(path => '/storage-vms');
-    my $volumes = $options{custom}->get(path => '/volumes');
 
     my $results = [];
-    foreach my $volume (@$volumes) {
-        my $svm_name = $options{custom}->get_record_attr(records => $svms, key => 'key', value => $volume->{storage_vm_key}, attr => 'name');
-        $svm_name = 'root' if (!defined($svm_name));
-
+    foreach (@$svms) {
         push @$results, {
-            key => $volume->{key},
-            name => $volume->{name},
-            svm => $svm_name,
-            state => defined($volume->{state}) ? $volume->{state} : 'none',
-            vol_type => $volume->{vol_type},
-            style  => $volume->{style},
-            is_replica_volume  => $volume->{is_replica_volume},
-            size_total => $volume->{size_total}
+            key => $_->{key},
+            name => $_->{name},
+            state => defined($_->{state}) ? $_->{state} : 'none',
+            type => $_->{type}
         }
     }
 
@@ -73,22 +65,18 @@ sub run {
     foreach (@$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                "[key: %s] [name: %s] [svm: %s] [state: %s] [vol_type: %s] [style: %s] [is_replica_volume: %s] [size_total: %s]",
+                "[key: %s] [name: %s] [state: %s] [type: %s]",
                 $_->{key},
                 $_->{name},
-                $_->{svm},
                 $_->{state},
-                $_->{vol_type},
-                $_->{style},
-                $_->{is_replica_volume},
-                $_->{size_total}
+                $_->{type}
             )
         );
     }
     
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List volumes:'
+        short_msg => 'List storage virtual machines:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -97,12 +85,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;  
     
-    $self->{output}->add_disco_format(
-        elements => [
-            'key', 'name', 'svm', 'state', 'vol_type', 'style',
-            'is_replica_volume', 'size_total'
-        ]
-    );
+    $self->{output}->add_disco_format(elements => ['key', 'name', 'state', 'type']);
 }
 
 sub disco_show {
@@ -120,7 +103,7 @@ __END__
 
 =head1 MODE
 
-List volumes.
+List storage virtual machines.
 
 =over 8
 

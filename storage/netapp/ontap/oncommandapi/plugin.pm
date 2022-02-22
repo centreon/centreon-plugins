@@ -45,6 +45,7 @@ sub new {
         'list-luns'             => 'storage::netapp::ontap::oncommandapi::mode::listluns',
         'list-nodes'            => 'storage::netapp::ontap::oncommandapi::mode::listnodes',
         'list-snapmirrors'      => 'storage::netapp::ontap::oncommandapi::mode::listsnapmirrors',
+        'list-svm'              => 'storage::netapp::ontap::oncommandapi::mode::listsvm',
         'list-volumes'          => 'storage::netapp::ontap::oncommandapi::mode::listvolumes',
         'lun-alignment'         => 'storage::netapp::ontap::oncommandapi::mode::lunalignment',
         'lun-online'            => 'storage::netapp::ontap::oncommandapi::mode::lunonline',
