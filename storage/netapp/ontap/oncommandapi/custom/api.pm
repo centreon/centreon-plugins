@@ -24,7 +24,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
-use URI::Encode;
 
 sub new {
     my ($class, %options) = @_;
@@ -42,13 +41,13 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s@' => { name => 'hostname' },
-            'url-path:s@' => { name => 'url_path' },
-            'port:s@'     => { name => 'port' },
-            'proto:s@'    => { name => 'proto' },
-            'username:s@' => { name => 'username' },
-            'password:s@' => { name => 'password' },
-            'timeout:s@'  => { name => 'timeout' }
+            'hostname:s' => { name => 'hostname' },
+            'url-path:s' => { name => 'url_path' },
+            'port:s'     => { name => 'port' },
+            'proto:s'    => { name => 'proto' },
+            'username:s' => { name => 'username' },
+            'password:s' => { name => 'password' },
+            'timeout:s'  => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'OnCommand API OPTIONS', once => 1);
@@ -70,25 +69,20 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/api/4.0/ontap';
-    $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : 8443;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'https';
-    $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : '';
-    $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : '';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
+    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/4.0/ontap';
+    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8443;
+    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
+    $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
  
-    if (!defined($self->{hostname})) {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
-
-    if (!defined($self->{hostname}) ||
-        scalar(@{$self->{option_results}->{hostname}}) == 0) {
-        return 0;
-    }
     
-    return 1;
+    return 0;
 }
 
 sub build_options_for_httplib {
@@ -115,7 +109,7 @@ sub settings {
 
 sub get_connection_info {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname} . ":" . $self->{port};
 }
 
@@ -125,7 +119,7 @@ sub get_objects {
     my %objects;
     my $objects = $self->get(%options);
     foreach my $object (@{$objects}) {
-        $objects{$object->{$options{key}}} = $object->{$options{name}};
+        $objects{ $object->{ $options{key} } } = $object->{ $options{name} };
     }
 
     return \%objects;
@@ -134,19 +128,15 @@ sub get_objects {
 sub get_next {
     my ($self, %options) = @_;
 
-    my $encoded_tag = '';
-    if (defined($options{nextTag})) {
-        my $uri = URI::Encode->new({encode_reserved => 1});
-        $encoded_tag = "nextTag=" . $uri->encode($options{nextTag});
-    }
+    my $get_param = [];
+    $get_param = $options{get_param} if (defined($options{get_param}));
+    push @$get_param, 'nextTag=' . $options{nextTag} if (defined($options{nextTag}));
 
-    my $url_path = $self->{url_path} . $options{path};
-    $url_path .= '?' . $options{args} if (defined($options{args}));
-    $url_path .= '?' . $encoded_tag if (defined($options{nextTag}) && !defined($options{args}));
-    $url_path .= '&' . $encoded_tag if (defined($options{nextTag}) && defined($options{args}));
-    
-    my $response = $self->{http}->request(url_path => $url_path);
-    
+    my $response = $self->{http}->request(
+        url_path => $self->{url_path} . $options{path},
+        get_param => $get_param
+    );
+
     my $content;
     eval {
         $content = JSON::XS->new->utf8->decode($response);
@@ -160,7 +150,7 @@ sub get_next {
         $self->{output}->add_option_msg(short_msg => "Cannot get data: " . $content->{errmsg});
         $self->{output}->option_exit();
     }
-    
+
     return $content;
 }
 
@@ -170,14 +160,24 @@ sub get {
     $self->settings();
 
     my @result;
-    while(my $content = $self->get_next(%options)) {
+    while (my $content = $self->get_next(%options)) {
         push @result, @{$content->{result}->{records}};
-        
+
         last if (!defined($content->{result}->{nextTag}));
         $options{nextTag} = $content->{result}->{nextTag};
     }
 
     return \@result;
+}
+
+sub get_record_attr {
+    my ($self, %options) = @_;
+
+    foreach (@{$options{records}}) {
+        if ($_->{ $options{key} } eq $options{value}) {
+            return $_->{ $options{attr} };
+        }
+    }
 }
 
 1;
