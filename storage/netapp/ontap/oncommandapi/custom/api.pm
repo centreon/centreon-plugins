@@ -162,7 +162,6 @@ sub get {
     my @result;
     while (my $content = $self->get_next(%options)) {
         push @result, @{$content->{result}->{records}};
-        last;
 
         last if (!defined($content->{result}->{nextTag}));
         $options{nextTag} = $content->{result}->{nextTag};
