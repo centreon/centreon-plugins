@@ -29,8 +29,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'aggregate-raid-status' => 'storage::netapp::ontap::oncommandapi::mode::aggregateraidstatus',
         'aggregate-status'      => 'storage::netapp::ontap::oncommandapi::mode::aggregatestatus',
         'aggregate-usage'       => 'storage::netapp::ontap::oncommandapi::mode::aggregateusage',
@@ -55,12 +54,10 @@ sub new {
         'qtree-status'          => 'storage::netapp::ontap::oncommandapi::mode::qtreestatus',
         'snapmirror-status'     => 'storage::netapp::ontap::oncommandapi::mode::snapmirrorstatus',
         'snapmirror-usage'      => 'storage::netapp::ontap::oncommandapi::mode::snapmirrorusage',
-        'volume-io'             => 'storage::netapp::ontap::oncommandapi::mode::volumeio',
-        'volume-status'         => 'storage::netapp::ontap::oncommandapi::mode::volumestatus',
-        'volume-usage'          => 'storage::netapp::ontap::oncommandapi::mode::volumeusage'
-    );
+        'volumes'               => 'storage::netapp::ontap::oncommandapi::mode::volumes'
+    };
 
-    $self->{custom_modes}{api} = 'storage::netapp::ontap::oncommandapi::custom::api';
+    $self->{custom_modes}->{api} = 'storage::netapp::ontap::oncommandapi::custom::api';
     return $self;
 }
 
