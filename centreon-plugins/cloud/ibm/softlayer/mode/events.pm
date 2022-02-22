@@ -25,13 +25,13 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use DateTime;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_event_output {
     my ($self, %options) = @_;
-    
+
     return sprintf(
-        "Status is '%s', Impacted items: %d, Start date: %s, End date: %s",
+        "status is '%s', impacted items: %d, start date: %s, end date: %s",
         $self->{result_values}->{status},
         $self->{result_values}->{items},
         ($self->{result_values}->{start_date} ne "-") ? $self->{result_values}->{start_date} . ' (' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since_start}) . ' ago)' : '-',
@@ -56,21 +56,21 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-        { name => 'events', type => 1, cb_prefix_output => 'prefix_events_output' },
+        { name => 'events', type => 1, cb_prefix_output => 'prefix_events_output' }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'active', nlabel => 'events.active.count', set => {
                 key_values => [ { name => 'active' } ],
-                output_template => 'Active : %d',
+                output_template => 'active: %d',
                 perfdatas => [
-                    { label => 'active_events', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
         { label => 'completed', nlabel => 'events.completed.count', set => {
                 key_values => [ { name => 'completed' } ],
-                output_template => 'Completed : %d',
+                output_template => 'completed: %d',
                 perfdatas => [
                     { label => 'completed_events', template => '%d', min => 0 }
                 ]
@@ -78,9 +78,9 @@ sub set_counters {
         },
         { label => 'published',nlabel => 'events.published.count', set => {
                 key_values => [ { name => 'published' } ],
-                output_template => 'Published : %d',
+                output_template => 'published: %d',
                 perfdatas => [
-                    { label => 'published_events', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         }
@@ -88,8 +88,10 @@ sub set_counters {
 
     $self->{maps_counters}->{events} = [
         { label => 'event', type => 2, critical_default => '%{status} =~ /Active/ && %{items} > 0', set => {
-                key_values => [ { name => 'id' }, { name => 'subject' }, { name => 'status' }, { name => 'items' },
-                    { name => 'start_date' }, { name => 'since_start' }, { name => 'end_date' }, { name => 'since_end' } ],
+                key_values => [
+                    { name => 'id' }, { name => 'subject' }, { name => 'status' }, { name => 'items' },
+                    { name => 'start_date' }, { name => 'since_start' }, { name => 'end_date' }, { name => 'since_end' }
+                ],
                 closure_custom_output => $self->can('custom_event_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -100,9 +102,9 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'filter-status:s' => { name => 'filter_status', default => 'Active' }
     });
@@ -112,9 +114,9 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $current_time = time();
-    
+
     my %status_hash;
     my $events = $options{custom}->get_endpoint(service => 'SoftLayer_Notification_Occurrence_Event', method => 'getAllObjects', extra_content => '');
     foreach my $event (@{$events->{'ns1:getAllObjectsResponse'}->{'getAllObjectsReturn'}->{'item'}}) {
@@ -149,7 +151,7 @@ sub manage_selection {
                 second => $6,
                 time_zone => $7
             );
-            $start_epoch = $dt->epoch;
+            $start_epoch = $dt->epoch();
         }
         if (defined($event->{endDate}->{content}) && 
             $event->{endDate}->{content} =~ /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.*)$/) { # 2018-10-18T15:36:54+00:00
@@ -162,9 +164,9 @@ sub manage_selection {
                 second => $6,
                 time_zone => $7
             );
-            $end_epoch = $dt->epoch;
+            $end_epoch = $dt->epoch();
         }
-        
+
         $self->{events}->{$event->{id}->{content}} = {
             id => $event->{id}->{content},
             subject => $event->{subject}->{content},
@@ -194,13 +196,13 @@ Check events status and number of impacted ressources
 
 Filter events status (Default: 'Active')
 
-=item B<--warning-status>
+=item B<--warning-event>
 
-Set warning threshold for status (Default: '')
+Set warning threshold for status.
 Can used special variables like: %{id}, %{subject}, %{status}, %{items}, 
 %{start_date}, %{since_start}, %{end_date}, %{since_end}.
 
-=item B<--critical-status>
+=item B<--critical-event>
 
 Set critical threshold for status (Default: '%{status} =~ /Active/ && %{items} > 0').
 Can used special variables like: %{id}, %{subject}, %{status}, %{items}, 
