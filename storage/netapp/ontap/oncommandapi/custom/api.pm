@@ -128,24 +128,6 @@ sub get_objects {
 sub get_next {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{path} =~ /volumes$/) {
-        $file = '/home/qgarnier/clients/macif/oncommandapi/volumes.json';
-    } elsif ($options{path} =~ /metrics$/) {
-        $file = '/home/qgarnier/clients/macif/oncommandapi/metrics.json';
-    } elsif ($options{path} =~ /storage-vms$/) {
-        $file = '/home/qgarnier/clients/macif/oncommandapi/storage-vms.json';
-    }
-    my $response = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     my $get_param = [];
     $get_param = $options{get_param} if (defined($options{get_param}));
     push @$get_param, 'nextTag=' . $options{nextTag} if (defined($options{nextTag}));
@@ -154,7 +136,6 @@ sub get_next {
         url_path => $self->{url_path} . $options{path},
         get_param => $get_param
     );
-=cut
 
     my $content;
     eval {
