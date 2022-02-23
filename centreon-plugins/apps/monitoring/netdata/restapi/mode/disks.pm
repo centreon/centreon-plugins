@@ -115,34 +115,33 @@ sub manage_selection {
 
     foreach my $chart (values %{$full_list->{charts}}) {
         next if ($chart->{name} !~ 'disk_space._');
-        push @{$self->{fs_list}}, $chart->{name};
+        push @{$self->{fs_list}}, { name => $chart->{name}, family => $chart->{family} };
     }
 
+    $self->{diskpath} = {};
     foreach my $fs (@{$self->{fs_list}}) {
         my $result = $options{custom}->get_data(
-            chart => $fs,
+            chart => $fs->{name},
             dimensions => 'used,avail,reserved_for_root',
             after_period => $self->{option_results}->{chart_period},
             group => $self->{option_results}->{chart_statistics}
         );
 
-        $fs =~ s/disk_space.//;
-        $fs =~ s/_/\//g;
+        my $family = $fs->{family};
 
-        next if (defined($self->{option_results}->{fs_name}) &&
-            $self->{option_results}->{fs_name} ne '' &&
-            $fs !~ /$self->{option_results}->{fs_name}/
-        );
+        next if (defined($self->{option_results}->{fs_name}) && $self->{option_results}->{fs_name} ne '' &&
+            $family !~ /$self->{option_results}->{fs_name}/);
 
+        my $metrics = {};
         foreach my $fs_value (@{$result->{data}}) {
             foreach my $fs_label (@{$result->{labels}}) {
-                $self->{fs}->{$fs}->{$fs_label} = shift @{$fs_value};
+                $metrics->{$fs_label} = shift @{$fs_value};
             }
         }
 
-        my $reserved_space = defined($self->{option_results}->{space_reservation}) ? $self->{fs}->{$fs}->{'reserved for root'} * (1024 ** 3) : '0';
-        my $used = $self->{fs}->{$fs}->{used} * (1024 ** 3);
-        my $free = $self->{fs}->{$fs}->{avail} * (1024 ** 3);
+        my $reserved_space = defined($self->{option_results}->{space_reservation}) ? $metrics->{'reserved for root'} * (1024 ** 3) : 0;
+        my $used = $metrics->{used} * (1024 ** 3);
+        my $free = $metrics->{avail} * (1024 ** 3);
         my $total = $used + $free + $reserved_space;
         my $prct_used = $used * 100 / $total;
         my $prct_free = 100 - $prct_used;
@@ -153,8 +152,8 @@ sub manage_selection {
             $prct_free = 0;
         }
 
-        $self->{diskpath}->{$fs} = {
-            display => $fs,
+        $self->{diskpath}->{$family} = {
+            display => $family,
             used => $used,
             total => $total,
             free => $free,
