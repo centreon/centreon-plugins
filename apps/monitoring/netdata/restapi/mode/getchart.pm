@@ -84,10 +84,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-          'chart-name:s'        => { name => 'chart_name' },
-          'chart-period:s'      => { name => 'chart_period', default => '300' },
-          'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' },
-          'filter-metric:s'     => { name => 'filter_metric' }
+          'chart-name:s'       => { name => 'chart_name' },
+          'chart-period:s'     => { name => 'chart_period', default => '300' },
+          'chart-statistics:s' => { name => 'chart_statistics', default => 'average' },
+          'filter-metric:s'    => { name => 'filter_metric' }
     });
 
     return $self;
@@ -169,7 +169,7 @@ This option is mandatory
 The period in seconds on which the values are calculated
 Default: 300
 
-=item B<--chart-statistic>
+=item B<--chart-statistics>
 
 The statistic calculation method used to parse the collected data.
 Can be : average, sum, min, max
@@ -187,7 +187,6 @@ Warning threshold (global to all the collected metrics)
 =item B<--critical-metric>
 
 Critical threshold (global to all the collected metrics)
-
 
 =back
 
