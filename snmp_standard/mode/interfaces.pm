@@ -159,9 +159,12 @@ sub custom_cast_calc {
     } elsif ($self->{instance_mode}->{option_results}->{units_cast} eq 'percent') {
         $self->{result_values}->{prct} = $cast * 100 / $total if ($total > 0);
         $self->{result_values}->{used} = $cast;
+        $self->{result_values}->{total} = $total;
     } elsif ($self->{instance_mode}->{option_results}->{units_cast} eq 'delta') {
+        $self->{result_values}->{prct} = $cast_diff * 100 / $total_diff if ($total_diff > 0);
         $self->{result_values}->{used} = $cast_diff;
     } else {
+        $self->{result_values}->{prct} = $cast_diff * 100 / $total_diff if ($total_diff > 0);
         $self->{result_values}->{used} = $cast;
         $self->{result_values}->{total} = $total;
     }
@@ -355,9 +358,12 @@ sub custom_errors_calc {
     } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent') {
         $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
         $self->{result_values}->{used} = $errors;
+        $self->{result_values}->{total} = $total;
     } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'delta') {
+        $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
         $self->{result_values}->{used} = $errors_diff;
     } else {
+        $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
         $self->{result_values}->{used} = $errors;
         $self->{result_values}->{total} = $total;
     }
