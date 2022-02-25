@@ -18,17 +18,19 @@
 # limitations under the License.
 #
 
-package apps::monitoring::netdata::restapi::mode::listdisks;
+package storage::netapp::ontap::oncommandapi::mode::listsvm;
+
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-
-use base qw(centreon::plugins::mode);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
+    
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -38,43 +40,60 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
-    my $full_list = $options{custom}->list_charts();
+    my $svms = $options{custom}->get(path => '/storage-vms');
 
-    foreach my $chart (values %{$full_list->{charts}}) {
-        next if ($chart->{name} !~ 'disk_space._');
+    my $results = [];
+    foreach (@$svms) {
+        push @$results, {
+            key => $_->{key},
+            name => $_->{name},
+            state => defined($_->{state}) ? $_->{state} : 'none',
+            type => $_->{type}
+        }
+    }
 
+    return $results;
+}
+
+sub run {
+    my ($self, %options) = @_;
+  
+    my $results = $self->manage_selection(%options);
+    foreach (@$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                "[name: %s][title: %s]",
-                $chart->{family},
-                $chart->{title}
+                "[key: %s] [name: %s] [state: %s] [type: %s]",
+                $_->{key},
+                $_->{name},
+                $_->{state},
+                $_->{type}
             )
         );
     }
-
-    $self->{output}->output_add(severity => 'OK', short_msg => 'Server disks:');
+    
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List storage virtual machines:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
-    my ($self, %options) = @_;
-
-    $self->{output}->add_disco_format(elements => [ 'name', 'title' ]);
+    my ($self, %options) = @_;  
+    
+    $self->{output}->add_disco_format(elements => ['key', 'name', 'state', 'type']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->run(%options);
-    foreach my $fs (@{$self->{fs_list}}) {
-        $self->{output}->add_disco_entry(
-            name   => $fs->{family},
-            status => $fs->{title}
-        );
+    my $results = $self->manage_selection(%options);
+    foreach (@$results) {          
+        $self->{output}->add_disco_entry(%$_);
     }
 }
 
@@ -84,7 +103,9 @@ __END__
 
 =head1 MODE
 
-List system disks using the Netdata agent Restapi.
+List storage virtual machines.
+
+=over 8
 
 =back
 

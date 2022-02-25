@@ -85,6 +85,7 @@ sub run {
                                 short_msg => sprintf("%.2f%% of the open files limit reached (%d of max. %d)",
                                 $prct_open, $open_tables, $open_tables_limit));
     $self->{output}->perfdata_add(label => 'open_tables',
+                                  nlabel => 'database.open.tables.count',
                                   value => $open_tables,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $open_tables_limit, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $open_tables_limit, cast_int => 1),

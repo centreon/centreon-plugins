@@ -32,6 +32,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use JSON::XS;
 use XML::LibXML::Simple;
 use JSON::Path;
+$JSON::Path::Safe = 0;
 
 sub custom_select_threshold {
     my ($self, %options) = @_;
@@ -263,10 +264,28 @@ sub call_http {
 
     my $creds = {};
     if (defined($options{rq}->{authorization}) && defined($options{rq}->{authorization}->{username})) {
+        $options{rq}->{authorization}->{username} = $self->substitute_constants(value => $options{rq}->{authorization}->{username});
+        $options{rq}->{authorization}->{password} = $self->substitute_constants(value => $options{rq}->{authorization}->{password});
         $creds = {
             credentials => 1,
             %{$options{rq}->{authorization}}
         };
+    }
+
+    my $headers;
+    if (defined($options{rq}->{headers}) && ref($options{rq}->{headers}) eq 'ARRAY') {
+        $headers = [];
+        foreach my $header (@{$options{rq}->{headers}}) {
+            push @$headers, $self->substitute_constants(value => $header);
+        }
+    }
+
+    my $get_params;
+    if (defined($options{rq}->{get_params}) && ref($options{rq}->{get_params}) eq 'ARRAY') {
+        $get_params = [];
+        foreach my $param (@{$options{rq}->{get_params}}) {
+            push @$get_params, $self->substitute_constants(value => $param);
+        }
     }
 
     my $post_param = $self->get_payload(rq => $options{rq});
@@ -275,16 +294,16 @@ sub call_http {
 
     my $timing0 = [gettimeofday];
     my ($content) = $http->request(
-        backend => $options{rq}->{backend},
-        method => $options{rq}->{method},
-        hostname => $options{rq}->{hostname},
-        proto => $options{rq}->{proto},
-        port => $options{rq}->{port},
-        url_path => $options{rq}->{endpoint},
-        header => $options{rq}->{headers},
-        timeout => $options{rq}->{timeout},
-        get_param => $options{rq}->{get_params},
-        query_form_post => $post_param,
+        backend => $self->substitute_constants(value => $options{rq}->{backend}),
+        method => $self->substitute_constants(value => $options{rq}->{method}),
+        hostname => $self->substitute_constants(value => $options{rq}->{hostname}),
+        proto => $self->substitute_constants(value => $options{rq}->{proto}),
+        port => $self->substitute_constants(value => $options{rq}->{port}),
+        url_path => $self->substitute_constants(value => $options{rq}->{endpoint}),
+        header => $headers,
+        timeout => $self->substitute_constants(value => $options{rq}->{timeout}),
+        get_param => $get_params,
+        query_form_post => $self->substitute_constants(value => $post_param),
         insecure => $options{rq}->{insecure},
         unknown_status => '',
         warning_status => '',
@@ -894,20 +913,24 @@ sub set_builtin {
     }
 }
 
-sub set_constants {
+sub create_constants {
     my ($self, %options) = @_;
 
-    my $constants = {};
+    $self->{constants} = {};
     if (defined($self->{config}->{constants})) {
         foreach (keys %{$self->{config}->{constants}}) {
-            $constants->{'constants.' . $_} = $self->{config}->{constants}->{$_};
+            $self->{constants}->{'constants.' . $_} = $self->{config}->{constants}->{$_};
         }
     }
     foreach (keys %{$self->{option_results}->{constant}}) {
-        $constants->{'constants.' . $_} = $self->{option_results}->{constant}->{$_};
+        $self->{constants}->{'constants.' . $_} = $self->{option_results}->{constant}->{$_};
     }
+}
 
-    return $constants;
+sub set_constants {
+    my ($self, %options) = @_;
+
+    return { %{$self->{constants}} };
 }
 
 sub set_expand_table {
@@ -1328,6 +1351,14 @@ sub set_functions {
     }
 }
 
+sub substitute_constants {
+    my ($self, %options) = @_;
+
+    return undef if (!defined($options{value}));
+    $options{value} =~ s/%\((constants\.[a-zA-Z0-9\._:]+?)\)/$self->{constants}->{$1}/g;
+    return $options{value};
+}
+
 sub prepare_variables {
     my ($self, %options) = @_;
 
@@ -1507,6 +1538,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->read_config();
+    $self->create_constants();
     $self->collect_http();
 
     $self->{selections} = {};
@@ -1528,6 +1560,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->read_config();
+    $self->create_constants();
     $self->collect_http();
 
     $self->{selections} = {};
