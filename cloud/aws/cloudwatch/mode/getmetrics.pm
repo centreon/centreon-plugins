@@ -128,10 +128,6 @@ sub check_options {
             $append = '-';
         }
     }
-    if ($self->{dimension_name} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --dimension option.");
-        $self->{output}->option_exit();
-    }
 
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
@@ -209,7 +205,7 @@ Set cloudwatch namespace (Required).
 
 =item B<--dimension>
 
-Set cloudwatch dimensions (Required).
+Set cloudwatch dimensions.
 
 =item B<--metric>
 
