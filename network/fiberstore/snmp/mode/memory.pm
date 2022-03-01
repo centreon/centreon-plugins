@@ -100,6 +100,11 @@ sub manage_selection {
     if (!defined($result->{total})) {
         ($total, $free) = ('total_legacy', 'free_legacy');
     }
+    if ($result->{$total} !~ /[0-9]+/) {
+        $self->{output}->add_option_msg(short_msg => 'cannot get informations');
+        $self->{output}->option_exit();
+
+    }
 
     $result->{$total} *= 1024;
     $result->{$free} *= 1024;
