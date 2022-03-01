@@ -48,6 +48,7 @@ sub new {
         'filter-uom:s'            => { name => 'filter_uom' },
         'verbose'                 => { name => 'verbose' },
         'debug'                   => { name => 'debug' },
+        'debug-stream'            => { name => 'debug_stream' },
         'opt-exit:s'              => { name => 'opt_exit', default => 'unknown' },
         'output-xml'              => { name => 'output_xml' },
         'output-json'             => { name => 'output_json' },
@@ -196,7 +197,7 @@ sub output_add {
         short_msg => undef,
         long_msg => undef,
     );
-    my $options = {%args, %params};
+    my $options = { %args, %params };
 
     if (defined($options->{short_msg})) {
         chomp $options->{short_msg};
@@ -209,10 +210,11 @@ sub output_add {
         push @{$self->{global_short_outputs}->{uc($options->{severity})}}, $options->{short_msg};
         $self->set_status(exit_litteral => $options->{severity});
     }
-    if (defined($options->{long_msg}) && 
-        ($options->{debug} == 0 || defined($self->{option_results}->{debug}))) {
+    if (defined($options->{long_msg})) {
         chomp $options->{long_msg};
-        push @{$self->{global_long_output}}, $options->{long_msg};
+
+        push @{$self->{global_long_output}}, $options->{long_msg} if ($options->{debug} == 0 || defined($self->{option_results}->{debug}));
+        print $options->{long_msg} . "\n" if (defined($self->{option_results}->{debug_stream}));
     }
 }
 
@@ -776,7 +778,6 @@ sub plugin {
 
 sub mode {
     my ($self, %options) = @_;
-    # $options{name} = string name
 
     if (defined($options{name})) {
         $self->{mode} = $options{name};
@@ -914,7 +915,7 @@ sub is_verbose {
 sub is_debug {
     my ($self) = @_;
 
-    if (defined($self->{option_results}->{debug})) {
+    if (defined($self->{option_results}->{debug}) || defined($self->{option_results}->{debug_stream})) {
         return 1;
     }
     return 0;
