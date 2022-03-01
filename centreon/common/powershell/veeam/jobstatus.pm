@@ -49,7 +49,7 @@ Try {
 
     $sessions = @{}
     Get-VBRBackupSession | Sort CreationTimeUTC -Descending | ForEach-Object {
-		$jobId = $_.jobId.toString()
+        $jobId = $_.jobId.toString()
         if (-not $sessions.ContainsKey($jobId)) {
             $sessions[$jobId] = New-Object System.Collections.Generic.List[Hashtable];
             $session = @{}
@@ -57,7 +57,7 @@ Try {
             $session.creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
             $session.endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
             $sessions[$jobId].Add($session)
-        } elseif ($sessions[$jobId] -lt 2) {
+        } elseif ($sessions[$jobId].Length -lt 2) {
             $session = @{}
             $session.result = $_.Result.value__
             $session.creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
@@ -77,7 +77,7 @@ Try {
             $item.isContinuous = 1
         }
 
-		$guid = $_.Id.Guid.toString()
+        $guid = $_.Id.Guid.toString()
         if ($sessions.ContainsKey($guid)) {
             $item.sessions = $sessions[$guid]
         } else {

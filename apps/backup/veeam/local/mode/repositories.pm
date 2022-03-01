@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::common::powershell::veeam::repositories;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use apps::backup::veeam::local::mode::resources::types qw($repository_type $repository_status);
 use JSON::XS;
