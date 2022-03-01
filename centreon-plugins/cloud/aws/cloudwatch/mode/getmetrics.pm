@@ -128,10 +128,6 @@ sub check_options {
             $append = '-';
         }
     }
-    if ($self->{dimension_name} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --dimension option.");
-        $self->{output}->option_exit();
-    }
 
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
@@ -178,9 +174,11 @@ sub manage_selection {
     foreach my $label (keys %{$metric_results}) {
         foreach my $stat (('minimum', 'maximum', 'average', 'sum')) {
             next if (!defined($metric_results->{$label}->{$stat}));
-            
-            $self->{metrics}->{$self->{dimension_name} . '_' . $label . '_' . $stat} = {
-                display => $self->{dimension_name} . '_' . $label . '_' . $stat,
+
+            my $name = $label . '_' . $stat;
+            $name = $self->{dimension_name} . '_' . $name if ($self->{dimension_name} ne '');
+            $self->{metrics}->{$name} = {
+                display => $name,
                 value => $metric_results->{$label}->{$stat},
                 perf_label => $label . '_' . $stat,
             };
@@ -209,7 +207,7 @@ Set cloudwatch namespace (Required).
 
 =item B<--dimension>
 
-Set cloudwatch dimensions (Required).
+Set cloudwatch dimensions.
 
 =item B<--metric>
 
