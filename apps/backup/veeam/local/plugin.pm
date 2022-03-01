@@ -30,12 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'job-status'   => 'apps::backup::veeam::local::mode::jobstatus',
-        'licenses'     => 'apps::backup::veeam::local::mode::licenses',
-        'list-jobs'    => 'apps::backup::veeam::local::mode::listjobs',
-        'repositories' => 'apps::backup::veeam::local::mode::repositories',
-        'tape-jobs'    => 'apps::backup::veeam::local::mode::tapejobs',
-        'vsb-jobs'     => 'apps::backup::veeam::local::mode::vsbjobs'
+        'job-status'        => 'apps::backup::veeam::local::mode::jobstatus',
+        'licenses'          => 'apps::backup::veeam::local::mode::licenses',
+        'list-jobs'         => 'apps::backup::veeam::local::mode::listjobs',
+        'list-repositories' => 'apps::backup::veeam::local::mode::listrepositories',
+        'repositories'      => 'apps::backup::veeam::local::mode::repositories',
+        'tape-jobs'         => 'apps::backup::veeam::local::mode::tapejobs',
+        'vsb-jobs'          => 'apps::backup::veeam::local::mode::vsbjobs'
     };
 
     return $self;
