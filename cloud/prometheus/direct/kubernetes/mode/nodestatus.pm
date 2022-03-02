@@ -24,14 +24,16 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("Status is '%s', New Pods Schedulable : %s",
+    return sprintf(
+        "Status is '%s', New Pods Schedulable : %s",
         $self->{result_values}->{status},
-        $self->{result_values}->{schedulable});
+        $self->{result_values}->{schedulable}
+    );
 }
 
 sub custom_status_calc {
@@ -39,7 +41,7 @@ sub custom_status_calc {
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{schedulable} = ($options{new_datas}->{$self->{instance} . '_unschedulable'} == 1) ? "false" : "true";
+    $self->{result_values}->{schedulable} = ($options{new_datas}->{$self->{instance} . '_unschedulable'} == 1) ? 'false' : 'true';
 
     return 0;
 }
@@ -76,8 +78,11 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_allocated};
     }
     $exit = $self->{perfdata}->threshold_check(
-        value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-                                                  { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+        ]
     );
     return $exit;
 }
@@ -85,12 +90,13 @@ sub custom_usage_threshold {
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Pods Capacity: %s, Allocatable: %s, Allocated: %s (%.2f%%)",
+    return sprintf(
+        "Pods Capacity: %s, Allocatable: %s, Allocated: %s (%.2f%%)",
         $self->{result_values}->{capacity},
         $self->{result_values}->{allocatable},
         $self->{result_values}->{allocated},
-        $self->{result_values}->{prct_allocated});
-    return $msg;
+        $self->{result_values}->{prct_allocated}
+    );
 }
 
 sub custom_usage_calc {
@@ -101,37 +107,8 @@ sub custom_usage_calc {
     $self->{result_values}->{allocatable} = $options{new_datas}->{$self->{instance} . '_allocatable'};
     $self->{result_values}->{allocated} = $options{new_datas}->{$self->{instance} . '_allocated'};
     $self->{result_values}->{prct_allocated} = ($self->{result_values}->{allocatable} > 0) ? $self->{result_values}->{allocated} * 100 / $self->{result_values}->{allocatable} : 0;
-    
+
     return 0;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output',
-          message_multiple => 'All nodes status are ok', message_separator => ' - ', skipped_code => { -11 => 1 } },
-    ];
-
-    $self->{maps_counters}->{nodes} = [
-        { label => 'status', set => {
-                key_values => [ { name => 'status' }, { name => 'unschedulable' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-        { label => 'allocated-pods', set => {
-                key_values => [ { name => 'capacity' }, { name => 'allocatable' }, { name => 'allocated' },
-                    { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-            }
-        },
-    ];
 }
 
 sub prefix_node_output {
@@ -140,27 +117,56 @@ sub prefix_node_output {
     return "Node '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output',
+          message_multiple => 'All nodes status are ok', message_separator => ' - ', skipped_code => { -11 => 1 } }
+    ];
+
+    $self->{maps_counters}->{nodes} = [
+        { label => 'status', type => 2, critical_default => '%{status} !~ /Ready/ || %{schedulable} =~ /false/', set => {
+                key_values => [ { name => 'status' }, { name => 'unschedulable' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'allocated-pods', set => {
+                key_values => [
+                    { name => 'capacity' }, { name => 'allocatable' }, { name => 'allocated' },
+                    { name => 'display' }
+                ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "node:s"                => { name => 'node', default => 'node=~".*"' },
-        "warning-status:s"      => { name => 'warning_status' },
-        "critical-status:s"     => { name => 'critical_status', default => '%{status} !~ /Ready/ || %{schedulable} =~ /false/' },
-        "extra-filter:s@"       => { name => 'extra_filter' },
-        "metric-overload:s@"    => { name => 'metric_overload' },
-        "units:s"               => { name => 'units', default => ''  },
+        'node:s'             => { name => 'node', default => 'node=~".*"' },
+        'extra-filter:s@'    => { name => 'extra_filter' },
+        'metric-overload:s@' => { name => 'metric_overload' },
+        'units:s'            => { name => 'units', default => ''  }
     });
-   
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $self->{metrics} = {
         'status' => '^kube_node_status_condition$',
         'unschedulable' => '^kube_node_spec_unschedulable$',
@@ -186,14 +192,10 @@ sub check_options {
     foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
         $self->{extra_filter} .= ',' . $filter;
     }
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    $self->{nodes} = {};
     
     my $results = $options{custom}->query(
         queries => [
@@ -216,12 +218,16 @@ sub manage_selection {
         ]
     );
 
+    $self->{nodes} = {};
     foreach my $result (@{$results}) {
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{node}}}->{display} = $result->{metric}->{$self->{labels}->{node}};
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{node}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{node}}}->{$result->{metric}->{__name__}} = $result->{metric}->{condition} if ($result->{metric}->{__name__} =~ /status/);
+        $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{node} } }->{display} = $result->{metric}->{ $self->{labels}->{node} };
+        if ($result->{metric}->{__name__} =~ /status/ && $result->{value}->[1] == 1) {
+            $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{node} } }->{ $result->{metric}->{__name__} } = $result->{metric}->{condition};
+        } else {
+            $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{node} } }->{ $result->{metric}->{__name__} } = $result->{value}->[1];
+        }
     }
-    
+
     if (scalar(keys %{$self->{nodes}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No nodes found.");
         $self->{output}->option_exit();
