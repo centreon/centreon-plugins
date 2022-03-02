@@ -25,13 +25,15 @@ use warnings;
 use Exporter;
 
 our $node_replication_state;
+our $node_replication_health;
 our $node_vm_integration_service_operational_status;
 our $node_vm_state;
 our $scvmm_vm_status;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
-    $node_replication_state $node_vm_integration_service_operational_status
+    $node_replication_state $node_replication_health
+    $node_vm_integration_service_operational_status
     $node_vm_state $scvmm_vm_status
 );
 
@@ -63,6 +65,13 @@ $node_vm_state = {
     32792 => 'ResumingCritical',
     32793 => 'FastSavedCritical',
     32794 => 'FastSavingCritical'
+};
+
+$node_replication_health = {
+    0 => 'notApplicable',
+    1 => 'normal',
+    2 => 'warning',
+    3 => 'critical'
 };
 
 $node_replication_state = {

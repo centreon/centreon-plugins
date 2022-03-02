@@ -26,14 +26,20 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::nodereplication;
-use apps::microsoft::hyperv::2012::local::mode::resources::types qw($node_replication_state);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use apps::microsoft::hyperv::2012::local::mode::resources::types qw($node_replication_state $node_replication_health);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use JSON::XS;
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return 'replication health: ' . $self->{result_values}->{health};
+}
+
+sub prefix_vm_output {
+    my ($self, %options) = @_;
+
+    return "VM '" . $options{instance_value}->{vm} . "' ";
 }
 
 sub set_counters {
@@ -44,20 +50,19 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{vm} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2,
+            warning_default => '%{health} =~ /warning/i',
+            critical_default => '%{health} =~ /critical/i',
+            set => {
                 key_values => [ { name => 'vm' }, { name => 'state' }, { name => 'health' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
-}
-
-sub prefix_vm_output {
-    my ($self, %options) = @_;
-
-    return "VM '" . $options{instance_value}->{vm} . "' ";
 }
 
 sub new {
@@ -73,19 +78,10 @@ sub new {
         'no-ps'             => { name => 'no_ps' },
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
-        'filter-vm:s'       => { name => 'filter_vm' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{health} =~ /Warning/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{health} =~ /Critical/i' }
+        'filter-vm:s'       => { name => 'filter_vm' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);  
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -131,9 +127,9 @@ sub manage_selection {
     }
 
     #[
-    #  { "name": "XXXX1", "state": "Replicating", "health": "Critical" },
-    #  { "name": "XXXX2", "state": "Replicating", "health": "Normal" },
-    #  { "name": "XXXX3", "state": "Replicating", "health": "Warning" }
+    #  { "name": "XXXX1", "state": 2, "health": 1 },
+    #  { "name": "XXXX2", "state": 2, "health": 2 },
+    #  { "name": "XXXX3", "state": 2, "health": 2 }
     #]
     $self->{vm} = {};
     my $id = 1;
@@ -147,7 +143,7 @@ sub manage_selection {
         $self->{vm}->{$id} = {
             vm => $node->{name},
             state => $node_replication_state->{ $node->{state} },
-            health => $node->{health}
+            health => $node_replication_health->{ $node->{health} }
         };
         $id++;
     }
