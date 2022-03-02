@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use database::mssql::mode::resources::types qw($database_state);
 
 sub new {
     my ($class, %options) = @_;
@@ -45,41 +46,47 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{sql} = $options{sql};
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{DBCC SQLPERF(LOGSPACE)});
+    $options{sql}->connect();
+    $options{sql}->query(query => q{
+        SELECT
+            D.name AS [database_name],
+            D.state
+        FROM sys.databases D
+    });
 
     my $result = $self->{sql}->fetchall_arrayref();
+    my $databases = {};
+    foreach (@$result) {
+        next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' &&
+            $_->[0] !~ /$self->{option_results}->{filter_database}/);
 
-    foreach my $database (@$result) {
-        if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' &&
-            $$database[0] !~ /$self->{option_results}->{filter_database}/i) {
-            next;
-        }
-        
-        $self->{sql}->query(query => "use [" . $$database[0] . "]; exec sp_spaceused;");
-        my $result2 = $self->{sql}->fetchall_arrayref();
-        
-        foreach my $row (@$result2) {
-            $self->{databases}->{$$row[0]} = {
-                display => $$row[0],
-                total => convert_bytes($$row[1]),
-            };
-        }
+        $databases->{ $_->[0] } = {
+            name => $_->[0],
+            state => $database_state->{ $_->[1] }
+        };
     }
+
+    return $databases;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $database (sort keys %{$self->{databases}}) {
-        $self->{output}->output_add(long_msg => sprintf("[name = %s] [total = %s]",
-                                                         $self->{databases}->{$database}->{display}, $self->{databases}->{$database}->{total}));
+    my $databases = $self->manage_selection(%options);
+    foreach (values %$databases) {
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '[name: %s] [state: %s]',
+                $_->{name},
+                $_->{state}
+            )
+        );
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List databases:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List databases:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -87,34 +94,16 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name', 'total']);
+    $self->{output}->add_disco_format(elements => ['name', 'state']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $database (sort keys %{$self->{databases}}) {
-        $self->{output}->add_disco_entry(
-            name => $self->{databases}->{$database}->{display},
-            total => $self->{databases}->{$database}->{total},
-        );
+    my $databases = $self->manage_selection(%options);
+    foreach (values %$databases) {
+        $self->{output}->add_disco_entry(%$_);
     }
-}
-
-sub convert_bytes {
-    my ($brut) = @_;
-    my ($value,$unit) = split(/\s+/,$brut);
-    if ($unit =~ /kb*/i) {
-        $value = $value * 1024;
-    } elsif ($unit =~ /mb*/i) {
-        $value = $value * 1024 * 1024;
-    } elsif ($unit =~ /gb*/i) {
-        $value = $value * 1024 * 1024 * 1024;
-    } elsif ($unit =~ /tb*/i) {
-        $value = $value * 1024 * 1024 * 1024 * 1024;
-    }
-    return $value;
 }
 
 1;
