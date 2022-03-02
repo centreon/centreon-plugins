@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use database::mssql::mode::resources::types qw($database_state);
 
 sub prefix_database_output {
     my ($self, %options) = @_;
@@ -114,8 +115,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-database:s' => { name => 'filter_database' },
-        'filter-table:s'    => { name => 'filter_table' }
+        'filter-database:s'       => { name => 'filter_database' },
+        'filter-database-state:s' => { name => 'filter_database_state' },
+        'filter-table:s'          => { name => 'filter_table' }
     });
 
     return $self;
@@ -165,19 +167,20 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    $options{sql}->query(query => qq{
-        SELECT [name] as database_name
-        FROM sys.databases
+    $options{sql}->query(query => q{
+        SELECT
+            D.name AS [database_name],
+            D.state
+        FROM sys.databases D
     });
 
     $self->{databases} = {};
     my $results = $options{sql}->fetchall_arrayref();
     foreach my $row (@$results) {
-        if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' && 
-            $row->[0] !~ /$self->{option_results}->{filter_database}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $row->[0] . "': no matching filter.", debug => 1);
-            next
-        }
+        next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' && 
+            $row->[0] !~ /$self->{option_results}->{filter_database}/);
+        next if (defined($self->{option_results}->{filter_database_state}) && $self->{option_results}->{filter_database_state} ne '' &&
+            $database_state->{ $row->[1] } !~ /$self->{option_results}->{filter_database_state}/);
 
         $self->{databases}->{ $row->[0] } = {
             display => $row->[0],
@@ -207,6 +210,10 @@ Check tables size.
 =item B<--filter-database>
 
 Filter tables by database name (Can be a regexp).
+
+=item B<--filter-database-state>
+
+Filter databases by state.
 
 =item B<--filter-table>
 

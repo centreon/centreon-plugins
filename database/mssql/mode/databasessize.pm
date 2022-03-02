@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use database::mssql::mode::resources::types qw($database_state);
 
 sub custom_space_usage_perfdata {
     my ($self, %options) = @_;
@@ -233,6 +234,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-database:s'             => { name => 'filter_database' },
+        'filter-database-state:s'       => { name => 'filter_database_state' },
         'datafiles-maxsize:s'           => { name => 'datafiles_maxsize' },
         'logfiles-maxsize:s'            => { name => 'logfiles_maxsize' },
         'datafiles-maxsize-unlimited:s' => { name => 'datafiles_maxsize_unlimited' },
@@ -259,51 +261,59 @@ sub manage_selection {
         }
     }
 
-    $options{sql}->query(query => qq{
-        EXEC sp_MSforeachdb 'USE [?]
+    $options{sql}->query(query => q{
         SELECT
-            DB_NAME(),
-            [name],    
-            physical_name,
-            [File_Type] = CASE type   
-                WHEN 0 THEN ''data''
-                WHEN 1 THEN ''log''
-            END,
-            [Total_Size] = [size],
-            [Used_Space] = (CAST(FILEPROPERTY([name], ''SpaceUsed'') as int)),
-            [Growth_Units] = CASE [is_percent_growth]    
-                WHEN 1 THEN CAST(growth AS varchar(20)) + ''%''
-                ELSE CAST(growth*8/1024 AS varchar(20)) + ''Mb''
-            END,
-            [max_size]
-        FROM sys.database_files'
+            D.name AS [database_name],
+            D.state
+        FROM sys.databases D
     });
+
+    my $databases = $options{sql}->fetchall_arrayref();
 
     # limit can be: 'unlimited', 'overload', 'other'.
     $self->{databases} = {};
-    while ($result = $options{sql}->fetchall_arrayref()) {
-        last if (scalar(@$result) <= 0);
+    foreach my $database (@$databases) {
+        my $dbname = $database->[0];
+        next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' &&
+            $dbname !~ /$self->{option_results}->{filter_database}/i);
+        next if (defined($self->{option_results}->{filter_database_state}) && $self->{option_results}->{filter_database_state} ne '' &&
+            $database_state->{ $database->[1] } !~ /$self->{option_results}->{filter_database_state}/);
 
-        foreach my $row (@$result) {
-            next if (!defined($row->[7]));    
+        $options{sql}->query(query => qq{
+            USE [$dbname]
+            SELECT
+                [name],
+                physical_name,
+                [File_Type] = CASE type   
+                    WHEN 0 THEN ''data''
+                    WHEN 1 THEN ''log''
+                END,
+                [Total_Size] = [size],
+                [Used_Space] = (CAST(FILEPROPERTY([name], ''SpaceUsed'') as int)),
+                [Growth_Units] = CASE [is_percent_growth]    
+                    WHEN 1 THEN CAST(growth AS varchar(20)) + ''%''
+                    ELSE CAST(growth*8/1024 AS varchar(20)) + ''Mb''
+                END,
+                [max_size]
+            FROM sys.database_files
+        });
+
+        my $rows = $options{sql}->fetchall_arrayref();
+
+        foreach my $row (@$rows) {
+            next if (!defined($row->[6]));    
     
-            if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' &&
-                $row->[0] !~ /$self->{option_results}->{filter_database}/i) {
-                $self->{output}->output_add(debug => 1, long_msg => "skipping database " . $row->[0] . ": no matching filter.");
-                next;
-            }
-
-            if (!defined($self->{databases}->{ $row->[0] })) {
-                $self->{databases}->{ $row->[0] } = {
-                    name => $row->[0],
+            if (!defined($self->{databases}->{$dbname})) {
+                $self->{databases}->{$dbname} = {
+                    name => $dbname,
                     datafiles => {
-                        name => $row->[0],
+                        name => $dbname,
                         used_space => 0,
                         total_space => 0,
                         limit => 'other'
                     },
                     logfiles => {
-                        name => $row->[0],
+                        name => $dbname,
                         used_space => 0,
                         total_space => 0,
                         limit => 'other'
@@ -311,30 +321,30 @@ sub manage_selection {
                 };
             }
 
-            $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{used_space} += ($row->[5] * 8 * 1024);
+            $self->{databases}->{$dbname}->{$row->[2] . 'files'}->{used_space} += ($row->[4] * 8 * 1024);
 
-            my $size = $row->[4] * 8 * 1024;
+            my $size = $row->[3] * 8 * 1024;
             #max_size = -1 (=unlimited)
-            if ($row->[7] == -1) {
-                $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{limit} = 'unlimited';
+            if ($row->[6] == -1) {
+                $self->{databases}->{$dbname}->{$row->[2] . 'files'}->{limit} = 'unlimited';
             }
             if (defined($self->{option_results}->{check_underlying_disk})) {
                 # look for the drives
                 foreach my $drive_name (keys %$drives) {
-                    if ($row->[2] =~ /^$drive_name/) {
-                        if (($row->[7] > 0) && (($row->[7] * 8 * 1024) <= ($size + $drives->{$drive_name}))) {
-                            $size = $row->[7] * 8 * 1024;
-                        } elsif (!defined($unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $drive_name })) {
+                    if ($row->[1] =~ /^$drive_name/) {
+                        if (($row->[6] > 0) && (($row->[6] * 8 * 1024) <= ($size + $drives->{$drive_name}))) {
+                            $size = $row->[6] * 8 * 1024;
+                        } elsif (!defined($unlimited_disk->{ $dbname . '_' . $row->[2] . 'files_' . $drive_name })) {
                             $size += $drives->{$drive_name};
-                            $unlimited_disk->{ $row->[0] . '_' . $row->[3] . 'files_' . $drive_name } = 1;
+                            $unlimited_disk->{ $dbname . '_' . $row->[2] . 'files_' . $drive_name } = 1;
                         }
                         last;
                     }
                 }
-            } elsif ($row->[7] > 0) {
-                $size = $row->[7] * 8 * 1024;
+            } elsif ($row->[6] > 0) {
+                $size = $row->[6] * 8 * 1024;
             }
-            $self->{databases}->{ $row->[0] }->{$row->[3] . 'files'}->{total_space} += $size;
+            $self->{databases}->{$dbname}->{ $row->[2] . 'files' }->{total_space} += $size;
         }
     }
 
@@ -374,6 +384,10 @@ Check database data and log files.
 =item B<--filter-database>
 
 Filter database by name (Can be a regex).
+
+=item B<--filter-database-state>
+
+Filter databases by state.
 
 =item B<--datafiles-maxsize>
 
