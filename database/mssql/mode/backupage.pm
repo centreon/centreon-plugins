@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use database::mssql::mode::resources::types qw($database_state);
 use centreon::plugins::misc;
 use POSIX;
 
@@ -167,9 +168,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s'         => { name => 'filter_name' },
-        'unit:s'                => { name => 'unit', default => 'd' },
-        'full-as-incremental:s' => { name => 'full_as_incremental' }
+        'filter-name:s'           => { name => 'filter_name' },
+        'filter-database-state:s' => { name => 'filter_database_state' },
+        'unit:s'                  => { name => 'unit', default => 'd' },
+        'full-as-incremental:s'   => { name => 'full_as_incremental' }
     });
 
     return $self;
@@ -184,6 +186,34 @@ sub check_options {
     }
 }
 
+sub get_database_state {
+    my ($self, %options) = @_;
+
+    if ($options{sql}->is_version_minimum(version => '9.x')) {
+        return $database_state->{ $options{state} };
+    }
+
+    my @states = ();
+    push @states, 'autoclose' if ($options{state} & 1);
+    push @states, 'select into/bulkcopy' if ($options{state} & 4);
+    push @states, 'trunc. log on chkpt' if ($options{state} & 8);
+    push @states, 'torn page detection' if ($options{state} & 16);
+    push @states, 'loading' if ($options{state} & 32);
+    push @states, 'pre recovery' if ($options{state} & 64);
+    push @states, 'recovering' if ($options{state} & 128);
+    push @states, 'not recovered' if ($options{state} & 256);
+    push @states, 'offline' if ($options{state} & 512);
+    push @states, 'read only' if ($options{state} & 1024);
+    push @states, 'dbo use only' if ($options{state} & 2048);
+    push @states, 'single user' if ($options{state} & 4096);
+    push @states, 'emergency mode' if ($options{state} & 32768);
+    push @states, 'online' if ($options{state} & 65536);
+    push @states, 'autoshrink' if ($options{state} & 4194304);
+    push @states, 'cleanly shutdown' if ($options{state} & 1073741824);
+
+    return join(',', @states);
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -191,7 +221,8 @@ sub manage_selection {
 
     my $query = q{
         SELECT
-            a.name, 
+            a.name,
+            a.status,
             a.recovery_model,
             DATEDIFF(SS, MAX(b.backup_finish_date), GETDATE()),
             DATEDIFF(SS, MAX(b.backup_start_date), MAX(b.backup_finish_date)),
@@ -205,6 +236,7 @@ sub manage_selection {
         $query = q{
             SELECT
                 D.name AS [database_name],
+                D.state,
                 D.recovery_model, 
                 BS1.last_backup,
                 BS1.last_duration,
@@ -231,8 +263,13 @@ sub manage_selection {
     my $map_type = { D => 'full', I => 'incremental', L => 'log' };
     $self->{databases} = {};
     foreach my $row (@$result) {
+        my $state = $self->get_database_state(state => $row->[1], sql => $options{sql});
+
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $row->[0] !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_database_state}) && $self->{option_results}->{filter_database_state} ne '' &&
+            $state !~ /$self->{option_results}->{filter_database_state}/);
+
         if (!defined($self->{databases}->{ $row->[0] })) {
             $self->{databases}->{ $row->[0] } = {
                 all => { exec_seconds => -1, exec_human => '', name => $row->[0] },
@@ -242,35 +279,35 @@ sub manage_selection {
             };
         }
 
-        next if (!defined($map_type->{ $row->[4] }));
+        next if (!defined($map_type->{ $row->[5] }));
 
-        if ($row->[4] =~ /D|I/) {
-            if (defined($row->[2]) && (
+        if ($row->[5] =~ /D|I/) {
+            if (defined($row->[3]) && (
                 $self->{databases}->{ $row->[0] }->{all}->{exec_seconds} == -1 ||
-                $self->{databases}->{ $row->[0] }->{all}->{exec_seconds} > $row->[2])) {
-                $self->{databases}->{ $row->[0] }->{all}->{exec_seconds} = $row->[2];
+                $self->{databases}->{ $row->[0] }->{all}->{exec_seconds} > $row->[3])) {
+                $self->{databases}->{ $row->[0] }->{all}->{exec_seconds} = $row->[3];
                 $self->{databases}->{ $row->[0] }->{all}->{exec_human} = centreon::plugins::misc::change_seconds(
-                    value => $row->[2]
+                    value => $row->[3]
                 );
-                if (defined($row->[3])) {
-                    $self->{databases}->{ $row->[0] }->{all}->{duration_seconds} = $row->[3];
+                if (defined($row->[4])) {
+                    $self->{databases}->{ $row->[0] }->{all}->{duration_seconds} = $row->[4];
                     $self->{databases}->{ $row->[0] }->{all}->{duration_human} = centreon::plugins::misc::change_seconds(
-                        value => $row->[3]
+                        value => $row->[4]
                     );
                 }
             }
         }
 
-        if (defined($row->[2])) {
-            $self->{databases}->{ $row->[0] }->{ $map_type->{ $row->[4] } }->{exec_seconds} = $row->[2];
-            $self->{databases}->{ $row->[0] }->{ $map_type->{ $row->[4] } }->{exec_human} = centreon::plugins::misc::change_seconds(
-                value => $row->[2]
+        if (defined($row->[3])) {
+            $self->{databases}->{ $row->[0] }->{ $map_type->{ $row->[5] } }->{exec_seconds} = $row->[3];
+            $self->{databases}->{ $row->[0] }->{ $map_type->{ $row->[5] } }->{exec_human} = centreon::plugins::misc::change_seconds(
+                value => $row->[3]
             );
         }
-        if (defined($row->[3])) {
-            $self->{databases}->{ $row->[0] }->{ $map_type->{ $row->[4] } }->{duration_seconds} = $row->[3];
-            $self->{databases}->{ $row->[0] }->{ $map_type->{ $row->[4] } }->{duration_human} = centreon::plugins::misc::change_seconds(
-                value => $row->[3]
+        if (defined($row->[4])) {
+            $self->{databases}->{ $row->[0] }->{ $map_type->{ $row->[5] } }->{duration_seconds} = $row->[4];
+            $self->{databases}->{ $row->[0] }->{ $map_type->{ $row->[5] } }->{duration_human} = centreon::plugins::misc::change_seconds(
+                value => $row->[4]
             );
         }
     }
@@ -302,6 +339,10 @@ Check MSSQL backup.
 =item B<--filter-name>
 
 Filter databases by name.
+
+=item B<--filter-database-state>
+
+Filter databases by state.
 
 =item B<--full-as-incremental>
 
