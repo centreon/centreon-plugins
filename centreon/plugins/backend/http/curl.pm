@@ -408,6 +408,7 @@ sub request {
         $self->{curl_easy}->perform();
     };
     if ($@) {
+        my $err = $@;
         if (ref($@) eq "Net::Curl::Easy::Code") {
             my $num = $@;
             if ($num == $self->{constant_cb}->(name => 'CURLE_OPERATION_TIMEDOUT')) {
@@ -416,7 +417,7 @@ sub request {
         }
 
         if (!defined($self->{response_code})) {
-            $self->{output}->add_option_msg(short_msg => 'curl perform error : ' . $@);
+            $self->{output}->add_option_msg(short_msg => 'curl perform error : ' . $err);
             $self->{output}->option_exit();
         }
     }
