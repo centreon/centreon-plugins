@@ -83,10 +83,10 @@ sub get_threshold_message {
 
     my @messages = ();
     if ($options{threshold} =~ /^([\-0-9]*):/) {
-        push @messages, sprintf('newer than %d %s', defined($1) && $1 ne '' ? $1 : 0, $options{unit});
+        push @messages, sprintf('newer than %s %s', defined($1) && $1 ne '' ? $1 : 0, $options{unit});
     }
     if ($options{threshold} =~ /^(?:[\-0-9]*:)?(-?[0-9]+)$/) {
-        push @messages, sprintf('older than %d %s', $1, $options{unit});
+        push @messages, sprintf('older than %s %s', $1, $options{unit});
     }
 
     return join(' or ', @messages);
