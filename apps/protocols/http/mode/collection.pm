@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use Safe;
+use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes qw(gettimeofday tv_interval);
@@ -1327,6 +1328,87 @@ sub exec_func_assign {
     $self->set_special_variable_value(value => $assign_var, %$result);
 }
 
+sub exec_func_capture {
+    my ($self, %options) = @_;
+
+    #{
+    #    "type": "capture",
+    #    "src": "%(snmp.leefs.content)",
+    #    "pattern": "(?msi)Vertical BER Analysis.*?Bit Error Rate: (\S+)",
+    #    "groups": [
+    #        { "offset": 1, "save": "%(bitErrorRate)" }
+    #    ]
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+    if (!defined($options{pattern}) || $options{pattern} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set pattern attribute");
+        $self->{output}->option_exit();
+    }
+    if (!defined($options{groups}) || ref($options{groups}) ne 'ARRAY') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set groups attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    } 
+    my $data = $self->get_special_variable_value(%$result);
+
+    my @matches = ($data =~ /$options{pattern}/);
+
+    foreach (@{$options{groups}}) {
+        next if ($_->{offset} !~ /^[0-9]+/);
+
+        my $value = '';
+        if (defined($matches[ $_->{offset} ])) {
+            $value = $matches[ $_->{offset} ];
+        }
+
+        my $save = $self->parse_special_variable(chars => [split //, $_->{save}], start => 0);
+        if ($save->{type} !~ /^(?:0|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $value, %$save);
+    }
+}
+
+sub exec_func_scientific2number {
+    my ($self, %options) = @_;
+
+    #{
+    #    "type": "scientific2number",
+    #    "src": "%(bitErrorRate)",
+    #    "save": "%(bitErrorRate)",
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    } 
+    my $data = $self->get_special_variable_value(%$result);
+
+    $data = centreon::plugins::misc::expand_exponential(value => $data);
+
+    if (defined($options{save}) && $options{save} ne '') {
+        my $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        if ($save->{type} !~ /^(?:0|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $data, %$save);
+    }
+}
+
 sub set_functions {
     my ($self, %options) = @_;
 
@@ -1354,6 +1436,10 @@ sub set_functions {
             $self->exec_func_replace(%$_);
         } elsif (lc($_->{type}) eq 'assign') {
             $self->exec_func_assign(%$_);
+        } elsif (lc($_->{type}) eq 'capture') {
+            $self->exec_func_capture(%$_);
+        } elsif (lc($_->{type}) eq 'scientific2number') {
+            $self->exec_func_scientific2number(%$_);
         }
     }
 }
