@@ -221,8 +221,9 @@ sub manage_selection {
     $self->{nodes} = {};
     foreach my $result (@{$results}) {
         $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{node} } }->{display} = $result->{metric}->{ $self->{labels}->{node} };
-        if ($result->{metric}->{__name__} =~ /status/ && $result->{value}->[1] == 1) {
-            $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{node} } }->{ $result->{metric}->{__name__} } = $result->{metric}->{condition};
+        if ($result->{metric}->{__name__} =~ /status/) {
+            $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{node} } }->{ $result->{metric}->{__name__} } = $result->{metric}->{condition}
+                if ($result->{value}->[1] == 1);
         } else {
             $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{node} } }->{ $result->{metric}->{__name__} } = $result->{value}->[1];
         }
