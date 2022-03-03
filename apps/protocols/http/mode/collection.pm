@@ -361,13 +361,20 @@ sub parse_txt {
 
     my $modifier = defined($options{conf}->{modifier}) ? $options{conf}->{modifier} : '';
 
+    my @entries = ();
+    foreach (@{$options{conf}->{entries}}) {
+        next if ($_->{offset} !~ /^[0-9]+$/);
+
+        push @entries, $_;
+    }
+
     my $i = 0;
     while ($options{content} =~ /(?$modifier)$options{conf}->{re}/g) {
         my $instance = $i;
         my $name = $options{name} . ucfirst($options{conf}->{name});
 
         my $entry = {};
-        foreach (@{$options{conf}->{entries}}) {
+        foreach (@entries) {
             my $offset = "\$" . $_->{offset};
             my $value = eval "$offset";
             if (!defined($value)) {
@@ -1330,7 +1337,7 @@ sub set_functions {
         $self->{current_section} = '[' . $options{section} . ' > ' . $i . ']';
         next if (defined($_->{position}) && $options{position} ne $_->{position});
         next if (!defined($_->{position}) && !(defined($options{default}) && $options{default} == 1));
-        
+
         next if (!defined($_->{type}));
 
         if ($_->{type} eq 'map') {
@@ -1355,7 +1362,11 @@ sub substitute_constants {
     my ($self, %options) = @_;
 
     return undef if (!defined($options{value}));
-    $options{value} =~ s/%\((constants\.[a-zA-Z0-9\._:]+?)\)/$self->{constants}->{$1}/g;
+    while ($options{value} =~ /%\((constants\.[a-zA-Z0-9\._:]+?)\)/g) {
+        my $value = defined($self->{constants}->{$1}) ? $self->{constants}->{$1} : '';
+        $options{value} =~ s/%\($1\)/$value/g;
+    }
+    
     return $options{value};
 }
 
