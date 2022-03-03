@@ -78,6 +78,20 @@ sub check_options {
     }
 }
 
+sub get_threshold_message {
+    my ($self, %options) = @_;
+
+    my @messages = ();
+    if ($options{threshold} =~ /^([\-0-9]*):/) {
+        push @messages, sprintf('newer than %d %s', defined($1) && $1 ne '' ? $1 : 0, $options{unit});
+    }
+    if ($options{threshold} =~ /^(?:[\-0-9]*:)?(-?[0-9]+)$/) {
+        push @messages, sprintf('older than %d %s', $1, $options{unit});
+    }
+
+    return join(' or ', @messages);
+}
+
 sub run {
     my ($self, %options) = @_;
 
@@ -168,23 +182,29 @@ sub run {
         min => 0
     );
     if (scalar(keys %{$vm_errors{warning}}) > 0) {
+        my $message = $self->get_threshold_message(
+            threshold => $self->{option_results}->{warning},
+            unit => $unitdiv->{ $self->{option_results}->{unit} }->[0]
+        );
         $self->{output}->output_add(
             severity => 'WARNING',
             short_msg => sprintf(
-                'Snapshots for VM older than %d %s: [%s]',
-                $self->{option_results}->{warning},
-                $unitdiv->{$self->{option_results}->{unit}}->[0],
+                'Snapshots for VM %s: [%s]',
+                $message,
                 join('] [', sort keys %{$vm_errors{warning}})
             )
         );
     }
     if (scalar(keys %{$vm_errors{critical}}) > 0) {
+        my $message = $self->get_threshold_message(
+            threshold => $self->{option_results}->{critical},
+            unit => $unitdiv->{ $self->{option_results}->{unit} }->[0]
+        );
         $self->{output}->output_add(
             severity => 'CRITICAL',
             short_msg => sprintf(
-                'Snapshots for VM older than %d %s: [%s]',
-                $self->{option_results}->{critical}, 
-                $unitdiv->{$self->{option_results}->{unit}}->[0],
+                'Snapshots for VM %s: [%s]',
+                $message,
                 join('] [', sort keys %{$vm_errors{critical}})
             )
         );
