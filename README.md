@@ -1,3 +1,6 @@
+# This is a fork to achieve a step-by-step personnal project. I suggest you to fork directly the original project! [centreon/centreon-plugins](https://github.com/centreon/centreon-plugins)
+
+
 # centreon-plugins
 
 [![License](https://img.shields.io/badge/License-APACHE2-brightgreen.svg)](https://github.com/centreon/centreon-plugins/blob/master/LICENSE.txt)
