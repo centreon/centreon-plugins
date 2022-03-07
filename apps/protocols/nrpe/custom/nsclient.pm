@@ -49,8 +49,6 @@ sub new {
             'hostname:s'             => { name => 'hostname' },
             'port:s'                 => { name => 'port' },
             'proto:s'                => { name => 'proto' },
-            'credentials'            => { name => 'credentials' },
-            'basic'                  => { name => 'basic' },
             'username:s'             => { name => 'username' },
             'password:s'             => { name => 'password' },
             'legacy-password:s'      => { name => 'legacy_password' },
@@ -107,7 +105,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{timeout} = $self->{timeout};
 
-    if (defined($self->{username})) {
+    if (defined($self->{username}) && $self->{username} ne '') {
         $self->{option_results}->{username} = $self->{username};
         $self->{option_results}->{password} = $self->{password};
         $self->{option_results}->{credentials} = 1;
