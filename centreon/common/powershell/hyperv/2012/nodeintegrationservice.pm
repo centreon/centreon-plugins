@@ -40,6 +40,9 @@ $ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
+    If (@(Get-Module | Where-Object {$_.Name -Match "Hyper-V"} ).count -eq 0) {
+        Import-Module -Name "Hyper-V"
+    }
 
     $vms = Get-VM
 
