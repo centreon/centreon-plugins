@@ -1,0 +1,3 @@
+debian/control
+debian/*.install
+tmp
