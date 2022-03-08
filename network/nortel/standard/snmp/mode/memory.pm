@@ -38,6 +38,12 @@ sub custom_usage_output {
     );
 }
 
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+    
+    return "Memory '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -73,19 +79,12 @@ sub set_counters {
     ];
 }
 
-sub prefix_memory_output {
-    my ($self, %options) = @_;
-    
-    return "Memory '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

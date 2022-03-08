@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+
+    return "CPU '" . $options{instance_value}->{num} . "' usage ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -37,8 +43,7 @@ sub set_counters {
                 key_values => [ { name => 'total' }, { name => 'num' } ],
                 output_template => '%.2f %% (total)',
                 perfdatas => [
-                    { label => 'cpu_total', value => 'total', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
         },
@@ -46,8 +51,7 @@ sub set_counters {
                 key_values => [ { name => '1m' }, { name => 'num' } ],
                 output_template => '%.2f %% (1min)',
                 perfdatas => [
-                    { label => 'cpu_1min', value => '1m', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
         },
@@ -55,8 +59,7 @@ sub set_counters {
                 key_values => [ { name => '5m' }, { name => 'num' } ],
                 output_template => '%.2f %% (5min)',
                 perfdatas => [
-                    { label => 'cpu_5min', value => '5m', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
         },
@@ -64,8 +67,7 @@ sub set_counters {
                 key_values => [ { name => '10m' }, { name => 'num' } ],
                 output_template => '%.2f %% (10min)',
                 perfdatas => [
-                    { label => 'cpu_10min', value => '10m', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
         },
@@ -73,23 +75,16 @@ sub set_counters {
                 key_values => [ { name => '1h' }, { name => 'num' } ],
                 output_template => '%.2f %% (1h)',
                 perfdatas => [
-                    { label => 'cpu_1h', value => '1h', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
         }
     ];
 }
 
-sub prefix_cpu_output {
-    my ($self, %options) = @_;
-
-    return "CPU '" . $options{instance_value}->{num} . "' usage ";
-}
-
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
@@ -146,7 +141,7 @@ sub manage_selection {
         next if ($oid !~ /^$mapping->{s5ChasUtilCPUUsageLast1Minute}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_s5ChasUtilEntry}, instance => $instance);
-        
+
         $self->{cpu}->{$instance} = {
             num => $instance,
             total => $result->{s5ChasUtilTotalCPUUsage},
