@@ -23,15 +23,100 @@ package network::nortel::standard::snmp::mode::components::temperature;
 use strict;
 use warnings;
 
-my $mapping = {
-    s5ChasTmpSnrTmpValue    => { oid => '.1.3.6.1.4.1.45.1.6.3.7.1.1.5' },
+my $mapping_s5 = {
+    value => { oid => '.1.3.6.1.4.1.45.1.6.3.7.1.1.5' } # s5ChasTmpSnrTmpValue
 };
 my $oid_s5ChasTmpSnrEntry = '.1.3.6.1.4.1.45.1.6.3.7.1.1';
+
+my $mapping_voss = {
+    description => { oid => '.1.3.6.1.4.1.2272.1.101.1.1.2.1.2' }, # rcVossSystemTemperatureSensorDescription
+    value       => { oid => '.1.3.6.1.4.1.2272.1.101.1.1.2.1.3' } # rcVossSystemTemperatureTemperature
+};
+my $oid_vossTempEntry = '.1.3.6.1.4.1.2272.1.101.1.1.2.1'; # rcVossSystemTemperatureEntry
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_s5ChasTmpSnrEntry };
+    push @{$self->{request}},
+        { oid => $oid_s5ChasTmpSnrEntry, start => $mapping_s5->{value}->{oid}, end => $mapping_s5->{value}->{oid} },
+        { oid => $oid_vossTempEntry, start => $mapping_voss->{description}->{oid}, end => $mapping_voss->{value}->{oid} };
+}
+
+sub check_s5 {
+    my ($self) = @_;
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_s5ChasTmpSnrEntry}})) {
+        next if ($oid !~ /^$mapping_s5->{value}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_s5, results => $self->{results}->{$oid_s5ChasTmpSnrEntry}, instance => $instance);
+
+        next if ($self->check_filter(section => 'temperature', instance => $instance));
+        $self->{components}->{temperature}->{total}++;
+
+        $result->{s5ChasTmpSnrTmpValue} = sprintf("%.2f", $result->{value} / 2);
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' is %s degree centigrade [instance: %s]",
+                $instance, $result->{value}, $instance
+            )
+        );
+
+        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{value});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Temperature '%s' is %s degree centigrade", $instance, $result->{value}
+                )
+            );
+        }
+        $self->{output}->perfdata_add(
+            nlabel => 'hardware.temperature.celsius',
+            unit => 'C',
+            instances => $instance, 
+            value => $result->{value},
+            warning => $warn,
+            critical => $crit
+        );
+    }
+}
+
+sub check_voss {
+    my ($self) = @_;
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_vossTempEntry}})) {
+        next if ($oid !~ /^$mapping_voss->{value}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_voss, results => $self->{results}->{$oid_vossTempEntry}, instance => $instance);
+
+        next if ($self->check_filter(section => 'temperature', instance => $instance));
+        $self->{components}->{temperature}->{total}++;
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' is %s degree centigrade [instance: %s]",
+                $result->{description}, $result->{value}, $instance
+            )
+        );
+
+        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{value});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Temperature '%s' is %s degree centigrade", $result->{description}, $result->{value}
+                )
+            );
+        }
+        $self->{output}->perfdata_add(
+            nlabel => 'hardware.temperature.celsius',
+            unit => 'C',
+            instances => $result->{description}, 
+            value => $result->{value},
+            warning => $warn,
+            critical => $crit
+        );
+    }
 }
 
 sub check {
@@ -41,33 +126,8 @@ sub check {
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
     return if ($self->check_filter(section => 'temperature'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_s5ChasTmpSnrEntry}})) {
-        next if ($oid !~ /^$mapping->{s5ChasTmpSnrTmpValue}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_s5ChasTmpSnrEntry}, instance => $instance);
-        
-        next if ($self->check_filter(section => 'temperature', instance => $instance));
-        $self->{components}->{temperature}->{total}++;
-
-        $result->{s5ChasTmpSnrTmpValue} = sprintf("%.2f", $result->{s5ChasTmpSnrTmpValue} / 2);
-        $self->{output}->output_add(long_msg => sprintf("temperature '%s' is %s degree centigrade [instance = %s]",
-                                    $instance, $result->{s5ChasTmpSnrTmpValue}, $instance, 
-                                    ));
-     
-        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{s5ChasTmpSnrTmpValue});
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' is %s degree centigrade", $result->{slHdwTempSensorName}, $result->{s5ChasTmpSnrTmpValue}));
-        }
-        $self->{output}->perfdata_add(
-            label => 'temp', unit => 'C',
-            nlabel => 'hardware.temperature.celsius',
-            instances => $instance, 
-            value => $result->{s5ChasTmpSnrTmpValue},
-            warning => $warn,
-            critical => $crit,
-        );
-    }
+    check_s5($self);
+    check_voss($self);
 }
 
 1;

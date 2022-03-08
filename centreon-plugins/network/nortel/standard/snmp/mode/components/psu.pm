@@ -25,7 +25,7 @@ use warnings;
 use network::nortel::standard::snmp::mode::components::resources qw($map_psu_status);
 
 my $mapping = {
-    rcChasPowerSupplyOperStatus => { oid => '.1.3.6.1.4.1.2272.1.4.8.1.1.2', map => $map_psu_status },
+    rcChasPowerSupplyOperStatus => { oid => '.1.3.6.1.4.1.2272.1.4.8.1.1.2', map => $map_psu_status }
 };
 my $oid_rcChasPowerSupplyEntry = '.1.3.6.1.4.1.2272.1.4.8.1.1';
 
@@ -37,7 +37,7 @@ sub load {
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'psu'));
@@ -50,15 +50,22 @@ sub check {
         next if ($self->check_filter(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is '%s' [instance: %s].",
-                                    $instance, $result->{rcChasPowerSupplyOperStatus},
-                                    $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' status is '%s' [instance: %s]",
+                $instance, $result->{rcChasPowerSupplyOperStatus},
+                $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'psu', instance => $instance, value => $result->{rcChasPowerSupplyOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Power supply '%s' status is '%s'",
-                                                             $instance, $result->{rcChasPowerSupplyOperStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Power supply '%s' status is '%s'",
+                    $instance, $result->{rcChasPowerSupplyOperStatus}
+                )
+            );
         }
     }
 }
