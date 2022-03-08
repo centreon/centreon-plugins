@@ -29,6 +29,24 @@ use centreon::common::powershell::hyperv::2012::nodesnapshot;
 use apps::microsoft::hyperv::2012::local::mode::resources::types qw($node_vm_state);
 use JSON::XS;
 
+sub custom_snapshot_output {
+    my ($self, %options) = @_;
+
+    return "checkpoint started " . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot}) . " ago";
+}
+
+sub custom_backing_output {
+    my ($self, %options) = @_;
+    
+    return "backing started " . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing}) . " ago";
+}
+
+sub prefix_vm_output {
+    my ($self, %options) = @_;
+
+    return "VM '" . $options{instance_value}->{display} . "' [status = " . $options{instance_value}->{status} . '] ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -50,24 +68,6 @@ sub set_counters {
             }
         }
     ];
-}
-
-sub custom_snapshot_output {
-    my ($self, %options) = @_;
-
-    return "checkpoint started " . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot}) . " ago";
-}
-
-sub custom_backing_output {
-    my ($self, %options) = @_;
-    
-    return "backing started " . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing}) . " ago";
-}
-
-sub prefix_vm_output {
-    my ($self, %options) = @_;
-
-    return "VM '" . $options{instance_value}->{display} . "' [status = " . $options{instance_value}->{status} . '] ';
 }
 
 sub new {

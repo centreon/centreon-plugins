@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::nodevmstatus;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use apps::microsoft::hyperv::2012::local::mode::resources::types qw($node_vm_state);
 use JSON::XS;
 
@@ -43,11 +43,11 @@ sub set_counters {
         { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' },
     ];
     $self->{maps_counters}->{vm} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} !~ /Operating normally/i', set => {
                 key_values => [ { name => 'vm' }, { name => 'state' }, { name => 'status' }, { name => 'is_clustered' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -73,19 +73,10 @@ sub new {
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
         'filter-vm:s'       => { name => 'filter_vm' },
-        'filter-note:s'     => { name => 'filter_note' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /Operating normally/i' }
+        'filter-note:s'     => { name => 'filter_note' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);  
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
