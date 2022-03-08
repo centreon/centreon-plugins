@@ -27,7 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::scvmmintegrationservice;
 use apps::microsoft::hyperv::2012::local::mode::resources::types qw($scvmm_vm_status);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use JSON::XS;
 
 sub custom_status_output {
@@ -74,59 +74,61 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{vm} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'vm' }, { name => 'status' }, { name => 'vm_addition' }, 
+        { label => 'status', type => 2, critical_default => '%{vmaddition} =~ /not detected/i', set => {
+                key_values => [
+                    { name => 'vm' }, { name => 'status' }, { name => 'vm_addition' }, 
                     { name => 'operating_system_shutdown_enabled' }, { name => 'time_synchronization_enabled' }, 
-                    { name => 'data_exchange_enabled' }, { name => 'heartbeat_enabled' }, { name => 'backup_enabled' } ],
+                    { name => 'data_exchange_enabled' }, { name => 'heartbeat_enabled' }, { name => 'backup_enabled' }
+                ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'osshutdown-status', threshold => 0, set => {
+        { label => 'osshutdown-status', type => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'operating_system_shutdown_enabled' } ],
                 closure_custom_calc => $self->can('custom_integrationservice_calc'),
                 closure_custom_calc_extra_options => { output_label => 'operating system shutdown', name_status => 'operating_system_shutdown_enabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'timesync-status', threshold => 0, set => {
+        { label => 'timesync-status', type => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'time_synchronization_enabled' } ],
                 closure_custom_calc => $self->can('custom_integrationservice_calc'),
                 closure_custom_calc_extra_options => { output_label => 'time synchronization', name_status => 'time_synchronization_enabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'dataexchange-status', threshold => 0, set => {
+        { label => 'dataexchange-status', type => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'data_exchange_enabled' } ],
                 closure_custom_calc => $self->can('custom_integrationservice_calc'),
                 closure_custom_calc_extra_options => { output_label => 'data exchange', name_status => 'data_exchange_enabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'heartbeat-status', threshold => 0, set => {
+        { label => 'heartbeat-status', type => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'heartbeat_enabled' } ],
                 closure_custom_calc => $self->can('custom_integrationservice_calc'),
                 closure_custom_calc_extra_options => { output_label => 'heartbeat', name_status => 'heartbeat_enabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'backup-status', threshold => 0, set => {
+        { label => 'backup-status', type => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'backup_enabled' } ],
                 closure_custom_calc => $self->can('custom_integrationservice_calc'),
                 closure_custom_calc_extra_options => { output_label => 'backup', name_status => 'backup_enabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -158,19 +160,7 @@ sub new {
         'filter-vm:s'         => { name => 'filter_vm' },
         'filter-description:s' => { name => 'filter_description' },
         'filter-hostgroup:s'   => { name => 'filter_hostgroup' },
-        'filter-status:s'      => { name => 'filter_status' },
-        'warning-status:s'     => { name => 'warning_status', default => '' },
-        'critical-status:s'    => { name => 'critical_status', default => '%{vmaddition} =~ /not detected/i' },
-        'warning-osshutdown-status:s'     => { name => 'warning_osshutdown_status', default => '' },
-        'critical-osshutdown-status:s'    => { name => 'critical_osshutdown_status', default => '' },
-        'warning-timesync-status:s'       => { name => 'warning_timesync_status', default => '' },
-        'critical-timesync-status:s'      => { name => 'critical_timesync_status', default => '' },
-        'warning-dataexchange-status:s'   => { name => 'warning_dataexchange_status', default => '' },
-        'critical-dataexchange-status:s'  => { name => 'critical_dataexchange_status', default => '' },
-        'warning-heartbeat-status:s'      => { name => 'warning_heartbeat_status', default => '' },
-        'critical-heartbeat-status:s'     => { name => 'critical_heartbeat_status', default => '' },
-        'warning-backup-status:s'         => { name => 'warning_backup_status', default => '' },
-        'critical-backup-status:s'        => { name => 'critical_backup_status', default => '' }
+        'filter-status:s'      => { name => 'filter_status' }
     });
 
     return $self;
@@ -188,12 +178,6 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }
-
-    $self->change_macros(macros => [
-        'warning_status', 'critical_status', 'warning_osshutdown_status', 'critical_osshutdown_status',
-        'warning_timesync_status', 'critical_timesync_status', 'warning_dataexchange_status', 'critical_dataexchange_status',
-        'warning_heartbeat_status', 'critical_heartbeat_status', 'warning_backup_status', 'critical_backup_status'
-    ]);
 }
 
 sub manage_selection {

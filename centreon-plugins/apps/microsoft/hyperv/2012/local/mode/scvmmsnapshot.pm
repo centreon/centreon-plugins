@@ -29,6 +29,18 @@ use centreon::common::powershell::hyperv::2012::scvmmsnapshot;
 use apps::microsoft::hyperv::2012::local::mode::resources::types qw($scvmm_vm_status);
 use JSON::XS;
 
+sub custom_vm_output {
+    my ($self, %options) = @_;
+
+    return 'checkpoint started since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot});
+}
+
+sub prefix_vm_output {
+    my ($self, %options) = @_;
+
+    return "VM '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -43,18 +55,6 @@ sub set_counters {
             }
         }
     ];
-}
-
-sub custom_vm_output {
-    my ($self, %options) = @_;
-
-    return 'checkpoint started since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot});
-}
-
-sub prefix_vm_output {
-    my ($self, %options) = @_;
-
-    return "VM '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
