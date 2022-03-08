@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Iplabel-Ekara-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor IP-Label Ekara using Rest Api",
+    "plugin_name": "centreon_monitoring_iplabel_ekara_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/monitoring/iplabel/ekara/restapi/"
+    ]
+}
