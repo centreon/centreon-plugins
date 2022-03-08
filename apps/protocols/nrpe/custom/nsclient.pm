@@ -81,7 +81,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 50;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{legacy_password} = (defined($self->{option_results}->{legacy_password})) ? $self->{option_results}->{legacy_password} : undef;
@@ -290,7 +290,7 @@ Use new RestAPI (> 5.2.33).
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (Default: 50).
 
 =item B<--unknown-status>
 
