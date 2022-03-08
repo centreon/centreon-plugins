@@ -1,0 +1,30 @@
+Name:           centreon-plugin
+Version:        @VERSION@
+Release:        @RELEASE@%{?dist}
+Source0:        %{name}-%{version}.tar.gz
+Summary:        Centreon plugin
+Group:          Development/Libraries
+License:        ASL 2.0
+URL:            https://www.centreon.com/
+BuildArch:      noarch
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+AutoReqProv:    no
+
+%description
+
+%prep
+%setup
+
+%build
+
+%install
+rm -rf %{buildroot}
+mkdir -p %{buildroot}/usr/lib/centreon/plugins/
+%{__install} -m 775 *.pl %{buildroot}%{_prefix}/lib/centreon/plugins/
+
+%clean
+rm -rf \%{buildroot}
+
+%files
+
+%changelog

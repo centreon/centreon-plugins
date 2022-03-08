@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Esa-Xmlapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_cisco_esa_xmlapi.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+	"centreon/common/cisco/ironport/xmlapi/",
+        "network/cisco/esa/xmlapi/"
+    ]
+}

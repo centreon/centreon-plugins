@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Netapp-Santricity-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Netapp storages with Santricity using RestAPI",
+    "plugin_name": "centreon_netapp_santricity_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "storage/netapp/santricity/restapi/"
+    ]
+}

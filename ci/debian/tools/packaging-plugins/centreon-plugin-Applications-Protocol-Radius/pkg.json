@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Radius",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_protocol_radius.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "apps/protocols/radius/"
+    ]
+}

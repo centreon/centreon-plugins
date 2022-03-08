@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Sensors-Netbotz-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_netbotz.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/sensors/netbotz/snmp/"
+    ]
+}

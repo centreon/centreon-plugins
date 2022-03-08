@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Skype-2015-Mssql",
+    "pkg_summary": "Centreon Plugin to monitor Skype For Business 2015 using the SQL database",
+    "plugin_name": "centreon_skype_2015_sql.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "centreon/plugins/script_sql.pm",
+        "centreon/plugins/dbi.pm",
+        "centreon/common/protocols/sql/",
+        "centreon/common/microsoft/skype/mssql/",
+        "database/mssql/"
+    ]
+}

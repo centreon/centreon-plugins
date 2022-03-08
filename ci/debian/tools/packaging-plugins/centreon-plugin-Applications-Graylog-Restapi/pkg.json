@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Graylog-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Graylogs throught Rest API",
+    "plugin_name": "centreon_graylog_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/graylog/restapi/"
+    ]
+}

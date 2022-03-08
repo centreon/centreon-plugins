@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Vmware-Velocloud-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor VMware VeloCloud solution using VCO RestAPI",
+    "plugin_name": "centreon_velocloud_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "cloud/vmware/velocloud/restapi/"
+    ]
+}

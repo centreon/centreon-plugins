@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Voip-3cx-Restapi",
+    "pkg_summary": "Centreon Plugin to 3cx RestAPI",
+    "plugin_name": "centreon_3cx_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/voip/3cx/restapi/"
+    ]
+}

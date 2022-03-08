@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Hp-Oneview-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor HP OneView using RestAPI",
+    "plugin_name": "centreon_hp_oneview_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "hardware/server/hp/oneview/restapi/"
+    ]
+}

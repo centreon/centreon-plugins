@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Analytics-EventHubs-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Analytics Event Hubs service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_analytics_eventhubs_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "cloud/azure/custom/",
+        "cloud/azure/management/monitor/mode/",
+        "cloud/azure/analytics/eventhubs/"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Emc-Isilon-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_emc_isilon.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "storage/emc/isilon/snmp/"
+    ]
+}

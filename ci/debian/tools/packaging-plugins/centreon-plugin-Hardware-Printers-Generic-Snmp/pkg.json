@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Printers-Generic-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_printers_generic_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/hardwaredevice.pm",
+        "snmp_standard/mode/printererror.pm",
+        "hardware/printers/standard/rfc3805/"
+    ]
+}

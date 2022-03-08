@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Firepower-Fmc-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Cisco Firepower Management Center using Rest API",
+    "plugin_name": "centreon_cisco_firepower_fmc_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+	"centreon/plugins/http.pm",
+	"centreon/plugins/backend/http/",
+        "network/cisco/firepower/fmc/restapi"
+    ]
+}

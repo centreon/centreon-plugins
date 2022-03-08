@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Emc-Unisphere-Restapi",
+    "pkg_summary": "Centreon Plugin EMC Unisphere Rest API",
+    "plugin_name": "centreon_emc_unisphere_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "storage/emc/unisphere/restapi/"
+    ]
+}

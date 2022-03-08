@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Fujitsu-Eternus-Dx-Ssh",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_fujitsu_eternus_dx.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "storage/fujitsu/eternus/dx/ssh/"
+    ]
+}

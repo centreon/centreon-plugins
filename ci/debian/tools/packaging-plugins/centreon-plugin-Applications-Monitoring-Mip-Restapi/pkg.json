@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Mip-Restapi",
+    "pkg_summary": "Centreon Plugin Maltem Insight Performance rest api",
+    "plugin_name": "centreon_monitoring_mip_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/monitoring/mip/restapi/"
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Lync-2013-Mssql",
+    "pkg_summary": "Centreon Plugin to monitor Lync 2013 using the SQL database",
+    "plugin_name": "centreon_lync_2k13.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "centreon/plugins/script_sql.pm",
+        "centreon/plugins/dbi.pm",
+        "centreon/common/protocols/sql/",
+        "centreon/common/microsoft/skype/mssql/",
+        "database/mssql/",
+        "apps/lync/2013/mssql/"
+    ]
+}

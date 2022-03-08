@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Webservers-Tomcat-Jmx",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_tomcat_jmx.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/jvm/",
+        "centreon/common/protocols/jmx/",
+        "apps/tomcat/jmx/"
+    ]
+}

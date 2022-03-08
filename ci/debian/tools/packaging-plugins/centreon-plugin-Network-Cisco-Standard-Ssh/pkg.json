@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Standard-Ssh",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_cisco_standard_ssh.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/cisco/standard/ssh/"
+    ]
+}

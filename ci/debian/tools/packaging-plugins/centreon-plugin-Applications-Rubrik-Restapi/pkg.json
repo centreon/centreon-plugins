@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Rubrik-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Rubrik using Rest API",
+    "plugin_name": "centreon_rubrik_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+	"centreon/plugins/http.pm",
+	"centreon/plugins/backend/http/",
+        "apps/backup/rubrik/restapi/"
+    ]
+}

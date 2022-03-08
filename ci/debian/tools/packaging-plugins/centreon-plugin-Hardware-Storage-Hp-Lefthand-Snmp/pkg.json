@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Hp-Lefthand-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_hp_lefthand.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "storage/hp/lefthand/snmp/"
+    ]
+}

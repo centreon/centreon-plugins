@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Cisco-Cms-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Cisco CMS (Cisco Meeting Server) using RestAPI",
+    "plugin_name": "centreon_cisco_cms_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/cisco/cms/restapi/"
+    ]
+}

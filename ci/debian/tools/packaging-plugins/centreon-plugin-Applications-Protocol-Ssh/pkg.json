@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Ssh",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_protocol_ssh.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/ssh/",
+        "apps/protocols/ssh/"
+    ]
+}

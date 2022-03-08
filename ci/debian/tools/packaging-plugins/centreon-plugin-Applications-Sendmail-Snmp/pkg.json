@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Sendmail-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_sendmail_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/mtausage.pm",
+        "apps/sendmail/snmp/"
+    ]
+}

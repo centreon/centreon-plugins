@@ -29,7 +29,7 @@ stage('Source') {
   }
 }
 
-stage('RPM Packaging') {
+stage('DEB/RPM Packaging') {
   parallel 'all': {
     node {
       sh 'setup_centreon_build.sh'
@@ -39,6 +39,16 @@ stage('RPM Packaging') {
       stash name: "rpms-centos7", includes: 'output-centos7/noarch/*.rpm'
       //stash name: "rpms-centos8", includes: 'output-centos8/noarch/*.rpm'
       sh 'rm -rf output'
+    }
+  }
+  'Debian bullseye packaging and signing': {
+    node("plugins") {
+      dir('centreon-plugins') {
+        checkout scm
+      }
+      sh 'docker run -i --entrypoint /src/centreon-plugins/ci/scripts/plugins-deb-package.sh -v "$PWD:/src" -e DISTRIB="Debian11" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-plugins-debian11-dependencies:22.04'
+      stash name: 'Debian11', includes: 'Debian11/*.deb'
+      archiveArtifacts artifacts: "Debian11/*"
     }
   }
   if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {

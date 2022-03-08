@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Databases-Mongodb",
+    "pkg_summary": "Centreon Plugin to monitor MongoDB databases using pure perl MongoDB driver",
+    "plugin_name": "centreon_mongodb.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "database/mongodb/"
+    ]
+}

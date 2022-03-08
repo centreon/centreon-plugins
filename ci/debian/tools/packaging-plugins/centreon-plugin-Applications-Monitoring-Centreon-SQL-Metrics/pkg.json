@@ -1,0 +1,17 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Centreon-SQL-Metrics",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_centreon_sql_metrics.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "centreon/plugins/statefile.pm",
+        "centreon/plugins/script_sql.pm",
+        "centreon/plugins/dbi.pm",
+        "centreon/plugins/values.pm",
+        "centreon/common/protocols/sql/mode/sql.pm",
+        "database/mysql/plugin.pm",
+        "database/mysql/dbi.pm",
+        "database/mysql/mysqlcmd.pm",
+        "apps/centreon/sql/"
+    ]
+}

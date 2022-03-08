@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Hp-3par-Ssh",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_hp_3par_ssh.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+	"centreon/plugins/backend/ssh/",
+	"centreon/plugins/ssh.pm",
+        "storage/hp/3par/ssh/"
+    ]
+}

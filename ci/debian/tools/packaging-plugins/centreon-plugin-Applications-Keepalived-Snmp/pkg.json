@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Keepalived-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Keepalived Application using SNMP",
+    "plugin_name": "centreon_keepalived_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "apps/keepalived/snmp/"
+    ]
+}

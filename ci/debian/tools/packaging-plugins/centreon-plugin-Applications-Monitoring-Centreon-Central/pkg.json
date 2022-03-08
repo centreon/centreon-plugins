@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Centreon-Central",
+    "pkg_summary": "Centreon Plugin to monitor Centreon Central server",
+    "plugin_name": "centreon_centreon_central.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "centreon/plugins/dbi.pm",
+        "apps/centreon/local/"
+    ]
+}

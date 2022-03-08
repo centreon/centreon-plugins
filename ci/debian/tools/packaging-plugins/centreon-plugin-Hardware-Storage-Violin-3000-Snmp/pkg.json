@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Violin-3000-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_violin_3000.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "centreon/common/violin/snmp",
+        "storage/violin/3000/snmp"
+    ]
+}

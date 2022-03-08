@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Oracle-Ovm-Api",
+    "pkg_summary": "Centreon Plugin to monitor Oracle VM Manager using API",
+    "plugin_name": "centreon_oracle_ovm_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+	"centreon/plugins/http.pm",
+	"centreon/plugins/backend/http/",
+        "apps/oracle/ovm/api/"
+    ]
+}

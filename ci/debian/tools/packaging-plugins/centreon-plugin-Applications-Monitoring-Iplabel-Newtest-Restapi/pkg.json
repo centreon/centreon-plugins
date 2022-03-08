@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Iplabel-Newtest-Restapi",
+    "pkg_summary": "Centreon plugin IP-Label Newtest Rest API",
+    "plugin_name": "centreon_monitoring_iplabel_newtest_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/monitoring/iplabel/newtest/restapi/"
+    ]
+}

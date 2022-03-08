@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "centreon-plugins-sudoers",
+        "libio-socket-ip-perl"
+    ]
+}

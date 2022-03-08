@@ -1,0 +1,15 @@
+{
+    "dependencies": [
+        "libjson-perl",
+        "liburi-encode-perl",
+        "libwww-perl",
+        "liblwp-protocol-https-perl",
+        "libio-socket-ssl-perl",
+        "liburi-perl",
+        "libhttp-proxypac-perl",
+        "libconvert-binary-c-perl",
+        "libdigest-crc-perl",
+        "libio-socket-inet6-perl",
+        "libsocket-perl"
+    ]
+}

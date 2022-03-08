@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        "centreon-plugins-sudoers",
+        "perl",
+        "nmap",
+        "libjson-xs-perl",
+        "libxml-simple-perl"
+    ]
+}

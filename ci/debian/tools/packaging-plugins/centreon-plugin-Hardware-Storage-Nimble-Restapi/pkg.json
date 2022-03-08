@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Nimble-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_nimble_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "storage/nimble/restapi/"
+    ]
+}

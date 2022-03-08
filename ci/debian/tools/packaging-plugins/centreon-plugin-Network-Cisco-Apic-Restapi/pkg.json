@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Apic-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Cisco Apic using RestAPI",
+    "plugin_name": "centreon_cisco_apic_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "network/cisco/aci/apic/restapi/"
+    ]
+}

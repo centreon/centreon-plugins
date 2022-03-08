@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Emc-Ppma-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_emc_ppma_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/emc/ppma/restapi/"
+    ]
+}

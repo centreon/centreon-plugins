@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Network-Fortinet-Fortiauthenticator-Snmp",
+    "pkg_summary": "Centreon Plugin Fortinet Fortiauthenticator SNMP",
+    "plugin_name": "centreon_fortinet_fortiauthenticator_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/resources/",
+        "network/fortinet/fortiauthenticator/snmp/"
+    ]
+}

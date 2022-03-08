@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Elb-Network-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon AWS Network ELB (Elastic Load Balancing) service using Cloudwatch API",
+    "plugin_name": "centreon_aws_elb_network_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/elb/network/"
+    ]
+}

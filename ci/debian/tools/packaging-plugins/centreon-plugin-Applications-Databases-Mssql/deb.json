@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "libdbi-perl",
+        "libdbd-sybase-perl",
+        "freetds-bin",
+        "unixodbc"
+    ]
+}

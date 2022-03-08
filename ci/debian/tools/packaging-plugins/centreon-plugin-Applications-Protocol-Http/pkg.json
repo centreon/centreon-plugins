@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Http",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_protocol_http.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/protocols/http/"
+    ]
+}

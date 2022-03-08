@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE=1
+
+%:
+	dh $@
+
+override_dh_clean:
+
+override_dh_auto_build:
+	/usr/bin/perl debian/tools/plugins-source.pl "21.10.0 (debian11)"

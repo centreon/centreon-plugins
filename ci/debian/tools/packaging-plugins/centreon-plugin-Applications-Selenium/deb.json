@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libxml-xpath-perl",
+        "libtest-www-selenium-perl"
+    ]
+}

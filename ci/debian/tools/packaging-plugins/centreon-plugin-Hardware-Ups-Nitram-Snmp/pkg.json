@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Ups-Nitram-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ups_nitram_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "centreon/common/cps/ups/snmp/",
+        "hardware/ups/nitram/snmp/"
+    ]
+}

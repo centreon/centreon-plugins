@@ -1,0 +1,18 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Standard-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Cisco switches using SNMP",
+    "plugin_name": "centreon_cisco_standard_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "centreon/common/cisco/standard/snmp/",
+        "network/cisco/standard/snmp/",
+        "snmp_standard/mode/arp.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/listspanningtrees.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/spanningtree.pm",
+        "snmp_standard/mode/uptime.pm"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Kafka-Jmx",
+    "pkg_summary": "Centreon Plugin to monitor Kafka Application using JMX protocol",
+    "plugin_name": "centreon_kafka_jmx.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/jmx/",
+        "apps/java/kafka/jmx/"
+    ]
+}

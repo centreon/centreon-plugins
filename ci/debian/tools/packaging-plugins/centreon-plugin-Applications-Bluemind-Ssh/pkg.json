@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Bluemind-Ssh",
+    "pkg_summary": "Centreon Plugin Bluemind SSH",
+    "plugin_name": "centreon_bluemind_ssh.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+	"centreon/plugins/backend/ssh/",
+	"centreon/plugins/ssh.pm",
+        "apps/bluemind/local/"
+    ]
+}

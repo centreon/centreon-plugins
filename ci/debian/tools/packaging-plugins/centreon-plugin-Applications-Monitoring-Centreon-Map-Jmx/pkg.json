@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Centreon-Map-Jmx",
+    "pkg_summary": "Centreon Plugin to monitor Centreon Map using Jolokia",
+    "plugin_name": "centreon_centreon_map_jmx.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/jmx/",
+        "apps/centreon/map/jmx/"
+    ]
+}

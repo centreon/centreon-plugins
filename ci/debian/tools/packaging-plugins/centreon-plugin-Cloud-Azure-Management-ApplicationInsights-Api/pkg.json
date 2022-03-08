@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Management-ApplicationInsights-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Application Insights service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_management_applicationinsights_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "cloud/azure/custom/",
+        "cloud/azure/management/applicationinsights/"
+    ]
+}

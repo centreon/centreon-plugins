@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Sns-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon SNS (Simple Notification Service) using Cloudwatch API",
+    "plugin_name": "centreon_aws_sns_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/sns/"
+    ]
+}

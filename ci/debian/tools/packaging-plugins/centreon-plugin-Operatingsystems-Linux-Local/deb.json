@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "net-tools",
+        "quota"
+    ]
+}

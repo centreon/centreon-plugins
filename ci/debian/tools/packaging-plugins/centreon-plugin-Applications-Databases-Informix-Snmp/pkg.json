@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Databases-Informix-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Informix database in SNMP",
+    "plugin_name": "centreon_informix_snmp.pl",
+    "files": [
+	"centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "database/informix/snmp/"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Servers-Sun-Sfxxk-Pssh",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_sun_sfxxk.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "hardware/server/sun/sfxxk/"
+    ]
+}

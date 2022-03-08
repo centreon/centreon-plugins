@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Databases-Informix",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_informix.pl",
+    "files": [
+        "centreon/plugins/dbi.pm",
+        "centreon/plugins/script_sql.pm",
+        "centreon/common/protocols/sql/",
+        "database/informix/sql/"
+    ]
+}

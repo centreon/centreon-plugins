@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Alyvix-Restapi",
+    "pkg_summary": "Centreon Plugin Alyvix Server RestAPI",
+    "plugin_name": "centreon_monitoring_alyvix_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/monitoring/alyvix/restapi/"
+    ]
+}

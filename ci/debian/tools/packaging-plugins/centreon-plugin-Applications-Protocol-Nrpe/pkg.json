@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Nrpe",
+    "pkg_summary": "Centreon Plugin to trigger commands against NRPE/NSClient agent",
+    "plugin_name": "centreon_protocol_nrpe.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "centreon/plugins/nrpe.pm",
+        "apps/protocols/nrpe/"
+    ]
+}

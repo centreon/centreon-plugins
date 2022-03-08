@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Iplabel-Datametrie-Restapi",
+    "pkg_summary": "Centreon Plugin IP-Label datametrie rest api",
+    "plugin_name": "centreon_monitoring_iplabel_datametrie_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/monitoring/iplabel/datametrie/restapi/"
+    ]
+}

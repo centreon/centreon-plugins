@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libdevice-modbus-rtu-client-perl",
+        "libdevice-modbus-tcp-client-perl"
+    ]
+}

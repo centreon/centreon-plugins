@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-Apigateway-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon AWS API Gateway service using Cloudwatch API",
+    "plugin_name": "centreon_aws_apigateway_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/apigateway/"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Ibmmq-Mqi",
+    "pkg_summary": "Centreon Plugin to monitor IBM MQ using MQI",
+    "plugin_name": "centreon_ibmmq_mqi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/mq/ibmmq/mqi/"
+    ]
+}

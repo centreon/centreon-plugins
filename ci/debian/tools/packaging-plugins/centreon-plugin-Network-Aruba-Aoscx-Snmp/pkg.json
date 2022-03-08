@@ -1,0 +1,13 @@
+{
+    "pkg_name": "centreon-plugin-Network-Aruba-Aoscx-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor ArubaOS-CX using SNMP",
+    "plugin_name": "centreon_aruba_aoscx_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+	"snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+	"snmp_standard/mode/interfaces.pm",
+        "network/aruba/aoscx/snmp/"
+    ]
+}

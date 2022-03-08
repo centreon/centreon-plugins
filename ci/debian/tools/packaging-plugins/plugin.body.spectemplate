@@ -1,0 +1,13 @@
+%package @NAME@
+Summary:        @SUMMARY@
+AutoReqProv:    no
+Requires:       perl(Pod::Find)
+Requires:       @REQUIRES@
+@CUSTOM_PKG_DATA@
+
+%description @NAME@
+Centreon plugin
+
+%files @NAME@
+%defattr(-,root,root,-)
+%{_prefix}/lib/centreon/plugins/@PLUGIN_NAME@

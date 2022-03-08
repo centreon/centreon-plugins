@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Zookeeper-Jmx",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_zookeeper_jmx.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/jmx/",
+        "apps/java/zookeeper/jmx/"
+    ]
+}

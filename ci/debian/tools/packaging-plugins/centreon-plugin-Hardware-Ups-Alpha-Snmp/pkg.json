@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Ups-Alpha-Snmp",
+    "pkg_summary": "Centreon Plugin UPS Alpha SNMP",
+    "plugin_name": "centreon_ups_alpha_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/ups/alpha/snmp/"
+    ]
+}

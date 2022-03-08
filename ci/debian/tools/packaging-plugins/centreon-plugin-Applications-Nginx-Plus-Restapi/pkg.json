@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Nginx-Plus-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Nginx Plus software using Restapi",
+    "plugin_name": "centreon_nginx_plus_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/nginx/nginxplus/restapi/"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Protocol-Bgp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_protocol_bgp4.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "apps/protocols/bgp/4/"
+    ]
+}

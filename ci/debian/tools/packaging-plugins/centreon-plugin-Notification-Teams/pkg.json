@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Notification-Teams",
+    "pkg_summary": "Centreon Plugin to send notifications to Microsoft Teams",
+    "plugin_name": "centreon_notification_teams.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "cloud/microsoft/office365/custom/graphapi.pm",
+        "notification/microsoft/office365/teams/"
+    ]
+}

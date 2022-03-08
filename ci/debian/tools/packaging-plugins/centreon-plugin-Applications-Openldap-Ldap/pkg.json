@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Openldap-Ldap",
+    "pkg_summary": "Centreon Plugin to monitor Openldap using LDAP protocol",
+    "plugin_name": "centreon_openldap_ldap.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "centreon/common/protocols/ldap/",
+        "apps/openldap/ldap/"
+    ]
+}

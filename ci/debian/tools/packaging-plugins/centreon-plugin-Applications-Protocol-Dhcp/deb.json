@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "centreon-plugins-sudoers",
+        "libsocket-perl",
+        "libnet-dhcp-perl",
+        "libnet-subnet-perl"
+    ]
+}

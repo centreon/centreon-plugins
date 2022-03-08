@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Vernemq-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor VerneMQ using RestAPI",
+    "plugin_name": "centreon_vernemq_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/mq/vernemq/restapi/"
+    ]
+}

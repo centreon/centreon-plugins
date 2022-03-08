@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Sensors-Serverscheck-Sensorgateway-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_sensorgateway.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/sensors/serverscheck/sensorgateway/snmp/"
+    ]
+}

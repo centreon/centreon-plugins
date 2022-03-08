@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Databases-Influxdb",
+    "pkg_summary": "Centreon Plugin to monitor InfluxDB databases using RestAPI",
+    "plugin_name": "centreon_influxdb.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "database/influxdb/"
+    ]
+}

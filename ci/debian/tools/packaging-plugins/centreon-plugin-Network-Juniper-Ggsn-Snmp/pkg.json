@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Network-Juniper-Ggsn-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_juniper_ggsn.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "network/juniper/ggsn/"
+    ]
+}

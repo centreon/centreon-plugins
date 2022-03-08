@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Network-Cisco-Meraki-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_cisco_meraki_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "network/cisco/meraki/cloudcontroller/restapi/"
+    ]
+}

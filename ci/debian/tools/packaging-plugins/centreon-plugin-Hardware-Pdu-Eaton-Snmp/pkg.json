@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Pdu-Eaton-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_pdu_eaton_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/pdu/eaton/snmp/"
+    ]
+}

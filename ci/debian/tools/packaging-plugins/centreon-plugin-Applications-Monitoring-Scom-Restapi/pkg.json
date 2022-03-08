@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Scom-Restapi",
+    "pkg_summary": "Centreon Plugin SCOM rest api",
+    "plugin_name": "centreon_monitoring_scom_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/monitoring/scom/restapi/"
+    ]
+}

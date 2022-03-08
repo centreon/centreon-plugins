@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Blockchain-Hyperledger-Exporter",
+    "pkg_summary": "Centreon Plugin to monitor Blockchain Hyperledger using Restapi",
+    "plugin_name": "centreon_blockchain_hyperledger_exporter_api.pl",
+    "files": [
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/monitoring/openmetrics/custom",
+        "blockchain/hyperledger/exporter/"
+    ]
+}

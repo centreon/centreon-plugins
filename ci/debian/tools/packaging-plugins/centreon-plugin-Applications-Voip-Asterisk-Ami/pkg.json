@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Voip-Asterisk-Ami",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_asterisk_ami.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/voip/asterisk/ami/"
+    ]
+}

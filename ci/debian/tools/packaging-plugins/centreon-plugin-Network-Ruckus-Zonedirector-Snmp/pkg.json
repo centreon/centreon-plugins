@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Network-Ruckus-Zonedirector-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Ruckus Zonedirector controllers using SNMP",
+    "plugin_name": "centreon_ruckus_zonedirector_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "network/ruckus/zonedirector/snmp/"
+    ]
+}

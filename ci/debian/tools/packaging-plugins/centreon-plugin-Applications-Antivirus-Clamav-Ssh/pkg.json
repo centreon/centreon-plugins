@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Clamav-Ssh",
+    "pkg_summary": "Centreon Plugin to monitor ClamAV antivirus engine through SSH",
+    "plugin_name": "centreon_clamav_ssh.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "apps/antivirus/clamav/local/"
+    ]
+}

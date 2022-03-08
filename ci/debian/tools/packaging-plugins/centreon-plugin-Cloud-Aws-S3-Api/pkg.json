@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Aws-S3-Api",
+    "pkg_summary": "Centreon Plugin to monitor Amazon AWS S3 (Simple Storage Service) service using Cloudwatch API",
+    "plugin_name": "centreon_aws_s3_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/aws/custom/",
+        "cloud/aws/s3/"
+    ]
+}

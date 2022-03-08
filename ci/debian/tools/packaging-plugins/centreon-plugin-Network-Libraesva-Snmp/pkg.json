@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Network-Libraesva-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_libraesva.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "network/libraesva/snmp/"
+    ]
+}

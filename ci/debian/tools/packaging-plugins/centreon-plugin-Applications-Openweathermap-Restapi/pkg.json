@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Openweathermap-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor current weather conditions using OpenWeatherMap RestAPI",
+    "plugin_name": "centreon_openweathermap.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/openweathermap/restapi/"
+    ]
+}

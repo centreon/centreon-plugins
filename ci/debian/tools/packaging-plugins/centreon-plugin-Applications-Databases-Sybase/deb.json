@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libdbd-sybase-perl",
+        "libdbi-perl"
+    ]
+}

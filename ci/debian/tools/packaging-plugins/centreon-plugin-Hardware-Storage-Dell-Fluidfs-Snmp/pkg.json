@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Dell-Fluidfs-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_dell_fluidfs.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "storage/dell/fluidfs/snmp/"
+    ]
+}

@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "libdatetime-perl",
+        "libmongodb-perl",
+    	"liburi-encode-perl"
+    ]
+}

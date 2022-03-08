@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Network-Versa-Director-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_versa_director_restapi.pl",
+    "files": [
+	"centreon/plugins/script_custom.pm",
+	"centreon/plugins/http.pm",
+	"centreon/plugins/backend/http/",
+        "network/versa/director/restapi/"
+    ]
+}

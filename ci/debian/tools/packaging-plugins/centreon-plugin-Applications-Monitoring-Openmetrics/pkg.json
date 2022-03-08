@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Openmetrics",
+    "pkg_summary": "Centreon Plugin to monitor applications or equipments exposing OpenMetrics endpoints",
+    "plugin_name": "centreon_monitoring_openmetrics.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "centreon/common/monitoring/openmetrics/",
+        "apps/monitoring/openmetrics/"
+    ]
+}

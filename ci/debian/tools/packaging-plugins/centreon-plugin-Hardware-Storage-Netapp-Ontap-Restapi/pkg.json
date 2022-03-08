@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Netapp-Ontap-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Netapp storages using Rest API",
+    "plugin_name": "centreon_netapp_ontap_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "storage/netapp/ontap/restapi/"
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "dependencies": [
+        "libjson-xs-perl",
+        "libdigest-sha-perl",
+	    "libdatetime-perl",
+        "libwww-perl",
+        "liblwp-protocol-https-perl",
+        "libio-socket-ssl-perl",
+        "liburi-encode-perl",
+        "liburi-perl",
+        "libhttp-proxypac-perl"
+    ]
+}

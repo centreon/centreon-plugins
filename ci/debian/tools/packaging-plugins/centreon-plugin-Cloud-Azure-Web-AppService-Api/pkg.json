@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Web-AppService-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Web App Service service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_web_appservice_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "cloud/azure/custom/",
+        "cloud/azure/management/monitor/mode/",
+        "cloud/azure/web/appservice/",
+        "cloud/azure/common/appservice/"
+    ]
+}

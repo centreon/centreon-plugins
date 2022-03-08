@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Overland-Neo-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_overland_neo_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "storage/overland/neo/snmp"
+    ]
+}

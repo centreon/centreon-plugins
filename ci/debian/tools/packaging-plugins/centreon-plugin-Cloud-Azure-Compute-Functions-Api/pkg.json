@@ -1,0 +1,16 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-Compute-Functions-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure Functions service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_compute_functions_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "cloud/azure/custom/",
+        "cloud/azure/management/monitor/mode/",
+        "cloud/azure/compute/functions/",
+        "cloud/azure/common/appservice/"
+    ]
+
+}
+

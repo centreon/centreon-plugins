@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Camera-Mobotix-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Mobotix camera using SNMP",
+    "plugin_name": "centreon_camera_mobotix_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/ntp.pm",
+        "hardware/devices/camera/mobotix/snmp/"
+    ]
+}

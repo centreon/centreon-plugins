@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Pdu-Cyberpower-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_pdu_cyberpower_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "hardware/pdu/cyberpower/snmp/"
+    ]
+}

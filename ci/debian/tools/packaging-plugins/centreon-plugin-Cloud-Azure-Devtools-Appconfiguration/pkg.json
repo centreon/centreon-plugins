@@ -1,0 +1,12 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Azure-DevTools-AppConfiguration-Api",
+    "pkg_summary": "Centreon Plugin to monitor Microsoft Azure App Configuration service using CLI or RestAPI",
+    "plugin_name": "centreon_azure_devtools_appconfiguration_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "cloud/azure/custom/",
+        "cloud/azure/devtools/appconfiguration/"
+    ]
+}

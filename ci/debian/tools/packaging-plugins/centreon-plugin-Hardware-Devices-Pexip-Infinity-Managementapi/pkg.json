@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Devices-Pexip-Infinity-Managementapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_pexip_infinity_managementapi.pl",
+    "files": [
+	"centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "hardware/devices/pexip/infinity/managementapi/"
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Notification-Sirportly",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_notification_sirportly.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "notification/sirportly/"
+    ]
+}

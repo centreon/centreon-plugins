@@ -1,0 +1,5 @@
+{
+    "dependencies": [
+        "libemail-send-smtp-gmail-perl"
+    ]
+}

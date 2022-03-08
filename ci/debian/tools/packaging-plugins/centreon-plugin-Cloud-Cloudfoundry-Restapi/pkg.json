@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Cloudfoundry-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_cloudfoundry_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "cloud/cloudfoundry/restapi/"
+    ]
+}

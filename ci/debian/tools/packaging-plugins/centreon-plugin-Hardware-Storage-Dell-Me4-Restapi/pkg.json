@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Dell-Me4-Restapi",
+    "pkg_summary": "Centreon Plugin Dell Me4 Rest API",
+    "plugin_name": "centreon_dell_me4_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "storage/dell/me4/restapi/"
+    ]
+}

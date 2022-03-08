@@ -1,0 +1,18 @@
+{
+    "pkg_name": "centreon-plugin-Network-Switchs-Arista-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_arista.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/cpu.pm",
+        "snmp_standard/mode/entity.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/storage.pm",
+        "snmp_standard/mode/tcpcon.pm",
+        "snmp_standard/mode/uptime.pm",
+        "network/arista/snmp/"
+    ]
+}

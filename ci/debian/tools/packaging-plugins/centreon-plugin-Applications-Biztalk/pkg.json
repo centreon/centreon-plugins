@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Biztalk",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_biztalk.pl",
+    "files": [
+        "centreon/plugins/script_sql.pm",
+        "centreon/plugins/dbi.pm",
+        "database/mssql/",
+        "apps/biztalk/sql/"
+    ]
+}

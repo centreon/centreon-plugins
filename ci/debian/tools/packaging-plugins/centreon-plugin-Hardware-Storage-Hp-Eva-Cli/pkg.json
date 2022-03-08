@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Hp-Eva-Cli",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_hp_eva_cli.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/hp/eva/cli"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Ibm-Ds4000-Smcli",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ibm_ds4000.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/smcli/",
+        "storage/ibm/DS4000/cli/"
+    ]
+}

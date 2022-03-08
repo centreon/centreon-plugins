@@ -1,0 +1,5 @@
+{
+    "dependencies": [
+        "libsoap-lite-perl"
+    ]
+}

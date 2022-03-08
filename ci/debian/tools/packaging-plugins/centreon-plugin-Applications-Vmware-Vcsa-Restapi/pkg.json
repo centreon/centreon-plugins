@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Vmware-Vcsa-Restapi",
+    "pkg_summary": "Centreon Plugin VMWare vcsa rest api",
+    "plugin_name": "centreon_vmware_vcsa_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/plugins/http.pm",
+        "centreon/plugins/backend/http/",
+        "apps/vmware/vcsa/restapi/"
+    ]
+}

@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "libjson-xs-perl",
+        "libdatetime-perl"
+    ]
+}

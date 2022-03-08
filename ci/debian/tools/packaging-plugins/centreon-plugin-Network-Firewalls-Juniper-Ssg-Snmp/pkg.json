@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Network-Firewalls-Juniper-Ssg-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_juniper_ssg_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "network/juniper/common/screenos",
+        "network/juniper/ssg"
+    ]
+}

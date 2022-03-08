@@ -1,0 +1,14 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Lenovo-Sseries-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_lenovo_sseries_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "snmp_standard/mode/hardwarefibrealliance.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+	"snmp_standard/mode/resources/",
+        "storage/lenovo/sseries/snmp/"
+    ]
+}
