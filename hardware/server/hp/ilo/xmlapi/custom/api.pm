@@ -263,6 +263,8 @@ sub change_shitty_xml {
     $options{response} =~ s/<FIRMWARE\s+VERSION\s*=\s*"(.*?)".*?<ENCLOSURE\s+ADDR\s*=\s*"(.*?)".*?\/>/<BACKPLANE FIRMWARE_VERSION="$1" ENCLOSURE_ADDR="$2"/mg;
     $options{response} =~ s/<DRIVE\s+BAY\s*=\s*"(.*?)".*?<DRIVE_STATUS\s+VALUE\s*=\s*"(.*?)".*?<UID\s+LED\s*=\s*"(.*?)".*?\/>/<DRIVE_BAY NUM="$1" STATUS="$2" UID_LED="$3" \/>/msg;
 
+    $options{response} =~ s/<FIRMWARE_VERSION VALUE\s*=\s*"([^"]*[^a-zA-Z0-9\s\.:-]+[^"]*)"\/>/<FIRMWARE_VERSION VALUE="UNK"\/>/msg;
+
     return $options{response};
 }
 
