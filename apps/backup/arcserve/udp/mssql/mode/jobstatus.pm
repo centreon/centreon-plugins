@@ -141,8 +141,8 @@ sub manage_selection {
                lj.jobStatus,
                rhostname,
                vmname,
-               DATEDIFF(s, '1970-01-01 00:00:00', lj.jobLocalStartTime) as start_time,
-               DATEDIFF(s, '1970-01-01 00:00:00', lj.jobLocalEndTime) as end_time,
+               DATEDIFF(s, '1970-01-01 00:00:00', lj.jobUTCStartTime) as start_time,
+               DATEDIFF(s, '1970-01-01 00:00:00', lj.jobUTCEndTime) as end_time,
                ep.name,
                lj.jobType,
                lj.jobStatus
