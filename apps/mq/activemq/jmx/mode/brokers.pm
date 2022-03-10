@@ -237,16 +237,14 @@ sub manage_selection {
 
     $self->{brokers} = {};
     foreach my $mbean (keys %$result) {
-        next if ($mbean !~ /org.apache.activemq:brokerName=(.*?),(?:destinationName=(.*?),destinationType=(.*?),|type=Broker)/);
-        my ($broker_name, $destination_name, $destination_type) = ($1, $2, $3);
+        my ($broker_name, $destination_name, $destination_type);
+
+        $broker_name = $1 if ($mbean =~ /brokerName=(.*?)(?:,|$)/);
+        $destination_name = $1 if ($mbean =~ /destinationName=(.*?)(?:,|$)/);
+        $destination_type = $1 if ($mbean =~ /destinationType=(.*?)(?:,|$)/);
 
         if (defined($self->{option_results}->{filter_broker_name}) && $self->{option_results}->{filter_broker_name} ne '' &&
             $broker_name !~ /$self->{option_results}->{filter_broker_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $broker_name . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_destination_type}) && $self->{option_results}->{filter_destination_type} ne '' &&
-            $destination_type !~ /$self->{option_results}->{filter_destination_type}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $broker_name . "': no matching filter.", debug => 1);
             next;
         }
@@ -266,6 +264,11 @@ sub manage_selection {
             if (defined($self->{option_results}->{filter_destination_name}) && $self->{option_results}->{filter_destination_name} ne '' &&
                 $destination_name !~ /$self->{option_results}->{filter_destination_name}/) {
                 $self->{output}->output_add(long_msg => "skipping '" . $destination_name . "': no matching filter.", debug => 1);
+                next;
+            }
+            if (defined($self->{option_results}->{filter_destination_type}) && $self->{option_results}->{filter_destination_type} ne '' &&
+                $destination_type !~ /$self->{option_results}->{filter_destination_type}/) {
+                $self->{output}->output_add(long_msg => "skipping '" . $broker_name . "': no matching filter.", debug => 1);
                 next;
             }
 
