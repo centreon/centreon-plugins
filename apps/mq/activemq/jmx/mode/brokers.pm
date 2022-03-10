@@ -27,6 +27,15 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_CurrentStatus'};
+    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
+
+    return 0;
+}
+
 sub broker_long_output {
     my ($self, %options) = @_;
 
@@ -66,8 +75,10 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'status', type => 2, critical_default => '%{status} !~ /Good/i', set => {
-                key_values => [ { name => 'status' }, { name => 'name' } ],
+                key_values => [ { name => 'CurrentStatus' }, { name => 'name' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
                 output_template => 'status: %s',
+                output_use => 'status',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
