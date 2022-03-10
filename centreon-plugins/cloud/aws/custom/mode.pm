@@ -62,6 +62,7 @@ sub custom_metric_perfdata {
         value     => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ?
             $self->{result_values}->{value_per_sec} :
             $self->{result_values}->{value}),
+        min       => $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{min},
         warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{label}),
         critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{instance_mode}->{metrics_mapping}->{ $self->{result_values}->{metric} }->{label}),
     );
