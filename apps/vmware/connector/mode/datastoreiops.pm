@@ -181,7 +181,15 @@ sub manage_selection {
     $self->{global_iops} = { write => 0, read => 0 };
     foreach my $ds_id (keys %{$response->{data}}) {
         my $ds_name = $response->{data}->{$ds_id}->{name};
-        $self->{datastore}->{$ds_name} = { display => $ds_name, 
+
+        # vcenter can provide negative values...
+        $response->{data}->{$ds_id}->{'disk.numberWrite.summation'} = $response->{data}->{$ds_id}->{'disk.numberWrite.summation'} > 0 ?
+            $response->{data}->{$ds_id}->{'disk.numberWrite.summation'} : 0;
+        $response->{data}->{$ds_id}->{'disk.numberRead.summation'} = $response->{data}->{$ds_id}->{'disk.numberRead.summation'} > 0 ?
+            $response->{data}->{$ds_id}->{'disk.numberRead.summation'} : 0;
+
+        $self->{datastore}->{$ds_name} = {
+            display => $ds_name, 
             vm => {}, 
             ds_global => {
                 accessible => $response->{data}->{$ds_id}->{accessible}
