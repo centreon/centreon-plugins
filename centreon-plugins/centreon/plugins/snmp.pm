@@ -372,6 +372,8 @@ sub get_leef {
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
 
+    $self->debug(results => $results) if ($self->{output}->is_debug());
+
     return $results;
 }
 
@@ -548,6 +550,8 @@ sub get_multiple_table {
         }
     }
 
+    $self->debug(results => $results) if ($self->{output}->is_debug());
+
     return $results;
 }
 
@@ -661,6 +665,8 @@ sub get_table {
         $self->{output}->add_option_msg(short_msg => 'SNMP Table Request: Cant get a single value.');
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
+
+    $self->debug(results => $results) if ($self->{output}->is_debug());
 
     return $results;
 }
@@ -922,6 +928,20 @@ sub map_instance {
     }
 
     return $results;
+}
+
+sub debug {
+    my ($self, %options) = @_;
+
+    foreach my $oid1 ($self->oid_lex_sort(keys %{$options{results}})) {
+        if (ref($options{results}->{$oid1}) eq 'HASH') {
+            foreach my $oid2 ($self->oid_lex_sort(keys %{$options{results}->{$oid1}})) {
+                $self->{output}->output_add(long_msg => $oid2 . ' = ' . (defined($options{results}->{$oid1}->{$oid2}) ? $options{results}->{$oid1}->{$oid2} : 'undef'), debug => 1);
+            }
+        } else {
+            $self->{output}->output_add(long_msg => $oid1 . ' = ' . (defined($options{results}->{$oid1}) ? $options{results}->{$oid1} : 'undef'), debug => 1);
+        }
+    }
 }
 
 sub oid_lex_sort {
