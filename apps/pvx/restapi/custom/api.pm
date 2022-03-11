@@ -167,11 +167,10 @@ sub query_range {
 
     my $result = $self->get_endpoint(url_path => '/query?expr=' . $uri->encode($query));
 
-    if (defined( $self->{option_results}->{default_value} ) && !exists( $result->{data} )) {
-        my $forced_hash;
+    if (defined( $self->{option_results}->{default_value} ) && $options{filter} ne '' && !exists( $result->{data} )) {
         $options{filter} =~ /([^\s\\]+) = \"([^\s\\]+)\"/;
-        push @{ $forced_hash->{key} }, { value => $2 };
-        push @{ $forced_hash->{values} }, { value => $self->{option_results}->{default_value} }; push @{$result->{data}}, $forced_hash;
+        push @{$result->{data}->{key}}, { value => $2 };
+        push @{$result->{data}->{values}}, { value => $self->{option_results}->{default_value} };
     }
 
     return $result->{data};
@@ -215,6 +214,10 @@ PVX Rest API custom mode
 =head1 REST API OPTIONS
 
 =over 8
+
+=item B<--default-value>
+
+Set a default value when nothing returned by PVX API
 
 =item B<--timeframe>
 
