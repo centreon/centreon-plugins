@@ -31,6 +31,9 @@ sub custom_used_calc {
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_free'} + $options{new_datas}->{$self->{instance} . '_used'};
+
+    return -10 if ($self->{result_values}->{total} == 0);
+
     $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
     $self->{result_values}->{free_prct} =  $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
@@ -63,7 +66,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'fs', type => 1, cb_prefix_output => 'prefix_fs_output', message_multiple => 'All filesystems are ok.' }
+        { name => 'fs', type => 1, cb_prefix_output => 'prefix_fs_output', message_multiple => 'All filesystems are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{fs} = [
@@ -73,7 +76,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_used_output'),
                 threshold_use => 'used_prct', output_error_template => '%s',
                 perfdatas => [
-                    { value => 'used', label => 'used', cast_int => 1,
+                    { label => 'used', value => 'used', cast_int => 1,
                       unit => 'B', min => 0, max => 'total', threshold_total => 'total', 
                       label_extra_instance => 1, instance_use => 'display' }
                 ]
