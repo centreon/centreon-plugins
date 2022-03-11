@@ -164,7 +164,7 @@ Check cluster.
 Set unknown threshold for status.
 Can used special variables like: %{state}
 
-=item B<--warning--cluster-status>
+=item B<--warning-cluster-status>
 
 Set warning threshold for status.
 Can used special variables like: %{state}
