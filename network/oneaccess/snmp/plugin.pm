@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'cpu'             => 'network::oneaccess::snmp::mode::cpu',
+        'cells-radio'     => 'network::oneaccess::snmp::mode::cellsradio',
         'interfaces'      => 'network::oneaccess::snmp::mode::interfaces', 
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'network::oneaccess::snmp::mode::memory'
