@@ -259,7 +259,7 @@ sub manage_selection {
 
         $self->{cells}->{$_}->{operator} = $result->{operator};
         $self->{cells}->{$_}->{status}->{operator} = $result->{operator};
-        $self->{cells}->{$_}->{status}->{imsi} = defined($result->{imsi}) ? $result->{imsi} : '-';
+        $self->{cells}->{$_}->{status}->{imsi} = defined($result->{imsi}) && $result->{imsi} =~ /^(?:[0-9]+)$/ ? $result->{imsi} : '-';
         $self->{cells}->{$_}->{signal}->{operator} = $result->{operator};
 
         $self->{cells}->{$_}->{status}->{simStatus} = $result->{simStatus} =~ /is present/ ? 'present' : 'notPresent';
@@ -269,9 +269,11 @@ sub manage_selection {
             rssi => $result->{rssi}
         );
 
-        $self->{cells}->{$_}->{signal}->{rssi} = $result->{rssi};
-        $self->{cells}->{$_}->{signal}->{rsrp} = $result->{rsrp};
-        $self->{cells}->{$_}->{signal}->{snr} = $result->{snr};
+        if ($self->{cells}->{$_}->{status}->{simStatus} eq 'present') {
+            $self->{cells}->{$_}->{signal}->{rssi} = $result->{rssi};
+            $self->{cells}->{$_}->{signal}->{rsrp} = $result->{rsrp};
+            $self->{cells}->{$_}->{signal}->{snr} = $result->{snr};
+        }
 
         $self->{global}->{detected}++;
     }
