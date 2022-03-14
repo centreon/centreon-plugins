@@ -46,8 +46,9 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'sim status: %s [signal quality: %s]',
+        'sim status: %s [imsi: %s] [signal quality: %s]',
         $self->{result_values}->{simStatus},
+        $self->{result_values}->{imsi},
         $self->{result_values}->{signalQuality}
     );
 }
@@ -76,12 +77,6 @@ sub prefix_global_output {
     my ($self, %options) = @_;
 
     return 'Number of cellular radio modules ';
-}
-
-sub prefix_packet_output {
-    my ($self, %options) = @_;
-
-    return 'packets ';
 }
 
 sub set_counters {
@@ -117,7 +112,7 @@ sub set_counters {
             critical_default => '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/',
             set => {
                 key_values => [
-                    { name => 'cellId' }, { name => 'operator' },
+                    { name => 'cellId' }, { name => 'operator' }, { name => 'imsi' },
                     { name => 'simStatus' }, { name => 'signalQuality' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -168,6 +163,7 @@ my $mapping_id = {
 };
 my $mapping = {
     simStatus => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.20' }, # oacCellSIMStatus
+    imsi      => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.21' }, # oacCellIMSI
     operator  => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.40' }, # oacCellSelectedOperator
     rssi      => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.41' }, # oacCellSignalStrength
     rsrp      => { oid => '.1.3.6.1.4.1.13191.10.3.9.2.1.44' }, # oacCellRSRP
@@ -263,6 +259,7 @@ sub manage_selection {
 
         $self->{cells}->{$_}->{operator} = $result->{operator};
         $self->{cells}->{$_}->{status}->{operator} = $result->{operator};
+        $self->{cells}->{$_}->{status}->{imsi} = defined($result->{imsi}) ? $result->{imsi} : '-';
         $self->{cells}->{$_}->{signal}->{operator} = $result->{operator};
 
         $self->{cells}->{$_}->{status}->{simStatus} = $result->{simStatus} =~ /is present/ ? 'present' : 'notPresent';
@@ -297,17 +294,17 @@ Filter cell modules by id (IMEI or MEID).
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}
+Can used special variables like: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{signalQuality} =~ /poor/').
-Can used special variables like: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}
+Can used special variables like: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{simStatus} eq "notPresent" || %{signalQuality} =~ /none/').
-Can used special variables like: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}
+Can used special variables like: %{simStatus}, %{signalQuality}, %{cellId}, %{operator}, %{imsi}
 
 =item B<--warning-*> B<--critical-*>
 
