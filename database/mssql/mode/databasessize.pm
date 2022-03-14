@@ -285,14 +285,14 @@ sub manage_selection {
                 [name],
                 physical_name,
                 [File_Type] = CASE type   
-                    WHEN 0 THEN ''data''
-                    WHEN 1 THEN ''log''
+                    WHEN 0 THEN 'data'
+                    WHEN 1 THEN 'log'
                 END,
                 [Total_Size] = [size],
-                [Used_Space] = (CAST(FILEPROPERTY([name], ''SpaceUsed'') as int)),
+                [Used_Space] = (CAST(FILEPROPERTY([name], 'SpaceUsed') as int)),
                 [Growth_Units] = CASE [is_percent_growth]    
-                    WHEN 1 THEN CAST(growth AS varchar(20)) + ''%''
-                    ELSE CAST(growth*8/1024 AS varchar(20)) + ''Mb''
+                    WHEN 1 THEN CAST(growth AS varchar(20)) + '%'
+                    ELSE CAST(growth*8/1024 AS varchar(20)) + 'Mb'
                 END,
                 [max_size]
             FROM sys.database_files
