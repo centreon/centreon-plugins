@@ -66,34 +66,54 @@ sub run {
     my $xtremio = $options{custom};
         
     my $urlbase = '/api/json/types/';
-    my @items = $xtremio->get_items(url => $urlbase,
-                                    obj => 'ssds');
+    my @items = $xtremio->get_items(
+        url => $urlbase,
+        obj => 'ssds'
+    );
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All SSDs Endurance are OK');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'All SSDs Endurance are OK'
+    );
 
     foreach my $item (@items) {
         next if ($self->check_filter(section => 'ssds', instance => $item));
-        my $details = $xtremio->get_details(url  => $urlbase,
-                                            obj  => 'ssds',
-                                            name => $item);
+        my $details = $xtremio->get_details(
+            url  => $urlbase,
+            obj  => 'ssds',
+            name => $item
+        );
 
-        $self->{output}->output_add(long_msg => sprintf("SSD '%s' endurance remaining is %i%%",
-                                                        $item, $details->{'percent-endurance-remaining'}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "SSD '%s' endurance remaining is %i%%",
+                $item, $details->{'percent-endurance-remaining'}
+            )
+        );
 
-
-        my $exit = $self->{perfdata}->threshold_check(value => $details->{'percent-endurance-remaining'},
-                                                      threshold => [ { label => 'warning', exit_litteral => 'warning' }, { label => 'critical', exit_litteral => 'critical' } ]);
+        my $exit = $self->{perfdata}->threshold_check(
+            value => $details->{'percent-endurance-remaining'},
+            threshold => [
+                { label => 'critical', exit_litteral => 'critical' },
+                { label => 'warning', exit_litteral => 'warning' }
+            ]
+        );
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("SSD '%s' endurance is %i%%",
-                                                             $item, $details->{'percent-endurance-remaining'}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "SSD '%s' endurance is %i%%",
+                    $item, $details->{'percent-endurance-remaining'}
+                )
+            );
         }
-        $self->{output}->perfdata_add(label => $item . "_endurance", unit => '%',
-                                      value => $details->{'percent-endurance-remaining'},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
+        $self->{output}->perfdata_add(
+            label => $item . "_endurance", unit => '%',
+            value => $details->{'percent-endurance-remaining'},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0, max => 100
+        );
     }
 
     $self->{output}->display();
