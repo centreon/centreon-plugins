@@ -83,7 +83,7 @@ sub run {
                                                         $details->{'cpu-usage'}));
 
 
-        my $exit = $self->{perfdata}->threshold_check(value => $details->{'cpu-usage'}, threshold => [ { label => 'warning', 'exit_litteral' => 'warning' }, { label => 'critical', exit_litteral => 'critical' } ]);
+        my $exit = $self->{perfdata}->threshold_check(value => $details->{'cpu-usage'}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Xenvs '%s' cpu-Usage is %i%%",
