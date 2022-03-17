@@ -139,7 +139,7 @@ sub custom_usage_calc {
     if (defined($self->{instance_mode}->{option_results}->{space_reservation})) {
         $reserved_value = $self->{instance_mode}->{option_results}->{space_reservation} * $self->{result_values}->{total} / 100;
     }
-    
+
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'} * $options{new_datas}->{$self->{instance} . '_allocation_units'};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used} - $reserved_value;
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / ($self->{result_values}->{total} - $reserved_value);
@@ -360,10 +360,19 @@ sub manage_selection {
     foreach (sort @{$self->{storage_id_selected}}) {
         my $name_storage = $self->get_display_value(id => $_);
 
-        if (!defined($result->{$oid_hrStorageAllocationUnits . "." . $_})) {
+        if (!defined($result->{$oid_hrStorageAllocationUnits . '.' . $_})) {
             $self->{output}->add_option_msg(
                 long_msg => sprintf(
                     "skipping storage '%s': not found (need to reload the cache)", 
+                    $name_storage
+                )
+            );
+            next;
+        }
+        if ($result->{$oid_hrStorageAllocationUnits . '.' . $_} == 0) {
+            $self->{output}->add_option_msg(
+                long_msg => sprintf(
+                    "skipping storage '%s': allocation units 0", 
                     $name_storage
                 )
             );
