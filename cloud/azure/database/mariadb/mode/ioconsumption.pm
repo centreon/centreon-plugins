@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'io_consumption_percent' => {
             'output' => 'IO Percent',
             'label'  => 'ioconsumption-usage',
-            'nlabel' => 'azmysql.ioconsumption.usage.percentage',
+            'nlabel' => 'azmariadb.ioconsumption.usage.percentage',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
@@ -109,7 +109,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Database for MySQL IO comsuption usage.
+Check Azure Database for MariaDB IO comsuption usage.
 
 Example:
 

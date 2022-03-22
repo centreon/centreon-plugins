@@ -63,6 +63,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure Database for MySQL resources.
+Check Microsoft Azure Database for MariaDB resources.
 
 =cut

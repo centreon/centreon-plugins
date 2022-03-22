@@ -32,28 +32,28 @@ sub get_metrics_mapping {
         'active_connections' => {
             'output' => 'Active Connections',
             'label'  => 'connections-active',
-            'nlabel' => 'azmysql.connections.active.count',
+            'nlabel' => 'azmariadb.connections.active.count',
             'unit'   => '',
             'min'    => '0'
         },
         'connections_failed' => {
             'output' => 'Failed Connections',
             'label'  => 'connections-failed',
-            'nlabel' => 'azmysql.connections.failed.count',
+            'nlabel' => 'azmariadb.connections.failed.count',
             'unit'   => '',
             'min'    => '0'
         },
         'aborted_connections' => {
             'output' => 'Aborted Connections',
             'label'  => 'connections-aborted',
-            'nlabel' => 'azmysql.connections.aborted.count',
+            'nlabel' => 'azmariadb.connections.aborted.count',
             'unit'   => '',
             'min'    => '0'
         },
         'total_connections' => {
             'output' => 'Total Connections',
             'label'  => 'connections-total',
-            'nlabel' => 'azmysql.connections.total.count',
+            'nlabel' => 'azmariadb.connections.total.count',
             'unit'   => '',
             'min'    => '0'
         }
@@ -139,7 +139,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Database for MySQL connections status.
+Check Azure Database for MariaDB connections status.
 
 Example:
 

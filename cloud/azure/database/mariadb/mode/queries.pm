@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'queries' => {
             'output' => 'Queries',
             'label'  => 'queries',
-            'nlabel' => 'azmysql.queries.count',
+            'nlabel' => 'azmariadb.queries.count',
             'unit'   => '',
             'min'    => '0',
         }
@@ -100,7 +100,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Database for MySQL network usage.
+Check Azure Database for MariaDB network usage.
 
 Example:
 

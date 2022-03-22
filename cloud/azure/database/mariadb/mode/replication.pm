@@ -32,14 +32,14 @@ sub get_metrics_mapping {
         'replication_lag' => {
             'output' => 'Replication Lag In Seconds',
             'label'  => 'replication-lag',
-            'nlabel' => 'azmysql.replication.lag.seconds',
+            'nlabel' => 'azmariadb.replication.lag.seconds',
             'unit'   => 's',
             'min'    => '0'
         },
         'seconds_behind_master' => {
             'output' => 'Replication lag in seconds',
             'label'  => 'replication-lag-count',
-            'nlabel' => 'azmysql.replication.lag.count',
+            'nlabel' => 'azmariadb.replication.lag.count',
             'unit'   => '',
             'min'    => '0'
         }
@@ -125,7 +125,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Database for MySQL replication status.
+Check Azure Database for MariaDB replication status.
 
 Example:
 

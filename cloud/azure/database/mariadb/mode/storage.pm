@@ -32,49 +32,49 @@ sub get_metrics_mapping {
         'backup_storage_used' => {
             'output' => 'Backup Storage used',
             'label'  => 'storage-backup',
-            'nlabel' => 'azmysql.storage.backup.usage.bytes',
+            'nlabel' => 'azmariadb.storage.backup.usage.bytes',
             'unit'   => 'B',
             'min'    => '0'
         },
         'serverlog_storage_limit' => {
             'output' => 'Server Log storage limit',
             'label'  => 'serverlog-limit',
-            'nlabel' => 'azmysql.storage.serverlog.limit.bytes',
+            'nlabel' => 'azmariadb.storage.serverlog.limit.bytes',
             'unit'   => 'B',
             'min'    => '0'
         },
         'serverlog_storage_percent' => {
             'output' => 'Server Log storage percent',
             'label'  => 'serverlog-percent',
-            'nlabel' => 'azmysql.storage.serverlog.usage.percentage',
+            'nlabel' => 'azmariadb.storage.serverlog.usage.percentage',
             'unit'   => '%',
             'min'    => '0'
         },
         'serverlog_storage_usage' => {
             'output' => 'Server Log storage used',
             'label'  => 'servelog-usage',
-            'nlabel' => 'azmysql.storage.serverlog.usage.bytes',
+            'nlabel' => 'azmariadb.storage.serverlog.usage.bytes',
             'unit'   => 'B',
             'min'    => '0'
         },
         'storage_limit' => {
             'output' => 'Storage Limit',
             'label'  => 'storage-limit',
-            'nlabel' => 'azmysql.storage.limit.bytes',
+            'nlabel' => 'azmariadb.storage.limit.bytes',
             'unit'   => 'B',
             'min'    => '0'
         },
         'storage_percent' => {
             'output' => 'Storage Percent',
             'label'  => 'storage-percent',
-            'nlabel' => 'azmysql.storage.usage.percentage',
+            'nlabel' => 'azmariadb.storage.usage.percentage',
             'unit'   => '%',
             'min'    => '0'
         },
         'storage_used' => {
             'output' => 'Storage Used',
             'label'  => 'storage-used',
-            'nlabel' => 'azmysql.storage.usage.bytes',
+            'nlabel' => 'azmariadb.storage.usage.bytes',
             'unit'   => 'B',
             'min'    => '0'
         }
@@ -162,7 +162,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Database for MySQL storage usage.
+Check Azure Database for MariaDB storage usage.
 
 Example:
 

@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'memory_percent' => {
             'output' => 'Memory percent',
             'label'  => 'memory-usage',
-            'nlabel' => 'azmysql.memory.usage.percentage',
+            'nlabel' => 'azmariadb.memory.usage.percentage',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
@@ -109,7 +109,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Database for MySQL memory usage.
+Check Azure Database for MariaDB memory usage.
 
 Example:
 

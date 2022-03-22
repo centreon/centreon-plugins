@@ -32,14 +32,14 @@ sub get_metrics_mapping {
         'network_bytes_egress' => {
             'output' => 'Network Out',
             'label'  => 'traffic-out',
-            'nlabel' => 'azmysql.traffic.out.bytes',
+            'nlabel' => 'azmariadb.traffic.out.bytes',
             'unit'   => 'B',
             'min'    => '0',
         },
         'network_bytes_ingress' => {
             'output' => 'Network In',
             'label'  => 'traffic-in',
-            'nlabel' => 'azmysql.traffic.in.bytes',
+            'nlabel' => 'azmariadb.traffic.in.bytes',
             'unit'   => 'B',
             'min'    => '0',
         }
@@ -115,7 +115,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Database for MySQL network usage.
+Check Azure Database for MariaDB network usage.
 
 Example:
 

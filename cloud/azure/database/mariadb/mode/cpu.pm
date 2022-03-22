@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'cpu_percent' => {
             'output' => 'CPU percent',
             'label'  => 'cpu-usage',
-            'nlabel' => 'azmysql.cpu.utilization.percentage',
+            'nlabel' => 'azmariadb.cpu.utilization.percentage',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
@@ -109,7 +109,7 @@ __END__
 
 =head1 MODE
 
-Check Azure Database for MySQL CPU usage.
+Check Azure Database for MariaDB CPU usage.
 
 Example:
 
