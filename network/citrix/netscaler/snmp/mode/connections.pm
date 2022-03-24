@@ -41,6 +41,14 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'established', nlabel => 'connections.server.established.count', set => {
+                key_values => [ { name => 'established' } ],
+                output_template => 'Established Server TCP connections: %s',
+                perfdatas => [
+                    { label => 'established_server', template => '%s', unit => 'con', min => 0 }
+                ]
+            }
+        },
         { label => 'server', nlabel => 'connections.server.count', set => {
                 key_values => [ { name => 'server' } ],
                 output_template => 'Server TCP connections: %s',
@@ -76,10 +84,12 @@ sub manage_selection {
 
     $self->{global} = { client => 0, server => 0, active => 0 }; 
     my $oid_tcpCurServerConn = '.1.3.6.1.4.1.5951.4.1.1.46.1.0';
+    my $oid_tcpCurServerConnEstablished = '.1.3.6.1.4.1.5951.4.1.1.46.10.0';
     my $oid_tcpCurClientConn = '.1.3.6.1.4.1.5951.4.1.1.46.2.0'; 
     my $oid_tcpActiveServerConn = '.1.3.6.1.4.1.5951.4.1.1.46.8.0';
-    my $result = $options{snmp}->get_leef(oids => [$oid_tcpCurServerConn, $oid_tcpCurClientConn, $oid_tcpActiveServerConn ], nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(oids => [$oid_tcpCurServerConn, $oid_tcpCurServerConnEstablished, $oid_tcpCurClientConn, $oid_tcpActiveServerConn ], nothing_quit => 1);
     $self->{global}->{client} = $result->{$oid_tcpCurClientConn};
+    $self->{global}->{established} = $result->{$oid_tcpCurServerConnEstablished};
     $self->{global}->{server} = $result->{$oid_tcpCurServerConn};
     $self->{global}->{active} = $result->{$oid_tcpActiveServerConn};
 }
@@ -97,12 +107,12 @@ Check connections usage (Client, Server, ActiveServer) (NS-ROOT-MIBv2).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'server', 'active', 'client'.
+Can be: 'server', 'active', 'client', 'established'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'server', 'active', 'client'.
+Can be: 'server', 'active', 'client', 'established'.
 
 =back
 
