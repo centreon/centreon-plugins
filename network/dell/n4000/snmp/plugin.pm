@@ -37,6 +37,8 @@ sub new {
         'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'centreon::common::dell::fastpath::snmp::mode::memory',
+        'time'            => 'snmp_standard::mode::ntp',
+        'uptime'          => 'snmp_standard::mode::uptime'
     );
 
     return $self;
