@@ -57,7 +57,6 @@ sub new {
         'filter-metric:s'  => { name => 'filter_metric' },
         'resource:s'       => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' },
-        'resource-type:s'  => { name => 'resource_type' }
     });
 
     return $self;
@@ -72,17 +71,12 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --resource-type option');
-        $self->{output}->option_exit();
-    }
-
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
     my $resource_type = $self->{option_results}->{resource_type};
     if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.DBforMariaDB\/(.*)\/(.*)$/) {
         $resource_group = $1;
-        $resource_type = $2;
+        $resource_type = 'servers';
         $resource = $3;
     }
 
@@ -127,7 +121,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=traffic --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=traffic --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMariaDB/servers/<db_id>'
 --aggregation='average' --warning-traffic-out='80' --critical-traffic-out='90'
 
@@ -142,10 +136,6 @@ Set resource name or id (Required).
 =item B<--resource-group>
 
 Set resource group (Required if resource's name is used).
-
-=item B<--resource-type>
-
-Set resource type (Default: 'servers'). Can be 'servers', 'flexibleServers'.
 
 =item B<--warning-*>
 

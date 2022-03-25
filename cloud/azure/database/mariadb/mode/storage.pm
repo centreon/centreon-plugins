@@ -92,7 +92,6 @@ sub new {
         'filter-metric:s'  => { name => 'filter_metric' },
         'resource:s'       => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' },
-        'resource-type:s'  => { name => 'resource_type' }
     });
 
     return $self;
@@ -107,17 +106,12 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --resource-type option');
-        $self->{output}->option_exit();
-    }
-
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
     my $resource_type = $self->{option_results}->{resource_type};
     if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.DBforMariaDB\/(.*)\/(.*)$/) {
         $resource_group = $1;
-        $resource_type = $2;
+        $resource_type = 'servers';
         $resource = $3;
     }
 
@@ -141,7 +135,6 @@ sub check_options {
         'servers' => [ 'backup_storage_used', 'serverlog_storage_limit', 'serverlog_storage_percent', 
                        'serverlog_storage_usage', 'storage_limit', 'storage_percent', 'storage_used'
         ],
-        'flexibleServers' => [ 'backup_storage_used', 'storage_limit', 'storage_percent', 'storage_used' ]
     };
 
     my $metrics_mapping_transformed;
@@ -170,13 +163,13 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=storage --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
---warning-storage_used='1000' --critical-storage_used='2000'
+--warning-storage-used='1000' --critical-storage-used='2000'
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=storage --custommode=api
---resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMariaDB/servers/<db_id>'
---aggregation='maximum' --warning-storage_used='1000' --critical-storage_used='2000'
+perl centreon-plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=storage --custommode=api
+--resource='/subscriptions/<subscription-id>/resourceGroups/<resourcegroup-id>/providers/Microsoft.DBforMariaDB/servers/<db-id>'
+--aggregation='maximum' --warning-storage-used='1000' --critical-storage-used='2000'
 
 Default aggregation: 'maximum' / 'average', 'minimum' and 'total' are valid.
 
@@ -189,10 +182,6 @@ Set resource name or id (Required).
 =item B<--resource-group>
 
 Set resource group (Required if resource's name is used).
-
-=item B<--resource-type>
-
-Set resource type (Default: 'servers'). Can be 'servers', 'flexibleServers'.
 
 =item B<--warning-*>
 

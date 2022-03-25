@@ -29,13 +29,6 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'replication_lag' => {
-            'output' => 'Replication Lag In Seconds',
-            'label'  => 'replication-lag',
-            'nlabel' => 'azmariadb.replication.lag.seconds',
-            'unit'   => 's',
-            'min'    => '0'
-        },
         'seconds_behind_master' => {
             'output' => 'Replication lag in seconds',
             'label'  => 'replication-lag-count',
@@ -57,7 +50,6 @@ sub new {
         'filter-metric:s'  => { name => 'filter_metric' },
         'resource:s'       => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' },
-        'resource-type:s'  => { name => 'resource_type' }
     });
 
     return $self;
@@ -72,17 +64,12 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --resource-type option');
-        $self->{output}->option_exit();
-    }
-
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
     my $resource_type = $self->{option_results}->{resource_type};
     if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.DBforMariaDB\/(.*)\/(.*)$/) {
         $resource_group = $1;
-        $resource_type = $2;
+        $resource_type = 'servers';
         $resource = $3;
     }
 
@@ -104,7 +91,6 @@ sub check_options {
 
     my $resource_mapping = {
         'servers' => [ 'seconds_behind_master' ],
-        'flexibleServers' => [ 'replication_lag' ]
     };
 
     my $metrics_mapping_transformed;
@@ -137,7 +123,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=connections --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=connections --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMariaDB/servers/<db_id>'
 --aggregation='maximum' --warning-replication-lag='1000' --critical-replication-lag='2000'
 
@@ -153,19 +139,15 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--resource-type>
-
-Set resource type (Default: 'servers'). Can be 'servers', 'flexibleServers'.
-
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'replication-lag', 'replication-lag-count'.
+'replication-lag-count'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'replication-lag', 'replication-lag-count'.
+'replication-lag-count'.
 
 =back
 

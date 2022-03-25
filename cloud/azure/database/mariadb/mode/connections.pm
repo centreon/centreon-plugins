@@ -42,20 +42,6 @@ sub get_metrics_mapping {
             'nlabel' => 'azmariadb.connections.failed.count',
             'unit'   => '',
             'min'    => '0'
-        },
-        'aborted_connections' => {
-            'output' => 'Aborted Connections',
-            'label'  => 'connections-aborted',
-            'nlabel' => 'azmariadb.connections.aborted.count',
-            'unit'   => '',
-            'min'    => '0'
-        },
-        'total_connections' => {
-            'output' => 'Total Connections',
-            'label'  => 'connections-total',
-            'nlabel' => 'azmariadb.connections.total.count',
-            'unit'   => '',
-            'min'    => '0'
         }
     };
 
@@ -71,7 +57,6 @@ sub new {
         'filter-metric:s'  => { name => 'filter_metric' },
         'resource:s'       => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' },
-        'resource-type:s'  => { name => 'resource_type' }
     });
 
     return $self;
@@ -86,23 +71,18 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --resource-type option');
-        $self->{output}->option_exit();
-    }
-
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
     my $resource_type = $self->{option_results}->{resource_type};
     if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.DBforMariaDB\/(.*)\/(.*)$/) {
         $resource_group = $1;
-        $resource_type = $2;
+        $resource_type = 'servers';
         $resource = $3;
     }
 
     $self->{az_resource} = $resource;
     $self->{az_resource_group} = $resource_group;
-    $self->{az_resource_type} = $resource_type;
+    $self->{az_resource_type} = 'servers';
     $self->{az_resource_namespace} = 'Microsoft.DBforMariaDB';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : 'PT5M';
@@ -118,7 +98,6 @@ sub check_options {
 
     my $resource_mapping = {
         'servers' => [ 'active_connections', 'connections_failed' ],
-        'flexibleServers' => [ 'active_connections', 'aborted_connections', 'total_connections' ]
     };
 
     my $metrics_mapping_transformed;
@@ -151,7 +130,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::integration::servicebus::plugin --mode=connections --custommode=api
+perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=connections --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMariaDB/servers/<db_id>'
 --aggregation='total' --warning-connections-active='1000' --critical-connections-active='2000'
 
@@ -167,21 +146,15 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--resource-type>
-
-Set resource type (Default: 'servers'). Can be 'servers', 'flexibleServers'.
-
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'connections-active', 'connections-failed', 'connections-aborted', 
-'connections-total'.
+'connections-active', 'connections-failed'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'connections-active', 'connections-failed', 'connections-aborted',
-'connections-total'.
+'connections-active', 'connections-failed'.
 
 =back
 

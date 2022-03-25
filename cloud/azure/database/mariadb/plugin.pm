@@ -36,7 +36,6 @@ sub new {
         'discovery'      => 'cloud::azure::database::mariadb::mode::discovery',
         'io-consumption' => 'cloud::azure::database::mariadb::mode::ioconsumption',
         'memory'         => 'cloud::azure::database::mariadb::mode::memory',
-        'queries'        => 'cloud::azure::database::mariadb::mode::queries',
         'replication'    => 'cloud::azure::database::mariadb::mode::replication',
         'storage'        => 'cloud::azure::database::mariadb::mode::storage',
         'traffic'        => 'cloud::azure::database::mariadb::mode::traffic'
