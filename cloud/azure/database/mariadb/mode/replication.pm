@@ -30,9 +30,9 @@ sub get_metrics_mapping {
 
     my $metrics_mapping = {
         'seconds_behind_master' => {
-            'output' => 'Replication lag in seconds',
-            'label'  => 'replication-lag-count',
-            'nlabel' => 'azmariadb.replication.lag.count',
+            'output' => 'Seconds behind master',
+            'label'  => 'slave-latency-seconds',
+            'nlabel' => 'azmariadb.slave.latency.seconds',
             'unit'   => '',
             'min'    => '0'
         }
