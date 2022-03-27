@@ -29,15 +29,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'              => 'network::huawei::snmp::mode::cpu',
         'hardware'         => 'network::huawei::snmp::mode::hardware',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'interfaces'       => 'network::huawei::snmp::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'network::huawei::snmp::mode::memory',
-        'uptime'           => 'snmp_standard::mode::uptime',
-    );
+        'uptime'           => 'snmp_standard::mode::uptime'
+    };
 
     return $self;
 }

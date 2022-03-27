@@ -33,13 +33,14 @@ $map_fan_status = {
     1 => 'unknown',
     2 => 'up',
     3 => 'down',
+    4 => 'notpresent'
 };
 
 $map_psu_status = {
     1 => 'unknown',
     2 => 'empty',
     3 => 'up',
-    4 => 'down',
+    4 => 'down'
 };
 
 $map_card_status = {
@@ -48,6 +49,9 @@ $map_card_status = {
     3 => 'testing',
     4 => 'unknown',
     5 => 'dormant',
+    6 => 'upMaster',
+    7 => 'upDormant',
+    8 => 'upWarmstandby'
 };
 
 $map_comp_status = {
@@ -62,7 +66,7 @@ $map_comp_status = {
     9 => 'nonFatalErr',
     10 => 'fatalErr',
     11 => 'notConfig',
-    12 => 'obsoleted',
+    12 => 'obsoleted'
 };
 
 $map_led_status = {

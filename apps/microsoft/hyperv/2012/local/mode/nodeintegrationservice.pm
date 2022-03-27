@@ -27,7 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::nodeintegrationservice;
 use apps::microsoft::hyperv::2012::local::mode::resources::types qw($node_vm_state $node_vm_integration_service_operational_status);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use JSON::XS;
 
 sub custom_service_status_output {
@@ -40,36 +40,6 @@ sub custom_global_status_output {
     my ($self, %options) = @_;
 
     return 'state/version: ' . $self->{result_values}->{integration_service_state} . '/' . $self->{result_values}->{integration_service_version};
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'vm', type => 2, cb_prefix_output => 'prefix_vm_output', cb_long_output => 'vm_long_output', message_multiple => 'All integration services are ok',
-          group => [ { name => 'global', cb_prefix_output => 'prefix_global_output' }, { name => 'service', cb_prefix_output => 'prefix_service_output' } ] 
-        }
-    ];
-    
-    $self->{maps_counters}->{global} = [
-        { label => 'global-status', threshold => 0, set => {
-                key_values => [ { name => 'integration_service_state' }, { name => 'integration_service_version' }, { name => 'state' }, { name => 'vm' } ],
-                closure_custom_output => $self->can('custom_global_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
-            }
-        }
-    ];
-    
-    $self->{maps_counters}->{service} = [
-        { label => 'service-status', threshold => 0, set => {
-                key_values => [ { name => 'primary_status' }, { name => 'secondary_status' }, { name => 'enabled' }, { name => 'vm' }, { name => 'service' } ],
-                closure_custom_output => $self->can('custom_service_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
-            }
-        }
-    ];
 }
 
 sub vm_long_output {
@@ -96,36 +66,55 @@ sub prefix_global_output {
     return "global virtual machine '" . $options{instance_value}->{vm} . "' integration service ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'vm', type => 2, cb_prefix_output => 'prefix_vm_output', cb_long_output => 'vm_long_output', message_multiple => 'All integration services are ok',
+          group => [ { name => 'global', cb_prefix_output => 'prefix_global_output' }, { name => 'service', cb_prefix_output => 'prefix_service_output' } ] 
+        }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'global-status', type => 2, warning_default => '%{integration_service_state} =~ /Update required/i', set => {
+                key_values => [ { name => 'integration_service_state' }, { name => 'integration_service_version' }, { name => 'state' }, { name => 'vm' } ],
+                closure_custom_output => $self->can('custom_global_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+    
+    $self->{maps_counters}->{service} = [
+        { label => 'service-status', type => 2, critical_default => '%{primary_status} !~ /Ok/i', set => {
+                key_values => [ { name => 'primary_status' }, { name => 'secondary_status' }, { name => 'enabled' }, { name => 'vm' }, { name => 'service' } ],
+                closure_custom_output => $self->can('custom_service_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'timeout:s'           => { name => 'timeout', default => 50 },
-        'command:s'           => { name => 'command', default => 'powershell.exe' },
-        'command-path:s'      => { name => 'command_path' },
-        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        'no-ps'               => { name => 'no_ps' },
-        'ps-exec-only'        => { name => 'ps_exec_only' },
-        'ps-display'          => { name => 'ps_display' },
-        'filter-vm:s'         => { name => 'filter_vm' },
-        'filter-note:s'       => { name => 'filter_note' },
-        'filter-status:s'     => { name => 'filter_status', default => 'running' },
-        'warning-global-status:s'   => { name => 'warning_global_status', default => '%{integration_service_state} =~ /Update required/i' },
-        'critical-global-status:s'  => { name => 'critical_global_status', default => '' },
-        'warning-service-status:s'  => { name => 'warning_service_status', default => '' },
-        'critical-service-status:s' => { name => 'critical_service_status', default => '%{primary_status} !~ /Ok/i' }
+        'timeout:s'         => { name => 'timeout', default => 50 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'             => { name => 'no_ps' },
+        'ps-exec-only'      => { name => 'ps_exec_only' },
+        'ps-display'        => { name => 'ps_display' },
+        'filter-vm:s'       => { name => 'filter_vm' },
+        'filter-note:s'     => { name => 'filter_note' },
+        'filter-status:s'   => { name => 'filter_status', default => 'running' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_service_status', 'critical_service_status', 'warning_global_status', 'critical_global_status']);
 }
 
 sub manage_selection {
@@ -242,7 +231,7 @@ sub manage_selection {
             };
             $id2++;
         }
-        
+
         $id++;
     }
 }

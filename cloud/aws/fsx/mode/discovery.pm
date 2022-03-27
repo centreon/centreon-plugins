@@ -65,7 +65,7 @@ sub run {
         $fsx{creation_time} = $fsx_instance->{CreationTime};
         $fsx{lifecycle} = $fsx_instance->{Lifecycle};
         $fsx{fsx_type} = $fsx_instance->{FileSystemType};
-        foreach my $tag (@{$instance->{Tags}}) {
+        foreach my $tag (@{$fsx_instance->{Tags}}) {
             push @{$fsx{tags}}, { key => $tag->{Key}, value => $tag->{Value} };
         }
         push @disco_data, \%fsx;

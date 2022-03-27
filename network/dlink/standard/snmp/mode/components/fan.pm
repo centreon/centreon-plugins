@@ -53,7 +53,7 @@ my $oid_esEntityExtEnvFanEntry = '.1.3.6.1.4.1.171.17.5.1.1.2.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}},
         { oid => $oid_swFanEntry, start => $mapping_equipment->{swFanStatus}->{oid} },
         { oid => $oid_dEntityExtEnvFanEntry, start => $mapping_industrial->{description}->{oid} },
@@ -80,7 +80,7 @@ sub check_fan_equipment {
                 $description,
                 $result->{swFanStatus},
                 $instance,
-                $result->{swFanSpeed}
+                defined($result->{swFanSpeed}) ? $result->{swFanSpeed} : '-'
             )
         );
         my $exit = $self->get_severity(section => 'fan', value => $result->{swFanStatus});
@@ -93,29 +93,29 @@ sub check_fan_equipment {
                 )
             );
         }
-        
-        if (defined($result->{swFanSpeed})) {
-            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{swFanSpeed});
-            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(
-                    severity => $exit2,
-                    short_msg => sprintf(
-                        "fan '%s' speed is %s rpm",
-                        $description,
-                        $result->{swFanSpeed}
-                    )
-                );
-            }
-            $self->{output}->perfdata_add(
-                unit => 'rpm',
-                nlabel => 'hardware.fan.speed.rpm',
-                instances => ['unit' . $unit_id, 'fan' . $fan_id],
-                value => $result->{swFanSpeed},
-                warning => $warn,
-                critical => $crit,
-                min => 0
+
+        next if (!defined($result->{swFanSpeed}));
+
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{swFanSpeed});
+        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf(
+                    "fan '%s' speed is %s rpm",
+                    $description,
+                    $result->{swFanSpeed}
+                )
             );
         }
+        $self->{output}->perfdata_add(
+            unit => 'rpm',
+            nlabel => 'hardware.fan.speed.rpm',
+            instances => ['unit' . $unit_id, 'fan' . $fan_id],
+            value => $result->{swFanSpeed},
+            warning => $warn,
+            critical => $crit,
+            min => 0
+        );
     }
 }
 

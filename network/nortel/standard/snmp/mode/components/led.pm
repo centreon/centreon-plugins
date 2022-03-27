@@ -56,7 +56,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "led '%s' status is '%s' [instance: %s].",
+                "led '%s' status is '%s' [instance: %s]",
                 $result->{label},
                 $result->{status},
                 $instance

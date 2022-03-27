@@ -26,7 +26,7 @@ use network::nortel::standard::snmp::mode::components::resources qw($map_comp_st
 
 my $mapping = {
     s5ChasComDescr      => { oid => '.1.3.6.1.4.1.45.1.6.3.3.1.1.5' },
-    s5ChasComOperState  => { oid => '.1.3.6.1.4.1.45.1.6.3.3.1.1.10', map => $map_comp_status },
+    s5ChasComOperState  => { oid => '.1.3.6.1.4.1.45.1.6.3.3.1.1.10', map => $map_comp_status }
 };
 my $oid_s5ChasComEntry = '.1.3.6.1.4.1.45.1.6.3.3.1.1';
 
@@ -53,15 +53,22 @@ sub check {
 
         my $name = defined($result->{s5ChasComDescr}) && $result->{s5ChasComDescr} ne '' ?
             $result->{s5ChasComDescr} : $instance;
-        $self->{output}->output_add(long_msg => sprintf("entity '%s' status is '%s' [instance: %s].",
-                                    $name, $result->{s5ChasComOperState},
-                                    $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "entity '%s' status is '%s' [instance: %s]",
+                $name, $result->{s5ChasComOperState},
+                $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'entity', instance => $instance, value => $result->{s5ChasComOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Entity '%s' status is '%s'",
-                                                             $name, $result->{s5ChasComOperState}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Entity '%s' status is '%s'",
+                    $name, $result->{s5ChasComOperState}
+                )
+            );
         }
     }
 }
