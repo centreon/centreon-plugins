@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'discovery'     => 'apps::ipfabric::mode::discovery',
+        'discovery'         => 'apps::ipfabric::mode::discovery',
         'path-verification' => 'apps::ipfabric::mode::pathverification' 
     };
 
