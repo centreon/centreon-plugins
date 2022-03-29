@@ -45,7 +45,6 @@ sub new {
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
     
-
     return $self;
 }
 
