@@ -234,7 +234,7 @@ the option would be:
 
 =item B<--critical-status>
 
-Set warning threshold for status. (Default: '%{expected_state} ne %{state}').
+Set critical threshold for status. (Default: '%{expected_state} ne %{state}').
 Can use special variables like: %{state}, %{expected_state}
 
 For example, if you want a critical alert when the path state is in 'error' then
