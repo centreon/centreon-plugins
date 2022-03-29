@@ -35,7 +35,6 @@ sub new {
     };
 
     $self->{custom_modes}->{api} = 'apps::ipfabric::custom::api';
-    $self->{custom_modes}->{apisims} = 'apps::ipfabric::custom::apisims';
     
     return $self;
 }
