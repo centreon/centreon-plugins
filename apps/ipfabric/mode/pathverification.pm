@@ -20,9 +20,6 @@
 
 package apps::ipfabric::mode::pathverification;
 
-use centreon::plugins::http;
-use JSON::XS;
-
 use base qw(centreon::plugins::templates::counter);
 
 use strict;

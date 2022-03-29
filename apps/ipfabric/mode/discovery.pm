@@ -20,9 +20,6 @@
 
 package apps::ipfabric::mode::discovery;
 
-use centreon::plugins::http;
-use JSON::XS;
-
 use base qw(centreon::plugins::mode);
 
 use strict;

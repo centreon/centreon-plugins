@@ -24,7 +24,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
