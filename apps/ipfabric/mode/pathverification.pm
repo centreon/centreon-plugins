@@ -223,6 +223,24 @@ Check end-to-end path's result against predefined expected state in IP Fabric.
 
 =over 8
 
+=item B<--warning-status>
+
+Set warning threshold for status. (Default: '').
+Can use special variables like: %{state}, %{expected_state}
+
+For example, if you want a warning alert when the path state is in 'error' then
+the option would be: 
+--warning-status="%{state} eq 'all'"
+
+=item B<--critical-status>
+
+Set warning threshold for status. (Default: '%{expected_state} ne %{state}').
+Can use special variables like: %{state}, %{expected_state}
+
+For example, if you want a critical alert when the path state is in 'error' then
+the option would be: 
+--critical-status="%{state} eq 'all'"
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
