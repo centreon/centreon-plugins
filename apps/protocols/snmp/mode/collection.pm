@@ -1318,8 +1318,14 @@ sub prepare_variables {
     my ($self, %options) = @_;
 
     return undef if (!defined($options{value}));
-    $options{value} =~ s/%\(([a-zA-Z0-9\.]+?)\)/\$expand->{'$1'}/g;
-    return $options{value};
+
+    while ($options{value} =~ /%\(([a-zA-Z0-9\.]+?)\)/g) {
+        next if ($1 =~ /^snmp\./);
+        $options{value} =~ s/%\(($1)\)/\$expand->{'$1'}/g;
+    }
+
+    my $expression = $self->substitute_string(value => $options{value});
+    return $expression;
 }
 
 sub check_filter {
