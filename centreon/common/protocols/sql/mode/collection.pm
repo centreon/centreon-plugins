@@ -1222,8 +1222,9 @@ sub prepare_variables {
     my ($self, %options) = @_;
 
     return undef if (!defined($options{value}));
-    $options{value} =~ s/%\(([a-zA-Z0-9\._:]+?)\)/\$expand->{'$1'}/g;
-    return $options{value};
+
+    my $expression = $self->substitute_string(value => $options{value});
+    return $expression;
 }
 
 sub check_filter {
