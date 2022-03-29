@@ -40,7 +40,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
 }
 
 sub manage_selection {
