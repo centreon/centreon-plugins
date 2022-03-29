@@ -41,7 +41,6 @@ sub custom_status_output {
 }
 
 sub set_counters {
-
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [

@@ -123,7 +123,6 @@ sub manage_selection {
 }
 
 sub run {
-
     my ($self, %options) = @_;
 
     my $encoded_data;
