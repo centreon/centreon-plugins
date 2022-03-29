@@ -1461,6 +1461,11 @@ sub prepare_variables {
 
     return undef if (!defined($options{value}));
 
+    while ($options{value} =~ /%\(([a-zA-Z0-9\.]+?)\)/g) {
+        next if ($1 =~ /^http\./);
+        $options{value} =~ s/%\(($1)\)/\$expand->{'$1'}/g;
+    }
+
     my $expression = $self->substitute_string(value => $options{value});
     return $expression;
 }
