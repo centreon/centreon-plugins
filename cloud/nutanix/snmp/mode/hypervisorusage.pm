@@ -29,7 +29,7 @@ use centreon::plugins::misc;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'memory_used';
+    my ($label, $nlabel) = ('memory_used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
@@ -37,9 +37,10 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         label => $label . $extra_label, unit => 'B',
+        nlabel => $nlabel,
         value => $value_perf,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $self->{result_values}->{total}
     );
 }
@@ -78,59 +79,59 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{hypervisor} = [
-        { label => 'cpu', set => {
+        { label => 'cpu', nlabel => 'hypervisor.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'hypervisorCpuUsagePercent' }, { name => 'display' } ],
                 output_template => 'CPU Usage : %s %%',
                 perfdatas => [
                     { label => 'cpu_usage', value => 'hypervisorCpuUsagePercent', template => '%s', unit => '%',
-                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'hypervisor.memory.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'hypervisorMemory' }, { name => 'hypervisorMemoryUsagePercent' } ],
                 threshold_use => 'prct_used',
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         },
-        { label => 'avg-latency', set => {
+        { label => 'avg-latency', nlabel => 'hypervisor.average.io.latency.microseconds', set => {
                 key_values => [ { name => 'hypervisorAverageLatency' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
                     { label => 'avg_latency', value => 'hypervisorAverageLatency', template => '%s', unit => 'µs',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'read-iops', set => {
+        { label => 'read-iops', nlabel => 'hypervisor.read.usage.iops', set => {
                 key_values => [ { name => 'hypervisorReadIOPerSecond' }, { name => 'display' } ],
                 output_template => 'Read IOPs : %s',
                 perfdatas => [
                     { label => 'read_iops', value => 'hypervisorReadIOPerSecond', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'write-iops', set => {
+        { label => 'write-iops', nlabel => 'hypervisor.write.usage.iops', set => {
                 key_values => [ { name => 'hypervisorWriteIOPerSecond' }, { name => 'display' } ],
                 output_template => 'Write IOPs : %s',
                 perfdatas => [
                     { label => 'write_iops', value => 'hypervisorWriteIOPerSecond', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'vm-count', set => {
+        { label => 'vm-count', nlabel => 'hypervisor.vm.count', set => {
                 key_values => [ { name => 'hypervisorVmCount' }, { name => 'display' } ],
                 output_template => 'VM Count : %s',
                 perfdatas => [
                     { label => 'vm_count', value => 'hypervisorVmCount', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -160,7 +161,7 @@ my $mapping = {
     hypervisorMemoryUsagePercent    => { oid => '.1.3.6.1.4.1.41263.9.1.8' },
     hypervisorReadIOPerSecond       => { oid => '.1.3.6.1.4.1.41263.9.1.9' },
     hypervisorWriteIOPerSecond      => { oid => '.1.3.6.1.4.1.41263.9.1.10' },
-    hypervisorAverageLatency        => { oid => '.1.3.6.1.4.1.41263.9.1.11' },
+    hypervisorAverageLatency        => { oid => '.1.3.6.1.4.1.41263.9.1.11' }
 };
 
 my $oid_hypervisorEntry = '.1.3.6.1.4.1.41263.9.1';
