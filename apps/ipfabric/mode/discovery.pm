@@ -79,6 +79,7 @@ sub manage_selection {
         $disco_data->{$device->{id}} = {
             id => $device->{id},
             hostname => $device->{hostname},
+	    loginIp => $device->{loginIp},
             siteName => $device->{siteName},
             vendor => $device->{vendor},
             family => $device->{family},
