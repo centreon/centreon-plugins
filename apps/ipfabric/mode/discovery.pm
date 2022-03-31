@@ -45,7 +45,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $disco_data = {};
+    my @disco_data;
     my $disco_stats;
 
     $disco_stats->{start_time} = time();
@@ -75,16 +75,16 @@ sub manage_selection {
         query_form_post => $disco_raw_form_post
     );
 
-    foreach my $device (@{$disco_api_results->{data}}) {
-        $disco_data->{$device->{id}} = {
-            id => $device->{id},
-            hostname => $device->{hostname},
-	    loginIp => $device->{loginIp},
-            siteName => $device->{siteName},
-            vendor => $device->{vendor},
-            family => $device->{family},
-            snmp_community => undef
-        };
+    foreach my $host (@{$disco_api_results->{data}}) {
+        my %device;
+        $device{id} = $host->{id};
+        $device{hostname} = $host->{hostname};
+        $device{loginIp} = $host->{loginIp};
+        $device{siteName} = $host->{siteName};
+        $device{vendor} = $host->{vendor};
+        $device{family} = $host->{family};
+        $device{snmp_community} = undef;
+        push @disco_data, \%device;
     }
 
     my $snmp_req_data_raw = {
@@ -108,17 +108,18 @@ sub manage_selection {
     );
 
     foreach my $snmp_device (@{$snmp_community_api_results->{data}}) {
-        foreach my $id (keys %$disco_data) {
-            if ($snmp_device->{hostname} eq $disco_data->{$id}->{hostname}){
-                $disco_data->{$id}->{snmp_community} = $snmp_device->{name}->{data};
+        for my $index (0 .. $#disco_data){
+            next if (!defined($disco_data[$index]->{hostname}));
+            if ($snmp_device->{hostname} eq $disco_data[$index]->{hostname}){
+                $disco_data[$index]->{snmp_community} = $snmp_device->{name}->{data};
             }
         }
     }
 
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
-    $disco_stats->{discovered_items} = $disco_data;
-    $disco_stats->{results} = $disco_data;
+    $disco_stats->{discovered_items} = @disco_data;
+    $disco_stats->{results} = \@disco_data;
 
     return $disco_stats;
 }
