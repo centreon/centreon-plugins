@@ -48,7 +48,7 @@ sub new {
             'password:s' => { name => 'password' },
             'token:s'    => { name => 'token' },
             'timeout:s'  => { name => 'timeout' },
-            'port:s '    => { name => 'port' },
+            'port:s'    => { name => 'port' },
             'proto:s'    => { name => 'proto' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
