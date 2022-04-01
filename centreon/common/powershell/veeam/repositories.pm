@@ -54,8 +54,8 @@ Try {
             type = $_.Type.value__;
             status = $_.Status.value__
         }
-        $item.totalSpace = $container.CachedTotalSpace.inBytes
-        $item.freeSpace = $container.CachedFreeSpace.inBytes
+        $item.totalSpace = $container.CachedTotalSpace.inBytes.ToString()
+        $item.freeSpace = $container.CachedFreeSpace.inBytes.ToString()
 
         $items.Add($item)
     }
