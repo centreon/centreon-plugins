@@ -61,6 +61,8 @@ sub check {
     $self->{components}->{memory} = { name => 'memory', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'memory'));
 
+    return if (scalar(keys %{$self->{results}->{$oid_cpqHeResMem2Module}}) <= 0);
+
     $self->{snmp}->load(
         oids => [map($_->{oid}, values(%$mapping))],
         instances => [values(%{$self->{results}->{$oid_cpqHeResMem2Module}})]
