@@ -68,8 +68,8 @@ sub check {
     $self->{components}->{ilo} = {name => 'ilo', total => 0, skip => 0};
     return if ($self->check_filter(section => 'ilo'));
 
-    return if (scalar(keys %{$self->{results}->{$mapping->{cpqSm2MibCondition}->{oid}}}) == 0);
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{cpqSm2MibCondition}->{oid}}, instance => '0');
+    return if (scalar(keys %{$self->{results}->{$mapping->{cpqSm2MibCondition}->{oid}}}) <= 0);
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{cpqSm2MibCondition}->{oid}}, instance => 0);
 
     next if ($self->check_filter(section => 'ilo', instance => '0'));
     $self->{components}->{ilo}->{total}++;
@@ -83,13 +83,21 @@ sub check {
         }
     }
     
-    $self->{output}->output_add(long_msg => sprintf("ilo status is %s [message = %s].", 
-                                $result->{cpqSm2MibCondition}, join(', ', @message_error)));
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "ilo status is %s [message = %s].", 
+            $result->{cpqSm2MibCondition}, join(', ', @message_error)
+        )
+    );
     my $exit = $self->get_severity(label => 'default', section => 'ilo', value => $result->{cpqSm2MibCondition});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("ilo is %s", 
-                                        $result->{cpqSm2MibCondition}));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf(
+                "ilo is %s", 
+                $result->{cpqSm2MibCondition}
+            )
+        );
     }
 }
 
