@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
+
     return sprintf(
         "alert [severity: %s] [name: %s] [resource: %s] %s",
         $self->{result_values}->{severity},
@@ -41,7 +41,7 @@ sub custom_status_output {
 
 sub prefix_global_output {
     my ($self, %options) = @_;
-    
+
     return 'Alerts severity ';
 }
 
@@ -77,7 +77,8 @@ sub set_counters {
             set => {
                 key_values => [
                     { name => 'resource' }, { name => 'name' },
-                    { name => 'severity' }, { name => 'timeraised' }
+                    { name => 'severity' }, { name => 'timeraised' },
+                    { name => 'acknowledged' } 
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -119,7 +120,7 @@ sub manage_selection {
     $self->{alarms}->{global} = { alarm => {} };
     my $results = $options{custom}->request_api(
         endpoint => '/api/rest/alert',
-        get_param => ['select=id,name,severity,state,resource_name,generated_timestamp']
+        get_param => ['select=id,name,severity,state,is_acknowledged,resource_name,generated_timestamp']
     );
 
     my $alerts_mem;
@@ -149,10 +150,11 @@ sub manage_selection {
             resource => $entry->{resource_name},
             name => $entry->{name},
             severity => lc($entry->{severity}),
-            timeraised => $entry->{generated_timestamp}
+            timeraised => $entry->{generated_timestamp},
+            acknowledged => ($entry->{is_acknowledged} =~ /True|1/i) ? 'yes' : 'no'
         };
     }
-    
+
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->write(data => { alerts => $alerts_mem });
     }
@@ -175,12 +177,12 @@ Filter alerts by name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{severity} =~ /minor/i')
-Can used special variables like: %{severity}, %{resource}, %{name}, %{timeraised}
+Can used special variables like: %{severity}, %{resource}, %{name}, %{timeraised}, %{acknowledged}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{severity} =~ /major|critical/i').
-Can used special variables like: %{severity}, %{resource}, %{name}, %{timeraised}
+Can used special variables like: %{severity}, %{resource}, %{name}, %{timeraised}, %{acknowledged}
 
 =item B<--warning-*> B<--critical-*>
 

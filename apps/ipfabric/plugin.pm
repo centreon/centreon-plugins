@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package network::oneaccess::snmp::plugin;
+package apps::ipfabric::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,13 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'             => 'network::oneaccess::snmp::mode::cpu',
-        'cells-radio'     => 'network::oneaccess::snmp::mode::cellsradio',
-        'interfaces'      => 'network::oneaccess::snmp::mode::interfaces', 
-        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'memory'          => 'network::oneaccess::snmp::mode::memory'
+        'discovery'         => 'apps::ipfabric::mode::discovery',
+        'path-verification' => 'apps::ipfabric::mode::pathverification' 
     };
 
+    $self->{custom_modes}->{api} = 'apps::ipfabric::custom::api';
+    
     return $self;
 }
 
@@ -46,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check OneAccess in SNMP.
+Check network devices through IP Fabric API.
 
 =cut

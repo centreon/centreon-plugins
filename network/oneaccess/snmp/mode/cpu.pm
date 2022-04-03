@@ -27,14 +27,13 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"       => { name => 'warning', },
-                                  "critical:s"      => { name => 'critical', },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' }
+    });
 
     return $self;
 }
@@ -55,22 +54,28 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_oacSysCpuUsed = '.1.3.6.1.4.1.13191.10.3.3.1.2.1.0';
     
-    my $result = $self->{snmp}->get_leef(oids => [$oid_oacSysCpuUsed], nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(oids => [$oid_oacSysCpuUsed], nothing_quit => 1);
         
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_oacSysCpuUsed}, 
-                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("CPU Usage: %d %%", $result->{$oid_oacSysCpuUsed}));
-    $self->{output}->perfdata_add(label => "cpu", unit => '%',
-                                  value => $result->{$oid_oacSysCpuUsed},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0, max => 100);
-    
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $result->{$oid_oacSysCpuUsed}, 
+        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf("CPU Usage: %d %%", $result->{$oid_oacSysCpuUsed})
+    );
+    $self->{output}->perfdata_add(
+        nlabel => 'cpu.utilization.percentage',
+        unit => '%',
+        value => $result->{$oid_oacSysCpuUsed},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0, max => 100
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -96,4 +101,3 @@ Threshold critical in percent.
 =back
 
 =cut
-    
