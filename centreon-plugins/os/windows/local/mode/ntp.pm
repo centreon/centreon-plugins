@@ -72,7 +72,7 @@ sub check_ntp_query {
         command_options => undef,
         no_quit => 1
     );
-    if ($stdout =~ /^Source:\s+(\S+)/mi) {
+    if ($stdout =~ /^Source\s*:\s+(\S+)/mi) {
         return $1;
     }
 }
@@ -81,7 +81,7 @@ sub run {
     my ($self, %options) = @_;
 
     my $ntp_hostname = $self->{option_results}->{ntp_hostname};
-    if (!defined($ntp_hostname)) {
+    if (!defined($ntp_hostname) || $ntp_hostname eq '') {
         my ($stdout) = centreon::plugins::misc::windows_execute(
             output => $self->{output},
             timeout => $self->{option_results}->{timeout},
@@ -101,16 +101,20 @@ sub run {
         #   NT5DS: The client is configured to use the domain hierarchy for its time synchronization
         #   AllSync: The client synchronizes time from any available time source, including domain hierarchy and external time sources
         if ($type =~ /NoSync/i) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf('No ntp configuration set. Please use --ntp-hostname or set windows ntp configuration.'));
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => sprintf('No ntp configuration set. Please use --ntp-hostname or set windows ntp configuration.')
+            );
             $self->{output}->display();
             $self->{output}->exit();
         } elsif ($type =~ /NT5DS/i) {
             $ntp_server = $self->check_ntp_query();
         }
         if (!defined($ntp_server)) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf('Cannot get ntp source configuration. Please use --ntp-hostname.'));
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => sprintf('Cannot get ntp source configuration. Please use --ntp-hostname.')
+            );
             $self->{output}->display();
             $self->{output}->exit();
         }
@@ -126,18 +130,24 @@ sub run {
         %ntp = Net::NTP::get_ntp_response($ntp_hostname, $self->{option_results}->{ntp_port});
     };
     if ($@) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Couldn't connect to ntp server ($ntp_hostname): " . $@);
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Couldn't connect to ntp server ($ntp_hostname): " . $@
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
     
     my $diff = $ntp{Offset};
 
-    my $exit = $self->{perfdata}->threshold_check(value => $diff, 
-                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf('Time offset %.3f second(s)', $diff));
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $diff, 
+        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf('Time offset %.3f second(s)', $diff)
+    );
 
     $self->{output}->perfdata_add(
         label => 'offset', unit => 's',
