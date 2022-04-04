@@ -41,7 +41,7 @@ stage('RPM Packaging') {
       stash name: "rpms-alma8", includes: 'output-alma8/noarch/*.rpm'
       sh 'rm -rf output'
     }
-  },
+  }
   if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
     error('Package stage failure.');
   }
