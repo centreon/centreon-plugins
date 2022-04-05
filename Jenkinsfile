@@ -39,6 +39,7 @@ stage('RPM Packaging') {
       archiveArtifacts artifacts: 'rpms-alma8.tar.gz'
       stash name: "rpms-centos7", includes: 'output-centos7/noarch/*.rpm'
       stash name: "rpms-alma8", includes: 'output-alma8/noarch/*.rpm'
+      stash name: "deb-bullseye", includes: 'output/*.deb'
     }
   }
   if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
