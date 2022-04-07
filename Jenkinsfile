@@ -8,6 +8,7 @@ if ((env.BRANCH_NAME == env.REF_BRANCH)) {
 
 stage('Source') {
   node {
+    cleanWs()
     sh 'setup_centreon_build.sh'
     dir('centreon-plugins') {
       checkout scm
