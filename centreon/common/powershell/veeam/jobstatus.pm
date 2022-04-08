@@ -49,12 +49,20 @@ Try {
 
     $sessions = @{}
     Get-VBRBackupSession | Sort CreationTimeUTC -Descending | ForEach-Object {
-		$jobId = $_.jobId.toString()
+        $jobId = $_.jobId.toString()
         if (-not $sessions.ContainsKey($jobId)) {
-            $sessions[$jobId] = @{}
-            $sessions[$jobId].result = $_.Result.value__
-            $sessions[$jobId].creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
-            $sessions[$jobId].endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $sessions[$jobId] = New-Object System.Collections.Generic.List[Hashtable];
+            $session = @{}
+            $session.result = $_.Result.value__
+            $session.creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $session.endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $sessions[$jobId].Add($session)
+        } elseif ($sessions[$jobId].Length -lt 2) {
+            $session = @{}
+            $session.result = $_.Result.value__
+            $session.creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $session.endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $sessions[$jobId].Add($session)
         }
     }
 
@@ -63,15 +71,22 @@ Try {
         $item.name = $_.Name
         $item.type = $_.JobType.value__
         $item.isRunning = $_.isRunning
-        $item.result = -10
-        $item.creationTimeUTC = ""
-        $item.endTimeUTC = ""
+        $item.isContinuous = 0
+        
+        if ($_.isContinuous -eq $true) {
+            $item.isContinuous = 1
+        }
 
-		$guid = $_.Id.Guid.toString()
+        $guid = $_.Id.Guid.toString()
         if ($sessions.ContainsKey($guid)) {
-            $item.result = $sessions[$guid].result
-            $item.creationTimeUTC = $sessions[$guid].creationTimeUTC
-            $item.endTimeUTC = $sessions[$guid].endTimeUTC
+            $item.sessions = $sessions[$guid]
+        } else {
+            $item.sessions = New-Object System.Collections.Generic.List[Hashtable];
+            $session = @{}
+            $session.result = -10
+            $session.creationTimeUTC = ""
+            $session.endTimeUTC = ""
+            $item.sessions.Add($session)
         }
 
         $items.Add($item)

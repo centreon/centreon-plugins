@@ -33,13 +33,13 @@ use JSON::XS;
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'status : ' . $self->{result_values}->{status} . ' [type: ' . $self->{result_values}->{type}  . ']';
+    return 'status: ' . $self->{result_values}->{status} . ' [type: ' . $self->{result_values}->{type}  . ']';
 }
 
 sub custom_long_output {
     my ($self, %options) = @_;
 
-    return 'started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
+    return 'started since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
 }
 
 sub custom_long_calc {
@@ -50,6 +50,7 @@ sub custom_long_calc {
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
     $self->{result_values}->{is_running} = $options{new_datas}->{$self->{instance} . '_is_running'};
+    $self->{result_values}->{is_continuous} = $options{new_datas}->{$self->{instance} . '_is_continuous'};
 
     return -11 if ($self->{result_values}->{is_running} != 1);
 
@@ -65,11 +66,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'jobs.total.count', set => {
+        { label => 'total', nlabel => 'jobs.detected.count', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'Total Jobs : %s',
+                output_template => 'Total jobs: %s',
                 perfdatas => [
-                    { label => 'total', template => '%s', min => 0 }
+                    { template => '%s', min => 0 }
                 ]
             }
         }
@@ -77,14 +78,21 @@ sub set_counters {
 
     $self->{maps_counters}->{job} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'type' }, { name => 'is_running' } ],
+                key_values => [
+                    { name => 'status' }, { name => 'display' },
+                    { name => 'type' }, { name => 'is_running' }, { name => 'is_continuous' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'long', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' }, { name => 'is_running' } ],
+                key_values => [
+                    { name => 'status' }, { name => 'display' },
+                    { name => 'elapsed' }, { name => 'type' },
+                    { name => 'is_running' }, { name => 'is_continuous' }
+                ],
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -96,7 +104,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
@@ -177,17 +185,23 @@ sub manage_selection {
     }
 
     #[
-    #  { name: 'xxxx', type: 0, isRunning: False, result: 0, creationTimeUTC: 1512875246.2, endTimeUTC: 1512883615.377 },
-    #  { name: 'xxxx', type: 0, isRunning: False, result: 1, creationTimeUTC: '', endTimeUTC: '' },
-    #  { name: 'xxxx', type: 1, isRunning: True, result: 0, creationTimeUTC: 1513060425.027, endTimeUTC: -2208992400 }
+    #  { "name": "backup 1", "type": 0, "isRunning": false, "isContinuous": 0, "sessions": { "result": 0, "creationTimeUTC": 1512875246.2, "endTimeUTC": 1512883615.377 } },
+    #  { "name": "backup 2", "type": 0, "isRunning": false, "isContinuous": 0, "sessions": { "result": -10, "creationTimeUTC": "", "endTimeUTC": "" } },
+    #  { "name": "backup 3", "type": 1, "isRunning": true, "isContinuous": 0, "sessions": { "result": 0, "creationTimeUTC": 1513060425.027, "endTimeUTC": -2208992400 } }
     #]
 
     $self->{global} = { total => 0 };
     $self->{job} = {};
     my $current_time = time();
     foreach my $job (@$decoded) {
-        $job->{creationTimeUTC} =~ s/,/\./;
-        $job->{endTimeUTC} =~ s/,/\./;
+        my $sessions = ref($job->{sessions}) eq 'ARRAY' ? $job->{sessions} : [ $job->{sessions} ];
+        my $session = $sessions->[0];
+        if ($job->{isContinuous} == 1 && defined($sessions->[1])) {
+            $session = $sessions->[1];
+        }
+
+        $session->{creationTimeUTC} =~ s/,/\./;
+        $session->{endTimeUTC} =~ s/,/\./;
 
         my $job_type = defined($job_type->{ $job->{type} }) ? $job_type->{ $job->{type} } : 'unknown';
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -201,27 +215,28 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_end_time}) && $self->{option_results}->{filter_end_time} =~ /[0-9]+/ &&
-            $job->{endTimeUTC} =~ /[0-9]+/ && $job->{endTimeUTC} < $current_time - $self->{option_results}->{filter_end_time}) {
+            $session->{endTimeUTC} =~ /[0-9]+/ && $session->{endTimeUTC} > 0 && $session->{endTimeUTC} < $current_time - $self->{option_results}->{filter_end_time}) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': end time too old.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_start_time}) && $self->{option_results}->{filter_start_time} =~ /[0-9]+/ &&
-            $job->{creationTimeUTC} =~ /[0-9]+/ && $job->{creationTimeUTC} < $current_time - $self->{option_results}->{filter_start_time}) {
+            $session->{creationTimeUTC} =~ /[0-9]+/ && $session->{creationTimeUTC} < $current_time - $self->{option_results}->{filter_start_time}) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': start time too old.", debug => 1);
             next;
         }
 
         my $elapsed_time;
-        $elapsed_time = $current_time - $job->{creationTimeUTC} if ($job->{creationTimeUTC} =~ /[0-9]/);
+        $elapsed_time = $current_time - $session->{creationTimeUTC} if ($session->{creationTimeUTC} =~ /[0-9]/);
 
         #is_running = 2 (never running)
         $self->{job}->{ $job->{name} } = {
             display => $job->{name},
             elapsed => $elapsed_time,
             type => $job_type,
-            is_running => $job->{isRunning} =~ /True|1/ ? 1 : ($job->{creationTimeUTC} !~ /[0-9]/ ? 2 : 0),
-            status => defined($job_result->{ $job->{result} }) && $job_result->{ $job->{result} } ne '' ?
-                $job_result->{ $job->{result} } : '-'
+            is_continuous => $job->{isContinuous},
+            is_running => $job->{isRunning} =~ /True|1/ ? 1 : ($session->{creationTimeUTC} !~ /[0-9]/ ? 2 : 0),
+            status => defined($job_result->{ $session->{result} }) && $job_result->{ $session->{result} } ne '' ?
+                $job_result->{ $session->{result} } : '-'
         };
         $self->{global}->{total}++;
     }

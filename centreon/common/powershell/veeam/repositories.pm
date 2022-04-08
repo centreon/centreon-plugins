@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::veeam::vsbjobs;
+package centreon::common::powershell::veeam::repositories;
 
 use strict;
 use warnings;
@@ -41,37 +41,21 @@ $culture = new-object "System.Globalization.CultureInfo" "en-us"
     $ps .= centreon::common::powershell::veeam::functions::powershell_init();
 
     $ps .= '
-
 Try {
     $ErrorActionPreference = "Stop"
 
     $items = New-Object System.Collections.Generic.List[Hashtable];
 
-    $sessions = @{}
-    Get-VSBSession | Sort CreationTimeUTC -Descending | ForEach-Object {
-        $jobId = $_.jobId.toString()
-        if (-not $sessions.ContainsKey($jobId)) {
-            $sessions[$jobId] = @{}
-            $sessions[$jobId].result = $_.Result.value__
-            $sessions[$jobId].creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
-            $sessions[$jobId].endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
+    Get-VBRBackupRepository | ForEach-Object {
+        $container = $_.GetContainer()
+    
+        $item = @{
+            name = $_.Name;
+            type = $_.Type.value__;
+            status = $_.Status.value__
         }
-    }
-
-    Get-VSBJob | ForEach-Object {
-        $item = @{}
-        $item.name = $_.Name
-        $item.type = $_.JobType.value__
-        $item.result = -10
-        $item.creationTimeUTC = ""
-        $item.endTimeUTC = ""
-
-        $guid = $_.Id.Guid.toString()
-        if ($sessions.ContainsKey($guid)) {
-            $item.result = $sessions[$guid].result
-            $item.creationTimeUTC = $sessions[$guid].creationTimeUTC
-            $item.endTimeUTC = $sessions[$guid].endTimeUTC
-        }
+        $item.totalSpace = $container.CachedTotalSpace.inBytes.ToString()
+        $item.freeSpace = $container.CachedFreeSpace.inBytes.ToString()
 
         $items.Add($item)
     }
@@ -95,6 +79,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to get veeam SureBackup jobs informations.
+Method to get veeam repositories informations.
 
 =cut
