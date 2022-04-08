@@ -26,6 +26,15 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+sub prefix_hypervisor_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Hypervisor '%s'",
+        $options{instance_value}->{display}
+    );
+}
+
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
@@ -83,7 +92,7 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorCpuUsagePercent' }, { name => 'display' } ],
                 output_template => 'CPU Usage : %s %%',
                 perfdatas => [
-                    { label => 'cpu_usage', value => 'hypervisorCpuUsagePercent', template => '%s', unit => '%',
+                    { label => 'cpu_usage', template => '%s', unit => '%',
                       min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -100,7 +109,7 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorAverageLatency' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'hypervisorAverageLatency', template => '%s', unit => 'µs',
+                    { label => 'avg_latency', template => '%s', unit => 'µs',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -109,7 +118,7 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorReadIOPerSecond' }, { name => 'display' } ],
                 output_template => 'Read IOPs : %s',
                 perfdatas => [
-                    { label => 'read_iops', value => 'hypervisorReadIOPerSecond', template => '%s', unit => 'iops',
+                    { label => 'read_iops', template => '%s', unit => 'iops',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -118,7 +127,7 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorWriteIOPerSecond' }, { name => 'display' } ],
                 output_template => 'Write IOPs : %s',
                 perfdatas => [
-                    { label => 'write_iops', value => 'hypervisorWriteIOPerSecond', template => '%s', unit => 'iops',
+                    { label => 'write_iops', template => '%s', unit => 'iops',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -127,7 +136,7 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorVmCount' }, { name => 'display' } ],
                 output_template => 'VM Count : %s',
                 perfdatas => [
-                    { label => 'vm_count', value => 'hypervisorVmCount', template => '%s',
+                    { label => 'vm_count', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -145,12 +154,6 @@ sub new {
     });
 
     return $self;
-}
-
-sub prefix_hypervisor_output {
-    my ($self, %options) = @_;
-
-    return "Hypervisor '" . $options{instance_value}->{display} . "' ";
 }
 
 my $mapping = {

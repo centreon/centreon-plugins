@@ -26,6 +26,15 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+sub prefix_container_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Container '%s'",
+        $options{instance_value}->{display}
+    );
+}
+
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
@@ -119,7 +128,7 @@ sub set_counters {
                 key_values => [ { name => 'citAvgLatencyUsecs' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'citAvgLatencyUsecs', template => '%s', unit => 'µs',
+                    { label => 'avg_latency', template => '%s', unit => 'µs',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -128,7 +137,7 @@ sub set_counters {
                 key_values => [ { name => 'citIOPerSecond' }, { name => 'display' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { label => 'iops', value => 'citIOPerSecond', template => '%s', unit => 'iops',
+                    { label => 'iops', template => '%s', unit => 'iops',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -148,12 +157,6 @@ sub new {
     });
 
     return $self;
-}
-
-sub prefix_container_output {
-    my ($self, %options) = @_;
-
-    return "Container '" . $options{instance_value}->{display} . "' ";
 }
 
 my $mapping = {

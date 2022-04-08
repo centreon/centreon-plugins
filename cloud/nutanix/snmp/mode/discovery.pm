@@ -28,15 +28,6 @@ use centreon::plugins::misc;
 use NetAddr::IP;
 use JSON::XS;
 
-
-
-my $mapping = {
-    citContainerName => { oid => '.1.3.6.1.4.1.41263.8.1.3' },
-    hypervisorName   => { oid => '.1.3.6.1.4.1.41263.9.1.3' },
-    vmName           => { oid => '.1.3.6.1.4.1.41263.10.1.3' },
-    vmPowerState     => { oid => '.1.3.6.1.4.1.41263.10.1.5' }
-};
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -55,6 +46,13 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
+my $mapping = {
+    citContainerName => { oid => '.1.3.6.1.4.1.41263.8.1.3' },
+    hypervisorName   => { oid => '.1.3.6.1.4.1.41263.9.1.3' },
+    vmName           => { oid => '.1.3.6.1.4.1.41263.10.1.3' },
+    vmPowerState     => { oid => '.1.3.6.1.4.1.41263.10.1.5' }
+};
+
 sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
@@ -62,9 +60,6 @@ sub run {
     my @disco_data;
     my $disco_stats;
     
-    # my $last_version;
-    # my $last_community;
-
     $disco_stats->{start_time} = time();
 
     if (defined($self->{option_results}->{discovery_type}) && $self->{option_results}->{discovery_type} ne '') {
@@ -72,14 +67,13 @@ sub run {
             my $snmp_result = $self->{snmp}->get_table(oid => $mapping->{citContainerName}->{oid}, nothing_quit => 1);
 
             foreach my $oid (keys %{$snmp_result}) {
-                # my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
                 $snmp_result->{$oid} = centreon::plugins::misc::trim($snmp_result->{$oid});
 
                 my %host;
                 $host{nutanix_hostname} = $self->{option_results}->{host};
                 $host{container_name} = $snmp_result->{$oid};
-                $host{snmp_version} = $self->{option_results}->{snmp_version}; #$last_version;
-                $host{snmp_community} = $self->{option_results}->{snmp_community}; #$last_community;
+                $host{snmp_version} = $self->{option_results}->{snmp_version};
+                $host{snmp_community} = $self->{option_results}->{snmp_community};
                 $host{snmp_port} = $self->{option_results}->{snmp_port};
                 push @disco_data, \%host;
             }
@@ -89,14 +83,13 @@ sub run {
             my $snmp_result = $self->{snmp}->get_table(oid => $mapping->{hypervisorName}->{oid}, nothing_quit => 1);
 
             foreach my $oid (keys %{$snmp_result}) {
-                # my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
                 $snmp_result->{$oid} = centreon::plugins::misc::trim($snmp_result->{$oid});
 
                 my %host;
                 $host{nutanix_hostname} = $self->{option_results}->{host};
                 $host{hypervisor_name} = $snmp_result->{$oid};
-                $host{snmp_version} = $self->{option_results}->{snmp_version}; #$last_version;
-                $host{snmp_community} = $self->{option_results}->{snmp_community}; #$last_community;
+                $host{snmp_version} = $self->{option_results}->{snmp_version};
+                $host{snmp_community} = $self->{option_results}->{snmp_community};
                 $host{snmp_port} = $self->{option_results}->{snmp_port};
                 push @disco_data, \%host;
             }
@@ -123,8 +116,8 @@ sub run {
                 $host{nutanix_hostname} = $self->{option_results}->{host};
                 $host{vm_name} = $result->{vmName};
                 $host{vm_power_state} = $result->{vmPowerState};
-                $host{snmp_version} = $self->{option_results}->{snmp_version}; #$last_version;
-                $host{snmp_community} = $self->{option_results}->{snmp_community}; #$last_community;
+                $host{snmp_version} = $self->{option_results}->{snmp_version};
+                $host{snmp_community} = $self->{option_results}->{snmp_community};
                 $host{snmp_port} = $self->{option_results}->{snmp_port};
                 push @disco_data, \%host;
             }

@@ -28,11 +28,20 @@ use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_vm_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Virtual machine '%s'", 
+        $options{instance_value}->{display}
+    );
+}
+
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'state: %s',
+        "state: '%s'",
         $self->{result_values}->{vmPowerState}
     );
 }
@@ -90,6 +99,17 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{vm} = [
+        { 
+            label => 'vm-power-state', 
+            type => 2, 
+            critical_default => '%{vmPowerState} ne "on"', 
+            set => {
+                key_values => [ { name => 'vmPowerState' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
         { label => 'cpu', nlabel => 'vm.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'vmCpuUsagePercent' }, { name => 'display' } ],
                 output_template => 'CPU Usage : %s %%',
@@ -153,16 +173,6 @@ sub set_counters {
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
-        },
-        { label => 'vm-power-state', 
-          type => 2, 
-          critical_default => '%{vmPowerState} eq "off"', 
-          set => {
-            key_values => [ { name => 'vmPowerState' }, { name => 'display' } ],
-            closure_custom_output => $self->can('custom_status_output'),
-            closure_custom_perfdata => sub { return 0; },
-            closure_custom_threshold_check => \&catalog_status_threshold_ng
-          }
         }
     ];
 }
@@ -177,12 +187,6 @@ sub new {
     });
 
     return $self;
-}
-
-sub prefix_vm_output {
-    my ($self, %options) = @_;
-
-    return "Virtual machine '" . $options{instance_value}->{display} . "' ";
 }
 
 my $mapping = {
@@ -263,6 +267,16 @@ Example: --filter-counters='^memory$'
 =item B<--filter-name>
 
 Filter virtual machine name (can be a regexp).
+
+=item B<--warning-vm-power-state>
+
+Set warning threshold for the virtual machine power state.
+Can used special variables like: %{vmPowerState}.
+
+=item B<--critical-vm-power-state>
+
+Set critical threshold for the virtual machine power state.
+Can used special variables like: %{vmPowerState}.
 
 =item B<--warning-*>
 

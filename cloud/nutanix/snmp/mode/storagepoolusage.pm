@@ -26,6 +26,15 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+sub prefix_sp_output {
+    my ($self, %options) = @_;
+    
+    return sprinf(
+        "Storage Pool '%s'",
+        $options{instance_value}->{display} 
+    );
+}
+
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
@@ -119,7 +128,7 @@ sub set_counters {
                 key_values => [ { name => 'spitAvgLatencyUsecs' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'spitAvgLatencyUsecs', template => '%s', unit => 'µs',
+                    { label => 'avg_latency', template => '%s', unit => 'µs',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -128,7 +137,7 @@ sub set_counters {
                 key_values => [ { name => 'spitIOPerSecond' }, { name => 'display' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { label => 'iops', value => 'spitIOPerSecond', template => '%s', unit => 'iops',
+                    { label => 'iops', template => '%s', unit => 'iops',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -148,12 +157,6 @@ sub new {
     });
 
     return $self;
-}
-
-sub prefix_sp_output {
-    my ($self, %options) = @_;
-    
-    return "Storage Pool '" . $options{instance_value}->{display} . "' ";
 }
 
 my $mapping = {

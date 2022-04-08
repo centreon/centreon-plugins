@@ -29,6 +29,15 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 
 my $cluster_name = '';
 
+sub prefix_cluster_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Cluster '%s'",
+        $cluster_name
+    );
+}
+
 sub custom_status_output {
     my ($self, %options) = @_;
 
@@ -122,7 +131,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cluster} = [
-        { label => 'status', type => 2, set => {
+        { 
+            label => 'status', 
+            type => 2, 
+            critical_default => '%{status} ne "started"',
+            set => {
                 key_values => [ { name => 'clusterStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
@@ -175,14 +188,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_cluster_output {
-    my ($self, %options) = @_;
-
-    return "Cluster '" . $cluster_name . "' ";
 }
 
 my $mapping = {
@@ -193,6 +198,7 @@ my $mapping = {
     clusterIops                 => { oid => '.1.3.6.1.4.1.41263.506' },
     clusterLatency              => { oid => '.1.3.6.1.4.1.41263.507' },
 };
+
 my $oid_nutanix = '.1.3.6.1.4.1.41263';
 
 sub manage_selection {
