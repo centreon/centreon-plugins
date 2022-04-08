@@ -107,7 +107,7 @@ sub check_options {
     }
 
     if (($options{request}->{proto} ne 'http') && ($options{request}->{proto} ne 'https')) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported protocol specified '" . $self->{option_results}->{proto} . "'.");
+        $self->{output}->add_option_msg(short_msg => "Unsupported protocol specified: '(" . $options{request}->{proto} . ")'. . Use either https or http.");
         $self->{output}->option_exit();
     }
     if (!defined($options{request}->{hostname})) {
