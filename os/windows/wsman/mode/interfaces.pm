@@ -405,13 +405,6 @@ Check interfaces.
 =over 8
 
 =item B<--add-traffic>
-<<<<<<< HEAD
-
-Check interface traffic.
-
-=item B<--add-errors>
-=======
->>>>>>> master
 
 Check interface traffic.
 
