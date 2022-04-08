@@ -31,11 +31,14 @@ our $job_tape_result;
 our $job_tape_state;
 our $license_type;
 our $license_status;
+our $repository_type;
+our $repository_status;
 
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
     $job_type $job_result $job_tape_type $job_tape_result $job_tape_state
     $license_type $license_status
+    $repository_type $repository_status
 );
 
 $job_type = {
@@ -133,6 +136,31 @@ $license_type = {
 
 $license_status = {
     0 => 'valid', 1 => 'expired', 2 => 'invalid'
+};
+
+$repository_type = {
+    0 => 'WinLocal', 1 => 'LinuxLocal',
+    2 => 'CifsShare', 3 => 'DDBoost',
+    4 => 'Cloud', 5 => 'HPStoreOnce',
+    6 => 'ExaGrid', 7 => 'Foreign',
+    8 => 'SanSnapshotOnly', 9 => 'HPStoreOnceIntegration',
+    10 => 'ExtendableRepository', 11 => 'AmazonS3',
+    12 => 'AzureStorage', 13 => 'AmazonS3Glacier',
+    14 => 'AmazonS3Compatible', 15 => 'Tape',
+    16 => 'AmazonS3External', 17 => 'AzureStorageExternal',
+    18 => 'Quantum', 19 => 'IbmCosS3',
+    20 => 'Nfs', 21 => 'AzureDataBox',
+    22 => 'PlatformServiceExternal', 23 => 'GoogleCloudStorage',
+    24 => 'AzureArchiveStorage', 25 => 'AmazonSnowball',
+    26 => 'GoogleCloudStorageExternal', 27 => 'SmartObjectS3',
+    31 => 'AmazonS3GlacierExternal', 32 => 'GoogleArchiveStorageExternal',
+    33 => 'AzureArchiveStorageExternal'
+};
+
+$repository_status = {
+    0 =>  'ordinal', 1 => 'maintenancePending',
+    2 => 'maintenance', 4 => 'evacuating',
+    8 => 'sealed'
 };
 
 1;
