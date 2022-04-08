@@ -61,7 +61,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -74,17 +74,17 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'standby-lag', nlabel => 'dataguard.standby.lag.minutes', set => {
                 key_values => [ { name => 'lag_minutes' } ],
                 output_template => 'dataguard standby lag %d minutes: %s',
                 perfdatas => [
-                    { value => 'lag_minutes', template => '%s', min => 0, unit => 'm' },
-                ],
+                    { template => '%s', min => 0, unit => 'm' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -147,21 +147,36 @@ sub manage_selection {
 
     $options{sql}->query(
         query => q{
-            SELECT 
-              TO_CHAR(MAX(first_time),'YYYYMMDDHH24MISS'),
-              CEIL((SYSDATE - MAX(first_time)) * 24 * 60)
-            FROM
-              v$archived_log
-            WHERE
-              applied NOT IN ('NO') AND registrar = 'RFS'
+            SELECT round(
+                extract(DAY from cast(value AS INTERVAL DAY TO SECOND)) * 1440
+                + extract(HOUR from cast(value AS INTERVAL DAY TO SECOND)) * 60
+                + extract(MINUTE from cast(value AS INTERVAL DAY TO SECOND))
+                + extract(SECOND from cast(value AS INTERVAL DAY TO SECOND)) / 60,
+                0
+            ) AS "Lag minutes"
+            from v$dataguard_stats where NAME='apply lag'
         }
     );
     @result = $options{sql}->fetchrow_array();
-    $self->{global}->{lag_minutes} = defined($result[1]) && $result[1] ne '' ? $result[1] : -1;
+    if (!defined($result[0]) || $result[0] eq '') {
+        $options{sql}->query(
+            query => q{
+                SELECT 
+                  CEIL((SYSDATE - MAX(first_time)) * 24 * 60)
+                FROM
+                  v$archived_log
+                WHERE
+                  applied NOT IN ('NO') AND registrar = 'RFS'
+            }
+        );
+        @result = $options{sql}->fetchrow_array();
+    }
+
+    $self->{global}->{lag_minutes} = defined($result[0]) && $result[0] ne '' ? $result[0] : -1;
 
     $options{sql}->disconnect();
 
-    $self->{cache_name} = "oracle_" . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
+    $self->{cache_name} = 'oracle_' . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 

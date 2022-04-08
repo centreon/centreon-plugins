@@ -27,13 +27,19 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::scvmmvmstatus;
 use apps::microsoft::hyperv::2012::local::mode::resources::types qw($scvmm_vm_status);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use JSON::XS;
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
     return 'status: ' . $self->{result_values}->{status};
+}
+
+sub prefix_vm_output {
+    my ($self, %options) = @_;
+
+    return "VM '" . $options{instance_value}->{vm} . "' ";
 }
 
 sub set_counters {
@@ -44,20 +50,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{vm} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} !~ /Running|Stopped/i', set => {
                 key_values => [ { name => 'vm' }, { name => 'hostgroup' }, { name => 'status' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
-}
-
-sub prefix_vm_output {
-    my ($self, %options) = @_;
-
-    return "VM '" . $options{instance_value}->{vm} . "' ";
 }
 
 sub new {
@@ -79,9 +79,7 @@ sub new {
         'ps-display'           => { name => 'ps_display' },
         'filter-vm:s'          => { name => 'filter_vm' },
         'filter-description:s' => { name => 'filter_description' },
-        'filter-hostgroup:s'   => { name => 'filter_hostgroup' },
-        'warning-status:s'     => { name => 'warning_status', default => '' },
-        'critical-status:s'    => { name => 'critical_status', default => '%{status} !~ /Running|Stopped/i' }
+        'filter-hostgroup:s'   => { name => 'filter_hostgroup' }
     });
 
     return $self;
@@ -99,7 +97,6 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {

@@ -44,18 +44,19 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-key:s'   => { name => 'api_key' },
-            'hostname:s'  => { name => 'hostname' },
-            'url-path:s'  => { name => 'url_path' },
-            'port:s'      => { name => 'port' },
-            'proto:s'     => { name => 'proto' },
-            'credentials' => { name => 'credentials' },
-            'basic'       => { name => 'basic' },
-            'username:s'  => { name => 'username' },
-            'password:s'  => { name => 'password' },
-            'timeout:s'   => { name => 'timeout', default => 10 },
-            'timeframe:s' => { name => 'timeframe' },
-            'timezone:s'  => { name => 'timezone', default => 'UTC' }
+            'api-key:s'       => { name => 'api_key' },
+            'default-value:s' => { name => 'default_value' },
+            'hostname:s'      => { name => 'hostname' },
+            'url-path:s'      => { name => 'url_path' },
+            'port:s'          => { name => 'port' },
+            'proto:s'         => { name => 'proto' },
+            'credentials'     => { name => 'credentials' },
+            'basic'           => { name => 'basic' },
+            'username:s'      => { name => 'username' },
+            'password:s'      => { name => 'password' },
+            'timeout:s'       => { name => 'timeout', default => 10 },
+            'timeframe:s'     => { name => 'timeframe' },
+            'timezone:s'      => { name => 'timezone', default => 'UTC' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -166,6 +167,12 @@ sub query_range {
 
     my $result = $self->get_endpoint(url_path => '/query?expr=' . $uri->encode($query));
 
+    if (defined( $self->{option_results}->{default_value} ) && $options{filter} ne '' && !exists( $result->{data} )) {
+        $options{filter} =~ /([^\s\\]+) = \"([^\s\\]+)\"/;
+        push @{$result->{data}->{key}}, { value => $2 };
+        push @{$result->{data}->{values}}, { value => $self->{option_results}->{default_value} };
+    }
+
     return $result->{data};
 }
 
@@ -207,6 +214,10 @@ PVX Rest API custom mode
 =head1 REST API OPTIONS
 
 =over 8
+
+=item B<--default-value>
+
+Set a default value when nothing returned by PVX API
 
 =item B<--timeframe>
 

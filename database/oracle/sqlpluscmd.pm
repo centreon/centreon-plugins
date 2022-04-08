@@ -56,7 +56,8 @@ sub new {
                 'local-connexion'        => { name => 'local_connexion', default => 0 }, 
                 'sysdba'                 => { name => 'sysdba', default => 0 }, 
                 'sql-errors-exit:s'      => { name => 'sql_errors_exit', default => 'unknown' },
-                'tempdir:s'              => { name => 'tempdir', default => '/tmp' }
+                'tempdir:s'              => { name => 'tempdir', default => '/tmp' },
+                'timeout:s'              => { name => 'timeout' }
             }
         );
     }
@@ -109,32 +110,38 @@ sub check_options {
     $self->{local_connexion} = $self->{option_results}->{local_connexion};
     $self->{sqlplus_cmd} = $self->{option_results}->{sqlplus_cmd};
     $self->{container} = defined($self->{option_results}->{container}[0]) ? $self->{option_results}->{container}[0] : undef;
-        
+
+    $self->{timeout} = 30;
+    if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
+        $self->{option_results}->{timeout} > 0) {
+        $self->{timeout} = $self->{option_results}->{timeout};
+    }
+
     $self->{output}->output_add(long_msg => "*** DEBUG MODE****\n", debug => 1);
     $self->{output}->output_add(long_msg => Data::Dumper::Dumper($self->{option_results}), debug => 1);
- 
+
     if ((!defined($self->{sid}) || $self->{sid} eq '') &&
         (!defined($self->{service_name}) || $self->{service_name} eq '')) {
         $self->{output}->add_option_msg(short_msg => "Need to specify sid or servicename argument.");
         $self->{output}->option_exit(exit_litteral => $self->{option_results}->{sql_errors_exit});
     }
-    
+
     # check the ORACLE_HOME variable
     if (!defined($self->{oracle_home}) || $self->{oracle_home} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify oracle-home argument.");
         $self->{output}->option_exit(exit_litteral => $self->{option_results}->{sql_errors_exit});
     }
-    
+
     # construct the TNSADMIN variable if not available
     if(!defined($self->{tnsadmin_home})) {
         $self->{tnsadmin_home} = $self->{oracle_home} . "/network/admin";
     }
-    
+
     # check the SQLPLUS command to use
     if(!$self->{sqlplus_cmd}) {
         $self->{sqlplus_cmd} = $self->{oracle_home} . "/bin/sqlplus";
     }
-    
+
     $self->{args} = ['-L', '-S'];
     my $connection_string = "";
     if ($self->{option_results}->{sysdba} == 1) {
@@ -163,20 +170,20 @@ sub check_options {
             $ENV{TWO_TASK} = '/' . $self->{service_name};
         }
     }
-    
+
     # register a false data_source to be compliant with tnsping mode
     if (defined($self->{sid}) && $self->{sid} ne '') {
         $self->{data_source} = "sid=" . $self->{sid};
     } else {
         $self->{data_source} = "service_name=" . $self->{service_name};
     }
-    
+
     push @{$self->{args}}, $connection_string;
-    
+
     # set oracle env variable
     $ENV{ORACLE_HOME} = $self->{oracle_home};
     $ENV{TNSADMIN} = $self->{tnsadmin_home};
-    
+
     if (defined($self->{option_results}->{sid})) {
         return 0;
     }
@@ -186,7 +193,7 @@ sub check_options {
 sub is_version_minimum {
     my ($self, %options) = @_;
     # $options{version} = string version to check
-    
+
     my @version_src = split /\./, $self->{version};
     my @versions = split /\./, $options{version};
     for (my $i = 0; $i < scalar(@versions); $i++) {
@@ -197,17 +204,15 @@ sub is_version_minimum {
         return 0 if ($versions[$i] > int($1));
         return 1 if ($versions[$i] < int($1));
     }
-    
+
     return 1;
 }
 
 sub get_id {
     my ($self, %options) = @_;
-    
-    my $msg = $self->{sid};
-    return $msg;
-}
 
+    return $self->{sid};
+}
 
 sub get_unique_id4save {
     my ($self, %options) = @_;
@@ -224,7 +229,7 @@ sub quote {
 
 sub command_execution {
     my ($self, %options) = @_;
-    
+
     my ($fh, $tempfile) = tempfile(DIR => $self->{option_results}->{tempdir}, SUFFIX => ".sql", UNLINK => 1);
     print $fh "set echo off
 -- set heading off
@@ -235,31 +240,33 @@ set colsep '#&!#'
 set numwidth 15
 $options{request};
 exit;";
-    
+
     $self->{output}->output_add(long_msg => "*** COMMAND: " . $self->{sqlplus_cmd} . ' ' . join(' ', (@{$self->{args}}, '@', $tempfile)), debug => 1);
     $self->{output}->output_add(long_msg => "*** REQUEST: " . $options{request}, debug => 1);
     my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $self->{sqlplus_cmd},
-                                                 arguments =>  [@{$self->{args}}, '@', $tempfile],
-                                                 timeout => 30,
-                                                 wait_exit => 1,
-                                                 redirect_stderr => 1
-                                                 );
+        command => $self->{sqlplus_cmd},
+        arguments =>  [@{$self->{args}}, '@', $tempfile],
+        timeout => $self->{timeout},
+        wait_exit => 1,
+        redirect_stderr => 1
+    );
     $self->{output}->output_add(long_msg => "REQ. STDOUT: '$stdout'", debug => 1);
     $self->{output}->output_add(long_msg => "REQ. EXIT_CODE: $exit_code", debug => 1);
-    
+
     # search oracle error lines
     $exit_code = -1 if($stdout =~ /^(ORA\-\d+|TNS\-\d+|SP\d\-\d+)/);
-    
+
     if ($exit_code <= -1000) {
         if ($exit_code == -1000) {
-            $self->{output}->output_add(severity => 'UNKNOWN', 
-                                        short_msg => $stdout);
+            $self->{output}->output_add(
+                severity => 'UNKNOWN', 
+                short_msg => $stdout
+            );
         }
         $self->{output}->display();
         $self->{output}->exit();
     }
-    
+
     return ($exit_code, $stdout); 
 }
 
@@ -278,7 +285,7 @@ sub connect {
         }
         return (-1, "Cannot connect: " . $self->{stdout});
     }
-    
+
     $self->{version} = $self->fetchrow_array();
     $self->{output}->output_add(long_msg => "VERSION: " . $self->{version}, debug => 1);
     if (defined($self->{container}) and $self->{container} ne '') {
@@ -290,12 +297,12 @@ sub connect {
 sub fetchall_arrayref {
     my ($self, %options) = @_;
     my $array_ref = [];
-    
+
     if($self->{stdout} eq '') {
         $self->{output}->output_add(long_msg => "fetchall_arrayref: no data returned (no rows selected)", debug => 1);
         return $array_ref;
     }
-    
+
     if (!defined($self->{columns})) {
         $self->{stdout} =~ s/^\s*\n(.*?)(\n|$)//;
         my $line = $1;
@@ -319,12 +326,12 @@ sub fetchall_arrayref {
 sub fetchrow_array {
     my ($self, %options) = @_;
     my @array_result = ();
-    
+
     if($self->{stdout} eq '') {
         $self->{output}->output_add(long_msg => "fetchrow_array: no data returned (no rows selected)", debug => 1);
         return @array_result;
     }
-    
+
     if (!defined($self->{columns})) {
         $self->{stdout} =~ s/^\s*\n(.*?)(\n|$)//;
         my $line = $1;
@@ -341,7 +348,7 @@ sub fetchrow_array {
         map { s/^\s+|\s+$//g; } @array_result;
         $self->{output}->output_add(long_msg => "ARRAY: " . Data::Dumper::Dumper(@array_result), debug => 1);
     }
-    
+
     $self->{output}->output_add(long_msg => "RETURN: " . Data::Dumper::Dumper(@array_result), debug => 1);
     return scalar(@array_result) == 1 ? $array_result[0] : @array_result;
 }
@@ -354,7 +361,7 @@ sub fetchrow_hashref {
         $self->{output}->output_add(long_msg => "fetchrow_hashref: no data returned (no rows selected)", debug => 1);
         return $array_result;
     }
-    
+
     if (!defined($self->{columns})) {
         $self->{stdout} =~ s/^\s*\n(.*?)(\n|$)//;
         my $line = $1;
@@ -448,6 +455,10 @@ Use a local connexion, don't need listener.
 =item B<--sql-errors-exit>
 
 Exit code for DB Errors (default: unknown)
+
+=item B<--timeout>
+
+Timeout in seconds for commands
 
 =back
 

@@ -31,7 +31,7 @@ sub custom_ticket_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Title: '%s', Group: '%s', Priority: %s, Create Date: %s (%s ago)",
+        "title: '%s', group: '%s', priority: %s, create date: %s (%s ago)",
         $self->{result_values}->{title}, 
         $self->{result_values}->{group},
         $self->{result_values}->{priority},
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'open' } ],
                 output_template => 'Number of open tickets : %d',
                 perfdatas => [
-                    { label => 'open_tickets', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         }
@@ -79,7 +79,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -128,7 +128,7 @@ sub manage_selection {
             second => $6,
             time_zone => $7
         );
-        
+
         $self->{tickets}->{$ticket->{id}->{content}} = {
             id => $ticket->{id}->{content},
             title => $ticket->{title}->{content},
@@ -156,17 +156,15 @@ Check if there is open tickets
 
 Name of the ticket group (Can be a regexp).
 
-=item B<--warning-status>
+=item B<--warning-ticket>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{id}, %{title},
-%{priority}, %{create_date}, %{group}, %{since}.
+Set warning threshold for status.
+Can used special variables like: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
 
-=item B<--critical-status>
+=item B<--critical-ticket>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{id}, %{title},
-%{priority}, %{create_date}, %{group}, %{since}.
+Set critical threshold for status.
+Can used special variables like: %{id}, %{title}, %{priority}, %{create_date}, %{group}, %{since}.
 
 =item B<--warning-open>
 

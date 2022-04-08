@@ -25,6 +25,40 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_CurrentStatus'};
+    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
+
+    return 0;
+}
+
+sub broker_long_output {
+    my ($self, %options) = @_;
+
+    return "checking broker '" . $options{instance} . "'";
+}
+
+sub prefix_broker_output {
+    my ($self, %options) = @_;
+
+    return "Broker '" . $options{instance} . "' ";
+}
+
+sub prefix_queue_output {
+    my ($self, %options) = @_;
+
+    return "queue '" . $options{instance} . "' ";
+}
+
+sub prefix_topic_output {
+    my ($self, %options) = @_;
+
+    return "topic '" . $options{instance} . "' ";
+}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -40,8 +74,17 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
+        { label => 'status', type => 2, critical_default => '%{status} !~ /Good/i', set => {
+                key_values => [ { name => 'CurrentStatus' }, { name => 'name' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                output_template => 'status: %s',
+                output_use => 'status',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
         { label => 'store-usage', nlabel => 'broker.store.usage.percentage', set => {
-                key_values => [ { name => 'StorePercentUsage' }, { name => 'display' } ],
+                key_values => [ { name => 'StorePercentUsage' } ],
                 output_template => 'store usage: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
@@ -49,7 +92,7 @@ sub set_counters {
             }
         },
         { label => 'temporary-usage', nlabel => 'broker.temporary.usage.percentage', set => {
-                key_values => [ { name => 'TempPercentUsage' }, { name => 'display' } ],
+                key_values => [ { name => 'TempPercentUsage' } ],
                 output_template => 'temporary usage: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
@@ -57,7 +100,7 @@ sub set_counters {
             }
         },
         { label => 'memory-usage', nlabel => 'broker.memory.usage.percentage', set => {
-                key_values => [ { name => 'MemoryPercentUsage' }, { name => 'display' } ],
+                key_values => [ { name => 'MemoryPercentUsage' } ],
                 output_template => 'memory usage: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
@@ -69,7 +112,7 @@ sub set_counters {
     foreach (('queue', 'topic')) {
         $self->{maps_counters}->{$_} = [
             { label => $_ . '-average-enqueue-time', nlabel => 'broker.' . $_ . '.average.enqueue.time.milliseconds', set => {
-                    key_values => [ { name => 'AverageEnqueueTime' }, { name => 'display' } ],
+                    key_values => [ { name => 'AverageEnqueueTime' } ],
                     output_template => 'average time messages remained enqueued: %.3f ms',
                     perfdatas => [
                         { template => '%.3f', unit => 'ms', min => 0, label_extra_instance => 1 }
@@ -77,7 +120,7 @@ sub set_counters {
                 }
             },
             { label => $_ . '-consumers-connected', nlabel => 'broker.' . $_ . '.consumers.connected.count', set => {
-                    key_values => [ { name => 'ConsumerCount' }, { name => 'display' } ],
+                    key_values => [ { name => 'ConsumerCount' } ],
                     output_template => 'consumers connected: %s',
                     perfdatas => [
                         { template => '%s', min => 0, label_extra_instance => 1 }
@@ -85,7 +128,7 @@ sub set_counters {
                 }
             },
             { label => $_ . '-producers-connected', nlabel => 'broker.' . $_ . '.producers.connected.count', display_ok => 0, set => {
-                    key_values => [ { name => 'ProducerCount' }, { name => 'display' } ],
+                    key_values => [ { name => 'ProducerCount' } ],
                     output_template => 'producers connected: %s',
                     perfdatas => [
                         { template => '%s', min => 0, label_extra_instance => 1 }
@@ -93,7 +136,7 @@ sub set_counters {
                 }
             },
             { label => $_ . '-memory-usage', nlabel => 'broker.' . $_ . '.memory.usage.percentage', display_ok => 0, set => {
-                    key_values => [ { name => 'MemoryPercentUsage' }, { name => 'display' } ],
+                    key_values => [ { name => 'MemoryPercentUsage' } ],
                     output_template => 'memory usage: %.2f %%',
                     perfdatas => [
                         { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
@@ -101,7 +144,7 @@ sub set_counters {
                 }
             },
             { label => $_ . '-size', nlabel => 'broker.' . $_ . '.size.count', set => {
-                    key_values => [ { name => 'QueueSize' }, { name => 'display' } ],
+                    key_values => [ { name => 'QueueSize' } ],
                     output_template => 'queue size: %s',
                     perfdatas => [
                         { template => '%s', min => 0, label_extra_instance => 1 }
@@ -109,7 +152,7 @@ sub set_counters {
                 }
             },
             { label => $_ . '-messages-enqueued', nlabel => 'broker.' . $_ . '.messages.enqueued.count', display_ok => 0, set => {
-                    key_values => [ { name => 'EnqueueCount', diff => 1 }, { name => 'display' } ],
+                    key_values => [ { name => 'EnqueueCount', diff => 1 } ],
                     output_template => 'messages enqueued: %s',
                     perfdatas => [
                         { template => '%s', min => 0, label_extra_instance => 1 }
@@ -117,7 +160,7 @@ sub set_counters {
                 }
             },
             { label => $_ . '-messages-dequeued', nlabel => 'broker.' . $_ . '.messages.dequeue.count', display_ok => 0, set => {
-                    key_values => [ { name => 'DequeueCount', diff => 1 }, { name => 'display' } ],
+                    key_values => [ { name => 'DequeueCount', diff => 1 } ],
                     output_template => 'messages dequeued: %s',
                     perfdatas => [
                         { template => '%s', min => 0, label_extra_instance => 1 }
@@ -125,7 +168,7 @@ sub set_counters {
                 }
             },
             { label => $_ . '-messages-expired', nlabel => 'broker.' . $_ . '.messages.expired.count', display_ok => 0, set => {
-                    key_values => [ { name => 'ExpiredCount', diff => 1 }, { name => 'display' } ],
+                    key_values => [ { name => 'ExpiredCount', diff => 1 } ],
                     output_template => 'messages expired: %s',
                     perfdatas => [
                         { template => '%s', min => 0, label_extra_instance => 1 }
@@ -133,7 +176,7 @@ sub set_counters {
                 }
             },
             { label => $_ . '-messages-inflighted', nlabel => 'broker.' . $_ . '.messages.inflighted.count', display_ok => 0, set => {
-                    key_values => [ { name => 'InFlightCount', diff => 1 }, { name => 'display' } ],
+                    key_values => [ { name => 'InFlightCount', diff => 1 } ],
                     output_template => 'messages in-flighted: %s',
                     perfdatas => [
                         { template => '%s', min => 0, label_extra_instance => 1 }
@@ -141,7 +184,7 @@ sub set_counters {
                 }
             },
             { label => $_ . '-messages-size-average', nlabel => 'broker.' . $_ . '.messages.size.average.bytes', display_ok => 0, set => {
-                    key_values => [ { name => 'AverageMessageSize' }, { name => 'display' } ],
+                    key_values => [ { name => 'AverageMessageSize' } ],
                     output_template => 'average messages size: %s %s',
                     output_change_bytes => 1,
                     perfdatas => [
@@ -151,30 +194,6 @@ sub set_counters {
             }
         ];
     }
-}
-
-sub broker_long_output {
-    my ($self, %options) = @_;
-
-    return "checking broker '" . $options{instance_value}->{display} . "'";
-}
-
-sub prefix_broker_output {
-    my ($self, %options) = @_;
-
-    return "Broker '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_queue_output {
-    my ($self, %options) = @_;
-
-    return "queue '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_topic_output {
-    my ($self, %options) = @_;
-
-    return "topic '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -203,14 +222,20 @@ sub manage_selection {
                 { name => 'QueueSize' }, { name => 'EnqueueCount' },
                 { name => 'DequeueCount' }, { name => 'ExpiredCount' },
                 { name => 'InFlightCount' }, { name => 'AverageMessageSize' }
-            ] 
+            ]
         },
         {
             mbean => 'org.apache.activemq:brokerName=*,type=Broker',
             attributes => [
                 { name => 'StorePercentUsage' }, { name => 'TempPercentUsage' }, 
                 { name => 'MemoryPercentUsage' }
-            ] 
+            ]
+        },
+        {
+            mbean => 'org.apache.activemq:brokerName=*,type=Broker,service=Health',
+            attributes => [
+                { name => 'CurrentStatus' }
+            ]
         }
     ];
     my $result = $options{custom}->get_attributes(request => $request, nothing_quit => 1);
@@ -223,23 +248,21 @@ sub manage_selection {
 
     $self->{brokers} = {};
     foreach my $mbean (keys %$result) {
-        next if ($mbean !~ /org.apache.activemq:brokerName=(.*?),(?:destinationName=(.*?),destinationType=(.*?),|type=Broker)/);
-        my ($broker_name, $destination_name, $destination_type) = ($1, $2, $3);
+        my ($broker_name, $destination_name, $destination_type);
+
+        $broker_name = $1 if ($mbean =~ /brokerName=(.*?)(?:,|$)/);
+        $destination_name = $1 if ($mbean =~ /destinationName=(.*?)(?:,|$)/);
+        $destination_type = $1 if ($mbean =~ /destinationType=(.*?)(?:,|$)/);
 
         if (defined($self->{option_results}->{filter_broker_name}) && $self->{option_results}->{filter_broker_name} ne '' &&
             $broker_name !~ /$self->{option_results}->{filter_broker_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $broker_name . "': no matching filter.", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_destination_type}) && $self->{option_results}->{filter_destination_type} ne '' &&
-            $destination_type !~ /$self->{option_results}->{filter_destination_type}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $broker_name . "': no matching filter.", debug => 1);
-            next;
-        }
 
         if (!defined($self->{brokers}->{$broker_name})) {
             $self->{brokers}->{$broker_name} = {
-                display => $broker_name,
+                global => { name => $broker_name },
                 queue => {},
                 topic => {}
             };
@@ -254,18 +277,18 @@ sub manage_selection {
                 $self->{output}->output_add(long_msg => "skipping '" . $destination_name . "': no matching filter.", debug => 1);
                 next;
             }
+            if (defined($self->{option_results}->{filter_destination_type}) && $self->{option_results}->{filter_destination_type} ne '' &&
+                $destination_type !~ /$self->{option_results}->{filter_destination_type}/) {
+                $self->{output}->output_add(long_msg => "skipping '" . $broker_name . "': no matching filter.", debug => 1);
+                next;
+            }
 
-            $self->{brokers}->{$broker_name}->{$type}->{$destination_name} = {
-                display => $destination_name,
-                %{$result->{$mbean}}
-            };
+            $self->{brokers}->{$broker_name}->{$type}->{$destination_name} = $result->{$mbean};
         } else {
-            $self->{brokers}->{$broker_name}->{global} = {
-                display => $broker_name,
-                %{$result->{$mbean}}
-            };
+            foreach (keys %{$result->{$mbean}}) {
+                $self->{brokers}->{$broker_name}->{global}->{$_} = $result->{$mbean}->{$_};
+            }
         }
-        
     }
 
     if (scalar(keys %{$self->{brokers}}) <= 0) {
@@ -294,6 +317,16 @@ Filter destination name (Can be a regexp).
 =item B<--filter-destination-type>
 
 Filter destination type (Can be a regexp).
+
+=item B<--warning-status>
+
+Set warning threshold for status.
+Can used special variables like: %{status}, %{name}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{status} !~ /Good/i').
+Can used special variables like: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 

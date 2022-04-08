@@ -25,26 +25,24 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf(
+    return sprintf(
         'virtual chassis operational status: %s',
         $self->{result_values}->{status}
     );
-    return $msg;
 }
 
 sub custom_member_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf(
+    return sprintf(
         'state: %s',
         $self->{result_values}->{state}
     );
-    return $msg;
 }
 
 sub custom_member_status_calc {
@@ -63,11 +61,10 @@ sub custom_member_status_calc {
 sub custom_link_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf(
+    return sprintf(
         'operational status: %s',
         $self->{result_values}->{link_status}
     );
-    return $msg;
 }
 
 sub custom_memory_usage_output {
@@ -76,13 +73,30 @@ sub custom_memory_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf(
+    return sprintf(
         "memory usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
     );
-    return $msg;
+}
+
+sub member_long_output {
+    my ($self, %options) = @_;
+
+    return "checking stack member '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_member_output {
+    my ($self, %options) = @_;
+
+    return "Stack member '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_link_output {
+    my ($self, %options) = @_;
+
+    return "link '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -93,18 +107,17 @@ sub set_counters {
         { name => 'member', type => 3, cb_prefix_output => 'prefix_member_output', cb_long_output => 'member_long_output', indent_long_output => '    ', message_multiple => 'All stack members are ok',
             group => [
                 { name => 'member_global', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'link', display_long => 1, cb_prefix_output => 'prefix_link_output',  message_multiple => 'All links are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'link', display_long => 1, cb_prefix_output => 'prefix_link_output',  message_multiple => 'All links are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} !~ /active/i', set => {
                 key_values => [ { name => 'status' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'members-total', nlabel => 'stack.members.total.count', set => {
@@ -118,12 +131,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{member_global} = [
-        { label => 'member-status', threshold => 0, set => {
+        { label => 'member-status', type => 2, critical_default => '%{state} ne %{stateLast} || %{state} =~ /communicationFailure|incompatibleOS/i', set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_member_status_calc'),
                 closure_custom_output => $self->can('custom_member_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'cpu-utilization', nlabel => 'member.cpu.utilization.percentage', set => {
@@ -165,33 +178,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{link} = [
-        { label => 'link-status',  threshold => 0, set => {
-                key_values => [ { name => 'link_status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
+        { label => 'link-status', type => 2, critical_default => '%{link_status} eq "down"', set => {
+                key_values => [ { name => 'link_status' }, { name => 'display' }, { name => 'member_serial' } ],
                 closure_custom_output => $self->can('custom_link_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
-}
-
-sub member_long_output {
-    my ($self, %options) = @_;
-
-    return "checking stack member '" . $options{instance_value}->{display} . "'";
-}
-
-sub prefix_member_output {
-    my ($self, %options) = @_;
-
-    return "Stack member '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_link_output {
-    my ($self, %options) = @_;
-
-    return "link '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -200,31 +194,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'unknown-status:s'         => { name => 'unknown_status', default => '' },
-        'warning-status:s'         => { name => 'warning_status', default => '' },
-        'critical-status:s'        => { name => 'critical_status', default => '%{status} !~ /active/i' },
-        'unknown-member-status:s'  => { name => 'unknown_member_status', default => '' },
-        'warning-member-status:s'  => { name => 'warning_member_status', default => '' },
-        'critical-member-status:s' => { name => 'critical_member_status', default => '%{state} ne %{stateLast} || %{state} =~ /communicationFailure|incompatibleOS/i' },
-        'unknown-link-status:s'    => { name => 'unknown_link_status', default => '' },
-        'warning-link-status:s'    => { name => 'warning_link_status', default => '' },
-        'critical-link-status:s'   => { name => 'critical_link_status', default => '%{link_status} eq "down"' },
+        "filter-member-serial:s" => { name => 'filter_member_serial' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(
-        macros => [
-            'unknown_status', 'warning_status', 'critical_status',
-            'unknown_member_status', 'warning_member_status', 'critical_member_status',
-            'unknown_link_status', 'warning_link_status', 'critical_link_status'
-        ]
-    );
 }
 
 my $mapping_oper_status = {
@@ -272,7 +245,7 @@ sub manage_selection {
         oids => [
             { oid => $oid_hpicfVsfVCConfig, start => $mapping->{hpicfVsfVCOperStatus}->{oid}, end => $mapping->{hpicfVsfVCAdminStatus}->{oid} },
             { oid => $oid_hpicfVsfVCMemberEntry, start => $mapping2->{hpicfVsfVCMemberState}->{oid} },
-            { oid => $oid_hpicfVsfVCLinkEntry, start => $mapping3->{hpicfVsfVCLinkName}->{oid}, end => $mapping3->{hpicfVsfVCLinkOperStatus}->{oid} },
+            { oid => $oid_hpicfVsfVCLinkEntry, start => $mapping3->{hpicfVsfVCLinkName}->{oid}, end => $mapping3->{hpicfVsfVCLinkOperStatus}->{oid} }
         ],
         nothing_quit => 1
     );
@@ -295,6 +268,9 @@ sub manage_selection {
         $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{$oid_hpicfVsfVCMemberEntry}, instance => $member_id);
 
         my $member_name = $result->{hpicfVsfVCMemberSerialNum};
+        next if (defined($self->{option_results}->{filter_member_serial}) && $self->{option_results}->{filter_member_serial} ne '' &&
+            $member_name !~ /$self->{option_results}->{filter_member_serial}/);
+
         $self->{member}->{$member_name} = {
             display => $member_name,
             member_global => {
@@ -307,7 +283,7 @@ sub manage_selection {
                 prct_used => ($result->{hpicfVsfVCMemberTotalMemory} - $result->{hpicfVsfVCMemberFreeMemory}) * 100 / $result->{hpicfVsfVCMemberTotalMemory},
                 prct_free => $result->{hpicfVsfVCMemberFreeMemory} * 100 / $result->{hpicfVsfVCMemberTotalMemory}
             },
-            link => {},
+            link => {}
         };
 
         foreach (keys %{$snmp_result->{$oid_hpicfVsfVCLinkEntry}}) {
@@ -315,8 +291,9 @@ sub manage_selection {
             $result = $options{snmp}->map_instance(mapping => $mapping3, results => $snmp_result->{$oid_hpicfVsfVCLinkEntry}, instance => $member_id . '.' . $1);
 
             $self->{member}->{$member_name}->{link}->{$result->{hpicfVsfVCLinkName}} = {
+                member_serial => $member_name,
                 display => $result->{hpicfVsfVCLinkName},
-                link_status => $result->{hpicfVsfVCLinkOperStatus},
+                link_status => $result->{hpicfVsfVCLinkOperStatus}
             };
         }
     }
@@ -324,7 +301,10 @@ sub manage_selection {
     $self->{global}->{members} = scalar(keys %{$self->{member}});
 
     $self->{cache_name} = 'hp_procurve_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+        md5_hex(
+            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : 'all') . '_' .
+            (defined($self->{option_results}->{filter_member_serial}) ? $self->{option_results}->{filter_member_serial} : 'all')
+        );
 }
 
 1;
@@ -337,14 +317,18 @@ Check vsf virtual chassis.
 
 =over 8
 
+=item B<--filter-member-serial>
+
+Filter members by serial (can be a regexp).
+
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '').
+Set unknown threshold for status.
 Can used special variables like: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Set warning threshold for status.
 Can used special variables like: %{status}
 
 =item B<--critical-status>
@@ -354,12 +338,12 @@ Can used special variables like: %{status}
 
 =item B<--unknown-member-status>
 
-Set unknown threshold for status (Default: '').
+Set unknown threshold for status.
 Can used special variables like: %{state}, %{stateLast}
 
 =item B<--warning-member-status>
 
-Set warning threshold for status (Default: '').
+Set warning threshold for status.
 Can used special variables like: %{state}, %{stateLast}
 
 =item B<--critical-member-status>
@@ -369,12 +353,12 @@ Can used special variables like: %{state}, %{stateLast}
 
 =item B<--unknown-link-status>
 
-Set unknown threshold for status (Default: '').
+Set unknown threshold for status.
 Can used special variables like: %{link_status}, %{display}
 
 =item B<--warning-link-status>
 
-Set warning threshold for status (Default: '').
+Set warning threshold for status.
 Can used special variables like: %{link_status}, %{display}
 
 =item B<--critical-link-status>

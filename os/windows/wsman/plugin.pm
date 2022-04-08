@@ -44,6 +44,7 @@ sub new {
         'processes'       => 'os::windows::wsman::mode::processes',
         'services'        => 'os::windows::wsman::mode::services',
         'storages'        => 'os::windows::wsman::mode::storages',
+		'sessions'        => 'os::windows::wsman::mode::sessions',
         'time'            => 'os::windows::wsman::mode::time',
         'uptime'          => 'os::windows::wsman::mode::uptime'
     };

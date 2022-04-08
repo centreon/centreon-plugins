@@ -376,9 +376,9 @@ Check cluster nodes.
 
 =over 8
 
-=item B<--filter-node-id>
+=item B<--filter-node-name>
 
-Filter nodes by id (can be a regexp).
+Filter nodes by name (can be a regexp).
 
 =item B<--filter-port-id>
 

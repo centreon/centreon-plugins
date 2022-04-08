@@ -49,8 +49,6 @@ sub new {
             'hostname:s'             => { name => 'hostname' },
             'port:s'                 => { name => 'port' },
             'proto:s'                => { name => 'proto' },
-            'credentials'            => { name => 'credentials' },
-            'basic'                  => { name => 'basic' },
             'username:s'             => { name => 'username' },
             'password:s'             => { name => 'password' },
             'legacy-password:s'      => { name => 'legacy_password' },
@@ -83,7 +81,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 50;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{legacy_password} = (defined($self->{option_results}->{legacy_password})) ? $self->{option_results}->{legacy_password} : undef;
@@ -107,7 +105,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{timeout} = $self->{timeout};
 
-    if (defined($self->{username})) {
+    if (defined($self->{username}) && $self->{username} ne '') {
         $self->{option_results}->{username} = $self->{username};
         $self->{option_results}->{password} = $self->{password};
         $self->{option_results}->{credentials} = 1;
@@ -292,7 +290,7 @@ Use new RestAPI (> 5.2.33).
 
 =item B<--timeout>
 
-Set timeout in seconds (Default: 10).
+Set timeout in seconds (Default: 50).
 
 =item B<--unknown-status>
 

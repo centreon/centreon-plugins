@@ -45,14 +45,12 @@ sub run {
 
     foreach my $chart (values %{$full_list->{charts}}) {
         next if ($chart->{name} !~ 'disk_space._');
-        push @{$self->{fs_list}}, $chart->{name};
-        $chart->{name} =~s/disk_space.//;
-        $chart->{name} =~ s/_/\//g;
+
         $self->{output}->output_add(
             long_msg => sprintf(
-                "[name = %s][title = %s]",
-                $chart->{name},
-                $chart->{title},
+                "[name: %s][title: %s]",
+                $chart->{family},
+                $chart->{title}
             )
         );
     }
@@ -74,8 +72,8 @@ sub disco_show {
     $self->run(%options);
     foreach my $fs (@{$self->{fs_list}}) {
         $self->{output}->add_disco_entry(
-            name   => $fs->{name},
-            status => $fs->{title},
+            name   => $fs->{family},
+            status => $fs->{title}
         );
     }
 }

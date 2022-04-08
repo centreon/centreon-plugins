@@ -101,6 +101,12 @@ sub new {
     return $self;
 }
 
+sub skip_interface {
+    my ($self, %options) = @_;
+
+    return ($self->{checking} =~ /cast|errors|traffic|status|volume|optical/ ? 0 : 1);
+}
+
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);

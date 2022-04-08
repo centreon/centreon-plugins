@@ -37,20 +37,21 @@ sub set_system {
             ['up', 'OK'],
             ['down', 'CRITICAL'],
             ['unknown', 'UNKNOWN'],
+            ['notpresent', 'OK']
         ],
         psu => [
             ['up', 'OK'],
             ['down', 'CRITICAL'],
             ['unknown', 'UNKNOWN'],
-            ['empty', 'OK'],
+            ['empty', 'OK']
         ],
         card => [
             ['up', 'OK'],
             ['down', 'CRITICAL'],
             ['unknown', 'UNKNOWN'],
             ['testing', 'OK'],
-            ['dormant', 'OK'],
-        ],        
+            ['dormant', 'OK']
+        ],
         entity => [
             ['other', 'UNKNOWN'],
             ['notAvail', 'OK'],
@@ -63,7 +64,7 @@ sub set_system {
             ['nonFatalErr', 'WARNING'],
             ['fatalErr', 'CRITICAL'],
             ['notConfig', 'OK'],
-            ['obsoleted', 'WARNING'],
+            ['obsoleted', 'WARNING']
         ],
         led => [
             ['unknown', 'UNKNOWN'],
@@ -75,9 +76,9 @@ sub set_system {
             ['off', 'OK']
         ]
     };
-    
+
     $self->{components_path} = 'network::nortel::standard::snmp::mode::components';
-    $self->{components_module} = ['card', 'entity', 'fan', 'led', 'psu'];
+    $self->{components_module} = ['card', 'entity', 'fan', 'led', 'psu', 'temperature'];
 }
 
 sub snmp_execute {
@@ -89,7 +90,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});

@@ -29,13 +29,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.5';
-    %{$self->{modes}} = (
-        'cpu'               => 'network::oneaccess::snmp::mode::cpu',
-        'interfaces'        => 'snmp_standard::mode::interfaces', 
-        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'memory'            => 'network::oneaccess::snmp::mode::memory',
-    );
+    $self->{modes} = {
+        'cpu'             => 'network::oneaccess::snmp::mode::cpu',
+        'cells-radio'     => 'network::oneaccess::snmp::mode::cellsradio',
+        'interfaces'      => 'network::oneaccess::snmp::mode::interfaces', 
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'memory'          => 'network::oneaccess::snmp::mode::memory'
+    };
 
     return $self;
 }

@@ -26,12 +26,14 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use Safe;
+use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes qw(gettimeofday tv_interval);
 use JSON::XS;
 use XML::LibXML::Simple;
 use JSON::Path;
+$JSON::Path::Safe = 0;
 
 sub custom_select_threshold {
     my ($self, %options) = @_;
@@ -263,10 +265,28 @@ sub call_http {
 
     my $creds = {};
     if (defined($options{rq}->{authorization}) && defined($options{rq}->{authorization}->{username})) {
+        $options{rq}->{authorization}->{username} = $self->substitute_constants(value => $options{rq}->{authorization}->{username});
+        $options{rq}->{authorization}->{password} = $self->substitute_constants(value => $options{rq}->{authorization}->{password});
         $creds = {
             credentials => 1,
             %{$options{rq}->{authorization}}
         };
+    }
+
+    my $headers;
+    if (defined($options{rq}->{headers}) && ref($options{rq}->{headers}) eq 'ARRAY') {
+        $headers = [];
+        foreach my $header (@{$options{rq}->{headers}}) {
+            push @$headers, $self->substitute_constants(value => $header);
+        }
+    }
+
+    my $get_params;
+    if (defined($options{rq}->{get_params}) && ref($options{rq}->{get_params}) eq 'ARRAY') {
+        $get_params = [];
+        foreach my $param (@{$options{rq}->{get_params}}) {
+            push @$get_params, $self->substitute_constants(value => $param);
+        }
     }
 
     my $post_param = $self->get_payload(rq => $options{rq});
@@ -275,16 +295,16 @@ sub call_http {
 
     my $timing0 = [gettimeofday];
     my ($content) = $http->request(
-        backend => $options{rq}->{backend},
-        method => $options{rq}->{method},
-        hostname => $options{rq}->{hostname},
-        proto => $options{rq}->{proto},
-        port => $options{rq}->{port},
-        url_path => $options{rq}->{endpoint},
-        header => $options{rq}->{headers},
-        timeout => $options{rq}->{timeout},
-        get_param => $options{rq}->{get_params},
-        query_form_post => $post_param,
+        backend => $self->substitute_constants(value => $options{rq}->{backend}),
+        method => $self->substitute_constants(value => $options{rq}->{method}),
+        hostname => $self->substitute_constants(value => $options{rq}->{hostname}),
+        proto => $self->substitute_constants(value => $options{rq}->{proto}),
+        port => $self->substitute_constants(value => $options{rq}->{port}),
+        url_path => $self->substitute_constants(value => $options{rq}->{endpoint}),
+        header => $headers,
+        timeout => $self->substitute_constants(value => $options{rq}->{timeout}),
+        get_param => $get_params,
+        query_form_post => $self->substitute_constants(value => $post_param),
         insecure => $options{rq}->{insecure},
         unknown_status => '',
         warning_status => '',
@@ -342,13 +362,20 @@ sub parse_txt {
 
     my $modifier = defined($options{conf}->{modifier}) ? $options{conf}->{modifier} : '';
 
+    my @entries = ();
+    foreach (@{$options{conf}->{entries}}) {
+        next if ($_->{offset} !~ /^[0-9]+$/);
+
+        push @entries, $_;
+    }
+
     my $i = 0;
     while ($options{content} =~ /(?$modifier)$options{conf}->{re}/g) {
         my $instance = $i;
         my $name = $options{name} . ucfirst($options{conf}->{name});
 
         my $entry = {};
-        foreach (@{$options{conf}->{entries}}) {
+        foreach (@entries) {
             my $offset = "\$" . $_->{offset};
             my $value = eval "$offset";
             if (!defined($value)) {
@@ -894,20 +921,24 @@ sub set_builtin {
     }
 }
 
-sub set_constants {
+sub create_constants {
     my ($self, %options) = @_;
 
-    my $constants = {};
+    $self->{constants} = {};
     if (defined($self->{config}->{constants})) {
         foreach (keys %{$self->{config}->{constants}}) {
-            $constants->{'constants.' . $_} = $self->{config}->{constants}->{$_};
+            $self->{constants}->{'constants.' . $_} = $self->{config}->{constants}->{$_};
         }
     }
     foreach (keys %{$self->{option_results}->{constant}}) {
-        $constants->{'constants.' . $_} = $self->{option_results}->{constant}->{$_};
+        $self->{constants}->{'constants.' . $_} = $self->{option_results}->{constant}->{$_};
     }
+}
 
-    return $constants;
+sub set_constants {
+    my ($self, %options) = @_;
+
+    return { %{$self->{constants}} };
 }
 
 sub set_expand_table {
@@ -1297,6 +1328,87 @@ sub exec_func_assign {
     $self->set_special_variable_value(value => $assign_var, %$result);
 }
 
+sub exec_func_capture {
+    my ($self, %options) = @_;
+
+    #{
+    #    "type": "capture",
+    #    "src": "%(snmp.leefs.content)",
+    #    "pattern": "(?msi)Vertical BER Analysis.*?Bit Error Rate: (\S+)",
+    #    "groups": [
+    #        { "offset": 1, "save": "%(bitErrorRate)" }
+    #    ]
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+    if (!defined($options{pattern}) || $options{pattern} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set pattern attribute");
+        $self->{output}->option_exit();
+    }
+    if (!defined($options{groups}) || ref($options{groups}) ne 'ARRAY') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set groups attribute");
+        $self->{output}->option_exit();
+    }
+
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    } 
+    my $data = $self->get_special_variable_value(%$result);
+
+    my @matches = ($data =~ /$options{pattern}/);
+
+    foreach (@{$options{groups}}) {
+        next if ($_->{offset} !~ /^[0-9]+/);
+
+        my $value = '';
+        if (defined($matches[ $_->{offset} ])) {
+            $value = $matches[ $_->{offset} ];
+        }
+
+        my $save = $self->parse_special_variable(chars => [split //, $_->{save}], start => 0);
+        if ($save->{type} !~ /^(?:0|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $value, %$save);
+    }
+}
+
+sub exec_func_scientific2number {
+    my ($self, %options) = @_;
+
+    #{
+    #    "type": "scientific2number",
+    #    "src": "%(bitErrorRate)",
+    #    "save": "%(bitErrorRate)",
+    #}
+    if (!defined($options{src}) || $options{src} eq '') {
+        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
+        $self->{output}->option_exit();
+    }
+    my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
+    if ($result->{type} !~ /^(?:0|4)$/) {
+        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
+        $self->{output}->option_exit();
+    } 
+    my $data = $self->get_special_variable_value(%$result);
+
+    $data = centreon::plugins::misc::expand_exponential(value => $data);
+
+    if (defined($options{save}) && $options{save} ne '') {
+        my $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
+        if ($save->{type} !~ /^(?:0|4)$/) {
+            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
+            $self->{output}->option_exit();
+        }
+        $self->set_special_variable_value(value => $data, %$save);
+    }
+}
+
 sub set_functions {
     my ($self, %options) = @_;
 
@@ -1307,7 +1419,7 @@ sub set_functions {
         $self->{current_section} = '[' . $options{section} . ' > ' . $i . ']';
         next if (defined($_->{position}) && $options{position} ne $_->{position});
         next if (!defined($_->{position}) && !(defined($options{default}) && $options{default} == 1));
-        
+
         next if (!defined($_->{type}));
 
         if ($_->{type} eq 'map') {
@@ -1324,16 +1436,38 @@ sub set_functions {
             $self->exec_func_replace(%$_);
         } elsif (lc($_->{type}) eq 'assign') {
             $self->exec_func_assign(%$_);
+        } elsif (lc($_->{type}) eq 'capture') {
+            $self->exec_func_capture(%$_);
+        } elsif (lc($_->{type}) eq 'scientific2number') {
+            $self->exec_func_scientific2number(%$_);
         }
     }
+}
+
+sub substitute_constants {
+    my ($self, %options) = @_;
+
+    return undef if (!defined($options{value}));
+    while ($options{value} =~ /%\((constants\.[a-zA-Z0-9\._:]+?)\)/g) {
+        my $value = defined($self->{constants}->{$1}) ? $self->{constants}->{$1} : '';
+        $options{value} =~ s/%\($1\)/$value/g;
+    }
+    
+    return $options{value};
 }
 
 sub prepare_variables {
     my ($self, %options) = @_;
 
     return undef if (!defined($options{value}));
-    $options{value} =~ s/%\(([a-zA-Z0-9\._:]+?)\)/\$expand->{'$1'}/g;
-    return $options{value};
+
+    while ($options{value} =~ /%\(([a-zA-Z0-9\.]+?)\)/g) {
+        next if ($1 =~ /^http\./);
+        $options{value} =~ s/%\(($1)\)/\$expand->{'$1'}/g;
+    }
+
+    my $expression = $self->substitute_string(value => $options{value});
+    return $expression;
 }
 
 sub check_filter {
@@ -1507,6 +1641,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->read_config();
+    $self->create_constants();
     $self->collect_http();
 
     $self->{selections} = {};
@@ -1528,6 +1663,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->read_config();
+    $self->create_constants();
     $self->collect_http();
 
     $self->{selections} = {};

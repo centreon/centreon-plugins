@@ -187,9 +187,12 @@ sub custom_errors_calc {
     } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent') {
         $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
         $self->{result_values}->{used} = $errors;
+        $self->{result_values}->{total} = $total;
     } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'delta') {
+        $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
         $self->{result_values}->{used} = $errors_diff;
     } else {
+        $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
         $self->{result_values}->{used} = $errors;
         $self->{result_values}->{total} = $total;
     }
@@ -355,7 +358,7 @@ sub do_selection {
     $self->{interfaces} = {};
     foreach (@$results) {
         next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
-            $self->{interface} !~ /$self->{option_results}->{filter_interface}/);
+            $_->{Name} !~ /$self->{option_results}->{filter_interface}/);
          next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
             $_->{Name} =~ /$self->{option_results}->{exclude_interface}/);
 
@@ -402,6 +405,13 @@ Check interfaces.
 =over 8
 
 =item B<--add-traffic>
+<<<<<<< HEAD
+
+Check interface traffic.
+
+=item B<--add-errors>
+=======
+>>>>>>> master
 
 Check interface traffic.
 
@@ -409,26 +419,10 @@ Check interface traffic.
 
 Check interface errors.
 
-=item B<--warning-in>
-
-Threshold warning in percent for 'in' traffic.
-
-=item B<--critical-in>
-
-Threshold critical in percent for 'in' traffic.
-
-=item B<--warning-out>
-
-Threshold warning in percent for 'out' traffic.
-
-=item B<--critical-out>
-
-Threshold critical in percent for 'out' traffic.
-
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'in-error', 'in-discard', 'out-error', 'out-discard',
+Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 
 =item B<--units-traffic>
 

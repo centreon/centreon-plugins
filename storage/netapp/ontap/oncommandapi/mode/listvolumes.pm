@@ -30,9 +30,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -45,39 +43,53 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get(path => '/volumes');
+    my $svms = $options{custom}->get(path => '/storage-vms');
+    my $volumes = $options{custom}->get(path => '/volumes');
 
-    foreach my $volume (@{$result}) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $volume->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $volume->{name} . "': no matching filter name.", debug => 1);
-            next;
-        }
+    my $results = [];
+    foreach my $volume (@$volumes) {
+        my $svm_name = $options{custom}->get_record_attr(records => $svms, key => 'key', value => $volume->{storage_vm_key}, attr => 'name');
+        $svm_name = 'root' if (!defined($svm_name));
 
-        $self->{volumes}->{$volume->{key}} = {
+        push @$results, {
+            key => $volume->{key},
             name => $volume->{name},
-            state => $volume->{state},
+            svm => $svm_name,
+            state => defined($volume->{state}) ? $volume->{state} : 'none',
             vol_type => $volume->{vol_type},
             style  => $volume->{style},
             is_replica_volume  => $volume->{is_replica_volume},
-            size_total => $volume->{size_total},
+            size_total => $volume->{size_total}
         }
     }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
   
-    $self->manage_selection(%options);
-    foreach my $volume (sort keys %{$self->{volumes}}) { 
-        $self->{output}->output_add(long_msg => sprintf("[name = %s] [state = %s] [vol_type = %s] [style = %s] [is_replica_volume = %s] [size_total = %s]",
-                                                         $self->{volumes}->{$volume}->{name}, $self->{volumes}->{$volume}->{state},
-                                                         $self->{volumes}->{$volume}->{vol_type}, $self->{volumes}->{$volume}->{style},
-                                                         $self->{volumes}->{$volume}->{is_replica_volume}, $self->{volumes}->{$volume}->{size_total}));
+    my $results = $self->manage_selection(%options);
+    foreach (@$results) {
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "[key: %s] [name: %s] [svm: %s] [state: %s] [vol_type: %s] [style: %s] [is_replica_volume: %s] [size_total: %s]",
+                $_->{key},
+                $_->{name},
+                $_->{svm},
+                $_->{state},
+                $_->{vol_type},
+                $_->{style},
+                $_->{is_replica_volume},
+                $_->{size_total}
+            )
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List volumes:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List volumes:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -85,23 +97,20 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;  
     
-    $self->{output}->add_disco_format(elements => ['name', 'state', 'vol_type', 'style',
-                                                   'is_replica_volume', 'size_total']);
+    $self->{output}->add_disco_format(
+        elements => [
+            'key', 'name', 'svm', 'state', 'vol_type', 'style',
+            'is_replica_volume', 'size_total'
+        ]
+    );
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $volume (sort keys %{$self->{volumes}}) {             
-        $self->{output}->add_disco_entry(
-            name => $self->{volumes}->{$volume}->{name},
-            state => $self->{volumes}->{$volume}->{state},
-            vol_type => $self->{volumes}->{$volume}->{vol_type},
-            style => $self->{volumes}->{$volume}->{style},
-            is_replica_volume => $self->{volumes}->{$volume}->{is_replica_volume},
-            size_total => $self->{volumes}->{$volume}->{size_total},
-        );
+    my $results = $self->manage_selection(%options);
+    foreach (@$results) {          
+        $self->{output}->add_disco_entry(%$_);
     }
 }
 
@@ -114,10 +123,6 @@ __END__
 List volumes.
 
 =over 8
-
-=item B<--filter-name>
-
-Filter volume name (can be a regexp).
 
 =back
 

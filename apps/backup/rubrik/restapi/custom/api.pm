@@ -136,7 +136,8 @@ sub get_token {
         ) {
         $self->settings();
         my $content = $self->{http}->request(
-            url_path => '/api/v1/cluster/me',
+            method => 'POST',
+            url_path => '/api/v1/session',
             credentials => 1,
             basic => 1,
             username => $self->{api_username},
@@ -208,6 +209,7 @@ sub request_api {
     $self->settings();
     my $creds = $self->credentials();
     my ($content) = $self->{http}->request(
+        method => 'GET',
         url_path => '/api/internal' . $options{endpoint},
         get_param => $options{get_param},
         %$creds
@@ -218,6 +220,7 @@ sub request_api {
         $self->clean_token();
         $creds = $self->credentials();
         $content = $self->{http}->request(
+            method => 'GET',
             url_path => '/api/internal' . $options{endpoint},
             get_param => $options{get_param},
             %$creds,
