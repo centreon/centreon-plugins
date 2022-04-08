@@ -869,6 +869,10 @@ Set AWS access key.
 
 Set AWS session token.
 
+=item B<--aws-role-arn>
+
+Set arn of the role to be assumed.
+
 =item B<--aws-profile>
 
 Set AWS profile.
