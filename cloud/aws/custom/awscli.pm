@@ -44,6 +44,7 @@ sub new {
             'aws-secret-key:s'    => { name => 'aws_secret_key' },
             'aws-access-key:s'    => { name => 'aws_access_key' },
             'aws-session-token:s' => { name => 'aws_session_token' },
+            'aws-role-arn:s'      => { name => 'aws_role_arn' },
             'aws-profile:s'       => { name => 'aws_profile' },
             'endpoint-url:s'      => { name => 'endpoint_url' },
             'region:s'            => { name => 'region' },
@@ -113,6 +114,10 @@ sub check_options {
         $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
     }
 
+    if (defined($self->{option_results}->{aws_role_arn}) && $self->{option_results}->{aws_role_arn} ne '') {
+        $self->assume_role(aws_arn => $self->{option_results}->{aws_role_arn});
+    }
+
     if (defined($self->{option_results}->{aws_secret_key}) && $self->{option_results}->{aws_secret_key} ne '') {
         $ENV{AWS_SECRET_ACCESS_KEY} = $self->{option_results}->{aws_secret_key};
     }
@@ -175,6 +180,27 @@ sub execute {
     }
 
     return $raw_results;
+}
+
+sub assume_role_set_cmd {
+    my ($self, %options) = @_;
+
+    my $cmd_options = "sts assume-role --role-arn $options{aws_arn} --role-session-name centreon-plugins";
+    
+    return $cmd_options;
+}
+
+sub assume_role {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->assume_role_set_cmd(%options);
+    my $raw_aksk = $self->execute(cmd_options => $cmd_options);
+
+    $ENV{AWS_SECRET_ACCESS_KEY} = $raw_aksk->{Credentials}->{SecretAccessKey};
+    $ENV{AWS_ACCESS_KEY_ID} = $raw_aksk->{Credentials}->{AccessKeyId};
+    $ENV{AWS_SESSION_TOKEN} = $raw_aksk->{Credentials}->{SessionToken};
+
+    return 0;
 }
 
 sub cloudwatch_get_metrics_set_cmd {
