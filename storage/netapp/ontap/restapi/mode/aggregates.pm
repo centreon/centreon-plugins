@@ -26,8 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-# use Data::Dumper;
-
 sub custom_status_output {
     my ($self, %options) = @_;
 
@@ -39,7 +37,6 @@ sub aggregates_long_output {
 
     return "checking aggregates '" . $options{instance_value}->{display} . "'";
 }
-
 
 sub custom_usage_output {
     my ($self, %options) = @_;
@@ -76,33 +73,6 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        # { label => 'usage', nlabel => 'aggregate.space.usage.bytes', set => {
-        #         key_values => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
-        #         closure_custom_output => $self->can('custom_usage_output'),
-        #         perfdatas => [
-        #             { template => '%d', min => 0, max => 'total_space',
-        #               unit => 'B', cast_int => 1, label_extra_instance => 1 }
-        #         ]
-        #     }
-        # },
-        # { label => 'usage-free', nlabel => 'aggregate.space.free.bytes', display_ok => 0, set => {
-        #         key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
-        #         closure_custom_output => $self->can('custom_usage_output'),
-        #         perfdatas => [
-        #             { template => '%d', min => 0, max => 'total_space',
-        #               unit => 'B', cast_int => 1, label_extra_instance => 1 }
-        #         ]
-        #     }
-        # },
-        # { label => 'usage-prct', nlabel => 'aggregate.space.usage.percentage', display_ok => 0, set => {
-        #         key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
-        #         closure_custom_output => $self->can('custom_usage_output'),
-        #         perfdatas => [
-        #             { template => '%.2f', min => 0, max => 100,
-        #               unit => '%', label_extra_instance => 1 }
-        #         ]
-        #     }
-        # },
         { label => 'read', nlabel => 'aggregate.io.read.usage.bytespersecond', display_ok => 0, set => {
                 key_values => [ { name => 'read' } ],
                 output_template => 'read: %s %s/s',
@@ -229,28 +199,13 @@ sub manage_selection {
         my $uuid = $_->{uuid};
 
         my $agg = $options{custom}->request_api(endpoint => '/api/storage/aggregates/'.$uuid.'?fields=metric');
-        # print Dumper($agg);
-        # print Dumper($agg->{name});
-        # print $agg->{name};
-
-        # if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-        #     $_->{name} !~ /$self->{option_results}->{filter_name}/) {
-        #     $self->{output}->output_add(long_msg => "skipping aggregate '" . $_->{name} . "': no matching filter.", debug => 1);
-        #     next;
-        # }
 
         $self->{aggregates}->{$name} = {
             display => $name,
             state => $_->{state},
-
             total_space => $_->{space}->{block_storage}->{size},
             used_space => $_->{space}->{block_storage}->{used},
             free_space => $_->{space}->{block_storage}->{available},
-            # used_space => $_->{space}->{used},
-            # free_space => $_->{space}->{available},
-            # prct_used_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{used} * 100 / $_->{space}->{size} : undef,
-            # prct_free_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{available} * 100 / $_->{space}->{size} : undef,
-
             read          => $agg->{metric}->{throughput}->{read},
             write         => $agg->{metric}->{throughput}->{write},
             other         => $agg->{metric}->{throughput}->{other},
@@ -265,8 +220,6 @@ sub manage_selection {
             total_latency => $agg->{metric}->{latency}->{total}
         };
     }
-    # print Dumper($self);
-    # print Dumper($self->{aggregate});
 
     if (scalar(keys %{$self->{aggregates}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No aggregate found");
