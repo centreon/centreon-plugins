@@ -46,7 +46,7 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $disco_data;
+    my $disco_data = [];
     my $disco_stats;
 
     $disco_stats->{start_time} = time();
