@@ -1,0 +1,18 @@
+Source: centreon-plugin-virtualization-vmware-daemon
+Section: net
+Priority: optional
+Maintainer: Luiz Costa <me@luizgustavo.pro.br>
+Build-Depends: debhelper-compat (= 12)
+Standards-Version: 4.5.0
+Homepage: https://www.centreon.com
+
+Package: centreon-plugin-virtualization-vmware-daemon
+Architecture: all
+Depends:    ${misc:Depends},
+            ${shlibs:Depends},
+            libio-socket-inet6-perl,
+            libjson-xs-perl,
+            liblwp-protocol-https-perl,
+            libzmq-constants-perl,
+            zmq-libzmq4-perl
+Description: Perl daemon to monitor VSphere Infrastructure
