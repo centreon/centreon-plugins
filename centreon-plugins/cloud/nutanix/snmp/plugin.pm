@@ -30,19 +30,20 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cluster-usage'        => 'cloud::nutanix::snmp::mode::clusterusage',
-        'container-usage'      => 'cloud::nutanix::snmp::mode::containerusage',
-        'disk-usage'           => 'cloud::nutanix::snmp::mode::diskusage',
-        'hypervisor-usage'     => 'cloud::nutanix::snmp::mode::hypervisorusage',
-        'list-containers'      => 'cloud::nutanix::snmp::mode::listcontainers',
-        'list-disks'           => 'cloud::nutanix::snmp::mode::listdisks',
-        'list-hypervisors'     => 'cloud::nutanix::snmp::mode::listhypervisors',
-        'list-storage-pools'   => 'cloud::nutanix::snmp::mode::liststoragepools',
-        'list-vms'             => 'cloud::nutanix::snmp::mode::listvms',
-        'storage-pool-usage'   => 'cloud::nutanix::snmp::mode::storagepoolusage',
-        'vm-usage'             => 'cloud::nutanix::snmp::mode::vmusage',
-    );
+    $self->{modes} = {
+        'cluster-usage'      => 'cloud::nutanix::snmp::mode::clusterusage',
+        'container-usage'    => 'cloud::nutanix::snmp::mode::containerusage',
+        'discovery'          => 'cloud::nutanix::snmp::mode::discovery',
+        'disk-usage'         => 'cloud::nutanix::snmp::mode::diskusage',
+        'hypervisor-usage'   => 'cloud::nutanix::snmp::mode::hypervisorusage',
+        'list-containers'    => 'cloud::nutanix::snmp::mode::listcontainers',
+        'list-disks'         => 'cloud::nutanix::snmp::mode::listdisks',
+        'list-hypervisors'   => 'cloud::nutanix::snmp::mode::listhypervisors',
+        'list-storage-pools' => 'cloud::nutanix::snmp::mode::liststoragepools',
+        'list-vms'           => 'cloud::nutanix::snmp::mode::listvms',
+        'storage-pool-usage' => 'cloud::nutanix::snmp::mode::storagepoolusage',
+        'vm-usage'           => 'cloud::nutanix::snmp::mode::vmusage'
+    };
 
     return $self;
 }
