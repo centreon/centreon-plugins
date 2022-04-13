@@ -819,6 +819,40 @@ sub sns_list_topics {
     return $topics_results;
 }
 
+sub elb_list_targetgroup_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "elbv2 describe-target-groups --region $self->{option_results}->{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
+    return $cmd_options;
+}
+
+sub elb_list_targetgroup {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->elb_list_targetgroup_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $target_group_results = [];
+    foreach my $target_group (@{$raw_results->{TargetGroups}}) {
+        next if (!(@{$target_group->{LoadBalancerArns}}));
+        for my $index (0 .. $#{$target_group->{LoadBalancerArns}}){
+            push @{$target_group_results}, { 
+            elb_arn             => $target_group->{LoadBalancerArns}[$index], 
+            targetgp_arn        => $target_group->{TargetGroupArn},
+            vpc_id              => $target_group->{VpcId},
+            healthcheck_proto   => $target_group->{HealthCheckProtocol}
+            };
+        };     
+
+    };
+
+    return $target_group_results;
+}
+
 sub tgw_list_gateways_set_cmd {
     my ($self, %options) = @_;
 

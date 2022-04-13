@@ -33,6 +33,7 @@ sub new {
     %{ $self->{modes} } = (
         'discovery'             => 'cloud::aws::elb::network::mode::discovery',
         'targets-health'        => 'cloud::aws::elb::network::mode::targetshealth',
+        'list-target-groups'    => 'cloud::aws::elb::network::mode::listtargetgroups',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
