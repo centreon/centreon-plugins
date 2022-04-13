@@ -1,0 +1,1 @@
+../../../contrib/config/centreon_vmware-conf.pm
