@@ -53,6 +53,7 @@ try {
   stage('Delivery') {
     node {
       sh 'setup_centreon_build.sh'
+      unstash "Debian11"
       unstash "rpms-centos7"
       unstash "rpms-alma8"
       sh './centreon-build/jobs/vmware/vmware-delivery.sh'
