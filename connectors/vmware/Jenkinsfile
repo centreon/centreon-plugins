@@ -61,7 +61,7 @@ try {
         unstash "Debian11"
         sh '''for i in $(echo *.deb)
               do 
-                curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@./$i" https://apt.centreon.com/repository/22.04/
+                curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@./$i" https://apt.centreon.com/repository/22.04-unstable/
               done
            '''    
       }     
