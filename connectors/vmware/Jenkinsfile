@@ -57,7 +57,9 @@ try {
       unstash "rpms-centos7"
       unstash "rpms-alma8"
       sh './centreon-build/jobs/vmware/vmware-delivery.sh'
-      sh './ci/scripts/vmware-deliver-deb-package.sh'
+      withCredentials([usernamePassword(credentialsId: 'nexus-credentials', passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
+        sh './ci/scripts/vmware-deliver-deb-package.sh $NEXUS_USERNAME $NEXUS_PASSWORD $VERSION'      
+      }     
     }
   }
 } catch(e) {
