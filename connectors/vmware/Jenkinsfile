@@ -27,6 +27,15 @@ try {
         sh 'rm -rf output'
       }
     },
+    'alma8': {
+      node {
+        sh 'setup_centreon_build.sh'
+        sh './centreon-build/jobs/vmware/vmware-package.sh alma8'
+        archiveArtifacts artifacts: 'rpms-alma8.tar.gz'
+        stash name: "rpms-alma8", includes: 'output/noarch/*.rpm'
+        sh 'rm -rf output'
+      }
+    },
     'Debian bullseye packaging and signing': {
       node {
         dir('centreon-vmware') {
@@ -45,7 +54,7 @@ try {
     node {
       sh 'setup_centreon_build.sh'
       unstash "rpms-centos7"
-      unstash "rpms-centos8"
+      unstash "rpms-alma8"
       sh './centreon-build/jobs/vmware/vmware-delivery.sh'
     }
   }
