@@ -77,6 +77,14 @@ sub run {
     my @disco_data;
     my $disco_stats;
 
+    my $customFields = {};
+    my $entries = centreon::vmware::common::get_view($self->{connector}, $self->{connector}->{session1}->get_service_content()->customFieldsManager);
+    if (defined($entries->{field})) {
+        foreach (@{$entries->{field}}) {
+            $customFields->{ $_->{key} } = $_->{name};
+        }
+    }
+
     $disco_stats->{start_time} = time();
 
     my $filters = $self->build_filter(label => 'name', search_option => 'datacenter', is_regexp => 'filter');
@@ -115,7 +123,8 @@ sub run {
             my @properties = (
                 'name', 'vm', 'config.virtualNicManagerInfo.netConfig', 'config.product.version',
                 'config.product.productLineId', 'hardware.systemInfo.vendor', 'hardware.systemInfo.model',
-                'hardware.systemInfo.uuid', 'runtime.powerState', 'runtime.inMaintenanceMode', 'runtime.connectionState'
+                'hardware.systemInfo.uuid', 'runtime.powerState', 'runtime.inMaintenanceMode', 'runtime.connectionState',
+                'summary.customValue'
             );
 
             my $esxs = centreon::vmware::common::get_views($self->{connector}, \@{$cluster->host}, \@properties);
@@ -124,6 +133,12 @@ sub run {
             foreach my $esx (@$esxs) {
                 my %esx;
 
+                my $customValuesEsx = [];
+                if (defined($esx->{'summary.customValue'})) {
+                    foreach (@{$esx->{'summary.customValue'}}) {
+                        push @$customValuesEsx, { key => $customFields->{ $_->{key}}, value => $_->{value}};
+                    }
+                }
                 $esx{type} = 'esx';
                 $esx{name} = $esx->name;
                 $esx{os} = $esx->{'config.product.productLineId'} . ' ' . $esx->{'config.product.version'};
@@ -133,6 +148,7 @@ sub run {
                 $esx{maintenance} = $esx->{'runtime.inMaintenanceMode'};
                 $esx{datacenter} = $datacenter->name;
                 $esx{cluster} = $cluster->name;
+                $esx{custom_attributes} = $customValuesEsx;
 
                 foreach my $nic (@{$esx->{'config.virtualNicManagerInfo.netConfig'}}) {
                     my %lookup = map { $_->{'key'} => $_->{'spec'}->{'ip'}->{'ipAddress'} } @{$nic->{'candidateVnic'}};
@@ -147,7 +163,8 @@ sub run {
 
                 @properties = (
                     'parent', 'config.name', 'config.annotation', 'config.template', 'config.uuid', 'config.version',
-                    'config.guestId', 'guest.guestState', 'guest.hostName', 'guest.ipAddress', 'runtime.powerState'
+                    'config.guestId', 'guest.guestState', 'guest.hostName', 'guest.ipAddress', 'runtime.powerState',
+                    'summary.customValue'
                 );
 
                 my $vms = centreon::vmware::common::get_views($self->{connector}, \@{$esx->vm}, \@properties);
@@ -158,6 +175,12 @@ sub run {
                     next if (!defined($vm->{'config.uuid'}) || $vm->{'config.uuid'} eq '');
                     my $entry;
 
+                    my $customValuesVm = [];
+                    if (defined($vm->{'summary.customValue'})) {
+                        foreach (@{$vm->{'summary.customValue'}}) {
+                            push @$customValuesVm, { key => $customFields->{ $_->{key}}, value => $_->{value}};
+                        }
+                    }
                     $entry->{type} = 'vm';
                     $entry->{name} = $vm->{'config.name'};
                     $entry->{uuid} = $vm->{'config.uuid'};
@@ -172,6 +195,7 @@ sub run {
                     $entry->{power_state} = $vm->{'runtime.powerState'}->val;
                     $entry->{datacenter} = $datacenter->name;
                     $entry->{cluster} = $cluster->name;
+                    $entry->{custom_attributes} = $customValuesVm;
                     $entry->{esx} = $esx->name;
 
                     push @disco_data, $entry;
