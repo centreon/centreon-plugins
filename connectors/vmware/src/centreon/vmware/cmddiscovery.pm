@@ -136,7 +136,7 @@ sub run {
                 my $customValuesEsx = [];
                 if (defined($esx->{'summary.customValue'})) {
                     foreach (@{$esx->{'summary.customValue'}}) {
-                        push @$customValuesEsx, { key => $customFields->{ $_->{key}}, value => $_->{value}};
+                        push @$customValuesEsx, { key => $customFields->{ $_->{key} }, value => $_->{value} };
                     }
                 }
                 $esx{type} = 'esx';
@@ -178,7 +178,7 @@ sub run {
                     my $customValuesVm = [];
                     if (defined($vm->{'summary.customValue'})) {
                         foreach (@{$vm->{'summary.customValue'}}) {
-                            push @$customValuesVm, { key => $customFields->{ $_->{key}}, value => $_->{value}};
+                            push @$customValuesVm, { key => $customFields->{ $_->{key} }, value => $_->{value} };
                         }
                     }
                     $entry->{type} = 'vm';
