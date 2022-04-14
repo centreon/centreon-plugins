@@ -27,13 +27,23 @@ try {
         sh 'rm -rf output'
       }
     },
-    'centos8': {
+    'alma8': {
       node {
         sh 'setup_centreon_build.sh'
-        sh './centreon-build/jobs/vmware/vmware-package.sh centos8'
-        archiveArtifacts artifacts: 'rpms-centos8.tar.gz'
-        stash name: "rpms-centos8", includes: 'output/noarch/*.rpm'
+        sh './centreon-build/jobs/vmware/vmware-package.sh alma8'
+        archiveArtifacts artifacts: 'rpms-alma8.tar.gz'
+        stash name: "rpms-alma8", includes: 'output/noarch/*.rpm'
         sh 'rm -rf output'
+      }
+    },
+    'Debian bullseye packaging and signing': {
+      node {
+        dir('centreon-vmware') {
+          checkout scm
+        }
+        sh 'docker run -i --entrypoint "/src/centreon-vmware/ci/scripts/vmware-deb-package.sh" -w "/src" -v "$PWD:/src" -e "DISTRIB=Debian11" -e "VERSION=$VERSION" -e "RELEASE=$RELEASE" registry.centreon.com/centreon-debian11-dependencies:22.04'
+        stash name: 'Debian11', includes: '*.deb'
+        archiveArtifacts artifacts: "*"
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
@@ -44,8 +54,17 @@ try {
     node {
       sh 'setup_centreon_build.sh'
       unstash "rpms-centos7"
-      unstash "rpms-centos8"
+      unstash "rpms-alma8"
       sh './centreon-build/jobs/vmware/vmware-delivery.sh'
+      withCredentials([usernamePassword(credentialsId: 'nexus-credentials', passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
+        checkout scm
+        unstash "Debian11"
+        sh '''for i in $(echo *.deb)
+              do 
+                curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@./$i" https://apt.centreon.com/repository/22.04-unstable/
+              done
+           '''    
+      }     
     }
   }
 } catch(e) {

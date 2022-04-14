@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ "$1" = "configure" ] ; then
+
+  systemctl daemon-reload
+  systemctl enable centreon_vmware.service
+  systemctl restart centreon_vmware.service
+
+fi
+exit 0 
