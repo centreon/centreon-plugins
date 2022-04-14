@@ -58,6 +58,9 @@ try {
       unstash "rpms-alma8"
       sh './centreon-build/jobs/vmware/vmware-delivery.sh'
       withCredentials([usernamePassword(credentialsId: 'nexus-credentials', passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
+        dir('centreon-vmware') {
+          checkout scm
+        }
         sh './ci/scripts/vmware-deliver-deb-package.sh $NEXUS_USERNAME $NEXUS_PASSWORD $VERSION'      
       }     
     }
