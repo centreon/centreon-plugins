@@ -55,12 +55,10 @@ try {
       sh 'setup_centreon_build.sh'
       unstash "rpms-centos7"
       unstash "rpms-alma8"
-      //sh './centreon-build/jobs/vmware/vmware-delivery.sh'
+      sh './centreon-build/jobs/vmware/vmware-delivery.sh'
       withCredentials([usernamePassword(credentialsId: 'nexus-credentials', passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
         checkout scm
         unstash "Debian11"
-        sh 'ls -lart'
-        //sh "./ci/scripts/vmware-deliver-deb-package.sh $NEXUS_USERNAME $NEXUS_PASSWORD" 
         sh '''for i in $(echo *.deb)
               do 
                 curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@./$i" https://apt.centreon.com/repository/22.04/
