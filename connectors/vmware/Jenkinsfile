@@ -26,7 +26,7 @@ try {
         stash name: "rpms-centos7", includes: 'output/noarch/*.rpm'
         sh 'rm -rf output'
       }
-    }
+    },
     'Debian bullseye packaging and signing': {
       node {
         dir('centreon-vmware') {
