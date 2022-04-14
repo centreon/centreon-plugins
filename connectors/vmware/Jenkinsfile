@@ -26,24 +26,15 @@ try {
         stash name: "rpms-centos7", includes: 'output/noarch/*.rpm'
         sh 'rm -rf output'
       }
-    },
-    'centos8': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh './centreon-build/jobs/vmware/vmware-package.sh centos8'
-        archiveArtifacts artifacts: 'rpms-centos8.tar.gz'
-        stash name: "rpms-centos8", includes: 'output/noarch/*.rpm'
-        sh 'rm -rf output'
-      }
-    },
+    }
     'Debian bullseye packaging and signing': {
       node {
         dir('centreon-vmware') {
           checkout scm
         }
         sh 'docker run -i --entrypoint "/src/centreon-vmware/ci/scripts/vmware-deb-package.sh" -w "/src" -v "$PWD:/src" -e "DISTRIB=Debian11" -e "VERSION=$VERSION" -e "RELEASE=$RELEASE" registry.centreon.com/centreon-debian11-dependencies:22.04'
-        stash name: 'Debian11', includes: 'Debian11/*.deb'
-        archiveArtifacts artifacts: "Debian11/*"
+        stash name: 'Debian11', includes: '*.deb'
+        archiveArtifacts artifacts: "*"
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
