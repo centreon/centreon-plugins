@@ -60,7 +60,7 @@ try {
       withCredentials([usernamePassword(credentialsId: 'nexus-credentials', passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
         checkout scm
         sh 'ls -lart'
-        sh './centreon-vmware/ci/scripts/vmware-deliver-deb-package.sh $NEXUS_USERNAME $NEXUS_PASSWORD $VERSION'      
+        sh './ci/scripts/vmware-deliver-deb-package.sh $NEXUS_USERNAME $NEXUS_PASSWORD $VERSION'      
       }     
     }
   }
