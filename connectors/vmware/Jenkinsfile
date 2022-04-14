@@ -57,6 +57,7 @@ try {
       unstash "rpms-centos7"
       unstash "rpms-alma8"
       sh './centreon-build/jobs/vmware/vmware-delivery.sh'
+      sh './ci/scripts/vmware-deliver-deb-package.sh'
     }
   }
 } catch(e) {
