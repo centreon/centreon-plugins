@@ -60,7 +60,8 @@ try {
       withCredentials([usernamePassword(credentialsId: 'nexus-credentials', passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
         checkout scm
         //sh "./ci/scripts/vmware-deliver-deb-package.sh $NEXUS_USERNAME $NEXUS_PASSWORD" 
-        sh 'curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@/*.deb" https://apt.centreon.com/repository/22.04/'    
+        sh 'BULLSEYEPACKAGES=`echo *.deb`'
+        sh 'curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@./$BULLSEYEPACKAGES" https://apt.centreon.com/repository/22.04/'    
       }     
     }
   }
