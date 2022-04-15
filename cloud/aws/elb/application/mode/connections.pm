@@ -223,6 +223,10 @@ Set the instance name (Required) (Can be multiple).
 
 Add Availability Zone dimension.
 
+=item B<--target-group>
+
+Add target group dimension.
+
 =item B<--filter-metric>
 
 Filter metrics (Can be: ActiveConnectionCount', 'NewConnectionCount',
