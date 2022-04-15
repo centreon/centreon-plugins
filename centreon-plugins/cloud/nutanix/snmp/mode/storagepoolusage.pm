@@ -29,7 +29,7 @@ use centreon::plugins::misc;
 sub prefix_sp_output {
     my ($self, %options) = @_;
     
-    return sprinf(
+    return sprintf(
         "Storage Pool '%s'",
         $options{instance_value}->{display} 
     );
