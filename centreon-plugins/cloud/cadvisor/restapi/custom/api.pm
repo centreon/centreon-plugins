@@ -161,7 +161,8 @@ sub internal_api_list_containers {
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path},
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => ''
+    );
     my $containers = [];
     my $containers_ids;
     eval {
@@ -174,21 +175,35 @@ sub internal_api_list_containers {
             short_msg => "Node '$options{node_name}': cannot decode json get containers response: $@"
         );
     }
-    foreach my $container (@{$containers_ids->{subcontainers}}) {
-        my $json_response = JSON::XS->new->utf8->decode(
-            $self->{http}->request(
-                hostname => $options{node_name},
-                url_path => '/api/' . $self->{option_results}->{api_version} . '/containers/' . $container->{name}
-            )
-        );
-        
-        push @$containers, {
-            id => defined($json_response->{id}) ? $json_response->{id} : $json_response->{name}, 
-            names => defined($json_response->{aliases}) ? $json_response->{aliases} : [$json_response->{name}],
-            node => $options{node_name} 
-        };
+
+    # cgroup v1
+    if (defined($containers_ids->{subcontainers})) {
+        foreach my $container (@{$containers_ids->{subcontainers}}) {
+            my $json_response = JSON::XS->new->utf8->decode(
+                $self->{http}->request(
+                    hostname => $options{node_name},
+                    url_path => '/api/' . $self->{option_results}->{api_version} . '/containers/' . $container->{name}
+                )
+            );
+
+            push @$containers, {
+                id => defined($json_response->{id}) ? $json_response->{id} : $json_response->{name}, 
+                names => defined($json_response->{aliases}) ? $json_response->{aliases} : [$json_response->{name}],
+                node => $options{node_name} 
+            };
+        }
+    } else {
+        # cgroup v2
+        foreach (values %$containers_ids) {
+            next if (!defined($_->{id}));
+            push @$containers, {
+                id => defined($_->{id}) ? $_->{id} : $_->{name}, 
+                names => defined($_->{aliases}) ? $_->{aliases} : [$_->{name}],
+                node => $options{node_name} 
+            };
+        }
     }
-    
+
     return $containers;
 }
 
@@ -218,10 +233,12 @@ sub internal_api_get_machine_stats {
 
 sub internal_api_get_container_stats {
     my ($self, %options) = @_;
+
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{api_path} . '/' . $options{container_id},
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => ''
+    );
     my $container_stats;
     my $full_container_stats;
     eval {

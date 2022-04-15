@@ -48,7 +48,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers are ok', skipped_code => { -11 => 1 } },
+        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers are ok', skipped_code => { -11 => 1 } }
     ];
     
     $self->{maps_counters}->{containers} = [
@@ -56,8 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_number'}, { name => 'display' } ],
                 output_template => 'CPU: %d core(s)',
                 perfdatas => [
-                    { label => 'cpu_number', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -65,8 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_total'}, { name => 'display' } ],
                 output_template => 'CPU Usage: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_total', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -74,8 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_user'}, { name => 'display' } ],
                 output_template => 'CPU User: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_user', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -83,8 +80,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_system' }, { name => 'display' } ],
                 output_template => 'CPU System: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_system', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -93,8 +89,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_memory_output'),
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'memory_used', template => '%s',
-                      min => 0, max => 'memory_total',unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, max => 'memory_total',unit => 'B', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -103,8 +98,7 @@ sub set_counters {
                 output_template => 'Memory Cache: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'memory_cache', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -113,8 +107,7 @@ sub set_counters {
                 output_template => 'Memory RSS: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'memory_rss', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -123,8 +116,7 @@ sub set_counters {
                 output_template => 'Swap: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'swap', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -181,8 +173,7 @@ sub manage_selection {
         my $last_cpu_system = $last_stat->{cpu}{usage}{system};
 
         my $diff_ts = $last_dt - $first_dt;
-        my $cpu_number = $machine_stats->{$result->{$container_id}->{NodeName}}->{num_cores};
-
+        my $cpu_number = $machine_stats->{ $result->{$container_id}->{NodeName} }->{num_cores};
 
         $self->{containers}->{$container_id} = {
             node_name           => $result->{$container_id}->{NodeName},
@@ -196,7 +187,7 @@ sub manage_selection {
             memory_cache        => $last_stat->{memory}{cache},
             memory_rss          => $last_stat->{memory}{rss},
             swap                => $last_stat->{memory}{swap},
-            memory_total        => $machine_stats->{$result->{$container_id}->{NodeName}}->{memory_capacity},
+            memory_total        => $machine_stats->{$result->{$container_id}->{NodeName}}->{memory_capacity}
         };
     }
     
@@ -204,7 +195,7 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No containers found.");
         $self->{output}->option_exit();
     }
-    
+
     my $hostnames = $options{custom}->get_hostnames();
 }
 
