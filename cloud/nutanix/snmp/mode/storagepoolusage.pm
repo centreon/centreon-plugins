@@ -26,13 +26,22 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+sub prefix_sp_output {
+    my ($self, %options) = @_;
+    
+    return sprintf(
+        "Storage Pool '%s'",
+        $options{instance_value}->{display} 
+    );
+}
+
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free';
+        ($label, $nlabel) = ('free', 'storagepool.storage.space.free.bytes');
         $value_perf = $self->{result_values}->{free};
     }
     my $extra_label = '';
@@ -45,9 +54,10 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         label => $label . $extra_label, unit => 'B',
+        nlabel => $nlabel,
         value => $value_perf,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $self->{result_values}->{total}
     );
 }
@@ -62,7 +72,13 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_used};
         $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value, 
+        threshold => [ 
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, 
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } 
+        ]
+    );
     return $exit;
 }
 
@@ -100,32 +116,32 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{sp} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'storagepool.storage.space.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'spitUsedCapacity' }, { name => 'spitTotalCapacity' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
-        { label => 'avg-latency', set => {
+        { label => 'avg-latency', nlabel => 'storagepool.average.io.latency.microseconds', set => {
                 key_values => [ { name => 'spitAvgLatencyUsecs' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'spitAvgLatencyUsecs', template => '%s', unit => 'µs',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'avg_latency', template => '%s', unit => 'µs',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'iops', set => {
+        { label => 'iops', nlabel => 'storagepool.operations.iops', set => {
                 key_values => [ { name => 'spitIOPerSecond' }, { name => 'display' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { label => 'iops', value => 'spitIOPerSecond', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'iops', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -141,12 +157,6 @@ sub new {
     });
 
     return $self;
-}
-
-sub prefix_sp_output {
-    my ($self, %options) = @_;
-    
-    return "Storage Pool '" . $options{instance_value}->{display} . "' ";
 }
 
 my $mapping = {
