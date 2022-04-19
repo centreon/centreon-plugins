@@ -38,7 +38,6 @@ sub new {
 }
 
 sub set_options {
-
     my ($self, %options) = @_;
 
     $self->{option_results} = $options{option_results};
@@ -61,10 +60,31 @@ sub manage_selection {
 }
 
 sub run {
-
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
+    
+    my @dimensions;
+    
+    foreach my $dimensions (@{$self->{all_dimensions}}) {
+        my %health_dimensions;
+        foreach my $dimension_name (@{$dimensions->{Dimensions}}) {
+            $health_dimensions{availability_zone} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/AvailabilityZone/);
+            $health_dimensions{elb_name} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/LoadBalancer/);
+            $health_dimensions{target_group} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/TargetGroup/);
+            
+        }
+        $health_dimensions{availability_zone} = defined($health_dimensions{availability_zone}) ? $health_dimensions{availability_zone} : '';
+        next if ($health_dimensions{elb_name} ne $self->{elb_name});
+        push @dimensions, \%health_dimensions;
+    }
+
+    foreach my $dimensions (@dimensions){
+        $self->{output}->output_add(long_msg => sprintf("[TargetGroup = %s][Elb = %s][AvailabilityZone = %s]", 
+                                                        TargetGroup => $dimensions->{target_group},
+                                                        Elb => $dimensions->{elb_name},
+                                                        AvailabilityZone => $dimensions->{availability_zone}));
+    }
 
     $self->{output}->output_add(
         severity => 'OK',
@@ -75,14 +95,12 @@ sub run {
 }
 
 sub disco_format {
-
     my ($self, %options) = @_;
 
     $self->{output}->add_disco_format(elements => ['TargetGroup', 'Elb', 'AvailabilityZone']);
 }
 
 sub disco_show {
-
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
@@ -117,7 +135,7 @@ __END__
 
 =head1 MODE
 
-List AWS target groups.
+List AWS target groups for a given ELB with --elb-name parameter.
 
 =over 8
 
