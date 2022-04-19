@@ -62,6 +62,7 @@ sub manage_selection {
 
     my $results = {};
     foreach my $entry (@$entries) {
+	$entry->{Name} =~ s/\\//g;
         $results->{ $entry->{DeviceID} } = {
             size => $entry->{Capacity},
             name => $entry->{Name},
