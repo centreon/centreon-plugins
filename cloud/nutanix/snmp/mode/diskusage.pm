@@ -25,12 +25,43 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
+sub prefix_controllervm_output {
+    my ($self, %options) = @_;
+    
+    return sprintf(
+        "ControllerVM '%s'",
+        $options{instance_value}->{name}
+    );
+}
+
+sub controllervm_long_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "checking ControllerVM '%s'",
+        $options{instance_value}->{name}
+    );
+}
+
+sub prefix_disk_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Disk '%s'",
+        $options{instance_value}->{display}
+    );
+}
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'state : ' . $self->{result_values}->{state};
+        return sprintf(
+            "state: '%s'",
+            $self->{result_values}->{state}
+        );
+
 }
 
 sub custom_status_calc {
@@ -44,10 +75,10 @@ sub custom_status_calc {
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free';
+        ($label, $nlabel) = ('free', 'disk.storage.space.free.bytes');
         $value_perf = $self->{result_values}->{free};
     }
     my $extra_label = '';
@@ -61,8 +92,10 @@ sub custom_usage_perfdata {
     $self->{output}->perfdata_add(
         label => $label . $extra_label, unit => 'B',
         value => $value_perf,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        nlabel => $nlabel,
+        instances => [ $self->{result_values}->{name}, $self->{result_values}->{display} ],
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $self->{result_values}->{total}
     );
 }
@@ -77,7 +110,13 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_used};
         $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value, 
+        threshold => [ 
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, 
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } 
+        ]
+    );
     return $exit;
 }
 
@@ -99,6 +138,7 @@ sub custom_usage_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_dstNumTotalBytes'};
     $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_dstNumFreeBytes'};
     $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
@@ -111,53 +151,59 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All disks are ok', skipped_code => { -10 => 1 } },
+        { name => 'controllervm', type => 3, cb_prefix_output => 'prefix_controllervm_output', 
+          cb_long_output => 'controllervm_long_output', indent_long_output => '    ', 
+          message_multiple => 'All ControllerVM disks are ok', 
+            group => [
+                { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All disks are ok', skipped_code => { -10 => 1 } }
+            ]
+        }
     ];
 
     $self->{maps_counters}->{disk} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, set => {
                 key_values => [ { name => 'dstState' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'usage', set => {
-                key_values => [ { name => 'display' }, { name => 'dstNumFreeBytes' }, { name => 'dstNumTotalBytes' } ],
+        { label => 'usage',  nlabel => 'disk.storage.space.usage.bytes', set => {
+                key_values => [ { name => 'name' }, { name => 'display' }, { name => 'dstNumFreeBytes' }, { name => 'dstNumTotalBytes' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
-        { label => 'inodes', set => {
+        { label => 'inodes', nlabel => 'disk.storage.inodes.usage.percentage', set => {
                 key_values => [ { name => 'inodes_used' }, { name => 'display' } ],
                 output_template => 'Inodes Used : %s %%',
                 perfdatas => [
-                    { label => 'inodes', value => 'inodes_used', template => '%s', unit => '%',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'inodes', template => '%s', unit => '%',
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'avg-latency', set => {
-                key_values => [ { name => 'dstAverageLatency' }, { name => 'display' } ],
+        { label => 'avg-latency', nlabel => 'disk.average.io.latency.microseconds', set => {
+                key_values => [ { name => 'dstAverageLatency' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'dstAverageLatency', template => '%s', unit => 'µs',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'avg_latency', template => '%s', unit => 'µs',
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'iops', set => {
+        { label => 'iops', nlabel => 'disk.operations.iops', set => {
                 key_values => [ { name => 'dstNumberIops' }, { name => 'display' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { label => 'iops', value => 'dstNumberIops', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'iops', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -166,12 +212,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
-        'units:s'           => { name => 'units', default => '%' },
-        'free'              => { name => 'free' },
+    $options{options}->add_options(arguments => {
+        'filter-controllervm:s' => { name => 'filter_controllervm' },
+        'filter-name:s'         => { name => 'filter_name' },
+        'units:s'               => { name => 'units', default => '%' },
+        'free'                  => { name => 'free' }
     });
 
     return $self;
@@ -180,30 +225,29 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_disk_output {
-    my ($self, %options) = @_;
-
-    return "Disk '" . $options{instance_value}->{display} . "' ";
 }
 
 my %map_state = (1 => 'online', 2 => 'offline');
 
-my $mapping = {
+my $disk_mapping = {
     dstDiskId               => { oid => '.1.3.6.1.4.1.41263.3.1.2' },
+    dstControllerVMId	    => { oid => '.1.3.6.1.4.1.41263.3.1.3' },
     dstNumTotalBytes        => { oid => '.1.3.6.1.4.1.41263.3.1.6' },
     dstNumFreeBytes         => { oid => '.1.3.6.1.4.1.41263.3.1.7' },
     dstNumTotalInodes       => { oid => '.1.3.6.1.4.1.41263.3.1.8' },
     dstNumFreeInodes        => { oid => '.1.3.6.1.4.1.41263.3.1.9' },
     dstAverageLatency       => { oid => '.1.3.6.1.4.1.41263.3.1.10' },
     dstNumberIops           => { oid => '.1.3.6.1.4.1.41263.3.1.12' },
-    dstState                => { oid => '.1.3.6.1.4.1.41263.3.1.13', map => \%map_state },
+    dstState                => { oid => '.1.3.6.1.4.1.41263.3.1.13', map => \%map_state }
+};
+
+my $controllervm_mapping = {
+    crtControllerVMId       => { oid => '.1.3.6.1.4.1.41263.4.1.2' },
+    crtName                 => { oid => '.1.3.6.1.4.1.41263.4.1.5' }
 };
 
 my $oid_dstEntry = '.1.3.6.1.4.1.41263.3.1';
+my $oid_cstEntry = '.1.3.6.1.4.1.41263.4.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -213,34 +257,79 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    $self->{disk} = {};
-    my $snmp_result = $options{snmp}->get_table(
+    $self->{controllervm} = {};
+    my $controllervm_snmp_result = $options{snmp}->get_table(
+        oid => $oid_cstEntry,
+        nothing_quit => 1
+    );
+
+    my $controllervm_name_mapping = {};
+    foreach my $oid (keys %{$controllervm_snmp_result}) {
+        next if ($oid !~ /^$controllervm_mapping->{crtControllerVMId}->{oid}\.(.*)$/);
+        my $controllervm_instance = $1;
+        my $controllervm_result = $options{snmp}->map_instance(mapping => $controllervm_mapping, results => $controllervm_snmp_result, instance => $controllervm_instance);
+
+        if (defined($self->{option_results}->{filter_controllervm}) && $self->{option_results}->{filter_controllervm} ne '' &&
+            $controllervm_result->{crtName} !~ /$self->{option_results}->{filter_controllervm}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $controllervm_result->{crtName} . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{controllervm}->{$controllervm_result->{crtName}} = {
+            id => $controllervm_result->{crtControllerVMId},
+            name => $controllervm_result->{crtName},
+            disk => {}
+        };
+
+        $controllervm_name_mapping->{$controllervm_result->{crtControllerVMId}} = $controllervm_result->{crtName};
+    }
+    
+    my $disk_snmp_result = $options{snmp}->get_table(
         oid => $oid_dstEntry,
         nothing_quit => 1
     );
 
-    foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping->{dstDiskId}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+    foreach my $oid (keys %{$disk_snmp_result}) {
+        next if ($oid !~ /^$disk_mapping->{dstDiskId}->{oid}\.(.*)$/);
+        my $disk_instance = $1;
+        my $disk_result = $options{snmp}->map_instance(mapping => $disk_mapping, results => $disk_snmp_result, instance => $disk_instance);
 
-        $result->{dstDiskId} = centreon::plugins::misc::trim($result->{dstDiskId});
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{dstDiskId} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{dstDiskId} . "': no matching filter.", debug => 1);
+        if (!defined($controllervm_name_mapping->{$disk_result->{dstControllerVMId}})) {
             next;
         }
 
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $disk_result->{dstDiskId} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $disk_result->{dstDiskId} . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $disk_result->{dstDiskId} = centreon::plugins::misc::trim($disk_result->{dstDiskId});
+        
         my $inodes_used;
-        $inodes_used = 100 - ($result->{dstNumFreeInodes} * 100 / $result->{dstNumTotalInodes}) if ($result->{dstNumTotalInodes} > 0);
-        $self->{disk}->{$instance} = {
-            display => $result->{dstDiskId}, 
-            %$result,
-            inodes_used => $inodes_used
+        $inodes_used = 100 - ($disk_result->{dstNumFreeInodes} * 100 / $disk_result->{dstNumTotalInodes}) if ($disk_result->{dstNumTotalInodes} > 0);
+
+        $self->{controllervm}->{$controllervm_name_mapping->{$disk_result->{dstControllerVMId}}}->{disk}->{$disk_result->{dstDiskId}} = {
+            name => $controllervm_name_mapping->{$disk_result->{dstControllerVMId}},
+            display => $disk_result->{dstDiskId}, 
+            %$disk_result,
+            inodes_used => $inodes_used          
         };
     }
 
-    if (scalar(keys %{$self->{disk}}) <= 0) {
+    if (scalar(keys %{$self->{controllervm}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No ControllerVM found.");
+        $self->{output}->option_exit();
+    }
+
+    my $disk_int = 0;
+    foreach my $controllervm (keys %{$self->{controllervm}}) {
+        if (scalar(keys %{$self->{controllervm}->{$controllervm}->{disk}}) <= 0) {
+            $disk_int = $disk_int + 1;
+        }
+    }
+    
+    if ($disk_int eq keys %{$self->{controllervm}}) {
         $self->{output}->add_option_msg(short_msg => "No disk found.");
         $self->{output}->option_exit();
     }
@@ -264,6 +353,10 @@ Example: --filter-counters='^usage$'
 =item B<--filter-name>
 
 Filter disk name (can be a regexp).
+
+=item B<--filter-controllervm>
+
+Filter controllervm name (can be a regexp).
 
 =item B<--warning-status>
 

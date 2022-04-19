@@ -75,8 +75,8 @@ sub set_counters {
             }
         },
         { label => 'current', nlabel => 'outlet.current.ampere', set => {
-                key_values => [ { name => 'current', no_value => 0 }, { name => 'display' } ],
-                output_template => 'current : %s A',
+                key_values => [ { name => 'current' }, { name => 'display' } ],
+                output_template => 'current: %s A',
                 perfdatas => [
                     { template => '%s', unit => 'A', min => 0, label_extra_instance => 1 }
                 ]
@@ -90,8 +90,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
     
     return $self;
 }
