@@ -76,10 +76,10 @@ sub prefix_vpn_output {
 
 my $thresholds = {
     vpn => [
-        ['larval', 'WARNING'],
+        ['larval', 'OK'],
         ['mature', 'OK'],
-        ['dying', 'CRITICAL'],
-        ['dead', 'CRITICAL']
+        ['dying', 'OK'],
+        ['dead', 'WARNING']
     ]
 };
 
