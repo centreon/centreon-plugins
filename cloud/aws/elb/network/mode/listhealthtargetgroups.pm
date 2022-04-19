@@ -1,3 +1,4 @@
+
 #
 # Copyright 2022 Centreon (http://www.centreon.com/)
 #
@@ -17,8 +18,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-package cloud::aws::elb::network::mode::listtargetgroups;
+package cloud::aws::elb::network::mode::listhealthtargetgroups;
 
 use base qw(centreon::plugins::mode);
 
@@ -38,6 +38,7 @@ sub new {
 }
 
 sub set_options {
+
     my ($self, %options) = @_;
 
     $self->{option_results} = $options{option_results};
@@ -47,32 +48,23 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    $self->{elb_name} = defined($self->{option_results}->{elb_name}) ? $self->{option_results}->{elb_name} : '';
+    $self->{elb_name} = $self->{option_results}->{elb_name};
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{target_groups} = $options{custom}->elb_list_targetgroup();
+    $self->{all_dimensions} = $options{custom}->cloudwatch_list_metrics(
+        namespace => 'AWS/NetworkELB',
+        metric => 'HealthyHostCount'
+    );
 }
 
 sub run {
+
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-
-    foreach my $target_group (@{$self->{target_groups}}) {
-        $target_group->{elb_arn} =~ s/(.*)\:loadbalancer\///g;
-        $target_group->{targetgp_arn} =~ s/(.*)\://g;
-
-        if ($target_group->{elb_arn} eq $self->{elb_name}) {
-            $self->{output}->output_add(long_msg => sprintf("[TargetGroup = %s][VpcId = %s][HealthCheckProtocol = %s]",
-                                                            $target_group->{targetgp_arn},
-                                                            $target_group->{vpc_id},
-                                                            $target_group->{healthcheck_proto}
-                                                            ));
-        }
-    }
 
     $self->{output}->output_add(
         severity => 'OK',
@@ -83,28 +75,40 @@ sub run {
 }
 
 sub disco_format {
+
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['TargetGroup', 'VpcId', 'HealthCheckProtocol']);
+    $self->{output}->add_disco_format(elements => ['TargetGroup', 'Elb', 'AvailabilityZone']);
 }
 
 sub disco_show {
+
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    
-    foreach my $target_group (@{$self->{target_groups}}) {
-        $target_group->{elb_arn} =~ s/(.*)\:loadbalancer\///g;
-        $target_group->{targetgp_arn} =~ s/(.*)\://g;
 
-        if ($target_group->{elb_arn} eq $self->{elb_name}) {
-            $self->{output}->add_disco_entry(
-                TargetGroup =>  $target_group->{targetgp_arn},
-                VpcId =>  $target_group->{vpc_id},
-                HealthCheckProtocol => $target_group->{healthcheck_proto}
-            );
+    my @dimensions;
+    
+    foreach my $dimensions (@{$self->{all_dimensions}}) {
+        my %health_dimensions;
+        foreach my $dimension_name (@{$dimensions->{Dimensions}}) {
+            $health_dimensions{availability_zone} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/AvailabilityZone/);
+            $health_dimensions{elb_name} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/LoadBalancer/);
+            $health_dimensions{target_group} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/TargetGroup/);
+            
         }
-    };
+        $health_dimensions{availability_zone} = defined($health_dimensions{availability_zone}) ? $health_dimensions{availability_zone} : '';
+        next if ($health_dimensions{elb_name} ne $self->{elb_name});
+        push @dimensions, \%health_dimensions;
+    }
+
+    foreach my $dimensions (@dimensions){
+        $self->{output}->add_disco_entry(
+            Elb => $dimensions->{elb_name},
+            AvailabilityZone => $dimensions->{availability_zone},
+            TargetGroup => $dimensions->{target_group}
+        );
+    }
 }
 
 1;

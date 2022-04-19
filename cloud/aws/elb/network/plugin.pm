@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'discovery'             => 'cloud::aws::elb::network::mode::discovery',
-        'targets-health'        => 'cloud::aws::elb::network::mode::targetshealth',
-        'list-target-groups'    => 'cloud::aws::elb::network::mode::listtargetgroups',
+        'discovery'                 => 'cloud::aws::elb::network::mode::discovery',
+        'targets-health'            => 'cloud::aws::elb::network::mode::targetshealth',
+        'list-health-target-groups' => 'cloud::aws::elb::network::mode::listhealthtargetgroups'
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
