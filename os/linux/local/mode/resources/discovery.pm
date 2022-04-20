@@ -30,6 +30,7 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw($discovery_match);
 
 $discovery_match = [
+    { type => 'cisco asa', re => qr/Cisco Adaptative Security Appliance/i },
     { type => 'cisco standard', re => qr/Cisco IOS Software/i },
     { type => 'emc data domain', re => qr/Data Domain/i },
     { type => 'sonicwall', re => qr/SonicWALL/i },
