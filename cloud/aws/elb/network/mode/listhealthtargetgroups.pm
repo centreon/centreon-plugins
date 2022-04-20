@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'elb-name:s'                   => { name => 'elb_name' }
+        'elb-name:s'    => { name => 'elb_name' }
     });
 
     return $self;
@@ -55,7 +55,7 @@ sub manage_selection {
 
     $self->{all_dimensions} = $options{custom}->cloudwatch_list_metrics(
         namespace => 'AWS/NetworkELB',
-        metric => 'HealthyHostCount'
+        metric    => 'HealthyHostCount'
     );
 }
 
@@ -72,7 +72,6 @@ sub run {
             $health_dimensions{availability_zone} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/AvailabilityZone/);
             $health_dimensions{elb_name} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/LoadBalancer/);
             $health_dimensions{target_group} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/TargetGroup/);
-            
         }
         $health_dimensions{availability_zone} = defined($health_dimensions{availability_zone}) ? $health_dimensions{availability_zone} : '';
         next if ($health_dimensions{elb_name} ne $self->{elb_name});
@@ -80,10 +79,12 @@ sub run {
     }
 
     foreach my $dimensions (@dimensions){
-        $self->{output}->output_add(long_msg => sprintf("[TargetGroup = %s][Elb = %s][AvailabilityZone = %s]", 
-                                                        TargetGroup => $dimensions->{target_group},
-                                                        Elb => $dimensions->{elb_name},
-                                                        AvailabilityZone => $dimensions->{availability_zone}));
+        $self->{output}->output_add(
+            long_msg => sprintf("[TargetGroup = %s][Elb = %s][AvailabilityZone = %s]", 
+            $dimensions->{target_group},
+            $dimensions->{elb_name},
+            $dimensions->{availability_zone})
+        );
     }
 
     $self->{output}->output_add(
@@ -112,8 +113,7 @@ sub disco_show {
         foreach my $dimension_name (@{$dimensions->{Dimensions}}) {
             $health_dimensions{availability_zone} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/AvailabilityZone/);
             $health_dimensions{elb_name} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/LoadBalancer/);
-            $health_dimensions{target_group} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/TargetGroup/);
-            
+            $health_dimensions{target_group} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/TargetGroup/);          
         }
         $health_dimensions{availability_zone} = defined($health_dimensions{availability_zone}) ? $health_dimensions{availability_zone} : '';
         next if ($health_dimensions{elb_name} ne $self->{elb_name});
