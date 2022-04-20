@@ -30,7 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'display-transform-src:s' => { name => 'display_transform_src' },
+        'display-transform-dst:s' => { name => 'display_transform_dst' }
+    });
 
     return $self;
 }
@@ -38,9 +41,10 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
 }
 
-my @labels = ('size', 'name', 'label', 'type'); 
+my @labels = ('size', 'label', 'type'); 
 my $map_types = {
     0 => 'unknown',
     1 => 'noRootDirectory',
@@ -50,6 +54,18 @@ my $map_types = {
     5 => 'compactDisc',
     6 => 'ramDisk'
 };
+
+
+sub get_display_value {
+    my ($self, %options) = @_;
+    my $value = $options{name};
+
+    if (defined($self->{option_results}->{display_transform_src})) {
+        $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
+        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+    }
+    return $value;
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -62,7 +78,6 @@ sub manage_selection {
 
     my $results = {};
     foreach my $entry (@$entries) {
-	$entry->{Name} =~ s/\\//g;
         $results->{ $entry->{DeviceID} } = {
             size => $entry->{Capacity},
             name => $entry->{Name},
@@ -79,8 +94,9 @@ sub run {
 
     my $results = $self->manage_selection(wsman => $options{wsman});
     foreach my $instance (sort keys %$results) {
+       my $display_value = $self->get_display_value(name => $results->{$instance}->{name});
         $self->{output}->output_add(long_msg => 
-            join('', map("[$_: " . $results->{$instance}->{$_} . ']', @labels))
+            join('',"[name: " . $display_value . ']', map("[$_: " . $results->{$instance}->{$_} . ']', @labels))
         );
     }
 
@@ -95,7 +111,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => [@labels]);
+    $self->{output}->add_disco_format(elements => [@labels,'name']);
 }
 
 sub disco_show {
@@ -103,8 +119,12 @@ sub disco_show {
 
     my $results = $self->manage_selection(wsman => $options{wsman});
     foreach (sort keys %$results) {
+        my $display_value = $self->get_display_value(name => $results->{$_}->{name});
         $self->{output}->add_disco_entry(
-            %{$results->{$_}}
+            name  => $display_value, 
+            size  => $results->{$_}->{size},
+            label => $results->{$_}->{label},
+            type  => $results->{$_}->{type}
         );
     }
 }
@@ -117,6 +137,14 @@ __END__
 List storages.
 
 =over 8
+
+=item B<--display-transform-src>
+
+Regexp src to transform display value. (security risk!!!)
+
+=item B<--display-transform-dst>
+
+Regexp dst to transform display value. (security risk!!!)
 
 =back
 
