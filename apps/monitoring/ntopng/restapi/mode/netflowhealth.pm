@@ -147,7 +147,7 @@ sub manage_selection {
     $self->{global} = {
         alertedFlows     => $results->{rsp}->{alerted_flows},
         flows            => $results->{rsp}->{num_flows},
-        alertedFlowsPrct => 100 * $results->{rsp}->{alerted_flows} / $results->{rsp}->{num_flows},
+        alertedFlowsPrct => $results->{rsp}->{num_flows} > 0 ? 100 * $results->{rsp}->{alerted_flows} / $results->{rsp}->{num_flows} : 0,
         packetsDownload  => $results->{rsp}->{packets_download},
         packetsUpload    => $results->{rsp}->{packets_upload},
         packetsDropped   => $results->{rsp}->{drops},
