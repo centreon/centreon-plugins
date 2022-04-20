@@ -111,7 +111,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => [@labels,]);
+    $self->{output}->add_disco_format(elements => [@labels]);
 }
 
 sub disco_show {
@@ -119,7 +119,6 @@ sub disco_show {
 
     my $results = $self->manage_selection(wsman => $options{wsman});
     foreach (sort keys %$results) {
-        my $display_value = $self->get_display_value(name => $results->{$_}->{name});
         $self->{output}->add_disco_entry(
             %{$results->{$_}}
         );
