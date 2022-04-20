@@ -24,7 +24,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -172,11 +171,11 @@ __END__
 
 =head1 NAME
 
-Ntopng Rest API
+NtopNG Rest API
 
 =head1 REST API OPTIONS
 
-Ntopng Rest API
+NtopNG Rest API
 
 =over 8
 
