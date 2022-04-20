@@ -48,7 +48,6 @@ stage('RPM Packaging') {
         stash name: "Debian11", includes: '*.deb'
       }
     }    
-  }
   if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
     error('Package stage failure.');
   }
