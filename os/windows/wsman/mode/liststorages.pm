@@ -44,7 +44,7 @@ sub check_options {
     
 }
 
-my @labels = ('size', 'label', 'type'); 
+my @labels = ('size', 'name', 'label', 'type'); 
 my $map_types = {
     0 => 'unknown',
     1 => 'noRootDirectory',
@@ -78,9 +78,10 @@ sub manage_selection {
 
     my $results = {};
     foreach my $entry (@$entries) {
+        my $display_value = $self->get_display_value(name => $entry->{Name} );
         $results->{ $entry->{DeviceID} } = {
             size => $entry->{Capacity},
-            name => $entry->{Name},
+            name => $display_value,
             label => $entry->{Label},
             type => $map_types->{ $entry->{DriveType} }
         };
@@ -94,9 +95,8 @@ sub run {
 
     my $results = $self->manage_selection(wsman => $options{wsman});
     foreach my $instance (sort keys %$results) {
-       my $display_value = $self->get_display_value(name => $results->{$instance}->{name});
         $self->{output}->output_add(long_msg => 
-            join('',"[name: " . $display_value . ']', map("[$_: " . $results->{$instance}->{$_} . ']', @labels))
+            join('', map("[$_: " . $results->{$instance}->{$_} . ']', @labels))
         );
     }
 
@@ -111,7 +111,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => [@labels,'name']);
+    $self->{output}->add_disco_format(elements => [@labels,]);
 }
 
 sub disco_show {
@@ -121,10 +121,7 @@ sub disco_show {
     foreach (sort keys %$results) {
         my $display_value = $self->get_display_value(name => $results->{$_}->{name});
         $self->{output}->add_disco_entry(
-            name  => $display_value, 
-            size  => $results->{$_}->{size},
-            label => $results->{$_}->{label},
-            type  => $results->{$_}->{type}
+            %{$results->{$_}}
         );
     }
 }
