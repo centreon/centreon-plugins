@@ -167,9 +167,10 @@ sub request_api {
     #404: Not found- No such URL, or you don't have access to the API or organization at all. 
     #429: Too Many Requests- You submitted more than 5 calls in 1 second to an Organization, triggering rate limiting. This also applies for API calls made across multiple organizations that triggers rate limiting for one of the organizations.
     my $results = [];
-    my ($full_url, $get_param);
+    my $full_url;
+    my $get_param = defined($options{get_param}) ? $options{get_param} : [];
     if (defined($options{paginate})) {
-        $get_param = ['perPage=' . $options{paginate}];
+        push @$get_param, 'perPage=' . $options{paginate};
     }
     while (1) {
         my $response =  $self->{http}->request(
@@ -431,7 +432,8 @@ sub get_organization_uplink_loss_and_latency {
     if (!defined($self->{datas}->{uplinks_loss_latency}->{ $options{orgId} })) {
         $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} } = {};
         my $datas = $self->request_api(
-            endpoint => '/organizations/' . $options{orgId} . '/devices/uplinksLossAndLatency?timespan=' . $self->{timespan},
+            endpoint => '/organizations/' . $options{orgId} . '/devices/uplinksLossAndLatency',
+            get_param => [ 'timespan=' . $self->{timespan} ],
             paginate => 1000,
             hostname => $self->get_shard_hostname(organization_id => $options{orgId})
         );
@@ -451,7 +453,8 @@ sub get_device_clients {
     my ($self, %options) = @_;
 
     return $self->request_api(
-        endpoint => '/devices/' . $options{serial} . '/clients?timespan=' . $self->{timespan},
+        endpoint => '/devices/' . $options{serial} . '/clients',
+        get_param => [ 'timespan=' . $self->{timespan} ],
         hostname => $self->get_shard_hostname(serial => $options{serial})
     )
 }
@@ -460,7 +463,8 @@ sub get_device_switch_port_statuses {
     my ($self, %options) = @_;
 
     return $self->request_api(
-        endpoint => '/devices/' . $options{serial} . '/switchPortStatuses?timespan=' . $self->{timespan},
+        endpoint => '/devices/' . $options{serial} . '/switchPortStatuses',
+        get_param => [ 'timespan=' . $self->{timespan} ],
         hostname => $self->get_shard_hostname(serial => $options{serial})
     );
 }
@@ -471,7 +475,8 @@ sub get_network_device_connection_stats {
     if (!defined($self->{devices_connection_stats}->{ $options{network_id} })) {
         $self->{devices_connection_stats}->{ $options{network_id} } = {};
         my $datas = $self->request_api(
-            endpoint => '/networks/' . $options{network_id} . '/wireless/devices/connectionStats?timespan=' . $self->{timespan},
+            endpoint => '/networks/' . $options{network_id} . '/wireless/devices/connectionStats',
+            get_param => [ 'timespan=' . $self->{timespan} ],
             hostname => $self->get_shard_hostname(network_id => $options{network_id})
         );
         foreach (@$datas) {
@@ -500,7 +505,8 @@ sub get_organization_api_requests_overview {
     my $results = {};
     foreach my $id (@{$options{orgs}}) {
         $results->{$id} = $self->request_api(
-            endpoint => '/organizations/' . $id . '/apiRequests/overview?timespan=' . $self->{timespan},
+            endpoint => '/organizations/' . $id . '/apiRequests/overview',
+            get_param => [ 'timespan=' . $self->{timespan} ],
             hostname => $self->get_shard_hostname(organization_id => $id)
         );
     }
@@ -522,7 +528,8 @@ sub get_networks_clients {
     my ($self, %options) = @_;
 
     return $self->request_api(
-        endpoint => '/networks/' . $options{network_id} . '/clients?timespan=' . $self->{timespan},
+        endpoint => '/networks/' . $options{network_id} . '/clients',
+        get_param => [ 'timespan=' . $self->{timespan} ],
         hostname => $self->get_shard_hostname(network_id => $options{network_id}),
         ignore_codes => { 400 => 1 }
     );
