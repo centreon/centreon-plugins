@@ -30,7 +30,7 @@ stage('Source') {
 }
 
 stage('RPM Packaging') {
-  parallel 'all': {
+  parallel 'package rpms': {
     node {
       sh 'setup_centreon_build.sh'
       sh './centreon-build/jobs/plugins/plugins-package.sh'
@@ -40,23 +40,46 @@ stage('RPM Packaging') {
       stash name: "rpms-alma8", includes: 'output-alma8/noarch/*.rpm'
       sh 'rm -rf output'
     }
-  }
+  },
+  'package debian bullseye': {
+    node {
+      sh 'setup_centreon_build.sh'
+      sh './centreon-build/jobs/plugins/plugins-package-deb.sh'
+      archiveArtifacts artifacts: '*.deb'
+      stash name: "Debian11", includes: '*.deb'
+    }
+  }    
   if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
     error('Package stage failure.');
   }
 }
 
-stage('RPM Delivery') {
-  parallel 'all': {
-    node {
-      sh 'setup_centreon_build.sh'
-      unstash 'rpms-centos7'
-      unstash 'rpms-alma8'
-      sh './centreon-build/jobs/plugins/plugins-delivery.sh'
+if ((env.BUILD == 'REFERENCE' )) {
+  stage('RPM Delivery') {
+    parallel 'deliver rpms': {
+      node {
+        sh 'setup_centreon_build.sh'
+        unstash 'rpms-centos7'
+        unstash 'rpms-alma8'
+        sh './centreon-build/jobs/plugins/plugins-delivery.sh'
+      }
+    },
+    'deliver debian bullseye': {
+      node {
+        withCredentials([usernamePassword(credentialsId: 'nexus-credentials', passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
+          checkout scm
+          unstash "Debian11"
+          sh '''for i in $(echo *.deb)
+                do 
+                  curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@./$i" https://apt.centreon.com/repository/22.04-unstable/
+                done
+            '''    
+        }
+      }
     }
-  }
-  if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
-    error('Package stage failure.');
+    if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
+      error('Package stage failure.');
+    }
   }
 }
 
