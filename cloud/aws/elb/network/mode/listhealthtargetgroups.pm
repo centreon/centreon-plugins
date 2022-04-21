@@ -72,6 +72,8 @@ sub run {
             $health_dimensions{availability_zone} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/AvailabilityZone/);
             $health_dimensions{elb_name} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/LoadBalancer/);
             $health_dimensions{target_group} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/TargetGroup/);
+            $health_dimensions{target_group_display_name} = $health_dimensions{target_group};
+            $health_dimensions{target_group_display_name} =~ s/(.*)targetgroup\///g; 
         }
         $health_dimensions{availability_zone} = defined($health_dimensions{availability_zone}) ? $health_dimensions{availability_zone} : '';
         next if ($health_dimensions{elb_name} ne $self->{elb_name});
@@ -80,8 +82,9 @@ sub run {
 
     foreach my $dimensions (@dimensions){
         $self->{output}->output_add(
-            long_msg => sprintf("[TargetGroup = %s][Elb = %s][AvailabilityZone = %s]", 
+            long_msg => sprintf("[target_group = %s][target_group_display_name = %s][elb = %s][availability_zone = %s]", 
             $dimensions->{target_group},
+            $dimensions->{target_group_display_name},
             $dimensions->{elb_name},
             $dimensions->{availability_zone})
         );
@@ -98,7 +101,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['TargetGroup', 'Elb', 'AvailabilityZone']);
+    $self->{output}->add_disco_format(elements => ['target_group', 'target_group_display_name', 'elb', 'availability_zone']);
 }
 
 sub disco_show {
@@ -113,7 +116,9 @@ sub disco_show {
         foreach my $dimension_name (@{$dimensions->{Dimensions}}) {
             $health_dimensions{availability_zone} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/AvailabilityZone/);
             $health_dimensions{elb_name} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/LoadBalancer/);
-            $health_dimensions{target_group} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/TargetGroup/);          
+            $health_dimensions{target_group} = $dimension_name->{Value} if ($dimension_name->{Name} =~ m/TargetGroup/);
+            $health_dimensions{target_group_display_name} = $health_dimensions{target_group};
+            $health_dimensions{target_group_display_name} =~ s/(.*)targetgroup\///g; 
         }
         $health_dimensions{availability_zone} = defined($health_dimensions{availability_zone}) ? $health_dimensions{availability_zone} : '';
         next if ($health_dimensions{elb_name} ne $self->{elb_name});
@@ -122,9 +127,10 @@ sub disco_show {
 
     foreach my $dimensions (@dimensions){
         $self->{output}->add_disco_entry(
-            Elb => $dimensions->{elb_name},
-            AvailabilityZone => $dimensions->{availability_zone},
-            TargetGroup => $dimensions->{target_group}
+            target_group => $dimensions->{target_group},
+            target_group_display_name => $dimensions->{target_group_display_name},
+            elb => $dimensions->{elb_name},
+            availability_zone => $dimensions->{availability_zone},
         );
     }
 }
