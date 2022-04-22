@@ -54,7 +54,7 @@ sub manage_selection {
         FROM sys.databases D
     });
 
-    my $result = $self->{sql}->fetchall_arrayref();
+    my $result = $options{sql}->fetchall_arrayref();
     my $databases = {};
     foreach (@$result) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' &&
