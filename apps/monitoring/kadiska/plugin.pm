@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'discovery' => 'apps::monitoring::kadiska::mode::discovery'
+        'list-watchers' => 'apps::monitoring::kadiska::mode::listwatchers',
+        'list-stations' => 'apps::monitoring::kadiska::mode::liststations'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::kadiska::custom::api';

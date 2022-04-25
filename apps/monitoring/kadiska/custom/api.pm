@@ -116,7 +116,7 @@ sub settings {
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-    $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
+    $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token}) if defined($self->{access_token});
     $self->{http}->set_options(%{$self->{option_results}});
 }
 

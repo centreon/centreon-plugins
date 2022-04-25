@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::kadiska::mode::discovery;
+package apps::monitoring::kadiska::mode::liststations;
 
 use base qw(centreon::plugins::mode);
 
@@ -51,30 +51,30 @@ sub manage_selection {
 
     $disco_stats->{start_time} = time();
 
-    my $disco_raw_form_post = {
+    my $raw_form_post = {
         "begin" => 1649667480000,
         "end"  => 1650877080000,
         "select" => [
-            "watcher_name",
-            "watcher_id"
+            "station_name",
+            "station_id"
         ],
-            "from" => "rum",
+            "from" => "traceroute",
             "groupby" => [
-            "watcher_id"
+            "station_id"
             ]
     };  
 
-    my $disco_api_results = $options{custom}->request_api(
+    my $results = $options{custom}->request_api(
         method => 'POST',
         endpoint => 'query',
-        query_form_post => $disco_raw_form_post
+        query_form_post => $raw_form_post
     );
 
-    foreach my $watcher (@{$disco_api_results->{data}}) {
-        my %application;
-        $application{name} = $watcher->{watcher_name};
-        $application{id} = $watcher->{watcher_id};
-        push @disco_data, \%application;
+    foreach my $tracer (@{$results->{data}}) {
+        my %station;
+        $station{name} = $tracer->{station_name};
+        $station{id} = $tracer->{station_id};
+        push @disco_data, \%station;
     }
     
     $disco_stats->{end_time} = time();
