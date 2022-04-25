@@ -223,7 +223,7 @@ sub request_api {
         $token = $self->get_token();
         $content = $self->{http}->request(
             method => 'POST',
-            url_path => $self->{url_path},
+            url_path => $self->{url_path} . 'index.php',
             get_param => [
                 'object=centreon_openticket',
                 'action=' . $options{action},
@@ -239,17 +239,14 @@ sub request_api {
         );
     }
 
+    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+        $self->{output}->add_option_msg(short_msg => "Authentication error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+        $self->{output}->option_exit();
+    }
+
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
         $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
-        $self->{output}->option_exit();
-    }
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        my $message = 'api request error';
-        if (defined($decoded->{message})) {
-            $message .= ': ' . $decoded->{message};
-        }
-        $self->{output}->add_option_msg(short_msg => $message);
         $self->{output}->option_exit();
     }
 

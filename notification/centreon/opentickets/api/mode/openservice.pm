@@ -32,11 +32,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'provider-name:s'  => { name => 'provider_name' },
-        'host-id:s'        => { name => 'host_id' },
-        'service-id:s'     => { name => 'service_id' },
-        'service-output:s' => { name => 'service_output' },
-        'service-state:s'  => { name => 'service_state' },
+        'rule-name:s'       => { name => 'rule_name' },
+        'host-id:s'         => { name => 'host_id' },
+        'service-id:s'      => { name => 'service_id' },
+        'service-output:s'  => { name => 'service_output' },
+        'service-state:s'   => { name => 'service_state' },
+        'extra-property:s%' => { name => 'extra_property' }
     });
 
     return $self;
@@ -46,8 +47,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{provider_name}) || $self->{option_results}->{provider_name} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Set --provider-name option');
+    if (!defined($self->{option_results}->{rule_name}) || $self->{option_results}->{rule_name} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Set --rule-name option');
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{host_id}) || $self->{option_results}->{host_id} eq '') {
@@ -71,18 +72,24 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
+    my $extra_properties = {};
+    foreach (keys %{$self->{option_results}->{extra_property}}) {
+        $extra_properties->{$_} = $self->{option_results}->{extra_property}->{$_};
+    }
+
     my $response = $options{custom}->request_api(
         action => 'openService',
         data => {
-            provider_name  => $self->{option_results}->{provider_name},
+            rule_name      => $self->{option_results}->{rule_name},
             host_id        => $self->{option_results}->{host_id},
             service_id     => $self->{option_results}->{service_id},
             service_state  => $self->{option_results}->{service_state},
             service_output => $self->{option_results}->{service_output},
+            extra_properties => $extra_properties
         }
     );
 
-    $self->{output}->output_add(short_msg => 'open-ticket response: ' . $response);
+    $self->{output}->output_add(short_msg => $response->{message});
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -97,9 +104,9 @@ Open a service ticket.
 
 =over 8
 
-=item B<--provider-name>
+=item B<--rule-name>
 
-Provider name used (Required).
+Rule name used (Required).
 
 =item B<--host-id>
 
@@ -116,6 +123,11 @@ Service state (Eg: CRITICAL, UNKNOWN, WARNING, OK) (Required).
 =item B<--service-output>
 
 Service output (Required).
+
+=item B<--extra-property>
+
+Add a extra property.
+Eg: --extra-property='custom_message=test my message'
 
 =back
 
