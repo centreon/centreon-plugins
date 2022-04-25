@@ -82,7 +82,7 @@ sub check_options {
     $self->{api_timeout} = (defined($self->{option_results}->{api_timeout})) ? $self->{option_results}->{api_timeout} : 10;
 
     if ($self->{api_hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
+        $self->{output}->add_option_msg(short_msg => 'Need to specify api-hostname option.');
         $self->{output}->option_exit();
     }
     if ($self->{api_username} eq '') {
@@ -135,7 +135,6 @@ sub settings {
     my ($self, %options) = @_;
 
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     $self->{http}->set_options(
         hostname => $self->{api_hostname},
         port => $self->{api_port},
@@ -148,31 +147,23 @@ sub clean_token {
 
     my $datas = {};
     $self->{cache}->write(data => $datas);
-    $self->{http}->add_header(key => 'centreon-auth-token', value => undef);
 }
 
-sub get_auth_token {
+sub get_token {
     my ($self, %options) = @_;
 
     my $has_cache_file = $self->{cache}->read(statefile => 'centreon_opentickets_' . md5_hex($self->{api_hostname}) . '_' . md5_hex($self->{api_username}));
-    my $token = $options{statefile}->get(name => 'token');
+    my $token = $self->{cache}->get(name => 'token');
 
     if ($has_cache_file == 0 || !defined($token)) {
-        my $json_request = { username => $self->{api_username}, password => $self->{api_password} };
-        my $encoded;
-        eval {
-            $encoded = JSON::XS->new->utf8->encode($json_request);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
-            $self->{output}->option_exit();
-        }
-
         my ($content) = $self->{http}->request(
             method => 'POST',
             url_path => $self->{url_path} . 'index.php',
             get_param => ['action=authenticate'],
-            query_form_post => $encoded,
+            post_param => [
+                'username=' . $self->{api_username},
+                'password=' . $self->{api_password}
+            ],
             warning_status => '', unknown_status => '', critical_status => ''
         );
 
@@ -193,7 +184,6 @@ sub get_auth_token {
     }
 
     return $token;
-    $self->{token} = $token;
 }
 
 sub request_api {
@@ -218,7 +208,10 @@ sub request_api {
             'object=centreon_openticket',
             'action=' . $options{action},
         ],
-        header => [ 'centreon-auth-token: ' . $token ],
+        header => [
+            'Content-Type: application/json',
+            'centreon-auth-token: ' . $token
+        ],
         query_form_post => $encoded,
         warning_status => '',
         unknown_status => '',
@@ -235,7 +228,10 @@ sub request_api {
                 'object=centreon_openticket',
                 'action=' . $options{action},
             ],
-            header => [ 'centreon-auth-token: ' . $token ],
+            header => [
+                'Content-Type: application/json',
+                'centreon-auth-token: ' . $token
+            ],
             query_form_post => $encoded,
             warning_status => '',
             unknown_status => '',
@@ -276,7 +272,7 @@ Centreon open-tickets api
 
 =over 8
 
-=item B<--hostname>
+=item B<--api-hostname>
 
 Centreon address.
 
@@ -284,11 +280,11 @@ Centreon address.
 
 API url path (Default: '/centreon/api/')
 
-=item B<--port>
+=item B<--api-port>
 
 API port (Default: 80)
 
-=item B<--proto>
+=item B<--api-proto>
 
 Specify https if needed (Default: 'http')
 

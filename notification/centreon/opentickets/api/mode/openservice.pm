@@ -72,7 +72,7 @@ sub run {
     my ($self, %options) = @_;
 
     my $response = $options{custom}->request_api(
-        action => 'open_service',
+        action => 'openService',
         data => {
             provider_name  => $self->{option_results}->{provider_name},
             host_id        => $self->{option_results}->{host_id},
