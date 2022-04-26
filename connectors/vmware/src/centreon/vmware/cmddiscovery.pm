@@ -78,10 +78,14 @@ sub run {
     my $disco_stats;
 
     my $customFields = {};
-    my $entries = centreon::vmware::common::get_view($self->{connector}, $self->{connector}->{session1}->get_service_content()->customFieldsManager);
-    if (defined($entries->{field})) {
-        foreach (@{$entries->{field}}) {
-            $customFields->{ $_->{key} } = $_->{name};
+
+    my $api_type = $self->{connector}->{session1}->get_service_content()->about->apiType;
+    if ($api_type eq 'VirtualCenter') {
+        my $entries = centreon::vmware::common::get_view($self->{connector}, $self->{connector}->{session1}->get_service_content()->customFieldsManager);
+        if (defined($entries->{field})) {
+            foreach (@{$entries->{field}}) {
+                $customFields->{ $_->{key} } = $_->{name};
+            }
         }
     }
 
@@ -123,9 +127,11 @@ sub run {
             my @properties = (
                 'name', 'vm', 'config.virtualNicManagerInfo.netConfig', 'config.product.version',
                 'config.product.productLineId', 'hardware.systemInfo.vendor', 'hardware.systemInfo.model',
-                'hardware.systemInfo.uuid', 'runtime.powerState', 'runtime.inMaintenanceMode', 'runtime.connectionState',
-                'summary.customValue'
+                'hardware.systemInfo.uuid', 'runtime.powerState', 'runtime.inMaintenanceMode', 'runtime.connectionState'
             );
+            if ($api_type eq 'VirtualCenter') {
+                push @properties, 'summary.customValue';
+            }
 
             my $esxs = centreon::vmware::common::get_views($self->{connector}, \@{$cluster->host}, \@properties);
             next if (!defined($esxs));
@@ -163,9 +169,11 @@ sub run {
 
                 @properties = (
                     'parent', 'config.name', 'config.annotation', 'config.template', 'config.uuid', 'config.version',
-                    'config.guestId', 'guest.guestState', 'guest.hostName', 'guest.ipAddress', 'runtime.powerState',
-                    'summary.customValue'
+                    'config.guestId', 'guest.guestState', 'guest.hostName', 'guest.ipAddress', 'runtime.powerState'
                 );
+                if ($api_type eq 'VirtualCenter') {
+                    push @properties, 'summary.customValue';
+                }
 
                 my $vms = centreon::vmware::common::get_views($self->{connector}, \@{$esx->vm}, \@properties);
                 next if (!defined($vms));
