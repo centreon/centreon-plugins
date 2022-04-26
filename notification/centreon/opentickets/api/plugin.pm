@@ -31,6 +31,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'open-host'    => 'notification::centreon::opentickets::api::mode::openhost',
         'open-service' => 'notification::centreon::opentickets::api::mode::openservice'
     };
 

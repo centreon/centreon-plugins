@@ -19,7 +19,7 @@
 # Authors : Roman Morandell - ivertix
 #
 
-package notification::centreon::opentickets::api::mode::openservice;
+package notification::centreon::opentickets::api::mode::openhost;
 
 use base qw(centreon::plugins::mode);
 
@@ -32,20 +32,18 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'rule-name:s'           => { name => 'rule_name' },
-        'contact-name:s'        => { name => 'contact_name' },
-        'contact-alias:s'       => { name => 'contact_alias' },
-        'contact-email:s'       => { name => 'contact_email' },
-        'host-id:s'             => { name => 'host_id' },
-        'host-name:s'           => { name => 'host_name' },
-        'host-alias:s'          => { name => 'host_alias' },
-        'service-id:s'          => { name => 'service_id' },
-        'service-description:s' => { name => 'service_description' },
-        'service-output:s'      => { name => 'service_output' },
-        'service-state:s'       => { name => 'service_state' },
-        'last-service-state-change:s' => { name => 'last_service_state_change' },
-        'extra-property:s%'           => { name => 'extra_property' },
-        'select:s%'                   => { name => 'select' }
+        'rule-name:s'              => { name => 'rule_name' },
+        'contact-name:s'           => { name => 'contact_name' },
+        'contact-alias:s'          => { name => 'contact_alias' },
+        'contact-email:s'          => { name => 'contact_email' },
+        'host-id:s'                => { name => 'host_id' },
+        'host-output:s'            => { name => 'host_output' },
+        'host-name:s'              => { name => 'host_name' },
+        'host-alias:s'             => { name => 'host_alias' },
+        'host-state:s'             => { name => 'host_state' },
+        'last-host-state-change:s' => { name => 'last_service_state_change' },
+        'extra-property:s%'        => { name => 'extra_property' },
+        'select:s%'                => { name => 'select' }
     });
 
     return $self;
@@ -63,16 +61,12 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Set --host-id option');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{service_id}) || $self->{option_results}->{service_id} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Set --service-id option');
+    if (!defined($self->{option_results}->{host_state}) || $self->{option_results}->{host_state} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Set --host-state option');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{service_state}) || $self->{option_results}->{service_state} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Set --service-state option');
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{service_output})) {
-        $self->{output}->add_option_msg(short_msg => 'Set --service-output option');
+    if (!defined($self->{option_results}->{host_output})) {
+        $self->{output}->add_option_msg(short_msg => 'Set --host-output option');
         $self->{output}->option_exit();
     }
 }
@@ -91,20 +85,19 @@ sub run {
     }
 
     my $properties = {};
-    foreach ('contact_name', 'contact_alias', 'contact_email', 'host_name', 'host_alias', 'service_description', 'last_service_state_change') {
+    foreach ('contact_name', 'contact_alias', 'contact_email', 'host_name', 'host_alias', 'last_host_state_change') {
         if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
             $properties->{$_} = $self->{option_results}->{$_};
         }
     }
 
     my $response = $options{custom}->request_api(
-        action => 'openService',
+        action => 'openHost',
         data => {
-            rule_name      => $self->{option_results}->{rule_name},
-            host_id        => $self->{option_results}->{host_id},
-            service_id     => $self->{option_results}->{service_id},
-            service_state  => $self->{option_results}->{service_state},
-            service_output => $self->{option_results}->{service_output},
+            rule_name        => $self->{option_results}->{rule_name},
+            host_id          => $self->{option_results}->{host_id},
+            host_state       => $self->{option_results}->{host_state},
+            host_output      => $self->{option_results}->{host_output},
             extra_properties => $extra_properties,
             select => $select,
             %$properties
@@ -122,7 +115,7 @@ __END__
 
 =head1 MODE
 
-Open a service ticket.
+Open a host ticket.
 
 =over 8
 
@@ -134,17 +127,13 @@ Rule name used (Required).
 
 Centreon host ID (Required).
 
-=item B<--service-id>
+=item B<--host-state>
 
-Centreon service ID (Required).
+Host state (Eg: UP, DOWN, UNREACHABLE) (Required).
 
-=item B<--service-state>
+=item B<--host-output>
 
-Service state (Eg: CRITICAL, UNKNOWN, WARNING, OK) (Required).
-
-=item B<--service-output>
-
-Service output (Required).
+Host output (Required).
 
 =item B<--contact-name>
 
@@ -166,13 +155,9 @@ Host name.
 
 Host alias.
 
-=item B<--service-description>
+=item B<--last-host-state-change>
 
-Service description.
-
-=item B<--last-service-state-change>
-
-Last service state change.
+Last host state change.
 
 =item B<--extra-property>
 
