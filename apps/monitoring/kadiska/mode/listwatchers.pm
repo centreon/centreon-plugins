@@ -72,8 +72,8 @@ sub manage_selection {
 
     foreach my $watcher (@{$results->{data}}) {
         my %application;
-        $application{name} = $watcher->{watcher_name};
-        $application{id} = $watcher->{watcher_id};
+        $application{watcher_name} = $watcher->{watcher_name};
+        $application{watcher_id} = $watcher->{watcher_id};
         push @disco_data, \%application;
     }
     
@@ -112,7 +112,7 @@ __END__
 
 =head1 MODE
 
-Kadiska discovery.
+Kadiska hosts discovery for watchers/application.
 
 =over 8
 

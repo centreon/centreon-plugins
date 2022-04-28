@@ -44,8 +44,8 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'client-id:s'   => { name => 'client_id' },
-            'client-secret:s'   => { name => 'client_secret' },
+            'client-id:s'      => { name => 'client_id' },
+            'client-secret:s'  => { name => 'client_secret' },
             'hostname:s'       => { name => 'hostname' },
             'port:s'           => { name => 'port' },
             'proto:s'          => { name => 'proto' },
@@ -120,13 +120,22 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
+sub clean_access_token {
+    my ($self, %options) = @_;
+
+    my $datas = { last_timestamp => time() };
+    $options{statefile}->write(data => $datas);
+    $self->{http}->remove_header(key => 'Authorization');
+    $self->{access_token} = undef;
+}
+
 sub get_access_token {
     my ($self, %options) = @_;
 
     my $has_cache_file = $options{statefile}->read(statefile => 'kadiska_' . md5_hex($self->{hostname}) . '_' . md5_hex($self->{client_id}));
     my $access_token = $options{statefile}->get(name => 'access_token');
 
-    if ( $has_cache_file == 0 || !defined($access_token) ) {
+    if ( $has_cache_file == 0 || !defined($access_token)) {
         my $credentials = { 'client_id' => $self->{client_id}, 'secret' => $self->{client_secret} };
         my $post_json = JSON::XS->new->utf8->encode($credentials);
 
@@ -145,10 +154,13 @@ sub get_access_token {
 
         $content =~ s/^"(.*)"$/$1/;
         $access_token = $content;
-        my $datas = { access_token => $access_token };
+        my $datas = { access_token => $access_token, last_timestamp => time() };
         
-        $options{statefile}->write(data => $datas);
+        $options{statefile}->write( data => $datas);
     }
+
+    $self->{access_token} = $access_token;
+    $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
 
     return $access_token;
 }
@@ -179,21 +191,39 @@ sub request_api {
         query_form_post => $encoded_form_post,
     );
 
+    if ($self->{http}->get_code() == 403 ){ # mettre n'importe quelle erreur 
+        $self->clean_access_token(statefile => $self->{cache});
+        $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
+        ($content) = $self->{http}->request(
+            method => 'POST',
+            url_path => $self->{url_path} . $options{endpoint},
+            query_form_post => $encoded_form_post,
+        );
+    } 
+
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
 
     my $decoded;
+
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
-    
+
+
+    if (defined($decoded->{error_code})) {
+        $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Authentication endpoint returns error code '" . $decoded->{error_code} . "' (add --debug option for detailed message)");
+        $self->{output}->option_exit();
+    }
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
 
+    
     return $decoded;
 }
 

@@ -52,7 +52,7 @@ sub manage_selection {
     $disco_stats->{start_time} = time();
 
     my $raw_form_post = {
-        "begin" => 1649667480000,
+        "begin" => 1648286640000,
         "end"  => 1650877080000,
         "select" => [
             "station_name",
@@ -70,10 +70,10 @@ sub manage_selection {
         query_form_post => $raw_form_post
     );
 
-    foreach my $tracer (@{$results->{data}}) {
+    foreach my $current_station (@{$results->{data}}) {
         my %station;
-        $station{name} = $tracer->{station_name};
-        $station{id} = $tracer->{station_id};
+        $station{station_name} = $current_station->{station_name};
+        $station{station_id} = $current_station->{station_id};
         push @disco_data, \%station;
     }
     
@@ -112,7 +112,7 @@ __END__
 
 =head1 MODE
 
-Kadiska discovery.
+Kadiska hosts discovery for stations.
 
 =over 8
 
