@@ -24,8 +24,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-# use DateTime;
-
 use Digest::MD5 qw(md5_hex);
 use JSON::XS;
 
