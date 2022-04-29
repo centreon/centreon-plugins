@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'alerts' => 'apps::backup::backupexec::local::mode::alerts',
+        'disks'  => 'apps::backup::backupexec::local::mode::disks',
         'jobs'   => 'apps::backup::backupexec::local::mode::jobs'
     };
 
