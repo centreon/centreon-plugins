@@ -101,7 +101,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{space} = [
-         { label => 'space-usage', nlabel => 'repository.space.usage.bytes', set => {
+         { label => 'space-usage', nlabel => 'disk.space.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_space_usage_output'),
                 perfdatas => [
@@ -109,7 +109,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'space-usage-free', display_ok => 0, nlabel => 'repository.space.free.bytes', set => {
+        { label => 'space-usage-free', display_ok => 0, nlabel => 'disk.space.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_space_usage_output'),
                 perfdatas => [
@@ -117,7 +117,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'space-usage-prct', display_ok => 0, nlabel => 'repository.space.usage.percentage', set => {
+        { label => 'space-usage-prct', display_ok => 0, nlabel => 'disk.space.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_space_usage_output'),
                 perfdatas => [
@@ -224,7 +224,7 @@ sub manage_selection {
             space => {
                 name => $disk->{name},
                 total => $disk->{totalSpace},
-                free => 100 - $disk->{usedSpace},
+                free => $disk->{totalSpace} - $disk->{usedSpace},
                 used => $disk->{usedSpace},
                 prct_used => $disk->{usedSpace} * 100 / $disk->{totalSpace},
                 prct_free => 100 - ($disk->{usedSpace} * 100 / $disk->{totalSpace})
