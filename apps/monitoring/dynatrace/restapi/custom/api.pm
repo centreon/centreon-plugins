@@ -80,10 +80,6 @@ sub check_options {
     $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{environment_id}) || $self->{environment_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --environment-id option.");
         $self->{output}->option_exit();
@@ -161,6 +157,45 @@ sub api_problem {
 
     my $status = $self->internal_problem();
     return $status->{result}->{problems};
+}
+
+sub get_apdex {
+    my ($self, %options) = @_;
+
+    my $status = $self->request_api(
+        method => 'GET',
+        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
+                    '/api/v1/timeseries?&timeseriesId=com.dynatrace.builtin:app.apdex' .
+                    '&aggregationType=' . $self->{option_results}->{aggregation_type} . 
+                    '&relativeTime=' . $self->{option_results}->{relative_time} .
+                    '&queryMode=' . $self->{option_results}->{query_mode}
+    );
+
+    return $status;
+}
+
+sub get_problems {
+    my ($self, %options) = @_;
+
+    my $status = $self->request_api(
+        method => 'GET',
+        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) .
+                    '/api/v2/problems?from=now-' . $self->{option_results}->{relative_time}
+    );
+
+    return $status;
+}
+
+sub get_events {
+    my ($self, %options) = @_;
+
+    my $status = $self->request_api(
+        method => 'GET',
+        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
+                    '/api/v2/events?from=now-' . $self->{option_results}->{relative_time}
+    );
+
+    return $status;
 }
 
 1;
