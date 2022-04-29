@@ -24,7 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
@@ -52,8 +51,6 @@ sub manage_selection {
     $disco_stats->{start_time} = time();
 
     my $raw_form_post = {
-        "begin" => 1649667480000,
-        "end"  => 1650877080000,
         "select" => [
             "watcher_name",
             "watcher_id"

@@ -89,8 +89,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $raw_form_post = {
-        "begin" => 1648456500000,
-        "end" => 1651134900000,
         "select" => [
             {
                 "tracer:group" => "tracer_id"
@@ -147,7 +145,7 @@ __END__
 
 =head1 MODE
 
-Check Kadiska tracer target statistics.
+Check Kadiska tracer targets' statistics during the period specified.
 
 =over 8
 

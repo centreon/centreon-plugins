@@ -52,8 +52,6 @@ sub manage_selection {
     $disco_stats->{start_time} = time();
 
     my $raw_form_post = {
-        "begin" => 1648286640000,
-        "end"  => 1650877080000,
         "select" => [
             "station_name",
             "station_id"

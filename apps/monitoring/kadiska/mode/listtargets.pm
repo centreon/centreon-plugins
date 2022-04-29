@@ -24,7 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
@@ -58,8 +57,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $raw_form_post = {
-        "begin" => 1648456500000,
-        "end" => 1651134900000,
         "select" => [
             "tracer_id"
         ],
@@ -77,6 +74,7 @@ sub manage_selection {
         endpoint => 'query',
         query_form_post => $raw_form_post
     );
+
 }
 
 sub run {
@@ -126,9 +124,13 @@ __END__
 
 =head1 MODE
 
-List tracer targets for a given station that must be specified with --station-name parameter.
+List tracer targets for a given station.
 
 =over 8
+
+=item B<--station-name>
+
+Specify station name to list linked tracer targets. 
 
 =back
 

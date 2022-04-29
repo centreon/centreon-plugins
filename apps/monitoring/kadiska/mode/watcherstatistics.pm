@@ -96,8 +96,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $raw_form_post = {
-        "begin" => 1648381320000,
-        "end" => 1651059720000,
         "select" => [
             {
                 "watcher_id:group" => "watcher_name"

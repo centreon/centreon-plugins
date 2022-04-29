@@ -24,7 +24,8 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use DateTime;
+# use DateTime;
+
 use Digest::MD5 qw(md5_hex);
 use JSON::XS;
 
@@ -49,6 +50,7 @@ sub new {
             'hostname:s'       => { name => 'hostname' },
             'port:s'           => { name => 'port' },
             'proto:s'          => { name => 'proto' },
+            'period:s'         => { name => 'period' },
             'timeout:s'        => { name => 'timeout' },
             'url-path:s'       => { name => 'url_path' }
         });
@@ -76,8 +78,8 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : 'app.kadiska.com';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{period} = (defined($self->{option_results}->{period})) ? $self->{option_results}->{period} : '1';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/';
-    $self->{endpoint} = (defined($self->{option_results}->{endpoint})) ? $self->{option_results}->{endpoint} : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{client_id} = (defined($self->{option_results}->{client_id})) ? $self->{option_results}->{client_id} : '';
     $self->{client_secret} = (defined($self->{option_results}->{client_secret})) ? $self->{option_results}->{client_secret} : '';
@@ -175,10 +177,19 @@ sub request_api {
     $self->settings(environment_header => 1, organization_header => 1);
 
     my $encoded_form_post;
+
     if (defined($options{query_form_post})) {
+
+        my $end = time() * 1000;
+        my $begin = ($end - (86400 * $self->{period} * 1000));
+
+        $options{query_form_post}->{begin} = $begin;
+        $options{query_form_post}->{end} = $end;
+
         eval {
             $encoded_form_post = JSON::XS->new->utf8->encode($options{query_form_post});
         };
+
         if ($@) {
             $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
             $self->{output}->option_exit();
@@ -191,7 +202,7 @@ sub request_api {
         query_form_post => $encoded_form_post,
     );
 
-    if ($self->{http}->get_code() == 403 ){ # mettre n'importe quelle erreur 
+    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300){
         $self->clean_access_token(statefile => $self->{cache});
         $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
         ($content) = $self->{http}->request(
@@ -233,4 +244,43 @@ __END__
 
 =head1 NAME
 
-Kadiska Rest API
+Kadiska Rest API.
+
+=head1 REST API OPTIONS
+
+Kadiska Rest API.
+
+=over 8
+
+=item B<--hostname>
+
+Set hostname (Default: 'app.kadiska.com').
+
+=item B<--port>
+
+Port used (Default: 443)
+
+=item B<--proto>
+
+Specify https if needed (Default: 'https')
+
+=item B<--period>
+
+Set period in days from which you want to get information. (Default: '1')
+Example: --period=7 would return you the data from last week.  
+
+=item B<--client-id>
+
+Set client id.
+
+=item B<--client-secret>
+
+Set client secret.
+
+=item B<--timeout>
+
+Set timeout in seconds (Default: 10).
+
+=back
+
+=cut
