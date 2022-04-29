@@ -16,28 +16,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# Authors : Roman Morandell - ivertix
 #
 
-package cloud::aws::elb::network::plugin;
+package notification::centreon::opentickets::api::plugin;
 
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'discovery'                 => 'cloud::aws::elb::network::mode::discovery',
-        'targets-health'            => 'cloud::aws::elb::network::mode::targetshealth',
-        'list-health-target-groups' => 'cloud::aws::elb::network::mode::listhealthtargetgroups'
-    );
+    $self->{modes} = {
+        'open-host'    => 'notification::centreon::opentickets::api::mode::openhost',
+        'open-service' => 'notification::centreon::opentickets::api::mode::openservice'
+    };
 
-    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
-    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
+    $self->{custom_modes}->{api} = 'notification::centreon::opentickets::api::custom::api';
     return $self;
 }
 
@@ -47,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Amazon Network Elastic Load Balancing (Amazon Network ELB).
+Open tickets with centreon-open-tickets module.
 
 =cut

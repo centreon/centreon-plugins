@@ -18,35 +18,31 @@
 # limitations under the License.
 #
 
-package cloud::aws::elb::network::plugin;
+package centreon::common::powershell::backupexec::functions;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
 
-sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
-    bless $self, $class;
+sub powershell_init {
+    my (%options) = @_;
 
-    $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'discovery'                 => 'cloud::aws::elb::network::mode::discovery',
-        'targets-health'            => 'cloud::aws::elb::network::mode::targetshealth',
-        'list-health-target-groups' => 'cloud::aws::elb::network::mode::listhealthtargetgroups'
-    );
+    my $bemcli_file = defined($options{bemcli_file}) && $options{bemcli_file} ne '' ?
+        $options{bemcli_file} : 'C:/Program Files/Veritas/Backup Exec/Modules/BEMCLI/bemcli'; 
+    my $ps = '
+If (@(Get-Module | Where-Object {$_.Name -Match "bemcli"} ).count -eq 0) {
+    Import-Module -Name "' . $bemcli_file . '"
+}
+';
 
-    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
-    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
-    return $self;
+    return $ps;
 }
 
 1;
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 DESCRIPTION
 
-Check Amazon Network Elastic Load Balancing (Amazon Network ELB).
+Powershell commands
 
 =cut

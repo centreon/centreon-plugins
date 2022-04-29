@@ -18,26 +18,24 @@
 # limitations under the License.
 #
 
-package cloud::aws::elb::network::plugin;
+package apps::backup::backupexec::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
+use base qw(centreon::plugins::script_simple);
 
 sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'discovery'                 => 'cloud::aws::elb::network::mode::discovery',
-        'targets-health'            => 'cloud::aws::elb::network::mode::targetshealth',
-        'list-health-target-groups' => 'cloud::aws::elb::network::mode::listhealthtargetgroups'
-    );
+    $self->{modes} = {
+        'alerts'     => 'apps::backup::backupexec::local::mode::alerts',
+        'disks'      => 'apps::backup::backupexec::local::mode::disks',
+        'jobs'       => 'apps::backup::backupexec::local::mode::jobs',
+        'list-disks' => 'apps::backup::backupexec::local::mode::listdisks'
+    };
 
-    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
-    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
     return $self;
 }
 
@@ -47,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Amazon Network Elastic Load Balancing (Amazon Network ELB).
+Check Backup Exec with powershell.
 
 =cut

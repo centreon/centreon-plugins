@@ -60,6 +60,7 @@ sub run {
         next if (!defined($load_balancer->{LoadBalancerArn}) || $load_balancer->{Type} ne 'application');
         my %elb;
         $elb{type} = "application";
+        $elb{arn} = $load_balancer->{LoadBalancerArn};
         $elb{name} = $1 if ($load_balancer->{LoadBalancerArn} =~ /arn:aws:elasticloadbalancing:.*:loadbalancer\/(.*)/);
         $elb{dns_name} = $load_balancer->{DNSName};
         $elb{availability_zones} = $load_balancer->{AvailabilityZones};

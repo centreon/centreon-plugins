@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::elb::network::plugin;
+package apps::monitoring::ntopng::restapi::plugin;
 
 use strict;
 use warnings;
@@ -26,18 +26,17 @@ use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'discovery'                 => 'cloud::aws::elb::network::mode::discovery',
-        'targets-health'            => 'cloud::aws::elb::network::mode::targetshealth',
-        'list-health-target-groups' => 'cloud::aws::elb::network::mode::listhealthtargetgroups'
-    );
+    $self->{modes} = {
+        'alerts'         => 'apps::monitoring::ntopng::restapi::mode::alerts',
+        'host-flows'     => 'apps::monitoring::ntopng::restapi::mode::hostflows',
+        'probe-health'   => 'apps::monitoring::ntopng::restapi::mode::probehealth',
+        'netflow-health' => 'apps::monitoring::ntopng::restapi::mode::netflowhealth'
+    };
 
-    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
-    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
+    $self->{custom_modes}->{api} = 'apps::monitoring::ntopng::restapi::custom::api';
     return $self;
 }
 
@@ -47,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Amazon Network Elastic Load Balancing (Amazon Network ELB).
+Check NtopNG using Rest API.
 
 =cut

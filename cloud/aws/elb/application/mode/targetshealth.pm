@@ -160,6 +160,10 @@ sub manage_selection {
         if (defined($self->{option_results}->{availability_zone}) && $self->{option_results}->{availability_zone} ne '') {
             push @{$self->{aws_dimensions}}, { Name => 'AvailabilityZone', Value => $self->{option_results}->{availability_zone} };
         }
+        if (defined($self->{option_results}->{target_group}) && $self->{option_results}->{target_group} ne '') {
+            push @{$self->{aws_dimensions}}, { Name => 'TargetGroup', Value => $self->{option_results}->{target_group} };
+        } 
+        
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
             namespace => 'AWS/ApplicationELB',
             dimensions => $self->{aws_dimensions},
@@ -212,6 +216,10 @@ Set the instance name (Required) (Can be multiple).
 =item B<--availability-zone>
 
 Add Availability Zone dimension.
+
+=item B<--target-group>
+
+Add target group dimension.
 
 =item B<--filter-metric>
 
