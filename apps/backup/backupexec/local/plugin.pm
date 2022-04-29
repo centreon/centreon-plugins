@@ -30,9 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'alerts' => 'apps::backup::backupexec::local::mode::alerts',
-        'disks'  => 'apps::backup::backupexec::local::mode::disks',
-        'jobs'   => 'apps::backup::backupexec::local::mode::jobs'
+        'alerts'     => 'apps::backup::backupexec::local::mode::alerts',
+        'disks'      => 'apps::backup::backupexec::local::mode::disks',
+        'jobs'       => 'apps::backup::backupexec::local::mode::jobs',
+        'list-disks' => 'apps::backup::backupexec::local::mode::listdisks'
     };
 
     return $self;

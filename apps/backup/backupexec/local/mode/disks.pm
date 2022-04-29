@@ -219,7 +219,7 @@ sub manage_selection {
             status => {
                 name => $disk->{name},
                 type => $type,
-                status =>  $disk->{disabled} =~ /True|1/i ? 'disabled' : 'enabled'
+                status => $disk->{disabled} =~ /True|1/i ? 'disabled' : 'enabled'
             },
             space => {
                 name => $disk->{name},
