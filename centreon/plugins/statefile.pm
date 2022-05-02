@@ -23,7 +23,6 @@ package centreon::plugins::statefile;
 use strict;
 use warnings;
 use Data::Dumper;
-use vars qw($datas);
 use centreon::plugins::misc;
 
 my $default_dir = '/var/lib/centreon/centplugins';
@@ -46,8 +45,11 @@ sub new {
             'statefile-dir:s'      => { name => 'statefile_dir', default => $default_dir },
             'statefile-suffix:s'   => { name => 'statefile_suffix', default => '' },
             'statefile-concat-cwd' => { name => 'statefile_concat_cwd' },
-            'statefile-storable'   => { name => 'statefile_storable' },
-            'failback-file'        => { name => 'failback_file' }
+            'statefile-storable'   => { name => 'statefile_storable' }, # legacy
+            'failback-file'        => { name => 'failback_file' },
+            'statefile-format:s'   => { name => 'statefile_format' },
+            'statefile-key:s'      => { name => 'statefile_key' },
+            'statefile-cipher:s'   => { name => 'statefile_cipher' }
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'RETENTION OPTIONS', once => 1);
     }
@@ -111,6 +113,56 @@ sub check_options {
         }
     }
 
+    $self->{statefile_format} = defined($options{option_results}->{statefile_format}) && $options{option_results}->{statefile_format} =~ /^(?:dumper|json|storable)$/ ?    
+        $options{option_results}->{statefile_format} : 'dumper';
+    if (defined($options{option_results}->{statefile_storable})) {
+        $self->{statefile_format} = 'storable';
+    }
+
+    if ($self->{statefile_format} eq 'dumper') {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'Safe', 
+            no_quit => 1
+        );
+        $self->{safe} = Safe->new();
+        $self->{safe}->share('$datas');
+    } elsif ($self->{statefile_format} eq 'storable') {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'Storable',
+            error_msg => "Cannot load module 'Storable'."
+        );
+    } elsif ($self->{statefile_format} eq 'json') {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'JSON::XS',
+            error_msg => "Cannot load module 'JSON::XS'."
+        );
+    }
+
+    $self->{statefile_cipher} = defined($options{option_results}->{statefile_cipher}) && $options{option_results}->{statefile_cipher} ne '' ?    
+        $options{option_results}->{statefile_cipher} : 'AES';
+    $self->{statefile_key} = defined($options{option_results}->{statefile_key}) && $options{option_results}->{statefile_key} ne '' ?    
+        $options{option_results}->{statefile_key} : '';
+
+    if ($self->{statefile_key} ne '') {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'Crypt::Mode::CBC',
+            error_msg => "Cannot load module 'Crypt::Mode::CBC'."
+        );
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'Crypt::PRNG',
+            error_msg => "Cannot load module 'Crypt::PRNG'."
+        );
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'MIME::Base64',
+            error_msg => "Cannot load module 'MIME::Base64'."
+        );
+    }
+
     $self->{statefile_dir} = $options{option_results}->{statefile_dir};
     if ($self->{statefile_dir} ne $default_dir && defined($options{option_results}->{statefile_concat_cwd})) {
         centreon::plugins::misc::mymodule_load(
@@ -120,14 +172,7 @@ sub check_options {
         );
         $self->{statefile_dir} = Cwd::cwd() . '/' . $self->{statefile_dir};
     }
-    if (defined($options{option_results}->{statefile_storable})) {
-        centreon::plugins::misc::mymodule_load(
-            output => $self->{output},
-            module => 'Storable',
-            error_msg => "Cannot load module 'Storable'."
-        );
-        $self->{storable} = 1;
-    }
+
     $self->{statefile_suffix} = $options{option_results}->{statefile_suffix};
     $self->{memexpiration} = $options{option_results}->{memexpiration};
 }
@@ -141,6 +186,93 @@ sub error {
     return $self->{error};
 }
 
+sub get_key {
+    my ($self, %options) = @_;
+
+    my $key = $options{key};
+
+    {
+        use bytes;
+
+        my $size = length($key);
+        my $minsize = Crypt::Cipher->min_keysize($options{cipher});
+        if ($minsize > $size) {
+            $key .= "0" x ($minsize - $size);
+        }
+    }
+
+    return $key;
+}
+
+sub decrypt {
+    my ($self, %options) = @_;
+
+    return (1, $options{data}) if (!defined($options{data}->{encrypted}));
+
+    my $plaintext;
+    eval {
+        my $cipher = Crypt::Mode::CBC->new($options{data}->{cipher}, 1);
+        $plaintext = $cipher->decrypt(
+            MIME::Base64::decode_base64($options{data}->{ciphertext}),
+            $self->get_key(key => $self->{statefile_key}, cipher => $options{data}->{cipher}),
+            pack('H*', $options{data}->{iv})
+        );
+    };
+
+    if ($@) {
+        return 0;
+    }
+
+    return $self->deserialize(data => $plaintext, nocipher => 1);
+}
+
+sub deserialize {
+    my ($self, %options) = @_;
+
+    my $deserialized = '';
+    if ($self->{statefile_format} eq 'dumper') {
+        our $datas;
+        $self->{safe}->reval($options{data}, 1);
+        return 0 if ($@);
+
+        $deserialized = $datas;
+    } elsif ($self->{statefile_format} eq 'storable') {
+        eval {
+            $deserialized = Storable::thaw($options{data});
+        };
+        return 0 if ($@);
+    } elsif ($self->{statefile_format} eq 'json') {
+        eval {
+            $deserialized = JSON::XS->new->decode($options{data});
+        };
+        return 0 if ($@);
+    }
+
+    return 0 if (!defined($deserialized) || ref($deserialized) ne 'HASH');
+
+    my $rv = 1;
+    if ($self->{statefile_key} ne '' && !defined($options{nocipher})) {
+        ($rv, $deserialized) = $self->decrypt(data => $deserialized);
+    }
+
+    return ($rv, $deserialized);
+}
+
+sub slurp {
+    my ($self, %options) = @_;
+
+    my $content = do {
+        local $/ = undef;
+        if (!open my $fh, '<', $options{file}) {
+            $self->{output}->add_option_msg(short_msg => "Could not open file $options{file}: $!");
+            $self->{output}->option_exit();
+        }
+        <$fh>;
+    };
+
+    return $content;
+}
+
 sub read {
     my ($self, %options) = @_;
     $self->{statefile_suffix} = defined($options{statefile_suffix}) ? $options{statefile_suffix} : $self->{statefile_suffix};
@@ -148,17 +280,19 @@ sub read {
     $self->{statefile} = defined($options{statefile}) ? $options{statefile} . $self->{statefile_suffix} : $self->{statefile};
     $self->{no_quit} = defined($options{no_quit}) && $options{no_quit} == 1 ? 1 : 0;
 
+    my ($data, $rv);
+
     if (defined($self->{memcached})) {
         # if "SUCCESS" or "NOT FOUND" is ok. Other with use the file
         my $val = Memcached::libmemcached::memcached_get($self->{memcached}, $self->{statefile_dir} . '/' . $self->{statefile});
         if (defined($self->{memcached}->errstr) && $self->{memcached}->errstr =~ /^SUCCESS|NOT FOUND$/i) {
             $self->{memcached_ok} = 1;
             if (defined($val)) {
-                eval( $val );
-                $self->{datas} = $datas;
-                $datas = {};
-                return 1;
+                ($rv, $data) = $self->deserialize(data => $val);
+                $self->{datas} = defined($data) ? $data : {};
+                return $rv;
             }
+
             return 0;
         }
     }
@@ -166,10 +300,9 @@ sub read {
     if (defined($self->{redis_cnx})) {
         my $val = $self->{redis_cnx}->get($self->{statefile_dir} . "/" . $self->{statefile});
         if (defined($val)) {
-            eval($val);
-            $self->{datas} = $datas;
-            $datas = {};
-            return 1;
+            ($rv, $data) = $self->deserialize(data => $val);
+            $self->{datas} = defined($data) ? $data : {};
+            return $rv;
         }
 
         return 0;
@@ -196,38 +329,11 @@ sub read {
         return 0;
     }
 
-    if ($self->{storable} == 1) {
-        open FILE, '<', $self->{statefile_dir} . '/' . $self->{statefile};
-        eval {
-            $self->{datas} = Storable::fd_retrieve(*FILE);
-        };
-        # File is corrupted surely. We'll reset it
-        if ($@) {
-            close FILE;
-            return 0;
-        }
-        close FILE;
-    } else {
-        unless (my $return = do $self->{statefile_dir} . '/' . $self->{statefile}) {
-            # File is corrupted surely. We'll reset it
-            return 0;
-            #if ($@) {
-            #    $self->{output}->add_option_msg(short_msg => "Couldn't parse '" . $self->{statefile_dir} . "/" . $self->{statefile} . "': $@");
-            #    $self->{output}->option_exit();
-            #}
-            #unless (defined($return)) {
-            #    $self->{output}->add_option_msg(short_msg => "Couldn't do '" . $self->{statefile_dir} . "/" . $self->{statefile} . "': $!");
-            #    $self->{output}->option_exit();
-            #}
-            #unless ($return) {
-            #    $self->{output}->add_option_msg(short_msg => "Couldn't run '" . $self->{statefile_dir} . "/" . $self->{statefile} . "': $!");
-            #    $self->{output}->option_exit();
-        }
-        $self->{datas} = $datas;
-        $datas = {};
-    }
+    $data = $self->slurp(file => $self->{statefile_dir} . '/' . $self->{statefile});
+    ($rv, $data) = $self->deserialize(data => $data);
+    $self->{datas} = defined($data) ? $data : {};
 
-    return 1;
+    return $rv;
 }
 
 sub get_string_content {
@@ -239,19 +345,75 @@ sub get_string_content {
 sub get {
     my ($self, %options) = @_;
 
-    if (defined($self->{datas}->{$options{name}})) {
-        return $self->{datas}->{$options{name}};
+    if (defined($self->{datas}->{ $options{name} })) {
+        return $self->{datas}->{ $options{name} };
     }
     return undef;
+}
+
+sub encrypt {
+    my ($self, %options) = @_;
+
+    my $data = {
+        encrypted => 1,
+        cipher => $self->{statefile_cipher},
+        iv => Crypt::PRNG::random_bytes_hex(16)
+    };
+
+    eval {
+        my $cipher = Crypt::Mode::CBC->new($self->{statefile_cipher}, 1);
+        $data->{ciphertext} = MIME::Base64::encode_base64(
+            $cipher->encrypt(
+                $options{data},
+                $self->get_key(key => $self->{statefile_key}, cipher => $self->{statefile_cipher}),
+                pack('H*', $data->{iv})
+            ),
+            ''
+        );
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "cipher encrypt error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $self->serialize(data => $data, nocipher => 1);
+}
+
+sub serialize {
+    my ($self, %options) = @_;
+
+    my $serialized = '';
+    if ($self->{statefile_format} eq 'dumper') {
+        $serialized = Data::Dumper->Dump([$options{data}], ['datas']);
+    } elsif ($self->{statefile_format} eq 'storable') {
+        $serialized = Storable::freeze($options{data});
+    } elsif ($self->{statefile_format} eq 'json') {
+        eval {
+            $serialized = JSON::XS->new->encode($options{data});
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg =>  "Cannot serialize statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'");
+            $self->{output}->option_exit();
+        }
+    }
+
+    if ($self->{statefile_key} ne '' && !defined($options{nocipher})) {
+        $serialized = $self->encrypt(data => $serialized);
+    }
+
+    return $serialized;
 }
 
 sub write {
     my ($self, %options) = @_;
 
+    my $serialized = $self->serialize(data => $options{data});
     if ($self->{memcached_ok} == 1) {
         Memcached::libmemcached::memcached_set(
-            $self->{memcached}, $self->{statefile_dir} . '/' . $self->{statefile}, 
-            Data::Dumper->Dump([$options{data}], ['datas']), $self->{memexpiration}
+            $self->{memcached},
+            $self->{statefile_dir} . '/' . $self->{statefile}, 
+            $serialized,
+            $self->{memexpiration}
         );
         if (defined($self->{memcached}->errstr) && $self->{memcached}->errstr =~ /^SUCCESS$/i) {
             return ;
@@ -259,16 +421,13 @@ sub write {
     }
     if (defined($self->{redis_cnx})) {
         return if (defined($self->{redis_cnx}->set(
-            $self->{statefile_dir} . '/' . $self->{statefile}, Data::Dumper->Dump([$options{data}], ['datas']),
+            $self->{statefile_dir} . '/' . $self->{statefile},
+            $serialized,
             'EX', $self->{memexpiration}))
         );
     }
     open FILE, '>', $self->{statefile_dir} . '/' . $self->{statefile};
-    if ($self->{storable} == 1) {
-        Storable::store_fd($options{data}, *FILE);
-    } else {
-        print FILE Data::Dumper->Dump([$options{data}], ['datas']);
-    }
+    print FILE $serialized;
     close FILE;
 }
 
@@ -325,9 +484,9 @@ Add a suffix for the statefile name (Default: '').
 Concat current working directory with option '--statefile-dir'.
 Useful on Windows when plugin is compiled.
 
-=item B<--statefile-storable>
+=item B<--statefile-format>
 
-Use Perl Module 'Storable' (instead Data::Dumper) to store datas.
+Format used to store cache (can be: 'dumper', 'storable', 'json').
 
 =back
 
