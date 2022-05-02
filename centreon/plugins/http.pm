@@ -34,7 +34,7 @@ sub new {
             'proxyurl:s'        => { name => 'proxyurl' },
             'proxypac:s'        => { name => 'proxypac' },
             'insecure'          => { name => 'insecure' },
-            'http-backend:s'    => { name => 'http_backend', default => 'lwp' }
+            'http-backend:s'    => { name => 'http_backend' }
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'HTTP GLOBAL OPTIONS');
     }
@@ -53,6 +53,8 @@ sub new {
     );
     $self->{backend_curl} = centreon::plugins::backend::http::curl->new(%options);
 
+    $self->{default_backend} = defined($options{default_backend}) && $options{default_backend} ne '' ?
+        $options{default_backend} : 'lwp';
     $self->{output} = $options{output};
     $self->{options} = {
         proto => 'http',
@@ -92,7 +94,7 @@ sub remove_header {
 sub check_options {
     my ($self, %options) = @_;
 
-    $options{request}->{http_backend} = 'lwp'
+    $options{request}->{http_backend} = $self->{default_backend}
         if (!defined($options{request}->{http_backend}) || $options{request}->{http_backend} eq '');
     $self->{http_backend} = $options{request}->{http_backend};
     if ($self->{http_backend} !~ /^\s*lwp|curl\s*$/i) {
