@@ -76,7 +76,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : 'app.kadiska.com';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{period} = (defined($self->{option_results}->{period})) ? $self->{option_results}->{period} : '1';
+    $self->{period} = (defined($self->{option_results}->{period})) ? $self->{option_results}->{period} : '15';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{client_id} = (defined($self->{option_results}->{client_id})) ? $self->{option_results}->{client_id} : '';
