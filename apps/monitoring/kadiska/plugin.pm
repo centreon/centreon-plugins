@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'list-watchers' => 'apps::monitoring::kadiska::mode::listwatchers',
-        'list-stations' => 'apps::monitoring::kadiska::mode::liststations',
-        'list-targets' => 'apps::monitoring::kadiska::mode::listtargets',
+        'list-watchers'      => 'apps::monitoring::kadiska::mode::listwatchers',
+        'list-stations'      => 'apps::monitoring::kadiska::mode::liststations',
+        'list-targets'       => 'apps::monitoring::kadiska::mode::listtargets',
         'watcher-statistics' => 'apps::monitoring::kadiska::mode::watcherstatistics',
-        'tracer-statistics' => 'apps::monitoring::kadiska::mode::tracerstatistics'
+        'tracer-statistics'  => 'apps::monitoring::kadiska::mode::tracerstatistics'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::kadiska::custom::api';

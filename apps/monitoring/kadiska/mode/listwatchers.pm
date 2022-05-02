@@ -58,7 +58,8 @@ sub manage_selection {
             "from" => "rum",
             "groupby" => [
             "watcher_id"
-            ]
+            ],
+        "options" => {"sampling" => \1 }
     };  
 
     my $results = $options{custom}->request_api(

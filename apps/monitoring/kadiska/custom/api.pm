@@ -179,7 +179,7 @@ sub request_api {
     if (defined($options{query_form_post})) {
 
         my $end = time() * 1000;
-        my $begin = ($end - (86400 * $self->{period} * 1000));
+        my $begin = ($end - (60 * $self->{period} * 1000));
 
         $options{query_form_post}->{begin} = $begin;
         $options{query_form_post}->{end} = $end;
@@ -208,7 +208,13 @@ sub request_api {
             url_path => $self->{url_path} . $options{endpoint},
             query_form_post => $encoded_form_post,
         );
-    } 
+    }
+
+    if ($self->{http}->get_code() == 429){
+        $self->{output}->add_option_msg(short_msg => "[code: 429] Too many requests.");
+        $self->{output}->option_exit();
+    }
+
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
@@ -264,8 +270,8 @@ Specify https if needed (Default: 'https')
 
 =item B<--period>
 
-Set period in days from which you want to get information. (Default: '1')
-Example: --period=7 would return you the data from last week.  
+Set period in minutes from which you want to get information. (Default: '15')
+Example: --period=60 would return you the data from last hour.  
 
 =item B<--client-id>
 

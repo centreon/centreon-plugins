@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub prefix_output {
     my ($self, %options) = @_;
     
-    return "Watcher '" . $options{instance_value}->{display} . "' ";
+    return "Watcher '" . $options{instance} . "' ";
 }
 
 sub set_counters {
@@ -40,35 +40,35 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{watchers} = [
-        { label => 'errors-prct', nlabel => 'errors.persecond.percentage', set => {
-                key_values => [ { name => 'errors_prct' }, { name => 'display' } ],
+        { label => 'errors-prct', nlabel => 'watcher.errors.percentage', set => {
+                key_values => [ { name => 'errors_prct' } ],
                 output_template => 'errors: %.2f%%',
                 perfdatas => [
-                    { label => 'errors_prct', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'errors_prct', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'sessions', nlabel => 'sessions.total.count', set => {
-                key_values => [ { name => 'sessions' }, { name => 'display' } ],
+        { label => 'sessions', nlabel => 'watcher.sessions.count', set => {
+                key_values => [ { name => 'sessions' } ],
                 output_template => 'sessions: %s',
                 perfdatas => [
-                    { label => 'sessions', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'sessions', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'requests', nlabel => 'requests.total.count', set => {
-                key_values => [ { name => 'requests' }, { name => 'display' } ],
+        { label => 'requests', nlabel => 'watcher.requests.count', set => {
+                key_values => [ { name => 'requests' } ],
                 output_template => 'requests: %s',
                 perfdatas => [
-                    { label => 'requests', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'requests', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'pages', nlabel => 'pages.total.count', set => {
-                key_values => [ { name => 'pages' }, { name => 'display' } ],
+        { label => 'pages', nlabel => 'watcher.pages.count', set => {
+                key_values => [ { name => 'pages' } ],
                 output_template => 'pages: %d',
                 perfdatas => [
-                    { label => 'pages', template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'pages', template => '%d', min => 0, label_extra_instance => 1 },
                 ],
             }
         }              
@@ -120,7 +120,8 @@ sub manage_selection {
         "groupby" => [
             "watcher_name"
         ],
-        "offset" => 0
+        "offset" => 0,
+        "options" => {"sampling" => \1 }
     };  
 
     if (defined($self->{option_results}->{filter_watcher_name}) && $self->{option_results}->{filter_watcher_name} ne ''){
@@ -145,7 +146,12 @@ sub manage_selection {
                                     sessions => $watcher->{'session:sum|hits'},
                                     requests => $watcher->{'item:count|requests'},
                                     pages => $watcher->{'item:count|pages'} };
-  };
+    };
+
+    if (scalar(keys %{$self->{watchers}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No instances or results found.");
+        $self->{output}->option_exit();
+    }
 
 }
 

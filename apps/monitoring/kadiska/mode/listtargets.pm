@@ -64,7 +64,8 @@ sub manage_selection {
         "groupby" => [
             "tracer_id"
         ],
-        "offset" => 0
+        "offset" => 0,
+        "options" => {"sampling" => \1 }
     };  
 
     $raw_form_post->{where} = ["=","station_name",["\$", $self->{option_results}->{station_name}]];

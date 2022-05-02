@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub prefix_output {
     my ($self, %options) = @_;
     
-    return "Target '" . $options{instance_value}->{display} . "' ";
+    return "Target '" . $options{instance} . "' ";
 }
 
 sub set_counters {
@@ -40,27 +40,27 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{targets} = [
-        { label => 'round-trip', nlabel => 'round.trip.persecond', set => {
-                key_values => [ { name => 'round_trip' }, { name => 'display' } ],
+        { label => 'round-trip', nlabel => 'tracer.round.trip.persecond', set => {
+                key_values => [ { name => 'round_trip' }],
                 output_template => 'Round trip: %.2f ms',
                 perfdatas => [
-                    { label => 'round_trip', template => '%.2f', unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'round_trip', template => '%.2f', unit => 'ms', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'path-length', nlabel => 'path.length', set => {
-                key_values => [ { name => 'path_length' }, { name => 'display' } ],
+        { label => 'path-length', nlabel => 'tracer.path.length', set => {
+                key_values => [ { name => 'path_length' } ],
                 output_template => 'Path length: %.2f',
                 perfdatas => [
-                    { label => 'path_length', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'path_length', template => '%.2f', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'packets-loss-prct', nlabel => 'packets.loss.percentage', set => {
-                key_values => [ { name => 'packets_loss_prct' }, { name => 'display' } ],
+        { label => 'packets-loss-prct', nlabel => 'tracer.packets.loss.percentage', set => {
+                key_values => [ { name => 'packets_loss_prct' } ],
                 output_template => 'Packets Loss: %.2f %%',
                 perfdatas => [
-                    { label => 'packets_loss_prct', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'packets_loss_prct', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         }          
@@ -79,7 +79,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-station-name:s' => { name => 'filter_station_name' },
-        'filter-tracer:s' => { name => 'filter_tracer' }
+        'filter-tracer:s'       => { name => 'filter_tracer' }
     });
 
     return $self;
@@ -110,7 +110,8 @@ sub manage_selection {
         "orderby" => [
             ["rtt_furthest:avg","desc"]
         ],
-        "offset" => 0
+        "offset" => 0,
+        "options" => {"sampling" => \1 }
     };  
 
     if (defined($self->{option_results}->{filter_station_name}) && $self->{option_results}->{filter_station_name} ne ''){
@@ -130,12 +131,17 @@ sub manage_selection {
 
         my $instance = $watcher->{"tracer:group"};
 
-        $self->{targets}->{$instance} = { display => $instance, 
+        $self->{targets}->{$instance} = {
                                     round_trip => ($watcher->{'rtt_furthest:avg'} / 1000),
                                     packets_loss_prct => $watcher->{'loss_furthest:avg'},
                                     path_length => $watcher->{'length_furthest:avg'},
         }
-  };
+    };
+
+    if (scalar(keys %{$self->{targets}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No instances or results found.");
+        $self->{output}->option_exit();
+    }
 
 }
 
