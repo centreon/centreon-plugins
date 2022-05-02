@@ -488,6 +488,14 @@ Useful on Windows when plugin is compiled.
 
 Format used to store cache (can be: 'dumper', 'storable', 'json').
 
+=item B<--statefile-key>
+
+Key to encrypt/decrypt cache.
+
+=item B<--statefile-cipher>
+
+Cipher to encrypt cache (Default: 'AES').
+
 =back
 
 =head1 DESCRIPTION
