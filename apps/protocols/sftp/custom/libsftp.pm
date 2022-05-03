@@ -163,6 +163,40 @@ sub delete_file {
     return  (0, '');
 }
 
+sub list_directory {
+    my ($self, %options) = @_;
+
+    if ($options{dir} !~ /^\//) {
+        $options{dir} = $self->{sftp}->canonicalize_path(path => $options{dir});
+    }
+
+    my $rv = $self->{sftp}->list_dir(dir => $options{dir});
+    if ($rv->{code} != SSH_OK) {
+        $rv->{message} = $self->{sftp}->error();
+    }
+    $rv->{dir} = $options{dir};
+    return $rv;
+}
+
+sub stat_file {
+    my ($self, %options) = @_;
+
+    my $file = $options{file};
+    if ($options{file} !~ /^\//) {
+        $file = $self->{sftp}->canonicalize_path(path => $file);
+        if (!defined($file)) {
+            return { code => 1, fullname => $options{file}, message => $self->{sftp}->get_msg_error() };
+        }
+    }
+
+    my $rv = $self->{sftp}->stat_file(file => $file);
+    if (!defined($rv)) {
+        return { code => 1, fullname => $file, message => $self->{sftp}->get_msg_error() };
+    }
+
+    return { code => 0, fullname => $file, %$rv };
+}
+
 1;
 
 __END__

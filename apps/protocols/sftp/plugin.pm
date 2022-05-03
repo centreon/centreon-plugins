@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'connection' => 'apps::protocols::sftp::mode::connection',
+        'files-date' => 'apps::protocols::sftp::mode::filesdate',
         'scenario'   => 'apps::protocols::sftp::mode::scenario'
     };
 
