@@ -71,7 +71,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{files} = [
-         { label => 'mtime-since', nlabel => 'file.mtime.last', set => {
+         { label => 'mtime-last', nlabel => 'file.mtime.last', set => {
                 key_values  => [ { name => 'mtime_seconds' }, { name => 'mtime_human' }, { name => 'name' } ],
                 output_template => 'last modified %s',
                 output_use => 'mtime_human',
@@ -128,7 +128,7 @@ sub check_options {
 
     if (scalar(@$files) == 0 && scalar(@$dirs) == 0) {
         $self->{output}->add_option_msg(short_msg => 'Set --file and/or --directory option');
-            $self->{output}->option_exit();
+        $self->{output}->option_exit();
     }
 
     $self->{option_results}->{directory} = $dirs;
@@ -211,8 +211,13 @@ Can use format: 'Europe/London' or '+0100'.
 
 =item B<--unit>
 
-Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
+Select the unit for modified time threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'mtime-last'.
 
 =back
 

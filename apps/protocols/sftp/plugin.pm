@@ -30,9 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'connection' => 'apps::protocols::sftp::mode::connection',
-        'files-date' => 'apps::protocols::sftp::mode::filesdate',
-        'scenario'   => 'apps::protocols::sftp::mode::scenario'
+        'connection'  => 'apps::protocols::sftp::mode::connection',
+        'files-count' => 'apps::protocols::sftp::mode::filescount',
+        'files-date'  => 'apps::protocols::sftp::mode::filesdate',
+        'scenario'    => 'apps::protocols::sftp::mode::scenario'
     };
 
     $self->{custom_modes}->{libsftp} = 'apps::protocols::sftp::custom::libsftp';
