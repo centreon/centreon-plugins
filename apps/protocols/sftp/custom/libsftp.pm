@@ -146,7 +146,6 @@ sub write_file {
 
     my $data = defined($options{content}) ? $options{content} : '';
 
-    # Close is down at the end
     if ($self->{sftp}->write(handle_file => $file, data => $data) != SSH_OK) {
         return (1, $self->{sftp}->error());
     }
