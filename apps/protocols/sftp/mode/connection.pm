@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::protocols::ssh::mode::login;
+package apps::protocols::sftp::mode::connection;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -37,8 +37,9 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' - ' },
+        { name => 'global', type => 0, message_separator => ' - ' }
     ];
+
     $self->{maps_counters}->{global} = [
         { 
             label => 'status', 
@@ -51,11 +52,11 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'time', nlabel => 'response.time.seconds' , set => {
+        { label => 'time', nlabel => 'connection.time.seconds' , set => {
                 key_values => [ { name => 'time_elapsed' } ],
-                output_template => 'Response time %.3fs',
+                output_template => 'connection time: %.3fs',
                 perfdatas => [
-                    { label => 'time', template => '%.3f', unit => 's', min => 0 }
+                    { template => '%.3f', unit => 's', min => 0 }
                 ]
             }
         }
@@ -64,11 +65,10 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -77,9 +77,13 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $timing0 = [gettimeofday];
-    my $result = $options{custom}->login();
+    my ($rv, $message) = $options{custom}->connect();
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
-    $self->{global} = { %$result, time_elapsed => $timeelapsed };
+    $self->{global} = {
+        status => $rv,
+        message => $message,
+        time_elapsed => $timeelapsed
+    };
 }
 
 1;
@@ -88,7 +92,7 @@ __END__
 
 =head1 MODE
 
-Check SSH connection.
+Check sftp connection.
 
 =over 8
 
