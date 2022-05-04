@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'errors_prct' } ],
                 output_template => 'errors: %.2f%%',
                 perfdatas => [
-                    { label => 'errors_prct', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         },
@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions' } ],
                 output_template => 'sessions: %s',
                 perfdatas => [
-                    { label => 'sessions', template => '%s', min => 0, label_extra_instance => 1 },
+                    { template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'requests' } ],
                 output_template => 'requests: %s',
                 perfdatas => [
-                    { label => 'requests', template => '%s', min => 0, label_extra_instance => 1 },
+                    { template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'pages' } ],
                 output_template => 'pages: %d',
                 perfdatas => [
-                    { label => 'pages', template => '%d', min => 0, label_extra_instance => 1 },
+                    { template => '%d', min => 0, label_extra_instance => 1 },
                 ],
             }
         }              
@@ -136,16 +136,15 @@ sub manage_selection {
 
     $self->{watchers} = {};
     foreach my $watcher (@{$results->{data}}) {
-        next if (defined($self->{option_results}->{filter_watcher_name}) && $self->{option_results}->{filter_watcher_name} ne ''
-            && $watcher->{'watcher_id:group'} !~ /$self->{option_results}->{filter_watcher_name}/);
 
         my $instance = $watcher->{'watcher_id:group'};
 
-        $self->{watchers}->{$instance} = { display => $instance, 
-                                    errors_prct => $watcher->{'%errors:avg|hits'},
-                                    sessions => $watcher->{'session:sum|hits'},
-                                    requests => $watcher->{'item:count|requests'},
-                                    pages => $watcher->{'item:count|pages'} };
+        $self->{watchers}->{$instance} = {
+            errors_prct => $watcher->{'%errors:avg|hits'},
+            sessions => $watcher->{'session:sum|hits'},
+            requests => $watcher->{'item:count|requests'},
+            pages => $watcher->{'item:count|pages'} 
+        };
     };
 
     if (scalar(keys %{$self->{watchers}}) <= 0) {
