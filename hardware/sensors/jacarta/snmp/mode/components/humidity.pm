@@ -105,9 +105,112 @@ sub check_inSeptPro {
         }
 
         $self->{output}->perfdata_add(
-            unit => '%',
             nlabel => 'hardware.humidity.percentage',
+            unit => '%',
             instances => $result->{name},
+            value => $result->{current},
+            warning => $warn,
+            critical => $crit,
+            min => 0, max => 100
+        );
+    }
+}
+
+sub check_inSept {
+    my ($self) = @_;
+
+    my $devices = $self->getInSeptDevices();
+
+    my $mapping = {
+        current => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.3.2.1.5' }, # inSeptsensorMonitorDeviceHumidity
+        alarm   => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.3.2.1.6', map => \%map_default_status } # inSeptsensorMonitorDeviceHumidityAlarm
+    };
+    my $mapping_config = {
+        1 => {
+            name              => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.4.1' }, # inSeptsensorConfigSensor1HumdityName
+            lowWarning        => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.4.2' }, # inSeptsensorConfigSensor1HumidityLowWarning
+            lowCritical       => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.4.3' }, # inSeptsensorConfigSensor1HumidityLowCritical
+            highWarning       => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.4.4' }, # inSeptsensorConfigSensor1HumidityHighWarning
+            highCritical      => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.4.5' }, # inSeptsensorConfigSensor1HumidityHighCritical
+            lowWarningState   => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.4.8', map => \%map_state },  # inSeptsensorConfigSensor1HumidityLowWarningStatus
+            lowCriticalState  => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.4.9', map => \%map_state },  # inSeptsensorConfigSensor1HumidityLowCriticalStatus
+            highWarningState  => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.4.10', map => \%map_state }, # inSeptsensorConfigSensor1HumidityHighWarningStatus
+            highCriticalState => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.4.11', map => \%map_state }  # inSeptsensorConfigSensor1HumidityHighCriticalStatus
+        },
+        2 => {
+            name              => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.4.1' }, # inSeptsensorConfigSensor2HumdityName
+            lowWarning        => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.4.2' }, # inSeptsensorConfigSensor2HumidityLowWarning
+            lowCritical       => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.4.3' }, # inSeptsensorConfigSensor2HumidityLowCritical
+            highWarning       => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.4.4' }, # inSeptsensorConfigSensor2HumidityHighWarning
+            highCritical      => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.4.5' }, # inSeptsensorConfigSensor2HumidityHighCritical
+            lowWarningState   => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.4.8', map => \%map_state },  # inSeptsensorConfigSensor2HumidityLowWarningStatus
+            lowCriticalState  => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.4.9', map => \%map_state },  # inSeptsensorConfigSensor2HumidityLowCriticalStatus
+            highWarningState  => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.4.10', map => \%map_state }, # inSeptsensorConfigSensor2HumidityHighWarningStatus
+            highCriticalState => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.4.11', map => \%map_state }  # inSeptsensorConfigSensor2HumidityHighCriticalStatus
+        }
+    };
+    my $oid_sensorEntry = '.1.3.6.1.4.1.19011.1.3.1.1.3.2.1'; # inSeptsensorMonitorSensorEntry
+
+    my $snmp_result = $self->{snmp}->get_table(oid => $oid_sensorEntry, start => $mapping->{current}->{oid}, end => $mapping->{alarm}->{oid});
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
+        next if ($oid !~ /^$mapping->{alarm}->{oid}\.(.*)$/);
+        my $instance = $1;
+
+        next if (!defined($devices->{$instance}) || $devices->{$instance}->{state} eq 'disabled');
+
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
+        my $snmp_config = $self->{snmp}->get_leef(oids => [ map($_->{oid} . '.0', values(%{$mapping_config->{$instance}})) ]);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping_config->{$instance}, results => $snmp_config, instance => 0);
+
+        next if ($self->check_filter(section => 'humidity', instance => $instance));
+        $self->{components}->{humidity}->{total}++;
+
+        $result->{current} *= 0.1;
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                    "humidity '%s' status is '%s' [instance: %s] [value: %s]",
+                    $result2->{name},
+                    $result->{alarm},
+                    $instance, 
+                    $result->{current}
+                )
+            );
+        
+        my $exit = $self->get_severity(label => 'default', section => 'humidity', value => $result->{alarm});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Humdity '%s' status is '%s'", $result2->{name}, $result->{alarm})
+            );
+        }
+
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'humidity', instance => $instance, value => $result->{current});
+        if ($checked == 0) {
+            $result2->{lowWarning} = ($result2->{lowWarningState} eq 'enabled') ? $result2->{lowWarning} * 0.1 : '';
+            $result2->{lowCritical} = ($result2->{lowCriticalState} eq 'enabled') ? $result2->{lowCritical} * 0.1 : '';
+            $result2->{highWarning} = ($result2->{highWarningState} eq 'enabled') ? $result2->{highWarning} * 0.1 : '';
+            $result2->{highCritical} = ($result2->{highCriticalState} eq 'enabled') ? $result2->{highCritical} * 0.1 : '';
+            my $warn_th = $result2->{lowWarning} . ':' . $result2->{highWarning};
+            my $crit_th = $result2->{lowCritical} . ':' . $result2->{highCritical};
+            $self->{perfdata}->threshold_validate(label => 'warning-humidity-instance-' . $instance, value => $warn_th);
+            $self->{perfdata}->threshold_validate(label => 'critical-humidity-instance-' . $instance, value => $crit_th);
+
+            $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-humidity-instance-' . $instance);
+            $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-humidity-instance-' . $instance);
+        }
+
+        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Humdity '%s' is %s %%", $result2->{name}, $result->{current})
+            );
+        }
+
+        $self->{output}->perfdata_add(
+            nlabel => 'hardware.humidity.percentage',
+            unit => '%',
+            instances => $result2->{name},
             value => $result->{current},
             warning => $warn,
             critical => $crit,
@@ -124,6 +227,7 @@ sub check {
     return if ($self->check_filter(section => 'humidity'));
 
     check_inSeptPro($self) if ($self->{inSeptPro} == 1);
+    check_inSept($self) if ($self->{inSept} == 1);
 }
 
 1;

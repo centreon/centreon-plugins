@@ -82,6 +82,28 @@ sub new {
     return $self;
 }
 
+sub getInSeptDevices {
+    my ($self, %options) = @_;
+
+    return $self->{inSeptDevices} if (defined($self->{inSeptDevices}));
+
+    my $oid_deviceName1 = '.1.3.6.1.4.1.19011.1.3.1.1.4.3.1.0';
+    my $oid_deviceState1 = '.1.3.6.1.4.1.19011.1.3.1.1.4.3.2.0';
+    my $oid_deviceName2 = '.1.3.6.1.4.1.19011.1.3.1.1.4.4.1.0';
+    my $oid_deviceState2 = '.1.3.6.1.4.1.19011.1.3.1.1.4.4.2.0';
+    my $result = $self->{snmp}->get_leef(oids => [
+        $oid_deviceName1, $oid_deviceState1,
+        $oid_deviceName2, $oid_deviceState2   
+    ]);
+
+    $self->{inSeptDevices} = {
+        1 => { name => $result->{$oid_deviceName1}, state => $result->{$oid_deviceState1} == 1 ? 'disabled' : 'auto' },
+        2 => { name => $result->{$oid_deviceName2}, state => $result->{$oid_deviceState2} == 1 ? 'disabled' : 'auto' }
+    };
+
+    return $self->{inSeptDevices};
+}
+
 1;
 
 __END__

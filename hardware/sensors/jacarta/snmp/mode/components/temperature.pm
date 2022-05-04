@@ -103,9 +103,108 @@ sub check_inSeptPro {
             );
         }
         $self->{output}->perfdata_add(
-            unit => $self->{temperature_unit},
             nlabel => 'hardware.temperature.' . (($self->{temperature_unit} eq 'C') ? 'celsius' : 'fahrenheit'),
+            unit => $self->{temperature_unit},
             instances => $result->{name},
+            value => $result->{current},
+            warning => $warn,
+            critical => $crit
+        );
+    }
+}
+
+sub check_inSept {
+    my ($self) = @_;
+
+    my $devices = $self->getInSeptDevices();
+
+    my $mapping = {
+        current => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.3.2.1.3' }, # inSeptsensorMonitorDeviceTemperature
+        alarm   => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.3.2.1.4', map => \%map_default_status } # inSeptsensorMonitorDeviceTemperatureAlarm
+    };
+    my $mapping_config = {
+        1 => {
+            name              => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.3.1' }, # inSeptsensorConfigSensor1TemperatureName
+            lowWarning        => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.3.2' }, # inSeptsensorConfigSensor1TemperatureLowWarning
+            lowCritical       => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.3.3' }, # inSeptsensorConfigSensor1TemperatureLowCritical
+            highWarning       => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.3.4' }, # inSeptsensorConfigSensor1TemperatureHighWarning
+            highCritical      => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.3.5' }, # inSeptsensorConfigSensor1TemperatureHighCritical
+            lowWarningState   => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.3.8', map => \%map_state },  # inSeptsensorConfigSensor1TemperatureLowWarningStatus
+            lowCriticalState  => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.3.9', map => \%map_state },  # inSeptsensorConfigSensor1TemperatureLowCriticalStatus
+            highWarningState  => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.3.10', map => \%map_state }, # inSeptsensorConfigSensor1TemperatureHighWarningStatus
+            highCriticalState => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.3.3.11', map => \%map_state }  # inSeptsensorConfigSensor1TemperatureHighCriticalStatus
+        },
+        2 => {
+            name              => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.3.1' }, # inSeptsensorConfigSensor2TemperatureName
+            lowWarning        => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.3.2' }, # inSeptsensorConfigSensor2TemperatureLowWarning
+            lowCritical       => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.3.3' }, # inSeptsensorConfigSensor2TemperatureLowCritical
+            highWarning       => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.3.4' }, # inSeptsensorConfigSensor2TemperatureHighWarning
+            highCritical      => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.3.5' }, # inSeptsensorConfigSensor2TemperatureHighCritical
+            lowWarningState   => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.3.8', map => \%map_state },  # inSeptsensorConfigSensor2TemperatureLowWarningStatus
+            lowCriticalState  => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.3.9', map => \%map_state },  # inSeptsensorConfigSensor2TemperatureLowCriticalStatus
+            highWarningState  => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.3.10', map => \%map_state }, # inSeptsensorConfigSensor2TemperatureHighWarningStatus
+            highCriticalState => { oid => '.1.3.6.1.4.1.19011.1.3.1.1.4.4.3.11', map => \%map_state }  # inSeptsensorConfigSensor2TemperatureHighCriticalStatus
+        }
+    };
+    my $oid_sensorEntry = '.1.3.6.1.4.1.19011.1.3.1.1.3.2.1'; # inSeptsensorMonitorSensorEntry
+
+    my $snmp_result = $self->{snmp}->get_table(oid => $oid_sensorEntry, start => $mapping->{current}->{oid}, end => $mapping->{alarm}->{oid});
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
+        next if ($oid !~ /^$mapping->{alarm}->{oid}\.(.*)$/);
+        my $instance = $1;
+
+        next if (!defined($devices->{$instance}) || $devices->{$instance}->{state} eq 'disabled');
+
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
+        my $snmp_config = $self->{snmp}->get_leef(oids => [ map($_->{oid} . '.0', values(%{$mapping_config->{$instance}})) ]);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping_config->{$instance}, results => $snmp_config, instance => 0);
+
+        next if ($self->check_filter(section => 'temperature', instance => $instance));
+        $self->{components}->{temperature}->{total}++;
+
+        $result->{current} *= 0.1;
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' status is '%s' [instance: %s] [value: %s]",
+                $result2->{name}, $result->{alarm}, $instance, 
+                $result->{current}
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'temperature', value => $result->{alarm});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Temperature '%s' status is '%s'", $result2->{name}, $result->{alarm})
+            );
+        }
+
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{current});
+        if ($checked == 0) {
+            $result2->{lowWarning} = ($result2->{lowWarningState} eq 'enabled') ? $result2->{lowWarning} * 0.1 : '';
+            $result2->{lowCritical} = ($result2->{lowCriticalState} eq 'enabled') ? $result2->{lowCritical} * 0.1 : '';
+            $result2->{highWarning} = ($result2->{highWarningState} eq 'enabled') ? $result2->{highWarning} * 0.1 : '';
+            $result2->{highCritical} = ($result2->{highCriticalState} eq 'enabled') ? $result2->{highCritical} * 0.1 : '';
+            my $warn_th = $result2->{lowWarning} . ':' . $result2->{highWarning};
+            my $crit_th = $result2->{lowCritical} . ':' . $result2->{highCritical};
+            $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
+            $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
+
+            $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
+            $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
+        }
+        
+        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Temperature '%s' is %s %s", $result2->{name}, $result->{current}, $self->{temperature_unit})
+            );
+        }
+        $self->{output}->perfdata_add(
+            nlabel => 'hardware.temperature.' . (($self->{temperature_unit} eq 'C') ? 'celsius' : 'fahrenheit'),
+            unit => $self->{temperature_unit},
+            instances => $result2->{name},
             value => $result->{current},
             warning => $warn,
             critical => $crit
@@ -121,6 +220,7 @@ sub check {
     return if ($self->check_filter(section => 'temperature'));
 
     check_inSeptPro($self) if ($self->{inSeptPro} == 1);
+    check_inSept($self) if ($self->{inSept} == 1);
 }
 
 1;
