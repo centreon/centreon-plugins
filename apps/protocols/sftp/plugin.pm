@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package hardware::sensors::jacarta::snmp::plugin;
+package apps::protocols::sftp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,9 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'sensors' => 'hardware::sensors::jacarta::snmp::mode::sensors'
+        'connection'  => 'apps::protocols::sftp::mode::connection',
+        'files-count' => 'apps::protocols::sftp::mode::filescount',
+        'files-date'  => 'apps::protocols::sftp::mode::filesdate',
+        'scenario'    => 'apps::protocols::sftp::mode::scenario'
     };
 
+    $self->{custom_modes}->{libsftp} = 'apps::protocols::sftp::custom::libsftp';
     return $self;
 }
 
@@ -42,6 +46,9 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Jacarta sensors in SNMP.
+Check a SFTP server.
+
+Need Libssh perl:
+https://github.com/garnier-quentin/perl-libssh
 
 =cut

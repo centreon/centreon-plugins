@@ -16,13 +16,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# Authors : Roman Morandell - ivertix
 #
 
-package hardware::sensors::jacarta::snmp::plugin;
+package notification::centreon::opentickets::api::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,9 +31,11 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'sensors' => 'hardware::sensors::jacarta::snmp::mode::sensors'
+        'open-host'    => 'notification::centreon::opentickets::api::mode::openhost',
+        'open-service' => 'notification::centreon::opentickets::api::mode::openservice'
     };
 
+    $self->{custom_modes}->{api} = 'notification::centreon::opentickets::api::custom::api';
     return $self;
 }
 
@@ -42,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Jacarta sensors in SNMP.
+Open tickets with centreon-open-tickets module.
 
 =cut

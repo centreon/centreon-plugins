@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package hardware::sensors::jacarta::snmp::plugin;
+package apps::backup::backupexec::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,7 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'sensors' => 'hardware::sensors::jacarta::snmp::mode::sensors'
+        'alerts'     => 'apps::backup::backupexec::local::mode::alerts',
+        'disks'      => 'apps::backup::backupexec::local::mode::disks',
+        'jobs'       => 'apps::backup::backupexec::local::mode::jobs',
+        'list-disks' => 'apps::backup::backupexec::local::mode::listdisks'
     };
 
     return $self;
@@ -42,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Jacarta sensors in SNMP.
+Check Backup Exec with powershell.
 
 =cut

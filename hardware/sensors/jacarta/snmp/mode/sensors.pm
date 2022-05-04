@@ -29,9 +29,9 @@ sub set_system {
     my ($self, %options) = @_;
 
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|humidity)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         default => [        
             ['unknown', 'UNKNOWN'],
@@ -48,31 +48,60 @@ sub set_system {
             ['triggered', 'CRITICAL']
         ]
     };
-    
+
     $self->{components_path} = 'hardware::sensors::jacarta::snmp::mode::components';
     $self->{components_module} = ['temperature', 'humidity', 'input'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
-    my $oid_isConfigTemperatureUnit = '.1.3.6.1.4.1.19011.1.3.2.1.2.16'; # .0
-    push @{$self->{request}}, { oid => $oid_isConfigTemperatureUnit };
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
-    
-    $self->{temperature_unit} = defined($self->{results}->{$oid_isConfigTemperatureUnit}->{$oid_isConfigTemperatureUnit . '.0'}) && $self->{results}->{$oid_isConfigTemperatureUnit}->{$oid_isConfigTemperatureUnit . '.0'} == 1 ?
-       'C' : 'F';
+    my $oid_inSeptTempUnit = '.1.3.6.1.4.1.19011.1.3.1.1.2.16.0'; # inSeptConfigTemperatureUnit
+    my $oid_inSeptProTempUnit = '.1.3.6.1.4.1.19011.1.3.2.1.2.16.0'; # isConfigTemperatureUnit
+    my $result = $self->{snmp}->get_leef(oids => [$oid_inSeptTempUnit, $oid_inSeptProTempUnit]);
+
+    $self->{inSept} = 0;
+    $self->{inSeptPro} = 0;
+    if (defined($result->{$oid_inSeptProTempUnit})) {
+        $self->{inSeptPro} = 1;
+        $self->{temperature_unit} = $result->{$oid_inSeptProTempUnit} == 1 ? 'C' : 'F';
+    } elsif (defined($result->{$oid_inSeptTempUnit})) {
+        $self->{inSept} = 1;
+        $self->{temperature_unit} = $result->{$oid_inSeptTempUnit} == 1 ? 'C' : 'F';
+    }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
 
     return $self;
+}
+
+sub getInSeptDevices {
+    my ($self, %options) = @_;
+
+    return $self->{inSeptDevices} if (defined($self->{inSeptDevices}));
+
+    my $oid_deviceName1 = '.1.3.6.1.4.1.19011.1.3.1.1.4.3.1.0';
+    my $oid_deviceState1 = '.1.3.6.1.4.1.19011.1.3.1.1.4.3.2.0';
+    my $oid_deviceName2 = '.1.3.6.1.4.1.19011.1.3.1.1.4.4.1.0';
+    my $oid_deviceState2 = '.1.3.6.1.4.1.19011.1.3.1.1.4.4.2.0';
+    my $result = $self->{snmp}->get_leef(oids => [
+        $oid_deviceName1, $oid_deviceState1,
+        $oid_deviceName2, $oid_deviceState2   
+    ]);
+
+    $self->{inSeptDevices} = {
+        1 => { name => $result->{$oid_deviceName1}, state => $result->{$oid_deviceState1} == 1 ? 'disabled' : 'auto' },
+        2 => { name => $result->{$oid_deviceName2}, state => $result->{$oid_deviceState2} == 1 ? 'disabled' : 'auto' }
+    };
+
+    return $self->{inSeptDevices};
 }
 
 1;
