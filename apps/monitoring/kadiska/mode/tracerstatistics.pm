@@ -132,10 +132,10 @@ sub manage_selection {
         my $instance = $watcher->{"tracer:group"};
 
         $self->{targets}->{$instance} = {
-                                    round_trip => ($watcher->{'rtt_furthest:avg'} / 1000),
-                                    packets_loss_prct => $watcher->{'loss_furthest:avg'},
-                                    path_length => $watcher->{'length_furthest:avg'},
-        }
+            round_trip => ($watcher->{'rtt_furthest:avg'} / 1000),
+            packets_loss_prct => $watcher->{'loss_furthest:avg'},
+            path_length => $watcher->{'length_furthest:avg'},
+        };
     };
 
     if (scalar(keys %{$self->{targets}}) <= 0) {
