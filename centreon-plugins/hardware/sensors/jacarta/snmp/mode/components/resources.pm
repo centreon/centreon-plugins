@@ -38,17 +38,17 @@ our @EXPORT_OK = qw(%map_default_status %map_input_status %map_state);
     4 => 'below-low-warning',
     5 => 'below-low-critical',
     6 => 'above-high-warning',
-    7 => 'above-high-critical',
+    7 => 'above-high-critical'
 );
 
 %map_input_status = (
     1 => 'normal',
-    2 => 'triggered',
+    2 => 'triggered'
 );
 
 %map_state = (
     1 => 'enabled',
-    2 => 'disabled',
+    2 => 'disabled'
 );
 
 1;
