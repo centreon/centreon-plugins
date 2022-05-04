@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'round_trip' }],
                 output_template => 'Round trip: %.2f ms',
                 perfdatas => [
-                    { label => 'round_trip', template => '%.2f', unit => 'ms', min => 0, label_extra_instance => 1 },
+                    { template => '%.2f', unit => 'ms', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'path_length' } ],
                 output_template => 'Path length: %.2f',
                 perfdatas => [
-                    { label => 'path_length', template => '%.2f', min => 0, label_extra_instance => 1 },
+                    { template => '%.2f', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'packets_loss_prct' } ],
                 output_template => 'Packets Loss: %.2f %%',
                 perfdatas => [
-                    { label => 'packets_loss_prct', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         }          
