@@ -29,10 +29,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'sensors' => 'hardware::sensors::jacarta::snmp::mode::sensors',
-    );
+    $self->{modes} = {
+        'sensors' => 'hardware::sensors::jacarta::snmp::mode::sensors'
+    };
 
     return $self;
 }
