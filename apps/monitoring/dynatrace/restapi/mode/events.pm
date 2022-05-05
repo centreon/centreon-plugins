@@ -179,12 +179,12 @@ Check events.
 
 =item B<--relative-time>
 
-Set request relative time (Default: 'min').
-Can use: min, 5mins, 10mins, 15mins, 30mins, hour, 2hours, 6hours, day, 3days, week, month.
+Set request relative time (Default: '2h').
+Can use: Xm (minutes), Xh (hours), Xd (days), Xm (months), Xy (year) where 'X' is the amount of time.
 
-=item B<--event-type>
+=item B<--filter-event-type>
 
-Set event type.
+Filter event by type (can be a regexp).
 
 =item B<--filter-management>
 
@@ -193,7 +193,6 @@ Filter events by management zone (can be a regexp).
 =item B<--filter-entity>
 
 Filter events by entity (can be a regexp).
-
 
 =item B<--unknown-status>
 

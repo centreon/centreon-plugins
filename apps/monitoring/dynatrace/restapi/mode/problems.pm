@@ -49,7 +49,7 @@ sub prefix_management_zones_output {
 sub prefix_service_output {
     my ($self, %options) = @_;
 
-    return "Problem '" . $options{instance_value}->{displayName} . "' ";
+    return "Problem '" . $self->{result_values}->{managementZone} . "' ";
 }
 
 sub set_counters {
@@ -57,8 +57,8 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'management_zone', type => 1, cb_prefix_output => 'prefix_management_zones_output',  skipped_code => { -10 => 1 } },
-        { name => 'problems', type => 2,
+        { name => 'management_zone', type => 1, cb_prefix_output => 'prefix_management_zones_output', message_multiple => 'All management zones are OK', skipped_code => { -10 => 1 } },
+        { name => 'problems', type => 2, cb_prefix_output => 'prefix_service_output',
           group => [ { name => 'problem' } ]
         }
     ];
@@ -170,7 +170,7 @@ __END__
 
 =head1 MODE
 
-Check problems.
+Check open problems.
 
 =over 8
 
