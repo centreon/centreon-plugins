@@ -31,8 +31,10 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'open-host'    => 'notification::centreon::opentickets::api::mode::openhost',
-        'open-service' => 'notification::centreon::opentickets::api::mode::openservice'
+        'open-host'        => 'notification::centreon::opentickets::api::mode::openhost',
+        'open-service'     => 'notification::centreon::opentickets::api::mode::openservice',
+        'close-host'       => 'notification::centreon::opentickets::api::mode::closehost',
+        'close-service'    => 'notification::centreon::opentickets::api::mode::closeservice'
     };
 
     $self->{custom_modes}->{api} = 'notification::centreon::opentickets::api::custom::api';
