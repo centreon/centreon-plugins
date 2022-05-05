@@ -58,7 +58,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'management_zone', type => 1, cb_prefix_output => 'prefix_management_zones_output', message_multiple => 'All management zones are OK', skipped_code => { -10 => 1 } },
-        { name => 'problems', type => 2, cb_prefix_output => 'prefix_service_output',
+        { name => 'problems', type => 2,
           group => [ { name => 'problem' } ]
         }
     ];
