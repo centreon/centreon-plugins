@@ -24,17 +24,22 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use DateTime;
 use POSIX;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("alarm [severity: %s] [source: %s] [text: %s] %s", $self->{result_values}->{severity},
-        $self->{result_values}->{source}, $self->{result_values}->{text}, $self->{result_values}->{generation_time});
-    return $msg;
+    return sprintf(
+        "alarm [severity: %s] [source: %s] [text: %s] %s",
+        $self->{result_values}->{severity},
+        $self->{result_values}->{source},
+        $self->{result_values}->{text},
+        scalar(localtime($self->{result_values}->{generation_time}))
+    );
 }
 
 sub custom_status_calc {
@@ -58,15 +63,20 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{alarm} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2, 
+            warning_default => '%{severity} =~ /minor|warning/i',
+            critical_default => '%{severity} =~ /critical|major/i',
+            set => {
                 key_values => [ { name => 'spsActiveAlarmSource' }, { name => 'spsActiveAlarmDescr' },
                     { name => 'since' }, { name => 'spsActiveAlarmSeverity' }, { name => 'spsActiveAlarmLogTime' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -75,16 +85,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-msg:s"        => { name => 'filter_msg' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /minor|warning/i' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /critical|major/i' },
-                                  "memory"              => { name => 'memory' },
-                                });
-    
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Date::Parse',
-                                           error_msg => "Cannot load module 'Date::Parse'.");
+    $options{options}->add_options(arguments => {
+        'filter-msg:s' => { name => 'filter_msg' },
+        'memory'       => { name => 'memory' }
+    });
+
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output},
+        module => 'Date::Parse',
+        error_msg => "Cannot load module 'Date::Parse'."
+    );
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -93,7 +103,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
     }
@@ -106,7 +115,7 @@ my $mapping = {
     spsActiveAlarmSeverity      => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.3', map => \%map_severity },
     spsActiveAlarmSource        => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.6' },
     spsActiveAlarmDescr         => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.5' },
-    spsActiveAlarmLogTime       => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.11' }, # timestamp
+    spsActiveAlarmLogTime       => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.11' } # timestamp
 };
 
 sub manage_selection {
@@ -131,27 +140,50 @@ sub manage_selection {
         next if ($oid !~ /^$mapping->{spsActiveAlarmSeverity}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        
-	my $create_time = $result->{spsActiveAlarmLogTime};
-        if (!defined($create_time)) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => "Can't get date '" . $result->{spsActiveAlarmLogTime} . "'");
+
+        if (!defined($result->{spsActiveAlarmLogTime})) {
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => "Can't get date '" . $result->{spsActiveAlarmLogTime} . "'"
+            );
             next;
         }
-        
+
+        my $create_time = $result->{spsActiveAlarmLogTime};
+        if ($create_time !~ /^\d+$/) {
+            my @date = unpack('n C6 a C2', $result->{spsActiveAlarmLogTime});
+            my $tz;
+            if (defined($date[7])) {
+                $tz = sprintf('%s%02d%02d', $date[7], $date[8], $date[9]);
+            }
+            my $dt = DateTime->new(
+                year => $date[0],
+                month => $date[1],
+                day => $date[2],
+                hour => $date[3],
+                minute => $date[4],
+                second => $date[5],
+                time_zone => $tz
+            );
+            $create_time = $dt->epoch();
+        }
+
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $create_time);
+
         if (defined($self->{option_results}->{filter_msg}) && $self->{option_results}->{filter_msg} ne '' &&
             $result->{spsActiveAlarmDescr} !~ /$self->{option_results}->{filter_msg}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{spsActiveAlarmDescr} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         my $diff_time = $current_time - $create_time;
-        
-        $self->{alarms}->{global}->{alarm}->{$i} = { %$result, since => $diff_time };
+    
+        $self->{alarms}->{global}->{alarm}->{$i} = $result;
+        $self->{alarms}->{global}->{alarm}->{$i}->{since} = $diff_time;
+        $self->{alarms}->{global}->{alarm}->{$i}->{spsActiveAlarmLogTime} = $create_time;
         $i++;
     }
-    
+
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->write(data => { last_time => $current_time });
     }
