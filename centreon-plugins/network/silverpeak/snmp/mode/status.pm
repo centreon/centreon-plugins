@@ -24,35 +24,29 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = "Operational state: '" . $self->{result_values}->{operStatus} . "' ";
-    return $msg;
-}
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    $self->{result_values}->{operStatus} = $options{new_datas}->{$self->{instance} . '_operStatus'};
-    return 0;
+    return "Operational state: '" . $self->{result_values}->{operStatus} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'operationnal_state', type => 0 },
+        { name => 'global', type => 0 }
     ];
-    $self->{maps_counters}->{operationnal_state} = [
-        { label => 'status', threshold => 0,  set => {
+
+    $self->{maps_counters}->{global} = [
+        { label => 'status', type => 2, critical_default => '%{operStatus} !~ /(Normal)/', set => {
                 key_values => [ { name => 'operStatus' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -61,33 +55,21 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-status:s"      => { name => 'warning_status', default => '' },
-                                "critical-status:s"     => { name => 'critical_status', default => '%{operStatus} !~ /(Normal)/' },
-                                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{operationnal_state} = {};
-
     my $oid_spsOperStatus = '.1.3.6.1.4.1.23867.3.1.1.1.3.0';
+    my $result = $options{snmp}->get_leef(
+        oids => [ $oid_spsOperStatus ],
+        nothing_quit => 1
+    );
 
-    my $result = $options{snmp}->get_leef(oids => [ $oid_spsOperStatus ],
-                                          nothing_quit => 1);
-
-    $self->{operationnal_state} = { operStatus => $result->{$oid_spsOperStatus}};
+    $self->{global} = { operStatus => $result->{$oid_spsOperStatus}};
 }
 
 1;

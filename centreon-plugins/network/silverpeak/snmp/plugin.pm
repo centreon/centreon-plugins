@@ -29,14 +29,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'alarms'          => 'network::silverpeak::snmp::mode::alarms',
         'interfaces'      => 'snmp_standard::mode::interfaces', 
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'status'          => 'network::silverpeak::snmp::mode::status',
-        'uptime'          => 'network::silverpeak::snmp::mode::uptime',
-    );
+        'uptime'          => 'network::silverpeak::snmp::mode::uptime'
+    };
 
     return $self;
 }
