@@ -69,7 +69,7 @@ sub check_options {
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 139;
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) && $self->{option_results}->{timeout} =~ /^\d+$/? $self->{option_results}->{timeout} : 30;
     $self->{cifs_username} = (defined($self->{option_results}->{cifs_username})) ? $self->{option_results}->{cifs_username} : '';
     $self->{cifs_password} = (defined($self->{option_results}->{cifs_password})) ? $self->{option_results}->{cifs_password} : '';
     $self->{workgroup} = (defined($self->{option_results}->{workgroup})) ? $self->{option_results}->{workgroup} : '';
