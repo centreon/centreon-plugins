@@ -25,25 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub custom_status_output { 
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "problem '%s' [type: %s] [severity: %s] [impact: %s] [entity: %s]",
-        $self->{result_values}->{displayName},
-        $self->{result_values}->{eventType},
-        $self->{result_values}->{severityLevel},
-        $self->{result_values}->{impactLevel},
-        $self->{result_values}->{entityName}
-    );
-}
-
-sub prefix_service_output {
-    my ($self, %options) = @_;
-
-    return "Problem '" . $options{instance_value}->{displayName} . "' ";
-}
-
 sub prefix_entity_output {
     my ($self, %options) = @_;
 
@@ -80,8 +61,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'aggregation-type:s' => { name => 'aggregation_type', default => 'count' },
         'filter-entity:s'    => { name => 'filter_entity' },
-        'relative-time:s'    => { name => 'relative_time', default => 'min' },
-        'query-mode:s'       => { name => 'query_mode', default => 'total' }
+        'relative-time:s'    => { name => 'relative_time', default => '30mins' }
     });
 
     return $self;
@@ -90,25 +70,26 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->get_apdex(relative_time => $options{options}->{relative_time});
-    $self->{apdex} = {};
+    my $result = $options{custom}->get_apdex();
 
-    foreach my $apdex (keys %{$results->{dataPoints}}) {
+    foreach my $apdex (keys %{$result->{result}->{dataPoints}}) {
         
         if (defined($self->{option_results}->{filter_entity}) && $self->{option_results}->{filter_entity} ne '' &&
-            $results->{entities}->{$apdex} !~ /$self->{option_results}->{filter_entity}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $results->{entities}->{$apdex} . "': no matching filter.", debug => 1);
+            $result->{result}->{entities}->{$apdex} !~ /$self->{option_results}->{filter_entity}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{result}->{entities}->{$apdex} . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{apdex}->{$results->{entities}->{$apdex}} = {
-            display => $results->{entities}->{$apdex},
-            apdex => $results->{dataPoints}->{$apdex}[0][1]
-        };
+        if (defined($result->{result}->{dataPoints}->{$apdex}[0][1])) {
+            $self->{apdex}->{$result->{result}->{entities}->{$apdex}} = {
+                display => $result->{result}->{entities}->{$apdex},
+                apdex   => $result->{result}->{dataPoints}->{$apdex}[0][1]
+            };
+        }
     }
 
     if (scalar(keys %{$self->{apdex}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entity machine found.");
+        $self->{output}->add_option_msg(short_msg => "No entity found.");
         $self->{output}->option_exit();
     }
 }
@@ -128,29 +109,21 @@ Check Apdex.
 Set request relative time (Default: 'min').
 Can use: min, 5mins, 10mins, 15mins, 30mins, hour, 2hours, 6hours, day, 3days, week, month.
 
+=item B<--aggregation-type>
+
+Set aggregation type (Default: 'count').
+
 =item B<--filter-entity>
 
-Filter ApDex by entity (can be a regexp).
+Filter Apdex by entity (can be a regexp).
 
-=item B<--unknown-status>
+=item B<--warning-apdex>
 
-Set unknown threshold for status.
-Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}, %{time}
+Set warning threshold for Apdex.
 
-=item B<--warning-status>
+=item B<--critical-apdex>
 
-Set warning threshold for status.
-Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}, %{time}
-
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '%{status} eq "OPEN"').
-Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}, %{time}
-
-=item B<--warning-*> B<--critical-*>
-
-Thresholds.
-Can be: 'problems-open'.
+Set critical threshold for Apdex.
 
 =back
 

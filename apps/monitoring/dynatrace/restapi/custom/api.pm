@@ -142,33 +142,63 @@ sub request_api {
     return $decoded;
 }
 
-sub internal_problem {
-    my ($self, %options) = @_;
-
-    my $status = $self->request_api(
-        method => 'GET',
-        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . '/api/v1/problem/feed?relativeTime=' . $self->{option_results}->{relative_time}
-    );
-    return $status;
-}
-
-sub api_problem {
-    my ($self, %options) = @_;
-
-    my $status = $self->internal_problem();
-    return $status->{result}->{problems};
-}
-
 sub get_apdex {
     my ($self, %options) = @_;
 
     my $status = $self->request_api(
-        method => 'GET',
+        method   => 'GET',
         url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
-                    '/api/v1/timeseries?&timeseriesId=com.dynatrace.builtin:app.apdex' .
+                    '/api/v1/timeseries?&timeseriesId=com.dynatrace.builtin:app.apdex&queryMode=total' .
                     '&aggregationType=' . $self->{option_results}->{aggregation_type} . 
-                    '&relativeTime=' . $self->{option_results}->{relative_time} .
-                    '&queryMode=' . $self->{option_results}->{query_mode}
+                    '&relativeTime=' . $self->{option_results}->{relative_time}
+                    
+    );
+
+    return $status;
+}
+
+sub get_management_zones {
+    my ($self, %options) = @_;
+
+    my $status = $self->request_api(
+        method   => 'GET',
+        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
+                    '/api/config/v1/managementZones'
+    );
+
+    my $management_zone_mapping;
+    foreach my $management_zone (@{$status->{values}}) {
+        $management_zone_mapping->{$management_zone->{name}} = $management_zone->{id};
+    }
+
+    return $management_zone_mapping;
+}
+
+sub get_events {
+    my ($self, %options) = @_;
+    
+    my @get_param;
+    my @filter_param;
+    push @get_param, 'from=now-' . $self->{option_results}->{relative_time};
+    push @get_param, 'pageSize=500';
+
+    if (scalar(keys %{$options{management_zone_mapping}}) > 0) {
+        my @management_zones = split(',', $self->{option_results}->{filter_management_zone});
+        my @tmp_management_zones;
+        foreach (@management_zones) {
+            if(defined($options{management_zone_mapping}{$_})) {
+                push @tmp_management_zones, $options{management_zone_mapping}{$_};
+            }
+        }
+        my $management_zones_id = join(",", map { '"' . $options{management_zone_mapping}->{$_} . '"' } @tmp_management_zones );
+        push @get_param, 'eventSelector=managementZoneId(' . $management_zones_id . ')';
+    }
+
+    my $status = $self->request_api(
+        method    => 'GET',
+        url_path  => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
+                    '/api/v2/events',
+        get_param => \@get_param
     );
 
     return $status;
@@ -177,22 +207,45 @@ sub get_apdex {
 sub get_problems {
     my ($self, %options) = @_;
 
+    my @get_param;
+    my @filter_param;
+    push @get_param, 'from=now-' . $self->{option_results}->{relative_time};
+    push @get_param, 'pageSize=500';
+    
+    if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '') {
+        my @list_management_zones = split(',', $self->{option_results}->{filter_management_zone});
+        my $management_zones = join(",", map { '"' . $_ . '"' } @list_management_zones);
+        push @filter_param, 'managementZones(' . $management_zones . ')'; 
+    }
+
+    if (defined($self->{option_results}->{filter_entity}) && $self->{option_results}->{filter_entity} ne '') {
+        my @list_entities = split(',', $self->{option_results}->{filter_entity});
+        my $entities = join(",", map { '"' . $_ . '"' } @list_entities);
+        push @filter_param, 'impactedEntities(' . $entities . ')'; 
+    }
+
+    if (@filter_param) {
+        push @get_param, 'problemSelector=' . join(',', @filter_param);
+    }
+
     my $status = $self->request_api(
-        method => 'GET',
-        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) .
-                    '/api/v2/problems?from=now-' . $self->{option_results}->{relative_time}
+        method    => 'GET',
+        url_path  => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) .
+                    '/api/v2/problems',
+        get_param => \@get_param
     );
 
     return $status;
 }
 
-sub get_events {
+sub get_synthetic_availability {
     my ($self, %options) = @_;
 
     my $status = $self->request_api(
-        method => 'GET',
+        method   => 'GET',
         url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
-                    '/api/v2/events?from=now-' . $self->{option_results}->{relative_time}
+                    '/api/v1/timeserie?&timeseriesId=com.dynatrace.builtin:syntheticmonitor.availability.percent&queryMode=total' .
+                    '&relativeTime=' . $self->{option_results}->{relative_time}
     );
 
     return $status;

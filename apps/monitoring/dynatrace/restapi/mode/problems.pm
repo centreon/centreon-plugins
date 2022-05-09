@@ -58,7 +58,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'management_zone', type => 1, cb_prefix_output => 'prefix_management_zones_output', message_multiple => 'All management zones are OK', skipped_code => { -10 => 1 } },
-        { name => 'problems', type => 2,
+        { name => 'problem', type => 2,
           group => [ { name => 'problem' } ]
         }
     ];
@@ -117,38 +117,34 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    my $problem = $options{custom}->get_problems(relative_time => $options{options}->{relative_time});
+    
+    my $problem = $options{custom}->get_problems();
     my ($i, $time) = (1, time());
     my $management_zones;
+    my $management_zone_name;
     my $entities;
 
     foreach my $item (@{$problem->{problems}}) {
-
-        $management_zones = join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}})),
+        if (!defined(@{$item->{managementZones}}[0]->{name})) {
+            $management_zones = 'undefined_management_zone';
+        } else {
+            $management_zones = join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}}));
+        }
         $entities = join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{impactedEntities}}));
-
-        if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
-            $management_zones !~ /$self->{option_results}->{filter_management_zone}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $management_zones . "': no matching filter.", debug => 1);
-            next;
-        }
         
-        if (defined($self->{option_results}->{filter_entity}) && $self->{option_results}->{filter_entity} ne '' &&
-            $entities !~ /$self->{option_results}->{filter_entity}/) {
-            $self->{output}->output_add(long_msg => "skipping '" .  $entities . "': no matching filter.", debug => 1);
-            next;
-        }
-
-        # if ($item->{status} eq 'OPEN') {
+        if ($item->{status} eq 'OPEN') {
+            $self->{global}->{problems_open}++;
             foreach my $management_zones (@{$item->{managementZones}}) {
-                $self->{global}->{problems_open}++;
-                $self->{management_zone}->{$management_zones->{name}}->{problems_open}++;
-                $self->{management_zone}->{$management_zones->{name}}->{displayName} = $management_zones->{name};
-            # }
+                $management_zone_name = defined($management_zones->{name}) ? $management_zones->{name} : 'undefined_management_zone';
+                # if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
+                #     $management_zone_name !~ /$self->{option_results}->{filter_management_zone}/) {
+                #     next;
+                # }
+                $self->{management_zone}->{$management_zone_name}->{problems_open}++;
+            }
         }
 
-        $self->{problems}->{global}->{problem}->{$i} = {
+        $self->{problem}->{global}->{problem}->{$i} = {
             displayName    => $item->{title},
             status         => $item->{status},
             impactLevel    => $item->{impactLevel},
@@ -162,6 +158,16 @@ sub manage_selection {
         };
         $i++;
     }
+
+    if (scalar(keys %{$self->{problem}->{global}->{problem}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No problem found.");
+        $self->{output}->option_exit();
+    }
+
+    foreach my $management_zone (keys %{$self->{management_zone}}) {
+        $self->{management_zone}->{$management_zone}->{displayName} = $management_zone;
+    }
+
 }
 
 1;
@@ -179,13 +185,15 @@ Check open problems.
 Set request relative time (Default: '2h').
 Can use: Xm (minutes), Xh (hours), Xd (days), Xm (months), Xy (year) where 'X' is the amount of time.
 
-=item B<--filter-management>
+=item B<--filter-management-zone>
 
-Filter problems by management zone (can be a regexp).
+Filter problems by management zone. Mutliple management zones need to be separated by comma.
+Example: --filter-management-zone='MZ1,MZ2'
 
 =item B<--filter-entity>
 
-Filter problems by entity (can be a regexp).
+Filter problems by entity. Mutliple entities need to be separated by comma.
+Example: --filter-management-zone='entity1,entity2'
 
 =item B<--unknown-status>
 

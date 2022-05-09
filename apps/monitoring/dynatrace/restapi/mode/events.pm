@@ -31,11 +31,11 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "event '%s' [event type: %s] [management zone: %s] [entity: %s]",
+        "event '%s' [event type: %s] [management zone: %s] [name: %s]",
         $self->{result_values}->{displayName},
         $self->{result_values}->{eventType},
         $self->{result_values}->{managementZone},
-        $self->{result_values}->{entityName}
+        $self->{result_values}->{processName}
     );
 }
 
@@ -85,11 +85,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{event} = [
-        { label => 'status', type => 2, critical_default => '%{status} eq "OPEN"', set => {
+        { label => 'status', type => 2, isplay_ok => 0, critical_default => '%{status} eq "OPEN"', set => {
                 key_values => [
-                    { name => 'status' },  { name => 'entityName' }, { name => 'entityId' }, 
-                    { name => 'displayName' }, { name => 'startTime' }, { name => 'endTime' }, 
-                    { name => 'time' }, { name => 'managementZone' }, { name => 'eventType' }
+                    { name => 'status' },  { name => 'processName' }, { name => 'displayName' }, 
+                    { name => 'startTime' }, { name => 'endTime' }, { name => 'time' }, 
+                    { name => 'managementZone' }, { name => 'eventType' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -106,7 +106,7 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'filter-entity:s'          => { name => 'filter_entity' },
+        'filter-name:s'            => { name => 'filter_name' },
         'filter-event-type:s'      => { name => 'filter_event_type' },
         'filter-management-zone:s' => { name => 'filter_management_zone' },
         'relative-time:s'          => { name => 'relative_time', default => '2h' }
@@ -118,38 +118,50 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $event = $options{custom}->get_events(relative_time => $options{options}->{relative_time});
+    my $management_zone_mapping;
+    if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '') {
+        my $management_zone_mapping = $options{custom}->get_management_zones();
+    }  
+    my $event = $options{custom}->get_events(management_zone_mapping => $management_zone_mapping);
     my ($i, $time) = (1, time());
     my $management_zones;
-    my $entities;
+    my $management_zone_name;
+    my $process_name;
 
     foreach my $item (@{$event->{events}}) {
+        if (defined($item->{managementZones})) {
+            $management_zones = join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}}));
+        } else {
+            $management_zones = 'undefined_management_zone';
+        }
 
-        $management_zones = join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}})),
-        $entities = join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } $item->{entityId}));
+        if (defined($item->{entityId})) {
+            $process_name = $item->{entityId}->{name};
+        } else {
+            $process_name = 'undefined_name_' . $i;
+        }
 
         if (defined($self->{option_results}->{filter_event_type}) && $self->{option_results}->{filter_event_type} ne '' &&
             $item->{eventType} !~ /$self->{option_results}->{filter_event_type}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $item->{eventType} . "': no matching filter.", debug => 1);
             next;
         }
-
-        if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
-            $management_zones !~ /$self->{option_results}->{filter_management_zone}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $management_zones . "': no matching filter.", debug => 1);
-            next;
-        }
         
-        if (defined($self->{option_results}->{filter_entity}) && $self->{option_results}->{filter_entity} ne '' &&
-            $entities !~ /$self->{option_results}->{filter_entity}/) {
-            $self->{output}->output_add(long_msg => "skipping '" .  $entities . "': no matching filter.", debug => 1);
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $process_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" .  $process_name . "': no matching filter.", debug => 1);
             next;
         }
+
+        $self->{global}->{events}++;
 
         foreach my $management_zones (@{$item->{managementZones}}) {
-            $self->{global}->{events}++;
-            $self->{management_zone}->{$management_zones->{name}}->{events}++;
-            $self->{management_zone}->{$management_zones->{name}}->{displayName} = $management_zones->{name};
+            $management_zone_name = defined($management_zones->{name}) ? $management_zones->{name} : 'undefined_management_zone';
+            # if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
+            #     $management_zone_name !~ /$self->{option_results}->{filter_management_zone}/) {
+            #     next;
+            # }
+            $self->{management_zone}->{$management_zone_name}->{events}++;
         }
         
         $self->{event}->{global}->{event}->{$i} = {
@@ -157,13 +169,21 @@ sub manage_selection {
             status         => $item->{status},
             eventType      => $item->{eventType},
             managementZone => $management_zones,
-            entityName     => $entities,
-            entityId       => join(",", centreon::plugins::misc::uniq(map { "$_->{entityId}->{id}" } $item->{entityId})),
+            processName    => $process_name,
             startTime      => $item->{startTime} / 1000,
             endTime        => $item->{endTime} > -1 ? $item->{endTime} / 1000 : -1,
             time           => $time
         };
         $i++;
+    }
+
+    if (scalar(keys %{$self->{event}->{global}->{event}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No event found.");
+        $self->{output}->option_exit();
+    }
+
+    foreach my $management_zone (keys %{$self->{management_zone}}) {
+        $self->{management_zone}->{$management_zone}->{displayName} = $management_zone;
     }
 }
 
