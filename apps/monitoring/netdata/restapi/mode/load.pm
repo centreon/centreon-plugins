@@ -25,6 +25,23 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub custom_load_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf('%.2f', $self->{result_values}->{ $self->{key_values}->[0]->{name} });
+    if ($self->{result_values}->{cpu} > 0) {
+        $msg .= sprintf(
+            ' [%.2f/%s CPUs]',
+            $self->{result_values}->{ $self->{key_values}->[1]->{name} },
+            $self->{result_values}->{cpu}
+        );
+    }
+
+    $self->{key_values}->[0]->{name} =~ /load(\d+)/;
+    $msg .= ' (' . $1 .'m)';
+    return $msg;
+}
+
 sub prefix_load_output {
     my ($self, %options) = @_;
 
@@ -39,24 +56,27 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{loadaverage} = [
-        { label => 'load1', nlabel => 'system.loadaverage.1m.value', set => {
-                key_values => [ { name => 'load1' } ],
+        { label => 'load1', nlabel => 'system.loadaverage.1m.count', set => {
+                key_values => [ { name => 'load1' }, { name => 'load1abs' }, { name => 'cpu' } ],
+                closure_custom_output => $self->can('custom_load_output'),
                 output_template => '%.2f (1m)',
                 perfdatas => [
                     { template => '%.2f', min => 0 }
                 ]
             }
         },
-        { label => 'load5', nlabel => 'system.loadaverage.5m.value', set => {
-                key_values => [ { name => 'load5' } ],
+        { label => 'load5', nlabel => 'system.loadaverage.5m.count', set => {
+                key_values => [ { name => 'load5' }, { name => 'load5abs' }, { name => 'cpu' } ],
+                closure_custom_output => $self->can('custom_load_output'),
                 output_template => '%.2f (5m)',
                 perfdatas => [
                     { template => '%.2f', min => 0 }
                 ]
             }
         },
-        { label => 'load15', nlabel => 'system.loadaverage.15m.value', set => {
-                key_values => [ { name => 'load15' }, { name => 'load1' }, { name => 'load5' } ],
+        { label => 'load15', nlabel => 'system.loadaverage.15m.count', set => {
+                key_values => [ { name => 'load15' }, { name => 'load15abs' }, { name => 'cpu' } ],
+                closure_custom_output => $self->can('custom_load_output'),
                 output_template => '%.2f (15m)',
                 perfdatas => [
                     { template => '%.2f', min => 0 }
@@ -72,8 +92,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'chart-period:s'      => { name => 'chart_period', default => '300' },
-        'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' },
+        'chart-period:s'     => { name => 'chart_period', default => '300' },
+        'chart-statistics:s' => { name => 'chart_statistics', default => 'average' },
+        'average'            => { name => 'average' }
     });
 
     return $self;
@@ -97,8 +118,20 @@ sub manage_selection {
     $self->{loadaverage} = {
         load1  => $self->{load_data}->{load1},
         load5  => $self->{load_data}->{load5},
-        load15 => $self->{load_data}->{load15}
+        load15 => $self->{load_data}->{load15},
+        load1abs => $self->{load_data}->{load1},
+        load5abs => $self->{load_data}->{load5},
+        load15abs => $self->{load_data}->{load15},
+        cpu => 0
     };
+
+    if (defined($self->{option_results}->{average})) {
+        my $cpu_number = $options{custom}->get_info(filter_info => 'cores_total');
+        $self->{loadaverage}->{load1} = $self->{load_data}->{load1} / $cpu_number;
+        $self->{loadaverage}->{load5} = $self->{load_data}->{load5} / $cpu_number;
+        $self->{loadaverage}->{load15} = $self->{load_data}->{load15} / $cpu_number;
+        $self->{loadaverage}->{cpu} = $cpu_number;
+    }
 };
 
 1;
@@ -128,13 +161,13 @@ The statistic calculation method used to parse the collected data.
 Can be : average, sum, min, max.
 Default: average
 
-=item B<--warning-*>
+=item B<--average>
 
-Warning threshold where '*' can be: load1, load5, load15
+Load average for the number of CPUs.
 
-=item B<--critical-*>
+=item B<--warning-*> B<--critical-*>
 
-Critical threshold where '*' can be: load1, load5, load15
+Threshold where '*' can be: load1, load5, load15
 
 =back
 
