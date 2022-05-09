@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'cpu'             => 'os::windows::wsman::mode::cpu',
+        'eventlog'        => 'os::windows::wsman::mode::eventlog',
         'files-date'      => 'os::windows::wsman::mode::filesdate',
         'files-size'      => 'os::windows::wsman::mode::filessize',
         'interfaces'      => 'os::windows::wsman::mode::interfaces',
@@ -44,7 +45,7 @@ sub new {
         'processes'       => 'os::windows::wsman::mode::processes',
         'services'        => 'os::windows::wsman::mode::services',
         'storages'        => 'os::windows::wsman::mode::storages',
-		'sessions'        => 'os::windows::wsman::mode::sessions',
+        'sessions'        => 'os::windows::wsman::mode::sessions',
         'time'            => 'os::windows::wsman::mode::time',
         'uptime'          => 'os::windows::wsman::mode::uptime'
     };
