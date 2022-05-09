@@ -106,7 +106,7 @@ Check Apdex.
 
 =item B<--relative-time>
 
-Set request relative time (Default: 'min').
+Set request relative time (Default: '30min').
 Can use: min, 5mins, 10mins, 15mins, 30mins, hour, 2hours, 6hours, day, 3days, week, month.
 
 =item B<--aggregation-type>
