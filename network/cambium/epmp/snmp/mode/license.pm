@@ -18,19 +18,13 @@
 # limitations under the License.
 #
 
-package network::cambium::snmp::mode::license;
+package network::cambium::epmp::snmp::mode::license;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
-
-sub custom_status_output { 
-    my ($self, %options) = @_;
-
-    return 'License status: ' . $self->{result_values}->{status};
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -40,15 +34,25 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', nlabel => 'license.status', threshold => 0, set => {
+        { label => 'status', 
+        type => 2, 
+        unknown_default => '%{status} =~ /unknown/i',
+        warning_default => '%{status} =~ /validation fail|not provided/i',
+        critical_default => '%{status} =~ /not valid/i',
+        set => {
                 key_values => [ { name => 'status' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
+}
+
+sub custom_status_output { 
+    my ($self, %options) = @_;
+
+    return 'License status: ' . $self->{result_values}->{status};
 }
 
 sub new {
@@ -57,9 +61,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /validation fail|not provided/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /not valid/i' }
     });
 
     return $self;
@@ -69,10 +70,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
-my $mapping_status = {
+my $map_status = {
     0 => 'Unknown',
     1 => 'License Valid',
     2 => 'Validation procedure was not provided',
@@ -84,13 +84,14 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $oid_cambLicenseStatus = '.1.3.6.1.4.1.17713.21.1.8.5.0';
+
     my $snmp_result = $options{snmp}->get_leef(
         oids => [ $oid_cambLicenseStatus ], 
         nothing_quit => 1
     );
 
     $self->{global} = {
-        status => $mapping_status->{ $snmp_result->{$oid_cambLicenseStatus} }
+        status => $map_status->{ $snmp_result->{$oid_cambLicenseStatus} }
     };
 }
 

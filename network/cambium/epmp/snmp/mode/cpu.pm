@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cambium::snmp::mode::cpu;
+package network::cambium::epmp::snmp::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cambium::snmp::mode::antenna;
+package network::cambium::epmp::snmp::mode::antenna;
 
 use base qw(centreon::plugins::templates::counter);
 

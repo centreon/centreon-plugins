@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cambium::snmp::plugin;
+package network::cambium::epmp::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'antenna'         => 'network::cambium::snmp::mode::antenna',
-        'cpu'             => 'network::cambium::snmp::mode::cpu',
-        'interfaces'      => 'snmp_standard::mode::interfaces',
-        'license'         => 'network::cambium::snmp::mode::license',
+        'antenna'         => 'network::cambium::epmp::snmp::mode::antenna',
+        'cpu'             => 'network::cambium::epmp::snmp::mode::cpu',
+        'interfaces'      => 'network::cambium::epmp::snmp::mode::interfaces',
+        'license'         => 'network::cambium::epmp::snmp::mode::license',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'uptime'          => 'snmp_standard::mode::uptime',
+        'uptime'          => 'network::cambium::epmp::snmp::mode::uptime',
     };
 
     return $self;
