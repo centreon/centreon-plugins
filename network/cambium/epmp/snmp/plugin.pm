@@ -48,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cambium equipments through SNMP.
+Check Cambium ePMP equipments through SNMP.
 
 =cut
