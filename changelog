@@ -1,3 +1,22 @@
+2022-05-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Protocol CIFS
+ * Plugin added: Protocol SFTP
+ * Plugin added: NtopNG
+ * Plugin added: Azure MariaDB
+ * Plugin added: AWS backup
+ * Plugin added: Viptela SNMP
+ * Plugin added: IP-Label Ekara
+ * Plugin added: Fortinet FortiADC SNMP
+ * Plugin added: Notification Centreon OpenTickets
+ * Core: wsan powershell chunk management
+ * Core: catch connect croack error for database plugin
+ * Core: add password manager environment
+ * Core: secure and options to encrypt data in plugin cache files
+ * Enhancement: [nortel] support voss hardware
+ * Enhancement: [wazuh] add token method authentication
+ * Enhancement: [cadvisor] support cgroupv2 api
+ * Enhancement: [jacarta] support interseptor
+
 2022-01-13 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: AWS FSx
  * Plugin added: Azure Virtual Machine Scale Sets
