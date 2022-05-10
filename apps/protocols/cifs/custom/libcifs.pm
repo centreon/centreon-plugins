@@ -173,12 +173,12 @@ sub stat_file {
 
     $self->init_cifs();
 
-    my @stat = $self->{cifs}->stat('smb://' . $self->{hostname} .$options{file});
+    my @stat = $self->{cifs}->stat('smb://' . $self->{hostname} . $options{file});
     if ($#stat == 0) {
         return { code => 1, message => "Stat error: $!" };
     }
 
-    return { code => 0, mtime => $stat[11] };
+    return { code => 0, mtime => $stat[11], size => $stat[7] };
 }
 
 1;
