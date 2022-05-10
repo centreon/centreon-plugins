@@ -26,33 +26,6 @@ use strict;
 use warnings;
 use Filesys::SmbClient;
 
-sub custom_mtime_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
-        instances => $self->{result_values}->{name},
-        unit => $self->{instance_mode}->{option_results}->{unit},
-        value => floor($self->{result_values}->{mtime_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min => 0
-    );
-}
-
-sub custom_mtime_threshold {
-    my ($self, %options) = @_;
-
-    return $self->{perfdata}->threshold_check(
-        value => floor($self->{result_values}->{mtime_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
-        threshold => [
-            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
-            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
-        ]
-    );
-}
-
 sub prefix_file_output {
     my ($self, %options) = @_;
 
@@ -67,12 +40,13 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{files} = [
-         { label => 'mtime-last', nlabel => 'file.mtime.last', set => {
-                key_values  => [ { name => 'mtime_seconds' }, { name => 'mtime_human' }, { name => 'name' } ],
-                output_template => 'last modified %s',
-                output_use => 'mtime_human',
-                closure_custom_perfdata => $self->can('custom_mtime_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_mtime_threshold')
+         { label => 'size', nlabel => 'file.size.bytes', set => {
+                key_values  => [ { name => 'size' } ],
+                output_template => 'size: %s%s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%d', unit => 'B', min => 0, label_extra_instance => 1 }
+                ]
             }
         }
     ];
@@ -85,7 +59,8 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'directory:s@' => { name => 'directory' },
-        'file:s@'      => { name => 'file' }
+        'file:s@'      => { name => 'file' },
+        'max-depth:s'  => { name => 'max_depth', default => 0 }
     });
 
     return $self;
@@ -118,37 +93,53 @@ sub check_options {
     $self->{option_results}->{file} = $files;
 }
 
+sub check_directory {
+    my ($self, %options) = @_;
+
+    my @listings = ( [ { name => $options{dir}, level => 0 } ] );
+    my @build_name = ();
+
+    $self->{files}->{ $options{dir} } = { name => $options{dir}, size => 0 };
+
+    foreach my $list (@listings) {
+        while (@$list) {
+            my @files;
+            my $hash = pop(@$list);
+            my $dir = $hash->{name};
+            my $level = $hash->{level};
+
+            my ($rv, $message, $files) =  $options{custom}->list_directory(directory => $dir);
+            if ($rv != 0) {
+                # Cannot list we skip
+                next;
+            }
+
+            foreach my $file (@$files) {
+                next if ($file->[0] != SMBC_FILE && $file->[0] != SMBC_DIR); 
+                next if ($file->[1] eq '.' || $file->[1] eq '..');
+
+                my $name = $dir . '/' . $file->[1];
+
+                if ($file->[0] == SMBC_DIR) {
+                    if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
+                        push @$list, { name => $name, level => $level + 1 };
+                    }
+                } else {
+                    my $rv = $options{custom}->stat_file(file => $name);
+                    $self->{files}->{ $options{dir} }->{size} += $rv->{size};
+                }
+            }        
+        }
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{files} = {};
+
     foreach my $dir (@{$self->{option_results}->{directory}}) {
-        my ($rv, $message, $files) = $options{custom}->list_directory(directory => $dir);
-        if ($rv != 0) {
-            $self->{output}->add_option_msg(short_msg => "cannot read directory '" . $dir . "': " . $message);
-            $self->{output}->option_exit();
-        }
-
-        foreach my $file (@$files) {
-            next if ($file->[0] != SMBC_FILE && $file->[0] != SMBC_DIR); 
-            next if ($file->[1] eq '.' || $file->[1] eq '..');
-
-            my $name = $dir . '/' . $file->[1];
-
-            $rv = $options{custom}->stat_file(file => $name);
-            if ($rv->{code} != 0) {
-                $self->{output}->add_option_msg(short_msg => "cannot stat file '" . $name . "': " . $rv->{message});
-                $self->{output}->option_exit();
-            }
-
-            $self->{files}->{$name} = {
-                name => $name,
-                mtime_seconds => $ctime - $rv->{mtime},
-                mtime_human => centreon::plugins::misc::change_seconds(
-                    value => $ctime - $rv->{mtime}
-                )
-            };
-        }
+        $self->check_directory(custom => $options{custom}, dir => $dir);
     }
 
     foreach my $file (@{$self->{option_results}->{file}}) {
@@ -160,10 +151,7 @@ sub manage_selection {
 
         $self->{files}->{$file} = {
             name => $file,
-            mtime_seconds => $ctime - $rv->{mtime},
-            mtime_human => centreon::plugins::misc::change_seconds(
-                value => $ctime - $rv->{mtime}
-            )
+            size => $rv->{size}
         };
     }
 }
@@ -180,16 +168,21 @@ Check files size.
 
 =item B<--directory>
 
-Check files in the directory (no recursive) (Multiple option)
+Check directory size (Multiple option).
+Can get sub directory size with --max-depth option.
 
 =item B<--file>
 
-Check file (Multiple option. Can be a directory).
+Check file (Multiple option)
+
+=item B<--max-depth>
+
+Don't check fewer levels (Default: '0'. Means current dir only).
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'mtime-last'.
+Can be: 'size'.
 
 =back
 
