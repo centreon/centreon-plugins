@@ -33,7 +33,7 @@ sub custom_traffic_perfdata {
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
         unit => 'b/s',
-        instances => [$self->{result_values}->{ipSrc}, $self->{result_values}->{ipDst}],
+        instances => [$self->{result_values}->{num}, $self->{result_values}->{ipSrc}, $self->{result_values}->{ipDst}],
         value => sprintf('%d', $self->{result_values}->{ $self->{key_values}->[0]->{name} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -45,7 +45,8 @@ sub prefix_vpn_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "VPN '%s/%s' ",
+        "VPN '%s/%s/%s' ",
+        $options{instance_value}->{num},
         $options{instance_value}->{ipSrc},
         $options{instance_value}->{ipDst}
     );
@@ -80,8 +81,7 @@ sub set_counters {
         {
             label => 'status',
             type => 2,
-            warning_default => '%{state} eq "larval"',
-            critical_default => '%{state} =~ /dying|dead/',
+            warning_default => '%{state} eq "dead"',
             set => {
                 key_values => [
                     { name => 'state' }, { name => 'ipSrc' }, { name => 'ipDst' }
@@ -93,21 +93,21 @@ sub set_counters {
             }
         },
         { label => 'traffic', nlabel => 'vpn.traffic.bitspersecond', set => {
-                key_values => [ { name => 'traffic', per_second => 1 }, { name => 'ipSrc' }, { name => 'ipDst' } ],
+                key_values => [ { name => 'traffic', per_second => 1 }, { name => 'ipSrc' }, { name => 'ipDst' }, { name => 'num' } ],
                 output_template => 'traffic: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata')
             }
         },
         { label => 'traffic-in', nlabel => 'vpn.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'ipSrc' }, { name => 'ipDst' } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'ipSrc' }, { name => 'ipDst' }, { name => 'num' } ],
                 output_template => 'traffic in: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata')
             }
         },
         { label => 'traffic-out', nlabel => 'vpn.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'ipSrc' }, { name => 'ipDst' } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'ipSrc' }, { name => 'ipDst' }, { name => 'num' } ],
                 output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata')
@@ -203,6 +203,7 @@ sub manage_selection {
 
         $self->{global}->{detected}++;
         $self->{vpn}->{$instance} = $result;
+        $self->{vpn}->{$instance}->{num} = $instance;
     }
 
     return if (scalar(keys %{$self->{vpn}}) <= 0);
@@ -254,12 +255,12 @@ Can used special variables like: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{state} eq "larval"').
+Set warning threshold for status (Default: '%{state} eq "dead"').
 Can used special variables like: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} =~ /dying|dead/').
+Set critical threshold for status.
 Can used special variables like: %{state}, %{srcIp}, %{dstIp}
 
 =item B<--warning-*> B<--critical-*>
