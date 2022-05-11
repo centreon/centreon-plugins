@@ -52,7 +52,7 @@ sub get_metrics_mapping {
         },
         'serverlog_storage_usage' => {
             'output' => 'Server Log storage used',
-            'label'  => 'servelog-usage',
+            'label'  => 'serverlog-usage',
             'nlabel' => 'azmariadb.storage.serverlog.usage.bytes',
             'unit'   => 'B',
             'min'    => '0'
@@ -186,13 +186,13 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'storage-backup', 'serverlog-limit', 'serverlog-percent', 'servelog-usage', 
+'storage-backup', 'serverlog-limit', 'serverlog-percent', 'serverlog-usage', 
 'storage-limit', 'storage-percent', 'storage-used'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'storage-backup', 'serverlog-limit', 'serverlog-percent', 'servelog-usage', 
+'storage-backup', 'serverlog-limit', 'serverlog-percent', 'serverlog-usage', 
 'storage-limit', 'storage-percent', 'storage-used'.
 
 =back
