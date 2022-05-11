@@ -266,7 +266,7 @@ Can used special variables like: %{state}, %{srcIp}, %{dstIp}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'traffic'.
+Can be: 'vpn-detected', 'traffic', 'traffic-in', 'traffic-out'.
 
 =back
 
