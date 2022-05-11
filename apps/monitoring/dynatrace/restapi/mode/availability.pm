@@ -141,7 +141,7 @@ __END__
 
 =head1 MODE
 
-Check Apdex.
+Check Synthetic Monitor availability.
 
 =over 8
 
@@ -152,7 +152,7 @@ Can use: min, 5mins, 10mins, 15mins, 30mins, hour, 2hours, 6hours, day, 3days, w
 
 =item B<--filter-synthetic>
 
-Filter availability by synthetic monitor (can be a regexp).
+Filter availability by Synthetic Monitor (can be a regexp).
 
 =item B<--filter-geolocation>
 

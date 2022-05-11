@@ -107,9 +107,9 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'filter-entity:s'          => { name => 'filter_entity' },
-        'filter-management-zone:s' => { name => 'filter_management_zone' },
-        'relative-time:s'          => { name => 'relative_time', default => '2h' }
+        'entity:s'          => { name => 'filter_entity' },
+        'management-zone:s' => { name => 'filter_management_zone' },
+        'relative-time:s'   => { name => 'relative_time', default => '2h' }
     });
 
     return $self;
@@ -185,15 +185,15 @@ Check open problems.
 Set request relative time (Default: '2h').
 Can use: Xm (minutes), Xh (hours), Xd (days), Xm (months), Xy (year) where 'X' is the amount of time.
 
-=item B<--filter-management-zone>
+=item B<--management-zone>
 
 Filter problems by management zone. Mutliple management zones need to be separated by comma.
-Example: --filter-management-zone='MZ1,MZ2'
+Example: --management-zone='MZ1,MZ2'
 
-=item B<--filter-entity>
+=item B<--entity>
 
 Filter problems by entity. Mutliple entities need to be separated by comma.
-Example: --filter-management-zone='entity1,entity2'
+Example: --entity='entity1,entity2'
 
 =item B<--unknown-status>
 

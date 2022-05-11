@@ -108,7 +108,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-name:s'            => { name => 'filter_name' },
         'filter-event-type:s'      => { name => 'filter_event_type' },
-        'filter-management-zone:s' => { name => 'filter_management_zone' },
+        'management-zone:s'        => { name => 'filter_management_zone' },
         'relative-time:s'          => { name => 'relative_time', default => '2h' }
     });
 
@@ -202,10 +202,10 @@ Check events.
 Set request relative time (Default: '2h').
 Can use: Xm (minutes), Xh (hours), Xd (days), Xm (months), Xy (year) where 'X' is the amount of time.
 
-=item B<--filter-management-zone>
+=item B<--management-zone>
 
 Filter problems by management zone. Mutliple management zones need to be separated by comma.
-Example: --filter-management-zone='MZ1,MZ2'
+Example: --management-zone='MZ1,MZ2'
 
 =item B<--filter-event-type>
 
