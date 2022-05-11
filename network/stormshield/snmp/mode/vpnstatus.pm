@@ -223,7 +223,7 @@ sub manage_selection {
         $self->{vpn}->{$_}->{traffic} = $result->{traffic} * 8 if (defined($result->{traffic}));
         $self->{vpn}->{$_}->{traffic_out} = $result->{traffic_out} * 8 if (defined($result->{traffic_out}));
         $self->{vpn}->{$_}->{traffic_in} = $result->{traffic_in} * 8 if (defined($result->{traffic_in}));
-    }    
+    }
 }
 
 1;
