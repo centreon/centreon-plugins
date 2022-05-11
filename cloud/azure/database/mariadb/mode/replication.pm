@@ -119,13 +119,13 @@ Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=connections --custommode=api
 --resource=<db_id> --resource-group=<resourcegroup_id> --aggregation='maximum'
---warning-replication-lag='1000' --critical-replication-lag='2000'
+--warning-slave-latency-seconds='1000' --critical-slave-latency-seconds='2000'
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::database::mariadb::plugin --mode=connections --custommode=api
 --resource='/subscriptions/<subscription_id>/resourceGroups/<resourcegroup_id>/providers/Microsoft.DBforMariaDB/servers/<db_id>'
---aggregation='maximum' --warning-replication-lag='1000' --critical-replication-lag='2000'
+--aggregation='maximum' --warning-slave-latency-seconds='1000' --critical-slave-latency-seconds='2000'
 
 Default aggregation: 'maximum' / 'average', 'minimum' and 'total' are valid.
 
@@ -142,12 +142,12 @@ Set resource group (Required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'replication-lag-count'.
+'slave-latency-seconds'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'replication-lag-count'.
+'slave-latency-seconds'.
 
 =back
 
