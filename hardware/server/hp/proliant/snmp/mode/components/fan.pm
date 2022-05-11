@@ -115,7 +115,7 @@ sub check {
 
         if (defined($result->{cpqHeFltTolFanCurrentSpeed})) {
             $self->{output}->perfdata_add(
-                label => 'fan_speed', unit => 'rpm',
+                unit => 'rpm',
                 nlabel => 'hardware.fan.speed.rpm',
                 instances => $instance,
                 value => $result->{cpqHeFltTolFanCurrentSpeed}

@@ -356,6 +356,25 @@ sub collect_sql_sampling {
     $self->{sql_cache}->write(data => { sql_collected_sampling => $self->{sql_collected_sampling} });
 }
 
+sub connect_sql {
+    my ($self, %options) = @_;
+
+    my ($status, $dontquit) = ('succeeded', 0);
+    if (defined($self->{config}->{sql}->{connectHandleError}) && $self->{config}->{sql}->{connectHandleError} == 1) {
+        $dontquit = 1;
+    }
+
+    my ($rv, $message) = $options{sql}->connect(dontquit => $dontquit);
+    if ($rv == -1) {
+        $status = 'failed';
+    }
+
+    $self->add_builtin(name => 'connectStatus', value => $status);
+    $self->add_builtin(name => 'connectMessage', value => defined($message) ? $message : '-');
+
+    return $rv;
+}
+
 sub collect_sql {
     my ($self, %options) = @_;
 
@@ -369,8 +388,9 @@ sub collect_sql {
         $self->{sql_collected_sampling} = { tables => {}, epoch => time() };
         $self->{sql_collected} = { tables => {}, epoch => time(), sampling => 0 };
 
-        $options{sql}->connect();
-        $self->collect_sql_tables(sql => $options{sql});
+        if ($self->connect_sql(%options) == 0) {
+            $self->collect_sql_tables(sql => $options{sql});
+        }
 
         $self->{sql_collected}->{sampling} = 1 if (
             scalar(keys(%{$self->{sql_collected_sampling}->{tables}})) > 0
