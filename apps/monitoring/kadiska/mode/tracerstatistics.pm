@@ -78,8 +78,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-station-name:s' => { name => 'filter_station_name' },
-        'filter-tracer:s'       => { name => 'filter_tracer' }
+        'filter-station-name:s'      => { name => 'filter_station_name' },
+        'filter-target-name:s'       => { name => 'filter_target_name' }
     });
 
     return $self;
@@ -91,7 +91,7 @@ sub manage_selection {
     my $raw_form_post = {
         "select" => [
             {
-                "tracer:group" => "tracer_id"
+                "target:group" => "target_name"
             },
             {
                 "length_furthest:avg" => ["avg","length_furthest"]
@@ -105,7 +105,7 @@ sub manage_selection {
         ],
         "from" => "traceroute",
         "groupby" => [
-            "tracer:group"
+            "target:group"
         ],
         "orderby" => [
             ["rtt_furthest:avg","desc"]
@@ -126,10 +126,10 @@ sub manage_selection {
 
     $self->{targets} = {};
     foreach my $watcher (@{$results->{data}}) {
-        next if (defined($self->{option_results}->{filter_tracer}) && $self->{option_results}->{filter_tracer} ne ''
-            && $watcher->{'tracer:group'} !~ /$self->{option_results}->{filter_tracer}/);
+        next if (defined($self->{option_results}->{filter_target_name}) && $self->{option_results}->{filter_target_name} ne ''
+            && $watcher->{'target:group'} !~ /^$self->{option_results}->{filter_target_name}$/);
 
-        my $instance = $watcher->{"tracer:group"};
+        my $instance = $watcher->{"target:group"};
 
         $self->{targets}->{$instance} = {
             round_trip => ($watcher->{'rtt_furthest:avg'} / 1000),
@@ -159,13 +159,13 @@ Check Kadiska tracer targets' statistics during the period specified.
 
 Filter on station name to display tracer targets' statistics linked to a particular station. 
 
-=item B<--filter-tracer>
+=item B<--filter-target-name>
 
 Filter to display statistics for particular tracer targets. Can be a regex or a single tracer target.
-A tracer_id must be given. 
+A target name must be given. 
 
 Regex example: 
---filter-tracer="(tracer:myid|tracer:anotherid)"
+--filter-target-name="(mylab.com|shop.mylab.com)"
 
 =item B<--warning-round-trip>
 
