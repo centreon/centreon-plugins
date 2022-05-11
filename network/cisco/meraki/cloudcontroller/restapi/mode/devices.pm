@@ -170,7 +170,7 @@ sub set_counters {
 
     $self->{maps_counters}->{device_connections} = [
         { label => 'connections-success', nlabel => 'device.connections.success.count', set => {
-                key_values => [ { name => 'assoc' } ],
+                key_values => [ { name => 'success' } ],
                 output_template => 'success: %s',
                 perfdatas => [
                     { template => '%d', min => 0, label_extra_instance => 1 }
@@ -321,7 +321,7 @@ sub add_connection_stats {
         auth => defined($connections->{auth}) ? $connections->{auth} : 0,
         dhcp => defined($connections->{dhcp}) ? $connections->{dhcp} : 0,
         dns => defined($connections->{dns}) ? $connections->{dns} : 0,
-        success => defined($connections->{assoc}) ? $connections->{success} : 0
+        success => defined($connections->{success}) ? $connections->{success} : 0
     };
 }
 
