@@ -158,13 +158,13 @@ Filter availability by Synthetic Monitor (can be a regexp).
 
 Filter availability by geolocation (can be a regexp).
 
-=item B<--warning-apdex>
+=item B<--warning-availability>
 
-Set warning threshold for Apdex.
+Set warning threshold for availability.
 
-=item B<--critical-apdex>
+=item B<--critical-availability>
 
-Set critical threshold for apdex.
+Set critical threshold for availability.
 
 =back
 
