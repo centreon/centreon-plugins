@@ -32,8 +32,8 @@ my %map_fan_state = (
 );
 
 my $mapping = {
-    raisecomFanSpeedValue   => { oid => '.1.3.6.1.4.1.8886.1.27.5.1.1.4' },
-    raisecomFanWorkState    => { oid => '.1.3.6.1.4.1.8886.1.27.5.1.1.3.6', map => \%map_fan_state },
+    raisecomFanSpeedValue => { oid => '.1.3.6.1.4.1.8886.1.27.5.1.1.4' },
+    raisecomFanWorkState  => { oid => '.1.3.6.1.4.1.8886.1.27.5.1.1.3.6', map => \%map_fan_state },
 };
 my $oid_raisecomFanMonitorStateEntry = '.1.3.6.1.4.1.8886.1.27.5.1.1';
 
@@ -47,13 +47,17 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking fans");
-    $self->{components}->{fan} = {name => 'fan', total => 0, skip => 0};
+    $self->{components}->{fan} = { name => 'fan', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_raisecomFanMonitorStateEntry}})) {
         next if ($oid !~ /^$mapping->{raisecomFanWorkState}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_raisecomFanMonitorStateEntry}, instance => $instance);
+        my $result =
+            $self->{snmp}->map_instance(
+                mapping  => $mapping,
+                results  => $self->{results}->{$oid_raisecomFanMonitorStateEntry},
+                instance => $instance);
 
         next if ($self->check_filter(section => 'fan', instance => $instance));
 
@@ -62,24 +66,32 @@ sub check {
                                                         $instance, $result->{raisecomFanWorkState}, $instance));
         my $exit = $self->get_severity(section => 'fan', value => $result->{raisecomFanWorkState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                       short_msg => sprintf("Fan '%s' status is '%s'", $instance, $result->{raisecomFanWorkState}));
+            $self->{output}->output_add(
+                severity  => $exit,
+                short_msg => sprintf("Fan '%s' status is '%s'", $instance, $result->{raisecomFanWorkState}));
         }
-        
-        my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'fan.speed', instance => $instance, value => $result->{raisecomFanSpeedValue});
+
+        my ($exit2, $warn, $crit) =
+            $self->get_severity_numeric(
+                section  => 'fan.speed',
+                instance => $instance,
+                value    => $result->{raisecomFanSpeedValue});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Fan speed '%s' is %s rpm", $instance, $result->{raisecomFanSpeedValue}));
+            $self->{output}->output_add(
+                severity  => $exit2,
+                short_msg => sprintf("Fan speed '%s' is %s rpm",
+                                     $instance,
+                                     $result->{raisecomFanSpeedValue}));
         }
-        
+
         $self->{output}->perfdata_add(
-            label => 'fan', unit => 'rpm',
-            nlabel => 'hardware.fan.speed.rpm',
+            label     => 'fan', unit => 'rpm',
+            nlabel    => 'hardware.fan.speed.rpm',
             instances => $instance,
-            value => $result->{raisecomFanSpeedValue},
-            warning => $warn,
-            critical => $crit,
-            min => 0
+            value     => $result->{raisecomFanSpeedValue},
+            warning   => $warn,
+            critical  => $crit,
+            min       => 0
         );
     }
 }
