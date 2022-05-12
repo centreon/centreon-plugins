@@ -42,7 +42,7 @@ my %map_input_status = (
 );
 
 my $mapping_input = {
-    raisecomPowerStatus    => { oid => '.1.3.6.1.4.1.8886.1.27.4.1.1.10', map => \%map_input_status },
+    raisecomPowerStatus   => { oid => '.1.3.6.1.4.1.8886.1.27.4.1.1.10', map => \%map_input_status },
     raisecomPowerInputvol => { oid => '.1.3.6.1.4.1.8886.1.27.4.1.1.9' }
 };
 
@@ -68,9 +68,15 @@ sub check {
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_raisecomOutputEntry}})) {
         next if ($oid !~ /^$mapping_output->{raisecomPowerStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $instance_id =  substr($instance, 0, index($instance, "."));
+        my $instance_id = substr($instance, 0, index($instance, "."));
 
-        my $result = $self->{snmp}->map_instance(mapping => $mapping_output, results => $self->{results}->{$oid_raisecomOutputEntry}, instance => $instance);
+        my $result =
+            $self->{snmp}->map_instance(mapping  =>
+                                        $mapping_output,
+                                        results  =>
+                                        $self->{results}->{$oid_raisecomOutputEntry},
+                                        instance =>
+                                        $instance);
 
         next if ($self->check_filter(section => 'voltage_output', instance => $instance_id));
         $self->{components}->{voltage}->{total}++;
@@ -94,11 +100,21 @@ sub check {
 
         next if (!defined($result->{raisecomPowerOutputvol}) || $result->{raisecomPowerOutputvol} !~ /[0-9]+/);
 
-        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage_output', instance => $instance_id, value => $result->{raisecomPowerOutputvol});
+        ($exit, $warn, $crit, $checked) =
+            $self->get_severity_numeric(section  =>
+                                        'voltage_output',
+                                        instance =>
+                                        $instance_id,
+                                        value    =>
+                                        $result->{raisecomPowerOutputvol});
 
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                short_msg                        => sprintf("Voltage '%s' is %.2f mV", "Power Output $instance_id", $result->{raisecomPowerOutputvol}));
+            $self->{output}->output_add(severity  =>
+                                        $exit,
+                                        short_msg =>
+                                        sprintf("Voltage '%s' is %.2f mV",
+                                                "Power Output $instance_id",
+                                                $result->{raisecomPowerOutputvol}));
         }
         $self->{output}->perfdata_add(
             label     => 'volt_output', unit => 'mV',
@@ -118,7 +134,13 @@ sub check {
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_raisecomInputEntry}})) {
         next if ($oid !~ /^$mapping_input->{raisecomPowerStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping_input, results => $self->{results}->{$oid_raisecomInputEntry}, instance => $instance);
+        my $result =
+            $self->{snmp}->map_instance(mapping  =>
+                                        $mapping_input,
+                                        results  =>
+                                        $self->{results}->{$oid_raisecomInputEntry},
+                                        instance =>
+                                        $instance);
 
         next if ($self->check_filter(section => 'voltage_input', instance => $instance));
         $self->{components}->{voltage}->{total}++;
@@ -142,11 +164,21 @@ sub check {
 
         next if (!defined($result->{raisecomPowerInputvol}) || $result->{raisecomPowerInputvol} !~ /[0-9]+/);
 
-        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage_input', instance => $instance, value => $result->{raisecomPowerInputvol});
+        ($exit, $warn, $crit, $checked) =
+            $self->get_severity_numeric(section  =>
+                                        'voltage_input',
+                                        instance =>
+                                        $instance,
+                                        value    =>
+                                        $result->{raisecomPowerInputvol});
 
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                short_msg                        => sprintf("Voltage '%s' is %.2f mV", "Power Input $instance", $result->{raisecomPowerInputvol}));
+            $self->{output}->output_add(severity  =>
+                                        $exit,
+                                        short_msg =>
+                                        sprintf("Voltage '%s' is %.2f mV",
+                                                "Power Input $instance",
+                                                $result->{raisecomPowerInputvol}));
         }
         $self->{output}->perfdata_add(
             label     => 'volt_input', unit => 'mV',
