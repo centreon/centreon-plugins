@@ -47,33 +47,38 @@ sub check {
         next if ($oid !~ /^$mapping->{tempValue}->{oid}\.(.*)$/);
         my $instance = $1;
 
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{tempValue}->{oid} }, instance => $instance);
+        my $result =
+            $self->{snmp}->map_instance(
+                mapping  => $mapping,
+                results  => $self->{results}->{ $mapping->{tempValue}->{oid} },
+                instance => $instance);
         next if ($self->check_filter(section => 'temperature', instance => $instance));
 
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
                 "System temperature is %s celsius",
-                 $result->{tempValue}
+                $result->{tempValue}
             )
         );
 
-        my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{tempValue});
+        my ($exit, $warn, $crit) =
+            $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{tempValue});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
-                severity => $exit,
+                severity  => $exit,
                 short_msg => sprintf(
                     "System temperature is %s celsius", $result->{tempValue}
                 )
             );
         }
         $self->{output}->perfdata_add(
-            nlabel => 'hardware.temperature.celsius',
-            unit => 'C',
+            nlabel    => 'hardware.temperature.celsius',
+            unit      => 'C',
             instances => 'system',
-            value => $result->{tempValue},
-            warning => $warn,
-            critical => $crit, min => 0
+            value     => $result->{tempValue},
+            warning   => $warn,
+            critical  => $crit, min => 0
         );
     }
 }
