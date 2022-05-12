@@ -32,11 +32,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
+        'filter-name:s'   => { name => 'filter_name' },
         'filter-status:s' => { name => 'filter_status' }
     });
 
-    $self->{order} = ['name', 'pid', 'status'];
+    $self->{order} = [ 'name', 'pid', 'status' ];
     return $self;
 }
 
@@ -58,9 +58,9 @@ my %map_status = (
 );
 
 my $mapping = {
-    name       => { oid => '.1.3.6.1.4.1.8886.18.1.7.2.2.1.3' }, # rcRunProcessName
-    pid       => { oid => '.1.3.6.1.4.1.8886.18.1.7.2.2.1.2' }, #  rcRunProcessPID
-    status     => { oid => '.1.3.6.1.4.1.8886.18.1.7.2.2.1.9', map => \%map_status }, #  rcRunProcessStatus
+    name   => { oid => '.1.3.6.1.4.1.8886.18.1.7.2.2.1.3' },                      # rcRunProcessName
+    pid    => { oid => '.1.3.6.1.4.1.8886.18.1.7.2.2.1.2' },                      #  rcRunProcessPID
+    status => { oid => '.1.3.6.1.4.1.8886.18.1.7.2.2.1.9', map => \%map_status }, #  rcRunProcessStatus
 };
 
 
@@ -69,9 +69,9 @@ sub manage_selection {
 
     my $oid_hrSWRunEntry = '.1.3.6.1.4.1.8886.18.1.7.2.2.1';
     my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_hrSWRunEntry,
-        start => $mapping->{pid}->{oid},
-        end => $mapping->{status}->{oid},
+        oid          => $oid_hrSWRunEntry,
+        start        => $mapping->{pid}->{oid},
+        end          => $mapping->{status}->{oid},
         nothing_quit => 1
     );
     my $results = {};
@@ -82,13 +82,17 @@ sub manage_selection {
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{name} . "': no matching name filter.", debug => 1);
+            $self->{output}->output_add(
+                long_msg => "skipping '" . $result->{name} . "': no matching name filter.",
+                debug    => 1);
             next;
         }
 
         if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
             $result->{name} !~ /$self->{option_results}->{filter_status}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{name} . "': no matching status filter.", debug => 1);
+            $self->{output}->output_add(
+                long_msg => "skipping '" . $result->{name} . "': no matching status filter.",
+                debug    => 1);
             next;
         }
 
@@ -111,7 +115,7 @@ sub run {
     }
 
     $self->{output}->output_add(
-        severity => 'OK',
+        severity  => 'OK',
         short_msg => 'List processes:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
