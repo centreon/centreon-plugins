@@ -58,11 +58,11 @@ sub manage_selection {
 
     my $raw_form_post = {
         "select" => [
-            "tracer_id"
+            "target_name"
         ],
         "from" => "traceroute",
         "groupby" => [
-            "tracer_id"
+            "target_name"
         ],
         "offset" => 0,
         "options" => {"sampling" => \1 }
@@ -86,7 +86,7 @@ sub run {
     foreach my $target (@{$self->{targets}->{data}}){
         $self->{output}->output_add(
             long_msg => sprintf("[target = %s][station = %s]", 
-                $target->{tracer_id},
+                $target->{target_name},
                 $self->{option_results}->{station_name}
             )
         );
@@ -113,7 +113,7 @@ sub disco_show {
 
     foreach my $target (@{$self->{targets}->{data}}){
         $self->{output}->add_disco_entry( 
-                target => $target->{tracer_id},
+                target => $target->{target_name},
                 station => $self->{option_results}->{station_name}
         );
     }
