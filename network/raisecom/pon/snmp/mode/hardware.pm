@@ -34,31 +34,31 @@ sub set_system {
     $self->{cb_hook2} = 'snmp_execute';
 
     $self->{thresholds} = {
-        fan => [
-            ['abnormal', 'CRITICAL'],
-            ['unknown', 'UNKNOWN'],
-            ['null', 'UNKNOWN'],
-            ['normal', 'OK']
+        fan            => [
+            [ 'abnormal', 'CRITICAL' ],
+            [ 'unknown', 'UNKNOWN' ],
+            [ 'null', 'UNKNOWN' ],
+            [ 'normal', 'OK' ]
         ],
-        voltage_input => [
-            ['abnormal', 'CRITICAL'],
-            ['unknown', 'UNKNOWN'],
-            ['null', 'UNKNOWN'],
-            ['normal', 'OK']
+        voltage_input  => [
+            [ 'abnormal', 'CRITICAL' ],
+            [ 'unknown', 'UNKNOWN' ],
+            [ 'null', 'UNKNOWN' ],
+            [ 'normal', 'OK' ]
         ],
         voltage_output => [
-            ['highAlarm', 'CRITICAL'],
-            ['uppCri', 'CRITICAL'],
-            ['lowCri', 'CRITICAL'],
-            ['lowAlarm', 'WARNING'],
-            ['lowMin', 'WARNING'],
-            ['lowMaj', 'WARNING'],
-            ['normal', 'OK']
+            [ 'highAlarm', 'CRITICAL' ],
+            [ 'uppCri', 'CRITICAL' ],
+            [ 'lowCri', 'CRITICAL' ],
+            [ 'lowAlarm', 'WARNING' ],
+            [ 'lowMin', 'WARNING' ],
+            [ 'lowMaj', 'WARNING' ],
+            [ 'normal', 'OK' ]
         ]
     };
 
     $self->{components_path} = 'network::raisecom::pon::snmp::mode::components';
-    $self->{components_module} = ['fan', 'temperature', 'voltage'];
+    $self->{components_module} = [ 'fan', 'temperature', 'voltage' ];
 }
 
 sub snmp_execute {
