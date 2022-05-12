@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::kadiska::mode::tracerstatistics;
+package apps::monitoring::kadiska::mode::nettracerstatistics;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -125,16 +125,16 @@ sub manage_selection {
     );
 
     $self->{targets} = {};
-    foreach my $watcher (@{$results->{data}}) {
+    foreach my $station (@{$results->{data}}) {
         next if (defined($self->{option_results}->{filter_target_name}) && $self->{option_results}->{filter_target_name} ne ''
-            && $watcher->{'target:group'} !~ /^$self->{option_results}->{filter_target_name}$/);
+            && $station->{'target:group'} !~ /^$self->{option_results}->{filter_target_name}$/);
 
-        my $instance = $watcher->{"target:group"};
+        my $instance = $station->{"target:group"};
 
         $self->{targets}->{$instance} = {
-            round_trip => ($watcher->{'rtt_furthest:avg'} / 1000),
-            packets_loss_prct => $watcher->{'loss_furthest:avg'},
-            path_length => $watcher->{'length_furthest:avg'},
+            round_trip => ($station->{'rtt_furthest:avg'} / 1000),
+            packets_loss_prct => $station->{'loss_furthest:avg'},
+            path_length => $station->{'length_furthest:avg'},
         };
     };
 
@@ -151,17 +151,17 @@ __END__
 
 =head1 MODE
 
-Check Kadiska tracer targets' statistics during the period specified.
+Check Kadiska net tracer targets' statistics during the period specified.
 
 =over 8
 
 =item B<--filter-station-name>
 
-Filter on station name to display tracer targets' statistics linked to a particular station. 
+Filter on station name to display net tracer targets' statistics linked to a particular station. 
 
 =item B<--filter-target-name>
 
-Filter to display statistics for particular tracer targets. Can be a regex or a single tracer target.
+Filter to display statistics for particular net tracer targets. Can be a regex or a single tracer target.
 A target name must be given. 
 
 Regex example: 

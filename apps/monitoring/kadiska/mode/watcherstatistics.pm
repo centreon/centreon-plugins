@@ -64,6 +64,14 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'loading-page', nlabel => 'watcher.loading.page.duration.seconds', set => {
+                key_values => [ { name => 'loading_page' } ],
+                output_template => 'Loading page duration: %.2f s',
+                perfdatas => [
+                    { template => '%.2f', unit => 's', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },   
         { label => 'pages', nlabel => 'watcher.pages.count', set => {
                 key_values => [ { name => 'pages' } ],
                 output_template => 'pages: %d',
@@ -114,6 +122,9 @@ sub manage_selection {
             },
             {
                 "item:count|pages" => ["countFor","pages"]
+            },
+            {
+                "lcp:p75|pages" => ["p75For","pages","lcp"]
             }
         ],
         "from" => "rum",
@@ -141,9 +152,10 @@ sub manage_selection {
 
         $self->{watchers}->{$instance} = {
             errors_prct => $watcher->{'%errors:avg|hits'},
-            sessions => $watcher->{'session:sum|hits'},
+            loading_page => ($watcher->{'lcp:p75|pages'} / 10**6),
+            pages => $watcher->{'item:count|pages'},
             requests => $watcher->{'item:count|requests'},
-            pages => $watcher->{'item:count|pages'} 
+            sessions => $watcher->{'session:sum|hits'}
         };
     };
 
