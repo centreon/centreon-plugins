@@ -43,14 +43,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'process-status:s' => { name => 'process_status' },
-        'process-name:s'   => { name => 'process_name' },
-        'regexp-name'      => { name => 'regexp_name' },
-        'process-pid'      => { name => 'process_pid' },
-        'warning:s'        => { name => 'warning' },
-        'critical:s'       => { name => 'critical' }
-    });
+    $options{options}->add_options(
+        arguments => {
+            'process-status:s' => { name => 'process_status' },
+            'process-name:s'   => { name => 'process_name' },
+            'regexp-name'      => { name => 'regexp_name' },
+            'process-pid'      => { name => 'process_pid' },
+            'warning:s'        => { name => 'warning' },
+            'critical:s'       => { name => 'critical' }
+        });
 
     return $self;
 }
@@ -60,11 +61,14 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->add_option_msg(short_msg =>
+                                        "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
         $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical}))
+        == 0) {
+        $self->{output}->add_option_msg(short_msg =>
+                                        "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
 }
@@ -85,7 +89,8 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     foreach my $filter (keys %$filters) {
-        if (defined($self->{option_results}->{'process_' . $filter}) && $self->{option_results}->{'process_' . $filter} ne '') {
+        if (defined($self->{option_results}->{'process_' . $filter}) && $self->{option_results}->{'process_' . $filter}
+                                                                        ne '') {
             $filters->{$filter}->{value} = $self->{option_results}->{'process_' . $filter};
         }
         if (defined($self->{option_results}->{'regexp_' . $filter})) {
@@ -105,34 +110,52 @@ sub run {
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{snmp_response}->{$oid_rcRunProcessStatus}})) {
         next if ($key !~ /^$oid_rcRunProcessStatus\.(.*)$/);
         my $instance = $1;
-        $self->{results}->{$instance}->{status} = $map_process_status{$self->{snmp_response}->{$oid_rcRunProcessStatus}->{$oid_rcRunProcessStatus . '.' . $instance}};
-        $self->{results}->{$instance}->{name} = $self->{snmp_response}->{$oid_rcRunProcessName}->{$oid_rcRunProcessName . '.' . $instance};
-        $self->{results}->{$instance}->{pid} = $self->{snmp_response}->{$oid_rcRunProcessPID}->{$oid_rcRunProcessPID . '.' . $instance};
+        $self->{results}->{$instance}->{status} = $map_process_status{$self
+            ->{snmp_response}
+            ->{$oid_rcRunProcessStatus}
+            ->{$oid_rcRunProcessStatus . '.' . $instance}};
+        $self->{results}->{$instance}->{name} = $self
+            ->{snmp_response}
+            ->{$oid_rcRunProcessName}
+            ->{$oid_rcRunProcessName . '.' . $instance};
+        $self->{results}->{$instance}->{pid} = $self
+            ->{snmp_response}
+            ->{$oid_rcRunProcessPID}
+            ->{$oid_rcRunProcessPID . '.' . $instance};
 
         foreach my $filter (keys %$filters) {
             next if !defined($self->{results}->{$instance}) || $filters->{$filter}->{value} eq '';
-            if ((defined($filters->{$filter}->{regexp}) && $self->{results}->{$instance}->{$filter} !~ /$filters->{$filter}->{value}/)
-                || (!defined($filters->{$filter}->{regexp}) && $self->{results}->{$instance}->{$filter} ne $filters->{$filter}->{value})) {
+            if ((defined($filters->{$filter}->{regexp}) && $self->{results}->{$instance}->{$filter} !~ /$filters
+                ->{$filter}
+                ->{value}/)
+                || (!defined($filters->{$filter}->{regexp}) && $self->{results}->{$instance}->{$filter} ne $filters
+                ->{$filter}
+                ->{value})) {
                 delete $self->{results}->{$instance};
             }
         }
     }
 
     my $num_processes_match = scalar(keys(%{$self->{results}}));
-    my $exit = $self->{perfdata}->threshold_check(value => $num_processes_match,
-        threshold                                       => [ { label => 'critical', exit_litteral => 'critical' },
-            { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-        short_msg                        => "Number of current processes running: $num_processes_match");
-    $self->{output}->perfdata_add(label => 'nbproc',
-        value                           => $num_processes_match,
-        warning                         => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-        critical                        => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-        min                             => 0);
+    my $exit = $self->{perfdata}->threshold_check(
+        value     => $num_processes_match,
+        threshold => [ { label => 'critical', exit_litteral => 'critical' },
+                       { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(
+        severity  => $exit,
+        short_msg => "Number of current processes running: $num_processes_match");
+    $self->{output}->perfdata_add(
+        label    => 'nbproc',
+        value    => $num_processes_match,
+        warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min      => 0);
 
     foreach my $pid (keys %{$self->{results}}) {
         my $long_msg = sprintf("Process '%s'", $self->{results}->{$pid}->{name});
-        $long_msg .= sprintf(" [status: %s, pid: %s]", $self->{results}->{$pid}->{status}, $self->{results}->{$pid}->{pid});
+        $long_msg .= sprintf(" [status: %s, pid: %s]",
+                             $self->{results}->{$pid}->{status},
+                             $self->{results}->{$pid}->{pid});
         $self->{output}->output_add(long_msg => $long_msg);
     }
 
