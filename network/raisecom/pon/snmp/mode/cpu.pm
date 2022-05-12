@@ -39,7 +39,7 @@ sub set_counters {
             output_template => '%.2f%% (1sec)',
             perfdatas       => [
                 { label => 'cpu_1s', value => 'oneSec', template => '%.2f',
-                    min => 0, max => 100, unit => '%' },
+                  min   => 0, max => 100, unit => '%' },
             ],
         }
         },
@@ -48,7 +48,7 @@ sub set_counters {
             output_template => '%.2f%% (10min)',
             perfdatas       => [
                 { label => 'cpu_10m', value => 'tenMin', template => '%.2f',
-                    min => 0, max => 100, unit => '%' },
+                  min   => 0, max => 100, unit => '%' },
             ],
         }
         },
@@ -57,7 +57,7 @@ sub set_counters {
             output_template => '%.2f%% (2h)',
             perfdatas       => [
                 { label => 'cpu_2h', value => 'twoHour', template => '%.2f',
-                    min => 0, max => 100, unit => '%' },
+                  min   => 0, max => 100, unit => '%' },
             ],
         }
         }
@@ -76,8 +76,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments =>
-        {
-        });
+                                   {
+                                   });
 
     return $self;
 }
@@ -98,12 +98,9 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_table(
         oid          => $oid_raisecomCPUUtilizationEntry,
         start        => $mapping->{oneSec}->{oid},
-        end        => $mapping->{twoHour}->{oid},
+        end          => $mapping->{twoHour}->{oid},
         nothing_quit => 1
     );
-
-    use Data::Dumper;
-    print Dumper($snmp_result);
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{oneSec}->{oid}\.(.*)$/);
