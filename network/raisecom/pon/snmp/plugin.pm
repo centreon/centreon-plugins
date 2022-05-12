@@ -32,14 +32,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'cpu'          => 'network::raisecom::pon::snmp::mode::cpu',
-        'hardware'     => 'network::raisecom::pon::snmp::mode::hardware',
-        'interfaces'   => 'snmp_standard::mode::interfaces',
-        'memory'       => 'network::raisecom::pon::snmp::mode::memory',
-        'processcount' => 'network::raisecom::pon::snmp::mode::processcount',
-        'uptime'       => 'snmp_standard::mode::uptime',
+        'cpu'             => 'network::raisecom::pon::snmp::mode::cpu',
+        'hardware'        => 'network::raisecom::pon::snmp::mode::hardware',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'memory'          => 'network::raisecom::pon::snmp::mode::memory',
+        'processcount'    => 'network::raisecom::pon::snmp::mode::processcount',
+        'uptime'          => 'snmp_standard::mode::uptime',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'list-processes' => 'network::raisecom::pon::snmp::mode::listprocesses',
+        'list-processes'  => 'network::raisecom::pon::snmp::mode::listprocesses',
     );
 
     return $self;
@@ -51,6 +51,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Raisecom devices through SNMP
+Check Raisecom pon devices through SNMP
 
 =cut
