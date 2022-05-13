@@ -428,7 +428,7 @@ sub add_switch_port_statuses {
             port_enabled => $_->{enabled} =~ /True|1/i ? 1 : 0
         };
         next if (defined($self->{option_results}->{skip_traffic_disconnect_port}) && $_->{status} =~ /disconnected/i);
-        
+
         $self->{devices}->{ $options{serial} }->{device_ports}->{ $_->{portId} }->{traffic_in} = $_->{usageInKb}->{recv} * 1000 * 8,
         $self->{devices}->{ $options{serial} }->{device_ports}->{ $_->{portId} }->{traffic_out} = $_->{usageInKb}->{sent} * 1000 * 8;
     }
