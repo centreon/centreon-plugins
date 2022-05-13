@@ -467,7 +467,7 @@ sub get_device_switch_port_statuses {
     my ($self, %options) = @_;
 
     return $self->request_api(
-        endpoint => '/devices/' . $options{serial} . '/switchPortStatuses',
+        endpoint => '/devices/' . $options{serial} . '/switch/ports/statuses',
         get_param => [ 'timespan=' . $self->{timespan} ],
         hostname => $self->get_shard_hostname(serial => $options{serial})
     );
