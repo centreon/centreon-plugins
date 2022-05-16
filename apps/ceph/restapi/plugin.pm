@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'health'     => 'apps::ceph::restapi::mode::health',
         'list-pools' => 'apps::ceph::restapi::mode::listpools',
         'pools'      => 'apps::ceph::restapi::mode::pools',
     };

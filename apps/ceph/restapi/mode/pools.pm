@@ -132,11 +132,11 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $pools = $options{custom}->request_api(endpoint => '/api/health/full');
+    my $health = $options{custom}->request_api(endpoint => '/api/health/full');
 
     $self->{global} = { detected => 0 };
     $self->{pools} = {};
-    foreach my $pool (@{$pools->{df}->{pools}}) {
+    foreach my $pool (@{$health->{df}->{pools}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $pool->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $pool->{name} . "': no matching filter.", debug => 1);
