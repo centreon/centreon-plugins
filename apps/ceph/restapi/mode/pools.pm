@@ -57,7 +57,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'pools', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All pools are ok', , skipped_code => { -10 => 1, -11 => 1 } }
+        { name => 'pools', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All pools are ok', skipped_code => { -10 => 1, -11 => 1 } }
     ];
     
     $self->{maps_counters}->{global} = [

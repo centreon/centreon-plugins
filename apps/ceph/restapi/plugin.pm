@@ -32,7 +32,8 @@ sub new {
     $self->{modes} = {
         'health'     => 'apps::ceph::restapi::mode::health',
         'list-pools' => 'apps::ceph::restapi::mode::listpools',
-        'pools'      => 'apps::ceph::restapi::mode::pools',
+        'osd'        => 'apps::ceph::restapi::mode::osd',
+        'pools'      => 'apps::ceph::restapi::mode::pools'
     };
 
     $self->{custom_modes}->{api} = 'apps::ceph::restapi::custom::api';
