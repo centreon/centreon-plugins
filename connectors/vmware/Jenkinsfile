@@ -41,7 +41,7 @@ try {
         dir('centreon-vmware') {
           checkout scm
         }
-        sh 'docker run -i --entrypoint "/src/centreon-vmware/ci/scripts/vmware-deb-package.sh" -w "/src" -v "$PWD:/src" -e "DISTRIB=Debian11" -e "VERSION=$VERSION" -e "RELEASE=$RELEASE" registry.centreon.com/centreon-debian11-dependencies:22.04'
+        sh 'docker run -i --entrypoint "/src/centreon-vmware/ci/scripts/vmware-deb-package.sh" -w "/src" -v "$PWD:/src" -e "DISTRIB=bullseye" -e "VERSION=$VERSION" -e "RELEASE=$RELEASE" registry.centreon.com/centreon-debian11-dependencies:22.04'
         stash name: 'Debian11', includes: '*.deb'
         archiveArtifacts artifacts: "*"
       }
