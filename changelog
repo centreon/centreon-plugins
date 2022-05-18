@@ -1,4 +1,5 @@
-2022-05-XX Quentin Garnier <qgarnier@centreon.com>
+2022-05-18 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Ceph Rest API
  * Plugin added: Protocol CIFS
  * Plugin added: Protocol SFTP
  * Plugin added: NtopNG
