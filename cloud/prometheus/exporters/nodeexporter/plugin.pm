@@ -29,16 +29,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'cpu'               => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
-        'cpu-detailed'      => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
-        'load'              => 'cloud::prometheus::exporters::nodeexporter::mode::load',
-        'memory'            => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
-        'storage'           => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
-    );
+    $self->{modes} = {
+        'cpu'          => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
+        'cpu-detailed' => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
+        'load'         => 'cloud::prometheus::exporters::nodeexporter::mode::load',
+        'memory'       => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
+        'storage'      => 'cloud::prometheus::exporters::nodeexporter::mode::storage'
+    };
 
-    $self->{custom_modes}{api} = 'cloud::prometheus::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'cloud::prometheus::restapi::custom::api';
     return $self;
 }
 
