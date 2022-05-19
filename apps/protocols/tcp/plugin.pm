@@ -29,11 +29,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'connection-status'     => 'apps::protocols::tcp::mode::connectionstatus',
-        'response-time'         => 'apps::protocols::tcp::mode::responsetime'
-    );
+    $self->{modes} = {
+        'connection-status' => 'apps::protocols::tcp::mode::connectionstatus',
+        'response-time'     => 'apps::protocols::tcp::mode::responsetime'
+    };
 
     return $self;
 }
