@@ -32,7 +32,8 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     my $msg = sprintf(
-        'Connection status on port %s is %s',
+        "Connection status '%s' on port %s is %s",
+        $self->{result_values}->{hostname},
         $self->{result_values}->{port},
         $self->{result_values}->{status}
     );
@@ -46,7 +47,8 @@ sub custom_time_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Response time on port %s is %.3fs",
+        "Response time '%s' on port %s is %.3fs",
+        $self->{result_values}->{hostname},
         $self->{result_values}->{port},
         $self->{result_values}->{response_time}
     );
@@ -61,14 +63,14 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'status', type => 2, critical_default => '%{status} eq "failed"', display_ok => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'port' }, { name => 'error_message' } ],
+                key_values => [ { name => 'status' }, { name => 'hostname' }, { name => 'port' }, { name => 'error_message' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'time', nlabel => 'tcp.response.time.seconds', set => {
-                key_values => [ { name => 'response_time' }, { name => 'port' } ],
+                key_values => [ { name => 'response_time' }, { name => 'hostname' }, { name => 'port' } ],
                 closure_custom_output => $self->can('custom_time_output'),
                 perfdatas => [
                     { template => '%s', min => 0, unit => 's' }
@@ -85,7 +87,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'hostname:s' => { name => 'hostname' },
-        'port:s'     => { name => 'port', },
+        'port:s'     => { name => 'port' },
         'warning:s'  => { name => 'warning', redirect => 'warning-tcp-response-time-seconds' },
         'critical:s' => { name => 'critical', redirect => 'critical-tcp-response-time-seconds' },
         'timeout:s'  => { name => 'timeout', default => 3 },
@@ -103,7 +105,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Please set the hostname option');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{port})) {
+    if (!defined($self->{option_results}->{port}) || $self->{option_results}->{port} !~ /(\d+)/) {
         $self->{output}->add_option_msg(short_msg => 'Please set the port option');
         $self->{output}->option_exit();
     }
@@ -118,18 +120,19 @@ sub manage_selection {
         $connection = IO::Socket::SSL->new(
             PeerAddr => $self->{option_results}->{hostname},
             PeerPort => $self->{option_results}->{port},
-            Timeout => $self->{option_results}->{timeout},
+            Timeout => $self->{option_results}->{timeout}
         );
     } else {
         $connection = IO::Socket::INET->new(
             PeerAddr => $self->{option_results}->{hostname},
             PeerPort => $self->{option_results}->{port},
-            Timeout => $self->{option_results}->{timeout},
+            Timeout => $self->{option_results}->{timeout}
         );
     }
 
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
     $self->{global} = {
+        hostname => $self->{option_results}->{hostname},
         port => $self->{option_results}->{port},
         status => 'ok',
         response_time => $timeelapsed,
