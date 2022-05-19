@@ -26,26 +26,27 @@ use strict;
 use warnings;
 use DateTime;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_perfdata {
     my ($self, %options) = @_;
     
     $self->{output}->perfdata_add(
-        label => 'active',
         nlabel => 'cronjob.jobs.active.count',
         value => $self->{result_values}->{active},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->{result_values}->{name}
     );
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("Jobs Active: %s, Last schedule time: %s ago (%s)",
+    return sprintf(
+        "Jobs Active: %s, Last schedule time: %s ago (%s)",
         $self->{result_values}->{active},
         centreon::plugins::misc::change_seconds(value => $self->{result_values}->{last_schedule}),
-        $self->{result_values}->{last_schedule_time});
+        $self->{result_values}->{last_schedule_time}
+    );
 }
 
 sub custom_status_calc {
@@ -71,6 +72,12 @@ sub custom_status_calc {
     return 0;
 }
 
+sub prefix_cronjob_output {
+    my ($self, %options) = @_;
+
+    return "CronJob '" . $options{instance_value}->{name} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -80,22 +87,17 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cronjobs} = [
-        { label => 'status', set => {
-                key_values => [ { name => 'active' }, { name => 'last_schedule_time' }, { name => 'name' },
-                                { name => 'namespace' } ],
+        { label => 'status', type => 2, set => {
+                key_values => [
+                    { name => 'active' }, { name => 'last_schedule_time' }, { name => 'name' },
+                    { name => 'namespace' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => $self->can('custom_status_perfdata'),
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
-}
-
-sub prefix_cronjob_output {
-    my ($self, %options) = @_;
-
-    return "CronJob '" . $options{instance_value}->{name} . "' ";
 }
 
 sub new {
@@ -104,20 +106,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s"         => { name => 'filter_name' },
-        "filter-namespace:s"    => { name => 'filter_namespace' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'filter-name:s'      => { name => 'filter_name' },
+        'filter-namespace:s' => { name => 'filter_namespace' }
     });
    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {

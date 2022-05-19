@@ -24,22 +24,21 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("Phase is '%s'",
-        $self->{result_values}->{phase});
+    return sprintf(
+        "Phase is '%s'",
+        $self->{result_values}->{phase}
+    );
 }
 
-sub custom_status_calc {
+sub prefix_pv_output {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{phase} = $options{new_datas}->{$self->{instance} . '_phase'};
-
-    return 0;
+    return "Persistent Volume '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -51,21 +50,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{pvs} = [
-        { label => 'status', set => {
+        { label => 'status', type => 2, critical_default => '%{phase} !~ /Bound|Available|Released/i', set => {
                 key_values => [ { name => 'phase' }, { name => 'name' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
-}
-
-sub prefix_pv_output {
-    my ($self, %options) = @_;
-
-    return "Persistent Volume '" . $options{instance_value}->{name} . "' ";
 }
 
 sub new {
@@ -74,20 +66,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s"         => { name => 'filter_name' },
-        "filter-namespace:s"    => { name => 'filter_namespace' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '%{phase} !~ /Bound|Available|Released/i' },
+        'filter-name:s'      => { name => 'filter_name' },
+        'filter-namespace:s' => { name => 'filter_namespace' }
     });
    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {

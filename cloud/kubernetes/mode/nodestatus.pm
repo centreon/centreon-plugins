@@ -55,7 +55,6 @@ sub long_output {
     return "Checking node '" . $options{instance_value}->{display} . "'";
 }
 
-
 sub set_counters {
     my ($self, %options) = @_;
 
