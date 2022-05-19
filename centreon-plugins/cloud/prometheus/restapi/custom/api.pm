@@ -85,12 +85,12 @@ sub check_options {
     $self->{basic} = (defined($self->{option_results}->{basic})) ? 1 : undef;
     $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : undef;
     $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
- 
+
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
-    
+
     return 0;
 }
 
@@ -167,10 +167,7 @@ sub query {
 sub get_endpoint {
     my ($self, %options) = @_;
 
-    $self->settings;
-    
-    $self->{output}->output_add(long_msg => "Query URL: '" . $self->{proto} . "://" . $self->{hostname} .
-        $self->{url_path} . $options{url_path} . "'", debug => 1);
+    $self->settings();
 
     my $response = $self->{http}->request(url_path => $self->{url_path} . $options{url_path});
     
