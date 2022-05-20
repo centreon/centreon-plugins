@@ -46,8 +46,9 @@ sub custom_memory_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => 'memory_used', unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => 'vm.memory.usage.bytes',
+        unit => 'B',
+        instances => $self->{result_values}->{display},
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -96,8 +97,9 @@ sub custom_swap_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => 'swap_used', unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => 'vm.swap.usage.bytes',
+        unit => 'B',
+        instances => $self->{result_values}->{display},
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -163,14 +165,13 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'cpu', set => {
+        { label => 'cpu', nlabel => 'vm.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_total_usage', diff => 1 }, { name => 'cpu_number' }, { name => 'display' } ],
                 output_template => 'cpu usage: %.2f %%',
                 closure_custom_calc => $self->can('custom_cpu_calc'),
                 output_use => 'prct_cpu', threshold_use => 'prct_cpu',
                 perfdatas => [
-                    { label => 'cpu', value => 'prct_cpu', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                    { value => 'prct_cpu', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -182,21 +183,19 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_memory_threshold')
             }
         },
-        { label => 'read-iops', set => {
+        { label => 'read-iops', nlabel => 'vm.read.usage.iops', set => {
                 key_values => [ { name => 'read_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'read iops: %.2f',
                 perfdatas => [
-                    { label => 'read_iops', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'write-iops', set => {
+        { label => 'write-iops', nlabel => 'vm.write.usage.iops', set => {
                 key_values => [ { name => 'write_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'write iops: %.2f',
                 perfdatas => [
-                    { label => 'write_iops', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -208,23 +207,21 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_swap_threshold')
             }
         },
-        { label => 'traffic-in', set => {
+        { label => 'traffic-in', nlabel => 'vm.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'traffic in: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'traffic-out', set => {
+        { label => 'traffic-out', nlabel => 'vm.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'traffic out: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -233,7 +230,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
