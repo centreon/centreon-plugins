@@ -79,7 +79,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $timing0 = [gettimeofday];
-    my ($rv, $message) = $options{custom}->list_directory(share => $self->{option_results}->{share});
+    my ($rv, $message) = $options{custom}->list_directory(directory => $self->{option_results}->{directory});
     if ($rv == 0) {
         $message = 'authentication succeeded';
     }
