@@ -361,14 +361,9 @@ Filter by node name (can be a regexp).
 Only display some counters (regexp can be used).
 Example: --filter-counters='^node-status$'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'cpu' (%), 'memory' (%), 'swap' (%), 'fs' (%).
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'cpu' (%), 'memory' (%), 'swap' (%), 'fs' (%).
 
 =item B<--warning-node-status>
