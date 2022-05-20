@@ -26,11 +26,9 @@ use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
-
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
         'list-nodes'        => 'apps::proxmox::ve::restapi::mode::listnodes',
         'list-storages'     => 'apps::proxmox::ve::restapi::mode::liststorages',

@@ -464,7 +464,7 @@ sub api_get_storages {
         foreach my $node_id (keys %$nodes) {
             if ($node_id eq $options{node_id}) {
                 foreach my $storage_id (keys %$storages) {
-                    if ($storages->{$storage_id}->{Node} eq $nodes->{$node_id}->{Node}) {
+                    if ($storages->{$storage_id}->{Node} eq $nodes->{$node_id}->{Name}) {
                         $storages->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id);
                     }
                 }

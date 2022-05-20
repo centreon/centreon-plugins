@@ -25,20 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return 'state : ' . $self->{result_values}->{state};
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    return 0;
 }
 
 sub custom_cpu_calc {
@@ -82,7 +74,7 @@ sub custom_memory_output {
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
     return sprintf(
-        'Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        'memory total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
@@ -132,7 +124,7 @@ sub custom_swap_output {
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
     return sprintf(
-        'Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        'swap total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
@@ -182,7 +174,7 @@ sub custom_fs_output {
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
     return sprintf(
-        'Root Filesystem Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        'root filesystem total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
@@ -201,30 +193,35 @@ sub custom_fs_calc {
     return 0;
 }
 
+sub prefix_nodes_output {
+    my ($self, %options) = @_;
+
+    return "Node '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes are ok', skipped_code => { -10 => 1, -11 => 1 } },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes are ok', skipped_code => { -10 => 1, -11 => 1 } }
     ];
 
     $self->{maps_counters}->{nodes} = [
-        { label => 'node-status', threshold => 0, set => {
+        { label => 'node-status', type => 2, set => {
                 key_values => [ { name => 'state' }, { name => 'name' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'cpu', set => {
                 key_values => [ { name => 'cpu_total_usage', diff => 1 }, { name => 'cpu_number' }, { name => 'display' } ],
-                output_template => 'CPU Usage : %.2f %%',
+                output_template => 'cpu usage: %.2f %%',
                 closure_custom_calc => $self->can('custom_cpu_calc'),
                 output_use => 'prct_cpu', threshold_use => 'prct_cpu',
                 perfdatas => [
                     { label => 'cpu', value => 'prct_cpu', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ],
             }
         },
@@ -233,7 +230,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_memory_calc'),
                 closure_custom_output => $self->can('custom_memory_output'),
                 closure_custom_perfdata => $self->can('custom_memory_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_memory_threshold'),
+                closure_custom_threshold_check => $self->can('custom_memory_threshold')
             }
         },
         { label => 'fs', set => {
@@ -241,7 +238,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_fs_calc'),
                 closure_custom_output => $self->can('custom_fs_output'),
                 closure_custom_perfdata => $self->can('custom_fs_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_fs_threshold'),
+                closure_custom_threshold_check => $self->can('custom_fs_threshold')
             }
         },
         { label => 'swap', set => {
@@ -249,9 +246,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_swap_calc'),
                 closure_custom_output => $self->can('custom_swap_output'),
                 closure_custom_perfdata => $self->can('custom_swap_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_swap_threshold'),
+                closure_custom_threshold_check => $self->can('custom_swap_threshold')
             }
-        },
+        }
     ];
 }
 
@@ -261,12 +258,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'node-id:s'                 => { name => 'node_id' },
-        'node-name:s'               => { name => 'node_name' },
-        'filter-name:s'             => { name => 'filter_name' },
-        'use-name'                  => { name => 'use_name' },
-        'warning-node-status:s'     => { name => 'warning_node_status', default => '' },
-        'critical-node-status:s'    => { name => 'critical_node_status', default => '' },
+        'node-id:s'     => { name => 'node_id' },
+        'node-name:s'   => { name => 'node_name' },
+        'filter-name:s' => { name => 'filter_name' },
+        'use-name'      => { name => 'use_name' }
     });
 
     $self->{statefile_cache_nodes} = centreon::plugins::statefile->new(%options);
@@ -277,14 +272,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_node_status', 'critical_node_status']);
     $self->{statefile_cache_nodes}->check_options(%options);
-}
-
-sub prefix_nodes_output {
-    my ($self, %options) = @_;
-
-    return "Node '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
@@ -307,6 +295,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
+
         $self->{nodes}->{$node_id} = {
             display => defined($self->{option_results}->{use_name}) ? $name : $node_id,
             name => $name,
@@ -319,7 +308,7 @@ sub manage_selection {
             swap_total => 
                 defined($result->{$node_id}->{Stats}->{swap}->{total}) && $result->{$node_id}->{Stats}->{swap}->{total} > 0 ? $result->{$node_id}->{Stats}->{swap}->{total} : undef,
             fs_usage => $result->{$node_id}->{Stats}->{rootfs}->{used},
-            fs_total => $result->{$node_id}->{Stats}->{rootfs}->{total},
+            fs_total => $result->{$node_id}->{Stats}->{rootfs}->{total}
         };
     }
 
@@ -329,11 +318,13 @@ sub manage_selection {
     }
 
     my $hostnames = $options{custom}->get_hostnames();
-    $self->{cache_name} = "proxmox_" . $self->{mode} . '_' .$hostnames . '_' . $options{custom}->get_port() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{node_id}) ? md5_hex($self->{option_results}->{node_id}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{node_name}) ? md5_hex($self->{option_results}->{node_name}) : md5_hex('all'));
+    $self->{cache_name} = 'proxmox_' . $self->{mode} . '_' .$hostnames . '_' . $options{custom}->get_port() . '_' .
+        md5_hex(
+            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
+            (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
+            (defined($self->{option_results}->{node_id}) ? $self->{option_results}->{node_id} : '') . '_' .
+            (defined($self->{option_results}->{node_name}) ? $self->{option_results}->{node_name} : '')
+        );
 }
 
 1;
@@ -379,12 +370,12 @@ Can be: 'cpu' (%), 'memory' (%), 'swap' (%), 'fs' (%).
 
 =item B<--warning-node-status>
 
-Set warning threshold for status (Default: -)
+Set warning threshold for status.
 Can used special variables like: %{name}, %{state}.
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: -).
+Set critical threshold for status.
 Can used special variables like: %{name}, %{state}.
 
 =back

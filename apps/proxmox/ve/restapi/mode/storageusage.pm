@@ -64,7 +64,7 @@ sub custom_storage_output {
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
     return sprintf(
-        "Storage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        "storage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
