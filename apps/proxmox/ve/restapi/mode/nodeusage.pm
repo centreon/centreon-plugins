@@ -30,7 +30,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'state : ' . $self->{result_values}->{state};
+    return 'state: ' . $self->{result_values}->{state};
 }
 
 sub custom_cpu_calc {
@@ -47,8 +47,9 @@ sub custom_memory_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => 'memory_used', unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => 'node.memory.usage.bytes',
+        unit => 'B',
+        instances => $self->{result_values}->{display},
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -97,8 +98,9 @@ sub custom_swap_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => 'swap_used', unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => 'node.swap.usage.bytes',
+        unit => 'B',
+        instances => $self->{result_values}->{display},
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -147,8 +149,9 @@ sub custom_fs_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => 'fs_used', unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => 'node.filesystem.usage.bytes',
+        unit => 'B',
+        instances => $self->{result_values}->{display},
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -214,15 +217,15 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'cpu', set => {
+        { label => 'cpu', nlabel => 'node.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_total_usage', diff => 1 }, { name => 'cpu_number' }, { name => 'display' } ],
                 output_template => 'cpu usage: %.2f %%',
                 closure_custom_calc => $self->can('custom_cpu_calc'),
                 output_use => 'prct_cpu', threshold_use => 'prct_cpu',
                 perfdatas => [
-                    { label => 'cpu', value => 'prct_cpu', template => '%.2f',
+                    { value => 'prct_cpu', template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
-                ],
+                ]
             }
         },
         { label => 'memory', set => {
@@ -254,7 +257,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {

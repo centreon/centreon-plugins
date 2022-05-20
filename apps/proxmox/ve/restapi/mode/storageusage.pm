@@ -30,15 +30,16 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'state : ' . $self->{result_values}->{state};
+    return 'state: ' . $self->{result_values}->{state};
 }
 
 sub custom_storage_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => 'storage_used', unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => 'storage.space.usage.bytes',
+        unit => 'B',
+        instances => $self->{result_values}->{display},
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -64,7 +65,7 @@ sub custom_storage_output {
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
     return sprintf(
-        "storage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
+        "space total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
@@ -111,15 +112,15 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_storage_calc'),
                 closure_custom_output => $self->can('custom_storage_output'),
                 closure_custom_perfdata => $self->can('custom_storage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_storage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_storage_threshold')
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
