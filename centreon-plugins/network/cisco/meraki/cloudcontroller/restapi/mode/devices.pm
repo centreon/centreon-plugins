@@ -299,6 +299,7 @@ sub new {
         'filter-organization-id:s'     => { name => 'filter_organization_id' },
         'filter-tags:s'                => { name => 'filter_tags' },
         'add-switch-ports'             => { name => 'add_switch_ports' },
+        'filter-switch-port:s'         => { name => 'filter_switch_port' },
         'skip-traffic-disconnect-port' => { name => 'skip_traffic_disconnect_port' },
         'skip-clients'                 => { name => 'skip_clients' },
         'skip-performance'             => { name => 'skip_performance' },
@@ -422,11 +423,15 @@ sub add_switch_port_statuses {
     );
 
     foreach (@$ports) {
+        next if (defined($self->{option_results}->{filter_switch_port}) && $_->{portId} !~ /$self->{option_results}->{filter_switch_port}/i
+            && $self->{option_results}->{filter_switch_port} ne '' );
+
         $self->{devices}->{ $options{serial} }->{device_ports}->{ $_->{portId} } = {
             display => $_->{portId},
             port_status => lc($_->{status}),
             port_enabled => $_->{enabled} =~ /True|1/i ? 1 : 0
         };
+        
         next if (defined($self->{option_results}->{skip_traffic_disconnect_port}) && $_->{status} =~ /disconnected/i);
 
         $self->{devices}->{ $options{serial} }->{device_ports}->{ $_->{portId} }->{traffic_in} = $_->{usageInKb}->{recv} * 1000 * 8,
@@ -579,6 +584,10 @@ Filter devices by tags (Can be a regexp).
 =item B<--add-switch-ports>
 
 Add switch port statuses and traffic.
+
+=item B<--filter-switch-port>
+
+Filter switch port (Can be a regexp).
 
 =item B<--skip-clients>
 
