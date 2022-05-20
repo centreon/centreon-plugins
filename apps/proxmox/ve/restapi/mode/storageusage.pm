@@ -79,6 +79,9 @@ sub custom_storage_calc {
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_storage_total'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_storage_usage'};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+
+    return -10 if ($self->{result_values}->{total} <= 0);
+
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
 
@@ -96,7 +99,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'storages', type => 1, cb_prefix_output => 'prefix_storages_output',
-          message_multiple => 'All storages are ok', skipped_code => { -11 => 1 } }
+          message_multiple => 'All storages are ok', skipped_code => { -10 => 1, -11 => 1 } }
     ];
 
     $self->{maps_counters}->{storages} = [
