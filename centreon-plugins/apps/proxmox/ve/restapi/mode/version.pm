@@ -44,10 +44,13 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     my $result = $options{custom}->get_version();
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Version is '" . $result . "'");
-        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
-        $self->{output}->exit();
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => "Version is '" . $result . "'"
+    );
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    $self->{output}->exit();
 }
 
 1;
