@@ -106,7 +106,7 @@ sub check {
                                             short_msg => sprintf("Temperature '%s' %s is %s degree centigrade", $instance, $result->{cpqHeTemperatureLocale}, $result->{cpqHeTemperatureCelsius}));
             }
             $self->{output}->perfdata_add(
-                label => "temp", unit => 'C',
+                unit => 'C',
                 nlabel => 'hardware.temperature.celsius',
                 instances => [$instance, $result->{cpqHeTemperatureLocale}],
                 value => $result->{cpqHeTemperatureCelsius},

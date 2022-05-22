@@ -83,6 +83,7 @@ sub manage_selection {
         $device{siteName} = $host->{siteName};
         $device{vendor} = $host->{vendor};
         $device{family} = $host->{family};
+        $device{platform} = $host->{platform};
         $device{snmp_community} = undef;
         push @disco_data, \%device;
     }

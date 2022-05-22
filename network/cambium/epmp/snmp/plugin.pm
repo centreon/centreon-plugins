@@ -18,26 +18,29 @@
 # limitations under the License.
 #
 
-package apps::checkmyws::plugin;
+package network::cambium::epmp::snmp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
-    my ($class, %options) = @_;
-
+    my ( $class, %options ) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'status' => 'apps::checkmyws::mode::status',
-    );
+    $self->{version} = '0.1';
+    $self->{modes} = {
+        'antenna'         => 'network::cambium::epmp::snmp::mode::antenna',
+        'cpu'             => 'network::cambium::epmp::snmp::mode::cpu',
+        'interfaces'      => 'network::cambium::epmp::snmp::mode::interfaces',
+        'license'         => 'network::cambium::epmp::snmp::mode::license',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'uptime'          => 'network::cambium::epmp::snmp::mode::uptime',
+    };
 
     return $self;
 }
-
 
 1;
 
@@ -45,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Check my Website through its API
+Check Cambium ePMP equipments through SNMP.
 
 =cut

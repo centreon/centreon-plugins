@@ -57,9 +57,13 @@ sub custom_usage_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{result_values}->{thlabel}, exit_litteral => 'critical' },
-                                                              { label => 'warning-'. $self->{result_values}->{thlabel}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -72,9 +76,12 @@ sub custom_usage_output {
         $msg = sprintf("%s: %s (unlimited)", ucfirst($self->{result_values}->{label}), $total_used_value . " " . $total_used_unit);
     } else {
         my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-        $msg = sprintf("%s: %s (%.2f%% of %s)", ucfirst($self->{result_values}->{label}), $total_used_value . " " . $total_used_unit,
-                $self->{result_values}->{prct_used},
-                $total_size_value . " " . $total_size_unit);
+        $msg = sprintf(
+            "%s: %s (%.2f%% of %s)",
+            ucfirst($self->{result_values}->{label}), $total_used_value . " " . $total_used_unit,
+            $self->{result_values}->{prct_used},
+            $total_size_value . " " . $total_size_unit
+        );
     }
 
     return $msg;
@@ -102,7 +109,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output',
-          message_multiple => 'All containers memory usage are ok' },
+          message_multiple => 'All containers memory usage are ok' }
     ];
 
     $self->{maps_counters}->{containers} = [
@@ -123,7 +130,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { label_ref => 'working', perfdata_ref => 'working' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'cache', nlabel => 'cache.usage.bytes', set => {
@@ -131,9 +138,9 @@ sub set_counters {
                 output_template => 'Cache: %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'cache', value => 'cache', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf' },
-                ],
+                    { label => 'cache', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf' }
+                ]
             }
         },
         { label => 'rss', nlabel => 'rss.usage.bytes', set => {
@@ -141,9 +148,9 @@ sub set_counters {
                 output_template => 'Rss: %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'rss', value => 'rss', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf' },
-                ],
+                    { label => 'rss', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf' }
+                ]
             }
         },
         { label => 'swap', nlabel => 'swap.usage.bytes', set => {
@@ -151,11 +158,11 @@ sub set_counters {
                 output_template => 'Swap: %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'swap', value => 'swap', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf' },
-                ],
+                    { label => 'swap', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -175,7 +182,7 @@ sub new {
         "pod:s"                 => { name => 'pod', default => 'pod_name=~".*"' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "units:s"               => { name => 'units', default => '%' },
-        "metric-overload:s@"    => { name => 'metric_overload' },
+        "metric-overload:s@"    => { name => 'metric_overload' }
     });
 
     return $self;

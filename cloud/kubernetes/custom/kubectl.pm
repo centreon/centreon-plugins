@@ -106,6 +106,10 @@ sub execute {
     # See https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-output-verbosity-and-debugging
     $cmd_options .= " --v='9'" if ($self->{output}->is_debug());
 
+    if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '') {
+        $cmd_options = $self->{option_results}->{command_options};
+    }
+
     $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $cmd_options . "'", debug => 1);
     
     my ($response, $exit_code) = centreon::plugins::misc::execute(

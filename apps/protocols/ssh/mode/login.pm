@@ -43,7 +43,7 @@ sub set_counters {
         { 
             label => 'status', 
             type => 2,
-            critical_default => '%{message} !~ /authentification succeeded/i',
+            critical_default => '%{message} !~ /authentication succeeded/i',
             set => {
                 key_values => [ { name => 'status' }, { name => 'message' } ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -99,7 +99,7 @@ Can used special variables like: %{status}, %{message}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{message} !~ /authentification succeeded/i'
+Set critical threshold for status (Default: '%{message} !~ /authentication succeeded/i'
 Can used special variables like: %{status}, %{message}
 
 =item B<--warning-time>

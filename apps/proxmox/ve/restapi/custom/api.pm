@@ -233,7 +233,7 @@ sub api_list_vms {
             Type => $type,
             Vmid => $vmid,
             Node => $vm->{node},
-            Name => $vm->{name},
+            Name => $vm->{name}
         };
     }
 
@@ -255,7 +255,7 @@ sub api_list_nodes {
     foreach my $node (@{$list_nodes}) {
         $nodes->{$node->{id}} = {
             State => $node->{status},
-            Name => $node->{node},
+            Name => $node->{node}
         };
     }
 
@@ -278,7 +278,7 @@ sub api_list_storages {
         $storages->{$storage->{id}} = {
             State => $storage->{status},
             Node => $storage->{node},
-            Name => $storage->{storage},
+            Name => $storage->{storage}
         };
     }
 
@@ -310,16 +310,16 @@ sub cache_vms {
 sub cache_nodes {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'cache_proxmox_node_'.$self->{hostname} . '_' . $self->{port});
+    my $has_cache_file = $options{statefile}->read(statefile => 'cache_proxmox_node_' . $self->{hostname} . '_' . $self->{port});
     my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
     my $nodes = $options{statefile}->get(name => 'nodes');
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time})))) {
         $nodes = {};
         my $list_nodes = $self->internal_api_list_nodes();
         foreach my $node (@{$list_nodes}) {
-            $nodes->{$node->{id}} = {
+            $nodes->{ $node->{id} } = {
                 State => $node->{status},
-                Name => $node->{node},
+                Name => $node->{node}
             };
         }
         $options{statefile}->write(data => $nodes);
@@ -331,7 +331,7 @@ sub cache_nodes {
 sub cache_storages {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'cache_proxmox_storage_'.$self->{hostname} . '_' . $self->{port});
+    my $has_cache_file = $options{statefile}->read(statefile => 'cache_proxmox_storage_' . $self->{hostname} . '_' . $self->{port});
     my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
     my $storages = $options{statefile}->get(name => 'storages');
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time})))) {
@@ -340,7 +340,8 @@ sub cache_storages {
         foreach my $storage (@{$list_storages}) {
             $storages->{$storage->{id}} = {
                 State => $storage->{status},
-                Name => $storage->{storage},
+                Node => $storage->{node},
+                Name => $storage->{storage}
             };
         }
         $options{statefile}->write(data => $storages);
@@ -452,30 +453,42 @@ sub api_get_nodes {
 sub api_get_storages {
     my ($self, %options) = @_;
     
-    my $content_total = $self->cache_storages(statefile => $options{statefile});
+    my $storages = $self->cache_storages(statefile => $options{statefile});
 
     if (defined($options{storage_id}) && $options{storage_id} ne '') {
-        if (defined($content_total->{$options{storage_id}})) {
-            $content_total->{$options{storage_id}}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $options{storage_id});
+        if (defined($storages->{ $options{storage_id} })) {
+            $storages->{ $options{storage_id} }->{Stats} = $self->internal_api_get_storage_stats(storage_id => $options{storage_id});
         }
-    } elsif (defined($options{storage_name}) && $options{storage_name} ne '') {
-        my $storage_id;
-        foreach (keys %{$content_total}) {
-            if ($content_total->{$_}->{Name} eq $options{storage_name}) {
-                $storage_id = $_;
-                last;
+    } elsif (defined($options{node_id}) && $options{node_id} ne '') {
+        my $nodes = $self->cache_nodes(statefile => $options{statefile});
+        foreach my $node_id (keys %$nodes) {
+            if ($node_id eq $options{node_id}) {
+                foreach my $storage_id (keys %$storages) {
+                    if ($storages->{$storage_id}->{Node} eq $nodes->{$node_id}->{Name}) {
+                        $storages->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id);
+                    }
+                }
             }
         }
-        if (defined($storage_id)) {
-            $content_total->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id);
+    } elsif (defined($options{node_name}) && $options{node_name} ne '') {
+        foreach my $storage_id (keys %$storages) {
+            if ($storages->{$storage_id}->{Node} eq $options{node_name}) {
+                $storages->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id);
+            }
+        }
+    } elsif (defined($options{storage_name}) && $options{storage_name} ne '') {
+        foreach my $storage_id (keys %$storages) {
+            if ($storages->{$storage_id}->{Name} eq $options{storage_name}) {
+                $storages->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id);
+            }
         }
     } else {
-        foreach my $storage_id (keys %{$content_total}) {
-            $content_total->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id);
+        foreach my $storage_id (keys %$storages) {
+            $storages->{$storage_id}->{Stats} = $self->internal_api_get_storage_stats(storage_id => $storage_id);
         }
     }
 
-    return $content_total;
+    return $storages;
 }
 
 1;

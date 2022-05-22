@@ -30,44 +30,37 @@ sub custom_status_perfdata {
     my ($self, %options) = @_;
     
     $self->{output}->perfdata_add(
-        label => 'desired',
         nlabel => 'replicaset.replicas.desired.count',
         value => $self->{result_values}->{desired},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
-        label => 'current',
         nlabel => 'replicaset.replicas.current.count',
         value => $self->{result_values}->{current},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
-        label => 'ready',
         nlabel => 'replicaset.replicas.ready.count',
         value => $self->{result_values}->{ready},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->{result_values}->{name}
     );
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("Replicas Desired: %s, Current: %s, Ready: %s",
+    return sprintf(
+        "Replicas Desired: %s, Current: %s, Ready: %s",
         $self->{result_values}->{desired},
         $self->{result_values}->{current},
-        $self->{result_values}->{ready});
+        $self->{result_values}->{ready}
+    );
 }
 
-sub custom_status_calc {
+sub prefix_replicaset_output {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{namespace} = $options{new_datas}->{$self->{instance} . '_namespace'};
-    $self->{result_values}->{desired} = $options{new_datas}->{$self->{instance} . '_desired'};
-    $self->{result_values}->{current} = $options{new_datas}->{$self->{instance} . '_current'};
-    $self->{result_values}->{ready} = $options{new_datas}->{$self->{instance} . '_ready'};
-
-    return 0;
+    return "ReplicaSet '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -79,22 +72,15 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{replicasets} = [
-        { label => 'status', set => {
+        { label => 'status', type => 2, critical_default => '%{ready} < %{desired}', set => {
                 key_values => [ { name => 'desired' }, { name => 'current' },
                     { name => 'ready' }, { name => 'name' }, { name => 'namespace' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => $self->can('custom_status_perfdata'),
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
-}
-
-sub prefix_replicaset_output {
-    my ($self, %options) = @_;
-
-    return "ReplicaSet '" . $options{instance_value}->{name} . "' ";
 }
 
 sub new {
@@ -103,20 +89,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s"         => { name => 'filter_name' },
-        "filter-namespace:s"    => { name => 'filter_namespace' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '%{ready} < %{desired}' },
+        'filter-name:s'      => { name => 'filter_name' },
+        'filter-namespace:s' => { name => 'filter_namespace' }
     });
    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -138,13 +115,15 @@ sub manage_selection {
             next;
         }
         
-        $self->{replicasets}->{$replicaset->{metadata}->{uid}} = {
+        $self->{replicasets}->{ $replicaset->{metadata}->{uid} } = {
             name => $replicaset->{metadata}->{name},
             namespace => $replicaset->{metadata}->{namespace},
-            desired => $replicaset->{spec}->{replicas},
-            current => (defined($replicaset->{status}->{replicas})) && $replicaset->{status}->{replicas} =~ /(\d+)/ ? $1 : 0,
-            ready => (defined($replicaset->{status}->{readyReplicas})) && $replicaset->{status}->{readyReplicas} =~ /(\d+)/ ? $1 : 0
-        }
+            desired => $replicaset->{spec}->{replicas}
+        };
+        $self->{replicasets}->{ $replicaset->{metadata}->{uid} }->{current} =
+            defined($replicaset->{status}->{replicas}) && $replicaset->{status}->{replicas} =~ /(\d+)/ ? $1 : 0;
+        $self->{replicasets}->{ $replicaset->{metadata}->{uid} }->{ready} =
+            defined($replicaset->{status}->{readyReplicas}) && $replicaset->{status}->{readyReplicas} =~ /(\d+)/ ? $1 : 0;
     }
     
     if (scalar(keys %{$self->{replicasets}}) <= 0) {
