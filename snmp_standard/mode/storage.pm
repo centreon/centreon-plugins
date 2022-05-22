@@ -527,12 +527,9 @@ sub get_selection {
         my $name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $self->{option_results}->{storage});
         push @{$self->{storage_id_selected}}, $self->{option_results}->{storage} if (defined($name) && $self->filter_type(id => $self->{option_results}->{storage}));
     } else {
-        my @path_split = undef;
-	my $path_best_match = undef;
-	my $path_best_match_score = 0;
-	if (defined($self->{option_results}->{use_path_best_match})) {
-	    @path_split = split("/", $self->{option_results}->{storage});
-	}
+	my $path_best_match_score = -1;
+	my $path_best_match = -1;
+
         foreach my $i (@{$all_ids}) {
             my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $i);
             next if (!defined($filter_name));
@@ -551,22 +548,15 @@ sub get_selection {
                 push @{$self->{storage_id_selected}}, $i if ($self->filter_type(id => $i));
             }
 	    if (defined($self->{option_results}->{use_path_best_match})) {
-		my $path_build = "";
-		my $path_score = 0;
-		foreach my $path_part (@path_split) {
-		    $path_build .= "/" if ( 1 < length($path_build) );
-		    $path_build .= $path_part;
-		    $path_score++;
-		    if ( $path_best_match_score < $path_score && $filter_name =~ /$path_build$/i && ($self->filter_type(id => $i))) {
-			$path_best_match_score = $path_score;
+		if ( $path_best_match_score < length($filter_name) && $self->{option_results}->{storage} =~ /^$filter_name/ ) {
+			$path_best_match_score = length($filter_name);
 			$path_best_match = $i;
-		    }
-		    $self->{output}->output_add(long_msg => sprintf("- filter-name [%s] part [%s] build [%s] score [%i] b_score [%i]\n",
-			$filter_name , $path_part,  $path_build , $path_score, $path_best_match_score), debug => 1) if ($self->{output}->is_debug());
-                }
+		}
+		$self->{output}->output_add(long_msg => sprintf("- searching [%s] filter-name [%s] length [%i] score [%i] index [%i]\n",
+			$self->{option_results}->{storage}, $filter_name , length($filter_name), $path_best_match_score, $path_best_match), debug => 1) if ($self->{output}->is_debug());
 	    }
         }
-	if (defined($path_best_match)) {
+	if (0 < $path_best_match_score) {
 	    push @{$self->{storage_id_selected}}, $path_best_match;
         }
     }
