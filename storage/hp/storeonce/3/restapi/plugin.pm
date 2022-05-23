@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::hp::storeonce::restapi::plugin;
+package storage::hp::storeonce::3::restapi::plugin;
 
 use strict;
 use warnings;
@@ -29,15 +29,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cluster-usage'    => 'storage::hp::storeonce::restapi::mode::clusterusage',
-        'fcs-usage'        => 'storage::hp::storeonce::restapi::mode::fcsusage',
-        'nas-usage'        => 'storage::hp::storeonce::restapi::mode::nasusage',
-        'serviceset-usage' => 'storage::hp::storeonce::restapi::mode::servicesetusage',
-    );
+    $self->{modes} = {
+        'cluster-usage'    => 'storage::hp::storeonce::3::restapi::mode::clusterusage',
+        'fcs-usage'        => 'storage::hp::storeonce::3::restapi::mode::fcsusage',
+        'nas-usage'        => 'storage::hp::storeonce::3::restapi::mode::nasusage',
+        'serviceset-usage' => 'storage::hp::storeonce::3::restapi::mode::servicesetusage'
+    };
 
-    $self->{custom_modes}{api} = 'storage::hp::storeonce::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'storage::hp::storeonce::3::restapi::custom::api';
     return $self;
 }
 
@@ -47,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Hp Storeonce through HTTP/REST API.
+Check Hp Storeonce 3.x through HTTP/REST API.
 
 =cut
