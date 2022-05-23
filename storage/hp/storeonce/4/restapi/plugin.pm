@@ -33,6 +33,7 @@ sub new {
         'appliances'       => 'storage::hp::storeonce::4::restapi::mode::appliances',
         'hardware-storage' => 'storage::hp::storeonce::4::restapi::mode::hardwarestorage',
         'list-appliances'  => 'storage::hp::storeonce::4::restapi::mode::listappliances',
+        'list-stores'      => 'storage::hp::storeonce::4::restapi::mode::liststores',
         'stores'           => 'storage::hp::storeonce::4::restapi::mode::stores'
     };
 
