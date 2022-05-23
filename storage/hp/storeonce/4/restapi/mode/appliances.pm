@@ -161,8 +161,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-uuid:s' => { name => 'filter_uuid' },
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-uuid:s'     => { name => 'filter_uuid' },
+        'filter-hostname:s' => { name => 'filter_hostname' }
     });
 
     return $self;
@@ -179,8 +179,8 @@ sub manage_selection {
     foreach my $member (@{$members->{members}}) {
         next if (defined($self->{option_results}->{filter_uuid}) && $self->{option_results}->{filter_uuid} ne '' &&
             $member->{uuid} !~ /$self->{option_results}->{filter_uuid}/);
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $member->{hostname} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_hostname}) && $self->{option_results}->{filter_hostname} ne '' &&
+            $member->{hostname} !~ /$self->{option_results}->{filter_hostname}/);
 
         $self->{global}->{detected}++;
 

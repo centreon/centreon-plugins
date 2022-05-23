@@ -32,6 +32,7 @@ sub new {
     $self->{modes} = {
         'appliances'       => 'storage::hp::storeonce::4::restapi::mode::appliances',
         'hardware-storage' => 'storage::hp::storeonce::4::restapi::mode::hardwarestorage',
+        'list-appliances'  => 'storage::hp::storeonce::4::restapi::mode::listappliances',
         'stores'           => 'storage::hp::storeonce::4::restapi::mode::stores'
     };
 
