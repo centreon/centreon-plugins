@@ -18,79 +18,28 @@
 # limitations under the License.
 #
 
-package storage::hp::storeonce::restapi::mode::nasusage;
+package storage::hp::storeonce::3::restapi::mode::nasusage;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_nas_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf('status : %s [replication health: %s]', 
-        $self->{result_values}->{health}, $self->{result_values}->{replication_health});
-    return $msg;
+    return sprintf(
+        'status: %s [replication health: %s]', 
+        $self->{result_values}->{health},
+        $self->{result_values}->{replication_health}
+    );
 }
 
 sub custom_share_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf('status : %s', $self->{result_values}->{health});
-    return $msg;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'nas', type => 1, cb_prefix_output => 'prefix_nas_output', message_multiple => 'All nas are ok' },
-        { name => 'share', type => 1, cb_prefix_output => 'prefix_share_output', message_multiple => 'All shares are ok' },
-    ];
-    
-    $self->{maps_counters}->{nas} = [
-        { label => 'nas-status', threshold => 0, set => {
-                key_values => [ { name => 'replication_health' }, { name => 'health' }, { name => 'display' } ],
-                closure_custom_output => $self->can('custom_nas_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-    ];
-    
-    $self->{maps_counters}->{share} = [
-        { label => 'share-status', threshold => 0, set => {
-                key_values => [ { name => 'health' }, { name => 'display' } ],
-                closure_custom_output => $self->can('custom_share_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-    ];
-}
-
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        "filter-name:s"       => { name => 'filter_name' },
-        "warning-nas-status:s"    => { name => 'warning_nas_status', default => '%{health} =~ /warning/i' },
-        "critical-nas-status:s"   => { name => 'critical_nas_status', default => '%{health} =~ /critical/i' },
-        "warning-share-status:s"  => { name => 'warning_share_status', default => '%{health} =~ /warning/i' },
-        "critical-share-status:s" => { name => 'critical_share_status', default => '%{health} =~ /critical/i' },
-    });
-
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_nas_status', 'critical_nas_status', 'warning_share_status', 'critical_share_status']);
+    return sprintf('status: %s', $self->{result_values}->{health});
 }
 
 sub prefix_nas_output {
@@ -105,6 +54,58 @@ sub prefix_share_output {
     return "Share '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'nas', type => 1, cb_prefix_output => 'prefix_nas_output', message_multiple => 'All nas are ok' },
+        { name => 'share', type => 1, cb_prefix_output => 'prefix_share_output', message_multiple => 'All shares are ok' }
+    ];
+    
+    $self->{maps_counters}->{nas} = [
+        {
+            label => 'nas-status',
+            type => 2,
+            warning_default => '%{health} =~ /warning/i',
+            critical_default => '%{health} =~ /critical/i',
+            set => {
+                key_values => [ { name => 'replication_health' }, { name => 'health' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_nas_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{share} = [
+        {
+            label => 'share-status', 
+            type => 2,
+            type => 2,
+            warning_default => '%{health} =~ /warning/i',
+            critical_default => '%{health} =~ /critical/i',
+            set => {
+                key_values => [ { name => 'health' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_share_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+    
+    $options{options}->add_options(arguments => { 
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
+    return $self;
+}
+
 my %mapping_health_level = (
     0 => 'unknown',
     1 => 'ok',
@@ -115,7 +116,7 @@ my %mapping_health_level = (
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     $self->{nas} = {};
     $self->{share} = {};
     my $result = $options{custom}->get(path => '/cluster/servicesets/*all*/services/nas', ForceArray => ['service', 'item']);
@@ -126,13 +127,13 @@ sub manage_selection {
                 $self->{output}->output_add(long_msg => "skipping '" . $entry->{properties}->{ssid} . "': no matching filter.", debug => 1);
                 next;
             }
-            
+
             $self->{nas}->{$entry->{properties}->{ssid}} = { 
                 display => $entry->{properties}->{ssid}, 
                 health => $mapping_health_level{$entry->{properties}->{nasHealthLevel}},
                 replication_health => $mapping_health_level{$entry->{properties}->{repHealthLevel}},
             };
-            
+
             foreach my $item (@{$entry->{shares}->{item}}) {
                 $self->{share}->{$entry->{properties}->{ssid} . '.' . $item->{id}} = {
                     display => $entry->{properties}->{ssid} . '.' . $item->{id},
@@ -141,7 +142,7 @@ sub manage_selection {
             }
         }
     }
-    
+
     if (scalar(keys %{$self->{nas}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No nas found.");
         $self->{output}->option_exit();
