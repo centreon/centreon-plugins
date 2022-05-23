@@ -32,12 +32,13 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'   => { name => 'hostname' },
-            'url-path:s'   => { name => 'url_path' },
-            'port:s'       => { name => 'port' },
-            'proto:s'      => { name => 'proto' },
-            'api-key:s'    => { name => 'api_key' },
-            'timeout:s'    => { name => 'timeout' }
+            'hostname:s'    => { name  => 'hostname' },
+            'url-path:s'    => { name  => 'url_path' },
+            'port:s'        => { name  => 'port' },
+            'proto:s'       => { name  => 'proto' },
+            'api-key:s'     => { name  => 'api_key' },
+            'timeout:s'     => { name  => 'timeout' },
+            'snapshot-id:s' => { name  => 'snapshot_id' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -65,6 +66,7 @@ sub check_options {
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/v1/tables';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_key} = (defined($self->{option_results}->{api_key})) ? $self->{option_results}->{api_key} : '';
+    $self->{snapshot_id} = (defined($self->{option_results}->{snapshot_id})) ? $self->{option_results}->{snapshot_id} : "\$last";
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -102,6 +104,7 @@ sub request_api {
 
     my $encoded_form_post;
     if (defined($options{query_form_post})) {
+        $options{query_form_post}->{snapshot} = $self->{snapshot_id};
         eval {
             $encoded_form_post = JSON::XS->new->utf8->encode($options{query_form_post});
         };

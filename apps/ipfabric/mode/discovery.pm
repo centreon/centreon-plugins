@@ -65,9 +65,8 @@ sub manage_selection {
             "limit" => undef,
             "start" => 0
         },
-        "snapshot" => "\$last",
         "reports" => "/inventory/devices"
-    };  
+    };
 
     my $disco_api_results = $options{custom}->request_api(
         method => 'POST',
@@ -99,7 +98,6 @@ sub manage_selection {
             "limit" => undef,
             "start" => 0
         },
-        "snapshot" => "\$last",
         "reports" => "/technology/management/snmp/communities"
     }; 
 
