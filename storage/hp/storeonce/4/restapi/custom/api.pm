@@ -185,31 +185,6 @@ sub clean_token {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /\/federation\/members/) {
-        $file = '/home/qgarnier/clients/plugins/storeonce/version4/storeonce/sto-federation-members.json';
-    } elsif ($options{endpoint} =~ /\/appliance\/ab65d53394025a01a49307e617395/) {
-        $file = '/home/qgarnier/clients/plugins/storeonce/version4/storeonce/sto-dashboard-appliance-uuid.json';
-    } elsif ($options{endpoint} =~ /\/hwmonitor\/storage/) {
-        $file = '/home/qgarnier/clients/plugins/storeonce/version4/storeonce/sto-hwmonitor-storage.json';
-    } elsif ($options{endpoint} =~ /\/hwmonitor\/storage\/sc_02e7247d-0000-1000-8003-53394d30354f/) {
-        $file = '/home/qgarnier/clients/plugins/storeonce/version4/storeonce/sto-hwmonitor-storage-clustername.json';
-    } elsif ($options{endpoint} =~ /\/hwmonitor\/storage\/sc_015563dd-0000-1000-807b-454330303238/) {
-        $file = '/home/qgarnier/clients/plugins/storeonce/version4/storeonce/sto-hwmonitor-storage-clustername2.json';
-    } elsif ($options{endpoint} =~ /\/cat\/stores/) {
-        $file = '/home/qgarnier/clients/plugins/storeonce/version4/storeonce/sto-cat-stores.json';
-    }
-
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $file : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     $self->settings();
     my $token = $self->get_token();
     my ($content) = $self->{http}->request(
@@ -231,7 +206,6 @@ sub request_api {
             critical_status => $self->{critical_http_status}
         );
     }
-=cut
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
