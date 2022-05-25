@@ -18,86 +18,18 @@
 # limitations under the License.
 #
 
-package storage::hp::storeonce::restapi::mode::fcsusage;
+package storage::hp::storeonce::3::restapi::mode::fcsusage;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'status : ' . $self->{result_values}->{health};
-    return $msg;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'fcs', type => 1, cb_prefix_output => 'prefix_fcs_output', message_multiple => 'All federated catalyst stores are ok' }
-    ];
-    
-    $self->{maps_counters}->{fcs} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'is_online' }, { name => 'health' }, { name => 'display' } ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-        { label => 'usage', set => {
-                key_values => [ { name => 'used' }, { name => 'display' } ],
-                output_template => 'Used : %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { label => 'used', value => 'used', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'dedup', set => {
-                key_values => [ { name => 'dedup' }, { name => 'display' } ],
-                output_template => 'Dedup Ratio : %.2f',
-                perfdatas => [
-                    { label => 'dedup_ratio', value => 'dedup', template => '%.2f', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'items', set => {
-                key_values => [ { name => 'num_items' }, { name => 'display' } ],
-                output_template => 'Num Items : %s',
-                perfdatas => [
-                    { label => 'items', value => 'num_items', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-    ];
-}
-
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        "filter-name:s"       => { name => 'filter_name' },
-        "warning-status:s"    => { name => 'warning_status', default => '%{is_online} == 1 and %{health} =~ /warning/i' },
-        "critical-status:s"   => { name => 'critical_status', default => '%{is_online} == 1 and %{health} =~ /critical/i' },
-    });
-    
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
+    return 'status: ' . $self->{result_values}->{health};
 }
 
 sub prefix_fcs_output {
@@ -106,14 +38,64 @@ sub prefix_fcs_output {
     return "Federated catalyst store '" . $options{instance_value}->{display} . "' ";
 }
 
-sub change_macros {
+sub set_counters {
     my ($self, %options) = @_;
     
-    foreach (()) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
+    $self->{maps_counters_type} = [
+        { name => 'fcs', type => 1, cb_prefix_output => 'prefix_fcs_output', message_multiple => 'All federated catalyst stores are ok' }
+    ];
+
+    $self->{maps_counters}->{fcs} = [
+        {
+            label => 'status',
+            type => 2,
+            warning_default => '%{is_online} == 1 and %{health} =~ /warning/i',
+            critical_default => '%{is_online} == 1 and %{health} =~ /critical/i',
+            set => {
+                key_values => [ { name => 'is_online' }, { name => 'health' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'usage', nlabel => 'fcs.space.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'display' } ],
+                output_template => 'Used: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'dedup', nlabel => 'fcs.deduplication.ratio.count', set => {
+                key_values => [ { name => 'dedup' }, { name => 'display' } ],
+                output_template => 'Dedup Ratio: %.2f',
+                perfdatas => [
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'items', nlabel => 'fcs.items.count', set => {
+                key_values => [ { name => 'num_items' }, { name => 'display' } ],
+                output_template => 'Num Items: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
         }
-    }
+    ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+    
+    $options{options}->add_options(arguments => { 
+        'filter-name:s' => { name => 'filter_name' }
+    });
+    
+    return $self;
 }
 
 my %mapping_health_level = (
@@ -121,7 +103,7 @@ my %mapping_health_level = (
     1 => 'ok',
     2 => 'information',
     3 => 'warning',
-    4 => 'critical',
+    4 => 'critical'
 );
 
 sub manage_selection {

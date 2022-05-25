@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::prometheus::exporters::cadvisor::plugin;
+package storage::hp::storeonce::4::restapi::plugin;
 
 use strict;
 use warnings;
@@ -30,15 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'             => 'cloud::prometheus::exporters::cadvisor::mode::cpu',
-        'list-containers' => 'cloud::prometheus::exporters::cadvisor::mode::listcontainers',
-        'load'            => 'cloud::prometheus::exporters::cadvisor::mode::load',
-        'memory'          => 'cloud::prometheus::exporters::cadvisor::mode::memory',
-        'storage'         => 'cloud::prometheus::exporters::cadvisor::mode::storage',
-        'task-state'      => 'cloud::prometheus::exporters::cadvisor::mode::taskstate'
+        'appliances'       => 'storage::hp::storeonce::4::restapi::mode::appliances',
+        'hardware-storage' => 'storage::hp::storeonce::4::restapi::mode::hardwarestorage',
+        'list-appliances'  => 'storage::hp::storeonce::4::restapi::mode::listappliances',
+        'list-stores'      => 'storage::hp::storeonce::4::restapi::mode::liststores',
+        'stores'           => 'storage::hp::storeonce::4::restapi::mode::stores'
     };
 
-    $self->{custom_modes}->{api} = 'cloud::prometheus::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'storage::hp::storeonce::4::restapi::custom::api';
     return $self;
 }
 
@@ -48,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check cAdvisor metrics through Prometheus server.
+Check Hp Storeonce 4.x through HTTP/REST API.
 
 =cut
