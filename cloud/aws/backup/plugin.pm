@@ -32,7 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'discovery'     => 'cloud::aws::backup::mode::discovery',
-        'jobstatus'     => 'cloud::aws::backup::mode::jobstatus'
+        'job-status'    => 'cloud::aws::backup::mode::jobstatus'
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
