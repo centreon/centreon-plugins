@@ -28,11 +28,11 @@ use centreon::plugins::misc;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'port', type => 1, cb_prefix_output => 'prefix_port_output', message_multiple => 'All ports are ok' }
     ];
-    
+
     $self->{maps_counters}->{port} = [
         { label => 'read-iops', nlabel => 'port.io.read.usage.iops', set => {
                 key_values => [ { name => 'read_iops' }, { name => 'display' } ],
@@ -84,40 +84,20 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        "hostname:s"              => { name => 'hostname' },
-        "ssh-option:s@"           => { name => 'ssh_option' },
-        "ssh-path:s"              => { name => 'ssh_path' },
-        "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"               => { name => 'timeout', default => 30 },
-        "command:s"               => { name => 'command', default => 'show' },
-        "command-path:s"          => { name => 'command_path' },
-        "command-options:s"       => { name => 'command_options', default => 'performance -type port' },
-        "filter-name:s"           => { name => 'filter_name' },
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        ssh_pipe => 1,
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'show',
+        command_options => 'performance -type port',
+        ssh_pipe => 1
     );
     
     #Location            IOPS(IOPS)               Throughput(MB/s)
@@ -136,7 +116,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "Skipping  '" . $port_name . "': no matching filter name.");
             next;
         }
-        
+
         $self->{port}->{$port_name} = {
             display => $port_name,
             read_iops => $port_read_iops, write_iops => $port_write_iops,
@@ -159,40 +139,9 @@ __END__
 
 Check Port statistics.
 
+Command used: show performance -type port
+
 =over 8
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--command>
-
-Command to get information (Default: 'show').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: 'performance -type port').
 
 =item B<--filter-name>
 

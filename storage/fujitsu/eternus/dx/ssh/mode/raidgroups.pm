@@ -32,13 +32,6 @@ sub custom_threshold_output {
     return $self->{instance_mode}->get_severity(section => 'rg', value => $self->{result_values}->{status});
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    return 0;
-}
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
@@ -86,6 +79,12 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_rg_output {
+    my ($self, %options) = @_;
+    
+    return "Raid Group '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -96,7 +95,6 @@ sub set_counters {
     $self->{maps_counters}->{rg} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 output_template => 'Status : %s', output_error_template => 'Status : %s',
                 output_use => 'status',
                 closure_custom_perfdata => sub { return 0; },
@@ -114,29 +112,15 @@ sub set_counters {
     ];
 }
 
-sub prefix_rg_output {
-    my ($self, %options) = @_;
-    
-    return "Raid Group '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        "hostname:s"              => { name => 'hostname' },
-        "ssh-option:s@"           => { name => 'ssh_option' },
-        "ssh-path:s"              => { name => 'ssh_path' },
-        "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"               => { name => 'timeout', default => 30 },
-        "command:s"               => { name => 'command', default => 'show' },
-        "command-path:s"          => { name => 'command_path' },
-        "command-options:s"       => { name => 'command_options', default => 'raid-groups -csv' },
-        "threshold-overload:s@"   => { name => 'threshold_overload' },
-        "filter-name:s"           => { name => 'filter_name' },
-        "filter-level:s"          => { name => 'filter_level' },
+    $options{options}->add_options(arguments => {
+        'threshold-overload:s@' => { name => 'threshold_overload' },
+        'filter-name:s'         => { name => 'filter_name' },
+        'filter-level:s'        => { name => 'filter_level' }
     });
 
     return $self;
@@ -145,10 +129,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
 
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
@@ -169,13 +149,10 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        ssh_pipe => 1,
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'show',
+        command_options => 'raid-groups -csv',
+        ssh_pipe => 1
     );
     
     #[RAID Group No.],[RAID Group Name],[RAID Level],[Assigned CM],[Status],[Total Capacity(MB)],[Free Capacity(MB)]
@@ -215,8 +192,8 @@ sub manage_selection {
 my $thresholds = {
     rg => [
         ['Available', 'OK'],
-        ['Spare in Use', 'WARNING'],
-    ],
+        ['Spare in Use', 'WARNING']
+    ]
 };
 
 sub get_severity {
@@ -249,40 +226,9 @@ __END__
 
 Check raid groups.
 
+Command used: show raid-groups -csv
+
 =over 8
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--command>
-
-Command to get information (Default: 'show').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: 'raid-groups -csv').
 
 =item B<--threshold-overload>
 
