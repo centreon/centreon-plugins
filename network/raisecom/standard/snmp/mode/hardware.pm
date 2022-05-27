@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::raisecom::snmp::mode::hardware;
+package network::raisecom::standard::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -39,7 +39,7 @@ sub set_system {
         ]
     };
 
-    $self->{components_path} = 'network::raisecom::snmp::mode::components';
+    $self->{components_path} = 'network::raisecom::standard::snmp::mode::components';
     $self->{components_module} = ['fan', 'temperature', 'voltage'];
 }
 

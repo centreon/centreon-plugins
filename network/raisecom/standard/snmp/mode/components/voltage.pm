@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::raisecom::snmp::mode::components::voltage;
+package network::raisecom::standard::snmp::mode::components::voltage;
 
 use strict;
 use warnings;

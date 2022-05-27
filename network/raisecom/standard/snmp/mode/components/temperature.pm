@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::raisecom::snmp::mode::components::temperature;
+package network::raisecom::standard::snmp::mode::components::temperature;
 
 use strict;
 use warnings;

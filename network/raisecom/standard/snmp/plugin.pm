@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::raisecom::snmp::plugin;
+package network::raisecom::standard::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'cpu'              => 'network::raisecom::snmp::mode::cpu',
-        'hardware'         => 'network::raisecom::snmp::mode::hardware',
+        'cpu'              => 'network::raisecom::standard::snmp::mode::cpu',
+        'hardware'         => 'network::raisecom::standard::snmp::mode::hardware',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::raisecom::snmp::mode::memory',
+        'memory'           => 'network::raisecom::standard::snmp::mode::memory',
     );
 
     return $self;
@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Raisecom devices through SNMP
+Check Raisecom standard devices through SNMP
 
 =cut

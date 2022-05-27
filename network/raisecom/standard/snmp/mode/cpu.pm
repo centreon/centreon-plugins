@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::raisecom::snmp::mode::cpu;
+package network::raisecom::standard::snmp::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 

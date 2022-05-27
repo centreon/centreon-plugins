@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::raisecom::snmp::mode::memory;
+package network::raisecom::standard::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
