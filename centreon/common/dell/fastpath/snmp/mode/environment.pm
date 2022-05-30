@@ -40,7 +40,7 @@ sub set_system {
             ['powering', 'WARNING'],
             ['nopower', 'CRITICAL'],
             ['notpowering', 'CRITICAL'],
-            ['incompatible', 'CRITICAL'],
+            ['incompatible', 'CRITICAL']
         ],
         temperature => [
             ['low', 'WARNING'],
@@ -49,8 +49,8 @@ sub set_system {
             ['critical', 'CRITICAL'],
             ['shutdown', 'CRITICAL'],
             ['notpresent', 'OK'],
-            ['notoperational', 'CRITICAL'],
-        ],
+            ['notoperational', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'centreon::common::dell::fastpath::snmp::mode::components';
@@ -66,7 +66,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {});

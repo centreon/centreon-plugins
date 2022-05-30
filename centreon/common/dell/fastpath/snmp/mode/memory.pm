@@ -27,12 +27,12 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
         'warning:s'  => { name => 'warning' },
-        'critical:s' => { name => 'critical' },
+        'critical:s' => { name => 'critical' }
     });
 
     return $self;
@@ -59,9 +59,10 @@ sub run {
     my $oid_agentSwitchCpuProcessMemFree = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.1.1.4.1.0'; # in KB
     my $oid_agentSwitchCpuProcessMemAvailable = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.1.1.4.2.0'; # in KB
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_agentSwitchCpuProcessMemFree,
-                                                  $oid_agentSwitchCpuProcessMemAvailable],
-                                         nothing_quit => 1);
+    my $result = $self->{snmp}->get_leef(
+        oids => [$oid_agentSwitchCpuProcessMemFree, $oid_agentSwitchCpuProcessMemAvailable],
+        nothing_quit => 1
+    );
    
     my $memory_free = $result->{$oid_agentSwitchCpuProcessMemFree} * 1024;
     my $memory_available = $result->{$oid_agentSwitchCpuProcessMemAvailable} * 1024;
@@ -75,17 +76,24 @@ sub run {
     my ($memory_available_value, $memory_available_unit) = $self->{perfdata}->change_bytes(value => $memory_available);
     my ($memory_free_value, $memory_free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
 
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory used: %s (%.2f%%), Size: %s, Free: %s (%.2f%%)",
-                                            $memory_used_value . " " . $memory_used_unit, $prct_used,
-                                            $memory_available_value . " " . $memory_available_unit,
-                                            $memory_free_value . " " . $memory_free_unit, $prct_free));
-    
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $memory_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $memory_available, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $memory_available, cast_int => 1),
-                                  min => 0, max => $memory_available);
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf(
+            "Memory used: %s (%.2f%%), Size: %s, Free: %s (%.2f%%)",
+            $memory_used_value . " " . $memory_used_unit, $prct_used,
+            $memory_available_value . " " . $memory_available_unit,
+            $memory_free_value . " " . $memory_free_unit, $prct_free
+        )
+    );
+
+    $self->{output}->perfdata_add(
+        nlabel => 'memory.usage.bytes',
+        unit => 'B',
+        value => $memory_used,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $memory_available, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $memory_available, cast_int => 1),
+        min => 0, max => $memory_available
+    );
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -113,4 +121,3 @@ Threshold critical in percent.
 =back
 
 =cut
-    
