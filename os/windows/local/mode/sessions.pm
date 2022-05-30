@@ -126,6 +126,15 @@ sub read_config {
         <header_sessionname>SESSION</header_sessionname>
         <header_state>^.*?TAT</header_state>
     </qwinsta>
+    <qwinsta language="it">
+        <created>Totale sessioni create</created>
+        <disconnected>Totale sessioni disconnesse</disconnected>
+        <reconnected>Totale sessioni riconnesse</reconnected>
+        <activestate>Attivo</activestate>
+        <disconnectedstate>Disc</disconnectedstate>
+        <header_sessionname>NOMESESSIONE</header_sessionname>
+        <header_state>STATO</header_state>
+    </qwinsta>
 </root>
 END_FILE
 
