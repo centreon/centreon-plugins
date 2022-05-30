@@ -30,16 +30,16 @@ my %map_temp_status = (
     3 => 'critical',
     4 => 'shutdown',
     5 => 'notpresent',
-    6 => 'notoperational',
+    6 => 'notoperational'
 );
 
 my $mapping1 = {
     boxServicesTempSensorState => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1.3', map => \%map_temp_status },
-    boxServicesTempSensorTemperature => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1.4' },
+    boxServicesTempSensorTemperature => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1.4' }
 };
 my $mapping2 = {
     boxServicesTempSensorState => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1.4', map => \%map_temp_status },
-    boxServicesTempSensorTemperature => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1.5' },
+    boxServicesTempSensorTemperature => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1.5' }
 };
 my $oid_boxServicesTempSensorsEntry = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1';
 
@@ -60,36 +60,45 @@ sub check {
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_boxServicesTempSensorsEntry}})) {
         next if ($oid !~ /^$mapping2->{boxServicesTempSensorState}->{oid}\.(.*)$/);
         my $instance = $1;
-        
+
         if (defined($self->{results}->{$oid_boxServicesTempSensorsEntry}->{$mapping2->{boxServicesTempSensorTemperature}->{oid} . '.' . $instance})) {
             $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_boxServicesTempSensorsEntry}, instance => $instance);
         } else {
             $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$oid_boxServicesTempSensorsEntry}, instance => $instance);
         }
-        
+
         next if ($self->check_filter(section => 'temperature', instance => $instance));
         if ($result->{boxServicesTempSensorState} =~ /notPresent/i) {
             $self->absent_problem(section => 'temperature', instance => $instance);
             next;
         }
-        
+
         $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("temperature '%s' status is '%s' [instance = %s, temperature = %s]",
-                                                        $instance, $result->{boxServicesTempSensorState}, $instance, defined($result->{boxServicesTempSensorTemperature}) ? $result->{boxServicesTempSensorTemperature} : 'unknown'));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' status is '%s' [instance = %s, temperature = %s]",
+                $instance, $result->{boxServicesTempSensorState}, $instance, defined($result->{boxServicesTempSensorTemperature}) ? $result->{boxServicesTempSensorTemperature} : 'unknown'
+            )
+        );
         $exit = $self->get_severity(section => 'temperature', value => $result->{boxServicesTempSensorState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' status is '%s'", $instance, $result->{boxServicesTempSensorState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Temperature '%s' status is '%s'", $instance, $result->{boxServicesTempSensorState})
+            );
         }
         
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{boxServicesTempSensorTemperature});            
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' is '%s' C", $instance, $result->{boxServicesTempSensorTemperature}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Temperature '%s' is '%s' C", $instance, $result->{boxServicesTempSensorTemperature})
+            );
         }
+
         $self->{output}->perfdata_add(
-            label => 'temp', unit => 'C',
             nlabel => 'hardware.temperature.celsius',
+            unit => 'C',
             instances => $instance,
             value => $result->{boxServicesTempSensorTemperature},
             warning => $warn,
