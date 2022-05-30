@@ -30,18 +30,18 @@ my %map_fan_status = (
     4 => 'powering',
     5 => 'nopower',
     6 => 'notpowering',
-	7 => 'incompatible',
+	7 => 'incompatible'
 );
 
 my $mapping = {
     boxServicesFanItemState => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.6.1.3', map => \%map_fan_status },
-    boxServicesFanSpeed => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.6.1.4' },
+    boxServicesFanSpeed => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.6.1.4' }
 };
 my $oid_boxServicesFansEntry = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.6.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_boxServicesFansEntry, start => $mapping->{boxServicesFanItemState}->{oid} };
 }
 
@@ -57,31 +57,39 @@ sub check {
         next if ($oid !~ /^$mapping->{boxServicesFanItemState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_boxServicesFansEntry}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'fan', instance => $instance));
         if ($result->{boxServicesFanItemState} =~ /notPresent/i) {
             $self->absent_problem(section => 'fan', instance => $instance);
             next;
         }
-        
+
         $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("fan '%s' status is '%s' [instance = %s, speed = %s]",
-                                                        $instance, $result->{boxServicesFanItemState}, $instance, defined($result->{boxServicesFanSpeed}) ? $result->{boxServicesFanSpeed} : 'unknown'));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s' status is '%s' [instance = %s, speed = %s]",
+                $instance, $result->{boxServicesFanItemState}, $instance, defined($result->{boxServicesFanSpeed}) ? $result->{boxServicesFanSpeed} : 'unknown'
+            )
+        );
         $exit = $self->get_severity(label => 'default', section => 'fan', value => $result->{boxServicesFanItemState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' status is '%s'", $instance, $result->{boxServicesFanItemState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '%s' status is '%s'", $instance, $result->{boxServicesFanItemState})
+            );
             next;
         }
-        
+
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{boxServicesFanSpeed});            
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' is '%s' rpm", $instance, $result->{boxServicesFanSpeed}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '%s' is '%s' rpm", $instance, $result->{boxServicesFanSpeed})
+            );
         }
         $self->{output}->perfdata_add(
-            label => 'fan', unit => 'rpm',
             nlabel => 'hardware.fan.speed.rpm',
+            unit => 'rpm',
             instances => $instance,
             value => $result->{boxServicesFanSpeed},
             warning => $warn,
