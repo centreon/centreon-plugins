@@ -39,7 +39,7 @@ sub custom_cpu_avg_calc {
             $buffer = 0;
 
             my ($old_total, $old_cpu_idle) = (0, 0);
-            if ($options{new_datas}->{$_} > $options{old_datas}->{$_}) {
+            if ($options{new_datas}->{$_} >= $options{old_datas}->{$_}) {
                 $old_total = $options{old_datas}->{$_} + $options{old_datas}->{$prefix . '_system'} + 
                     $options{old_datas}->{$prefix . '_user'} + $options{old_datas}->{$prefix . '_iowait'};
                 $old_cpu_idle = $options{old_datas}->{$_};
@@ -72,7 +72,7 @@ sub custom_cpu_core_calc {
     my ($self, %options) = @_;
 
     my ($old_total, $old_cpu_idle) = (0, 0);
-    if ($options{new_datas}->{$self->{instance} . '_idle'} > $options{old_datas}->{$self->{instance} . '_idle'}) {
+    if ($options{new_datas}->{$self->{instance} . '_idle'} >= $options{old_datas}->{$self->{instance} . '_idle'}) {
         $old_total = $options{old_datas}->{$self->{instance} . '_idle'} + $options{old_datas}->{$self->{instance} . '_system'} + 
             $options{old_datas}->{$self->{instance} . '_user'} + $options{old_datas}->{$self->{instance} . '_iowait'};
         $old_cpu_idle = $options{old_datas}->{$self->{instance} . '_idle'};
