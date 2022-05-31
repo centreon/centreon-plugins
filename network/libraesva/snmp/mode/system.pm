@@ -97,7 +97,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'mails-queue-out', nlabel => 'system.mails.queue.ou.count', set => {
+        { label => 'mails-queue-out', nlabel => 'system.mails.queue.out.count', set => {
                 key_values => [ { name => 'outgoingMailQueue' } ],
                 output_template => 'mails queue out: %s',
                 perfdatas => [
