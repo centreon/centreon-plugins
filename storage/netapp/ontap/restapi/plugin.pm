@@ -36,7 +36,8 @@ sub new {
         'list-volumes' => 'storage::netapp::ontap::restapi::mode::listvolumes',
         'luns'         => 'storage::netapp::ontap::restapi::mode::luns',
         'snapmirrors'  => 'storage::netapp::ontap::restapi::mode::snapmirrors',
-        'volumes'      => 'storage::netapp::ontap::restapi::mode::volumes'
+        'volumes'      => 'storage::netapp::ontap::restapi::mode::volumes',
+        'aggregates'   => 'storage::netapp::ontap::restapi::mode::aggregates'
     };
 
     $self->{custom_modes}{api} = 'storage::netapp::ontap::restapi::custom::api';
