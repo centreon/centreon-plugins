@@ -18,27 +18,17 @@
 # limitations under the License.
 #
 
-package network::libraesva::snmp::plugin;
+package network::libraesva::snmp::mode::memory;
+
+use base qw(snmp_standard::mode::memory);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-
-    $self->{modes} = {
-        'load'            => 'network::libraesva::snmp::mode::load',
-        'interfaces'      => 'network::libraesva::snmp::mode::interfaces',
-        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'list-storages'   => 'snmp_standard::mode::liststorages',
-        'memory'          => 'network::libraesva::snmp::mode::memory',
-        'storage'         => 'network::libraesva::snmp::mode::storage',
-        'system'          => 'network::libraesva::snmp::mode::system',
-        'swap'            => 'network::libraesva::snmp::mode::swap'
-    };
 
     return $self;
 }
@@ -47,8 +37,31 @@ sub new {
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Check Libraesva appliance in SNMP.
+Check memory usage (UCD-SNMP-MIB).
+
+=over 8
+
+=item B<--units>
+
+Units of thresholds (Default: '%') ('%', 'absolute') (Deprecated. Please use new counters directly)
+
+=item B<--free>
+
+Thresholds are on free space left (Deprecated. Please use new counters directly)
+
+=item B<--swap>
+
+Check swap also.
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%), 
+'swap' (B), 'swap-free' (B), 'swap-prct' (%),
+'buffer' (B), 'cached' (B), 'shared' (B).
+
+=back
 
 =cut
