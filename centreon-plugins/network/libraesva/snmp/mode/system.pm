@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -37,7 +37,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -45,74 +45,73 @@ sub set_counters {
                 key_values => [ { name => 'mailSent', diff => 1 } ],
                 output_template => 'mails sent: %s',
                 perfdatas => [
-                    { value => 'mailSent', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'mails-received', nlabel => 'system.mails.received.count', set => {
                 key_values => [ { name => 'mailReceived', diff => 1 } ],
                 output_template => 'mails received: %s',
                 perfdatas => [
-                    { value => 'mailReceived', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'mails-rejected', nlabel => 'system.mails.rejected.count', set => {
                 key_values => [ { name => 'mailRejected', diff => 1 } ],
                 output_template => 'mails rejected: %s',
                 perfdatas => [
-                    { value => 'mailRejected', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'mails-bounced', nlabel => 'system.mails.bounced.count', display_ok => 0, set => {
                 key_values => [ { name => 'mailBounced', diff => 1 } ],
                 output_template => 'mails bounced: %s',
                 perfdatas => [
-                    { value => 'mailBounced', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'messages-spam', nlabel => 'system.messages.spam.count', set => {
                 key_values => [ { name => 'spamMessages', diff => 1 } ],
                 output_template => 'spam messages: %s',
                 perfdatas => [
-                    { value => 'spamMessages', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'messages-virus', nlabel => 'system.messages.virus.count', set => {
                 key_values => [ { name => 'virusMessages', diff => 1 } ],
                 output_template => 'virus messages: %s',
                 perfdatas => [
-                    { value => 'virusMessages', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'mails-queue-in', nlabel => 'system.mails.queue.in.count', set => {
                 key_values => [ { name => 'incomingMailQueue' } ],
                 output_template => 'mails queue in: %s',
                 perfdatas => [
-                    { value => 'incomingMailQueue', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'mails-queue-out', nlabel => 'system.mails.queue.ou.count', set => {
                 key_values => [ { name => 'outgoingMailQueue' } ],
                 output_template => 'mails queue out: %s',
                 perfdatas => [
-                    { value => 'outgoingMailQueue', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'cluster-status', threshold => 0, set => {
+        { label => 'cluster-status', type => 2, critical_default => '%{cluster_status} =~ /error/i', set => {
                 key_values => [ { name => 'cluster_status' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -121,20 +120,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'unknown-cluster-status:s'  => { name => 'unknown_cluster_status', default => '' },
-        'warning-cluster-status:s'  => { name => 'warning_cluster_status', default => '' },
-        'critical-cluster-status:s' => { name => 'critical_cluster_status', default => '%{cluster_status} =~ /error/i' },
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_; 
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_cluster_status', 'critical_cluster_status', 'unknown_cluster_status']);
 }
 
 my $map_cluster_status = {
@@ -150,7 +138,7 @@ my $mapping = {
     virusMessages     => { oid => '.1.3.6.1.4.1.41091.1.1.6' },
     incomingMailQueue => { oid => '.1.3.6.1.4.1.41091.1.1.8' },
     outgoingMailQueue => { oid => '.1.3.6.1.4.1.41091.1.1.9' },
-    cluster_status    => { oid => '.1.3.6.1.4.1.41091.1.1.10', map => $map_cluster_status },
+    cluster_status    => { oid => '.1.3.6.1.4.1.41091.1.1.10', map => $map_cluster_status }
 };
 
 sub manage_selection {
@@ -160,7 +148,7 @@ sub manage_selection {
         oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
         nothing_quit => 1
     );
-    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
 
     $self->{cache_name} = 'libraesva_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
