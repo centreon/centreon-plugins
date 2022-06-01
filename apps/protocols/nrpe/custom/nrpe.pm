@@ -80,12 +80,6 @@ sub check_options {
     return 0;
 }
 
-sub parse_perfdatas {
-    my ($self, %options) = @_;
-
-    
-}
-
 sub parse_plugin_output {
     my ($self, %options) = @_;
 
