@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use centreon::plugins::nrpe;
 
 my %errors_num = (0 => 'OK', 1 => 'WARNING', 2 => 'CRITICAL', 3 => 'UNKNOWN');
@@ -44,7 +45,8 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s' => { name => 'hostname' }
+            'hostname:s' => { name => 'hostname' },
+            'parse'      => { name => 'parse' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM MODE OPTIONS', once => 1);
@@ -68,25 +70,73 @@ sub check_options {
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{nrpe}->check_options(option_results => $self->{option_results});
 
     return 0;
 }
 
+sub parse_perfdatas {
+    my ($self, %options) = @_;
+
+    
+}
+
+sub parse_plugin_output {
+    my ($self, %options) = @_;
+
+    my @lines = split(/\n/, $options{output});
+    my $short = 'no output';
+    my $line = shift(@lines);
+    if (defined($line) && $line =~ /^(.*?)(?:\|(.*)|\Z)/) {
+        $short = $1;
+        if (defined($2)) {
+            my $perf = $2;
+            while ($perf =~ /(.*?)=([0-9\.]+)([^0-9;]+?)?([0-9.@;]+?)?(?:\s+|\Z)/g) {
+                my ($label, $value, $unit, $extra) = ($1, $2, $3, $4);
+                $label = centreon::plugins::misc::trim($label);
+                $label =~ s/^'//;
+                $label =~ s/'$//;
+                my @extras = split(';', $extra);
+                push @{$options{result}->{perf}}, { 
+                    label => $label,
+                    nlabel => $label,
+                    unit => $unit,
+                    value => $value,
+                    warning => $extras[1],
+                    critical => $extras[2],
+                    min => $extras[3],
+                    max => $extras[4]
+                };
+            }
+        }
+    }
+
+    $options{result}->{message} = $short;
+    $options{result}->{long_message} = [];
+    foreach (@lines) {
+        push @{$options{result}->{long_message}}, $_;
+    }
+}
+
 sub format_result {
     my ($self, %options) = @_;
 
-    my %result = (
+    my $result = {
         code => ($options{content}->{result_code} =~ /^[0-3]$/) ? $errors_num{$options{content}->{result_code}} : $options{content}->{result_code},
         message => $options{content}->{buffer},
         perf => []
-    );
-    return \%result;
+    };
+
+    if (defined($self->{option_results}->{parse})) {
+        $self->parse_plugin_output(result => $result, output => $options{content}->{buffer});
+    }
+
+    return $result;
 }
 
 sub request {
@@ -94,9 +144,7 @@ sub request {
         
     my ($content) = $self->{nrpe}->request(check => $options{command}, arg => $options{arg});
     
-    my $result = $self->format_result(content => $content);
-    
-    return $result;
+    return $self->format_result(content => $content);
 }
 
 1;
@@ -116,6 +164,10 @@ NRPE protocol
 =item B<--hostname>
 
 Remote hostname or IP address.
+
+=item B<--parse>
+
+Parse remote plugin output.
 
 =back
 

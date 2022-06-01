@@ -69,22 +69,28 @@ sub sanitize_message {
 
 sub run {
     my ($self, %options) = @_;
-    
+
     my $result = $options{custom}->request(
         command => $self->{option_results}->{command},
         arg => $self->{option_results}->{arg}
     );
-    
+
     $self->{output}->output_add(
         severity => $result->{code},
         short_msg => $self->sanitize_message(message => $result->{message})
     );
 
+    if (defined($result->{long_message})) {
+        foreach (@{$result->{long_message}}) {
+            $self->{output}->output_add(long_msg => $_);
+        }
+    }
+
     foreach (@{$result->{perf}}) {
         $self->{output}->perfdata_add(%{$_});
     }
     $self->{display_options}->{force_ignore_perfdata} = 1 if (scalar(@{$result->{perf}}) == 0);
-    
+
     $self->{output}->display(%{$self->{display_options}});
     $self->{output}->exit();
 }
