@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'connection'  => 'apps::protocols::cifs::mode::connection',
+        'files'       => 'apps::protocols::cifs::mode::files',
         'files-count' => 'apps::protocols::cifs::mode::filescount',
         'files-date'  => 'apps::protocols::cifs::mode::filesdate',
         'files-size'  => 'apps::protocols::cifs::mode::filessize',
