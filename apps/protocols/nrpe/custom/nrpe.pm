@@ -45,8 +45,8 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s' => { name => 'hostname' },
-            'parse'      => { name => 'parse' }
+            'hostname:s'        => { name => 'hostname' },
+            'nrpe-parse-output' => { name => 'nrpe_parse_output' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM MODE OPTIONS', once => 1);
@@ -126,7 +126,7 @@ sub format_result {
         perf => []
     };
 
-    if (defined($self->{option_results}->{parse})) {
+    if (defined($self->{option_results}->{nrpe_parse_output})) {
         $self->parse_plugin_output(result => $result, output => $options{content}->{buffer});
     }
 
@@ -159,7 +159,7 @@ NRPE protocol
 
 Remote hostname or IP address.
 
-=item B<--parse>
+=item B<--nrpe-parse-output>
 
 Parse remote plugin output.
 
