@@ -47,7 +47,6 @@ sub snmp_execute {
     my ($self, %options) = @_;
 
     $self->{snmp} = $options{snmp};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
 
 sub new {

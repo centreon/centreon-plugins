@@ -78,11 +78,12 @@ sub check_voltage {
         $self->{components}->{voltage}->{total}++;
 
         $self->{output}->output_add(
-            long_msg => sprintf("voltage '%s' is %.2f mV [instance: %s].",
-                            $instance, 
-                            $result->{raisecomVoltValue}, 
-                            $instance
-                        )
+            long_msg => sprintf(
+                "voltage '%s' is %.2f mV [instance: %s].",
+                $instance, 
+                $result->{raisecomVoltValue}, 
+                $instance
+            )
         );
 
         my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{raisecomVoltValue});
@@ -92,21 +93,28 @@ sub check_voltage {
             $self->{perfdata}->threshold_validate(label => 'warning-voltage-instance-' . $instance, value => $warn_th);
             $self->{perfdata}->threshold_validate(label => 'critical-voltage-instance-' . $instance, value => $crit_th);
 
-            $exit = $self->{perfdata}->threshold_check(value => $result->{raisecomVoltValue}, threshold => [ { label => 'critical-voltage-instance-' . $instance, exit_litteral => 'critical' },
-                                                                                                             { label => 'warning-voltage-instance-' . $instance, exit_litteral => 'warning' } 
-                                                                                                            ]);
+            $exit = $self->{perfdata}->threshold_check(
+                value => $result->{raisecomVoltValue},
+                threshold => [
+                    { label => 'critical-voltage-instance-' . $instance, exit_litteral => 'critical' },
+                    { label => 'warning-voltage-instance-' . $instance, exit_litteral => 'warning' } 
+                ]
+            );
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-voltage-instance-' . $instance);
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-voltage-instance-' . $instance);
         }
 
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' is %.2f mV", 
-                                                        $instance, 
-                                                        $result->{raisecomVoltValue}
-                                                    )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Voltage '%s' is %.2f mV", 
+                    $instance, 
+                    $result->{raisecomVoltValue}
+                )
+            );
         }
+
         $self->{output}->perfdata_add(
             unit => 'mV',
             nlabel => 'hardware.voltage.millivolt',
@@ -132,14 +140,14 @@ sub check_voltage_input {
         next if ($self->check_filter(section => 'voltage', instance => $instance));
         $self->{components}->{voltage}->{total}++;
 
-
         $self->{output}->output_add(
-            long_msg => sprintf("Input voltage '%s' is %.2f mV [instance: %s].",
-                            $instance, 
-                            $result->{volt}, 
-                            $instance
-                        )
-            );
+            long_msg => sprintf(
+                "Input voltage '%s' is %.2f mV [instance: %s].",
+                $instance, 
+                $result->{volt}, 
+                $instance
+            )
+        );
 
         my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{volt});
         if ($checked == 0) {
@@ -150,23 +158,26 @@ sub check_voltage_input {
 
             $exit = $self->{perfdata}->threshold_check(
                 value => $result->{volt}, 
-                        threshold => [ 
-                            { label => 'critical-voltage-instance-' . $instance, exit_litteral => 'critical' },
-                            { label => 'warning-voltage-instance-' . $instance, exit_litteral => 'warning' } 
-                        ]
+                threshold => [ 
+                    { label => 'critical-voltage-instance-' . $instance, exit_litteral => 'critical' },
+                    { label => 'warning-voltage-instance-' . $instance, exit_litteral => 'warning' } 
+                ]
             );
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-voltage-instance-' . $instance);
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-voltage-instance-' . $instance);
         }
 
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' is %.2f mV", 
-                                                        $instance, 
-                                                        $result->{volt}
-                                                    )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Voltage '%s' is %.2f mV", 
+                    $instance, 
+                    $result->{volt}
+                )
+            );
         }
+
         $self->{output}->perfdata_add(
             unit => 'mV',
             nlabel => 'hardware.voltage.input.millivolt',
@@ -191,18 +202,20 @@ sub check_voltage_output {
         next if ($self->check_filter(section => 'voltage', instance => $instance));
         $self->{components}->{voltage}->{total}++;
 
-        if ($type == 3){
+        if ($type == 3) {
             $result->{volt} *= 10;
         } elsif ($type == 5) {
             $result->{volt} *= 100;
         }
 
-        $self->{output}->output_add(long_msg => sprintf("voltage '%s' is %.2f mV [instance: %s].",
-                                $instance, 
-                                $result->{volt}, 
-                                $instance
-                            )
-                        );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "voltage '%s' is %.2f mV [instance: %s].",
+                $instance, 
+                $result->{volt}, 
+                $instance
+            )
+        );
 
         my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{volt});
         if ($checked == 0) {
@@ -213,22 +226,24 @@ sub check_voltage_output {
 
             $exit = $self->{perfdata}->threshold_check(
                 value => $result->{volt},
-                        threshold => [
-                            { label => 'critical-voltage-instance-' . $instance, exit_litteral => 'critical' },
-                            { label => 'warning-voltage-instance-' . $instance, exit_litteral => 'warning' }
-                        ]
+                threshold => [
+                    { label => 'critical-voltage-instance-' . $instance, exit_litteral => 'critical' },
+                    { label => 'warning-voltage-instance-' . $instance, exit_litteral => 'warning' }
+                ]
             );
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-voltage-instance-' . $instance);
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-voltage-instance-' . $instance);
         }
 
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' is %.2f mV", 
-                                                        $instance, 
-                                                        $result->{volt}
-                                                    )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Voltage '%s' is %.2f mV", 
+                    $instance, 
+                    $result->{volt}
+                )
+            );
         }
         $self->{output}->perfdata_add(
             unit => 'mV',
@@ -248,11 +263,11 @@ sub check {
     $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
     return if ($self->check_filter(section => 'voltage'));
 
-    my $result = $self->{snmp}->get_table(oid => $oid_raisecomVoltEntry, nothing_quit => 0);
+    my $result = $self->{snmp}->get_table(oid => $oid_raisecomVoltEntry);
     if (scalar(keys %{$result}) <= 0) {
-        my $result_pon_input = $self->{snmp}->get_table(oid => $oid_PON_raisecomPowerInputEntry, nothing_quit => 0);
-        my $result_pon_output = $self->{snmp}->get_table(oid => $oid_PON_raisecomPowerOutputEntry, nothing_quit => 0);
-        
+        my $result_pon_input = $self->{snmp}->get_table(oid => $oid_PON_raisecomPowerInputEntry);
+        my $result_pon_output = $self->{snmp}->get_table(oid => $oid_PON_raisecomPowerOutputEntry);
+
         check_voltage_input($self, entry => $result_pon_input);
         check_voltage_output($self, entry => $result_pon_output);
     } else {

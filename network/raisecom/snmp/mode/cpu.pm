@@ -43,47 +43,42 @@ sub set_counters {
                 key_values => [ { name => 'oneSec' }, { name => 'num' } ],
                 output_template => '%.2f%% (1sec)',
                 perfdatas => [
-                    { label => 'cpu_1s', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
         { label => '5s', nlabel => 'cpu.utilization.5s.percentage', set => {
                 key_values => [ { name => 'fiveSec' }, { name => 'num' } ],
                 output_template => '%.2f%% (5sec)',
                 perfdatas => [
-                    { label => 'cpu_5s', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
         { label => '1m', nlabel => 'cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => 'oneMin' }, { name => 'num' } ],
                 output_template => '%.2f%% (1min)',
                 perfdatas => [
-                    { label => 'cpu_1m', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
         { label => '10m', nlabel => 'cpu.utilization.10m.percentage', set => {
                 key_values => [ { name => 'tenMin' }, { name => 'num' } ],
                 output_template => '%.2f%% (10min)',
                 perfdatas => [
-                    { label => 'cpu_10m', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
         { label => '2h', nlabel => 'cpu.utilization.2h.percentage', set => {
                 key_values => [ { name => 'twoHour' }, { name => 'num' } ],
                 output_template => '%.2f%% (2h)',
                 perfdatas => [
-                    { label => 'cpu_2h', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -92,9 +87,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -102,7 +96,7 @@ my %mapping_period = (1 => 'oneSec', 2 => 'fiveSec', 3 => 'oneMin', 4 => 'tenMin
 
 my $mapping = {
     raisecomCPUUtilizationPeriod    => { oid => '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.2', map => \%mapping_period },
-    raisecomCPUUtilization          => { oid => '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3' },
+    raisecomCPUUtilization          => { oid => '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3' }
 };
 my $mapping_pon = {
     rcCpuUsage1Second    => { oid => '.1.3.6.1.4.1.8886.18.1.7.1.1.1.3' },
@@ -116,8 +110,9 @@ my $oid_pon_raisecomCPUUtilizationEntry = '.1.3.6.1.4.1.8886.18.1.7.1.1.1';
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{cpu} = {};
     my $snmp_result = $options{snmp}->get_table(oid => $oid_raisecomCPUUtilizationEntry, nothing_quit => 0);
+
+    $self->{cpu} = {};
     if (scalar(keys %{$snmp_result}) <= 0) {
         my $result = $options{snmp}->get_table(oid => $oid_pon_raisecomCPUUtilizationEntry, nothing_quit => 1);
         foreach my $oid (keys %{$result}) {
@@ -125,24 +120,20 @@ sub manage_selection {
             my $instance = $1;
             my $mapping_result = $options{snmp}->map_instance(mapping => $mapping_pon, results => $result, instance => $instance . '.' . 0);
             $self->{cpu}->{$instance} = {
-                num => $instance,
-                'oneSec'  => $mapping_result->{rcCpuUsage1Second},
-                'tenMin'  => $mapping_result->{rcCpuUsage10Minutes},
-                'twoHour' => $mapping_result->{rcCpuUsage2Hours}
+                oneSec  => $mapping_result->{rcCpuUsage1Second},
+                tenMin  => $mapping_result->{rcCpuUsage10Minutes},
+                twoHour => $mapping_result->{rcCpuUsage2Hours}
             };
         }
-
     } else {
+        $self->{cpu} = { 0 => {} };
+
         foreach my $oid (keys %{$snmp_result}) {
             next if ($oid !~ /^$mapping->{raisecomCPUUtilization}->{oid}\.(.*)$/);
             my $instance = $1;
             my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-            my $period = $result->{raisecomCPUUtilizationPeriod};
 
-            $self->{cpu}->{$instance} = {
-                num => 0,
-                $period => $result->{raisecomCPUUtilization}
-            };
+            $self->{cpu}->{0}->{ $result->{raisecomCPUUtilizationPeriod} } = $result->{raisecomCPUUtilization};
         }
     };
 }
