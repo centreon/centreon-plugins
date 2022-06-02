@@ -28,7 +28,7 @@ use warnings;
 sub prefix_cpu_output {
     my ($self, %options) = @_;
 
-    return "CPU '" . $options{instance_value}->{num} . "' usage ";
+    return "CPU '" . $options{instance} . "' usage ";
 }
 
 sub set_counters {
@@ -40,7 +40,7 @@ sub set_counters {
 
     $self->{maps_counters}->{cpu} = [
         { label => '1s', nlabel => 'cpu.utilization.1s.percentage', set => {
-                key_values => [ { name => 'oneSec' }, { name => 'num' } ],
+                key_values => [ { name => 'oneSec' } ],
                 output_template => '%.2f%% (1sec)',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
@@ -48,7 +48,7 @@ sub set_counters {
             }
         },
         { label => '5s', nlabel => 'cpu.utilization.5s.percentage', set => {
-                key_values => [ { name => 'fiveSec' }, { name => 'num' } ],
+                key_values => [ { name => 'fiveSec' } ],
                 output_template => '%.2f%% (5sec)',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
@@ -56,7 +56,7 @@ sub set_counters {
             }
         },
         { label => '1m', nlabel => 'cpu.utilization.1m.percentage', set => {
-                key_values => [ { name => 'oneMin' }, { name => 'num' } ],
+                key_values => [ { name => 'oneMin' } ],
                 output_template => '%.2f%% (1min)',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
@@ -64,7 +64,7 @@ sub set_counters {
             }
         },
         { label => '10m', nlabel => 'cpu.utilization.10m.percentage', set => {
-                key_values => [ { name => 'tenMin' }, { name => 'num' } ],
+                key_values => [ { name => 'tenMin' } ],
                 output_template => '%.2f%% (10min)',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
@@ -72,7 +72,7 @@ sub set_counters {
             }
         },
         { label => '2h', nlabel => 'cpu.utilization.2h.percentage', set => {
-                key_values => [ { name => 'twoHour' }, { name => 'num' } ],
+                key_values => [ { name => 'twoHour' } ],
                 output_template => '%.2f%% (2h)',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
