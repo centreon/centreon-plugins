@@ -22,7 +22,6 @@ package network::raisecom::snmp::mode::components::voltage;
 
 use strict;
 use warnings;
-use Clone qw(clone);
 
 my $mapping = {
     raisecomVoltValue           => { oid => '.1.3.6.1.4.1.8886.1.1.4.3.1.1.3' },
