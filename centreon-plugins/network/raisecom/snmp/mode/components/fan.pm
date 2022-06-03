@@ -111,10 +111,10 @@ sub check_pon_fan {
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$options{entry}})) {
         next if ($oid !~ /^$mapping_pon->{raisecomFanWorkState}->{oid}\.(.*)$/);
-        my $fan = $slot_id . '.' . $fan_id;
+        my $fan = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping_pon, results => $options{entry}, instance => $fan);
 
-        next if ($self->check_filter(section => 'fan', instance => $fan_id));
+        next if ($self->check_filter(section => 'fan', instance => $fan));
 
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(
