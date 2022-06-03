@@ -32,7 +32,7 @@ sub new {
     $self->{modes} = {
         'cpu'             => 'network::raisecom::snmp::mode::cpu',
         'hardware'        => 'network::raisecom::snmp::mode::hardware',
-        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'interfaces'      => 'network::raisecom::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'network::raisecom::snmp::mode::memory'
     };
