@@ -338,7 +338,8 @@ sub check_domain {
     my $timing0 = [gettimeofday];
     my ($output) = $options{custom}->execute_command(
         command => 'whois',
-        command_options => $command_options
+        command_options => $command_options,
+        no_quit => 1
     );
 
     $self->{domains}->{ $options{domain} } = {
