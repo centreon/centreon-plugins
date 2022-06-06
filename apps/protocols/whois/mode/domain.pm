@@ -177,8 +177,7 @@ sub get_status {
         "Can't access",
         'Network is unreachable',
         'Error for',
-        'not permitted',
-        '^query_status: (?:250|520)',
+        '^query_status: (?:250|520)'
     );
     foreach (@errors) {
         if ($options{output} =~ /$_/msi) {
