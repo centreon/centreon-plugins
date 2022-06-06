@@ -282,7 +282,8 @@ sub get_expiration_date {
         #Expiration Date:   2023-05-11
         #Expire Date:        2022-08-02
         ($year, $month, $day) = ($1, $2, $3);
-    } elsif ($options{output} =~ /^\s*(?:Expiry\s+Date|Registry\s+Expiry\s+Date):\s+(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*(?:Expiry\s+Date|Registry\s+Expiry\s+Date|Registrar\s+Registration\s+Expiration\s+Date):\s+(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/msi) {
+        #Registrar Registration Expiration Date: 2022-09-20T22:00:00
         #Registry Expiry Date: 2023-04-18T23:59:59Z
         #Registry Expiry Date: 2023-03-24T00:00:00.000Z
         #Expiry Date: 2022-06-20T14:54:52Z
