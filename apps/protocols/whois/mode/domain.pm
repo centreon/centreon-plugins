@@ -204,7 +204,8 @@ sub get_status {
         '^NO OBJECT FOUND',
         'Object_Not_Found',
         '^Domain\s+Status:\s+No\s+Object\s+Found',
-        'query_status: 220 Available'
+        'query_status: 220 Available',
+        'The domain has not been registered'
     );
     foreach (@unregistered) {
         if ($options{output} =~ /$_/msi) {
@@ -273,7 +274,10 @@ sub get_expiration_date {
     } elsif ($options{output} =~ /Expiry\s+date:\s*(\d+)-([a-zA-Z]+)-(\d+)/msi) {
          #Expiry date:  02-Jul-2030
         ($year, $month, $day) = ($3, $months{ lc($2) }, $1);
-    } elsif ($options{output} =~ /(?:Expire|Expiration)\s+Date:\s*(\d+)-(\d+)-(\d+)/msi) {
+    } elsif ($options{output} =~ /Expiry\s+date:\s*(\d+)-(\d+)-(\d+)/msi) {
+         #Expiry Date: 31-03-2023
+        ($year, $month, $day) = ($3, $2, $1);
+    }elsif ($options{output} =~ /(?:Expire|Expiration)\s+Date:\s*(\d+)-(\d+)-(\d+)/msi) {
         #Expiration Date:   2023-05-11
         #Expire Date:        2022-08-02
         ($year, $month, $day) = ($1, $2, $3);
