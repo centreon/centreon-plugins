@@ -94,9 +94,9 @@ sub set_counters {
     $self->{maps_counters}->{response} = [
         { label => 'response-time', nlabel => 'whois.response.time.milliseconds', set => {
                 key_values => [ { name => 'time' } ],
-                output_template => 'whois reponse time: %s ms',
+                output_template => 'whois reponse time: %d ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                    { template => '%d', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -342,7 +342,7 @@ sub check_domain {
     );
 
     $self->{domains}->{ $options{domain} } = {
-        response => { time => tv_interval($timing0, [gettimeofday]) },
+        response => { time => tv_interval($timing0, [gettimeofday]) * 1000 },
         status => { domain => $options{domain} },
         expires => { domain => $options{domain} }
     };
