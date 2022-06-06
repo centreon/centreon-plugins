@@ -231,7 +231,7 @@ sub get_status {
     );
     my @statuses = ();
     foreach (@statusre) {
-        push @statuses, $1 if ($options{output} =~ /$_/msi);
+        push @statuses, $1 while ($options{output} =~ /$_/msig);
     }
     $self->{domains}->{ $options{domain} }->{status}->{status} = join(',', @statuses) if (scalar(@statuses) > 0);
 }
