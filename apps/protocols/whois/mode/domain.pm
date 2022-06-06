@@ -205,7 +205,8 @@ sub get_status {
         'Object_Not_Found',
         '^Domain\s+Status:\s+No\s+Object\s+Found',
         'query_status: 220 Available',
-        'The domain has not been registered'
+        'The domain has not been registered',
+        'no\s+se\s+encuentra\s+registrado'
     );
     foreach (@unregistered) {
         if ($options{output} =~ /$_/msi) {
@@ -298,6 +299,9 @@ sub get_expiration_date {
     } elsif ($options{output} =~ /^\s*expires:\s+(\d+)-(\d+)-(\d+)/msi) {
         #expires:          2022-10-20
         ($year, $month, $day) = ($1, $2, $3);
+    } elsif ($options{output} =~ /^\s*expire:\s+(\d+)-(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/msi) {
+        #expire:		2022-11-01 00:00:00
+        ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
     } elsif ($options{output} =~ /^\s*expires\.+:\s+(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+):(\d+)/msi) {
         #expires............: 4.7.2023 10:15:55
         ($year, $month, $day, $hour, $min, $sec) = ($3, $2, $1, $4, $5, $6);
@@ -353,7 +357,7 @@ sub check_domain {
         $self->{output}->add_option_msg(short_msg => '.ph domain lookups are not available to the public');
         $self->{output}->option_exit();
     }
-    if ($tld =~ /^(?:ar|es|gr|ph|pk|py|vn)$/) {
+    if ($tld =~ /^(?:es|gr|ph|pk|py|vn)$/) {
         $self->{output}->add_option_msg(short_msg => '.' . $tld . ' tld domain lookups are not available at this time');
         $self->{output}->option_exit();
     }
