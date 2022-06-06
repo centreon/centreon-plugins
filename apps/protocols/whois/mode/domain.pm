@@ -207,7 +207,7 @@ sub get_status {
         'The domain has not been registered',
         'no\s+se\s+encuentra\s+registrado',
         #xxxxx is free
-        '\s+is\s+free$'
+        '^[^\s+]+\s+is\s+free$'
     );
     foreach (@unregistered) {
         if ($options{output} =~ /$_/msi) {
