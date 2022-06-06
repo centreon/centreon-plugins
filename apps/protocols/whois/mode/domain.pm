@@ -268,7 +268,13 @@ sub get_expiration_date {
     if (defined($self->{option_results}->{expiration_date}) && $self->{option_results}->{expiration_date} ne '' &&
         $self->{option_results}->{expiration_date} =~ /^(\d{4})-(\d{2})-(\d{2})/) {
         ($year, $month, $day) = ($1, $2, $3);
-    } elsif ($options{output} =~ /^\s*Record expires on (\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+) \((.*?)\)/msi) {
+    } elsif ($options{output} =~ /^\s*(?:Expiry\s+Date|Registry\s+Expiry\s+Date|Registrar\s+Registration\s+Expiration\s+Date):\s+(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/msi) {
+        #Registrar Registration Expiration Date: 2022-09-20T22:00:00
+        #Registry Expiry Date: 2023-04-18T23:59:59Z
+        #Registry Expiry Date: 2023-03-24T00:00:00.000Z
+        #Expiry Date: 2022-06-20T14:54:52Z
+        ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
+    }elsif ($options{output} =~ /^\s*Record expires on (\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+) \((.*?)\)/msi) {
         #Record expires on 2022-10-31 12:47:54 (UTC+8)
         ($year, $month, $day, $hour, $min, $sec, $tz) = ($1, $2, $3, $4, $5, $6, $7);
     } elsif ($options{output} =~ /^\s*(?:Expiry\s+date|Exp\s+date):\s*(\d+)[-\s]([a-zA-Z]+)[-\s](\d+)/msi) {
@@ -278,16 +284,10 @@ sub get_expiration_date {
     } elsif ($options{output} =~ /^\s*Expiry\s+date:\s*(\d+)-(\d+)-(\d+)/msi) {
          #Expiry Date: 31-03-2023
         ($year, $month, $day) = ($3, $2, $1);
-    }elsif ($options{output} =~ /^\s*(?:Expire|Expiration)\s+Date:\s*(\d+)-(\d+)-(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*(?:Expire|Expiration)\s+Date:\s*(\d+)-(\d+)-(\d+)/msi) {
         #Expiration Date:   2023-05-11
         #Expire Date:        2022-08-02
         ($year, $month, $day) = ($1, $2, $3);
-    } elsif ($options{output} =~ /^\s*(?:Expiry\s+Date|Registry\s+Expiry\s+Date|Registrar\s+Registration\s+Expiration\s+Date):\s+(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/msi) {
-        #Registrar Registration Expiration Date: 2022-09-20T22:00:00
-        #Registry Expiry Date: 2023-04-18T23:59:59Z
-        #Registry Expiry Date: 2023-03-24T00:00:00.000Z
-        #Expiry Date: 2022-06-20T14:54:52Z
-        ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
     } elsif ($options{output} =~ /^\s*Expiration\s+Time:\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/msi) {
         #Expiration Time: 2023-03-17 12:48:36
         ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
