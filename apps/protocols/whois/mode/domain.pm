@@ -214,10 +214,6 @@ sub get_status {
 
     my @statusre = (
         '^status:\s*(.+?)\s*$',
-        #   Domain Status: clientUpdateProhibited,clientTransferProhibited,clientDeleteProhibited
-        #Domain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited
-        #Domain Status: clientDeleteProhibited
-        '^\s*domain\s+status:\s*([^\s]+?)(\s+|$)',
         #[Status]                        Active
         '\[Status\]\s+(.+?)\s*$',
         #status.............: Registered
@@ -233,6 +229,23 @@ sub get_status {
     foreach (@statusre) {
         push @statuses, $1 while ($options{output} =~ /$_/msig);
     }
+
+    #   Domain Status: clientUpdateProhibited,clientTransferProhibited,clientDeleteProhibited
+    #Domain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited
+    #Domain Status:		CLIENT UPDATE PROHIBITED
+    #Domain Status: clientDeleteProhibited
+    while ($options{output} =~ /Domain Status:(.*?)$/msig) {
+        my @values = split(/\s+/, $1);
+        my $value = '';
+        my $append = '';
+        foreach (@values) {
+            next if (/https:\/\//);
+            $value .= $append . $_;
+            $append = ' ';
+        }
+        push @statuses, $value;
+    }
+
     $self->{domains}->{ $options{domain} }->{status}->{status} = join(',', @statuses) if (scalar(@statuses) > 0);
 }
 
@@ -283,7 +296,10 @@ sub get_expiration_date {
     } elsif ($options{output} =~ /Expiration\s+date:\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/msi) {
         #Expiration date: 2022-11-20 14:48:02 CLST
         ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
-    } elsif ($options{output} =~ /renewal\s+date:\s*(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+):(\d+)/msi) {
+    } elsif ($options{output} =~ /Expiration\s+date:\s*(\d+)-([a-zA-Z]+)-(\d+)\s+(\d+):(\d+):(\d+)/msi) {
+        #Expiration Date:		03-Jan-2023 00:00:00
+        ($year, $month, $day, $hour, $min, $sec) = ($3, $months{ lc($2) }, $1, $4, $5, $6);
+    }elsif ($options{output} =~ /renewal\s+date:\s*(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+):(\d+)/msi) {
         #renewal date:          2022.09.18 14:00:00
         ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
     } elsif ($options{output} =~ /free-date:\s*(\d+)-(\d+)-(\d+)/msi) {
