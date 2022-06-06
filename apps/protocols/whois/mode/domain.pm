@@ -223,7 +223,9 @@ sub get_status {
         #state:            active
         '^state:\s*([^\s]+?)',
         #query_status: 200 Active
-        '^query_status:\s+200\s+(.+?)\s*$'
+        '^query_status:\s+200\s+(.+?)\s*$',
+        #EPP Status:                   clientTransferProhibited, clientUpdateProhibited, clientDeleteProhibited
+        '^EPP Status:\s+(.*?)\s+$',
     );
     my @statuses = ();
     foreach (@statusre) {
@@ -304,6 +306,9 @@ sub get_expiration_date {
         ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
     } elsif ($options{output} =~ /free-date:\s*(\d+)-(\d+)-(\d+)/msi) {
         #free-date:     2023-04-05
+        ($year, $month, $day) = ($1, $2, $3);
+    } elsif ($options{output} =~ /Valid Until:\s*(\d+)-(\d+)-(\d+)/msi) {
+        #Valid Until:                  2022-07-24
         ($year, $month, $day) = ($1, $2, $3);
     }
 
