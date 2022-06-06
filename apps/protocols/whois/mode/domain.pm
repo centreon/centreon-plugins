@@ -92,7 +92,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{response} = [
-        { label => 'response-time', nlabel => 'whois.response.time.milliseconds', display_ok => 0, set => {
+        { label => 'response-time', nlabel => 'whois.response.time.milliseconds', set => {
                 key_values => [ { name => 'time' } ],
                 output_template => 'whois reponse time: %s ms',
                 perfdatas => [
@@ -333,7 +333,7 @@ sub check_domain {
         $whois_server = "whois.nic.$tld" if ($tld =~ /^(?:asia|bo|fm|me|ms|nf|tel)$/);
     }
 
-    my $command_options = '-d ' . ($whois_server ne '' ? "-h $whois_server" : '') . ' ' . $options{domain};
+    my $command_options = ($whois_server ne '' ? "-h $whois_server" : '') . ' ' . $options{domain};
 
     my $timing0 = [gettimeofday];
     my ($output) = $options{custom}->execute_command(
@@ -344,7 +344,7 @@ sub check_domain {
     $self->{domains}->{ $options{domain} } = {
         response => { time => tv_interval($timing0, [gettimeofday]) },
         status => { domain => $options{domain} },
-        expires => {}
+        expires => { domain => $options{domain} }
     };
 
     $self->get_status(domain => $options{domain}, output => $output);
@@ -368,7 +368,7 @@ __END__
 
 Check domain status and expiration. 
 
-Command used: whois -d [-h $whois_server] $domain
+Command used: whois [-h $whois_server] $domain
 
 =over 8
 
