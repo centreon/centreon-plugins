@@ -268,55 +268,55 @@ sub get_expiration_date {
     if (defined($self->{option_results}->{expiration_date}) && $self->{option_results}->{expiration_date} ne '' &&
         $self->{option_results}->{expiration_date} =~ /^(\d{4})-(\d{2})-(\d{2})/) {
         ($year, $month, $day) = ($1, $2, $3);
-    } elsif ($options{output} =~ /Record expires on (\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+) \((.*?)\)/msi) {
+    } elsif ($options{output} =~ /^\s*Record expires on (\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+) \((.*?)\)/msi) {
         #Record expires on 2022-10-31 12:47:54 (UTC+8)
         ($year, $month, $day, $hour, $min, $sec, $tz) = ($1, $2, $3, $4, $5, $6, $7);
-    } elsif ($options{output} =~ /Expiry\s+date:\s*(\d+)-([a-zA-Z]+)-(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*Expiry\s+date:\s*(\d+)-([a-zA-Z]+)-(\d+)/msi) {
          #Expiry date:  02-Jul-2030
         ($year, $month, $day) = ($3, $months{ lc($2) }, $1);
-    } elsif ($options{output} =~ /Expiry\s+date:\s*(\d+)-(\d+)-(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*Expiry\s+date:\s*(\d+)-(\d+)-(\d+)/msi) {
          #Expiry Date: 31-03-2023
         ($year, $month, $day) = ($3, $2, $1);
-    }elsif ($options{output} =~ /(?:Expire|Expiration)\s+Date:\s*(\d+)-(\d+)-(\d+)/msi) {
+    }elsif ($options{output} =~ /^\s*(?:Expire|Expiration)\s+Date:\s*(\d+)-(\d+)-(\d+)/msi) {
         #Expiration Date:   2023-05-11
         #Expire Date:        2022-08-02
         ($year, $month, $day) = ($1, $2, $3);
-    } elsif ($options{output} =~ /Expiry\s+Date:\s+(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*(?:Expiry\s+Date|Registry\s+Expiry\s+Date):\s+(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/msi) {
         #Registry Expiry Date: 2023-04-18T23:59:59Z
         #Registry Expiry Date: 2023-03-24T00:00:00.000Z
         #Expiry Date: 2022-06-20T14:54:52Z
         ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
-    } elsif ($options{output} =~ /Expiration\s+Time:\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*Expiration\s+Time:\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/msi) {
         #Expiration Time: 2023-03-17 12:48:36
         ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
-    } elsif ($options{output} =~ /\[Expires\s+on\]\s+(\d+)\/(\d+)\/(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*\[Expires\s+on\]\s+(\d+)\/(\d+)\/(\d+)/msi) {
         #[Expires on]                    2023/05/31
         ($year, $month, $day) = ($1, $2, $3);
-    } elsif ($options{output} =~ /expire:\s+(\d+)\.(\d+).(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*expire:\s+(\d+)\.(\d+).(\d+)/msi) {
         #expire:       22.07.2022
         ($year, $month, $day) = ($3, $2, $1);
-    } elsif ($options{output} =~ /expires:\s+(\d+)-(\d+)-(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*expires:\s+(\d+)-(\d+)-(\d+)/msi) {
         #expires:          2022-10-20
         ($year, $month, $day) = ($1, $2, $3);
-    } elsif ($options{output} =~ /expires\.+:\s+(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+):(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*expires\.+:\s+(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+):(\d+)/msi) {
         #expires............: 4.7.2023 10:15:55
         ($year, $month, $day, $hour, $min, $sec) = ($3, $2, $1, $4, $5, $6);
-    } elsif ($options{output} =~ /Expiration\s+date:\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*Expiration\s+date:\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/msi) {
         #Expiration date: 2022-11-20 14:48:02 CLST
         ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
-    } elsif ($options{output} =~ /Expiration\s+date:\s*(\d+)-([a-zA-Z]+)-(\d+)\s+(\d+):(\d+):(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*Expiration\s+date:\s*(\d+)-([a-zA-Z]+)-(\d+)\s+(\d+):(\d+):(\d+)/msi) {
         #Expiration Date:		03-Jan-2023 00:00:00
         ($year, $month, $day, $hour, $min, $sec) = ($3, $months{ lc($2) }, $1, $4, $5, $6);
-    }elsif ($options{output} =~ /renewal\s+date:\s*(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+):(\d+)/msi) {
+    }elsif ($options{output} =~ /^\s*renewal\s+date:\s*(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+):(\d+)/msi) {
         #renewal date:          2022.09.18 14:00:00
         ($year, $month, $day, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
-    } elsif ($options{output} =~ /free-date:\s*(\d+)-(\d+)-(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*free-date:\s*(\d+)-(\d+)-(\d+)/msi) {
         #free-date:     2023-04-05
         ($year, $month, $day) = ($1, $2, $3);
-    } elsif ($options{output} =~ /Valid Until:\s*(\d+)-(\d+)-(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*Valid Until:\s*(\d+)-(\d+)-(\d+)/msi) {
         #Valid Until:                  2022-07-24
         ($year, $month, $day) = ($1, $2, $3);
-    } elsif ($options{output} =~ /Expiration\s+Date:\s*(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/msi) {
+    } elsif ($options{output} =~ /^\s*Expiration\s+Date:\s*(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/msi) {
         #Expiration Date: 28/02/2023 23:59:00
         ($year, $month, $day, $hour, $min, $sec) = ($3, $2, $1, $4, $5, $6);
     }
