@@ -236,7 +236,7 @@ sub get_status {
     #Domain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited
     #Domain Status:		CLIENT UPDATE PROHIBITED
     #Domain Status: clientDeleteProhibited
-    while ($options{output} =~ /Domain Status:(.*?)$/msig) {
+    while ($options{output} =~ /Domain Status:\s+(.*?)$/msig) {
         my @values = split(/\s+/, $1);
         my $value = '';
         my $append = '';
@@ -310,6 +310,9 @@ sub get_expiration_date {
     } elsif ($options{output} =~ /Valid Until:\s*(\d+)-(\d+)-(\d+)/msi) {
         #Valid Until:                  2022-07-24
         ($year, $month, $day) = ($1, $2, $3);
+    } elsif ($options{output} =~ /Expiration\s+Date:\s*(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/msi) {
+        #Expiration Date: 28/02/2023 23:59:00
+        ($year, $month, $day, $hour, $min, $sec) = ($3, $2, $1, $4, $5, $6);
     }
 
     return if (!defined($year)); # noExpirationDate
