@@ -272,8 +272,9 @@ sub get_expiration_date {
     } elsif ($options{output} =~ /^\s*Record expires on (\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+) \((.*?)\)/msi) {
         #Record expires on 2022-10-31 12:47:54 (UTC+8)
         ($year, $month, $day, $hour, $min, $sec, $tz) = ($1, $2, $3, $4, $5, $6, $7);
-    } elsif ($options{output} =~ /^\s*Expiry\s+date:\s*(\d+)-([a-zA-Z]+)-(\d+)/msi) {
-         #Expiry date:  02-Jul-2030
+    } elsif ($options{output} =~ /^\s*(?:Expiry\s+date|Exp\s+date):\s*(\d+)[-\s]([a-zA-Z]+)[-\s](\d+)/msi) {
+        #Exp date:                   16 Jul 2022
+        #Expiry date:  02-Jul-2030
         ($year, $month, $day) = ($3, $months{ lc($2) }, $1);
     } elsif ($options{output} =~ /^\s*Expiry\s+date:\s*(\d+)-(\d+)-(\d+)/msi) {
          #Expiry Date: 31-03-2023
