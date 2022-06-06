@@ -349,7 +349,8 @@ sub check_domain {
     };
 
     $self->get_status(domain => $options{domain}, output => $output);
-    $self->get_expiration_date(domain => $options{domain}, output => $output);
+    $self->get_expiration_date(domain => $options{domain}, output => $output)
+        if ($self->{domains}->{ $options{domain} }->{status}->{status} ne 'notRegistered');
 }
 
 sub manage_selection {
