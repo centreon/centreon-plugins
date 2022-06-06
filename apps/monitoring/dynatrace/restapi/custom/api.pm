@@ -177,21 +177,25 @@ sub get_management_zones {
 sub get_events {
     my ($self, %options) = @_;
     
+    my $management_zone_mapping;
     my @get_param;
     my @filter_param;
     push @get_param, 'from=now-' . $self->{option_results}->{relative_time};
     push @get_param, 'pageSize=500';
 
-    if (scalar(keys %{$options{management_zone_mapping}}) > 0) {
-        my @management_zones = split(',', $self->{option_results}->{filter_management_zone});
-        my @tmp_management_zones;
-        foreach (@management_zones) {
-            if(defined($options{management_zone_mapping}{$_})) {
-                push @tmp_management_zones, $options{management_zone_mapping}{$_};
+    if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '') {
+        $management_zone_mapping = $self->get_management_zones();
+        if (scalar(keys %{$management_zone_mapping}) > 0) {
+            my @management_zones = split(',', $self->{option_results}->{filter_management_zone});
+            my @tmp_management_zones;
+            foreach (@management_zones) {
+                if (defined($management_zone_mapping->{$_})) {
+                    push @tmp_management_zones, $management_zone_mapping->{$_};
+                }
             }
-        }
-        my $management_zones_id = join(",", map { '"' . $options{management_zone_mapping}->{$_} . '"' } @tmp_management_zones );
-        push @get_param, 'eventSelector=managementZoneId(' . $management_zones_id . ')';
+            my $management_zones_id = join(",", map { '"' . $_ . '"' } @tmp_management_zones );
+            push @get_param, 'eventSelector=managementZoneId(' . $management_zones_id . ')';
+        } 
     }
 
     my $status = $self->request_api(
@@ -244,7 +248,7 @@ sub get_synthetic_availability {
     my $status = $self->request_api(
         method   => 'GET',
         url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
-                    '/api/v1/timeserie?&timeseriesId=com.dynatrace.builtin:syntheticmonitor.availability.percent&queryMode=total' .
+                    '/api/v1/timeseries?&timeseriesId=com.dynatrace.builtin:syntheticmonitor.availability.percent&queryMode=total' .
                     '&relativeTime=' . $self->{option_results}->{relative_time}
     );
 

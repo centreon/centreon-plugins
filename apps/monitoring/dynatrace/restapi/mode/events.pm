@@ -45,21 +45,13 @@ sub prefix_management_zones_output {
     return "Management Zone '" . $options{instance_value}->{displayName} . "' ";
 }
 
-sub prefix_service_output {
-    my ($self, %options) = @_;
-
-    return "Event '" . $options{instance_value}->{displayName} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'management_zone', type => 1, cb_prefix_output => 'prefix_management_zones_output',  skipped_code => { -10 => 1 } },
-        { name => 'event', type => 2,
-          group => [ { name => 'event' } ]
-        }
+        { name => 'management_zone', type => 1, cb_prefix_output => 'prefix_management_zones_output', message_multiple => 'All management zones are OK',  skipped_code => { -10 => 1 } },
+        { name => 'event', type => 2, group => [ { name => 'event' } ] }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -74,7 +66,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{management_zone} = [
-        { label => 'managementzone-events', nlabel => 'events.count', display_ok => 0, set => {
+        { label => 'managementzone-events', nlabel => 'events.count', set => {
                 key_values => [ { name => 'events' }, { name => 'displayName' } ],
                 output_template => 'number of event : %s',
                 perfdatas => [
@@ -85,7 +77,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{event} = [
-        { label => 'status', type => 2, isplay_ok => 0, critical_default => '%{status} eq "OPEN"', set => {
+        { label => 'status', type => 2, set => {
                 key_values => [
                     { name => 'status' },  { name => 'processName' }, { name => 'displayName' }, 
                     { name => 'startTime' }, { name => 'endTime' }, { name => 'time' }, 
@@ -118,23 +110,12 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $management_zone_mapping;
-    if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '') {
-        my $management_zone_mapping = $options{custom}->get_management_zones();
-    }  
-    my $event = $options{custom}->get_events(management_zone_mapping => $management_zone_mapping);
+    my $event = $options{custom}->get_events();
     my ($i, $time) = (1, time());
-    my $management_zones;
     my $management_zone_name;
     my $process_name;
 
     foreach my $item (@{$event->{events}}) {
-        if (defined($item->{managementZones})) {
-            $management_zones = join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}}));
-        } else {
-            $management_zones = 'undefined_management_zone';
-        }
-
         if (defined($item->{entityId})) {
             $process_name = $item->{entityId}->{name};
         } else {
@@ -155,20 +136,19 @@ sub manage_selection {
 
         $self->{global}->{events}++;
 
-        foreach my $management_zones (@{$item->{managementZones}}) {
-            $management_zone_name = defined($management_zones->{name}) ? $management_zones->{name} : 'undefined_management_zone';
-            # if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
-            #     $management_zone_name !~ /$self->{option_results}->{filter_management_zone}/) {
-            #     next;
-            # }
-            $self->{management_zone}->{$management_zone_name}->{events}++;
+        if (@{$item->{managementZones}}) {
+            foreach my $management_zones (@{$item->{managementZones}}) {
+                $self->{management_zone}->{$management_zones->{name}}->{events}++;
+            }
+        } else {
+            $self->{management_zone}->{undefined_management_zone}->{events}++;
         }
         
         $self->{event}->{global}->{event}->{$i} = {
             displayName    => $item->{title},
             status         => $item->{status},
             eventType      => $item->{eventType},
-            managementZone => $management_zones,
+            managementZone => @{$item->{managementZones}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}})) : 'undefined_management_zone',
             processName    => $process_name,
             startTime      => $item->{startTime} / 1000,
             endTime        => $item->{endTime} > -1 ? $item->{endTime} / 1000 : -1,

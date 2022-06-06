@@ -46,27 +46,19 @@ sub prefix_management_zones_output {
     return "Management Zone '" . $options{instance_value}->{displayName} . "' ";
 }
 
-sub prefix_service_output {
-    my ($self, %options) = @_;
-
-    return "Problem '" . $self->{result_values}->{managementZone} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'management_zone', type => 1, cb_prefix_output => 'prefix_management_zones_output', message_multiple => 'All management zones are OK', skipped_code => { -10 => 1 } },
-        { name => 'problem', type => 2,
-          group => [ { name => 'problem' } ]
-        }
+        { name => 'problem', type => 2, group => [ { name => 'problem' } ] }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'problems-open', nlabel => 'total.problems.open.count', display_ok => 0, set => {
                 key_values => [ { name => 'problems_open' } ],
-                output_template => 'number of open problems : %s',
+                output_template => 'number of total open problems : %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -75,7 +67,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{management_zone} = [
-        { label => 'managementzone-problems-open', nlabel => 'problems.open.count', display_ok => 0, set => {
+        { label => 'managementzone-problems-open', nlabel => 'problems.open.count', set => {
                 key_values => [ { name => 'problems_open' }, { name => 'displayName' } ],
                 output_template => 'number of open problems : %s',
                 perfdatas => [
@@ -120,38 +112,27 @@ sub manage_selection {
     
     my $problem = $options{custom}->get_problems();
     my ($i, $time) = (1, time());
-    my $management_zones;
-    my $management_zone_name;
-    my $entities;
 
     foreach my $item (@{$problem->{problems}}) {
-        if (!defined(@{$item->{managementZones}}[0]->{name})) {
-            $management_zones = 'undefined_management_zone';
-        } else {
-            $management_zones = join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}}));
-        }
-        $entities = join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{impactedEntities}}));
-        
         if ($item->{status} eq 'OPEN') {
-            $self->{global}->{problems_open}++;
-            foreach my $management_zones (@{$item->{managementZones}}) {
-                $management_zone_name = defined($management_zones->{name}) ? $management_zones->{name} : 'undefined_management_zone';
-                # if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
-                #     $management_zone_name !~ /$self->{option_results}->{filter_management_zone}/) {
-                #     next;
-                # }
-                $self->{management_zone}->{$management_zone_name}->{problems_open}++;
+            $self->{global}->{problems_open}++;    
+            if (@{$item->{managementZones}}) {
+                foreach my $management_zones (@{$item->{managementZones}}) {
+                    $self->{management_zone}->{$management_zones->{name}}->{problems_open}++;
+                }
+            } else {
+                $self->{management_zone}->{undefined_management_zone}->{problems_open}++;
             }
         }
-
+ 
         $self->{problem}->{global}->{problem}->{$i} = {
             displayName    => $item->{title},
             status         => $item->{status},
             impactLevel    => $item->{impactLevel},
             severityLevel  => $item->{severityLevel},
-            managementZone => $management_zones,
-            entityName     => $entities,
-            entityId       => join(",", centreon::plugins::misc::uniq(map { "$_->{entityId}->{id}" } @{$item->{impactedEntities}})),
+            managementZone => @{$item->{managementZones}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}})) : 'undefined_management_zone',
+            entityName     => @{$item->{impactedEntities}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{impactedEntities}})) : 'undefined_entity',
+            entityId       => @{$item->{impactedEntities}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{entityId}->{id}" } @{$item->{impactedEntities}})) : 'undefined_entity',
             startTime      => $item->{startTime} / 1000,
             endTime        => $item->{endTime} > -1 ? $item->{endTime} / 1000 : -1,
             time           => $time
@@ -167,7 +148,6 @@ sub manage_selection {
     foreach my $management_zone (keys %{$self->{management_zone}}) {
         $self->{management_zone}->{$management_zone}->{displayName} = $management_zone;
     }
-
 }
 
 1;

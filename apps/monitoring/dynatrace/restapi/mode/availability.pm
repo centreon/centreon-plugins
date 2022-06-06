@@ -94,7 +94,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get_synthetic_availability(relative_time => $options{options}->{relative_time});
+    my $result = $options{custom}->get_synthetic_availability();
     my @synthetic;
     my $synthetic_name;
     my $synthetic_geolocation;
