@@ -72,7 +72,7 @@ sub check_ntp_query {
         command_options => undef,
         no_quit => 1
     );
-    if ($stdout =~ /^Source[\s\xA0]*:\s+(\S+)/mi) {
+    if ($stdout =~ /^Source.*?:\s+(\S+)/mi) {
         return $1;
     }
 }
