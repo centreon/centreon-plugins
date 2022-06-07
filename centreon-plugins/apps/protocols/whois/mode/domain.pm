@@ -94,7 +94,7 @@ sub set_counters {
     $self->{maps_counters}->{response} = [
         { label => 'response-time', nlabel => 'whois.response.time.milliseconds', set => {
                 key_values => [ { name => 'time' } ],
-                output_template => 'whois reponse time: %d ms',
+                output_template => 'whois response time: %d ms',
                 perfdatas => [
                     { template => '%d', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
