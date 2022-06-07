@@ -429,6 +429,26 @@ sub azure_list_resources {
     return $full_response;
 }
 
+sub azure_list_subscriptions_set_url {
+    my ($self) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions" . "?api-version=" . $self->{api_version};
+
+    return $url;
+}
+
+sub azure_list_subscriptions {
+    my ($self) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_subscriptions_set_url();
+
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response->{value};
+
+}
+
 sub azure_list_vms_set_url {
     my ($self, %options) = @_;
 
