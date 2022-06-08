@@ -61,6 +61,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
+    $self->{mode_name} = $options{mode_name};
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     $self->{cache} = centreon::plugins::statefile->new(%options);
 
@@ -98,7 +99,7 @@ sub check_options {
     $self->{management_endpoint} = (defined($self->{option_results}->{management_endpoint})) ? $self->{option_results}->{management_endpoint} : 'https://management.azure.com';
     $self->{api_version} = (defined($self->{option_results}->{api_version})) ? $self->{option_results}->{api_version} : undef;
 
-    if (!defined($self->{subscription}) || $self->{subscription} eq '') {
+    if ((!defined($self->{subscription}) || $self->{subscription} eq '') && $self->{mode_name} !~ /discovery-tenant/) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --subscription option.");
         $self->{output}->option_exit();
     }
@@ -150,7 +151,6 @@ sub get_access_token {
     my $has_cache_file = $options{statefile}->read(
         statefile =>
             'azure_api_' . 
-            md5_hex($self->{subscription}) . '_' . 
             md5_hex($self->{tenant}) . '_' . 
             md5_hex($self->{client_id}) . '_' .
             md5_hex($self->{management_endpoint})
@@ -396,6 +396,10 @@ sub azure_list_resources_set_url {
     $filter{location} = "location eq '" . $options{location} . "'" if (defined($options{location}) && $options{location} ne '');
 
     my $append = '';
+
+    $self->{subscription} = (defined($options{subscription_id}) ? $options{subscription_id} : $self->{subscription});
+    $self->{api_version} = (defined($options{api_version}) ? $options{api_version} : $self->{api_version});
+
     foreach (('resource_type', 'resource_group', 'location')) {
         next if (!defined($filter{$_}));
         $filter .= $append . $filter{$_};
@@ -415,6 +419,7 @@ sub azure_list_resources {
     my ($self, %options) = @_;
 
     my $full_response = [];
+
     my $full_url = $self->azure_list_resources_set_url(%options);
     while (1) {
         my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
@@ -427,6 +432,26 @@ sub azure_list_resources {
     }
 
     return $full_response;
+}
+
+sub azure_list_subscriptions_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions" . "?api-version=" . $options{api_version};
+
+    return $url;
+}
+
+sub azure_list_subscriptions {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_subscriptions_set_url(%options);
+
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response->{value};
+
 }
 
 sub azure_list_vms_set_url {
