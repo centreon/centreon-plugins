@@ -35,11 +35,11 @@ sub new {
         'discovery'              => 'cloud::azure::management::monitor::mode::discovery',
         'get-metrics'            => 'cloud::azure::management::monitor::mode::getmetrics',
         'health'                 => 'cloud::azure::management::monitor::mode::health',
-        'discover-subscriptions' => 'cloud::azure::management::monitor::mode::discoversubscriptions'
+        'discovery-tenant'       => 'cloud::azure::management::monitor::mode::discoverytenant'
     );
                         
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
-    $self->{custom_modes}{api} = 'cloud::azure::custom::api';
+    $self->{custom_modes}{api}   = 'cloud::azure::custom::api';
     return $self;
 }
 

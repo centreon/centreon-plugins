@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::monitor::mode::discoversubscriptions;
+package cloud::azure::management::monitor::mode::discoverytenant;
 
 use base qw(centreon::plugins::mode);
 
@@ -57,8 +57,8 @@ sub run {
     );
 
     foreach my $subscription (@$subscriptions) {
-        $self->{subscription} = $subscription->{subscriptionId};
         my $resources = $options{custom}->azure_list_resources(
+            subscription_id => $subscription->{subscriptionId},
             api_version => '2021-04-01'
         );
 
@@ -81,16 +81,14 @@ sub run {
             $resource->{subscriptionName} = $subscription->{displayName};
 
             foreach my $tag (keys %{$subscription}) {
-                next if (ref($subscription->{$tag}) ne "HASH" && $subscription->{$tag} !~ /^tags/) ;
-
+                next if (ref($subscription->{$tag}) ne "HASH" || $tag !~ /tags/) ;
                 my @array;
+                
                 foreach my $key (keys %{$subscription->{$tag}}) {
                     push @array, { key => $key, value => $subscription->{$tag}->{$key} };
                 }
-                $subscription->{subscriptionTags} = \@array;
+                $resource->{subscriptionTags} = \@array;
             }
-
-            $resource->{subscriptionTags} = $subscription->{subscriptionTags};
 
             push @disco_data, $resource;
 
@@ -126,3 +124,15 @@ sub run {
 __END__
 
 =head1 MODE
+
+Discover all resources for every subscription related to a particular tenant. 
+
+=over 8
+
+=item B<--prettify>
+
+Prettify JSON output.
+
+=back
+
+=cut
