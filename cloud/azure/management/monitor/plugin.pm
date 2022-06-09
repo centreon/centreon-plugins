@@ -33,9 +33,9 @@ sub new {
     %{$self->{modes}} = (
         'alert'                  => 'cloud::azure::management::monitor::mode::alert',
         'discovery'              => 'cloud::azure::management::monitor::mode::discovery',
+        'discovery-tenant'       => 'cloud::azure::management::monitor::mode::discoverytenant',
         'get-metrics'            => 'cloud::azure::management::monitor::mode::getmetrics',
-        'health'                 => 'cloud::azure::management::monitor::mode::health',
-        'discovery-tenant'       => 'cloud::azure::management::monitor::mode::discoverytenant'
+        'health'                 => 'cloud::azure::management::monitor::mode::health'
     );
                         
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
