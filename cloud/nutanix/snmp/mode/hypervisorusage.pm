@@ -30,7 +30,7 @@ sub prefix_hypervisor_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Hypervisor '%s'",
+        "Hypervisor '%s' ",
         $options{instance_value}->{display}
     );
 }

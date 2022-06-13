@@ -32,7 +32,7 @@ sub prefix_vm_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Virtual machine '%s'", 
+        "Virtual machine '%s' ", 
         $options{instance_value}->{display}
     );
 }
