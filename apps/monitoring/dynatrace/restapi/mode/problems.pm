@@ -99,9 +99,9 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'entity:s'          => { name => 'filter_entity' },
-        'management-zone:s' => { name => 'filter_management_zone' },
-        'relative-time:s'   => { name => 'relative_time', default => '2h' }
+        'filter-entity:s'          => { name => 'filter_entity' },
+        'filter-management-zone:s' => { name => 'filter_management_zone' },
+        'relative-time:s'          => { name => 'relative_time', default => '2h' }
     });
 
     return $self;
@@ -112,12 +112,30 @@ sub manage_selection {
     
     my $problem = $options{custom}->get_problems();
     my ($i, $time) = (1, time());
+    $self->{global}->{problems_open} = 0;
 
-    foreach my $item (@{$problem->{problems}}) {
+    foreach my $item (@{$problem}) {
+        
+        if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
+            $item->{eventType} !~ /$self->{option_results}->{filter_management_zone}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $item->{managementZones}->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        
+        if (defined($self->{option_results}->{filter_entity}) && $self->{option_results}->{filter_entity} ne '' &&
+            $item->{eventType} !~ /$self->{option_results}->{filter_entity}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $item->{impactedEntities}->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+
         if ($item->{status} eq 'OPEN') {
             $self->{global}->{problems_open}++;    
             if (@{$item->{managementZones}}) {
                 foreach my $management_zones (@{$item->{managementZones}}) {
+                    if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
+                        $management_zones->{name} !~ /$self->{option_results}->{filter_management_zone}/) {
+                        next;
+                    }
                     $self->{management_zone}->{$management_zones->{name}}->{problems_open}++;
                 }
             } else {

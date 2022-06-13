@@ -100,7 +100,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-name:s'            => { name => 'filter_name' },
         'filter-event-type:s'      => { name => 'filter_event_type' },
-        'management-zone:s'        => { name => 'filter_management_zone' },
+        'filter-management-zone:s' => { name => 'filter_management_zone' },
         'relative-time:s'          => { name => 'relative_time', default => '2h' }
     });
 
@@ -114,8 +114,9 @@ sub manage_selection {
     my ($i, $time) = (1, time());
     my $management_zone_name;
     my $process_name;
+    $self->{global}->{events} = 0;
 
-    foreach my $item (@{$event->{events}}) {
+    foreach my $item (@{$event}) {
         if (defined($item->{entityId})) {
             $process_name = $item->{entityId}->{name};
         } else {
@@ -125,6 +126,12 @@ sub manage_selection {
         if (defined($self->{option_results}->{filter_event_type}) && $self->{option_results}->{filter_event_type} ne '' &&
             $item->{eventType} !~ /$self->{option_results}->{filter_event_type}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $item->{eventType} . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
+            $item->{eventType} !~ /$self->{option_results}->{filter_management_zone}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $item->{managementZones}->{name} . "': no matching filter.", debug => 1);
             next;
         }
         
@@ -138,6 +145,10 @@ sub manage_selection {
 
         if (@{$item->{managementZones}}) {
             foreach my $management_zones (@{$item->{managementZones}}) {
+                if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
+                    $management_zones->{name} !~ /$self->{option_results}->{filter_management_zone}/) {
+                    next;
+                }
                 $self->{management_zone}->{$management_zones->{name}}->{events}++;
             }
         } else {
@@ -155,11 +166,6 @@ sub manage_selection {
             time           => $time
         };
         $i++;
-    }
-
-    if (scalar(keys %{$self->{event}->{global}->{event}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No event found.");
-        $self->{output}->option_exit();
     }
 
     foreach my $management_zone (keys %{$self->{management_zone}}) {

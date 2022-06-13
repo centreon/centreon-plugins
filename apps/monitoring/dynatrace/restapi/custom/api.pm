@@ -119,90 +119,72 @@ sub settings {
 sub request_api {
     my ($self, %options) = @_;
 
-    $self->settings();
-    my $content = $self->{http}->request(%options,
-        warning_status => '', unknown_status => '%{http_code} < 200 or %{http_code} >= 300', critical_status => ''
-    );
-
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->decode($content);
+    my $mode_mapping = {
+        timeseries => 'result',
+        events     => 'events',
+        problems   => 'problems'
     };
-    if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-    if (!defined($decoded)) {
-        $self->{output}->output_add(long_msg => $decoded, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
-        $self->{output}->option_exit();
+    my $items = [];
+    $options{get_param} = [];
+    $self->settings();
+    $options{url_path} = (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . $options{endpoint};
+    
+    while(1) {
+        my $content = $self->{http}->request(%options,
+            warning_status => '', unknown_status => '%{http_code} < 200 or %{http_code} >= 300', critical_status => ''
+        );
+
+        my $decoded;
+        eval {
+            $decoded = JSON::XS->new->decode($content);
+        };
+        if ($@) {
+            $self->{output}->output_add(long_msg => $content, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+            $self->{output}->option_exit();
+        }
+        if (!defined($decoded)) {
+            $self->{output}->output_add(long_msg => $decoded, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
+            $self->{output}->option_exit();
+        }
+
+        if ($options{endpoint_type} eq 'timeseries') {
+            return $decoded;
+        }
+
+        last if (!defined($decoded->{$mode_mapping->{$options{endpoint_type}}}));
+        push @$items, @{$decoded->{$mode_mapping->{$options{endpoint_type}}}};
+
+        last if (!defined($decoded->{nextPageKey}));
+        $options{get_param} = [@{$options{get_param}}, 'nextPageKey=' . $decoded->{nextPageKey}];
     }
 
-    return $decoded;
+    return $items;
 }
 
 sub get_apdex {
     my ($self, %options) = @_;
 
     my $status = $self->request_api(
-        method   => 'GET',
-        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
-                    '/api/v1/timeseries?&timeseriesId=com.dynatrace.builtin:app.apdex&queryMode=total' .
-                    '&aggregationType=' . $self->{option_results}->{aggregation_type} . 
-                    '&relativeTime=' . $self->{option_results}->{relative_time}
+        method        => 'GET',
+        endpoint      => '/api/v1/timeseries?&timeseriesId=com.dynatrace.builtin:app.apdex&queryMode=total' .
+                         '&aggregationType=' . $self->{option_results}->{aggregation_type} . 
+                         '&relativeTime=' . $self->{option_results}->{relative_time},
+        endpoint_type => 'timeseries'
                     
     );
 
     return $status;
 }
 
-sub get_management_zones {
-    my ($self, %options) = @_;
-
-    my $status = $self->request_api(
-        method   => 'GET',
-        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
-                    '/api/config/v1/managementZones'
-    );
-
-    my $management_zone_mapping;
-    foreach my $management_zone (@{$status->{values}}) {
-        $management_zone_mapping->{$management_zone->{name}} = $management_zone->{id};
-    }
-
-    return $management_zone_mapping;
-}
-
 sub get_events {
     my ($self, %options) = @_;
     
-    my $management_zone_mapping;
-    my @get_param;
-    my @filter_param;
-    push @get_param, 'from=now-' . $self->{option_results}->{relative_time};
-    push @get_param, 'pageSize=500';
-
-    if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '') {
-        $management_zone_mapping = $self->get_management_zones();
-        if (scalar(keys %{$management_zone_mapping}) > 0) {
-            my @management_zones = split(',', $self->{option_results}->{filter_management_zone});
-            my @tmp_management_zones;
-            foreach (@management_zones) {
-                if (defined($management_zone_mapping->{$_})) {
-                    push @tmp_management_zones, $management_zone_mapping->{$_};
-                }
-            }
-            my $management_zones_id = join(",", map { '"' . $_ . '"' } @tmp_management_zones );
-            push @get_param, 'eventSelector=managementZoneId(' . $management_zones_id . ')';
-        } 
-    }
-
     my $status = $self->request_api(
-        method    => 'GET',
-        url_path  => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
-                    '/api/v2/events',
-        get_param => \@get_param
+        method        => 'GET',
+        endpoint      => '/api/v2/events?from=now-' . $self->{option_results}->{relative_time} . 'pageSize=500',
+        endpoint_type => 'events',
     );
 
     return $status;
@@ -211,32 +193,10 @@ sub get_events {
 sub get_problems {
     my ($self, %options) = @_;
 
-    my @get_param;
-    my @filter_param;
-    push @get_param, 'from=now-' . $self->{option_results}->{relative_time};
-    push @get_param, 'pageSize=500';
-    
-    if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '') {
-        my @list_management_zones = split(',', $self->{option_results}->{filter_management_zone});
-        my $management_zones = join(",", map { '"' . $_ . '"' } @list_management_zones);
-        push @filter_param, 'managementZones(' . $management_zones . ')'; 
-    }
-
-    if (defined($self->{option_results}->{filter_entity}) && $self->{option_results}->{filter_entity} ne '') {
-        my @list_entities = split(',', $self->{option_results}->{filter_entity});
-        my $entities = join(",", map { '"' . $_ . '"' } @list_entities);
-        push @filter_param, 'impactedEntities(' . $entities . ')'; 
-    }
-
-    if (@filter_param) {
-        push @get_param, 'problemSelector=' . join(',', @filter_param);
-    }
-
     my $status = $self->request_api(
-        method    => 'GET',
-        url_path  => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) .
-                    '/api/v2/problems',
-        get_param => \@get_param
+        method        => 'GET',
+        endpoint      => '/api/v2/problems?from=now-' . $self->{option_results}->{relative_time} . 'pageSize=500',
+        endpoint_type => 'problems'
     );
 
     return $status;
@@ -246,10 +206,10 @@ sub get_synthetic_availability {
     my ($self, %options) = @_;
 
     my $status = $self->request_api(
-        method   => 'GET',
-        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . 
-                    '/api/v1/timeseries?&timeseriesId=com.dynatrace.builtin:syntheticmonitor.availability.percent&queryMode=total' .
-                    '&relativeTime=' . $self->{option_results}->{relative_time}
+        method        => 'GET',
+        endpoint      => '/api/v1/timeseries?&timeseriesId=com.dynatrace.builtin:syntheticmonitor.availability.percent&queryMode=total' .
+                         '&relativeTime=' . $self->{option_results}->{relative_time},
+        endpoint_type => 'timeseries'
     );
 
     return $status;
