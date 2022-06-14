@@ -30,7 +30,7 @@ sub prefix_sp_output {
     my ($self, %options) = @_;
     
     return sprintf(
-        "Storage Pool '%s'",
+        "Storage Pool '%s' ",
         $options{instance_value}->{display} 
     );
 }

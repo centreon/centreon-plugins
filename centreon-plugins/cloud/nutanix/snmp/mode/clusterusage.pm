@@ -33,7 +33,7 @@ sub prefix_cluster_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Cluster '%s'",
+        "Cluster '%s' ",
         $cluster_name
     );
 }
