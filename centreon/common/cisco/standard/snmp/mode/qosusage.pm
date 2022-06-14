@@ -25,81 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use bigint;
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'total', type => 0 },
-        { name => 'interface_classmap', type => 1, cb_prefix_output => 'prefix_intcmap_output', message_multiple => 'All interface classmaps are ok' },
-        { name => 'classmap', type => 1, cb_prefix_output => 'prefix_cmap_output', message_multiple => 'All classmaps are ok' }
-    ];
-
-    $self->{maps_counters}->{interface_classmap} = [
-         { label => 'int-cmap-traffic', set => {
-                key_values => [ { name => 'traffic_usage', diff => 1 }, { name => 'total' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_traffic_calc'),
-                closure_custom_output => $self->can('custom_traffic_output'),
-                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
-            }
-        },
-        { label => 'int-cmap-drop', set => {
-                key_values => [ { name => 'drop_usage', per_second => 1 }, { name => 'display' } ],
-                output_change_bytes => 2,
-                output_template => 'Drop : %s %s/s',
-                perfdatas => [
-                    { label => 'icmap_drop', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
-        }
-    ];
-    $self->{maps_counters}->{classmap} = [
-         { label => 'cmap-traffic', set => {
-                key_values => [ { name => 'traffic_usage', per_second => 1 }, { name => 'display' } ],
-                output_change_bytes => 2,
-                output_template => 'Traffic : %s %s/s',
-                perfdatas => [
-                    { label => 'cmap_traffic', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
-        },
-        { label => 'cmap-drop', set => {
-                key_values => [ { name => 'drop_usage', per_second => 1 }, { name => 'display' } ],
-                output_change_bytes => 2,
-                output_template => 'Drop : %s %s/s',
-                perfdatas => [
-                    { label => 'cmap_drop', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
-        }
-    ];
-
-    $self->{maps_counters}->{total} = [
-         { label => 'total-traffic', set => {
-                key_values => [ { name => 'traffic_usage', per_second => 1 } ],
-                output_change_bytes => 2,
-                output_template => 'Total Traffic : %s %s/s',
-                perfdatas => [
-                    { label => 'total_traffic', template => '%d', unit => 'b/s', min => 0 }
-                ]
-            }
-        },
-        { label => 'total-drop', set => {
-                key_values => [ { name => 'drop_usage', per_second => 1 } ],
-                output_change_bytes => 2,
-                output_template => 'Total Drop : %s %s/s',
-                perfdatas => [
-                    { label => 'total_drop', template => '%d', unit => 'b/s', min => 0 }
-                ]
-            }
-        }
-    ];
-}
+use Math::BigInt;
+use Math::BigFloat;
 
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
@@ -115,9 +42,10 @@ sub custom_traffic_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => 'icmap_traffic', unit => 'b/s',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-        value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
+        nlabel => $self->{nlabel},
+        unit => 'b/s',
+        instances => $self->{result_values}->{display},
+        value => sprintf('%.2f', $self->{result_values}->{traffic_per_second}),
         warning => $warning,
         critical => $critical,
         min => 0, max => ($self->{result_values}->{total} =~ /[0-9]/ ? $self->{result_values}->{total} : undef)
@@ -132,19 +60,19 @@ sub custom_traffic_threshold {
         (defined($self->{result_values}->{total}) && $self->{result_values}->{total} =~ /[0-9]/)) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_second}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
 
 sub custom_traffic_output {
     my ($self, %options) = @_;
-    
-    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);    
+
+    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_second}, network => 1); 
     return sprintf(
-        'Traffic : %s/s (%s)',
+        'traffic: %s/s%s',
         $traffic_value . $traffic_unit,
-        defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-'
+        defined($self->{result_values}->{traffic_prct}) ? sprintf(' (%.2f%%)', $self->{result_values}->{traffic_prct}) : ''
     );
 }
 
@@ -153,14 +81,20 @@ sub custom_traffic_calc {
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};    
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
-    $self->{result_values}->{traffic_usage} = $options{new_datas}->{$self->{instance} . '_traffic_usage'};
+    $self->{result_values}->{traffic_usage} = Math::BigInt->new($options{new_datas}->{$self->{instance} . '_traffic_usage'});
 
-    my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_traffic_usage'} - $options{old_datas}->{$self->{instance} . '_traffic_usage'});
-    $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
-    if ($options{new_datas}->{$self->{instance} . '_total'} =~ /[1-9]/) {
-        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $options{new_datas}->{$self->{instance} . '_total'};
+    my $diff_traffic = Math::BigInt->new('0');
+    $diff_traffic->badd($options{new_datas}->{$self->{instance} . '_traffic_usage'});
+    $diff_traffic->bsub($options{old_datas}->{$self->{instance} . '_traffic_usage'});
+
+    $self->{result_values}->{traffic_per_second} = Math::BigFloat->new('0');
+    $self->{result_values}->{traffic_per_second}->badd($diff_traffic);
+    $self->{result_values}->{traffic_per_second}->bdiv($options{delta_time});
+
+    if (defined($options{new_datas}->{$self->{instance} . '_total'}) && $options{new_datas}->{$self->{instance} . '_total'} =~ /[1-9]/) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_second} * 100 / $options{new_datas}->{$self->{instance} . '_total'};
     }
-    
+
     return 0;
 }
 
@@ -176,9 +110,87 @@ sub prefix_cmap_output {
     return "Classmap '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'total', type => 0 },
+        { name => 'interface_classmap', type => 1, cb_prefix_output => 'prefix_intcmap_output', message_multiple => 'All interface classmaps are ok' },
+        { name => 'classmap', type => 1, cb_prefix_output => 'prefix_cmap_output', message_multiple => 'All classmaps are ok' }
+    ];
+
+    $self->{maps_counters}->{interface_classmap} = [
+         { label => 'int-cmap-traffic', nlabel => 'qos.interface.classmap.traffic.bitspersecond', set => {
+                key_values => [ { name => 'traffic_usage', diff => 1 }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_traffic_calc'),
+                closure_custom_output => $self->can('custom_traffic_output'),
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
+            }
+        },
+        { label => 'int-cmap-drop', nlabel => 'qos.interface.classmap.drop.bitspersecond', set => {
+                key_values => [ { name => 'drop_usage', per_second => 1 }, { name => 'display' } ],
+                output_template => 'drop: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'icmap_drop', template => '%.0f',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{classmap} = [
+         { label => 'cmap-traffic', nlabel => 'qos.classmap.traffic.bitspersecond', set => {
+                key_values => [ { name => 'traffic_usage', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_traffic_calc'),
+                output_template => 'traffic: %s %s/s',
+                output_change_bytes => 2,
+                output_use => 'traffic_per_second',
+                threshold_use => 'traffic_per_second',
+                perfdatas => [
+                    { value => 'traffic_per_second', template => '%.0f', unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'cmap-drop', nlabel => 'qos.classmap.drop.bitspersecond', set => {
+                key_values => [ { name => 'drop_usage', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
+                output_template => 'drop: %s %s/s',
+                perfdatas => [
+                    { template => '%.0f', unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{total} = [
+         { label => 'total-traffic', nlabel => 'qos.traffic.bitspersecond', set => {
+                key_values => [ { name => 'traffic_usage', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_traffic_calc'),
+                output_template => 'total traffic: %s %s/s',
+                output_change_bytes => 2,
+                output_use => 'traffic_per_second', threshold_use => 'traffic_per_second',
+                perfdatas => [
+                    { value => 'traffic_per_second', template => '%.0f', unit => 'b/s', min => 0 }
+                ]
+            }
+        },
+        { label => 'total-drop', nlabel => 'qos.drop.bitspersecond', set => {
+                key_values => [ { name => 'drop_usage', per_second => 1 } ],
+                output_change_bytes => 2,
+                output_template => 'total drop: %s %s/s',
+                perfdatas => [
+                    { template => '%.0f', unit => 'b/s', min => 0 }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -282,7 +294,7 @@ sub manage_selection {
 
     $self->{interface_classmap} = {};
     $self->{classmap} = {};
-    $self->{total} = { drop_usage => 0, total_usage => 0 };
+    $self->{total} = { drop_usage => Math::BigInt->new('0'), traffic_usage => Math::BigInt->new('0') };
 
     my $request_oids = [
         { oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}} },
@@ -359,21 +371,23 @@ sub manage_selection {
         }
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cbQosCMStatsEntry}, instance => $policy_index . '.' . $qos_object_index);
-        my $traffic_usage = (defined($result->{cbQosCMPostPolicyByte64}) && $result->{cbQosCMPostPolicyByte64} =~ /[1-9]/) ?
-            $result->{cbQosCMPostPolicyByte64} :
-            (
-                ($result->{cbQosCMPostPolicyByteOverflow} == 4294967295) ?
-                undef :
-                ($result->{cbQosCMPostPolicyByteOverflow} * 4294967295 + $result->{cbQosCMPostPolicyByte})
-            );
-        my $drop_usage = 
-            (defined($result->{cbQosCMDropByte64}) && $result->{cbQosCMDropByte64} =~ /[1-9]/) ?
-            $result->{cbQosCMDropByte64} :
-            (
-                ($result->{cbQosCMDropByteOverflow} == 4294967295) ?
-                undef :
-                ($result->{cbQosCMDropByteOverflow} * 4294967295 + $result->{cbQosCMDropByte})
-            );
+        my $traffic_usage = Math::BigInt->new(0);
+        if (defined($result->{cbQosCMPostPolicyByte64}) && $result->{cbQosCMPostPolicyByte64} =~ /[1-9]/) {
+            $traffic_usage = Math::BigInt->new("$result->{cbQosCMPostPolicyByte64}");
+        } elsif ($result->{cbQosCMPostPolicyByteOverflow} != 4294967295) {
+            $traffic_usage = Math::BigInt->new("$result->{cbQosCMPostPolicyByteOverflow}");
+            $traffic_usage->bmuladd(Math::BigInt->new("4294967295"), Math::BigInt->new("$result->{cbQosCMPostPolicyByte}"));
+        }
+        $traffic_usage->bmul(Math::BigInt->new('8'));
+
+        my $drop_usage = Math::BigInt->new('0');
+        if (defined($result->{cbQosCMDropByte64}) && $result->{cbQosCMDropByte64} =~ /[1-9]/) {
+            $drop_usage = Math::BigInt->new("$result->{cbQosCMDropByte64}");
+        } elsif ($result->{cbQosCMDropByteOverflow} != 4294967295) {
+            $drop_usage = Math::BigInt->new("$result->{cbQosCMDropByteOverflow}");
+            $drop_usage->bmuladd("4294967295", "$result->{cbQosCMDropByte}");
+        }
+        $drop_usage->bmul(Math::BigInt->new('8'));
 
         my $total = 'unknown';
         if (defined($qos_data->{shaping})) {
@@ -383,25 +397,34 @@ sub manage_selection {
 
         $self->{interface_classmap}->{$policy_index . '.' . $qos_object_index} = {
             display => $name,
-            traffic_usage => defined($traffic_usage) ? $traffic_usage * 8 : undef,
-            drop_usage => defined($drop_usage) ? $drop_usage * 8 : undef,
+            traffic_usage => $traffic_usage->bdstr(),
+            drop_usage => $drop_usage->bdstr(),
             total => $total
         };
 
         my @tabname = split /:/, $name;
-        if (defined($tabname[3])){
+        if (defined($tabname[3])) {
             $class_name = $tabname[3] . '-' . $class_name;
         }
 
-        $self->{classmap}->{$name} = { display => $class_name, drop_usage => 0, traffic_usage => 0} if (!defined($self->{classmap}->{$name}));
-        $self->{classmap}->{$name}->{traffic_usage} += defined($traffic_usage) ? $traffic_usage * 8 : 0;
-        $self->{classmap}->{$name}->{drop_usage} += defined($drop_usage) ? $drop_usage * 8 : 0;
+        $self->{classmap}->{$class_name} = { display => $class_name, drop_usage => Math::BigInt->new('0'), traffic_usage => Math::BigInt->new('0') }
+            if (!defined($self->{classmap}->{$class_name}));
+        $self->{classmap}->{$class_name}->{traffic_usage}->badd($traffic_usage);
+        $self->{classmap}->{$class_name}->{drop_usage}->badd($drop_usage);
 
         if (!defined($tabname[3])){
-            $self->{total}->{traffic_usage} += defined($traffic_usage) ? $traffic_usage * 8 : 0;
-            $self->{total}->{drop_usage} += defined($drop_usage) ? $drop_usage * 8 : 0;
+            $self->{total}->{traffic_usage}->badd($traffic_usage);
+            $self->{total}->{drop_usage}->badd($drop_usage);
         }
     }
+
+    foreach (keys %{$self->{classmap}}) {
+        $self->{classmap}->{$_}->{traffic_usage} = $self->{classmap}->{$_}->{traffic_usage}->bdstr();
+        $self->{classmap}->{$_}->{drop_usage} = $self->{classmap}->{$_}->{drop_usage}->bdstr();
+    }
+
+    $self->{total}->{traffic_usage} = $self->{total}->{traffic_usage}->bdstr();
+    $self->{total}->{drop_usage} = $self->{total}->{drop_usage}->bdstr();
 
     $self->{cache_name} = 'cisco_qos_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_source}) ? md5_hex($self->{option_results}->{filter_source}) : md5_hex('all')) . '_' .
