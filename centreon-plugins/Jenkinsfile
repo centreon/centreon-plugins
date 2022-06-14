@@ -42,7 +42,7 @@ stage('RPM/DEB Packaging') {
       stash name: "rpms-centos7", includes: 'output-centos7/noarch/*.rpm'
       stash name: "rpms-alma8", includes: 'output-alma8/noarch/*.rpm'
     }
-  }
+  },
   'package debian bullseye': {
     node {
       sh 'setup_centreon_build.sh'
