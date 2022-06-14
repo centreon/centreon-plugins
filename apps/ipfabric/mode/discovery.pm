@@ -65,9 +65,8 @@ sub manage_selection {
             "limit" => undef,
             "start" => 0
         },
-        "snapshot" => "\$last",
         "reports" => "/inventory/devices"
-    };  
+    };
 
     my $disco_api_results = $options{custom}->request_api(
         method => 'POST',
@@ -83,6 +82,7 @@ sub manage_selection {
         $device{siteName} = $host->{siteName};
         $device{vendor} = $host->{vendor};
         $device{family} = $host->{family};
+        $device{platform} = $host->{platform};
         $device{snmp_community} = undef;
         push @disco_data, \%device;
     }
@@ -98,7 +98,6 @@ sub manage_selection {
             "limit" => undef,
             "start" => 0
         },
-        "snapshot" => "\$last",
         "reports" => "/technology/management/snmp/communities"
     }; 
 

@@ -53,8 +53,8 @@ Try {
         if (-not $sessions.ContainsKey($jobId)) {
             $sessions[$jobId] = @{}
             $sessions[$jobId].result = $_.Result.value__
-            $sessions[$jobId].creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
-            $sessions[$jobId].endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $sessions[$jobId].creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $sessions[$jobId].endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
         }
     }
 

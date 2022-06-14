@@ -150,7 +150,7 @@ sub manage_selection {
                 $events->{$_}->{region},
                 $events->{$_}->{statusCode},
                 $events->{$_}->{eventTypeCode},
-                scalar(localtime($events->{$_}->{startTime})),
+                $events->{$_}->{startTime} =~ m/^\d{4}-\d{2}-\d{2}/ ? $events->{$_}->{startTime} : scalar(localtime($events->{$_}->{startTime})),
                 $entity
             )
         );

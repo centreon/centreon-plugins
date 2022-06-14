@@ -24,96 +24,56 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_perfdata {
     my ($self, %options) = @_;
     
     $self->{output}->perfdata_add(
-        label => 'desired',
         nlabel => 'daemonset.pods.desired.count',
         value => $self->{result_values}->{desired},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
-        label => 'current',
         nlabel => 'daemonset.pods.current.count',
         value => $self->{result_values}->{current},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
-        label => 'available',
         nlabel => 'daemonset.pods.available.count',
         value => $self->{result_values}->{available},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         label => 'up_to_date',
         nlabel => 'daemonset.pods.uptodate.count',
         value => $self->{result_values}->{up_to_date},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
-        label => 'ready',
         nlabel => 'daemonset.pods.ready.count',
         value => $self->{result_values}->{ready},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
-        label => 'misscheduled',
         nlabel => 'daemonset.pods.misscheduled.count',
         value => $self->{result_values}->{misscheduled},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        instances => $self->{result_values}->{name}
     );
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("Pods Desired: %s, Current: %s, Available: %s, Up-to-date: %s, Ready: %s, Misscheduled: %s",
+    return sprintf(
+        "Pods Desired: %s, Current: %s, Available: %s, Up-to-date: %s, Ready: %s, Misscheduled: %s",
         $self->{result_values}->{desired},
         $self->{result_values}->{current},
         $self->{result_values}->{available},
         $self->{result_values}->{up_to_date},
         $self->{result_values}->{ready},
-        $self->{result_values}->{misscheduled});
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{namespace} = $options{new_datas}->{$self->{instance} . '_namespace'};
-    $self->{result_values}->{desired} = $options{new_datas}->{$self->{instance} . '_desired'};
-    $self->{result_values}->{current} = $options{new_datas}->{$self->{instance} . '_current'};
-    $self->{result_values}->{available} = $options{new_datas}->{$self->{instance} . '_available'};
-    $self->{result_values}->{up_to_date} = $options{new_datas}->{$self->{instance} . '_up_to_date'};
-    $self->{result_values}->{ready} = $options{new_datas}->{$self->{instance} . '_ready'};
-    $self->{result_values}->{misscheduled} = $options{new_datas}->{$self->{instance} . '_misscheduled'};
-
-    return 0;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'daemonsets', type => 1, cb_prefix_output => 'prefix_daemonset_output',
-            message_multiple => 'All DaemonSets status are ok', skipped_code => { -11 => 1 } },
-    ];
-
-    $self->{maps_counters}->{daemonsets} = [
-        { label => 'status', set => {
-                key_values => [ { name => 'desired' }, { name => 'current' }, { name => 'up_to_date' },
-                    { name => 'available' }, { name => 'ready' }, { name => 'misscheduled' }, { name => 'name' },
-                    { name => 'namespace' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => $self->can('custom_status_perfdata'),
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-    ];
+        $self->{result_values}->{misscheduled}
+    );
 }
 
 sub prefix_daemonset_output {
@@ -122,26 +82,43 @@ sub prefix_daemonset_output {
     return "DaemonSet '" . $options{instance_value}->{name} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'daemonsets', type => 1, cb_prefix_output => 'prefix_daemonset_output',
+            message_multiple => 'All DaemonSets status are ok', skipped_code => { -11 => 1 } }
+    ];
+
+    $self->{maps_counters}->{daemonsets} = [
+        {
+            label => 'status',
+            type => 2,
+            warning_default => '%{up_to_date} < %{desired}',
+            critical_default => '%{available} < %{desired}',
+            set => {
+                key_values => [ { name => 'desired' }, { name => 'current' }, { name => 'up_to_date' },
+                    { name => 'available' }, { name => 'ready' }, { name => 'misscheduled' }, { name => 'name' },
+                    { name => 'namespace' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => $self->can('custom_status_perfdata'),
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s"         => { name => 'filter_name' },
-        "filter-namespace:s"    => { name => 'filter_namespace' },
-        "warning-status:s"      => { name => 'warning_status', default => '%{up_to_date} < %{desired}' },
-        "critical-status:s"     => { name => 'critical_status', default => '%{available} < %{desired}' },
+        'filter-name:s'      => { name => 'filter_name' },
+        'filter-namespace:s' => { name => 'filter_namespace' }
     });
    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -162,17 +139,24 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $daemonset->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
             next;
         }
-        
-        $self->{daemonsets}->{$daemonset->{metadata}->{uid}} = {
+
+        $self->{daemonsets}->{ $daemonset->{metadata}->{uid} } = {
             name => $daemonset->{metadata}->{name},
-            namespace => $daemonset->{metadata}->{namespace},
-            desired => (defined($daemonset->{status}->{desiredNumberScheduled})) && $daemonset->{status}->{desiredNumberScheduled} =~ /(\d+)/ ? $1 : 0,
-            current => (defined($daemonset->{status}->{currentNumberScheduled})) && $daemonset->{status}->{currentNumberScheduled} =~ /(\d+)/ ? $1 : 0,
-            up_to_date => (defined($daemonset->{status}->{updatedNumberScheduled})) && $daemonset->{status}->{updatedNumberScheduled} =~ /(\d+)/ ? $1 : 0,
-            available => (defined($daemonset->{status}->{numberAvailable})) && $daemonset->{status}->{numberAvailable} =~ /(\d+)/ ? $1 : 0,
-            ready => (defined($daemonset->{status}->{numberReady})) && $daemonset->{status}->{numberReady} =~ /(\d+)/ ? $1 : 0,
-            misscheduled => (defined($daemonset->{status}->{numberMisscheduled})) && $daemonset->{status}->{numberMisscheduled} =~ /(\d+)/ ? $1 : 0
-        }
+            namespace => $daemonset->{metadata}->{namespace}
+        };
+
+        $self->{daemonsets}->{ $daemonset->{metadata}->{uid} }->{desired} =
+            defined($daemonset->{status}->{desiredNumberScheduled}) && $daemonset->{status}->{desiredNumberScheduled} =~ /(\d+)/ ? $1 : 0;
+        $self->{daemonsets}->{ $daemonset->{metadata}->{uid} }->{current} =
+            defined($daemonset->{status}->{currentNumberScheduled}) && $daemonset->{status}->{currentNumberScheduled} =~ /(\d+)/ ? $1 : 0;
+        $self->{daemonsets}->{ $daemonset->{metadata}->{uid} }->{up_to_date} =
+            defined($daemonset->{status}->{updatedNumberScheduled}) && $daemonset->{status}->{updatedNumberScheduled} =~ /(\d+)/ ? $1 : 0;
+        $self->{daemonsets}->{ $daemonset->{metadata}->{uid} }->{available} =
+            defined($daemonset->{status}->{numberAvailable}) && $daemonset->{status}->{numberAvailable} =~ /(\d+)/ ? $1 : 0;
+        $self->{daemonsets}->{ $daemonset->{metadata}->{uid} }->{ready} =
+            defined($daemonset->{status}->{numberReady}) && $daemonset->{status}->{numberReady} =~ /(\d+)/ ? $1 : 0;
+        $self->{daemonsets}->{ $daemonset->{metadata}->{uid} }->{misscheduled} =
+            defined($daemonset->{status}->{numberMisscheduled}) && $daemonset->{status}->{numberMisscheduled} =~ /(\d+)/ ? $1 : 0;
     }
     
     if (scalar(keys %{$self->{daemonsets}}) <= 0) {

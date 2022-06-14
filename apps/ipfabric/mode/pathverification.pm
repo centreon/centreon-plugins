@@ -156,7 +156,6 @@ sub manage_selection {
             "limit" => undef,
             "start" => 0
         },
-        "snapshot" => "\$last",
         "reports" => "/technology/routing/path-verifications"
     };  
 
@@ -179,6 +178,11 @@ sub manage_selection {
         if ($path_state->{$route->{id}}->{expected_state} ne $path_state->{$route->{id}}->{state}){
             $self->{global}->{total_mismatch}++;
         }
+    }
+
+    if (scalar(keys %$path_state) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No path found.");
+        $self->{output}->option_exit();
     }
     
     foreach my $id (keys %$path_state) {

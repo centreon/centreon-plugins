@@ -29,17 +29,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'load'            => 'snmp_standard::mode::loadaverage',
-        'interfaces'      => 'snmp_standard::mode::interfaces',
+    $self->{modes} = {
+        'load'            => 'network::libraesva::snmp::mode::load',
+        'interfaces'      => 'network::libraesva::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'list-storages'   => 'snmp_standard::mode::liststorages',
-        'memory'          => 'snmp_standard::mode::memory',
-        'storage'         => 'snmp_standard::mode::storage',
+        'memory'          => 'network::libraesva::snmp::mode::memory',
+        'storage'         => 'network::libraesva::snmp::mode::storage',
         'system'          => 'network::libraesva::snmp::mode::system',
-        'swap'            => 'snmp_standard::mode::swap',
-    );
+        'swap'            => 'network::libraesva::snmp::mode::swap'
+    };
 
     return $self;
 }

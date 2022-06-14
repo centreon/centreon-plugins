@@ -103,6 +103,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "name:s@"               => { name => 'name' },
         "availability-zone:s"   => { name => 'availability_zone' },
+        "target-group:s"        => { name => 'target_group' },
         "filter-metric:s"       => { name => 'filter_metric' },
         "statistic:s@"          => { name => 'statistic' },
     });
@@ -155,8 +156,12 @@ sub manage_selection {
         if (defined($self->{option_results}->{availability_zone}) && $self->{option_results}->{availability_zone} ne '') {
             push @{$self->{aws_dimensions}}, { Name => 'AvailabilityZone', Value => $self->{option_results}->{availability_zone} };
         }
+        if (defined($self->{option_results}->{target_group}) && $self->{option_results}->{target_group} ne '') {
+            push @{$self->{aws_dimensions}}, { Name => 'TargetGroup', Value => $self->{option_results}->{target_group} };
+        } 
+        
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            namespace => 'AWS/ApplicationELB',
+            namespace => 'AWS/NetworkELB',
             dimensions => $self->{aws_dimensions},
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
@@ -207,6 +212,10 @@ Set the instance name (Required) (Can be multiple).
 =item B<--availability-zone>
 
 Add Availability Zone dimension.
+
+=item B<--target-group>
+
+Add target group dimension.
 
 =item B<--filter-metric>
 

@@ -167,10 +167,12 @@ sub query_range {
 
     my $result = $self->get_endpoint(url_path => '/query?expr=' . $uri->encode($query));
 
-    if (defined( $self->{option_results}->{default_value} ) && $options{filter} ne '' && !exists( $result->{data} )) {
-        $options{filter} =~ /([^\s\\]+) = \"([^\s\\]+)\"/;
-        push @{$result->{data}->{key}}, { value => $2 };
-        push @{$result->{data}->{values}}, { value => $self->{option_results}->{default_value} };
+    if (defined($self->{option_results}->{default_value}) && $options{filter} ne '' && !exists($result->{data})) {
+        $options{filter} =~ /\s*([^\s\\]+)\s*=\s*\"(.*)\"/;
+        $result->{data} = [
+            { key => [ { value => $2 } ] },
+            { values => [ { value => $self->{option_results}->{default_value} } ] }
+        ];
     }
 
     return $result->{data};

@@ -252,6 +252,7 @@ sub new {
         'storage:s'               => { name => 'storage' },
         'regexp'                  => { name => 'use_regexp' },
         'regexp-isensitive'       => { name => 'use_regexpi' },
+        'path-best-match'         => { name => 'use_path_best_match' },
         'oid-filter:s'            => { name => 'oid_filter', default => 'hrStorageDescr'},
         'oid-display:s'           => { name => 'oid_display', default => 'hrStorageDescr'},
         'display-transform-src:s' => { name => 'display_transform_src' },
@@ -526,6 +527,9 @@ sub get_selection {
         my $name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $self->{option_results}->{storage});
         push @{$self->{storage_id_selected}}, $self->{option_results}->{storage} if (defined($name) && $self->filter_type(id => $self->{option_results}->{storage}));
     } else {
+        my $path_best_match_score = -1;
+        my $path_best_match = -1;
+
         foreach my $i (@{$all_ids}) {
             my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $i);
             next if (!defined($filter_name));
@@ -543,9 +547,25 @@ sub get_selection {
             if (!defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name eq $self->{option_results}->{storage}) {
                 push @{$self->{storage_id_selected}}, $i if ($self->filter_type(id => $i));
             }
+            if (defined($self->{option_results}->{use_path_best_match})) {
+                if ($path_best_match_score < length($filter_name) && $self->{option_results}->{storage} =~ /^$filter_name/) {
+                    $path_best_match_score = length($filter_name);
+                    $path_best_match = $i;
+                }
+                $self->{output}->output_add(
+                    long_msg => sprintf(
+                        "- searching [%s] filter-name [%s] length [%i] score [%i] index [%i]\n",
+                        $self->{option_results}->{storage}, $filter_name , length($filter_name), $path_best_match_score, $path_best_match
+                    ),
+                    debug => 1
+                );
+            }
+        }
+        if (0 < $path_best_match_score) {
+            push @{$self->{storage_id_selected}}, $path_best_match;
         }
     }
-    
+
     if (scalar(@{$self->{storage_id_selected}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No storage found. Can be: filters, cache file.");
         $self->{output}->option_exit();
@@ -615,6 +635,10 @@ Allows to use regexp to filter storage (with option --name).
 =item B<--regexp-isensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
+
+=item B<--path-best-match>
+
+Allows to select best path mount point (with --name).
 
 =item B<--reload-cache-time>
 

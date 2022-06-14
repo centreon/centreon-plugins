@@ -93,7 +93,7 @@ sub check_options {
 sub login {
     my ($self, %options) = @_;
     
-    my $result = { status => 0, message => 'authentification succeeded' };
+    my $result = { status => 0, message => 'authentication succeeded' };
     $self->{ssh} = Libssh::Session->new();
 
     foreach (['hostname', 'host'], ['port', 'port'], ['timeout', 'timeout'], ['ssh_username', 'user'],

@@ -29,10 +29,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
-        'applicationpool-state' => 'apps::microsoft::iis::wsman::mode::applicationpoolstate',
-        'list-applicationpools' => 'apps::microsoft::iis::wsman::mode::listapplicationpools'
+        'application-pools'      => 'apps::microsoft::iis::wsman::mode::applicationpools',
+        'list-application-pools' => 'apps::microsoft::iis::wsman::mode::listapplicationpools'
     };
 
     return $self;

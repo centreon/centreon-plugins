@@ -53,7 +53,7 @@ sub check_s5 {
         next if ($self->check_filter(section => 'temperature', instance => $instance));
         $self->{components}->{temperature}->{total}++;
 
-        $result->{s5ChasTmpSnrTmpValue} = sprintf("%.2f", $result->{value} / 2);
+        $result->{value} = sprintf("%.2f", $result->{value} / 2);
         $self->{output}->output_add(
             long_msg => sprintf(
                 "temperature '%s' is %s degree centigrade [instance: %s]",

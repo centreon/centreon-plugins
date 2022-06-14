@@ -47,6 +47,8 @@ sub new {
         $options{options}->add_options(arguments => {
             'api-username:s'        => { name => 'api_username' },
             'api-password:s'        => { name => 'api_password' },
+            'client-id:s'           => { name => 'client_id' },
+            'client-secret:s'       => { name => 'client_secret' },
             'environment-id:s'      => { name => 'environment_id' },
             'organization-id:s'     => { name => 'organization_id' },
             'hostname:s'            => { name => 'hostname' },
@@ -82,12 +84,13 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{authent_endpoint} = (defined($self->{option_results}->{authent_endpoint})) ? $self->{option_results}->{authent_endpoint} : '/accounts/login';
     $self->{monitoring_endpoint}->{arm} = (defined($self->{option_results}->{monitoring_endpoint})) ? $self->{option_results}->{monitoring_endpoint} : '/hybrid/api/v1';
     $self->{monitoring_endpoint}->{mq_admin} = (defined($self->{option_results}->{monitoring_endpoint})) ? $self->{option_results}->{monitoring_endpoint} : '/mq/admin/api/v1';
     $self->{monitoring_endpoint}->{mq_stats} = (defined($self->{option_results}->{monitoring_endpoint})) ? $self->{option_results}->{monitoring_endpoint} : '/mq/stats/api/v1';
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{client_id} = (defined($self->{option_results}->{client_id})) ? $self->{option_results}->{client_id} : '';
+    $self->{client_secret} = (defined($self->{option_results}->{client_secret})) ? $self->{option_results}->{client_secret} : '';
     $self->{environment_id} = (defined($self->{option_results}->{environment_id})) ? $self->{option_results}->{environment_id} : '';
     $self->{organization_id} = (defined($self->{option_results}->{organization_id})) ? $self->{option_results}->{organization_id} : '';
     $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 180;
@@ -97,11 +100,35 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "--environment-id and --organization-id must be set");
         $self->{output}->option_exit();
     }
-    if ($self->{api_username} eq '' || $self->{api_password} eq '' ) {
-        $self->{output}->add_option_msg(short_msg => "--api-username and --api-password must be set");
+    if (! (
+        ($self->{api_username} ne '' && $self->{api_password} ne '')
+        ||
+        ($self->{client_id} ne '' && $self->{client_secret} ne '' )
+    ) ) {
+        $self->{output}->add_option_msg(short_msg => "At least one of --api-username / --api-password (login) ; or --client-id and --client-secret (OAuth2), must be set");
+        $self->{output}->option_exit();
+    }
+    if (! (
+      ($self->{api_username} ne '' && $self->{api_password} ne '' && $self->{client_id} eq '' && $self->{client_secret} eq '' )
+      ||
+      ($self->{api_username} eq '' && $self->{api_password} eq '' && $self->{client_id} ne '' && $self->{client_secret} ne '' )
+    ) ) {
+        $self->{output}->add_option_msg(short_msg => "--api-username / --api-password (login), and --client-id / --client-secret (OAuth2), cannot be set both at the same time");
         $self->{output}->option_exit();
     }
 
+    # Different endpoints based on whether we use classic login, or OAuth2
+    # Cf https://anypoint.mulesoft.com/exchange/portals/anypoint-platform/f1e97bc6-315a-4490-82a7-23abe036327a.anypoint-platform/access-management-api/minor/1.0/pages/Authentication/
+    # (Or: https://anypoint.mulesoft.com/exchange/portals/anypoint-platform/?search=Access%20Management%20API and click on first result)
+    if ($self->{api_username} ne '') {
+        # Using the Login endpoint
+        $self->{cache_key} = md5_hex($self->{api_username});
+        $self->{authent_endpoint} = (defined($self->{option_results}->{authent_endpoint})) ? $self->{option_results}->{authent_endpoint} : '/accounts/login';
+      } else {
+        # Using the OAuth2 endpoint
+        $self->{cache_key} = md5_hex($self->{client_id});
+        $self->{authent_endpoint} = (defined($self->{option_results}->{authent_endpoint})) ? $self->{option_results}->{authent_endpoint} : '/accounts/api/v2/oauth2/token';
+      }
     return 0;
 }
 
@@ -132,11 +159,16 @@ sub settings {
 sub get_access_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'mulesoft_api_' . md5_hex($self->{hostname}) . '_' . md5_hex($self->{api_username}));
+    my $has_cache_file = $options{statefile}->read(statefile => 'mulesoft_api_' . md5_hex($self->{hostname}) . '_' . $self->{cache_key});
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
     if ( $has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10) ) {
-        my $login = { username => $self->{api_username}, password => $self->{api_password} };
+        my $login;
+        if ($self->{api_username} ne '') {
+          $login = { username => $self->{api_username}, password => $self->{api_password} };
+        } else {
+          $login = { client_id => $self->{client_id}, client_secret => $self->{client_secret}, grant_type => "client_credentials" };
+        }
         my $post_json = JSON::XS->new->utf8->encode($login);
 
         $self->settings();
@@ -252,7 +284,7 @@ sub cache_hosts {
 
     $self->{cache_hosts} = centreon::plugins::statefile->new(%options);
     $self->{cache_hosts}->check_options(option_results => $self->{option_results});
-    my $has_cache_file = $self->{cache_hosts}->read(statefile => 'cache_ovirt_hosts_' . md5_hex($self->{hostname}) . '_' . md5_hex($self->{api_username}));
+    my $has_cache_file = $self->{cache_hosts}->read(statefile => 'cache_ovirt_hosts_' . md5_hex($self->{hostname}) . '_' . $self->{cache_key});
     my $timestamp_cache = $self->{cache_hosts}->get(name => 'last_timestamp');
     my $hosts = $self->{cache_hosts}->get(name => 'hosts');
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{reload_cache_time}) * 60))) {

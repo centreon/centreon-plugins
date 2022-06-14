@@ -26,13 +26,22 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+sub prefix_container_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Container '%s' ",
+        $options{instance_value}->{display}
+    );
+}
+
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free';
+        ($label, $nlabel) = ('free', 'container.storage.space.free.bytes');
         $value_perf = $self->{result_values}->{free};
     }
     my $extra_label = '';
@@ -45,9 +54,10 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         label => $label . $extra_label, unit => 'B',
+        nlabel => $nlabel,
         value => $value_perf,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $self->{result_values}->{total}
     );
 }
@@ -62,7 +72,13 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_used};
         $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value, 
+        threshold => [ 
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, 
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } 
+        ]
+    );
     return $exit;
 }
 
@@ -96,36 +112,36 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'container', type => 1, cb_prefix_output => 'prefix_container_output', message_multiple => 'All containers are ok', skipped_code => { -10 => 1 } },
+        { name => 'container', type => 1, cb_prefix_output => 'prefix_container_output', message_multiple => 'All containers are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{container} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'container.storage.space.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'citUsedCapacity' }, { name => 'citTotalCapacity' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
-        { label => 'avg-latency', set => {
+        { label => 'avg-latency', nlabel => 'container.average.io.latency.microseconds', set => {
                 key_values => [ { name => 'citAvgLatencyUsecs' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'citAvgLatencyUsecs', template => '%s', unit => 'µs',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'avg_latency', template => '%s', unit => 'µs',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'iops', set => {
+        { label => 'iops', nlabel => 'container.operations.iops', set => {
                 key_values => [ { name => 'citIOPerSecond' }, { name => 'display' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { label => 'iops', value => 'citIOPerSecond', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'iops', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -137,16 +153,10 @@ sub new {
     $options{options}->add_options(arguments => { 
         'filter-name:s' => { name => 'filter_name' },
         'units:s'       => { name => 'units', default => '%' },
-        'free'          => { name => 'free' },
+        'free'          => { name => 'free' }
     });
 
     return $self;
-}
-
-sub prefix_container_output {
-    my ($self, %options) = @_;
-
-    return "Container '" . $options{instance_value}->{display} . "' ";
 }
 
 my $mapping = {
@@ -154,7 +164,7 @@ my $mapping = {
     citTotalCapacity    => { oid => '.1.3.6.1.4.1.41263.8.1.4' },
     citUsedCapacity     => { oid => '.1.3.6.1.4.1.41263.8.1.5' },
     citIOPerSecond      => { oid => '.1.3.6.1.4.1.41263.8.1.6' },
-    citAvgLatencyUsecs  => { oid => '.1.3.6.1.4.1.41263.8.1.7' },
+    citAvgLatencyUsecs  => { oid => '.1.3.6.1.4.1.41263.8.1.7' }
 };
 
 my $oid_citEntry = '.1.3.6.1.4.1.41263.8.1';

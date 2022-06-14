@@ -30,11 +30,11 @@ my %map_status = (
     4 => 'powering',
     5 => 'nopower',
     6 => 'notpowering',
-	7 => 'incompatible',
+	7 => 'incompatible'
 );
 
 my $mapping = {
-    boxServicesPowSupplyItemState => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.7.1.3', map => \%map_status },
+    boxServicesPowSupplyItemState => { oid => '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.7.1.3', map => \%map_status }
 };
 my $oid_boxServicesPowSuppliesEntry = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.7.1';
 
@@ -62,15 +62,20 @@ sub check {
             $self->absent_problem(section => 'psu', instance => $instance);
             next;
         }
-        
+
         $self->{components}->{psu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is '%s' [instance = %s]",
-                                                        $instance, $result->{boxServicesPowSupplyItemState}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' status is '%s' [instance = %s]",
+                $instance, $result->{boxServicesPowSupplyItemState}, $instance
+            )
+        );
         $exit = $self->get_severity(label => 'default', section => 'psu', value => $result->{boxServicesPowSupplyItemState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power supply '%s' status is '%s'", $instance, $result->{boxServicesPowSupplyItemState}));
-            next;
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Power supply '%s' status is '%s'", $instance, $result->{boxServicesPowSupplyItemState})
+            );
         }
     }
 }

@@ -112,8 +112,8 @@ sub check_options {
     }
 
     $self->{radius_dictionary} = [];
-    if (defined($self->{option_results}->{radius_attribute})) {
-        $self->{radius_dictionary} = $self->{option_results}->{radius_attribute};
+    if (defined($self->{option_results}->{radius_dictionary})) {
+        $self->{radius_dictionary} = $self->{option_results}->{radius_dictionary};
     }
     
     $self->{option_results}->{retry} = 0 if (!defined($self->{option_results}->{retry}) || $self->{option_results}->{retry} !~ /^\d+$/);

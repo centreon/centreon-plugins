@@ -64,7 +64,12 @@ sub new {
             'contextname:s'      => { name => 'snmp_context_name' },
             'contextengineid:s'  => { name => 'snmp_context_engine_id' },
             'securityengineid:s' => { name => 'snmp_security_engine_id' },
-            'snmp-errors-exit:s' => { name => 'snmp_errors_exit', default => 'unknown' },
+            'snmp-tls-transport:s'      => { name => 'snmp_tls_transport' },
+            'snmp-tls-our-identity:s'   => { name => 'snmp_tls_our_identity' },
+            'snmp-tls-their-identity:s' => { name => 'snmp_tls_their_identity' },
+            'snmp-tls-their-hostname:s' => { name => 'snmp_tls_their_hostname' },
+            'snmp-tls-trust-cert:s    ' => { name => 'snmp_tls_trust_cert' },
+            'snmp-errors-exit:s'        => { name => 'snmp_errors_exit', default => 'unknown' },
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'SNMP OPTIONS');
     }
@@ -102,18 +107,18 @@ sub connect {
     $self->{session} = new SNMP::Session(%{$self->{snmp_params}});
     if (!defined($self->{session})) {
         if (defined($options{dont_quit}) && $options{dont_quit} == 1) {
-            $self->set_error(error_status => -1, error_msg => 'SNMP Session : unable to create');
+            $self->set_error(error_status => -1, error_msg => 'SNMP Session: unable to create');
             return 1;
         }
-        $self->{output}->add_option_msg(short_msg => 'SNMP Session : unable to create');
+        $self->{output}->add_option_msg(short_msg => 'SNMP Session: unable to create');
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
     if ($self->{session}->{ErrorNum}) {
         if (defined($options{dont_quit}) && $options{dont_quit} == 1) {
-            $self->set_error(error_status => -1, error_msg => 'SNMP Session : ' . $self->{session}->{ErrorStr});
+            $self->set_error(error_status => -1, error_msg => 'SNMP Session: ' . $self->{session}->{ErrorStr});
             return 1;
         }
-        $self->{output}->add_option_msg(short_msg => 'SNMP Session : ' . $self->{session}->{ErrorStr});
+        $self->{output}->add_option_msg(short_msg => 'SNMP Session: ' . $self->{session}->{ErrorStr});
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
 
@@ -328,7 +333,7 @@ sub get_leef {
                 ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == 5 || $self->{session}->{ErrorNum} == -24)) {
                 next if ($self->autoreduce_leef(current => $entry) == 0);
             }
-            my $msg = 'SNMP GET Request : ' . $self->{session}->{ErrorStr};    
+            my $msg = 'SNMP GET Request: ' . $self->{session}->{ErrorStr};    
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => $msg);
                 $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
@@ -368,7 +373,7 @@ sub get_leef {
     }
 
     if ($nothing_quit == 1 && $total == 0) {
-        $self->{output}->add_option_msg(short_msg => 'SNMP GET Request : Cant get a single value.');
+        $self->{output}->add_option_msg(short_msg => 'SNMP GET Request: Cant get a single value.');
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
 
@@ -481,7 +486,7 @@ sub get_multiple_table {
                 next if ($self->autoreduce_multiple_table(repeat_count => \$repeat_count) == 0);
             }
 
-            my $msg = 'SNMP Table Request : ' . $self->{session}->{ErrorStr};
+            my $msg = 'SNMP Table Request: ' . $self->{session}->{ErrorStr};
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => $msg);
                 $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
@@ -629,7 +634,7 @@ sub get_table {
                 next if ($self->autoreduce_table(repeat_count => \$repeat_count) == 0);
             }
 
-            my $msg = 'SNMP Table Request : ' . $self->{session}->{ErrorStr};
+            my $msg = 'SNMP Table Request: ' . $self->{session}->{ErrorStr};
 
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => $msg);
@@ -696,7 +701,7 @@ sub set {
         # 1    tooBig        Reponse de taille trop grande.
         # 2    noSuchName    Variable inexistante.
 
-        my $msg = 'SNMP SET Request : ' . $self->{session}->{ErrorStr};
+        my $msg = 'SNMP SET Request: ' . $self->{session}->{ErrorStr};
         if ($dont_quit == 0) {
             $self->{output}->add_option_msg(short_msg => $msg);
             $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
@@ -796,11 +801,12 @@ sub check_options {
         $self->{snmp_params}->{SecName} = $options{option_results}->{snmp_security_name} if (defined($options{option_results}->{snmp_security_name}));
 
         # Certificate SNMPv3. Need net-snmp > 5.6
-        if ($options{option_results}->{host} =~ /^(dtls|tls|ssh).*:/) {
-            $self->{snmp_params}->{OurIdentity} = $options{option_results}->{snmp_our_identity} if (defined($options{option_results}->{snmp_our_identity}));
-            $self->{snmp_params}->{TheirIdentity} = $options{option_results}->{snmp_their_identity} if (defined($options{option_results}->{snmp_their_identity}));
-            $self->{snmp_params}->{TheirHostname} = $options{option_results}->{snmp_their_hostname} if (defined($options{option_results}->{snmp_their_hostname}));
-            $self->{snmp_params}->{TrustCert} = $options{option_results}->{snmp_trust_cert} if (defined($options{option_results}->{snmp_trust_cert}));
+        if (defined($options{option_results}->{snmp_tls_transport}) && $options{option_results}->{snmp_tls_transport} =~ /^dtlsudp|tlstcp$/) {
+            $self->{snmp_params}->{DestHost} = $options{option_results}->{snmp_tls_transport} . ':' . $options{option_results}->{host};
+            $self->{snmp_params}->{OurIdentity} = $options{option_results}->{snmp_tls_our_identity} if (defined($options{option_results}->{snmp_tls_our_identity}));
+            $self->{snmp_params}->{TheirIdentity} = $options{option_results}->{snmp_tls_their_identity} if (defined($options{option_results}->{snmp_tls_their_identity}));
+            $self->{snmp_params}->{TheirHostname} = $options{option_results}->{snmp_tls_their_hostname} if (defined($options{option_results}->{snmp_tls_their_hostname}));
+            $self->{snmp_params}->{TrustCert} = $options{option_results}->{snmp_tls_trust_cert} if (defined($options{option_results}->{snmp_tls_trust_cert}));
             $self->{snmp_params}->{SecLevel} = 'authPriv';
             return ;
         }
@@ -1052,6 +1058,36 @@ Security engine ID
 =item B<--snmp-errors-exit>
 
 Exit code for SNMP Errors (default: unknown)
+
+=item B<--snmp-tls-transport>
+
+TLS Transport communication used (can be: 'dtlsudp', 'tlstcp').
+
+=item B<--snmp-tls-our-identity>
+
+Our X.509 identity to use, which should either be a fingerprint or the
+filename that holds the certificate.
+
+=item B<--snmp-tls-their-identity>
+
+The remote server's identity to connect to, specified as either a
+fingerprint or a file name.  Either this must be specified, or the
+hostname below along with a trust anchor.
+
+=item B<--snmp-tls-their-hostname>
+
+The remote server's hostname that is expected.  If their certificate
+was signed by a CA then their hostname presented in the certificate
+must match this value or the connection fails to be established (to
+avoid man-in-the-middle attacks).
+
+=item B<--snmp-tls-trust-cert>
+
+A trusted certificate to use as trust anchor (like a CA certificate)
+for verifying a remote server's certificate. If a CA certificate is
+used to validate a certificate then the TheirHostname parameter must
+also be specified to ensure their presented hostname in the certificate
+matches.
 
 =back
 

@@ -28,11 +28,11 @@ use warnings;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my $nlabel = 'storage.space.usage.bytes';
     my $value_perf = $self->{result_values}->{used};
 
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free';
+        $nlabel = 'storage.space.free.bytes';
         $value_perf = $self->{result_values}->{free};
     }
     my %total_options = ();
@@ -42,13 +42,13 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => $label, unit => 'B',
-        nlabel => 'storage.space.usage.bytes', 
+        nlabel => $nlabel,
+        unit => 'B',
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $self->{result_values}->{total},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        instances => [$self->{result_values}->{instance}, $self->{result_values}->{mountpoint}]
     );
 }
 
@@ -62,9 +62,13 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_used};
         $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
-                                               threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-                                                              { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -74,24 +78,25 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{label} = $self->{instance};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{instance} = $options{new_datas}->{$self->{instance} . '_instance'};
+    $self->{result_values}->{mountpoint} = $options{new_datas}->{$self->{instance} . '_mountpoint'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_size'};    
     $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
     $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
     $self->{result_values}->{prct_used} = ($self->{result_values}->{total} > 0) ? $self->{result_values}->{used} * 100 / $self->{result_values}->{total} : 0;
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
-    
+
     # limit to 100. Better output.
     if ($self->{result_values}->{prct_used} > 100) {
         $self->{result_values}->{free} = 0;
@@ -102,6 +107,24 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_node_output {
+    my ($self, %options) = @_;
+
+    return "Node '" . $options{instance_value}->{instance} . "' ";
+}
+
+sub node_long_output {
+    my ($self, %options) = @_;
+
+    return "Checking node '" . $options{instance_value}->{instance} . "'";
+}
+
+sub prefix_storage_output {
+    my ($self, %options) = @_;
+
+    return "Storage '" . $options{instance_value}->{mountpoint} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -110,55 +133,36 @@ sub set_counters {
           message_multiple => 'All nodes storages usage are ok', indent_long_output => '    ',
             group => [
                 { name => 'storage', display_long => 1, cb_prefix_output => 'prefix_storage_output',
-                  message_multiple => 'All storages usage are ok', type => 1, skipped_code => { -10 => 1 } },
+                  message_multiple => 'All storages usage are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
     $self->{maps_counters}->{storage} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'free' }, { name => 'size' }, { name => 'display' } ],
+                key_values => [ { name => 'free' }, { name => 'size' }, { name => 'instance' }, { name => 'mountpoint' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-                label_extra_instance => 1, instance_use => 'display'
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
-}
-
-sub prefix_node_output {
-    my ($self, %options) = @_;
-
-    return "Node '" . $options{instance_value}->{display} . "' ";
-}
-
-sub node_long_output {
-    my ($self, %options) = @_;
-
-    return "Checking node '" . $options{instance_value}->{display} . "'";
-}
-
-sub prefix_storage_output {
-    my ($self, %options) = @_;
-
-    return "Storage '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
-        "mountpoint:s"            => { name => 'mountpoint', default => 'mountpoint=~".*"' },
-        "fstype:s"                => { name => 'fstype', default => 'fstype!~"linuxfs|rootfs|tmpfs"' },
-        "units:s"                 => { name => 'units', default => '%' },
-        "free"                    => { name => 'free' },
-        "extra-filter:s@"         => { name => 'extra_filter' },
-        "metric-overload:s@"      => { name => 'metric_overload' },
+        'instance:s'         => { name => 'instance', default => 'instance=~".*"' },
+        'mountpoint:s'       => { name => 'mountpoint', default => 'mountpoint=~".*"' },
+        'fstype:s'           => { name => 'fstype', default => 'fstype!~"linuxfs|rootfs|tmpfs"' },
+        'units:s'            => { name => 'units', default => '%' },
+        'free'               => { name => 'free' },
+        'extra-filter:s@'    => { name => 'extra_filter' },
+        'metric-overload:s@' => { name => 'metric_overload' }
     });
 
     return $self;
@@ -169,8 +173,8 @@ sub check_options {
     $self->SUPER::check_options(%options);
     
     $self->{metrics} = {
-        'free'      => "^node_filesystem_free.*",
-        'size'      => "^node_filesystem_size.*",
+        'free' => "^node_filesystem_free.*",
+        'size' => "^node_filesystem_size.*"
     };
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
@@ -195,8 +199,6 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{nodes} = {};
-
     my $results = $options{custom}->query(
         queries => [
             'label_replace({__name__=~"' . $self->{metrics}->{free} . '",' .
@@ -212,14 +214,25 @@ sub manage_selection {
         ]
     );
 
-    foreach my $result (@{$results}) {
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{display} = $result->{metric}->{$self->{labels}->{instance}};
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{storage}->{$result->{metric}->{mountpoint}}->{display} = $result->{metric}->{$self->{labels}->{mountpoint}};
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{storage}->{$result->{metric}->{mountpoint}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
+    $self->{nodes} = {};
+    foreach my $result (@$results) {
+        if (!defined($self->{nodes}->{ $result->{metric}->{ $self->{labels}->{instance} } })) {
+            $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{instance} } } = {
+                instance => $result->{metric}->{ $self->{labels}->{instance} },
+                storage => {}
+            };
+        }
+        if (!defined($self->{nodes}->{ $result->{metric}->{ $self->{labels}->{instance} } }->{storage}->{ $result->{metric}->{mountpoint} })) {
+            $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{instance} } }->{storage}->{ $result->{metric}->{mountpoint} } = {
+                instance => $result->{metric}->{ $self->{labels}->{instance} },
+                mountpoint => $result->{metric}->{ $self->{labels}->{mountpoint} }
+            };
+        }
+        $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{instance} } }->{storage}->{ $result->{metric}->{mountpoint} }->{ $result->{metric}->{__name__} } = $result->{value}->[1];
     }
 
     if (scalar(keys %{$self->{nodes}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No nodes found.");
+        $self->{output}->add_option_msg(short_msg => 'No nodes found.');
         $self->{output}->option_exit();
     }
 }

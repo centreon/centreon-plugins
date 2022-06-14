@@ -50,6 +50,8 @@ sub new {
             'timeout:s'                 => { name => 'timeout' },
             'reload-cache-time:s'       => { name => 'reload_cache_time' },
             'ignore-permission-errors'  => { name => 'ignore_permission_errors' },
+            'ignore-orgs-api-disabled'  => { name => 'ignore_orgs_api_disabled' },
+            'api-filter-orgs:s'         => { name => 'api_filter_orgs' },
             'timespan:s'                => { name => 'timespan' },
             'cache-use'                 => { name => 'cache_use' }
         });
@@ -88,13 +90,14 @@ sub check_options {
     $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 180;
     $self->{reload_extra_cache_time} = (defined($self->{option_results}->{reload_extra_cache_time})) ? $self->{option_results}->{reload_extra_cache_time} : 10;
     $self->{ignore_permission_errors} = (defined($self->{option_results}->{ignore_permission_errors})) ? 1 : 0;
+    $self->{ignore_orgs_api_disabled} = (defined($self->{option_results}->{ignore_orgs_api_disabled})) ? 1 : 0;
     $self->{timespan} = (defined($self->{option_results}->{timespan})) ? $self->{option_results}->{timespan} : 300;
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_token}) || $self->{api_token} eq '') {
+    if ($self->{api_token} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-token option.");
         $self->{output}->option_exit();
     }
@@ -164,9 +167,10 @@ sub request_api {
     #404: Not found- No such URL, or you don't have access to the API or organization at all. 
     #429: Too Many Requests- You submitted more than 5 calls in 1 second to an Organization, triggering rate limiting. This also applies for API calls made across multiple organizations that triggers rate limiting for one of the organizations.
     my $results = [];
-    my ($full_url, $get_param);
+    my $full_url;
+    my $get_param = defined($options{get_param}) ? $options{get_param} : [];
     if (defined($options{paginate})) {
-        $get_param = ['perPage=' . $options{paginate}];
+        push @$get_param, 'perPage=' . $options{paginate};
     }
     while (1) {
         my $response =  $self->{http}->request(
@@ -221,7 +225,12 @@ sub request_api {
 sub write_cache_file {
     my ($self, %options) = @_;
 
-    $self->{cache}->read(statefile => 'cache_meraki_' . md5_hex($self->{api_token}));
+    $self->{cache}->read(
+        statefile => 'cache_meraki_' . md5_hex(
+            $self->{api_token} . '_' . 
+            (defined($self->{option_results}->{api_filter_orgs}) ? $self->{option_results}->{api_filter_orgs} : '')
+        )
+    );
     $self->{cache}->write(data => {
         update_time => time(),
         response => $self->{datas}
@@ -231,7 +240,12 @@ sub write_cache_file {
 sub get_cache_file_response {
     my ($self, %options) = @_;
 
-    $self->{cache}->read(statefile => 'cache_meraki_' . md5_hex($self->{api_token}));
+    $self->{cache}->read(
+        statefile => 'cache_meraki_' . md5_hex(
+            $self->{api_token} . '_' . 
+            (defined($self->{option_results}->{api_filter_orgs}) ? $self->{option_results}->{api_filter_orgs} : '')
+        )
+    );
     $self->{datas} = $self->{cache}->get(name => 'response');
     if (!defined($self->{datas})) {
         $self->{output}->add_option_msg(short_msg => 'Cache file missing');
@@ -288,6 +302,9 @@ sub get_organizations {
     $self->{datas}->{orgs} = {};
     if (defined($datas)) {
         foreach (@$datas) {
+            next if (defined($self->{option_results}->{api_filter_orgs}) && $self->{option_results}->{api_filter_orgs} ne '' &&
+                $_->{name} !~ /$self->{option_results}->{api_filter_orgs}/);
+
             $self->{datas}->{orgs}->{ $_->{id} } = {
                 name => $_->{name},
                 url => $_->{url}
@@ -301,12 +318,22 @@ sub get_organizations {
 sub get_networks {
     my ($self, %options) = @_;
 
+    my $ignore_codes = {};
+    $ignore_codes = { 404 => 1 } if ($self->{ignore_orgs_api_disabled} == 1);
+
     $self->{datas}->{networks} = {};
     foreach my $id (@{$options{orgs}}) {
         my $datas = $self->request_api(
             endpoint => '/organizations/' . $id . '/networks',
-            hostname => $self->get_shard_hostname(organization_id => $id)
+            hostname => $self->get_shard_hostname(organization_id => $id),
+            ignore_codes => $ignore_codes
         );
+
+        if (!defined($datas) && $self->{ignore_orgs_api_disabled} == 1) {
+            delete $self->{datas}->{orgs}->{$id};
+            next;
+        }
+
         if (defined($datas)) {
             foreach (@$datas) {
                 if (defined($options{extended})) {
@@ -405,14 +432,19 @@ sub get_organization_uplink_loss_and_latency {
     if (!defined($self->{datas}->{uplinks_loss_latency}->{ $options{orgId} })) {
         $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} } = {};
         my $datas = $self->request_api(
-            endpoint => '/organizations/' . $options{orgId} . '/devices/uplinksLossAndLatency?timespan=' . $self->{timespan},
+            endpoint => '/organizations/' . $options{orgId} . '/devices/uplinksLossAndLatency',
+            get_param => [ 'timespan=' . $self->{timespan} ],
             paginate => 1000,
-            hostname => $self->get_shard_hostname(organization_id => $options{orgId})
+            hostname => $self->get_shard_hostname(organization_id => $options{orgId}),
+            ignore_codes => { 404 => 1 }
         );
-        foreach (@$datas) {
-            $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} } = {}
-                if (!defined($self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }));
-            $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }->{ $_->{uplink} } = $_;
+
+        if (defined($datas)) {
+            foreach (@$datas) {
+                $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} } = {}
+                    if (!defined($self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }));
+                $self->{datas}->{uplinks_loss_latency}->{ $options{orgId} }->{ $_->{serial} }->{ $_->{uplink} } = $_;
+            }
         }
     }
 
@@ -425,7 +457,8 @@ sub get_device_clients {
     my ($self, %options) = @_;
 
     return $self->request_api(
-        endpoint => '/devices/' . $options{serial} . '/clients?timespan=' . $self->{timespan},
+        endpoint => '/devices/' . $options{serial} . '/clients',
+        get_param => [ 'timespan=' . $self->{timespan} ],
         hostname => $self->get_shard_hostname(serial => $options{serial})
     )
 }
@@ -434,7 +467,8 @@ sub get_device_switch_port_statuses {
     my ($self, %options) = @_;
 
     return $self->request_api(
-        endpoint => '/devices/' . $options{serial} . '/switchPortStatuses?timespan=' . $self->{timespan},
+        endpoint => '/devices/' . $options{serial} . '/switch/ports/statuses',
+        get_param => [ 'timespan=' . $self->{timespan} ],
         hostname => $self->get_shard_hostname(serial => $options{serial})
     );
 }
@@ -445,7 +479,8 @@ sub get_network_device_connection_stats {
     if (!defined($self->{devices_connection_stats}->{ $options{network_id} })) {
         $self->{devices_connection_stats}->{ $options{network_id} } = {};
         my $datas = $self->request_api(
-            endpoint => '/networks/' . $options{network_id} . '/wireless/devices/connectionStats?timespan=' . $self->{timespan},
+            endpoint => '/networks/' . $options{network_id} . '/wireless/devices/connectionStats',
+            get_param => [ 'timespan=' . $self->{timespan} ],
             hostname => $self->get_shard_hostname(network_id => $options{network_id})
         );
         foreach (@$datas) {
@@ -474,7 +509,8 @@ sub get_organization_api_requests_overview {
     my $results = {};
     foreach my $id (@{$options{orgs}}) {
         $results->{$id} = $self->request_api(
-            endpoint => '/organizations/' . $id . '/apiRequests/overview?timespan=' . $self->{timespan},
+            endpoint => '/organizations/' . $id . '/apiRequests/overview',
+            get_param => [ 'timespan=' . $self->{timespan} ],
             hostname => $self->get_shard_hostname(organization_id => $id)
         );
     }
@@ -496,7 +532,8 @@ sub get_networks_clients {
     my ($self, %options) = @_;
 
     return $self->request_api(
-        endpoint => '/networks/' . $options{network_id} . '/clients?timespan=' . $self->{timespan},
+        endpoint => '/networks/' . $options{network_id} . '/clients',
+        get_param => [ 'timespan=' . $self->{timespan} ],
         hostname => $self->get_shard_hostname(network_id => $options{network_id}),
         ignore_codes => { 400 => 1 }
     );
@@ -541,6 +578,14 @@ Set HTTP timeout
 =item B<--ignore-permission-errors>
 
 Ignore permission errors (403 status code).
+
+=item B<--ignore-orgs-api-disabled>
+
+Ignore organizations with api disabled.
+
+=item B<--api-filter-orgs>
+
+Filter organizations (regexp).
 
 =item B<--cache-use>
 

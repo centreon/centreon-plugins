@@ -31,14 +31,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'alert'         => 'cloud::azure::management::monitor::mode::alert',
-        'discovery'     => 'cloud::azure::management::monitor::mode::discovery',
-        'get-metrics'   => 'cloud::azure::management::monitor::mode::getmetrics',
-        'health'        => 'cloud::azure::management::monitor::mode::health',
+        'alert'                  => 'cloud::azure::management::monitor::mode::alert',
+        'discovery'              => 'cloud::azure::management::monitor::mode::discovery',
+        'discovery-tenant'       => 'cloud::azure::management::monitor::mode::discoverytenant',
+        'get-metrics'            => 'cloud::azure::management::monitor::mode::getmetrics',
+        'health'                 => 'cloud::azure::management::monitor::mode::health'
     );
                         
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
-    $self->{custom_modes}{api} = 'cloud::azure::custom::api';
+    $self->{custom_modes}{api}   = 'cloud::azure::custom::api';
     return $self;
 }
 

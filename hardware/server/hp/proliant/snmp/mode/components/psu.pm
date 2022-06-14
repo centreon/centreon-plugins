@@ -116,14 +116,14 @@ sub check {
         }
         
         $self->{output}->perfdata_add(
-            label => 'psu_power', unit => 'W',
+            unit => 'W',
             nlabel => 'hardware.powersupply.power.watt',
             instances => $instance,
             value => $result->{cpqHeFltTolPowerSupplyCapacityUsed},
             critical => $result->{cpqHeFltTolPowerSupplyCapacityMaximum}
         );
         $self->{output}->perfdata_add(
-            label => 'psu_voltage', unit => 'V',
+            unit => 'V',
             nlabel => 'hardware.powersupply.voltage.volt',
             instances => $instance,
             value => $result->{cpqHeFltTolPowerSupplyMainVoltage}

@@ -29,16 +29,17 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'xenvs-cpu'        => 'storage::emc::xtremio::restapi::mode::xenvscpu',
-        'xenvs-state'      => 'storage::emc::xtremio::restapi::mode::xenvsstate',
-        'ssds-endurance'   => 'storage::emc::xtremio::restapi::mode::ssdendurance',
-        'ssds-iops'        => 'storage::emc::xtremio::restapi::mode::ssdiops',
-        'cluster-health'   => 'storage::emc::xtremio::restapi::mode::clusterhealth',
-    );
+    $self->{modes} = {
+        'cluster-health'      => 'storage::emc::xtremio::restapi::mode::clusterhealth',
+        'dpg'                 => 'storage::emc::xtremio::restapi::mode::dpg',
+        'ssds-endurance'      => 'storage::emc::xtremio::restapi::mode::ssdendurance',
+        'ssds-iops'           => 'storage::emc::xtremio::restapi::mode::ssdiops',
+        'storage-controllers' => 'storage::emc::xtremio::restapi::mode::storagecontrollers',
+        'xenvs-cpu'           => 'storage::emc::xtremio::restapi::mode::xenvscpu',
+        'xenvs-state'         => 'storage::emc::xtremio::restapi::mode::xenvsstate'
+    };
 
-    $self->{custom_modes}{xtremioapi} = 'storage::emc::xtremio::restapi::custom::xtremioapi';
+    $self->{custom_modes}->{xtremioapi} = 'storage::emc::xtremio::restapi::custom::xtremioapi';
     return $self;
 }
 
@@ -49,3 +50,5 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check EMC Xtremio through HTTP/REST API.
+
+=cut

@@ -30,7 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'display-transform-src:s' => { name => 'display_transform_src' },
+        'display-transform-dst:s' => { name => 'display_transform_dst' }
+    });
 
     return $self;
 }
@@ -38,6 +41,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
 }
 
 my @labels = ('size', 'name', 'label', 'type'); 
@@ -51,6 +55,18 @@ my $map_types = {
     6 => 'ramDisk'
 };
 
+
+sub get_display_value {
+    my ($self, %options) = @_;
+    my $value = $options{name};
+
+    if (defined($self->{option_results}->{display_transform_src})) {
+        $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
+        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+    }
+    return $value;
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -62,9 +78,10 @@ sub manage_selection {
 
     my $results = {};
     foreach my $entry (@$entries) {
+        my $display_value = $self->get_display_value(name => $entry->{Name} );
         $results->{ $entry->{DeviceID} } = {
             size => $entry->{Capacity},
-            name => $entry->{Name},
+            name => $display_value,
             label => $entry->{Label},
             type => $map_types->{ $entry->{DriveType} }
         };
@@ -116,6 +133,14 @@ __END__
 List storages.
 
 =over 8
+
+=item B<--display-transform-src>
+
+Regexp src to transform display value. (security risk!!!)
+
+=item B<--display-transform-dst>
+
+Regexp dst to transform display value. (security risk!!!)
 
 =back
 

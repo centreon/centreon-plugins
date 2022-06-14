@@ -65,7 +65,8 @@ sub set_counters {
                 { name => 'status', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } },
                 { name => 'latency', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'jitter', type => 0, skipped_code => { -10 => 1 } }
+                { name => 'jitter', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'packetloss', type => 0, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -185,6 +186,28 @@ sub set_counters {
             }
         }
     ];
+
+    $self->{maps_counters}->{packetloss} = [
+        { label => 'packetloss', nlabel => 'sdwan.packetloss.percentage', set => {
+                key_values => [ { name => 'packet_loss' }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
+                output_template => 'packet loss: %.3f%%',
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => '%',
+                        instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
+                        value => sprintf('%.3f', $self->{result_values}->{packet_loss}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0,
+                        max => 100
+                    );
+                }
+            }
+        }
+    ];
 }
 
 sub new {
@@ -207,6 +230,7 @@ my $mapping = {
     state       => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.4', map => $mapping_status }, # fgVWLHealthCheckLinkState
     latency     => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.5' }, # fgVWLHealthCheckLinkLatency
     jitter      => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.6' }, # fgVWLHealthCheckLinkJitter
+    packet_loss => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.9' }, # fgVWLHealthCheckLinkPacketLoss
     vdom        => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.10' }, # fgVWLHealthCheckLinkVdom
     traffic_in  => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.11' }, # fgVWLHealthCheckLinkBandwidthIn
     traffic_out => { oid => '.1.3.6.1.4.1.12356.101.4.9.2.1.12' }, # fgVWLHealthCheckLinkBandwidthOut
@@ -307,6 +331,12 @@ sub manage_selection {
             ifName => $result->{ifName},
             latency => $result->{latency}
         };
+        $self->{sdwan}->{$_}->{packetloss} = {
+            name => $self->{sdwan}->{$_}->{name},
+            vdom => $result->{vdom},
+            ifName => $result->{ifName},
+            packet_loss => $result->{packet_loss}
+        };
     }
 }
 
@@ -351,7 +381,7 @@ Can used special variables like: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
 
 Thresholds.
 Can be: 'traffic-in', 'traffic-out', 'traffic-bi',
-'latency', 'jitter'.
+'latency', 'jitter', 'packetloss'.
 
 =back
 

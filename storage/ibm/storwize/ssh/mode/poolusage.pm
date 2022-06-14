@@ -24,20 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'status : ' . $self->{result_values}->{status};
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return 'status: ' . $self->{result_values}->{status};
 }
 
 sub custom_usage_perfdata {
@@ -87,7 +79,7 @@ sub custom_usage_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
-        'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        'usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
@@ -99,6 +91,9 @@ sub custom_usage_calc {
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};    
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+
+    return -10 if ($self->{result_values}->{total} <= 0);
+
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
@@ -107,20 +102,30 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_pool_output {
+    my ($self, %options) = @_;
+
+    return "Pool '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All pools are ok' }
+        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All pools are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{pool} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2,
+            warning_default => '%{status} =~ /degraded/i',
+            critical_default => '%{status} =~ /offline/i',
+            set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'usage', set => {
@@ -128,9 +133,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 }
 
@@ -140,27 +145,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /degraded/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /offline/i' },
-        'units:s'           => { name => 'units', default => '%' },
-        'free'              => { name => 'free' },
+        'filter-name:s' => { name => 'filter_name' },
+        'units:s'       => { name => 'units', default => '%' },
+        'free'          => { name => 'free' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_pool_output {
-    my ($self, %options) = @_;
-
-    return "Pool '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
@@ -175,7 +165,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $_->{name} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $self->{pool}->{$_->{id}} = {
             display => $_->{name},
             status => $_->{status},

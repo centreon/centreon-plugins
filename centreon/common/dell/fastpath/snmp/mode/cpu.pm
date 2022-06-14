@@ -27,12 +27,12 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'warning:s'  => { name => 'warning', default => '' },
-        'critical:s' => { name => 'critical', default => '' },
+        'critical:s' => { name => 'critical', default => '' }
     });
 
     return $self;
@@ -77,8 +77,10 @@ sub run {
 
     my $oid_agentSwitchCpuProcessTotalUtilization1 = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.1.1.4.9.0';
        my $oid_agentSwitchCpuProcessTotalUtilization2 = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.1.1.4.4.0'; # oid for 6200 series
-    $self->{result} = $self->{snmp}->get_leef(oids => [ $oid_agentSwitchCpuProcessTotalUtilization1, $oid_agentSwitchCpuProcessTotalUtilization2 ],
-                                              nothing_quit => 1);
+    $self->{result} = $self->{snmp}->get_leef(
+        oids => [ $oid_agentSwitchCpuProcessTotalUtilization1, $oid_agentSwitchCpuProcessTotalUtilization2 ],
+        nothing_quit => 1
+    );
     
     my $cpu_usage;
     if ((defined($self->{result}->{$oid_agentSwitchCpuProcessTotalUtilization1})) && ($self->{result}->{$oid_agentSwitchCpuProcessTotalUtilization1} =~ /sec.*(sec|min).*(sec|min)/i)) {
@@ -86,8 +88,10 @@ sub run {
     } elsif ((defined($self->{result}->{$oid_agentSwitchCpuProcessTotalUtilization2})) && ($self->{result}->{$oid_agentSwitchCpuProcessTotalUtilization2} =~ /sec.*(sec|min).*(sec|min)/i)) {
         $cpu_usage = $self->{result}->{$oid_agentSwitchCpuProcessTotalUtilization2};
     } else {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => sprintf("Can't get CPU information."));
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => sprintf("Can't get CPU information.")
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -96,33 +100,52 @@ sub run {
         my $cpu1min = $2;
         my $cpu5min = $3;
 
-        my $exit1 = $self->{perfdata}->threshold_check(value => $cpu5sec,
-                               threshold => [ { label => 'crit5s', 'exit_litteral' => 'critical' }, { label => 'warn5s', exit_litteral => 'warning' } ]);
-        my $exit2 = $self->{perfdata}->threshold_check(value => $cpu1min,
-                               threshold => [ { label => 'crit1m', 'exit_litteral' => 'critical' }, { label => 'warn1m', exit_litteral => 'warning' } ]);
-        my $exit3 = $self->{perfdata}->threshold_check(value => $cpu5min,
-                               threshold => [ { label => 'crit5m', 'exit_litteral' => 'critical' }, { label => 'warn5m', exit_litteral => 'warning' } ]);
+        my $exit1 = $self->{perfdata}->threshold_check(
+            value => $cpu5sec,
+            threshold => [ { label => 'crit5s', 'exit_litteral' => 'critical' }, { label => 'warn5s', exit_litteral => 'warning' } ]
+        );
+        my $exit2 = $self->{perfdata}->threshold_check(
+            value => $cpu1min,
+            threshold => [ { label => 'crit1m', 'exit_litteral' => 'critical' }, { label => 'warn1m', exit_litteral => 'warning' } ]
+        );
+        my $exit3 = $self->{perfdata}->threshold_check(
+            value => $cpu5min,
+            threshold => [ { label => 'crit5m', 'exit_litteral' => 'critical' }, { label => 'warn5m', exit_litteral => 'warning' } ]
+        );
         my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
 
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("CPU Usage: %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)",
-                                                        $cpu5sec, $cpu1min, $cpu5min));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf(
+                "CPU Usage: %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)",
+                $cpu5sec, $cpu1min, $cpu5min
+            )
+        );
 
-        $self->{output}->perfdata_add(label => "cpu_5s", unit => '%',
-                                      value => $cpu5sec,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5s'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5s'),
-                                      min => 0, max => 100);
-        $self->{output}->perfdata_add(label => "cpu_1m", unit => '%',
-                                      value => $cpu1min,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1m'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1m'),
-                                      min => 0, max => 100);
-        $self->{output}->perfdata_add(label => "cpu_5m", unit => '%',
-                                      value => $cpu5min,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5m'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5m'),
-                                      min => 0, max => 100);
+        $self->{output}->perfdata_add(
+            nlabel => 'cpu.utilization.5s.percentage',
+            unit => '%',
+            value => $cpu5sec,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5s'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5s'),
+            min => 0, max => 100
+        );
+        $self->{output}->perfdata_add(
+            nlabel => 'cpu.utilization.1m.percentage',
+            unit => '%',
+            value => $cpu1min,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1m'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1m'),
+            min => 0, max => 100
+        );
+        $self->{output}->perfdata_add(
+            nlabel => 'cpu.utilization.5m.percentage',
+            unit => '%',
+            value => $cpu5min,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5m'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5m'),
+            min => 0, max => 100
+        );
     } else {
         $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => sprintf("Can't parse CPU usage."));

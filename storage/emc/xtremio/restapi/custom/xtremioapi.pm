@@ -42,10 +42,10 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s@'         => { name => 'hostname' },
-            'xtremio-username:s@' => { name => 'xtremio_username' },
-            'xtremio-password:s@' => { name => 'xtremio_password' },
-            'timeout:s@'          => { name => 'timeout' },
+            'hostname:s'          => { name => 'hostname' },
+            'xtremio-username:s'  => { name => 'xtremio_username' },
+            'xtremio-password:s'  => { name => 'xtremio_password' },
+            'timeout:s'           => { name => 'timeout' },
             'reload-cache-time:s' => { name => 'reload_cache_time' }
         });
     }
@@ -69,30 +69,25 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
-    $self->{xtremio_username} = (defined($self->{option_results}->{xtremio_username})) ? shift(@{$self->{option_results}->{xtremio_username}}) : '';
-    $self->{xtremio_password} = (defined($self->{option_results}->{xtremio_password})) ? shift(@{$self->{option_results}->{xtremio_password}}) : '';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
-    $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? shift(@{$self->{option_results}->{reload_cache_time}}) : 180;
+    $self->{hostname} = defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : '';
+    $self->{xtremio_username} = defined($self->{option_results}->{xtremio_username}) ? $self->{option_results}->{xtremio_username} : '';
+    $self->{xtremio_password} = defined($self->{option_results}->{xtremio_password}) ? $self->{option_results}->{xtremio_password} : '';
+    $self->{timeout} = defined($self->{option_results}->{timeout}) ? $self->{option_results}->{timeout} : 10;
+    $self->{reload_cache_time} = defined($self->{option_results}->{reload_cache_time}) ? $self->{option_results}->{reload_cache_time} : 180;
  
-    if (!defined($self->{hostname})) {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{xtremio_username}) || !defined($self->{xtremio_password})) {
+    if ($self->{xtremio_username} eq '' || $self->{xtremio_password} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --xtremio-username and --xtremio-password options.");
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{hostname}) ||
-        scalar(@{$self->{option_results}->{hostname}}) == 0) {
-        $self->{statefile_cache_cluster}->check_options(option_results => $self->{option_results});
-        return 0;
-    }
-    return 1;
+    $self->{statefile_cache_cluster}->check_options(option_results => $self->{option_results});
+    return 0;
 }
-
 
 sub build_options_for_httplib {
     my ($self, %options) = @_;
@@ -119,8 +114,10 @@ sub cache_clusters {
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{reload_cache_time}) * 60))) {
         $clusters = {};
         my $datas = { last_timestamp => time(), clusters => $clusters };
-        my @items = $self->get_items(url => '/api/json/types/',
-                                     obj => 'clusters');
+        my @items = $self->get_items(
+            url => '/api/json/types/',
+            obj => 'clusters'
+        );
         foreach (@items) {
             $clusters->{$_} = 1;
         }
@@ -140,6 +137,7 @@ sub get_items {
     }
 
     my $response = $self->{http}->request(url_path => $options{url});
+
     my $decoded;
     eval {
         $decoded = decode_json($response);
@@ -159,9 +157,12 @@ sub get_items {
 
 sub get_details_data {
     my ($self, %options) = @_;
-    
-    my $response = $self->{http}->request(url_path => $options{url},
-        critical_status => '', warning_status => '', unknown_status => '');
+
+    my $response = $self->{http}->request(
+        url_path => $options{url},
+        critical_status => '', warning_status => '', unknown_status => ''
+    );
+
     my $decoded;
     eval {
         $decoded = decode_json($response);
