@@ -30,7 +30,7 @@ sub prefix_container_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Container '%s'",
+        "Container '%s' ",
         $options{instance_value}->{display}
     );
 }

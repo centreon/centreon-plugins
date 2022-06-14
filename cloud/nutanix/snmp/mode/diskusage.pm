@@ -31,7 +31,7 @@ sub prefix_controllervm_output {
     my ($self, %options) = @_;
     
     return sprintf(
-        "ControllerVM '%s'",
+        "ControllerVM '%s' ",
         $options{instance_value}->{name}
     );
 }
