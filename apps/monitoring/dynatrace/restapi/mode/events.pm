@@ -112,15 +112,18 @@ sub manage_selection {
 
     my $event = $options{custom}->get_events();
     my ($i, $time) = (1, time());
-    my $management_zone_name;
+    my $management_zone_names;
     my $process_name;
     $self->{global}->{events} = 0;
 
     foreach my $item (@{$event}) {
-        if (defined($item->{entityId})) {
-            $process_name = $item->{entityId}->{name};
-        } else {
-            $process_name = 'undefined_name_' . $i;
+        $management_zone_names = @{$item->{managementZones}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}})) : 'undefined_management_zone';
+        $process_name = defined($item->{entityId}) ? $item->{entityId}->{name} : 'undefined_name_' . $i;
+        
+        if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
+            $management_zone_names  !~ /$self->{option_results}->{filter_management_zone}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $management_zone_names  . "': no matching filter.", debug => 1);
+            next;
         }
 
         if (defined($self->{option_results}->{filter_event_type}) && $self->{option_results}->{filter_event_type} ne '' &&
@@ -128,13 +131,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $item->{eventType} . "': no matching filter.", debug => 1);
             next;
         }
-
-        if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
-            $item->{eventType} !~ /$self->{option_results}->{filter_management_zone}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $item->{managementZones}->{name} . "': no matching filter.", debug => 1);
-            next;
-        }
-        
+       
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $process_name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" .  $process_name . "': no matching filter.", debug => 1);
@@ -188,7 +185,7 @@ Check events.
 Set request relative time (Default: '2h').
 Can use: Xm (minutes), Xh (hours), Xd (days), Xm (months), Xy (year) where 'X' is the amount of time.
 
-=item B<--management-zone>
+=item B<--filter-management-zone>
 
 Filter problems by management zone. Mutliple management zones need to be separated by comma.
 Example: --management-zone='MZ1,MZ2'

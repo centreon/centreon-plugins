@@ -125,7 +125,7 @@ sub request_api {
         problems   => 'problems'
     };
     my $items = [];
-    $options{get_param} = [];
+    $options{get_param} = defined($options{get_param}) ? $options{get_param} : [];
     $self->settings();
     $options{url_path} = (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . $options{endpoint};
     
@@ -168,9 +168,11 @@ sub get_apdex {
 
     my $status = $self->request_api(
         method        => 'GET',
-        endpoint      => '/api/v1/timeseries?&timeseriesId=com.dynatrace.builtin:app.apdex&queryMode=total' .
-                         '&aggregationType=' . $self->{option_results}->{aggregation_type} . 
-                         '&relativeTime=' . $self->{option_results}->{relative_time},
+        endpoint      => '/api/v1/timeseries',
+        get_param    => ['timeseriesId=com.dynatrace.builtin:app.apdex',
+                         'queryMode=total',
+                         'aggregationType=' . $self->{option_results}->{aggregation_type},
+                         'relativeTime=' . $self->{option_results}->{relative_time}],
         endpoint_type => 'timeseries'
                     
     );
@@ -183,7 +185,8 @@ sub get_events {
     
     my $status = $self->request_api(
         method        => 'GET',
-        endpoint      => '/api/v2/events?from=now-' . $self->{option_results}->{relative_time} . 'pageSize=500',
+        endpoint      => '/api/v2/events',
+        get_param     => ['from=now-' . $self->{option_results}->{relative_time}, 'pageSize=500'],
         endpoint_type => 'events',
     );
 
@@ -195,7 +198,8 @@ sub get_problems {
 
     my $status = $self->request_api(
         method        => 'GET',
-        endpoint      => '/api/v2/problems?from=now-' . $self->{option_results}->{relative_time} . 'pageSize=500',
+        endpoint      => '/api/v2/problems',
+        get_param     => ['from=now-' . $self->{option_results}->{relative_time}, 'pageSize=500'],
         endpoint_type => 'problems'
     );
 
@@ -207,8 +211,10 @@ sub get_synthetic_availability {
 
     my $status = $self->request_api(
         method        => 'GET',
-        endpoint      => '/api/v1/timeseries?&timeseriesId=com.dynatrace.builtin:syntheticmonitor.availability.percent&queryMode=total' .
-                         '&relativeTime=' . $self->{option_results}->{relative_time},
+        endpoint      => '/api/v1/timeseries',
+        get_param     => ['timeseriesId=com.dynatrace.builtin:syntheticmonitor.availability.percent', 
+                          'queryMode=total',  $self->{option_results}->{relative_time}, 
+                          'relativeTime=' . $self->{option_results}->{relative_time}],
         endpoint_type => 'timeseries'
     );
 

@@ -114,17 +114,24 @@ sub manage_selection {
     my ($i, $time) = (1, time());
     $self->{global}->{problems_open} = 0;
 
+    my $management_zone_names;
+    my $entity_names;
+    my $entity_id;
+    
     foreach my $item (@{$problem}) {
-        
+        $management_zone_names = @{$item->{managementZones}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}})) : 'undefined_management_zone';
+        $entity_names = @{$item->{impactedEntities}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{impactedEntities}})) : 'undefined_entity';
+        $entity_id = @{$item->{impactedEntities}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{entityId}->{id}" } @{$item->{impactedEntities}})) : 'undefined_entity';
+    
         if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
-            $item->{eventType} !~ /$self->{option_results}->{filter_management_zone}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $item->{managementZones}->{name} . "': no matching filter.", debug => 1);
+            $management_zone_names !~ /$self->{option_results}->{filter_management_zone}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $management_zone_names . "': no matching filter.", debug => 1);
             next;
         }
         
         if (defined($self->{option_results}->{filter_entity}) && $self->{option_results}->{filter_entity} ne '' &&
-            $item->{eventType} !~ /$self->{option_results}->{filter_entity}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $item->{impactedEntities}->{name} . "': no matching filter.", debug => 1);
+            $entity_names !~ /$self->{option_results}->{filter_entity}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $entity_names . "': no matching filter.", debug => 1);
             next;
         }
 
@@ -148,19 +155,14 @@ sub manage_selection {
             status         => $item->{status},
             impactLevel    => $item->{impactLevel},
             severityLevel  => $item->{severityLevel},
-            managementZone => @{$item->{managementZones}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}})) : 'undefined_management_zone',
-            entityName     => @{$item->{impactedEntities}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{impactedEntities}})) : 'undefined_entity',
-            entityId       => @{$item->{impactedEntities}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{entityId}->{id}" } @{$item->{impactedEntities}})) : 'undefined_entity',
+            managementZone => $management_zone_names,
+            entityName     => $entity_names,
+            entityId       => $entity_id,
             startTime      => $item->{startTime} / 1000,
             endTime        => $item->{endTime} > -1 ? $item->{endTime} / 1000 : -1,
             time           => $time
         };
         $i++;
-    }
-
-    if (scalar(keys %{$self->{problem}->{global}->{problem}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No problem found.");
-        $self->{output}->option_exit();
     }
 
     foreach my $management_zone (keys %{$self->{management_zone}}) {
@@ -183,12 +185,12 @@ Check open problems.
 Set request relative time (Default: '2h').
 Can use: Xm (minutes), Xh (hours), Xd (days), Xm (months), Xy (year) where 'X' is the amount of time.
 
-=item B<--management-zone>
+=item B<--filter-management-zone>
 
 Filter problems by management zone. Mutliple management zones need to be separated by comma.
 Example: --management-zone='MZ1,MZ2'
 
-=item B<--entity>
+=item B<--filter-entity>
 
 Filter problems by entity. Mutliple entities need to be separated by comma.
 Example: --entity='entity1,entity2'
