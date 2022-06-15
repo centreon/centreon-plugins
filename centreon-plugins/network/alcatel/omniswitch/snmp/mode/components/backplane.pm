@@ -59,9 +59,9 @@ sub check {
 
         if ($result->{chasEntPhysPower} > 0) {
             $self->{output}->perfdata_add(
-                label => "power", unit => 'W',
                 nlabel => 'hardware.backplane.power.watt',
-                instances => $instance,
+                unit => 'W',
+                instances => [$result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance],
                 value => $result->{chasEntPhysPower},
                 min => 0
             );
