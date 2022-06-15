@@ -397,8 +397,8 @@ sub manage_selection {
 
         $self->{interface_classmap}->{$policy_index . '.' . $qos_object_index} = {
             display => $name,
-            traffic_usage => $traffic_usage->bdstr(),
-            drop_usage => $drop_usage->bdstr(),
+            traffic_usage => $traffic_usage->bstr(),
+            drop_usage => $drop_usage->bstr(),
             total => $total
         };
 
@@ -419,12 +419,12 @@ sub manage_selection {
     }
 
     foreach (keys %{$self->{classmap}}) {
-        $self->{classmap}->{$_}->{traffic_usage} = $self->{classmap}->{$_}->{traffic_usage}->bdstr();
-        $self->{classmap}->{$_}->{drop_usage} = $self->{classmap}->{$_}->{drop_usage}->bdstr();
+        $self->{classmap}->{$_}->{traffic_usage} = $self->{classmap}->{$_}->{traffic_usage}->bstr();
+        $self->{classmap}->{$_}->{drop_usage} = $self->{classmap}->{$_}->{drop_usage}->bstr();
     }
 
-    $self->{total}->{traffic_usage} = $self->{total}->{traffic_usage}->bdstr();
-    $self->{total}->{drop_usage} = $self->{total}->{drop_usage}->bdstr();
+    $self->{total}->{traffic_usage} = $self->{total}->{traffic_usage}->bstr();
+    $self->{total}->{drop_usage} = $self->{total}->{drop_usage}->bstr();
 
     $self->{cache_name} = 'cisco_qos_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_source}) ? md5_hex($self->{option_results}->{filter_source}) : md5_hex('all')) . '_' .
