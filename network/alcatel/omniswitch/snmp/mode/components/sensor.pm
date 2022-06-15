@@ -40,12 +40,12 @@ sub check {
             push @instances, $1;
         }
     }
-    
+
     foreach my $instance (@instances) {
         next if (!defined($self->{results}->{entity}->{$oids{$self->{type}}{chasEntPhysAdminStatus} . '.' . $instance}));
-        
+
         my $result = $self->{snmp}->map_instance(mapping => $mapping->{$self->{type}}, results => $self->{results}->{entity}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'sensor', instance => $instance));
         $self->{components}->{sensor}->{total}++;
 
@@ -59,14 +59,14 @@ sub check {
 
         if ($result->{chasEntPhysPower} > 0) {
             $self->{output}->perfdata_add(
-                label => "power", unit => 'W',
                 nlabel => 'hardware.sensor.power.watt',
-                instances => $instance,
+                unit => 'W',
+                instances => [$result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance],
                 value => $result->{chasEntPhysPower},
                 min => 0
             );
         }
-        
+
         my $exit = $self->get_severity(label => 'admin', section => 'sensor.admin', value => $result->{chasEntPhysAdminStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(

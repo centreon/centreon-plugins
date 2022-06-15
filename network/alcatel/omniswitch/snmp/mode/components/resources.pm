@@ -82,29 +82,32 @@ our @EXPORT_OK = qw(%physical_class %phys_oper_status %phys_admin_status %oids $
     },
     aos6 => {
         entreprise_alcatel_base => '.1.3.6.1.4.1.6486.800',
-        
+
+        version => '.1.3.6.1.4.1.6486.800.1.1.1.2.1.1.3.17.0', # systemHardwareUbootVersion
+
+        chasPhysBase => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1',
         chasEntPhysAdminStatus => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.1',
         chasEntPhysOperStatus => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.2',
         chasEntPhysPower => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.4',
-    
-        chasHardwareBoardTemp => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.3.1.4',
-        chasTempThreshold => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.3.1.7',
-        chasDangerTempThreshold => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.3.1.8',
+
+        chasChassisEntry => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.3.1',
     
         alaChasEntPhysFanStatus => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.11.1.2'
     },
     aos7 => {
         entreprise_alcatel_base => '.1.3.6.1.4.1.6486.801',
-        
+
+        version => '.1.3.6.1.4.1.6486.801.1.1.1.2.1.1.3.17.0', # systemHardwareUbootVersion
+
+        chasPhysBase => '.1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1',
         chasEntPhysAdminStatus => '.1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.1',
         chasEntPhysOperStatus => '.1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.2',
         chasEntPhysPower => '.1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.3',
-    
-        chasTempThreshold => '.1.3.6.1.4.1.6486.801.1.1.1.3.1.1.3.1.5',
-        chasDangerTempThreshold => '.1.3.6.1.4.1.6486.801.1.1.1.3.1.1.3.1.6',
+
+        chasChassisEntry => '.1.3.6.1.4.1.6486.801.1.1.1.3.1.1.3.1',
         
         alaChasEntPhysFanStatus => '.1.3.6.1.4.1.6486.801.1.1.1.3.1.1.11.1.2'
-    },
+    }
 );
 
 $mapping = {

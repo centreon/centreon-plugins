@@ -40,7 +40,7 @@ sub check {
     return if ($self->check_filter(section => 'fan'));
 
     my @instances = ();
-    foreach my $key (keys %{$self->{results}->{$oids{common}->{entPhysicalClass}}}) {
+    foreach my $key (keys %{$self->{results}->{ $oids{common}->{entPhysicalClass} }}) {
         if ($self->{results}->{$oids{common}->{entPhysicalClass}}->{$key} == 7) {
             next if ($key !~ /^$oids{common}->{entPhysicalClass}\.(.*)$/);
             push @instances, $1;
@@ -48,7 +48,7 @@ sub check {
     }
 
     foreach my $instance (@instances) {
-        next if (!defined($self->{results}->{entity}->{$oids{$self->{type}}{chasEntPhysAdminStatus} . '.' . $instance}));
+        next if (!defined($self->{results}->{entity}->{ $oids{ $self->{type} }->{chasEntPhysAdminStatus} . '.' . $instance }));
 
         my $result = $self->{snmp}->map_instance(mapping => $mapping->{$self->{type}}, results => $self->{results}->{entity}, instance => $instance);
 
@@ -67,7 +67,7 @@ sub check {
             $self->{output}->perfdata_add(
                 label => "power", unit => 'W',
                 nlabel => 'hardware.fan.power.watt',
-                instances => $instance,
+                instances => [$result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance],
                 value => $result->{chasEntPhysPower},
                 min => 0
             );
@@ -99,7 +99,9 @@ sub check {
         }
     }
 
-    foreach my $key (keys %{$self->{results}->{$oids{$self->{type}}->{alaChasEntPhysFanStatus}}}) {
+    return if ($self->{type} eq '');
+
+    foreach my $key (keys %{$self->{results}->{ $oids{ $self->{type} }->{alaChasEntPhysFanStatus} } }) {
         next if ($key !~ /^$oids{$self->{type}}->{alaChasEntPhysFanStatus}\.(.*?)\.(.*?)$/);
         my ($phys_index, $loc_index) = ($1, $2);
         my $status = $self->{results}->{$oids{$self->{type}}->{alaChasEntPhysFanStatus}}->{$key};
