@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'invocations'               => 'cloud::aws::lambda::mode::invocations',
+        'discovery'   => 'cloud::aws::lambda::mode::discovery',
+        'invocations' => 'cloud::aws::lambda::mode::invocations'
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
