@@ -99,7 +99,9 @@ sub check {
         }
     }
 
-    foreach my $key (keys %{$self->{results}->{$oids{$self->{type}}->{alaChasEntPhysFanStatus}}}) {
+    return if ($self->{type} eq '');
+
+    foreach my $key (keys %{$self->{results}->{ $oids{ $self->{type} }->{alaChasEntPhysFanStatus} } }) {
         next if ($key !~ /^$oids{$self->{type}}->{alaChasEntPhysFanStatus}\.(.*?)\.(.*?)$/);
         my ($phys_index, $loc_index) = ($1, $2);
         my $status = $self->{results}->{$oids{$self->{type}}->{alaChasEntPhysFanStatus}}->{$key};
