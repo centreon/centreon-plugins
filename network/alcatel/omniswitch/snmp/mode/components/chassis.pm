@@ -34,17 +34,17 @@ sub check {
     return if ($self->check_filter(section => 'chassis'));
     
     my @instances = ();
-    foreach my $key (keys %{$self->{results}->{$oids{common}->{entPhysicalClass}}}) {
-        if ($self->{results}->{$oids{common}->{entPhysicalClass}}->{$key} == 3) {
+    foreach my $key (keys %{$self->{results}->{ $oids{common}->{entPhysicalClass} }}) {
+        if ($self->{results}->{ $oids{common}->{entPhysicalClass} }->{$key} == 3) {
             next if ($key !~ /^$oids{common}->{entPhysicalClass}\.(.*)$/);
             push @instances, $1;
         }
     }
     
     foreach my $instance (@instances) {
-        next if (!defined($self->{results}->{entity}->{$oids{$self->{type}}{chasEntPhysAdminStatus} . '.' . $instance}));
+        next if (!defined($self->{results}->{entity}->{ $oids{ $self->{type} }->{chasEntPhysAdminStatus} . '.' . $instance }));
         
-        my $result = $self->{snmp}->map_instance(mapping => $mapping->{$self->{type}}, results => $self->{results}->{entity}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping->{ $self->{type} }, results => $self->{results}->{entity}, instance => $instance);
         
         next if ($self->check_filter(section => 'chassis', instance => $instance));
         $self->{components}->{chassis}->{total}++;
@@ -52,28 +52,33 @@ sub check {
         $self->{output}->output_add(
             long_msg => sprintf(
                 "chassis '%s/%s' [instance: %s, admin status: %s] operationnal status is %s.",
-                $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
-                $result->{chasEntPhysAdminStatus}, $result->{chasEntPhysOperStatus}
+                $result->{entPhysicalName},
+                $result->{entPhysicalDescr},
+                $instance, 
+                $result->{chasEntPhysAdminStatus},
+                $result->{chasEntPhysOperStatus}
             )
         );
 
         if ($result->{chasEntPhysPower} > 0) {
             $self->{output}->perfdata_add(
-                label => "power", unit => 'W',
                 nlabel => 'hardware.chassis.power.watt',
-                instances => $instance,
+                unit => 'W',
+                instances => [$result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance],
                 value => $result->{chasEntPhysPower},
                 min => 0
             );
         }
-        
+
         my $exit = $self->get_severity(label => 'admin', section => 'chassis.admin', value => $result->{chasEntPhysAdminStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
                 short_msg => sprintf(
                     "chassis '%s/%s/%s' admin status is %s",
-                    $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
+                    $result->{entPhysicalName},
+                    $result->{entPhysicalDescr},
+                    $instance, 
                     $result->{chasEntPhysAdminStatus}
                 )
             );
@@ -86,7 +91,9 @@ sub check {
                 severity => $exit,
                 short_msg => sprintf(
                     "chassis '%s/%s/%s' operational status is %s",
-                    $result->{entPhysicalName}, $result->{entPhysicalDescr}, $instance, 
+                    $result->{entPhysicalName},
+                    $result->{entPhysicalDescr},
+                    $instance, 
                     $result->{chasEntPhysOperStatus}
                 )
             );

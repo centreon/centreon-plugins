@@ -82,7 +82,9 @@ our @EXPORT_OK = qw(%physical_class %phys_oper_status %phys_admin_status %oids $
     },
     aos6 => {
         entreprise_alcatel_base => '.1.3.6.1.4.1.6486.800',
-        
+
+        version => '.1.3.6.1.4.1.6486.800.1.1.1.2.1.1.3.17.0', # systemHardwareUbootVersion
+
         chasEntPhysAdminStatus => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.1',
         chasEntPhysOperStatus => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.2',
         chasEntPhysPower => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.4',
@@ -95,7 +97,9 @@ our @EXPORT_OK = qw(%physical_class %phys_oper_status %phys_admin_status %oids $
     },
     aos7 => {
         entreprise_alcatel_base => '.1.3.6.1.4.1.6486.801',
-        
+
+        version => '.1.3.6.1.4.1.6486.801.1.1.1.2.1.1.3.17.0', # systemHardwareUbootVersion
+
         chasEntPhysAdminStatus => '.1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.1',
         chasEntPhysOperStatus => '.1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.2',
         chasEntPhysPower => '.1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.3',
