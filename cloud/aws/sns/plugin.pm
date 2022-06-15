@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{ $self->{modes} } = (
-        'notifications' => 'cloud::aws::sns::mode::notifications',
-        'list-topics'   => 'cloud::aws::sns::mode::listtopics'
+        'discovery'     => 'cloud::aws::sns::mode::discovery',
+        'list-topics'   => 'cloud::aws::sns::mode::listtopics',
+        'notifications' => 'cloud::aws::sns::mode::notifications'
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

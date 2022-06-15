@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{ $self->{modes} } = (
-        'queues'      => 'cloud::aws::sqs::mode::queues',
-        'list-queues' => 'cloud::aws::sqs::mode::listqueues'
+        'discovery'   => 'cloud::aws::sqs::mode::discovery',
+        'list-queues' => 'cloud::aws::sqs::mode::listqueues',
+        'queues'      => 'cloud::aws::sqs::mode::queues'
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
