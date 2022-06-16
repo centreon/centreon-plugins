@@ -582,8 +582,7 @@ sub collect_http_sampling {
 sub display_variables {
     my ($self, %options) = @_;
 
-    $self->{output}->output_add(long_msg => '=======', debug => 1);
-    $self->{output}->output_add(long_msg => 'display variables:', debug => 1);
+    $self->{output}->output_add(long_msg => '======> display variables', debug => 1);
     foreach my $tbl_name (keys %{$self->{http_collected}->{tables}}) {
         my $expr = 'http.tables.' . $tbl_name;
         foreach my $instance (keys %{$self->{http_collected}->{tables}->{$tbl_name}}) {
@@ -601,7 +600,6 @@ sub display_variables {
             }
         }
     }
-    $self->{output}->output_add(long_msg => '=======', debug => 1);
 }
 
 sub collect_http {
