@@ -261,7 +261,7 @@ sub request {
 
     if ($self->{response_code} == 500) {
         my $client_warning = $self->get_header(name => 'Client-Warning');
-        if (defined($client_warning) && $client_warning eq 'Internal response') {
+        if (defined($client_warning) && $client_warning eq 'Internal response' && $self->{response_message} =~ /connection timed out/mi) {
             $self->{response_code} = 450;
             $self->{response_message} = 'Timeout reached';
         }
