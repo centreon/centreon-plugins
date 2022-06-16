@@ -579,6 +579,31 @@ sub collect_http_sampling {
     $self->{http_cache}->write(data => { http_collected_sampling => $self->{http_collected_sampling} });
 }
 
+sub display_variables {
+    my ($self, %options) = @_;
+
+    $self->{output}->output_add(long_msg => '=======', debug => 1);
+    $self->{output}->output_add(long_msg => 'display variables:', debug => 1);
+    foreach my $tbl_name (keys %{$self->{http_collected}->{tables}}) {
+        my $expr = 'http.tables.' . $tbl_name;
+        foreach my $instance (keys %{$self->{http_collected}->{tables}->{$tbl_name}}) {
+            $expr .= ".[$instance]";
+            foreach my $attr (keys %{$self->{http_collected}->{tables}->{$tbl_name}->{$instance}}) {
+                $expr .= ".$attr";
+                $self->{output}->output_add(
+                    long_msg => sprintf(
+                        '    %s = %s',
+                        $expr,
+                        $self->{http_collected}->{tables}->{$tbl_name}->{$instance}->{$attr}
+                    ),
+                    debug => 1
+                );
+            }
+        }
+    }
+    $self->{output}->output_add(long_msg => '=======', debug => 1);
+}
+
 sub collect_http {
     my ($self, %options) = @_;
 
@@ -601,6 +626,10 @@ sub collect_http {
     }
 
     $self->collect_http_sampling();
+
+    if ($self->{output}->is_debug()) {
+        $self->display_variables();
+    }
 }
 
 sub exist_table_name {
