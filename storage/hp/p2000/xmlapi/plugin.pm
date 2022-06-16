@@ -25,20 +25,20 @@ use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
-    
+    my ($class, %options) = @_;    
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
-        'controllers'    => 'storage::hp::p2000::xmlapi::mode::controllers',
-        'health'         => 'storage::hp::p2000::xmlapi::mode::health',
-        'list-volumes'   => 'storage::hp::p2000::xmlapi::mode::listvolumes',
-        'ntp'            => 'storage::hp::p2000::xmlapi::mode::ntp',
-        'vdisks'         => 'storage::hp::p2000::xmlapi::mode::vdisks',
-        'volume-stats'   => 'storage::hp::p2000::xmlapi::mode::volumesstats'
+        'controllers'  => 'storage::hp::p2000::xmlapi::mode::controllers',
+        'health'       => 'storage::hp::p2000::xmlapi::mode::health',
+        'list-volumes' => 'storage::hp::p2000::xmlapi::mode::listvolumes',
+        'ntp'          => 'storage::hp::p2000::xmlapi::mode::ntp',
+        'time'         => 'storage::hp::p2000::xmlapi::mode::time',
+        'vdisks'       => 'storage::hp::p2000::xmlapi::mode::vdisks',
+        'volume-stats' => 'storage::hp::p2000::xmlapi::mode::volumesstats'
     };
+
     $self->{custom_modes}->{p2000xml} = 'storage::hp::p2000::xmlapi::custom::api';
 
     return $self;
