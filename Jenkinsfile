@@ -2,7 +2,7 @@
 env.REF_BRANCH = 'master'
 if ((env.BRANCH_NAME == env.REF_BRANCH)) {
   env.BUILD = 'REFERENCE'
-  env.REPO = 'testing'
+  env.REPO = 'stable'
 } else {
   env.BUILD = 'CI'
   env.REPO = 'unstable'
