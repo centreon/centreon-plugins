@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::hp::p2000::xmlapi::mode::components::enclosure;
+package storage::hp::p2000::xmlapi::mode::components::saslink;
 
 use strict;
 use warnings;
@@ -27,34 +27,35 @@ use storage::hp::p2000::xmlapi::mode::components::resources qw($map_health);
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking enclosures");
-    $self->{components}->{enclosure} = {name => 'enclosures', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'enclosure'));
+    $self->{output}->output_add(long_msg => "Checking sas-links");
+    $self->{components}->{saslink} = { name => 'saslink', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'saslink'));
     
     my ($results) = $self->{custom}->get_infos(
-        cmd => 'show enclosures', 
-        base_type => 'enclosures',
-        key => 'durable-id',
-        properties_name => '^health-numeric|health-reason$',
+        cmd => 'show sas-link-health', 
+        base_type => 'expander-ports',
+        key => 'durable-id', 
+        properties_name => '^health-numeric$',
         no_quit => 1
     );
-    foreach my $enc_id (keys %$results) {
-        next if ($self->check_filter(section => 'enclosure', instance => $enc_id));
-        $self->{components}->{enclosure}->{total}++;
 
-        my $state = $map_health->{ $results->{$enc_id}->{'health-numeric'} };
-
+    foreach my $sas_id (keys %$results) {
+        next if ($self->check_filter(section => 'saslink', instance => $sas_id));
+        $self->{components}->{disk}->{total}++;
+        
+        my $state = $map_health->{$results->{$sas_id}->{'health-numeric'}};
+        
         $self->{output}->output_add(
             long_msg => sprintf(
-                "enclosure '%s' status is %s [instance: %s] [reason: %s]",
-                $enc_id, $state, $enc_id, $results->{$enc_id}->{'health-reason'}
+                "sas link '%s' status is %s [instance: %s]",
+                $sas_id, $state, $sas_id
             )
         );
-        my $exit = $self->get_severity(label => 'default', section => 'enclosure', value => $state);
+        my $exit = $self->get_severity(label => 'default', section => 'saslink', value => $state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("Enclosure '%s' status is '%s'", $enc_id, $state)
+                short_msg => sprintf("Sas link '%s' status is '%s'", $sas_id, $state)
             );
         }
     }

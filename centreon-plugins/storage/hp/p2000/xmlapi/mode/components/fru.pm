@@ -50,7 +50,7 @@ sub check {
         $results->{$name} = $_;
     }
 
-    foreach my $instance (sort keys %$results) {    
+    foreach my $instance (sort keys %$results) {
         next if ($self->check_filter(section => 'fru', instance => $instance));
         $self->{components}->{fru}->{total}++;
         
