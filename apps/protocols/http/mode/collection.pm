@@ -445,7 +445,7 @@ sub parse_structure {
                 $entry->{ $_->{id} } = $value->{ $_->{id} };
             } elsif (ref($value) eq 'ARRAY') {
                 next;
-            } elsif ($ref eq '') {
+            } elsif ($ref eq '' || $ref eq 'JSON::PP::Boolean') {
                 $entry->{ $_->{id} } = $value;
             } else {
                 next;
