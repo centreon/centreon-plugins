@@ -2,10 +2,10 @@
 env.REF_BRANCH = 'master'
 if ((env.BRANCH_NAME == env.REF_BRANCH)) {
   env.BUILD = 'REFERENCE'
-  env.REPO = 'stable'
+  env.REPO = '22.04'
 } else {
   env.BUILD = 'CI'
-  env.REPO = 'unstable'
+  env.REPO = '22.04-unstable'
 }
 
 stage('Source') {
@@ -72,7 +72,7 @@ stage('RPM Delivery') {
         unstash "Debian11"
         sh '''for i in $(echo *.deb)
               do 
-                curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@./$i" https://apt.centreon.com/repository/22.04-$REPO/
+                curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@./$i" https://apt.centreon.com/repository/$REPO/
               done
           '''    
       }
