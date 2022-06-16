@@ -1,3 +1,12 @@
+2022-06-16 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Speedtest
+ * Plugin added: Protocol WHOIS
+ * Mode added: [nortel/standard/snmp] 'stack'
+ * Enhancement: [raisecom/snmp] support pon hardware
+ * Break: [dell/n4000/snmp] renamed dell/nseries/snmp
+ * Break: [hp/storeonce] renamed hp/storeonce/3
+ * Break: [protocol/tcp] refactoring
+
 2022-05-18 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Ceph Rest API
  * Plugin added: Protocol CIFS
