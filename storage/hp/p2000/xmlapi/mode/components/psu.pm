@@ -22,14 +22,7 @@ package storage::hp::p2000::xmlapi::mode::components::psu;
 
 use strict;
 use warnings;
-
-my %health = (
-    0 => 'ok',
-    1 => 'degraded',
-    2 => 'fault',
-    3 => 'unknown',
-    4 => 'not available'
-);
+use storage::hp::p2000::xmlapi::mode::components::resources qw($map_health);
 
 sub check {
     my ($self) = @_;
@@ -62,7 +55,7 @@ sub check {
         next if ($self->check_filter(section => 'psu', instance => $results->{$psu_id}->{'durable-id'}));
         $self->{components}->{psu}->{total}++;
 
-        my $state = $health{$results->{$psu_id}->{'health-numeric'}};
+        my $state = $map_health->{ $results->{$psu_id}->{'health-numeric'} };
 
         $self->{output}->output_add(
             long_msg => sprintf(

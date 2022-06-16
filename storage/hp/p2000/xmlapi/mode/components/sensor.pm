@@ -111,8 +111,8 @@ sub check {
         }
 
         $self->{output}->perfdata_add(
-            label => 'sensor', unit => $unit,
             nlabel => 'hardware.sensor.' . $type . (defined($units{$unit}->{long}) ? $units{$unit}->{long} : ''),
+            unit => $unit,
             instances => $sensor_id,
             value => $value,
             warning => $warn,

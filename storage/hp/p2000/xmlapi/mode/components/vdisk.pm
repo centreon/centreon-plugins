@@ -22,14 +22,7 @@ package storage::hp::p2000::xmlapi::mode::components::vdisk;
 
 use strict;
 use warnings;
-
-my %health = (
-    0 => 'ok',
-    1 => 'degraded',
-    2 => 'failed',
-    3 => 'unknown',
-    4 => 'not available',
-);
+use storage::hp::p2000::xmlapi::mode::components::resources qw($map_health);
 
 sub check_vdisk {
     my ($self, %options) = @_;
@@ -38,7 +31,7 @@ sub check_vdisk {
         next if ($self->check_filter(section => 'vdisk', instance => $vdisk_id));
         $self->{components}->{vdisk}->{total}++;
         
-        my $state = $health{$options{results}->{$vdisk_id}->{'health-numeric'}};
+        my $state = $map_health->{ $options{results}->{$vdisk_id}->{'health-numeric'} };
         
         $self->{output}->output_add(
             long_msg => sprintf(

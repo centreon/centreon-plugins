@@ -29,17 +29,18 @@ sub set_system {
     my ($self, %options) = @_;
 
     $self->{regexp_threshold_numeric_check_section_option} = 
-        '^(?:sensor)$';
+        '^(?:sensor|fan\.speed)$';
     
     $self->{cb_hook1} = 'init_health';
     
     $self->{thresholds} = {
-        # disk, enclosure, vdisk
+        # disk, enclosure, vdisk, saslink, fan
         default => [
             ['ok', 'OK'],
             ['degraded', 'WARNING'],
             ['failed|fault', 'CRITICAL'],
-            ['unknown|not available', 'UNKNOWN']
+            ['unknown', 'UNKNOWN'],
+            ['not available', 'OK']
         ],
         fru => [
             ['ok', 'OK'],
@@ -57,7 +58,7 @@ sub set_system {
 
     $self->{components_exec_load} = 0;
     $self->{components_path} = 'storage::hp::p2000::xmlapi::mode::components';
-    $self->{components_module} = ['disk', 'enclosure', 'fru', 'psu', 'sensor', 'vdisk'];
+    $self->{components_module} = ['disk', 'enclosure', 'fan', 'fru', 'psu', 'saslink', 'sensor', 'vdisk'];
 }
 
 sub init_health {
@@ -68,11 +69,10 @@ sub init_health {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -90,7 +90,7 @@ Check health status of storage.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'disk', 'enclosure', 'fru', 'psu', 'sensor', 'vdisk'.
+Can be: 'disk', 'enclosure', 'fan', 'fru', 'psu', 'saslink', 'sensor', 'vdisk'.
 
 =item B<--filter>
 
@@ -110,12 +110,12 @@ Example: --threshold-overload='disk,OK,unknown'
 
 =item B<--warning>
 
-Set warning threshold for 'sensor' (syntax: type,instance,threshold)
+Set warning threshold for 'sensor', 'fan.speed' (syntax: type,instance,threshold)
 Example: --warning='sensor,temperature.*,30'
 
 =item B<--critical>
 
-Set warning threshold for 'sensors' (syntax: type,instance,threshold)
+Set warning threshold for 'sensor', 'fan.speed' (syntax: type,instance,threshold)
 Example: --warning='sensor,temperature.*,30'
 
 =back
