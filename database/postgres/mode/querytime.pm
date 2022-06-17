@@ -34,7 +34,8 @@ sub new {
         'warning:s'      => { name => 'warning' },
         'critical:s'     => { name => 'critical' },
         'exclude:s'      => { name => 'exclude' },
-        'exclude-user:s' => { name => 'exclude_user' }
+        'exclude-user:s' => { name => 'exclude_user' },
+        'idle'           => { name => 'idle' }
     });
 
     return $self;
@@ -61,21 +62,27 @@ sub run {
 
     my $query;
     if ($options{sql}->is_version_minimum(version => '9.2')) {
-        $query = q{
-        SELECT pg_database.datname, pgsa.datid, pgsa.pid, pgsa.usename, pgsa.client_addr, pgsa.query AS current_query, pgsa.state AS state,
-            CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
-            COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
-        FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL AND (pgsa.state NOT LIKE 'idle%' OR pgsa.state IS NULL))
-        ORDER BY pgsa.query_start, pgsa.pid DESC
-};
+        $query = sprintf(
+            q{
+                SELECT pg_database.datname, pgsa.datid, pgsa.pid, pgsa.usename, pgsa.client_addr, pgsa.query AS current_query, pgsa.state AS state,
+                    CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
+                    COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
+                FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL AND (%s pgsa.state IS NULL))
+                ORDER BY pgsa.query_start, pgsa.pid DESC
+            },
+            !defined($self->{option_results}->{idle}) ? "pgsa.state NOT LIKE 'idle%' OR" : ''
+        );
     } else {
-        $query = q{
-        SELECT pg_database.datname, pgsa.datid, pgsa.procpid, pgsa.usename, pgsa.client_addr, pgsa.current_query AS current_query, '' AS state, 
-            CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
-            COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
-        FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL AND current_query NOT LIKE '<IDLE>%')
-        ORDER BY pgsa.query_start, pgsa.procpid DESC
-};
+        $query = sprintf(
+            q{
+                SELECT pg_database.datname, pgsa.datid, pgsa.procpid, pgsa.usename, pgsa.client_addr, pgsa.current_query AS current_query, '' AS state, 
+                    CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
+                    COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
+                FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL %s)
+                ORDER BY pgsa.query_start, pgsa.procpid DESC
+            },
+            !defined($self->{option_results}->{idle}) ? " AND current_query NOT LIKE '<IDLE>%'" : ''
+        );
     }
 
     $options{sql}->query(query => $query);
@@ -159,6 +166,10 @@ Filter databases.
 =item B<--exclude-user>
 
 Filter users.
+
+=item B<--idle>
+
+Idle queries are counted.
 
 =back
 
