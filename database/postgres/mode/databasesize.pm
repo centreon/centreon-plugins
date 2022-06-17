@@ -25,42 +25,41 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'databases', type => 1, cb_prefix_output => 'prefix_database_output', message_multiple => 'All databases are ok' },
-    ];
-
-    $self->{maps_counters}->{databases} = [
-        { label => 'size', set => {
-                key_values => [ { name => 'size' }, { name => 'display' } ],
-                output_template => 'size : %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { label => 'size', value => 'size', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-    ];
-}
-
 sub prefix_database_output {
     my ($self, %options) = @_;
 
     return "Database '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'databases', type => 1, cb_prefix_output => 'prefix_database_output', message_multiple => 'All databases are ok' }
+    ];
+
+    $self->{maps_counters}->{databases} = [
+        { label => 'size', nlabel => 'database.space.usage.bytes', set => {
+                key_values => [ { name => 'size' }, { name => 'display' } ],
+                output_template => 'size: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-database:s"   => { name => 'filter_database' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-database:s'   => { name => 'filter_database' }
+    });
+
     return $self;
 }
 
@@ -71,7 +70,7 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     $self->{sql} = $options{sql};
     $self->{sql}->connect();
     $self->{sql}->query(query => "SELECT pg_database.datname, pg_database_size(pg_database.datname) FROM pg_database;");
@@ -83,7 +82,7 @@ sub manage_selection {
     foreach my $row (@$result) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' 
             && $$row[0] !~ /$self->{option_results}->{filter_database}/);
-        
+
         $self->{databases}->{$$row[0]}->{display} = $$row[0];
         $self->{databases}->{$$row[0]}->{size} = $$row[1];
     }
