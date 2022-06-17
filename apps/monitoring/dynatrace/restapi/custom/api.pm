@@ -80,10 +80,6 @@ sub check_options {
     $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{environment_id}) || $self->{environment_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --environment-id option.");
         $self->{output}->option_exit();
@@ -123,44 +119,106 @@ sub settings {
 sub request_api {
     my ($self, %options) = @_;
 
-    $self->settings();
-    my $content = $self->{http}->request(%options,
-        warning_status => '', unknown_status => '%{http_code} < 200 or %{http_code} >= 300', critical_status => ''
-    );
-
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->decode($content);
+    my $mode_mapping = {
+        timeseries => 'result',
+        events     => 'events',
+        problems   => 'problems'
     };
-    if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-    if (!defined($decoded)) {
-        $self->{output}->output_add(long_msg => $decoded, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
-        $self->{output}->option_exit();
+    my $items = [];
+    $options{get_param} = defined($options{get_param}) ? $options{get_param} : [];
+    $self->settings();
+    $options{url_path} = (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . $options{endpoint};
+    
+    while(1) {
+        my $content = $self->{http}->request(%options,
+            warning_status => '', unknown_status => '%{http_code} < 200 or %{http_code} >= 300', critical_status => ''
+        );
+
+        my $decoded;
+        eval {
+            $decoded = JSON::XS->new->decode($content);
+        };
+        if ($@) {
+            $self->{output}->output_add(long_msg => $content, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+            $self->{output}->option_exit();
+        }
+        if (!defined($decoded)) {
+            $self->{output}->output_add(long_msg => $decoded, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
+            $self->{output}->option_exit();
+        }
+
+        if ($options{endpoint_type} eq 'timeseries') {
+            return $decoded;
+        }
+
+        last if (!defined($decoded->{$mode_mapping->{$options{endpoint_type}}}));
+        push @$items, @{$decoded->{$mode_mapping->{$options{endpoint_type}}}};
+
+        last if (!defined($decoded->{nextPageKey}));
+        $options{get_param} = [@{$options{get_param}}, 'nextPageKey=' . $decoded->{nextPageKey}];
     }
 
-    return $decoded;
+    return $items;
 }
 
-sub internal_problem {
+sub get_apdex {
     my ($self, %options) = @_;
 
     my $status = $self->request_api(
-        method => 'GET',
-        url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e/' . $self->{option_results}->{environment_id}) . '/api/v1/problem/feed?relativeTime=' . $self->{option_results}->{relative_time}
+        method        => 'GET',
+        endpoint      => '/api/v1/timeseries',
+        get_param    => ['timeseriesId=com.dynatrace.builtin:app.apdex',
+                         'queryMode=total',
+                         'aggregationType=' . $self->{option_results}->{aggregation_type},
+                         'relativeTime=' . $self->{option_results}->{relative_time}],
+        endpoint_type => 'timeseries'
+                    
     );
+
     return $status;
 }
 
-sub api_problem {
+sub get_events {
+    my ($self, %options) = @_;
+    
+    my $status = $self->request_api(
+        method        => 'GET',
+        endpoint      => '/api/v2/events',
+        get_param     => ['from=now-' . $self->{option_results}->{relative_time}, 'pageSize=500'],
+        endpoint_type => 'events',
+    );
+
+    return $status;
+}
+
+sub get_problems {
     my ($self, %options) = @_;
 
-    my $status = $self->internal_problem();
-    return $status->{result}->{problems};
+    my $status = $self->request_api(
+        method        => 'GET',
+        endpoint      => '/api/v2/problems',
+        get_param     => ['from=now-' . $self->{option_results}->{relative_time}, 'pageSize=500'],
+        endpoint_type => 'problems'
+    );
+
+    return $status;
+}
+
+sub get_synthetic_availability {
+    my ($self, %options) = @_;
+
+    my $status = $self->request_api(
+        method        => 'GET',
+        endpoint      => '/api/v1/timeseries',
+        get_param     => ['timeseriesId=com.dynatrace.builtin:syntheticmonitor.availability.percent', 
+                          'queryMode=total',  $self->{option_results}->{relative_time}, 
+                          'relativeTime=' . $self->{option_results}->{relative_time}],
+        endpoint_type => 'timeseries'
+    );
+
+    return $status;
 }
 
 1;

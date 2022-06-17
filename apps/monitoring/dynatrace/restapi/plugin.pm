@@ -30,9 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'problems' => 'apps::monitoring::dynatrace::restapi::mode::problems',
-    );
+    $self->{modes} = {
+        'apdex'        => 'apps::monitoring::dynatrace::restapi::mode::apdex',
+        'availability' => 'apps::monitoring::dynatrace::restapi::mode::availability',
+        'events'       => 'apps::monitoring::dynatrace::restapi::mode::events',
+        'problems'     => 'apps::monitoring::dynatrace::restapi::mode::problems'
+    };
 
     $self->{custom_modes}{api} = 'apps::monitoring::dynatrace::restapi::custom::api';
     return $self;
