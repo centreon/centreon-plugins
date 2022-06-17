@@ -27,16 +27,15 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "exclude:s"               => { name => 'exclude', },
-                                  "noidle"                  => { name => 'noidle', },
-                                });
+
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' },
+        'exclude:s'  => { name => 'exclude' },
+        'noidle'     => { name => 'noidle' }
+    });
 
     return $self;
 }
@@ -46,22 +45,19 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
-    
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
 
-    $self->{sql}->connect();
+    $options{sql}->connect();
     
     my $noidle = '';
     if (defined($self->{option_results}->{noidle})) {
@@ -72,51 +68,71 @@ sub run {
         }
     }
 
-    my $query = "SELECT COUNT(datid) AS current,
-  (SELECT setting AS mc FROM pg_settings WHERE name = 'max_connections') AS mc,
-  d.datname
-FROM pg_database d
-LEFT JOIN pg_stat_activity s ON (s.datid = d.oid $noidle)
-GROUP BY d.datname
-ORDER BY d.datname";
-    $self->{sql}->query(query => $query);
+    my $query = "
+        SELECT
+            COUNT(datid) AS current,
+            (SELECT setting AS mc FROM pg_settings WHERE name = 'max_connections') AS mc,
+            d.datname
+        FROM pg_database d
+        LEFT JOIN pg_stat_activity s ON (s.datid = d.oid $noidle)
+        GROUP BY d.datname
+        ORDER BY d.datname
+    ";
+    $options{sql}->query(query => $query);
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "All client database connections are ok.");
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'All client database connections are ok'
+    );
 
     my $database_check = 0;
-    my $result = $self->{sql}->fetchall_arrayref();
-    
+    my $result = $options{sql}->fetchall_arrayref();
+
     foreach my $row (@{$result}) {
         if (defined($self->{option_results}->{exclude}) && $$row[2] !~ /$self->{option_results}->{exclude}/) {
             $self->{output}->output_add(long_msg => "Skipping database '" . $$row[2] . '"');
             next;
-        }       
-        
+        }
+
         $database_check++;
-        my $used = $$row[0];
-        my $max_connections = $$row[1];
-        my $database_name = $$row[2];
+        my $used = $row->[0];
+        my $max_connections = $row->[1];
+        my $database_name = $row->[2];
         
         my $prct_used = ($used * 100) / $max_connections;
-        my $exit_code = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(long_msg => sprintf("Database '%s': %.2f%% client connections limit reached (%d of max. %d)",
-                                                    $database_name, $prct_used, $used, $max_connections));
+        my $exit_code = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Database '%s': %.2f%% client connections limit reached (%d of max. %d)",
+                $database_name, $prct_used, $used, $max_connections
+            )
+        );
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("Database '%s': %.2f%% client connections limit reached (%d of max. %d)",
-                                                    $database_name, $prct_used, $used, $max_connections));
+            $self->{output}->output_add(
+                severity => $exit_code,
+                short_msg => sprintf(
+                    "Database '%s': %.2f%% client connections limit reached (%d of max. %d)",
+                    $database_name, $prct_used, $used, $max_connections
+                )
+            );
         }
         
-        $self->{output}->perfdata_add(label => 'connections_' . $database_name,
-                                      value => $used,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $max_connections, cast_int => 1),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $max_connections, cast_int => 1),
-                                      min => 0, max => $max_connections);
+        $self->{output}->perfdata_add(
+            nlabel => 'database.clients.connected.count',
+            instances => $database_name,
+            value => $used,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $max_connections, cast_int => 1),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $max_connections, cast_int => 1),
+            min => 0,
+            max => $max_connections
+        );
     }
+
     if ($database_check == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'No database checked. (permission or a wrong exclude filter)');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'No database checked (permission or a wrong exclude filter)'
+        );
     }
 
     $self->{output}->display();
