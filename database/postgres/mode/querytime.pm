@@ -27,7 +27,7 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
@@ -62,19 +62,19 @@ sub run {
     my $query;
     if ($options{sql}->is_version_minimum(version => '9.2')) {
         $query = q{
-SELECT pg_database.datname, pgsa.datid, pgsa.pid, pgsa.usename, pgsa.client_addr, pgsa.query AS current_query, pgsa.state AS state,
-       CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
-       COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
-FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL AND (pgsa.state NOT LIKE 'idle%' OR pgsa.state IS NULL))
-ORDER BY pgsa.query_start, pgsa.pid DESC
+        SELECT pg_database.datname, pgsa.datid, pgsa.pid, pgsa.usename, pgsa.client_addr, pgsa.query AS current_query, pgsa.state AS state,
+            CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
+            COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
+        FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL AND (pgsa.state NOT LIKE 'idle%' OR pgsa.state IS NULL))
+        ORDER BY pgsa.query_start, pgsa.pid DESC
 };
     } else {
         $query = q{
-SELECT pg_database.datname, pgsa.datid, pgsa.procpid, pgsa.usename, pgsa.client_addr, pgsa.current_query AS current_query, '' AS state,
-       CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
-       COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
-FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL AND current_query NOT LIKE '<IDLE>%')
-ORDER BY pgsa.query_start, pgsa.procpid DESC
+        SELECT pg_database.datname, pgsa.datid, pgsa.procpid, pgsa.usename, pgsa.client_addr, pgsa.current_query AS current_query, '' AS state, 
+            CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
+            COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
+        FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL AND current_query NOT LIKE '<IDLE>%')
+        ORDER BY pgsa.query_start, pgsa.procpid DESC
 };
     }
 
@@ -114,7 +114,8 @@ ORDER BY pgsa.query_start, pgsa.procpid DESC
 
     foreach my $dbname (keys %$dbquery) {
         $self->{output}->perfdata_add(
-            label => $dbname . '_qtime_num',
+            nlabel => 'database.longqueries.count',
+            instances => $dbname,
             value => $dbquery->{$dbname}->{total},
             min => 0
         );
