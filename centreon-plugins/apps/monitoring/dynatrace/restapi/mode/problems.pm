@@ -31,19 +31,19 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "problem '%s' [type: %s] [severity: %s] [impact: %s] [entity: %s]",
+        "problem '%s' [severity: %s] [impact: %s] [management zone: %s] [entity: %s]",
         $self->{result_values}->{displayName},
-        $self->{result_values}->{eventType},
         $self->{result_values}->{severityLevel},
         $self->{result_values}->{impactLevel},
+        $self->{result_values}->{managementZone},
         $self->{result_values}->{entityName}
     );
 }
 
-sub prefix_service_output {
+sub prefix_management_zones_output {
     my ($self, %options) = @_;
 
-    return "Problem '" . $options{instance_value}->{displayName} . "' ";
+    return "Management Zone '" . $options{instance_value}->{displayName} . "' ";
 }
 
 sub set_counters {
@@ -51,17 +51,27 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'problems', type => 2, message_multiple => '0 problems detected', display_counter_problem => { label => 'problems', min => 0 },
-          group => [ { name => 'problem' } ]
-        }
+        { name => 'management_zone', type => 1, cb_prefix_output => 'prefix_management_zones_output', message_multiple => 'All management zones are OK', skipped_code => { -10 => 1 } },
+        { name => 'problem', type => 2, group => [ { name => 'problem' } ] }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'problems-open', nlabel => 'problems.open.count', display_ok => 0, set => {
+        { label => 'problems-open', nlabel => 'total.problems.open.count', display_ok => 0, set => {
                 key_values => [ { name => 'problems_open' } ],
+                output_template => 'number of total open problems : %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{management_zone} = [
+        { label => 'managementzone-problems-open', nlabel => 'problems.open.count', set => {
+                key_values => [ { name => 'problems_open' }, { name => 'displayName' } ],
                 output_template => 'number of open problems : %s',
                 perfdatas => [
-                    { template => '%s', value => 'problems_open', min => 0 }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'displayName' }
                 ]
             }
         }
@@ -71,8 +81,8 @@ sub set_counters {
         { label => 'status', type => 2, critical_default => '%{status} eq "OPEN"', set => {
                 key_values => [
                     { name => 'status' }, { name => 'impactLevel' }, { name => 'severityLevel' }, 
-                    { name => 'entityName' }, { name => 'eventType' }, { name => 'entityId' }, { name => 'displayName' }, 
-                    { name => 'startTime' }, { name => 'endTime' }, { name => 'commentCount' }, { name => 'time' }
+                    { name => 'entityName' }, { name => 'entityId' }, { name => 'displayName' }, 
+                    { name => 'startTime' }, { name => 'endTime' }, { name => 'time' }, { name => 'managementZone' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -89,7 +99,9 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'relative-time:s'   => { name => 'relative_time', default => 'min' }
+        'filter-entity:s'          => { name => 'filter_entity' },
+        'filter-management-zone:s' => { name => 'filter_management_zone' },
+        'relative-time:s'          => { name => 'relative_time', default => '2h' }
     });
 
     return $self;
@@ -97,33 +109,64 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    my $problem = $options{custom}->api_problem(relative_time => $options{options}->{relative_time});
-
-    $self->{global} = { problems_open => 0 };
-    $self->{problem} = {};
-
-    $self->{problems}->{global} = { problem => {} };
+    
+    my $problem = $options{custom}->get_problems();
     my ($i, $time) = (1, time());
+    $self->{global}->{problems_open} = 0;
+
+    my $management_zone_names;
+    my $entity_names;
+    my $entity_id;
+    
     foreach my $item (@{$problem}) {
-        $self->{problems}->{global}->{problem}->{$i} = {
-            displayName => $item->{displayName},
-            status => $item->{status},
-            impactLevel => $item->{impactLevel},
-            severityLevel => $item->{severityLevel},
-            entityName => join(",", centreon::plugins::misc::uniq(map { "$_->{entityName}" } @{$item->{rankedImpacts}})),
-            eventType => join(",", centreon::plugins::misc::uniq(map { "$_->{eventType}" } @{$item->{rankedImpacts}})),
-            entityId => join(",", centreon::plugins::misc::uniq(map { "$_->{entityId}" } @{$item->{rankedImpacts}})),
-            startTime => $item->{startTime} / 1000,
-            endTime => $item->{endTime} > -1 ? $item->{endTime} / 1000 : -1,
-            commentCount => $item->{commentCount},
-            time => $time
-        };
-        if ($item->{status} eq 'OPEN') {
-            $self->{global}->{problems_open}++;
+        $management_zone_names = @{$item->{managementZones}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{managementZones}})) : 'undefined_management_zone';
+        $entity_names = @{$item->{impactedEntities}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{name}" } @{$item->{impactedEntities}})) : 'undefined_entity';
+        $entity_id = @{$item->{impactedEntities}} ? join(",", centreon::plugins::misc::uniq(map { "$_->{entityId}->{id}" } @{$item->{impactedEntities}})) : 'undefined_entity';
+    
+        if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
+            $management_zone_names !~ /$self->{option_results}->{filter_management_zone}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $management_zone_names . "': no matching filter.", debug => 1);
+            next;
+        }
+        
+        if (defined($self->{option_results}->{filter_entity}) && $self->{option_results}->{filter_entity} ne '' &&
+            $entity_names !~ /$self->{option_results}->{filter_entity}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $entity_names . "': no matching filter.", debug => 1);
+            next;
         }
 
+        if ($item->{status} eq 'OPEN') {
+            $self->{global}->{problems_open}++;    
+            if (@{$item->{managementZones}}) {
+                foreach my $management_zones (@{$item->{managementZones}}) {
+                    if (defined($self->{option_results}->{filter_management_zone}) && $self->{option_results}->{filter_management_zone} ne '' &&
+                        $management_zones->{name} !~ /$self->{option_results}->{filter_management_zone}/) {
+                        next;
+                    }
+                    $self->{management_zone}->{$management_zones->{name}}->{problems_open}++;
+                }
+            } else {
+                $self->{management_zone}->{undefined_management_zone}->{problems_open}++;
+            }
+        }
+ 
+        $self->{problem}->{global}->{problem}->{$i} = {
+            displayName    => $item->{title},
+            status         => $item->{status},
+            impactLevel    => $item->{impactLevel},
+            severityLevel  => $item->{severityLevel},
+            managementZone => $management_zone_names,
+            entityName     => $entity_names,
+            entityId       => $entity_id,
+            startTime      => $item->{startTime} / 1000,
+            endTime        => $item->{endTime} > -1 ? $item->{endTime} / 1000 : -1,
+            time           => $time
+        };
         $i++;
+    }
+
+    foreach my $management_zone (keys %{$self->{management_zone}}) {
+        $self->{management_zone}->{$management_zone}->{displayName} = $management_zone;
     }
 }
 
@@ -133,34 +176,44 @@ __END__
 
 =head1 MODE
 
-Check problems.
+Check open problems.
 
 =over 8
 
 =item B<--relative-time>
 
-Set request relative time (Default: 'min').
-Can use: min, 5mins, 10mins, 15mins, 30mins, hour, 2hours, 6hours, day, 3days, week, month.
+Set request relative time (Default: '2h').
+Can use: Xm (minutes), Xh (hours), Xd (days), Xm (months), Xy (year) where 'X' is the amount of time.
+
+=item B<--filter-management-zone>
+
+Filter problems by management zone. Mutliple management zones need to be separated by comma.
+Example: --management-zone='MZ1,MZ2'
+
+=item B<--filter-entity>
+
+Filter problems by entity. Mutliple entities need to be separated by comma.
+Example: --entity='entity1,entity2'
 
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}, %{time}
+Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{managementZone}, %{entityName}, %{entityId}, %{startTime}, %{endTime}, %{time}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}, %{time}
+Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{managementZone}, %{entityName}, %{entityId}, %{startTime}, %{endTime}, %{time}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} eq "OPEN"').
-Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}, %{time}
+Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{managementZone}, %{entityName}, %{entityId}, %{startTime}, %{endTime}, %{time}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'problems-open'.
+Can be: 'problems-open', 'managementzone-problems-open'.
 
 =back
 
