@@ -27,9 +27,9 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
         'exec-command:s'         => { name => 'exec_command' },
         'exec-command-path:s'    => { name => 'exec_command_path' },
@@ -44,25 +44,38 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     if (!defined($self->{option_results}->{exec_command})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify exec-command option.");
         $self->{output}->option_exit();
     }
 
-    $self->{manage_returns} = {};
+    $self->{expressions} = [];
     foreach my $entry (split(/$self->{option_results}->{separator}/, $self->{option_results}->{manage_returns})) {
         next if (!($entry =~ /(.*?),(.*?),(.*)/));
         next if (!$self->{output}->is_litteral_status(status => $2));
-        if ($1 ne '') {
-            $self->{manage_returns}->{$1} = {return => $2, msg => $3};
+        my ($expr, $rv, $msg) = ($1, $2, $3);
+
+        if ($expr ne '') {
+            if ($expr =~ /^\s*([0-9]+)\s*$/) {
+                push @{$self->{expressions}}, { test => "%(code) == $1", rv => $rv, msg => $msg };
+            } else {
+                push @{$self->{expressions}}, { test => $expr, rv => $rv, msg => $msg };
+            }
         } else {
-            $self->{manage_returns}->{default} = {return => $2, msg => $3};
+            $self->{expression_default} = { rv => $rv, msg => $msg };
         }
     }
-    if ($self->{option_results}->{manage_returns} eq '' || scalar(keys %{$self->{manage_returns}}) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify manage-returns option correctly.");
-       $self->{output}->option_exit();
+
+    if ($self->{option_results}->{manage_returns} eq '' ||
+        (scalar(@{$self->{expressions}}) == 0 && !defined($self->{expression_default}))) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify manage-returns option correctly.");
+        $self->{output}->option_exit();
+    }
+
+    for (my $i = 0; $i < scalar(@{$self->{expressions}}); $i++) {
+        $self->{expressions}->[$i]->{test} =~ s/%\{(.*?)\}/\$values->{$1}/g;
+        $self->{expressions}->[$i]->{test} =~ s/%\((.*?)\)/\$values->{$1}/g;
     }
 }
 
@@ -80,30 +93,38 @@ sub run {
     $long_msg =~ s/\|/~/mg;
     $self->{output}->output_add(long_msg => $long_msg);
     
-    if (defined($self->{manage_returns}->{$exit_code})) {
+    my $matched = 0;
+    my $values = { code => $exit_code, output => $stdout };
+    foreach (@{$self->{expressions}}) {
+        if ($self->{output}->test_eval(test => $_->{test}, values => $values)) {
+            $self->{output}->output_add(
+                severity => $_->{rv}, 
+                short_msg => $_->{msg}
+            );
+            $matched = 1;
+            last;
+        }
+    }
+
+    if ($matched == 0 && defined($self->{expression_default})) {
         $self->{output}->output_add(
-            severity => $self->{manage_returns}->{$exit_code}->{return}, 
-            short_msg => $self->{manage_returns}->{$exit_code}->{msg}
+            severity => $self->{expression_default}->{rv}, 
+            short_msg => $self->{expression_default}->{msg}
         );
-    } elsif (defined($self->{manage_returns}->{default})) {
+    } elsif ($matched == 0) {
         $self->{output}->output_add(
-            severity => $self->{manage_returns}->{default}->{return}, 
-            short_msg => $self->{manage_returns}->{default}->{msg}
-        );
-    } else {
-        $self->{output}->output_add(
-            severity => 'UNKNWON', 
-            short_msg => 'Exit code from command'
+            severity => 'UNKNOWN', 
+            short_msg => "Command exit code ($exit_code)"
         );
     }
-    
+
     if (defined($exit_code)) {
         $self->{output}->perfdata_add(
-            label => 'code',
+            nlabel => 'command.exit.code.count',
             value => $exit_code
         );
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -121,7 +142,7 @@ Check command returns.
 =item B<--manage-returns>
 
 Set action according command exit code.
-Example: 0,OK,File xxx exist#1,CRITICAL,File xxx not exist#,UNKNOWN,Command problem
+Example: %(code) == 0,OK,File xxx exist#%(code) == 1,CRITICAL,File xxx not exist#,UNKNOWN,Command problem
 
 =item B<--separator>
 
