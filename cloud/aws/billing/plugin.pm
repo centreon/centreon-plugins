@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'discovery'         => 'cloud::aws::billing::mode::discovery',
         'estimated-charges' => 'cloud::aws::billing::mode::estimatedcharges',
         'list-services'     => 'cloud::aws::billing::mode::listservices'
     };
