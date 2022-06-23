@@ -173,7 +173,7 @@ sub manage_selection {
         my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
         my $namespace = $self->{az_resource_namespace};
-        my $storagetype_full = ($self->{az_storage_type} ne '') ? '/' . lc($self->{az_storage_type}) . 'Services/default' : '';
+        my $storagetype_full = ($self->{az_storage_type} ne '' && lc($self->{az_storage_type}) ne 'account' ) ? '/' . lc($self->{az_storage_type}) . 'Services/default' : '';
         my $storagetype_name = ($self->{az_storage_type} ne '') ? $self->{az_storage_type} : "Account";
         if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)\/(.*)\/default$/ ||
             $resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)$/) {
@@ -257,8 +257,7 @@ Default: 'Microsoft.Storage'.
 
 =item B<--storage-type>
 
-Set storage type (Can be: 'Blob', 'File', 'Table', 'Queue').
-Leave empty for account metric.
+Set storage type (Can be: 'Account', 'Blob', 'File', 'Table', 'Queue').
 
 =item B<--filter-metric>
 
