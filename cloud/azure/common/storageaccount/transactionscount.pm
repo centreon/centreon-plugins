@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storageaccount::mode::transactionsthroughput;
+package cloud::azure::common::storageaccount::transactionscount;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -66,7 +66,7 @@ sub custom_usage_perfdata {
     $extra_label = '_' . lc($self->{result_values}->{display}) if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
 
     $self->{output}->perfdata_add(label => $self->{result_values}->{metric_perf} . "_" . $self->{result_values}->{stat} . $extra_label,
-				                  unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ? 'B/s' : 'B',
+				                  unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ? 'transactions/s' : 'transactions',
                                   value => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value}),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}),
@@ -79,11 +79,9 @@ sub custom_usage_output {
     my $msg = "";
 
     if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
-        my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec});
-        $msg = $self->{result_values}->{metric_name}  . ": " . $value . ' ' . $unit . "/s"; 
+        $msg = sprintf("%s: %.2f transactions/s", $self->{result_values}->{metric_name}, $self->{result_values}->{value_per_sec}); 
     } else {
-        my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value});
-        $msg = $self->{result_values}->{metric_name}  . ": " . $value . ' ' . $unit;
+        $msg = sprintf("%s: %.2f transactions", $self->{result_values}->{metric_name}, $self->{result_values}->{value}); 
     }
     return $msg;
 }
@@ -95,8 +93,8 @@ sub set_counters {
         { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All transactions metrics are ok", skipped_code => { -10 => 1 } },
     ];
 
-    foreach my $aggregation ('minimum', 'maximum', 'average', 'total') {
-        foreach my $metric ('Ingress', 'Egress') {
+    foreach my $aggregation ('total') {
+        foreach my $metric ('Transactions') {
             my $metric_label = lc($metric);
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' },
@@ -122,8 +120,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "resource:s@"           => { name => 'resource' },
         "resource-group:s"      => { name => 'resource_group' },
-        "resource-namespace:s"  => { name => 'resource_namespace' },
-        "filter-metric:s"       => { name => 'filter_metric' },
+        "storage-type:s"        => { name => 'storage_type' },
         "per-sec"               => { name => 'per_sec' },
     });
 
@@ -145,7 +142,7 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.Storage';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
-    $self->{az_resource_extra_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : '';
+    $self->{az_storage_type} = defined($self->{option_results}->{storage_type}) ? $self->{option_results}->{storage_type} : '';
     $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
@@ -156,10 +153,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('Ingress', 'Egress') {
-        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
-            && $metric !~ /$self->{option_results}->{filter_metric}/);
-
+    foreach my $metric ('Transactions') {
         push @{$self->{az_metrics}}, $metric;
     }
 }
@@ -172,8 +166,8 @@ sub manage_selection {
         my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
         my $namespace = $self->{az_resource_namespace};
-        my $namespace_full = ($self->{az_resource_extra_namespace} ne '') ? '/' . lc($self->{az_resource_extra_namespace}) . 'Services/default' : '';
-        my $namespace_name = ($self->{az_resource_extra_namespace} ne '') ? $self->{az_resource_extra_namespace} : "Account";
+        my $namespace_full = ($self->{az_storage_type} ne '') ? '/' . lc($self->{az_storage_type}) . 'Services/default' : '';
+        my $namespace_name = ($self->{az_storage_type} ne '') ? $self->{az_storage_type} : "Account";
         if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)\/(.*)\/default$/ ||
             $resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
             $resource_group = $1;
@@ -221,22 +215,23 @@ __END__
 
 =head1 MODE
 
-Check storage account resources transaction throughput metrics.
+Check storage account resources transaction count metric.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-throughput
---resource=MYFILER --resource-group=MYHOSTGROUP--resource-namespace=Blob --aggregation='total' --critical-egress-total='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-count
+--resource=MYFILER --resource-group=MYHOSTGROUP --resource-namespace=Blob --aggregation='total'
+--critical-transactions-total='10' --verbose
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-throughput
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-count
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx'
---aggregation='total' --critical-egress-total='10' --verbose
+--aggregation='total' --critical-transactions-total='10' --verbose
 
-Default aggregation: 'total' / All aggregations are valid.
+Default aggregation: 'total' / Only total is valid.
 
 =over 8
 
@@ -248,24 +243,18 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--resource-namespace>
+=item B<--storage-type>
 
-Set resource namespace (Can be: 'Blob', 'File', 'Table', 'Queue').
+Set storage type (Can be: 'Blob', 'File', 'Table', 'Queue').
 Leave empty for account metric.
 
-=item B<--filter-metric>
+=item B<--warning-transactions-total>
 
-Filter metrics (Can be: 'Ingress', 'Egress') (Can be a regexp).
+Thresholds warning.
 
-=item B<--warning-$metric$-$aggregation$>
+=item B<--critical-transactions-total>
 
-Thresholds warning ($metric$ can be: 'ingress', 'egress',
-$aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
-
-=item B<--critical-$metric$-$aggregation$>
-
-Thresholds critical ($metric$ can be: 'ingress', 'egress',
-$aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
+Thresholds critical.
 
 =item B<--per-sec>
 

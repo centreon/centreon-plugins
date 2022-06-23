@@ -31,26 +31,26 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'account-used-capacity'     => 'cloud::azure::storage::storageaccount::mode::accountusedcapacity',
-        'blob-capacity'             => 'cloud::azure::storage::storageaccount::mode::blobcapacity',
-        'blob-container-count'      => 'cloud::azure::storage::storageaccount::mode::blobcontainercount',
-        'blob-count'                => 'cloud::azure::storage::storageaccount::mode::blobcount',
-        'discovery'                 => 'cloud::azure::storage::storageaccount::mode::discovery',
-        'file-capacity'             => 'cloud::azure::storage::storageaccount::mode::filecapacity',
-        'file-count'                => 'cloud::azure::storage::storageaccount::mode::filecount',
-        'file-share-count'          => 'cloud::azure::storage::storageaccount::mode::filesharecount',
-        'health'                    => 'cloud::azure::storage::storageaccount::mode::health',
+        'account-used-capacity'     => 'cloud::azure::common::storageaccount::accountusedcapacity',
+        'blob-capacity'             => 'cloud::azure::common::storageaccount::blobcapacity',
+        'blob-container-count'      => 'cloud::azure::common::storageaccount::blobcontainercount',
+        'blob-count'                => 'cloud::azure::common::storageaccount::blobcount',
+        'discovery'                 => 'cloud::azure::common::storageaccount::discovery',
+        'file-capacity'             => 'cloud::azure::common::storageaccount::filecapacity',
+        'file-count'                => 'cloud::azure::storage::storageaccount::mode::filecount', # apparemment renvoie tjr rien 
+        'file-share-count'          => 'cloud::azure::common::storageaccount::filesharecount',
+        'health'                    => 'cloud::azure::common::storageaccount::health',
         'list-resources'            => 'cloud::azure::storage::storageaccount::mode::listresources',
-        'queue-capacity'            => 'cloud::azure::storage::storageaccount::mode::queuecapacity',
-        'queue-count'               => 'cloud::azure::storage::storageaccount::mode::queuecount',
-        'queue-message-count'       => 'cloud::azure::storage::storageaccount::mode::queuemessagecount',
-        'table-capacity'            => 'cloud::azure::storage::storageaccount::mode::tablecapacity',
-        'table-count'               => 'cloud::azure::storage::storageaccount::mode::tablecount',
-        'table-entity-count'        => 'cloud::azure::storage::storageaccount::mode::tableentitycount',
+        'queue-capacity'            => 'cloud::azure::common::storageaccount::queuecapacity',
+        'queue-count'               => 'cloud::azure::common::storageaccount::queuecount',
+        'queue-message-count'       => 'cloud::azure::common::storageaccount::queuemessagecount',
+        'table-capacity'            => 'cloud::azure::common::storageaccount::tablecapacity',
+        'table-count'               => 'cloud::azure::common::storageaccount::tablecount',
+        'table-entity-count'        => 'cloud::azure::common::storageaccount::tableentitycount',
         'transactions-availability' => 'cloud::azure::storage::storageaccount::mode::transactionsavailability',
-        'transactions-count'        => 'cloud::azure::storage::storageaccount::mode::transactionscount',
-        'transactions-latency'      => 'cloud::azure::storage::storageaccount::mode::transactionslatency',
-        'transactions-throughput'   => 'cloud::azure::storage::storageaccount::mode::transactionsthroughput',
+        'transactions-count'        => 'cloud::azure::common::storageaccount::transactionscount',
+        'transactions-latency'      => 'cloud::azure::common::storageaccount::transactionslatency',
+        'transactions-throughput'   => 'cloud::azure::common::storageaccount::transactionsthroughput',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
@@ -62,7 +62,7 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+        'api-version:s'         => { name => 'api_version', default => '2018-01-01' }
     });
 
     $self->SUPER::init(%options);

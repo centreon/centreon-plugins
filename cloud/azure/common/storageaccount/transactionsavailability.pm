@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storageaccount::mode::transactionscount;
+package cloud::azure::common::storageaccount::transactionsavailability;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -35,57 +35,6 @@ sub prefix_metric_output {
     return $msg;
 }
 
-sub custom_metric_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{stat} = $options{new_datas}->{$self->{instance} . '_stat'};
-    $self->{result_values}->{metric_perf} = lc($options{extra_options}->{metric_perf});
-    $self->{result_values}->{metric_label} = lc($options{extra_options}->{metric_label});
-    $self->{result_values}->{metric_name} = $options{extra_options}->{metric_name};
-    $self->{result_values}->{timeframe} = $options{new_datas}->{$self->{instance} . '_timeframe'};
-    $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{metric_perf} . '_' . $self->{result_values}->{stat}};
-    $self->{result_values}->{value_per_sec} = $self->{result_values}->{value} / $self->{result_values}->{timeframe};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{namespace} = $options{new_datas}->{$self->{instance} . '_namespace'};
-    return 0;
-}
-
-sub custom_metric_threshold {
-    my ($self, %options) = @_;
-
-    my $exit = $self->{perfdata}->threshold_check(value => defined($self->{instance_mode}->{option_results}->{per_sec}) ?  $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
-                                                  threshold => [ { label => 'critical-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}, exit_litteral => 'warning' } ]);
-    return $exit;
-}
-
-sub custom_usage_perfdata {
-    my ($self, %options) = @_;
-
-    my $extra_label = '';
-    $extra_label = '_' . lc($self->{result_values}->{display}) if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-
-    $self->{output}->perfdata_add(label => $self->{result_values}->{metric_perf} . "_" . $self->{result_values}->{stat} . $extra_label,
-				                  unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ? 'transactions/s' : 'transactions',
-                                  value => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value}),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}),
-                                  min => 0
-                                 );
-}
-
-sub custom_usage_output {
-    my ($self, %options) = @_;
-    my $msg = "";
-
-    if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
-        $msg = sprintf("%s: %.2f transactions/s", $self->{result_values}->{metric_name}, $self->{result_values}->{value_per_sec}); 
-    } else {
-        $msg = sprintf("%s: %.2f transactions", $self->{result_values}->{metric_name}, $self->{result_values}->{value}); 
-    }
-    return $msg;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -93,18 +42,17 @@ sub set_counters {
         { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All transactions metrics are ok", skipped_code => { -10 => 1 } },
     ];
 
-    foreach my $aggregation ('total') {
-        foreach my $metric ('Transactions') {
+    foreach my $aggregation ('minimum', 'maximum', 'average') {
+        foreach my $metric ('Availability') {
             my $metric_label = lc($metric);
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
-                                key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' },
-                                    { name => 'stat' }, { name => 'timeframe' }, { name => 'namespace' } ],
-                                closure_custom_calc => $self->can('custom_metric_calc'),
-                                closure_custom_calc_extra_options => { metric_perf => $metric_label,
-                                    metric_label => $metric_label, metric_name => $metric },
-                                closure_custom_output => $self->can('custom_usage_output'),
-                                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
+                                key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
+                                output_template => $metric . ': %.2f %%',
+                                perfdatas => [
+                                    { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation , 
+                                      template => '%.2f', label_extra_instance => 1, instance_use => 'display',
+                                      unit => '%', min => 0, max => 100 },
+                                ],
                             }
                         };
             push @{$self->{maps_counters}->{metric}}, $entry;
@@ -117,13 +65,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {
-        "resource:s@"           => { name => 'resource' },
-        "resource-group:s"      => { name => 'resource_group' },
-        "resource-namespace:s"  => { name => 'resource_namespace' },
-        "per-sec"               => { name => 'per_sec' },
-    });
-
+    $options{options}->add_options(arguments =>
+                                {
+                                    "resource:s@"           => { name => 'resource' },
+                                    "resource-group:s"      => { name => 'resource_group' },
+                                    "storage-type:s"        => { name => 'storage_type' },
+                                });
+    
     return $self;
 }
 
@@ -142,8 +90,8 @@ sub check_options {
     $self->{az_resource_namespace} = 'Microsoft.Storage';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
-    $self->{az_resource_extra_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : '';
-    $self->{az_aggregations} = ['Total'];
+    $self->{az_storage_type} = defined($self->{option_results}->{storage_type}) ? $self->{option_results}->{storage_type} : '';
+    $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -153,7 +101,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('Transactions') {
+    foreach my $metric ('Availability') {
         push @{$self->{az_metrics}}, $metric;
     }
 }
@@ -166,8 +114,8 @@ sub manage_selection {
         my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
         my $namespace = $self->{az_resource_namespace};
-        my $namespace_full = ($self->{az_resource_extra_namespace} ne '') ? '/' . lc($self->{az_resource_extra_namespace}) . 'Services/default' : '';
-        my $namespace_name = ($self->{az_resource_extra_namespace} ne '') ? $self->{az_resource_extra_namespace} : "Account";
+        my $namespace_full = ($self->{az_storage_type} ne '') ? '/' . lc($self->{az_storage_type}) . 'Services/default' : '';
+        my $namespace_name = ($self->{az_storage_type} ne '') ? $self->{az_storage_type} : "Account";
         if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)\/(.*)\/default$/ ||
             $resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
             $resource_group = $1;
@@ -215,23 +163,23 @@ __END__
 
 =head1 MODE
 
-Check storage account resources transaction count metric.
+Check storage account resources transaction availability metric.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-count
---resource=MYFILER --resource-group=MYHOSTGROUP --resource-namespace=Blob --aggregation='total'
---critical-transactions-total='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-availability
+--resource=MYFILER --resource-group=MYHOSTGROUP --resource-namespace=Blob --aggregation='average'
+--critical-availability-average='10' --verbose
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-count
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-availability
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx'
---aggregation='total' --critical-transactions-total='10' --verbose
+--aggregation='average' --critical-availability-average='10' --verbose
 
-Default aggregation: 'total' / Only total is valid.
+Default aggregation: 'average' / Minimum, maximum and average are valid.
 
 =over 8
 
@@ -248,17 +196,13 @@ Set resource group (Required if resource's name is used).
 Set resource namespace (Can be: 'Blob', 'File', 'Table', 'Queue').
 Leave empty for account metric.
 
-=item B<--warning-transactions-total>
+=item B<--warning-availability-*>
 
-Thresholds warning.
+Thresholds warning (* can be: 'minimum', 'maximum', 'average').
 
-=item B<--critical-transactions-total>
+=item B<--critical-availability-*>
 
-Thresholds critical.
-
-=item B<--per-sec>
-
-Change the data to be unit/sec.
+Thresholds critical (* can be: 'minimum', 'maximum', 'average').
 
 =back
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::classicstorage::mode::discovery;
+package cloud::azure::classicstorage::storageaccount::mode::discovery;
 
 use base qw(cloud::azure::management::monitor::mode::discovery);
 

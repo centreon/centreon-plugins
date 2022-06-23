@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storageaccount::mode::tableentitycount;
+package cloud::azure::common::storageaccount::queuemessagecount;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -39,7 +39,7 @@ sub set_counters {
     ];
 
     foreach my $aggregation ('average', 'total') {
-        foreach my $metric ('TableEntityCount') {
+        foreach my $metric ('QueueMessageCount') {
             my $metric_label = lc($metric);
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
@@ -65,6 +65,7 @@ sub new {
                                 {
                                     "resource:s@"           => { name => 'resource' },
                                     "resource-group:s"      => { name => 'resource_group' },
+                                    "resource-namespace:s"  => { name => 'resource_namespace' }
                                 });
     
     return $self;
@@ -82,7 +83,7 @@ sub check_options {
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'storageAccounts';
-    $self->{az_resource_namespace} = 'Microsoft.Storage';
+    $self->{az_resource_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : 'Microsoft.Storage';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 3600;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1H";
     $self->{az_aggregations} = ['Average'];
@@ -95,7 +96,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('TableEntityCount') {
+    foreach my $metric ('QueueMessageCount') {
         push @{$self->{az_metrics}}, $metric;
     }
 }
@@ -107,14 +108,15 @@ sub manage_selection {
     foreach my $resource (@{$self->{az_resource}}) {
         my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
-        my $namespace_full = '/tableServices/default';
-        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
+        my $queueservice_name = '/queueServices/default';
+        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)$/) {
             $resource_group = $1;
-            $resource_name = $2;
+            $self->{az_resource_namespace} = $2, 
+            $resource_name = $3;
         }
 
         ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource_name . $namespace_full,
+            resource => $resource_name . $queueservice_name,
             resource_group => $resource_group,
             resource_type => $self->{az_resource_type},
             resource_namespace => $self->{az_resource_namespace},
@@ -149,20 +151,20 @@ __END__
 
 =head1 MODE
 
-Check storage account resources table entity count metric.
+Check storage account resources queue message count metric.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=table-entity-count
---resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-tableentitycount-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=queue-message-count
+--resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-queuemessagecount-average='10' --verbose
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=table-entity-count
---resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/tableServices/default'
---aggregation='average' --critical-tableentitycount-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=queue-message-count
+--resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/queueServices/default'
+--aggregation='average' --critical-queuemessagecount-average='10' --verbose
 
 Default aggregation: 'average' / Total and average are valid.
 
@@ -176,11 +178,16 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-tableentitycount-*>
+=item B<--resource-namespace>
+
+Specify resource namespace. Can be: 'Storage' or 'ClassicStorage'. 
+Default: 'Storage'.
+
+=item B<--warning-queuemessagecount-*>
 
 Thresholds warning (* can be: 'average', 'total').
 
-=item B<--critical-tableentitycount-*>
+=item B<--critical-queuemessagecount-*>
 
 Thresholds critical (* can be: 'average', 'total').
 

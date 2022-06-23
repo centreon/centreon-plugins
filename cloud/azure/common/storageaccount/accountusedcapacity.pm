@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storageaccount::mode::filesharecount;
+package cloud::azure::common::storageaccount::accountusedcapacity;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -35,18 +35,19 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All count metrics are ok", skipped_code => { -10 => 1 } },
+        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All capacity metrics are ok", skipped_code => { -10 => 1 } },
     ];
 
-    foreach my $aggregation ('average', 'total') {
-        foreach my $metric ('FileShareCount') {
+    foreach my $aggregation ('total') {
+        foreach my $metric ('UsedCapacity') {
             my $metric_label = lc($metric);
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
-                                output_template => $metric . ': %s',
+                                output_template => $metric . ': %s %s',
+                                output_change_bytes => 1,
                                 perfdatas => [
                                     { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation , 
-                                      template => '%s', label_extra_instance => 1, instance_use => 'display',
+                                      template => '%s', unit => 'B', label_extra_instance => 1, instance_use => 'display',
                                       min => 0 },
                                 ],
                             }
@@ -65,6 +66,7 @@ sub new {
                                 {
                                     "resource:s@"           => { name => 'resource' },
                                     "resource-group:s"      => { name => 'resource_group' },
+                                    "resource-namespace:s"  => { name => 'resource_namespace' }
                                 });
     
     return $self;
@@ -82,10 +84,10 @@ sub check_options {
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'storageAccounts';
-    $self->{az_resource_namespace} = 'Microsoft.Storage';
+    $self->{az_resource_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : 'Microsoft.Storage' ;
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 3600;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1H";    
-    $self->{az_aggregations} = ['Average'];
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1H";
+    $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -95,7 +97,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('FileShareCount') {
+    foreach my $metric ('UsedCapacity') {
         push @{$self->{az_metrics}}, $metric;
     }
 }
@@ -107,14 +109,13 @@ sub manage_selection {
     foreach my $resource (@{$self->{az_resource}}) {
         my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
-        my $namespace_full = '/fileServices/default';
-        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
+        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)$/) {
             $resource_group = $1;
-            $resource_name = $2;
+            $self->{az_resource_namespace} = $2, 
+            $resource_name = $3;
         }
-
         ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource_name . $namespace_full,
+            resource => $resource_name,
             resource_group => $resource_group,
             resource_type => $self->{az_resource_type},
             resource_namespace => $self->{az_resource_namespace},
@@ -149,22 +150,22 @@ __END__
 
 =head1 MODE
 
-Check storage account resources file share count metric.
+Check storage account resources used capacity metric.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-share-count
---resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-filesharecount-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=account-used-capacity
+--resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='total' --critical-usedcapacity-total='10' --verbose
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-share-count
---resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/fileServices/default'
---aggregation='average' --critical-filesharecount-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=account-used-capacity
+--resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx'
+--aggregation='total' --critical-usedcapacity-total='10' --verbose
 
-Default aggregation: 'average' / Total and average are valid.
+Default aggregation: 'total' / Only total is valid.
 
 =over 8
 
@@ -176,13 +177,18 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-filesharecount-*>
+=item B<--resource-namespace>
 
-Thresholds warning (* can be: 'average', 'total').
+Specify resource namespace. Can be: 'Storage' or 'ClassicStorage'. 
+Default: 'Storage'.
 
-=item B<--critical-filesharecount-*>
+=item B<--warning-usedcapacity-total>
 
-Thresholds critical (* can be: 'average', 'total').
+Thresholds warning
+
+=item B<--critical-usedcapacity-total>
+
+Thresholds critical
 
 =back
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storageaccount::mode::health;
+package cloud::azure::common::storageaccount::health;
 
 use base qw(cloud::azure::management::monitor::mode::health);
 
@@ -29,8 +29,21 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{az_resource_namespace} = 'Microsoft.Storage';
+    $self->{az_resource_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : 'Microsoft.Storage';
     $self->{az_resource_type} = 'storageAccounts';
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+    
+    $options{options}->add_options(arguments =>
+                                {
+                                    "resource-namespace:s"  => { name => 'resource_namespace' }
+                                });
+    
+    return $self;
 }
 
 1;
@@ -52,6 +65,11 @@ Set resource name or id (Required).
 =item B<--resource-group>
 
 Set resource group (Required if resource's name is used).
+
+=item B<--resource-namespace>
+
+Specify resource namespace. Can be: 'Storage' or 'ClassicStorage'. 
+Default: 'Storage'.
 
 =item B<--warning-status>
 

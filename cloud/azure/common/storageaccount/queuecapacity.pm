@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storageaccount::mode::filecapacity;
+package cloud::azure::common::storageaccount::queuecapacity;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -39,7 +39,7 @@ sub set_counters {
     ];
 
     foreach my $aggregation ('average', 'total') {
-        foreach my $metric ('FileCapacity') {
+        foreach my $metric ('QueueCapacity') {
             my $metric_label = lc($metric);
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
@@ -66,6 +66,7 @@ sub new {
                                 {
                                     "resource:s@"           => { name => 'resource' },
                                     "resource-group:s"      => { name => 'resource_group' },
+                                    "resource-namespace:s"  => { name => 'resource_namespace' }
                                 });
     
     return $self;
@@ -83,9 +84,9 @@ sub check_options {
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'storageAccounts';
-    $self->{az_resource_namespace} = 'Microsoft.Storage';
+    $self->{az_resource_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : 'Microsoft.Storage';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 3600;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1H";    
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1H";
     $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
@@ -96,7 +97,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('FileCapacity') {
+    foreach my $metric ('QueueCapacity') {
         push @{$self->{az_metrics}}, $metric;
     }
 }
@@ -108,14 +109,15 @@ sub manage_selection {
     foreach my $resource (@{$self->{az_resource}}) {
         my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
-        my $namespace_full = '/fileServices/default';
-        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
+        my $queueservice_name = '/queueServices/default';
+        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)$/) {
             $resource_group = $1;
-            $resource_name = $2;
+            $self->{az_resource_namespace} = $2, 
+            $resource_name = $3;
         }
 
         ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource_name . $namespace_full,
+            resource => $resource_name . $queueservice_name,
             resource_group => $resource_group,
             resource_type => $self->{az_resource_type},
             resource_namespace => $self->{az_resource_namespace},
@@ -150,20 +152,20 @@ __END__
 
 =head1 MODE
 
-Check storage account resources file capacity metric.
+Check storage account resources queue capacity metric.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-capacity
---resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-filecapacity-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=queue-capacity
+--resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-queuecapacity-average='10' --verbose
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-capacity
---resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/fileServices/default'
---aggregation='average' --critical-filecapacity-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=queue-capacity
+--resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/queueServices/default'
+--aggregation='average' --critical-queuecapacity-average='10' --verbose
 
 Default aggregation: 'average' / Total and average are valid.
 
@@ -177,11 +179,16 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-filecapacity-*>
+=item B<--resource-namespace>
+
+Specify resource namespace. Can be: 'Storage' or 'ClassicStorage'. 
+Default: 'Storage'.
+
+=item B<--warning-queuecapacity-*>
 
 Thresholds warning (* can be: 'average', 'total').
 
-=item B<--critical-filecapacity-*>
+=item B<--critical-queuecapacity-*>
 
 Thresholds critical (* can be: 'average', 'total').
 
