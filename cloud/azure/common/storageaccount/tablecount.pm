@@ -178,6 +178,11 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
+=item B<--resource-namespace>
+
+Specify resource namespace. Can be: 'Microsoft.Storage' or 'Microsoft.ClassicStorage'. 
+Default: 'Microsoft.Storage'.
+
 =item B<--warning-tablecount-*>
 
 Thresholds warning (* can be: 'average', 'total').

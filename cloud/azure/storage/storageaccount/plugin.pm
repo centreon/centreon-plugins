@@ -47,7 +47,7 @@ sub new {
         'table-capacity'            => 'cloud::azure::common::storageaccount::tablecapacity',
         'table-count'               => 'cloud::azure::common::storageaccount::tablecount',
         'table-entity-count'        => 'cloud::azure::common::storageaccount::tableentitycount',
-        'transactions-availability' => 'cloud::azure::storage::storageaccount::mode::transactionsavailability',
+        'transactions-availability' => 'cloud::azure::common::storageaccount::transactionsavailability',
         'transactions-count'        => 'cloud::azure::common::storageaccount::transactionscount',
         'transactions-latency'      => 'cloud::azure::common::storageaccount::transactionslatency',
         'transactions-throughput'   => 'cloud::azure::common::storageaccount::transactionsthroughput',
