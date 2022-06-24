@@ -202,7 +202,6 @@ Default: 'Microsoft.Storage'.
 
 Set storage type (Can be: 'Account', 'Blob', 'File', 'Table', 'Queue').
 
-
 =item B<--warning-availability-*>
 
 Thresholds warning (* can be: 'minimum', 'maximum', 'average').
