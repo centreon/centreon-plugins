@@ -32,9 +32,26 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'account-used-capacity'     => 'cloud::azure::common::storageaccount::accountusedcapacity',
+        'blob-capacity'             => 'cloud::azure::common::storageaccount::blobcapacity',
+        'blob-container-count'      => 'cloud::azure::common::storageaccount::blobcontainercount',
+        'blob-count'                => 'cloud::azure::common::storageaccount::blobcount',
         'discovery'                 => 'cloud::azure::classicstorage::storageaccount::mode::discovery',
-        'file-count'                => 'cloud::azure::common::storageaccount::filecount',
+        'file-capacity'             => 'cloud::azure::common::storageaccount::filecapacity',
+        'file-count'                => 'cloud::azure::common::storageaccount::filecount', 
         'file-share-count'          => 'cloud::azure::common::storageaccount::filesharecount',
+        'file-share-quota'          => 'cloud::azure::common::storageaccount::filesharecount',
+        'health'                    => 'cloud::azure::common::storageaccount::health',
+        'list-resources'            => 'cloud::azure::classicstorage::storageaccount::mode::listresources',
+        'queue-capacity'            => 'cloud::azure::common::storageaccount::queuecapacity',
+        'queue-count'               => 'cloud::azure::common::storageaccount::queuecount',
+        'queue-message-count'       => 'cloud::azure::common::storageaccount::queuemessagecount',
+        'table-capacity'            => 'cloud::azure::common::storageaccount::tablecapacity',
+        'table-count'               => 'cloud::azure::common::storageaccount::tablecount',
+        'table-entity-count'        => 'cloud::azure::common::storageaccount::tableentitycount',
+        'transactions-availability' => 'cloud::azure::common::storageaccount::transactionsavailability',
+        'transactions-count'        => 'cloud::azure::common::storageaccount::transactionscount',
+        'transactions-latency'      => 'cloud::azure::common::storageaccount::transactionslatency',
+        'transactions-throughput'   => 'cloud::azure::common::storageaccount::transactionsthroughput',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
@@ -58,7 +75,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure storage account.
+Check Microsoft Azure classic storage account.
 
 =over 8
 

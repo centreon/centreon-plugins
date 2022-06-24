@@ -35,10 +35,11 @@ sub new {
         'blob-capacity'             => 'cloud::azure::common::storageaccount::blobcapacity',
         'blob-container-count'      => 'cloud::azure::common::storageaccount::blobcontainercount',
         'blob-count'                => 'cloud::azure::common::storageaccount::blobcount',
-        'discovery'                 => 'cloud::azure::common::storageaccount::discovery',
+        'discovery'                 => 'cloud::azure::storage::storageaccount::mode::discovery',
         'file-capacity'             => 'cloud::azure::common::storageaccount::filecapacity',
-        'file-count'                => 'cloud::azure::storage::storageaccount::mode::filecount', # apparemment renvoie tjr rien 
+        'file-count'                => 'cloud::azure::common::storageaccount::filecount', 
         'file-share-count'          => 'cloud::azure::common::storageaccount::filesharecount',
+        'file-share-quota'          => 'cloud::azure::common::storageaccount::filesharequota',
         'health'                    => 'cloud::azure::common::storageaccount::health',
         'list-resources'            => 'cloud::azure::storage::storageaccount::mode::listresources',
         'queue-capacity'            => 'cloud::azure::common::storageaccount::queuecapacity',

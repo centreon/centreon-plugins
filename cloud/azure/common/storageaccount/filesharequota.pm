@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::common::storageaccount::filesharecount;
+package cloud::azure::common::storageaccount::filesharequota;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -96,8 +96,13 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('FileShareQuota') {
-        push @{$self->{az_metrics}}, $metric;
+    if ($self->{az_resource}[0] =~ /Microsoft\.ClassicStorage/) {
+        foreach my $metric ('FileShareQuota') { 
+            push @{$self->{az_metrics}}, $metric;
+        }
+    }
+    foreach my $metric ('FileShareCapacityQuota') { 
+            push @{$self->{az_metrics}}, $metric;
     }
 }
 
