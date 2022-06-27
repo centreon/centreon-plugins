@@ -152,7 +152,7 @@ sub manage_selection {
 
         $self->{watchers}->{$instance} = {
             errors_prct => $watcher->{'%errors:avg|hits'},
-            loading_page => ($watcher->{'lcp:p75|pages'} / 10**6),
+            loading_page => (defined($watcher->{'lcp:p75|pages'}) && $watcher->{'lcp:p75|pages'} != 0 ) ? ($watcher->{'lcp:p75|pages'} / 10**6) : 0,
             pages => $watcher->{'item:count|pages'},
             requests => $watcher->{'item:count|requests'},
             sessions => $watcher->{'session:sum|hits'}
@@ -211,6 +211,14 @@ Warning threshold for requested pages by the application.
 =item B<--critical-pages>
 
 Critical threshold for requested pages by the application.
+
+=item B<--warning-loading-page>
+
+Warning threshold loading page duration in seconds.
+
+=item B<--critical-loading-page>
+
+Critical threshold for loading page duration in seconds.
 
 =back
 
