@@ -25,6 +25,7 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
+use Date::Parse;
 use JSON::XS;
 
 sub new {
@@ -77,7 +78,7 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{period} = (defined($self->{option_results}->{period})) ? $self->{option_results}->{period} : '15';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/';
+    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/v1/';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{client_id} = (defined($self->{option_results}->{client_id})) ? $self->{option_results}->{client_id} : '';
     $self->{client_secret} = (defined($self->{option_results}->{client_secret})) ? $self->{option_results}->{client_secret} : '';
@@ -133,9 +134,10 @@ sub get_access_token {
     my ($self, %options) = @_;
 
     my $has_cache_file = $options{statefile}->read(statefile => 'kadiska_' . md5_hex($self->{hostname}) . '_' . md5_hex($self->{client_id}));
+    my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
 
-    if ( $has_cache_file == 0 || !defined($access_token)) {
+    if ( $has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10)) {
         my $credentials = { 'client_id' => $self->{client_id}, 'secret' => $self->{client_secret} };
         my $post_json = JSON::XS->new->utf8->encode($credentials);
 
@@ -144,7 +146,7 @@ sub get_access_token {
         my $content = $self->{http}->request(
             method => 'POST',
             query_form_post => $post_json,
-            url_path => $self->{url_path} . "config/auth/token"
+            url_path => $self->{url_path} . "config/clients/" . $self->{client_id} . "/tokens"
         );
 
         if (!defined($content) || $content eq '') {
@@ -152,16 +154,27 @@ sub get_access_token {
             $self->{output}->option_exit();
         }
 
-        $content =~ s/^"(.*)"$/$1/;
-        $access_token = $content;
-        my $datas = { access_token => $access_token, last_timestamp => time() };
-        
-        $options{statefile}->write( data => $datas);
+        my $decoded;
+        eval {
+            $decoded = JSON::XS->new->utf8->decode($content);
+        };
+        if ($@) {
+            $self->{output}->output_add(long_msg => $content, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+            $self->{output}->option_exit();
+        }
+        if (defined($decoded->{error_code})) {
+            $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Authentication endpoint returns error code '" . $decoded->{error_code} . "' (add --debug option for detailed message)");
+            $self->{output}->option_exit();
+        }
+
+        $access_token = $decoded->{token};
+        my $expiration_time = $decoded->{expiration_time};
+        my $datas = { last_timestamp => time(), access_token => $access_token, expires_on => str2time($expiration_time) };
+        $options{statefile}->write(data => $datas);
     }
-
-    $self->{access_token} = $access_token;
-    $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
-
+    
     return $access_token;
 }
 
@@ -172,26 +185,23 @@ sub request_api {
         $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
     }
 
-    $self->settings(environment_header => 1, organization_header => 1);
+    $self->settings();
 
     my $encoded_form_post;
 
-    if (defined($options{query_form_post})) {
+    my $end = time() * 1000;
+    my $begin = ($end - (60 * $self->{period} * 1000));
 
-        my $end = time() * 1000;
-        my $begin = ($end - (60 * $self->{period} * 1000));
+    $options{query_form_post}->{begin} = $begin;
+    $options{query_form_post}->{end} = $end;
 
-        $options{query_form_post}->{begin} = $begin;
-        $options{query_form_post}->{end} = $end;
+    eval {
+        $encoded_form_post = JSON::XS->new->utf8->encode($options{query_form_post});
+    };
 
-        eval {
-            $encoded_form_post = JSON::XS->new->utf8->encode($options{query_form_post});
-        };
-
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
-            $self->{output}->option_exit();
-        }
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
+        $self->{output}->option_exit();
     }
 
     my ($content) = $self->{http}->request(
@@ -199,16 +209,6 @@ sub request_api {
         url_path => $self->{url_path} . $options{endpoint},
         query_form_post => $encoded_form_post,
     );
-
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300){
-        $self->clean_access_token(statefile => $self->{cache});
-        $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
-        ($content) = $self->{http}->request(
-            method => 'POST',
-            url_path => $self->{url_path} . $options{endpoint},
-            query_form_post => $encoded_form_post,
-        );
-    }
 
     if ($self->{http}->get_code() == 429){
         $self->{output}->add_option_msg(short_msg => "[code: 429] Too many requests.");
