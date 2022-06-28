@@ -52,7 +52,7 @@ sub get_metrics_mapping {
         },
         'serverlog_storage_usage' => {
             'output' => 'Server Log storage used',
-            'label'  => 'servelog-usage',
+            'label'  => 'serverlog-usage',
             'nlabel' => 'azmysql.storage.serverlog.usage.bytes',
             'unit'   => 'B',
             'min'    => '0'
