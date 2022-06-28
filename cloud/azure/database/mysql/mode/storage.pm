@@ -197,13 +197,13 @@ Set resource type (Default: 'servers'). Can be 'servers', 'flexibleServers'.
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'storage-backup', 'serverlog-limit', 'serverlog-percent', 'servelog-usage', 
+'storage-backup', 'serverlog-limit', 'serverlog-percent', 'serverlog-usage', 
 'storage-limit', 'storage-percent', 'storage-used'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'storage-backup', 'serverlog-limit', 'serverlog-percent', 'servelog-usage', 
+'storage-backup', 'serverlog-limit', 'serverlog-percent', 'serverlog-usage', 
 'storage-limit', 'storage-percent', 'storage-used'.
 
 =back
