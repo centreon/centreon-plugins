@@ -34,7 +34,7 @@ sub new {
         'cpu'       => 'apps::monitoring::nodeexporter::mode::cpu'
     );
 
-    $self->{custom_modes}{nodeexporter} = 'apps::monitoring::nodeexporter::custom::nodeexporter';
+    $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';
     return $self;
 }
 

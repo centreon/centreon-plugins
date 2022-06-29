@@ -25,97 +25,21 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-
-sub custom_cpu_calc {
-    my ($self, %options) = @_;
-
-    return -10 if (!defined($options{new_datas}->{$self->{instance} . '_display' }));
-    if (!defined($options{old_datas}->{$self->{instance} . '_display' })) {
-        $self->{error_msg} = "Buffer creation";
-        return -1;
-    }
-
-    if (!defined($self->{instance_mode}->{total_cpu})) {
-        $self->{instance_mode}->{total_cpu} = 0;        
-        foreach (keys %{$options{new_datas}}) {
-            if (/$self->{instance}_/) {
-                my $new_total = $options{new_datas}->{$_};
-                next if (!defined($options{old_datas}->{$_}));
-                my $old_total = $options{old_datas}->{$_};
-
-                my $diff_total = $new_total - $old_total;
-                if ($diff_total < 0) {
-                    $self->{instance_mode}->{total_cpu} += $old_total;
-                } else {
-                    $self->{instance_mode}->{total_cpu} += $diff_total;
-                }
-            }
-        }
-    }
-
-    if ($self->{instance_mode}->{total_cpu} <= 0) {
-        $self->{error_msg} = "counter not moved";
-        return -12;
-    }
-
-    # use Data::Dumper;
-    # print Dumper $self;
-    
-    # if ($options{old_datas}->{$self->{instance} . '_display' > $options{new_datas}->{$self->{instance} . '_display') {
-    #     $options{old_datas}->{$self->{instance} . '_display' = 0;
-    # }
-    $self->{result_values}->{prct_used} = 
-        ($options{new_datas}->{$self->{instance} . '_display'} - 
-         $options{old_datas}->{$self->{instance} . '_display'}) * 100 /
-        $self->{instance_mode}->{total_cpu};
-    
-    return 0;
-}
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    my $msg = 'status ' . $self->{result_values}->{status};
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_state'};
-    return 0;
-}
+use centreon::plugins::statefile;
+use centreon::common::monitoring::openmetrics::scrape;
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cpu_avg', type => 0, cb_prefix_output => 'prefix_cpu_avg_output' },
-        { name => 'node_cpu', type => 1, cb_prefix_output => 'prefix_cpu_core_output' }
-    ];
-
-    $self->{maps_counters}->{cpu_avg} = [
-        { label => 'average', nlabel => 'cpu.utilization.percentage', set => {
-                key_values => [ { name => 'average' }, { name => 'count' } ],
-                output_template => '%.2f %%',
-                perfdatas => [
-                    { label => 'total_cpu_avg', value => 'average', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
-            }
-        },
+        { name => 'node_cpu', type => 1, cb_prefix_output => 'prefix_node_cpu_output', message_multiple => 'All CPU types are ok' }
     ];
 
     $self->{maps_counters}->{node_cpu} = [
         { 
-            label => 'node-cpu-idle', nlabel => 'node.cpu.idle.percentage', set => {
+            label => 'idle', nlabel => 'node.cpu.idle.percentage', set => {
                 key_values => [ { name => 'node_cpu_seconds_total_idle' }],
-                closure_custom_calc => $self->can('custom_cpu_calc'), 
-                # closure_custom_calc_extra_options => {
-                #     display => 'display'
-                # },
-                output_template => 'usage : %.2f %%',
+                output_template => 'CPU idle usage : %.2f %%',
                 perfdatas => [
                     { label => 'node_cpu_seconds_total_idle', value => 'node_cpu_seconds_total_idle', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
@@ -123,88 +47,74 @@ sub set_counters {
             }
         },
         { 
-            label => 'node-cpu-iowait', nlabel => 'node.cpu.seconds.iowait.percentage', set => {
-                key_values => [ { name => 'node_cpu_seconds_total_iowait' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_cpu_calc'),
-                closure_custom_calc_extra_options => {
-                    display => 'display'
-                },
-                output_template => 'usage : %.2f %%',
-                perfdatas => [
-                    { label => 'node_cpu_seconds_total_iowait', value => 'node_cpu_seconds_total_iowait', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
+                label => 'iowait', nlabel => 'node.cpu.seconds.iowait.percentage', set => {
+                    key_values => [ { name => 'node_cpu_seconds_total_iowait' } ],
+                    output_template => 'CPU iowait usage : %.2f %%',
+                    perfdatas => [
+                        { label => 'node_cpu_seconds_total_iowait', value => 'node_cpu_seconds_total_iowait', template => '%.2f',
+                        min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
+                    ],
+                }
         },
         { 
-            label => 'node-cpu-nice', nlabel => 'node.cpu.seconds.nice.percentage', set => {
-                key_values => [ { name => 'node_cpu_seconds_total_nice' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_cpu_calc'),
-                closure_custom_calc_extra_options => {
-                    display => 'display'
-                },
-                output_template => 'usage : %.2f %%',
-                perfdatas => [
-                    { label => 'node_cpu_seconds_total_nice', value => 'node_cpu_seconds_total_nice', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
+                label => 'irq', nlabel => 'node.cpu.seconds.irq.percentage', set => {
+                    key_values => [ { name => 'node_cpu_seconds_total_irq' } ],
+                    output_template => 'CPU irq usage : %.2f %%',
+                    perfdatas => [
+                        { label => 'node_cpu_seconds_total_irq', value => 'node_cpu_seconds_total_irq', template => '%.2f',
+                        min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
+                    ],
+                }
         },
         { 
-            label => 'node-cpu-softirq', nlabel => 'node.cpu.seconds.softirq.percentage', set => {
-                key_values => [ { name => 'node_cpu_seconds_total_softirq' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_cpu_calc'),
-                closure_custom_calc_extra_options => {
-                    display => 'display'
-                },
-                output_template => 'usage : %.2f %%',
-                perfdatas => [
-                    { label => 'node_cpu_seconds_total_softirq', value => 'node_cpu_seconds_total_softirq', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
+                label => 'nice', nlabel => 'node.cpu.seconds.nice.percentage', set => {
+                    key_values => [ { name => 'node_cpu_seconds_total_nice' } ],
+                    output_template => 'CPU nice usage : %.2f %%',
+                    perfdatas => [
+                        { label => 'node_cpu_seconds_total_nice', value => 'node_cpu_seconds_total_nice', template => '%.2f',
+                        min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
+                    ],
+                }
         },
         { 
-            label => 'node-cpu-steal', nlabel => 'node.cpu.seconds.steal.percentage', set => {
-                key_values => [ { name => 'node_cpu_seconds_total_steal' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_cpu_calc'),
-                closure_custom_calc_extra_options => {
-                    display => 'display'
-                },
-                output_template => 'usage : %.2f %%',
-                perfdatas => [
-                    { label => 'node_cpu_seconds_total_steal', value => 'node_cpu_seconds_total_steal', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
+                label => 'softirq', nlabel => 'node.cpu.seconds.softirq.percentage', set => {
+                    key_values => [ { name => 'node_cpu_seconds_total_softirq' } ],
+                    output_template => 'CPU softirq usage : %.2f %%',
+                    perfdatas => [
+                        { label => 'node_cpu_seconds_total_softirq', value => 'node_cpu_seconds_total_softirq', template => '%.2f',
+                        min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
+                    ],
+                }
         },
-            { 
-            label => 'node-cpu-system', nlabel => 'node.cpu.seconds.system.percentage', set => {
-                key_values => [ { name => 'node_cpu_seconds_total_system' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_cpu_calc'),
-                closure_custom_calc_extra_options => {
-                    display => 'display'
-                },
-                output_template => 'usage : %.2f %%',
-                perfdatas => [
-                    { label => 'node_cpu_seconds_total_system', value => 'node_cpu_seconds_total_system', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
+        { 
+                label => 'steal', nlabel => 'node.cpu.seconds.steal.percentage', set => {
+                    key_values => [ { name => 'node_cpu_seconds_total_steal' } ],
+                    output_template => 'CPU steal usage : %.2f %%',
+                    perfdatas => [
+                        { label => 'node_cpu_seconds_total_steal', value => 'node_cpu_seconds_total_steal', template => '%.2f',
+                        min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
+                    ],
+                }
         },
-            { 
-            label => 'node-cpu-user', nlabel => 'node.cpu.seconds.user.percentage', set => {
-                key_values => [ { name => 'node_cpu_seconds_total_user' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_cpu_calc'),
-                closure_custom_calc_extra_options => {
-                    display => 'display'
-                },
-                output_template => 'usage : %.2f %%',
-                perfdatas => [
-                    { label => 'node_cpu_seconds_total_user', value => 'node_cpu_seconds_total_user', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
+        { 
+                label => 'system', nlabel => 'node.cpu.seconds.system.percentage', set => {
+                    key_values => [ { name => 'node_cpu_seconds_total_system' } ],
+                    output_template => 'CPU system usage : %.2f %%',
+                    perfdatas => [
+                        { label => 'node_cpu_seconds_total_system', value => 'node_cpu_seconds_total_system', template => '%.2f',
+                        min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
+                    ],
+                }
+        },
+        { 
+                label => 'user', nlabel => 'node.cpu.seconds.user.percentage', set => {
+                    key_values => [ { name => 'node_cpu_seconds_total_user' } ],
+                    output_template => 'CPU user usage : %.2f %%',
+                    perfdatas => [
+                        { label => 'node_cpu_seconds_total_user', value => 'node_cpu_seconds_total_user', template => '%.2f',
+                        min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
+                    ],
+                }
         }
     ];
 }
@@ -212,7 +122,7 @@ sub set_counters {
 sub prefix_cpu_avg_output {
     my ($self, %options) = @_;
 
-    return $self->{cpu_avg}->{count} . " CPU(s) average usage is ";
+    return "Total CPU(s) average usage is ";
 }
 
 sub prefix_cpu_core_output {
@@ -229,48 +139,40 @@ sub new {
     $options{options}->add_options(arguments => { 
     });
 
+    
+
     return $self;
+}
+
+sub convert_buffer_to_percentage {
+    my (%options) = @_;
+
+    print $options{data_value};
+
+    foreach my $key (keys %options)
+    {
+        print "KEY : $key , VALUE : $options{$key}\n";
+    }
+
+    # $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    # $self->{statefile_value}->check_options(%options);
+    # $self->{statefile_value}->read(statefile => $self->{cache_name});
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result;
-    my $response = $options{custom}->get_metrics();
+    my $metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
+  
+    $self->{cache_name} = 'linux_nodeexporter' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_channel}) ? md5_hex($self->{option_results}->{filter_channel}) : md5_hex('all'));
 
-    foreach my $line (split /\n/, $response) {
-        $result->{metrics}->{$1}->{type} = $2 if ($line =~ /^#\sTYPE\s(\w+)\s(.*)$/);
-        $result->{metrics}->{$1}->{help} = $2 if ($line =~ /^#\sHELP\s(\w+)\s(.*)$/);
-
-        next if ($line !~ /^[\d\/\s]*([\w.]+)(.*)?\s([\d.+-e]+)$/);
-        my ($metric, $dimensions, $value) = ($1, $2, $3);
-
-        $dimensions =~ s/[{}]//g;
-        $dimensions =~ s/"/'/g;
-        $dimensions =~ s/$options{strip_chars}//g if (defined($options{strip_chars}));
-        my %dimensions = ();
-        foreach (split /,/, $dimensions) {
-            my ($key, $value) = split /=/;
-            $dimensions{$key} = $value;
-        }
-
-        push @{$result->{metrics}->{$metric}->{data}}, {
-            value => centreon::plugins::misc::expand_exponential(value => $value),
-            dimensions => \%dimensions,
-            dimensions_string => $dimensions
-        };
-    }
-    my @exits;
-    my $short_msg = 'All metrics are ok';
-    
-    my $nometrics = 1;
-
-    foreach my $metric (keys %{$result->{metrics}}) {
+    $self->{node_cpu} = {};
+    foreach my $metric (keys %{$metrics}) {
         next if ($metric !~ /node_cpu_seconds_total/i);
-        
-        foreach my $data (@{$result->{metrics}->{$metric}->{data}}) {
 
-            $nometrics = 0;
+        foreach my $data (@{$metrics->{$metric}->{data}}) {
             my $label = $metric;
             my $cpu_index = $data->{dimensions}->{cpu};
             $cpu_index =~ s/'//g;
@@ -278,26 +180,14 @@ sub manage_selection {
             $label .= "_" . $data->{dimensions}->{mode};
             $label =~ s/'//g;
 
-            $self->{node_cpu}->{$label} = {
-                display => $cpu_index,
-                $label => $data->{value}
-            };
+            my $data_value = $data->{value};
 
-            $self->{cache_name} = "testFileblabla";
+            convert_buffer_to_percentage(data_value => $data_value);
 
-            $self->{output}->output_add(long_msg => sprintf("Metric '%s' value is '%s' [Help: \"%s\"] [Type: '%s'] [Dimensions: \"%s\"]",
-                $metric, $data->{value}, 
-                (defined($self->{metrics}->{$metric}->{help})) ? $self->{metrics}->{$metric}->{help} : '-',
-                (defined($self->{metrics}->{$metric}->{type})) ? $self->{metrics}->{$metric}->{type} : '-',
-                $data->{dimensions_string}));
+            # $self->{node_cpu}->{$cpu_index}->{$label} = $data->{value};
         }
     }
-
-    if ($nometrics == 1) {
-        $self->{output}->add_option_msg(short_msg => "No metrics found.");
-        $self->{output}->option_exit();
-    }
-
+    # convert_buffer_to_percentage($self);
 }
 
 1;
@@ -312,13 +202,7 @@ Check CPU based on node exporter metrics.
 
 =item B<--warning-*>
 
-Threshold warning.
-Can be: 'total-cpu', 'total-cpu-mhz', 'cpu'.
-
 =item B<--critical-*>
-
-Threshold critical.
-Can be: 'total-cpu', 'total-cpu-mhz', 'cpu'.
 
 =back
 
