@@ -120,7 +120,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-type:s'     => { name => 'filter_type' },
         'filter-severity:s' => { name => 'filter_severity' },
-        'interface:i'       => { name => 'interface', default => 0 },
+        'interface:s'       => { name => 'interface', default => 0 },
         'period:s'          => { name => 'period', default => 'last-5mns' }
     });
 
