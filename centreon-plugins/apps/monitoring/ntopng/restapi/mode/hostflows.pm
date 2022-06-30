@@ -97,7 +97,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'interface:i' => { name => 'interface', default => 0 },
+        'interface:s' => { name => 'interface', default => 0 },
         'ip:s'        => { name => 'ip' }
     });
 
