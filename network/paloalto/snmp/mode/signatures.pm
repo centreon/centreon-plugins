@@ -149,8 +149,8 @@ sub manage_selection {
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
 
     $self->{signatures} = {
-        av_lastupdate_time       => $self->get_diff_time(time => $result->{panSysThreatReleaseDate}),
-        threat_lastupdate_time   => $self->get_diff_time(time => $result->{panSysAvReleaseDate}),
+        av_lastupdate_time       => $self->get_diff_time(time => $result->{panSysAvReleaseDate}),
+        threat_lastupdate_time   => $self->get_diff_time(time => $result->{panSysThreatReleaseDate}),
         wildfire_lastupdate_time => $self->get_diff_time(time => $result->{panSysWfReleaseDate}),
         av_version               => $result->{panSysAvVersion},
         threat_version           => $result->{panSysThreatVersion},
