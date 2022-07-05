@@ -47,7 +47,7 @@ sub set_counters {
 
     $self->{maps_counters}->{node_cpu} = [
         { 
-            label => 'idle', nlabel => 'node.cpu.idle.percentage', set => {
+            label => 'idle', nlabel => 'node.cpu.idle.utilization.percentage', set => {
                 key_values => [ { name => 'idle' , diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'idle' },
                 output_template => 'idle usage : %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
@@ -58,7 +58,7 @@ sub set_counters {
             }
         },
         { 
-                label => 'iowait', nlabel => 'node.cpu.seconds.iowait.percentage', set => {
+                label => 'iowait', nlabel => 'node.cpu.iowait.utilization.percentage', set => {
                     key_values => [ { name => 'iowait', diff => 1 }, { name => 'display' } ],
                     closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'iowait' },
                     output_template => 'iowait usage : %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
@@ -69,7 +69,7 @@ sub set_counters {
                 }
         },
         { 
-                label => 'irq', nlabel => 'node.cpu.seconds.irq.percentage', set => {
+                label => 'irq', nlabel => 'node.cpu.irq.utilization.percentage', set => {
                     key_values => [ { name => 'irq', diff => 1 }, { name => 'display' } ],
                     closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'irq' },
                     output_template => 'irq usage : %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
@@ -80,7 +80,7 @@ sub set_counters {
                 }
         },
         { 
-                label => 'nice', nlabel => 'node.cpu.seconds.nice.percentage', set => {
+                label => 'nice', nlabel => 'node.cpu.nice.utilization.percentage', set => {
                     key_values => [ { name => 'nice', diff => 1 }, { name => 'display' } ],
                     closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'nice' },
                     output_template => 'nice usage : %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
@@ -91,7 +91,7 @@ sub set_counters {
                 }
         },
         { 
-                label => 'softirq', nlabel => 'node.cpu.seconds.softirq.percentage', set => {
+                label => 'softirq', nlabel => 'node.cpu.softirq.utilization.percentage', set => {
                     key_values => [ { name => 'softirq', diff => 1 }, { name => 'display' } ],
                     closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'softirq' },
                     output_template => 'softirq usage : %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
@@ -102,7 +102,7 @@ sub set_counters {
                 }
         },
         { 
-                label => 'steal', nlabel => 'node.cpu.seconds.steal.percentage', set => {
+                label => 'steal', nlabel => 'node.cpu.steal.utilization.percentage', set => {
                     key_values => [ { name => 'steal', diff => 1 }, { name => 'display' } ],
                     closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'steal' },
                     output_template => 'steal usage : %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
@@ -113,7 +113,7 @@ sub set_counters {
                 }
         },
         { 
-                label => 'system', nlabel => 'node.cpu.seconds.system.percentage', set => {
+                label => 'system', nlabel => 'node.cpu.system.utilization.percentage', set => {
                     key_values => [ { name => 'system', diff => 1 }, { name => 'display' } ],
                     closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'system' },
                     output_template => 'system usage : %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
@@ -124,7 +124,7 @@ sub set_counters {
                 }
         },
         { 
-                label => 'user', nlabel => 'node.cpu.seconds.user.percentage', set => {
+                label => 'user', nlabel => 'node.cpu.user.utilization.percentage', set => {
                     key_values => [ { name => 'user', diff => 1 }, { name => 'display' } ],
                     closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'user' },
                     output_template => 'user usage : %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
@@ -197,7 +197,17 @@ Check CPU based on node exporter metrics.
 
 =item B<--warning-*>
 
+Threshold warning.
+
+Can be: 'idle', 'iowait', 'nice', 'irq'
+'softirq', 'steal', 'system', 'user'
+
 =item B<--critical-*>
+
+Threshold critical.
+
+Can be: 'idle', 'iowait', 'nice', 'irq'
+'softirq', 'steal', 'system', 'user'
 
 =back
 

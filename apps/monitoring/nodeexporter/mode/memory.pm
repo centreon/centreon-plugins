@@ -171,7 +171,19 @@ Check memory based on node exporter metrics.
 
 =item B<--warning-*>
 
+Threshold warning.
+
+Can be: 'usage', 'buffer', 'cached'.
+
 =item B<--critical-*>
+
+Threshold critical.
+
+Can be: 'usage', 'buffer', 'cached'.
+
+=item B<--units>
+
+Units of thresholds (Default: '%') ('%', 'B').
 
 =back
 
