@@ -29,9 +29,6 @@ use centreon::common::monitoring::openmetrics::scrape;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    use Data::Dumper;
-    print Dumper $self->{result_values};
-
     my $value_perf = $self->{result_values}->{used};
     
     my %total_options = ();
@@ -40,9 +37,6 @@ sub custom_usage_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    print  $self->{result_values}->{display} . "\n";
-    print "extra instance : " . $options{extra_instance} . "\n";
-
     $self->{output}->perfdata_add(
         label => 'used', unit => 'B',
         nlabel => 'node.storage.space.free.bytes', 
@@ -50,7 +44,7 @@ sub custom_usage_perfdata {
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $self->{result_values}->{node_filesystem_size_bytes},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        instances => $self->{result_values}->{display}
     );
 }
 
@@ -90,9 +84,9 @@ sub custom_usage_output {
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{display} = $options{new_datas}->{'_display'};
-    $self->{result_values}->{node_filesystem_size_bytes} = $options{new_datas}->{'_node_filesystem_size_bytes'};    
-    $self->{result_values}->{node_filesystem_free_bytes} = $options{new_datas}->{'_node_filesystem_free_bytes'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{node_filesystem_size_bytes} = $options{new_datas}->{$self->{instance} . '_node_filesystem_size_bytes'};    
+    $self->{result_values}->{node_filesystem_free_bytes} = $options{new_datas}->{$self->{instance} . '_node_filesystem_free_bytes'};
     $self->{result_values}->{used} = $self->{result_values}->{node_filesystem_size_bytes} - $self->{result_values}->{node_filesystem_free_bytes};
     $self->{result_values}->{prct_used} = ($self->{result_values}->{node_filesystem_size_bytes} > 0) ? $self->{result_values}->{used} * 100 / $self->{result_values}->{node_filesystem_size_bytes} : 0;
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
@@ -111,7 +105,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'node_storage', type => 1, message_multiple => 'All memory types are ok' }
+        { name => 'node_storage', type => 1, message_multiple => 'All memory types are ok', display_long => 1, cb_prefix_output => 'prefix_storage_output', }
     ];
 
     $self->{maps_counters}->{node_storage} = [
@@ -132,11 +126,19 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "units:s"                 => { name => 'units', default => '%' },
+        "units:s"      => { name => 'units', default => '%' },
+        'fstype:s'     => { name => 'fstype', default => 'linuxfs|rootfs|tmpfs' },
     });
 
     return $self;
 }
+
+sub prefix_storage_output {
+    my ($self, %options) = @_;
+
+    return "Storage '" . $options{instance_value}->{display} . "' ";
+}
+
 
 sub check_options {
     my ($self, %options) = @_;
@@ -150,14 +152,15 @@ sub manage_selection {
     my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
 
     foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric !~ /node_filesystem_free_bytes|node_filesystem_size_bytes/i);
+        next if ($metric !~ /node_filesystem_free_bytes|node_filesystem_size_bytes/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
+            next if ( $data->{dimensions}->{fstype} !~ $self->{option_results}->{fstype} );
 
-            print $raw_metrics->{$metric}->{dimensions}->{mountpoint} . "toto \n";
-
-            $self->{node_storage}->{$data->{dimensions}->{mountpoint}}->{$metric} = $data->{value};
-            $self->{node_storage}->{$data->{dimensions}->{mountpoint}}->{display} = $data->{dimensions}->{mountpoint};
+            foreach my $mountpoint ($data->{dimensions}->{mountpoint}) {
+                $self->{node_storage}->{$mountpoint}->{$metric} = $data->{value};
+                $self->{node_storage}->{$mountpoint}->{display} = $mountpoint;
+            }
         }
     }
 }
@@ -172,11 +175,21 @@ Check storage based on node exporter metrics.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--fstype>
+
+Inclusion filter on fstype.
+
+Can be used to exclude fstypes. Example : --fstype='^(?!(tmpfs))'
+
+=item B<--units>
+
+Units of thresholds (Default: '%') ('%', 'B').
+
+=item B<--warning-usage>
 
 Threshold warning.
 
-=item B<--critical-*>
+=item B<--critical-usage>
 
 Threshold critical.
 
