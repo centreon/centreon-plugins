@@ -32,7 +32,8 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
         'cpu'          => 'apps::monitoring::nodeexporter::mode::cpu',
-        'memory'       => 'apps::monitoring::nodeexporter::mode::memory'
+        'memory'       => 'apps::monitoring::nodeexporter::mode::memory',
+        'storage'       => 'apps::monitoring::nodeexporter::mode::storage'
     );
 
     $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';
