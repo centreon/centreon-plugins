@@ -103,7 +103,7 @@ sub set_counters {
             }
         },
         { 
-            label => 'node_memory_Buffers_bytes', nlabel => 'node.memory.buffer.bytes', set => {
+            label => 'buffer', nlabel => 'node.memory.buffer.bytes', set => {
                 key_values => [ { name => 'node_memory_Buffers_bytes'  } ],
                 output_template => 'Buffer: %.2f %s',
                 output_change_bytes => 1,
@@ -114,7 +114,7 @@ sub set_counters {
             }
         },
         { 
-            label => 'node_memory_Cached_bytes', nlabel => 'node.memory.cached.bytes', set => {
+            label => 'cached', nlabel => 'node.memory.cached.bytes', set => {
                 key_values => [ { name => 'node_memory_Cached_bytes' } ],
                 output_template => 'Cached: %.2f %s',
                 output_change_bytes => 1,
@@ -169,7 +169,8 @@ Check memory based on node exporter metrics.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds. Can be : '%', 'B' 
+Default: '%'
 
 =item B<--warning-*>
 

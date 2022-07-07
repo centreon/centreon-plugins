@@ -32,8 +32,10 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
         'cpu'          => 'apps::monitoring::nodeexporter::mode::cpu',
+        'load'          => 'apps::monitoring::nodeexporter::mode::load',
         'memory'       => 'apps::monitoring::nodeexporter::mode::memory',
-        'storage'       => 'apps::monitoring::nodeexporter::mode::storage'
+        'storage'       => 'apps::monitoring::nodeexporter::mode::storage',
+        'traffic'          => 'apps::monitoring::nodeexporter::mode::traffic'
     );
 
     $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';
@@ -46,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Prometheus server.
+Check host metrics based on node exporter's metrics.
 
 =cut

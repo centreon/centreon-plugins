@@ -118,7 +118,7 @@ sub set_counters {
             }
         }
     ];
-}
+
 
 sub new {
     my ($class, %options) = @_;
@@ -183,7 +183,8 @@ Can be used to exclude fstypes. Example : --fstype='^(?!(tmpfs))'
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds. Can be : '%', 'B' 
+Default: '%'
 
 =item B<--warning-usage>
 
