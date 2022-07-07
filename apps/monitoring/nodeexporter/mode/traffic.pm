@@ -85,7 +85,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-         "exclude:s"      => { name => 'exclude', default => '' },
+         "filter:s"      => { name => 'filter' },
     });
 
     return $self;
@@ -105,10 +105,10 @@ sub manage_selection {
     $self->{traffic} = {};
 
     foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric !~ /node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total/i );
+        next if ($metric !~ /node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            next if ( $data->{dimensions}->{device} =~ $self->{option_results}->{exclude} );
+            next if (defined($self->{option_results}->{filter}) && $data->{dimensions}->{device} =~ $self->{option_results}->{filter});
             $traffic_metrics->{$data->{dimensions}->{device}}->{$metric} = $data->{value};
             $traffic_metrics->{$data->{dimensions}->{device}}->{display} = $data->{dimensions}->{device};
         }
@@ -128,9 +128,9 @@ __END__
 
 =head1 MODE
 
-=item B<--exclude> 
+=item B<--filter> 
 
-Exclude interfaces. Can be regex (example: --exclude=(lo|eth4) )
+Filter to exclude interfaces. Is a regex.
 
 =item B<--warning-*> 
 
