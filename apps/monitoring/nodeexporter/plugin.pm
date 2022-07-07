@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'cpu'          => 'apps::monitoring::nodeexporter::mode::cpu',
+        'cpu'           => 'apps::monitoring::nodeexporter::mode::cpu',
         'load'          => 'apps::monitoring::nodeexporter::mode::load',
-        'memory'       => 'apps::monitoring::nodeexporter::mode::memory',
+        'memory'        => 'apps::monitoring::nodeexporter::mode::memory',
         'storage'       => 'apps::monitoring::nodeexporter::mode::storage',
-        'traffic'          => 'apps::monitoring::nodeexporter::mode::traffic'
+        'traffic'       => 'apps::monitoring::nodeexporter::mode::traffic'
     );
 
     $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';

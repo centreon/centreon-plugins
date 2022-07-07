@@ -172,17 +172,13 @@ sub manage_selection {
         next if ($metric !~ /node_cpu_seconds_total/i);
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            $cpu_metrics->{$data->{dimensions}->{cpu}}->{$data->{dimensions}->{mode}} = $data->{value};
-            $cpu_metrics->{$data->{dimensions}->{cpu}}->{display} = $data->{dimensions}->{cpu};
+
+            foreach my $cpu_index ($data->{dimensions}->{cpu}){
+                $self->{node_cpu}->{$cpu_index}->{$data->{dimensions}->{mode}} = $data->{value};
+                $self->{node_cpu}->{$cpu_index}->{display} = $data->{dimensions}->{cpu};
+            }
         }
     }
-
-    foreach my $cpu_index (keys %$cpu_metrics) {
-        $self->{node_cpu}->{$cpu_index} = {
-            %{$cpu_metrics->{$cpu_index}}
-        }
-    }
-
 }
 
 1;
