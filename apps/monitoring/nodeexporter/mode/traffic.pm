@@ -21,6 +21,7 @@
 package apps::monitoring::nodeexporter::mode::traffic;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 use strict;
 use warnings;
@@ -28,11 +29,58 @@ use Digest::MD5 qw(md5_hex);
 use centreon::plugins::statefile;
 use centreon::common::monitoring::openmetrics::scrape;
 
+
+sub interface_long_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "checking interfaces %s ",
+        $options{instance_value}->{status}->{display}
+    );
+}
+
+sub prefix_interface_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "interface %s ",
+        $options{instance_value}->{status}->{display}
+    );
+}
+
+sub prefix_packet_output {
+    my ($self, %options) = @_;
+
+    return 'packets ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'traffic', type => 1, message_multiple => 'All interfaces are OK. ', display_long => 1 }
+        { name => 'interface', type => 3, message_multiple => 'All interfaces are OK. ', cb_prefix_output => 'prefix_interface_output', cb_long_output => 'interface_long_output',
+          indent_long_output => '    ' , 
+            group => [
+                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } }
+            ]
+        }
+    ];
+
+    $self->{maps_counters}->{status} = [
+        {
+            label => 'status',
+            type => 2,
+            critical_default => '%{operState} ne "up"',
+            set => {
+                key_values => [
+                    { name => 'operState' }, { name => 'display' }
+                ],
+                output_template => "status: %s",
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
     ];
 
     $self->{maps_counters}->{traffic} = [
@@ -85,7 +133,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-         "filter:s"      => { name => 'filter' },
+         "filter:s"      => { name => 'filter', default => 'lo' },
     });
 
     return $self;
@@ -102,23 +150,22 @@ sub manage_selection {
     
 
     my $traffic_metrics;
-    $self->{traffic} = {};
+    $self->{interface} = {};
 
     foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric !~ /node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total/i );
+        next if ($metric !~ /node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total|node_network_up/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
             next if (defined($self->{option_results}->{filter}) && $data->{dimensions}->{device} =~ $self->{option_results}->{filter});
-            $traffic_metrics->{$data->{dimensions}->{device}}->{$metric} = $data->{value};
-            $traffic_metrics->{$data->{dimensions}->{device}}->{display} = $data->{dimensions}->{device};
+            $self->{interface}->{$data->{dimensions}->{device}}->{traffic}->{$metric} = $data->{value} if ($metric ne 'node_network_up');
+            $self->{interface}->{$data->{dimensions}->{device}}->{traffic}->{display} = $data->{dimensions}->{device} if ($metric ne 'node_network_up');
+
+            if ($metric eq 'node_network_up') {
+                $self->{interface}->{$data->{dimensions}->{device}}->{status}->{operState} = ($data->{value} == 1) ? "up" : "down";
+                $self->{interface}->{$data->{dimensions}->{device}}->{status}->{display} = $data->{dimensions}->{device};
+            }
         }
 
-    }
-
-    foreach my $interface (keys %$traffic_metrics) {
-        $self->{traffic}->{$interface} = {
-            %{$traffic_metrics->{$interface}}
-        }
     }
 }
 
