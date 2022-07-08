@@ -234,14 +234,14 @@ Check CPU based on node exporter metrics.
 
 Threshold warning.
 
-Can be: 'idle', 'iowait', 'nice', 'irq'
+Can be: 'average', 'idle', 'iowait', 'nice', 'irq'
 'softirq', 'steal', 'system', 'user'
 
 =item B<--critical-*>
 
 Threshold critical.
 
-Can be: 'idle', 'iowait', 'nice', 'irq'
+Can be: 'average', 'idle', 'iowait', 'nice', 'irq'
 'softirq', 'steal', 'system', 'user'
 
 =back
