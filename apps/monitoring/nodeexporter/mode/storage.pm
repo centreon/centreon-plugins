@@ -118,6 +118,7 @@ sub set_counters {
             }
         }
     ];
+}
 
 
 sub new {
@@ -155,7 +156,7 @@ sub manage_selection {
         next if ($metric !~ /node_filesystem_free_bytes|node_filesystem_size_bytes/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            next if ( $data->{dimensions}->{fstype} !~ $self->{option_results}->{fstype} );
+            next if ( $data->{dimensions}->{fstype} !~ /$self->{option_results}->{fstype}/i );
 
             foreach my $mountpoint ($data->{dimensions}->{mountpoint}) {
                 $self->{node_storage}->{$mountpoint}->{$metric} = $data->{value};

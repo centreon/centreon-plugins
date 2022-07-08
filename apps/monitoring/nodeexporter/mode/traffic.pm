@@ -133,7 +133,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-         "filter:s"      => { name => 'filter', default => 'lo' },
+         "filter:s"      =>   { name => 'filter', default => 'lo' },
     });
 
     return $self;
@@ -165,7 +165,6 @@ sub manage_selection {
                 $self->{interface}->{$data->{dimensions}->{device}}->{status}->{display} = $data->{dimensions}->{device};
             }
         }
-
     }
 }
 

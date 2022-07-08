@@ -93,7 +93,6 @@ sub manage_selection {
         next if ($metric !~ /node_load1|node_load5|node_load15/i );
 
         $self->{load}->{$metric} = $raw_metrics->{$metric}->{data}[0]->{value};
-
     }
 }
 

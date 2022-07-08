@@ -133,7 +133,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "units:s"                 => { name => 'units', default => '%' },
+        "units:s"     => { name => 'units', default => '%' },
     });
 
     return $self;
