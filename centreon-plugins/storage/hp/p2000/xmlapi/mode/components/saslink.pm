@@ -41,7 +41,7 @@ sub check {
 
     foreach my $sas_id (keys %$results) {
         next if ($self->check_filter(section => 'saslink', instance => $sas_id));
-        $self->{components}->{disk}->{total}++;
+        $self->{components}->{saslink}->{total}++;
         
         my $state = $map_health->{$results->{$sas_id}->{'health-numeric'}};
         
