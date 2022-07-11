@@ -242,9 +242,7 @@ sub change_macros {
     my ($self, %options) = @_;
 
     my $value = $self->{option_results}->{'format_' . $options{severity}};
-    while ($value =~ /%\{(.*?)\}/g) {
-        $value =~ s/%\{($1)\}/$self->{macros}->{$1}/eg;
-    }
+    $value =~ s/%\{(.*?)\}/$self->{macros}->{$1}/g;
 
     return $value;
 }
