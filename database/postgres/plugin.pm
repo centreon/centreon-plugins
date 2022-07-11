@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'backends'         => 'database::postgres::mode::backends',
+        'bloat'            => 'database::postgres::mode::bloat',
         'collection'       => 'centreon::common::protocols::sql::mode::collection',
         'connection-time'  => 'database::postgres::mode::connectiontime',
         'database-size'    => 'database::postgres::mode::databasesize',
@@ -43,7 +44,7 @@ sub new {
         'statistics'       => 'database::postgres::mode::statistics',
         'tablespace'       => 'database::postgres::mode::tablespace',
         'timesync'         => 'database::postgres::mode::timesync',
-        'vacuum'           => 'database::postgres::mode::vacuum',
+        'vacuum'           => 'database::postgres::mode::vacuum'
     };
 
     $self->{sql_modes}->{psqlcmd} = 'database::postgres::psqlcmd';
