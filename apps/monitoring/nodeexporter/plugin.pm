@@ -32,6 +32,8 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
         'cpu'           => 'apps::monitoring::nodeexporter::mode::cpu',
+        'list-interfaces' => 'apps::monitoring::nodeexporter::mode::listinterfaces',
+        'list-storages' => 'apps::monitoring::nodeexporter::mode::liststorages',
         'load'          => 'apps::monitoring::nodeexporter::mode::load',
         'memory'        => 'apps::monitoring::nodeexporter::mode::memory',
         'storage'       => 'apps::monitoring::nodeexporter::mode::storage',
