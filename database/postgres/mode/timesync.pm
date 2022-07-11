@@ -28,14 +28,13 @@ use Time::HiRes;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' }
+    });
 
     return $self;
 }
@@ -45,42 +44,51 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
 
-    $self->{sql}->connect();
+    $options{sql}->connect();
 
-    $self->{sql}->query(query => q{
-SELECT extract(epoch FROM now()) AS epok
-});
+    $options{sql}->query(query => q{
+        SELECT extract(epoch FROM now()) AS epok
+    });
 
-    my ($result) = $self->{sql}->fetchrow_array();
+    my ($result) = $options{sql}->fetchrow_array();
     my $ltime = Time::HiRes::time();
     if (!defined($result)) {
         $self->{output}->add_option_msg(short_msg => "Cannot get server time.");
         $self->{output}->option_exit();
     }
-    
+
     my $diff = $result - $ltime;
-    my $exit_code = $self->{perfdata}->threshold_check(value => $diff, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("%.3fs time diff between servers", $diff));
-    $self->{output}->perfdata_add(label => 'timediff', unit => 's',
-                                  value => sprintf("%.3f", $diff),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+    my $exit_code = $self->{perfdata}->threshold_check(
+        value => $diff,
+        threshold => [
+            { label => 'critical', exit_litteral => 'critical' },
+            { label => 'warning', exit_litteral => 'warning' }
+        ]
+    );
+
+    $self->{output}->output_add(
+        severity => $exit_code,
+        short_msg => sprintf("%.3fs time diff between servers", $diff)
+    );
+    $self->{output}->perfdata_add(
+        nlabel => 'time.offset.seconds',
+        unit => 's',
+        value => sprintf('%.3f', $diff),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
+    );
 
     $self->{output}->display();
     $self->{output}->exit();

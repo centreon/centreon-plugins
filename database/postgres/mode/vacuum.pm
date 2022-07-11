@@ -27,7 +27,7 @@ use warnings;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
@@ -77,8 +77,9 @@ sub run {
             severity => $exit_code,
             short_msg => sprintf('Most recent vacuum dates back from %d seconds', $result)
         );
+
         $self->{output}->perfdata_add(
-            label => 'last_vacuum',
+            nlabel => 'vacuum.last_execution.seconds',
             value => $result,
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
@@ -86,7 +87,7 @@ sub run {
     } else {
         $self->{output}->output_add(
             severity => 'UNKNOWN',
-            short_msg => 'No vacuum performed on this BD yet.'
+            short_msg => 'No vacuum performed'
         );
     }
 

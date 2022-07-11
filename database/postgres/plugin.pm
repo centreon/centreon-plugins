@@ -29,11 +29,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
         'backends'         => 'database::postgres::mode::backends',
+        'bloat'            => 'database::postgres::mode::bloat',
         'collection'       => 'centreon::common::protocols::sql::mode::collection',
-        'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
+        'connection-time'  => 'database::postgres::mode::connectiontime',
         'database-size'    => 'database::postgres::mode::databasesize',
         'hitratio'         => 'database::postgres::mode::hitratio',
         'locks'            => 'database::postgres::mode::locks',
@@ -44,7 +44,7 @@ sub new {
         'statistics'       => 'database::postgres::mode::statistics',
         'tablespace'       => 'database::postgres::mode::tablespace',
         'timesync'         => 'database::postgres::mode::timesync',
-        'vacuum'           => 'database::postgres::mode::vacuum',
+        'vacuum'           => 'database::postgres::mode::vacuum'
     };
 
     $self->{sql_modes}->{psqlcmd} = 'database::postgres::psqlcmd';
