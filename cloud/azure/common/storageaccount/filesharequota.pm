@@ -41,7 +41,7 @@ sub set_counters {
     foreach my $aggregation ('average', 'total') {
         foreach my $metric ('FileShareQuota', 'FileShareCapacityQuota') {
             my $metric_label = lc($metric);
-            my $entry = { label => $metric_label . '-' . $aggregation, set => {
+            my $entry = { label => 'filesharequota' . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
                                 output_template => $metric . ': %s',
                                 perfdatas => [
@@ -158,6 +158,21 @@ __END__
 
 Check storage account resources file share quota.
 
+Example:
+
+Using resource name :
+
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-share-quota
+--resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-filesharequota-average='10' --verbose
+
+Using resource id :
+
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-share-quota
+--resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/fileServices/default'
+--aggregation='average' --critical-filesharequota-average='10' --verbose
+
+Default aggregation: 'average' / Total and average are valid.
+
 =over 8
 
 =item B<--resource>
@@ -173,6 +188,13 @@ Set resource group (Required if resource's name is used).
 Specify resource namespace. Can be: 'Microsoft.Storage' or 'Microsoft.ClassicStorage'. 
 Default: 'Microsoft.Storage'.
 
+=item B<--warning-filesharequota-*>
+
+Thresholds warning (* can be: 'average', 'total').
+
+=item B<--critical-filesharequota-*>
+
+Thresholds critical (* can be: 'average', 'total').
 
 =back
 
