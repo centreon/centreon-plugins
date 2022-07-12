@@ -104,7 +104,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'index-leaf-density', nlabel => 'table.leaf_density.percentage', set => {
+        { label => 'index-leaf-density', nlabel => 'index.leaf_density.percentage', set => {
                 key_values => [ { name => 'avg_leaf_density' } ],
                 output_template => 'average leaf density: %.2f %%',
                 perfdatas => [
