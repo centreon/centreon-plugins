@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::mode::cpu;
+package apps::monitoring::nodeexporter::linux::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 

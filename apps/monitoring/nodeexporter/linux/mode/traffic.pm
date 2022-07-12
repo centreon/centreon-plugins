@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::mode::traffic;
+package apps::monitoring::nodeexporter::linux::mode::traffic;
 
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
