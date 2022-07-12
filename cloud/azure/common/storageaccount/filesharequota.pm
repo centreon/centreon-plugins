@@ -39,7 +39,7 @@ sub set_counters {
     ];
 
     foreach my $aggregation ('average', 'total') {
-        foreach my $metric ('FileShareCount') {
+        foreach my $metric ('FileShareQuota', 'FileShareCapacityQuota') {
             my $metric_label = lc($metric);
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
