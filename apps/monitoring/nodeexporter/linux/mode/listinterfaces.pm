@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::mode::listinterfaces;
+package apps::monitoring::nodeexporter::linux::mode::listinterfaces;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -52,7 +52,7 @@ sub manage_selection {
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
             $self->{interfaces}->{$data->{dimensions}->{device}}->{name} = $data->{dimensions}->{device};
-            $self->{interfaces}->{$data->{dimensions}->{device}}->{state} = ($data->{value} == 1) ? "up" : "down" ;
+            $self->{interfaces}->{$data->{dimensions}->{device}}->{status} = ($data->{value} == 1) ? "up" : "down" ;
         }
     }
 }
@@ -62,8 +62,8 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $interface (sort keys %{$self->{interfaces}}) {
-        $self->{output}->output_add(long_msg => '[interface = ' . $interface . "]" .
-            "[state = '" . $self->{interfaces}->{$interface}->{state} . "']"
+        $self->{output}->output_add(long_msg => '[name = ' . $interface . "]" .
+            "[status = '" . $self->{interfaces}->{$interface}->{status} . "']"
         );
     }
 
@@ -76,7 +76,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['interface', 'state']);
+    $self->{output}->add_disco_format(elements => ['name', 'status']);
 }
 
 sub disco_show {
@@ -85,8 +85,8 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach my $interface (sort keys %{$self->{interfaces}}) {
         $self->{output}->add_disco_entry(
-            interface => $self->{interfaces}->{$interface}->{name},
-            state => $self->{interfaces}->{$interface}->{state},
+            name => $self->{interfaces}->{$interface}->{name},
+            status => $self->{interfaces}->{$interface}->{status},
         );
     }
 }

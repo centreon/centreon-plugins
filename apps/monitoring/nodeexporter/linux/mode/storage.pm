@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::mode::storage;
+package apps::monitoring::nodeexporter::linux::mode::storage;
 
 use base qw(centreon::plugins::templates::counter);
 
