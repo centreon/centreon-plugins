@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storageaccount::mode::filecount;
+package cloud::azure::common::storageaccount::filesharequota;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -39,9 +39,9 @@ sub set_counters {
     ];
 
     foreach my $aggregation ('average', 'total') {
-        foreach my $metric ('FileCount') {
+        foreach my $metric ('FileShareQuota', 'FileShareCapacityQuota') {
             my $metric_label = lc($metric);
-            my $entry = { label => $metric_label . '-' . $aggregation, set => {
+            my $entry = { label => 'filesharequota' . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
                                 output_template => $metric . ': %s',
                                 perfdatas => [
@@ -65,6 +65,7 @@ sub new {
                                 {
                                     "resource:s@"           => { name => 'resource' },
                                     "resource-group:s"      => { name => 'resource_group' },
+                                    "resource-namespace:s"  => { name => 'resource_namespace' }
                                 });
     
     return $self;
@@ -82,9 +83,9 @@ sub check_options {
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'storageAccounts';
-    $self->{az_resource_namespace} = 'Microsoft.Storage';
+    $self->{az_resource_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : 'Microsoft.Storage';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 3600;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1H";
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1H";    
     $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
@@ -95,8 +96,13 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('FileCount') {
-        push @{$self->{az_metrics}}, $metric;
+    if ($self->{az_resource}[0] =~ /Microsoft\.ClassicStorage/) {
+        foreach my $metric ('FileShareQuota') { 
+            push @{$self->{az_metrics}}, $metric;
+        }
+    }
+    foreach my $metric ('FileShareCapacityQuota') { 
+            push @{$self->{az_metrics}}, $metric;
     }
 }
 
@@ -107,14 +113,15 @@ sub manage_selection {
     foreach my $resource (@{$self->{az_resource}}) {
         my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
-        my $namespace_full = '/fileServices/default';
-        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
+        my $fileservice_name = '/fileServices/default';
+        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)$/) {
             $resource_group = $1;
-            $resource_name = $2;
+            $self->{az_resource_namespace} = $2, 
+            $resource_name = $3;
         }
 
         ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource_name . $namespace_full,
+            resource => $resource_name . $fileservice_name,
             resource_group => $resource_group,
             resource_type => $self->{az_resource_type},
             resource_namespace => $self->{az_resource_namespace},
@@ -149,20 +156,20 @@ __END__
 
 =head1 MODE
 
-Check storage account resources file count metric.
+Check storage account resources file share quota.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-count
---resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-filecount-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-share-quota
+--resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-filesharequota-average='10' --verbose
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-count
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-share-quota
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/fileServices/default'
---aggregation='average' --critical-filecount-average='10' --verbose
+--aggregation='average' --critical-filesharequota-average='10' --verbose
 
 Default aggregation: 'average' / Total and average are valid.
 
@@ -176,11 +183,16 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-filecount-*>
+=item B<--resource-namespace>
+
+Specify resource namespace. Can be: 'Microsoft.Storage' or 'Microsoft.ClassicStorage'. 
+Default: 'Microsoft.Storage'.
+
+=item B<--warning-filesharequota-*>
 
 Thresholds warning (* can be: 'average', 'total').
 
-=item B<--critical-filecount-*>
+=item B<--critical-filesharequota-*>
 
 Thresholds critical (* can be: 'average', 'total').
 

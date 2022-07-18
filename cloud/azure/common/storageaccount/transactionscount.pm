@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storageaccount::mode::transactionscount;
+package cloud::azure::common::storageaccount::transactionscount;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,7 +29,7 @@ sub prefix_metric_output {
     my ($self, %options) = @_;
 
     my $msg = "Resource '" . $options{instance_value}->{display} . "'";
-    $msg .= " (" . $options{instance_value}->{namespace} . ")" if ($options{instance_value}->{namespace} ne '');
+    $msg .= " (" . $options{instance_value}->{storagetype} . ")" if ($options{instance_value}->{storagetype} ne '');
     $msg .= " " . $options{instance_value}->{stat} . " ";
     
     return $msg;
@@ -46,7 +46,7 @@ sub custom_metric_calc {
     $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{metric_perf} . '_' . $self->{result_values}->{stat}};
     $self->{result_values}->{value_per_sec} = $self->{result_values}->{value} / $self->{result_values}->{timeframe};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{namespace} = $options{new_datas}->{$self->{instance} . '_namespace'};
+    $self->{result_values}->{storagetype} = $options{new_datas}->{$self->{instance} . '_storagetype'};
     return 0;
 }
 
@@ -98,7 +98,7 @@ sub set_counters {
             my $metric_label = lc($metric);
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' },
-                                    { name => 'stat' }, { name => 'timeframe' }, { name => 'namespace' } ],
+                                    { name => 'stat' }, { name => 'timeframe' }, { name => 'storagetype' } ],
                                 closure_custom_calc => $self->can('custom_metric_calc'),
                                 closure_custom_calc_extra_options => { metric_perf => $metric_label,
                                     metric_label => $metric_label, metric_name => $metric },
@@ -121,6 +121,7 @@ sub new {
         "resource:s@"           => { name => 'resource' },
         "resource-group:s"      => { name => 'resource_group' },
         "resource-namespace:s"  => { name => 'resource_namespace' },
+        "storage-type:s"        => { name => 'storage_type' },
         "per-sec"               => { name => 'per_sec' },
     });
 
@@ -139,10 +140,10 @@ sub check_options {
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'storageAccounts';
-    $self->{az_resource_namespace} = 'Microsoft.Storage';
+    $self->{az_resource_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : 'Microsoft.Storage';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
-    $self->{az_resource_extra_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : '';
+    $self->{az_storage_type} = defined($self->{option_results}->{storage_type}) ? $self->{option_results}->{storage_type} : '';
     $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
@@ -166,19 +167,20 @@ sub manage_selection {
         my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
         my $namespace = $self->{az_resource_namespace};
-        my $namespace_full = ($self->{az_resource_extra_namespace} ne '') ? '/' . lc($self->{az_resource_extra_namespace}) . 'Services/default' : '';
-        my $namespace_name = ($self->{az_resource_extra_namespace} ne '') ? $self->{az_resource_extra_namespace} : "Account";
-        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)\/(.*)\/default$/ ||
-            $resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
+        my $storagetype_full = ($self->{az_storage_type} ne '' && lc($self->{az_storage_type}) ne 'account' ) ? '/' . lc($self->{az_storage_type}) . 'Services/default' : '';
+        my $storagetype_name = ($self->{az_storage_type} ne '') ? $self->{az_storage_type} : "Account";
+        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)\/(.*)\/default$/ ||
+            $resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)$/) {
             $resource_group = $1;
-            $resource_name = $2;
-            $namespace_full = '/' . $3 . '/default' if(defined($3));
-            $namespace_name = $3 if(defined($3));
+            $namespace = $2;
+            $resource_name = $3;
+            $storagetype_full = '/' . $4 . '/default' if(defined($4));
+            $storagetype_name = $4 if(defined($4));
         }
-        $namespace_name =~ s/Services//g;
+        $storagetype_name =~ s/Services//g;
 
         ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource_name . $namespace_full,
+            resource => $resource_name . $storagetype_full,
             resource_group => $resource_group,
             resource_type => $self->{az_resource_type},
             resource_namespace => $namespace,
@@ -197,7 +199,7 @@ sub manage_selection {
                 $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{display} = $resource_name;
                 $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{timeframe} = $self->{az_timeframe};
                 $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{stat} = lc($aggregation);
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{namespace} = ucfirst($namespace_name);
+                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{storagetype} = ucfirst($storagetype_name);
                 $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{$metric_name . "_" . lc($aggregation)} = defined($metric_results{$resource_name}->{$metric_name}->{lc($aggregation)}) ? $metric_results{$resource_name}->{$metric_name}->{lc($aggregation)} : 0;
             }
         }
@@ -245,8 +247,12 @@ Set resource group (Required if resource's name is used).
 
 =item B<--resource-namespace>
 
-Set resource namespace (Can be: 'Blob', 'File', 'Table', 'Queue').
-Leave empty for account metric.
+Specify resource namespace. Can be: 'Microsoft.Storage' or 'Microsoft.ClassicStorage'. 
+Default: 'Microsoft.Storage'.
+
+=item B<--storage-type>
+
+Set storage type (Can be: 'Account', 'Blob', 'File', 'Table', 'Queue').
 
 =item B<--warning-transactions-total>
 

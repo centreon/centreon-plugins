@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storageaccount::mode::transactionsavailability;
+package cloud::azure::common::storageaccount::filecapacity;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,30 +28,27 @@ use warnings;
 sub prefix_metric_output {
     my ($self, %options) = @_;
 
-    my $msg = "Resource '" . $options{instance_value}->{display} . "'";
-    $msg .= " (" . $options{instance_value}->{namespace} . ")" if ($options{instance_value}->{namespace} ne '');
-    $msg .= " " . $options{instance_value}->{stat} . " ";
-    
-    return $msg;
+    return "Resource '" . $options{instance_value}->{display} . "' " . $options{instance_value}->{stat} . " ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All transactions metrics are ok", skipped_code => { -10 => 1 } },
+        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All capacity metrics are ok", skipped_code => { -10 => 1 } },
     ];
 
-    foreach my $aggregation ('minimum', 'maximum', 'average') {
-        foreach my $metric ('Availability') {
+    foreach my $aggregation ('average', 'total') {
+        foreach my $metric ('FileCapacity') {
             my $metric_label = lc($metric);
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
-                                output_template => $metric . ': %.2f %%',
+                                output_template => $metric . ': %s %s',
+                                output_change_bytes => 1,
                                 perfdatas => [
                                     { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation , 
-                                      template => '%.2f', label_extra_instance => 1, instance_use => 'display',
-                                      unit => '%', min => 0, max => 100 },
+                                      template => '%s', unit => 'B', label_extra_instance => 1, instance_use => 'display',
+                                      min => 0 },
                                 ],
                             }
                         };
@@ -69,7 +66,7 @@ sub new {
                                 {
                                     "resource:s@"           => { name => 'resource' },
                                     "resource-group:s"      => { name => 'resource_group' },
-                                    "resource-namespace:s"  => { name => 'resource_namespace' },
+                                    "resource-namespace:s"  => { name => 'resource_namespace' }
                                 });
     
     return $self;
@@ -87,10 +84,9 @@ sub check_options {
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'storageAccounts';
-    $self->{az_resource_namespace} = 'Microsoft.Storage';
-    $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
-    $self->{az_resource_extra_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : '';
+    $self->{az_resource_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : 'Microsoft.Storage';
+    $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 3600;
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1H";    
     $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
@@ -101,7 +97,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('Availability') {
+    foreach my $metric ('FileCapacity') {
         push @{$self->{az_metrics}}, $metric;
     }
 }
@@ -113,23 +109,18 @@ sub manage_selection {
     foreach my $resource (@{$self->{az_resource}}) {
         my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
-        my $namespace = $self->{az_resource_namespace};
-        my $namespace_full = ($self->{az_resource_extra_namespace} ne '') ? '/' . lc($self->{az_resource_extra_namespace}) . 'Services/default' : '';
-        my $namespace_name = ($self->{az_resource_extra_namespace} ne '') ? $self->{az_resource_extra_namespace} : "Account";
-        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)\/(.*)\/default$/ ||
-            $resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
+        my $fileservice_name = '/fileServices/default';
+        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)$/) {
             $resource_group = $1;
-            $resource_name = $2;
-            $namespace_full = '/' . $3 . '/default' if(defined($3));
-            $namespace_name = $3 if(defined($3));
+            $self->{az_resource_namespace} = $2, 
+            $resource_name = $3;
         }
-        $namespace_name =~ s/Services//g;
 
         ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource_name . $namespace_full,
+            resource => $resource_name . $fileservice_name,
             resource_group => $resource_group,
             resource_type => $self->{az_resource_type},
-            resource_namespace => $namespace,
+            resource_namespace => $self->{az_resource_namespace},
             metrics => $self->{az_metrics},
             aggregations => $self->{az_aggregations},
             timeframe => $self->{az_timeframe},
@@ -143,9 +134,7 @@ sub manage_selection {
                 next if (!defined($metric_results{$resource_name}->{$metric_name}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
 
                 $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{display} = $resource_name;
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{timeframe} = $self->{az_timeframe};
                 $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{stat} = lc($aggregation);
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{namespace} = ucfirst($namespace_name);
                 $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{$metric_name . "_" . lc($aggregation)} = defined($metric_results{$resource_name}->{$metric_name}->{lc($aggregation)}) ? $metric_results{$resource_name}->{$metric_name}->{lc($aggregation)} : 0;
             }
         }
@@ -163,23 +152,22 @@ __END__
 
 =head1 MODE
 
-Check storage account resources transaction availability metric.
+Check storage account resources file capacity metric.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-availability
---resource=MYFILER --resource-group=MYHOSTGROUP --resource-namespace=Blob --aggregation='average'
---critical-availability-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-capacity
+--resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-filecapacity-average='10' --verbose
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=transactions-availability
---resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx'
---aggregation='average' --critical-availability-average='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-capacity
+--resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/fileServices/default'
+--aggregation='average' --critical-filecapacity-average='10' --verbose
 
-Default aggregation: 'average' / Minimum, maximum and average are valid.
+Default aggregation: 'average' / Total and average are valid.
 
 =over 8
 
@@ -193,16 +181,16 @@ Set resource group (Required if resource's name is used).
 
 =item B<--resource-namespace>
 
-Set resource namespace (Can be: 'Blob', 'File', 'Table', 'Queue').
-Leave empty for account metric.
+Specify resource namespace. Can be: 'Microsoft.Storage' or 'Microsoft.ClassicStorage'. 
+Default: 'Microsoft.Storage'.
 
-=item B<--warning-availability-*>
+=item B<--warning-filecapacity-*>
 
-Thresholds warning (* can be: 'minimum', 'maximum', 'average').
+Thresholds warning (* can be: 'average', 'total').
 
-=item B<--critical-availability-*>
+=item B<--critical-filecapacity-*>
 
-Thresholds critical (* can be: 'minimum', 'maximum', 'average').
+Thresholds critical (* can be: 'average', 'total').
 
 =back
 
