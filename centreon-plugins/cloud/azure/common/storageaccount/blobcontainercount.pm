@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::storage::storageaccount::mode::blobcontainercount;
+package cloud::azure::common::storageaccount::blobcontainercount;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -65,6 +65,7 @@ sub new {
                                 {
                                     "resource:s@"           => { name => 'resource' },
                                     "resource-group:s"      => { name => 'resource_group' },
+                                    "resource-namespace:s"  => { name => 'resource_namespace' }
                                 });
     
     return $self;
@@ -82,7 +83,7 @@ sub check_options {
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'storageAccounts';
-    $self->{az_resource_namespace} = 'Microsoft.Storage';
+    $self->{az_resource_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : 'Microsoft.Storage';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 3600;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1H";
     $self->{az_aggregations} = ['Average'];
@@ -107,14 +108,15 @@ sub manage_selection {
     foreach my $resource (@{$self->{az_resource}}) {
         my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
-        my $namespace_full = '/blobServices/default';
-        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
+        my $blobservice_name = '/blobServices/default';
+        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)$/) {
             $resource_group = $1;
-            $resource_name = $2;
+            $self->{az_resource_namespace} = $2, 
+            $resource_name = $3;
         }
 
         ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource_name . $namespace_full,
+            resource => $resource_name . $blobservice_name,
             resource_group => $resource_group,
             resource_type => $self->{az_resource_type},
             resource_namespace => $self->{az_resource_namespace},
@@ -175,6 +177,11 @@ Set resource name or id (Required).
 =item B<--resource-group>
 
 Set resource group (Required if resource's name is used).
+
+=item B<--resource-namespace>
+
+Specify resource namespace. Can be: 'Microsoft.Storage' or 'Microsoft.ClassicStorage'. 
+Default: 'Microsoft.Storage'.
 
 =item B<--warning-containercount-*>
 
