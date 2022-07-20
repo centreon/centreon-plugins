@@ -191,7 +191,10 @@ sub request_api {
     my ($content) = $self->{http}->request(
         url_path => $options{endpoint},
         get_param => $options{get_param},
-        header => ['Authorization: Bearer ' . $token]
+        header => [
+                'Authorization: Bearer ' . $token,
+                'Accept: application/vnd.ceph.api.v1.0+json',
+        ],
     );
 
     # Maybe token is invalid. so we retry
@@ -201,7 +204,10 @@ sub request_api {
         $content = $self->{http}->request(
             url_path => $options{endpoint},
             get_param => $options{get_param},
-            header => ['Authorization: Bearer ' . $token],
+            header => [
+                'Authorization: Bearer ' . $token,
+                'Accept: application/vnd.ceph.api.v1.0+json',
+            ],
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status}
