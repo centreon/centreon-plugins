@@ -69,6 +69,7 @@ sub run {
             $ec2{id} = $instance->{InstanceId};
             $ec2{state} = $instance->{State}->{Name};
             $ec2{key_name} = $instance->{KeyName};
+            $ec2{platform_details} = $instance->{PlatformDetails};
             $ec2{private_ip} = $instance->{PrivateIpAddress};
             $ec2{private_dns_name} = $instance->{PrivateDnsName};
             $ec2{public_dns_name} = $instance->{PublicDnsName};
