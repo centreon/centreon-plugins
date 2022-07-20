@@ -192,8 +192,8 @@ sub request_api {
         url_path => $options{endpoint},
         get_param => $options{get_param},
         header => [
-                'Authorization: Bearer ' . $token,
-                'Accept: application/vnd.ceph.api.v1.0+json',
+            'Authorization: Bearer ' . $token,
+            'Accept: application/vnd.ceph.api.v1.0+json',
         ],
     );
 
