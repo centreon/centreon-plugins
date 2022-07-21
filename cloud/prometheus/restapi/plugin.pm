@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+        'discovery'       => 'cloud::prometheus::restapi::mode::discovery',
         'expression'       => 'cloud::prometheus::restapi::mode::expression',
         'target-status'    => 'cloud::prometheus::restapi::mode::targetstatus',
     );
