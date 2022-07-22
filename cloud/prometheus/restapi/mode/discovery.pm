@@ -1,4 +1,3 @@
-
 #
 # Copyright 2022 Centreon (http://www.centreon.com/)
 #
