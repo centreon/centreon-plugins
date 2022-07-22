@@ -55,9 +55,9 @@ sub manage_selection {
     foreach my $target_information (@{$disco_results->{activeTargets}}) {
         my %target;
         $target{instance} = $target_information->{labels}->{instance};
-        $target{filter_instance} = "instance," . $target_information->{labels}->{instance} . ".*";
-        $target_information->{labels}->{instance} =~ s/:.*//;
-        $target{instance_address} = $target_information->{labels}->{instance};
+        $target{filter_instance} = "instance," . $target_information->{labels}->{instance};
+        $target_information->{labels}->{instance} =~ s/(.*):\d+$//;
+        $target{instance_address} = $1;
         $target{job} = $target_information->{labels}->{job};
         $target{group} = $target_information->{labels}->{group};
         push @disco_data, \%target;
