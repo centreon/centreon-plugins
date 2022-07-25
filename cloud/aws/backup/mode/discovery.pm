@@ -58,6 +58,7 @@ sub run {
     
     foreach my $backup_vault (@{$backup_vaults->{BackupVaultList}}) {
         my %backup_vault;
+        $backup_vault{type} = 'backup_vault';
         $backup_vault{name} = $backup_vault->{BackupVaultName};
         push @disco_data, \%backup_vault;
     }

@@ -33,13 +33,13 @@ sub new {
     
     $options{options}->add_options(arguments => {
         "service:s"    => { name => 'service' },
-        "prettify"      => { name => 'prettify' },
+        "prettify"      => { name => 'prettify' }
     });
 
     $self->{services} = {
         APIGATEWAY         => $self->can('discover_api'),
         BACKUP_VAULT       => $self->can('discover_backup_vault'),
-        # DYNAMODB         => $self->can('discover_dynamodb_table'),
+        DYNAMODB           => $self->can('discover_dynamodb_table'),
         EBS                => $self->can('discover_ebs'),
         EC2                => $self->can('discover_ec2'),
         EFS                => $self->can('discover_efs'),
@@ -54,8 +54,8 @@ sub new {
         SNS                => $self->can('discover_sns'),
         SPOT_FLEET_REQUEST => $self->can('discover_spotfleetrequest'),
         SQS                => $self->can('discover_sqs'),
-        # VPC              => $self->can('discover_vpc'),
-        # VPN              => $self->can('discover_vpn')
+        VPC              => $self->can('discover_vpc'),
+        VPN              => $self->can('discover_vpn')
     };
     
     return $self;
@@ -65,10 +65,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    # if (!defined($self->{option_results}->{service}) || $self->{option_results}->{service} eq '') {
-    #     $self->{output}->add_option_msg(short_msg => "Need to specify --service option.");
-    #     $self->{output}->option_exit();
-    # }
 }
 
 sub discover_vpc {
@@ -93,7 +89,8 @@ sub discover_vpc {
         }
         push @disco_data, \%vpc;
     }
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_vpn {
@@ -119,7 +116,8 @@ sub discover_vpn {
         }
         push @disco_data, \%vpn;
     }
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_dynamodb_table {
@@ -136,79 +134,8 @@ sub discover_dynamodb_table {
         $table{name} = $table;
         push @disco_data, \%table;
     }
-
-    return @disco_data;
-}
-
-sub discover_ec2 {
-    my (%options) = @_;
-    
-    my @disco_data;
-    my %asgs;
-    my $instances = $options{custom}->discovery(
-        service => 'ec2',
-        command => 'describe-instances'
-    );
-
-    foreach my $reservation (@{$instances->{Reservations}}) {
-        foreach my $instance (@{$reservation->{Instances}}) {
-            next if (!defined($instance->{InstanceId}));            
-            my %asg;
-            $asg{type} = "asg";
-            my %ec2;
-            $ec2{type} = "ec2";
-            $ec2{id} = $instance->{InstanceId};
-            $ec2{state} = $instance->{State}->{Name};
-            $ec2{key_name} = $instance->{KeyName};
-            $ec2{private_ip} = $instance->{PrivateIpAddress};
-            $ec2{private_dns_name} = $instance->{PrivateDnsName};
-            $ec2{public_dns_name} = $instance->{PublicDnsName};
-            $ec2{instance_type} = $instance->{InstanceType};
-            $ec2{vpc_id} = $instance->{VpcId};
-            foreach my $tag (@{$instance->{Tags}}) {
-                if ($tag->{Key} eq "aws:autoscaling:groupName" && defined($tag->{Value})) {
-                    $ec2{asg} = $tag->{Value};
-                    next if (defined($asgs{$tag->{Value}}));
-                    $asg{name} = $tag->{Value};
-                    $asgs{$tag->{Value}} = 1;
-                }
-                if ($tag->{Key} eq "Name" && defined($tag->{Value})) {
-                    $ec2{name} = $tag->{Value};
-                }
-                push @{$ec2{tags}}, { key => $tag->{Key}, value => $tag->{Value} };
-            }
-            push @disco_data, \%ec2;#unless (defined($self->{option_results}->{filter_type})
-                # && $ec2{type} !~ /$self->{option_results}->{filter_type}/);
-            push @disco_data, \%asg;# unless ((defined($self->{option_results}->{filter_type})
-                # && $asg{type} !~ /$self->{option_results}->{filter_type}/) || !defined($asg{name}) || $asg{name} eq '');
-        }
-    }
-
-    return @disco_data;
-
-}
-
-sub discover_spotfleetrequest {
-    my (%options) = @_;
-    
-    my @disco_data;
-    my $spot_fleet_requests = $options{custom}->discovery(
-        service => 'ec2',
-        command => 'describe-spot-fleet-requests'
-    );
-
-    foreach my $fleet_request (@{$spot_fleet_requests->{SpotFleetRequestConfigs}}) {
-        my %sfr;
-        $sfr{state} = $fleet_request->{SpotFleetRequestState};
-        $sfr{id} = $fleet_request->{SpotFleetRequestId};
-        $sfr{activity_status} = $fleet_request->{ActivityStatus};
-        $sfr{type} = 'spot_fleet_request';
-
-        push @disco_data, \%sfr;# unless (defined($self->{option_results}->{filter_state})
-            # && $sfr{state} !~ /$self->{option_results}->{filter_state}/);
-    }
-
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_api {
@@ -216,7 +143,8 @@ sub discover_api {
 
     use cloud::aws::apigateway::mode::discovery;
     my @disco_data = cloud::aws::apigateway::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_backup_vault {
@@ -224,7 +152,8 @@ sub discover_backup_vault {
 
     use cloud::aws::backup::mode::discovery;
     my @disco_data = cloud::aws::backup::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_ebs {
@@ -232,31 +161,35 @@ sub discover_ebs {
 
     use cloud::aws::ebs::mode::discovery;
     my @disco_data = cloud::aws::ebs::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
-# sub discover_ec2 {
-#     my (%options) = @_;
+sub discover_ec2 {
+    my (%options) = @_;
 
-#     use cloud::aws::ec2::mode::discovery;
-#     my @disco_data = cloud::aws::ec2::mode::discovery->run(custom => $options{custom}, discover => 1);
-#     return @disco_data;
-# }
+    use cloud::aws::ec2::mode::discovery;
+    my @disco_data = cloud::aws::ec2::mode::discovery->run(custom => $options{custom}, discover => 1);
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
+}
 
 sub discover_efs {
     my (%options) = @_;
 
     use cloud::aws::efs::mode::discovery;
     my @disco_data = cloud::aws::efs::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
-sub discover_elbv2_app {
+sub discover_elb_app {
     my (%options) = @_;
 
     use cloud::aws::elb::application::mode::discovery;
     my @disco_data = cloud::aws::elb::application::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_elb_classic {
@@ -264,7 +197,8 @@ sub discover_elb_classic {
 
     use cloud::aws::elb::classic::mode::discovery;
     my @disco_data = cloud::aws::elb::classic::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_elb_network {
@@ -272,16 +206,17 @@ sub discover_elb_network {
 
     use cloud::aws::elb::network::mode::discovery;
     my @disco_data = cloud::aws::elb::network::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
-
 
 sub discover_fsx {
     my (%options) = @_;
 
     use cloud::aws::fsx::mode::discovery;
     my @disco_data = cloud::aws::fsx::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_kinesis_stream {
@@ -289,7 +224,8 @@ sub discover_kinesis_stream {
 
     use cloud::aws::kinesis::mode::discovery;
     my @disco_data = cloud::aws::kinesis::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_lambda {
@@ -297,7 +233,8 @@ sub discover_lambda {
 
     use cloud::aws::lambda::mode::discovery;
     my @disco_data = cloud::aws::lambda::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_rds {
@@ -305,7 +242,8 @@ sub discover_rds {
 
     use cloud::aws::rds::mode::discovery;
     my @disco_data = cloud::aws::rds::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
 sub discover_s3_bucket {
@@ -313,7 +251,8 @@ sub discover_s3_bucket {
 
     use cloud::aws::s3::mode::discovery;
     my @disco_data = cloud::aws::s3::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;  
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys; 
 }
 
 sub discover_sns {
@@ -321,56 +260,54 @@ sub discover_sns {
 
     use cloud::aws::sns::mode::discovery;
     my @disco_data = cloud::aws::sns::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
 
-# sub discover_spotfleetrequest {
-#     my (%options) = @_;
+sub discover_spotfleetrequest {
+    my (%options) = @_;
 
-#     use cloud::aws::ec2::mode::discoveryspotfleetrequests;
-#     my @disco_data = cloud::aws::ec2::mode::discoveryspotfleetrequests->run(custom => $options{custom}, discover => 1);
-#     return @disco_data;
-# }
+    use cloud::aws::ec2::mode::discoveryspotfleetrequests;
+    my @disco_data = cloud::aws::ec2::mode::discoveryspotfleetrequests->run(custom => $options{custom}, discover => 1);
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
+}
 
 sub discover_sqs {
     my (%options) = @_;
 
     use cloud::aws::sqs::mode::discovery;
     my @disco_data = cloud::aws::sqs::mode::discovery->run(custom => $options{custom}, discover => 1);
-    return @disco_data;
+    my @disco_keys = @disco_data ? keys $disco_data[0] : [];
+    return \@disco_data, \@disco_keys;
 }
-
-
 
 sub run {
     my ($self, %options) = @_;
-use Data::Dumper;
-    my @disco_data_ori;
+
+    my $disco_data_ori;
+    my $disco_data_keys;
     my @disco_data;
     my $disco_stats;
 
     $disco_stats->{start_time} = time();
 
-    my @uncommon_keys = ("dns_name", "engine", "id", "lifecycle", "private_ip", "state");
+    my @uncommon_keys;
 
     foreach my $service (keys %{$self->{services}}) {
-    # foreach my $service (split(',', $self->{option_results}->{service})) {
-        # push @disco_data, $self->{services}->{uc($service)}->(custom => $options{custom},
-        #     region => $self->{option_results}->{region}) if (defined($self->{services}->{uc($service)}));
-        @disco_data_ori = $self->{services}->{$service}->(custom => $options{custom},
-                          region => $self->{option_results}->{region}) if (defined($self->{services}->{$service}));;
+        ($disco_data_ori, $disco_data_keys) = $self->{services}->{$service}->(custom => $options{custom});
+        push @uncommon_keys, @$disco_data_keys unless !@$disco_data_keys;
+        push @disco_data, @$disco_data_ori if @$disco_data_ori;
+    }
 
-        foreach (@disco_data_ori){
-            $_->{resource_type} = lc($service);
-            
-            foreach my $key (@uncommon_keys) {
-                if (!defined($_->{$key})) {
-                    $_->{$key} = "undefined";
-                }
+    @uncommon_keys = do { my %seen; grep { !$seen{$_}++ } @uncommon_keys };
+
+    foreach (@disco_data) {
+        foreach my $key (@uncommon_keys) {
+            if (!defined($_->{$key})) {
+                $_->{$key} = "This property is not supported by this resource";
             }
         }
-  
-        push @disco_data, @disco_data_ori;
     }
 
     $disco_stats->{end_time} = time();

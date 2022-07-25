@@ -58,6 +58,7 @@ sub run {
     
     foreach my $queue (@{$queues->{QueueUrls}}) {
         my %queue;
+        $queue{type} = 'sqs';
         $queue{name} = $queue;
         $queue{name} =~ s/(.*)\///g;
         push @disco_data, \%queue;

@@ -58,6 +58,7 @@ sub run {
 
     foreach my $topic (@{$topics->{Topics}}) {
         my %topic;
+        $topic{type} = 'sns';
         $topic{name} = $topic->{TopicArn};
         $topic{name} =~ s/(.*)\://g;
         push @disco_data, \%topic;

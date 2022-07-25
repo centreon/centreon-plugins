@@ -58,6 +58,7 @@ sub run {
 
     foreach my $function (@{$functions->{Functions}}) {
         my %function;
+        $function{type} = 'lambda';
         $function{name} = $function->{FunctionName};
         push @disco_data, \%function;
     }

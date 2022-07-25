@@ -66,7 +66,8 @@ sub run {
             }
         $volume{id} = $volume->{VolumeId};
         $volume{name} = join(",", @name_tags);
-        $volume{type} = $volume->{VolumeType};
+        $volume{type} = 'ebs';
+        $volume{volumeType} = $volume->{VolumeType};
         $volume{state} = $volume->{State};
         $volume{snapshotid} = $volume->{SnapshotId};
         $volume{encrypted} = $volume->{Encrypted};
