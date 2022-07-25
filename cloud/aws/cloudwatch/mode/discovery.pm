@@ -32,8 +32,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "service:s"    => { name => 'service' },
-        "prettify"      => { name => 'prettify' }
+        "service:s" => { name => 'service' },
+        "prettify"  => { name => 'prettify' }
     });
 
     $self->{services} = {
@@ -294,8 +294,6 @@ sub run {
     my %asset_attr_keys;
 
     $disco_stats->{start_time} = time();
-
-    my @uncommon_keys;
 
     foreach my $service (keys %{$self->{services}}) {
         ($disco_data_ori, $disco_data_keys) = $self->{services}->{$service}->(custom => $options{custom});
