@@ -119,9 +119,7 @@ sub set_counters {
         { label => 'incident-duration', nlabel => 'ekara.incident.duration.seconds', set => {
                 key_values => [ { name => 'duration' }, { name => 'start_time' }, { name => 'end_time' }, { name => 'status'} ],
                 closure_custom_output => $self->can('custom_duration_output'),
-                perfdatas => [
-                    { template => '%s', min => 0, unit => 's', label_extra_instance => 1 }
-                ]
+		closure_custom_perfdata => sub { return 0; }
             }
         }
     ];
