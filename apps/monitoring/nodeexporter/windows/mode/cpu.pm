@@ -185,6 +185,11 @@ sub manage_selection {
     $self->{node_cpu_avg}->{idle_avg} = $avg_cpu_idle;
     $self->{node_cpu_avg}->{count} = $cpu_number;
 
+    if (scalar(keys %{$self->{node_cpu}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->option_exit();
+    }
+
 }
 
 1;

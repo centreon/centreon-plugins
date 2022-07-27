@@ -38,11 +38,36 @@ sub prefix_interface_output {
     );
 }
 
+sub custom_usage_bandwidth_calc {
+    my ($self, %options) = @_;
+
+    my $delta_time = $options{new_datas}->{bandwidth_windows_net_bytes_total} - $options{old_datas}->{bandwidth_windows_net_bytes_total} ;
+    my $bandwidth_usage = ($delta_time / $options{old_datas}->{bandwidth_windows_net_current_bandwidth_bytes}) * 100;
+    $self->{result_values}->{bandwitdh_avg} = $bandwidth_usage;
+
+    return 0;
+}
+
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
+        { name => 'bandwidth', type => 0  },
         { name => 'traffic', type => 1, message_multiple => 'All interfaces are OK. ', cb_prefix_output => 'prefix_interface_output'}
+    ];
+
+    $self->{maps_counters}->{bandwidth} = [
+        { label => 'bandwidth-usage', nlabel => 'node.bandwidth.usage', display_ok => 0, set => {
+                key_values => [ { name => 'windows_net_current_bandwidth_bytes' }, { name => 'windows_net_bytes_total' } ],
+                closure_custom_calc => $self->can('custom_usage_bandwidth_calc'),
+                output_template => '%.2f %%',
+                output_template => 'Average bandwidth usage : %.2f %%', output_use => 'bandwitdh_avg', threshold_use => 'bandwitdh_avg',
+                perfdatas => [
+                    { template => '%.2f', value => 'bandwitdh_avg', min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
     ];
 
     $self->{maps_counters}->{traffic} = [
@@ -64,9 +89,25 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'packets-error-in', nlabel => 'node.packets.in.error.count', display_ok => 0, set => {
+                key_values => [ { name => 'windows_net_packets_received_errors_total', diff => 1 }, { name => 'display' } ],
+                output_template => 'packets error in: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'packets-error-out', nlabel => 'node.packets.out.error.count', display_ok => 0, set => {
+                key_values => [ { name => 'windows_net_packets_outbound_errors_total', diff => 1 }, { name => 'display' } ],
+                output_template => 'packets error out: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
         { label => 'traffic-in', nlabel => 'node.traffic.in.bitspersecond', set => {
                 key_values => [
-                    { name => 'windows_net_bytes_total', per_second => 1 }, { name => 'display' }
+                    { name => 'windows_net_bytes_received_total', per_second => 1 }, { name => 'display' }
                 ],
                 output_template => 'traffic in: %.2f %s/s',
                 output_change_bytes => 2,
@@ -79,7 +120,7 @@ sub set_counters {
                 key_values => [
                     { name => 'windows_net_bytes_sent_total', per_second => 1 }, { name => 'display' }
                 ],
-                output_template => 'traffic in: %.2f %s/s',
+                output_template => 'traffic out: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { template => '%.2f', unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
@@ -115,14 +156,23 @@ sub manage_selection {
     $self->{interface} = {};
 
     foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric !~ /windows_net_packets_received_total|windows_net_packets_sent_total|windows_net_bytes_total|windows_net_bytes_sent_total/i );
+        next if ($metric !~ /windows_net_packets_received_total|windows_net_packets_sent_total|windows_net_bytes_received_total|windows_net_bytes_sent_total|windows_net_packets_received_errors_total|windows_net_packets_outbound_errors_total|windows_net_bytes_total|windows_net_current_bandwidth_bytes/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
             next if (defined($self->{option_results}->{filter}) && $data->{dimensions}->{nic} =~ $self->{option_results}->{filter});
 
             $self->{traffic}->{$data->{dimensions}->{nic}}->{$metric} = $data->{value} ;
             $self->{traffic}->{$data->{dimensions}->{nic}}->{display} = $data->{dimensions}->{nic} ;
+
+            if ($metric =~ /windows_net_bytes_total|windows_net_current_bandwidth_bytes/){
+                $self->{bandwidth}->{$metric} = $data->{value};
+            }
         }
+    }
+
+    if (scalar(keys %{$self->{traffic}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -134,21 +184,23 @@ __END__
 
 =item B<--filter> 
 
-Filter to exclude interfaces. Is a regex.
+Filter to exclude interfaces. Can be a regex.
 
 =item B<--warning-*> 
 
 Warning thresholds.
 
 Can be: 'traffic-in', 'traffic-out', 
-'packets-in', 'packets-out'.
+'packets-in', 'packets-out',
+'bandwidth-usage'
 
 =item B<--critical-*>
 
 Critical thresholds.
 
 Can be: 'traffic-in', 'traffic-out', 
-'packets-in', 'packets-out'.
+'packets-in', 'packets-out',
+'bandwidth-usage'
 
 =back
 

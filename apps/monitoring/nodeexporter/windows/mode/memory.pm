@@ -163,7 +163,7 @@ sub set_counters {
             }
         },
         { 
-            label => 'pages', nlabel => 'node.memory.pages.bytes', set => {
+            label => 'paging', nlabel => 'node.memory.pages.bytes', set => {
                 key_values => [ { name => 'windows_os_paging_limit_bytes'  }, { name => 'windows_os_paging_free_bytes'  } ],
                 closure_custom_calc => $self->can('custom_paging_usage_calc'),
                 closure_custom_output => $self->can('custom_paging_usage_output'),
@@ -171,17 +171,6 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_paging_usage_threshold')
             }
         }
-        # { 
-        #     label => 'cached', nlabel => 'node.memory.cached.bytes', set => {
-        #         key_values => [ { name => 'node_memory_Cached_bytes' } ],
-        #         output_template => 'Cached: %.2f %s',
-        #         output_change_bytes => 1,
-        #         perfdatas => [
-        #             { label => 'node_memory_Cached_bytes', template => '%s',
-        #               min => 0, unit => 'B' }
-        #         ]
-        #     }
-        # }
     ];
 }
 
@@ -221,9 +210,6 @@ sub manage_selection {
 
 1;
 
-# need ajouter windows_os_paging_limit_bytes
-# + windows_os_paging_free_bytes
-
 __END__
 
 =head1 MODE
@@ -239,11 +225,19 @@ Default: '%'
 
 =item B<--warning-usage>
 
-Threshold warning.
+Warning threshlod.
 
 =item B<--critical-usage>
 
-Threshold critical.
+Critical threshlod.
+
+=item B<--warning-paging>
+
+Warning threshlod.
+
+=item B<--critical-paging>
+
+Critical threshlod.
 
 =back
 

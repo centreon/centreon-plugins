@@ -127,8 +127,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter:s"      =>   { name => 'filter', default => '' },
-        "units:s"      => { name => 'units', default => '%' }
+        "filter:s"      => { name => 'filter' },
+        "units:s"       => { name => 'units', default => '%' }
     });
 
     return $self;
@@ -157,13 +157,17 @@ sub manage_selection {
         next if ($metric !~ /windows_logical_disk_free_bytes|windows_logical_disk_size_bytes/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            next if (defined($self->{option_results}->{filter}) && $data->{dimensions}->{volume} =~ /$self->{option_results}->{filter}/i);
+            next if (defined($self->{option_results}->{filter}) && $data->{dimensions}->{volume} !~ /$self->{option_results}->{filter}/i);
 
             foreach my $volume ($data->{dimensions}->{volume}) {
                 $self->{node_storage}->{$volume}->{$metric} = $data->{value};
                 $self->{node_storage}->{$volume}->{display} = $volume;
             }
         }
+    }
+    if (scalar(keys %{$self->{node_storage}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No disk found.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -177,9 +181,11 @@ Check storage based on node exporter metrics.
 
 =over 8
 
-=item B<--disk-name>
+=item B<--filter>
 
-Specify disk name to filter on.
+Inclusive filter. Specify which disks you want to monitor.
+
+Can be a regex.
 
 =item B<--units>
 
