@@ -44,6 +44,7 @@ sub new {
         'extend-perfdata-group:s@'=> { name => 'extend_perfdata_group' },
         'change-exit:s@'          => { name => 'change_exit' },
         'change-short-output:s@'  => { name => 'change_short_output' },
+        'change-long-output:s@'   => { name => 'change_long_output' },
         'use-new-perfdata'        => { name => 'use_new_perfdata' },
         'filter-uom:s'            => { name => 'filter_uom' },
         'verbose'                 => { name => 'verbose' },
@@ -310,7 +311,7 @@ sub output_json {
         foreach (@{$self->{global_long_output}}) {
             push @{$json_content->{plugin}->{outputs}}, {
                 type => 2,
-                msg => $_,
+                msg => $_
             };
         }
     }
@@ -543,6 +544,25 @@ sub output_txt {
     }
 }
 
+sub change_long_output {
+    my ($self, %options) = @_;
+
+    return if (!(defined($self->{option_results}->{verbose}) || $options{force_long_output} == 1));
+    return if (!defined($self->{option_results}->{change_long_output}));
+
+    my $long_output = join("\n", @{$self->{global_long_output}});
+
+    foreach (@{$self->{option_results}->{change_long_output}}) {
+        my ($pattern, $replace, $modifier) = split /~/;
+        next if (!defined($pattern));
+        $replace = '' if (!defined($replace));
+        $modifier = '' if (!defined($modifier));
+        eval "\$long_output =~ s{$pattern}{$replace}$modifier";
+    }
+
+    $self->{global_long_output} = [split(/\n/, $long_output)];
+}
+
 sub display {
     my ($self, %options) = @_;
     my $nolabel = (defined($options{nolabel}) || defined($self->{option_results}->{output_ignore_label})) ? 1 : 0;
@@ -552,6 +572,10 @@ sub display {
 
     if (defined($self->{option_results}->{output_openmetrics})) {
         $self->perfdata_add(nlabel => 'plugin.mode.status', value => $self->{errors}->{$self->{myerrors}->{$self->{global_status}}});
+    }
+
+    if (defined($self->{option_results}->{change_long_output})) {
+        $self->change_long_output(force_long_output => $force_long_output);
     }
 
     return if ($self->{nodisplay} == 1);
@@ -1547,9 +1571,9 @@ Sum traffic by interface: --extend-perfdata-group='traffic_in_(.*),traffic_$1,su
 
 =back
 
-=item B<--change-short-output>
+=item B<--change-short-output> B<--change-long-output>
 
-Change short output display: --change-short-output=pattern~replace~modifier
+Change short/long output display: --change-short-output=pattern~replace~modifier
 
 =item B<--change-exit>
 
