@@ -37,7 +37,8 @@ sub set_system {
             ['ok', 'OK'],
             ['missing', 'OK'],
             ['degraded', 'OK'],
-            ['critical', 'CRITICAL']
+            ['critical', 'CRITICAL'],
+            ['failed', 'CRITICAL']
         ]
     };
 
