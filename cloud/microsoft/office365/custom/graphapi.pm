@@ -454,7 +454,7 @@ sub teams_post_notification {
 sub azuread_get_organization_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/beta/organization"; #/v1.0/reports/getEmailActivityUserDetail(" . $options{param} . ")";
+    my $url = $self->{graph_endpoint} . "/beta/organization";
 
     return $url;
 }
