@@ -33,7 +33,8 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'resource-type:s' => { name => 'resource_type' },
-        'prettify'        => { name => 'prettify' }
+        'prettify'        => { name => 'prettify' },
+        'tags'            => { name => 'tags' }
     });
 
     return $self;
@@ -47,9 +48,12 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'discovery', force_response => 1);
-    
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'discovery',
+        force_response => 1
+    );
+
     my $encoded_data;
     eval {
         if (defined($self->{option_results}->{prettify})) {
@@ -84,6 +88,10 @@ to discover (Can be: 'esx', 'vm') (Mandatory).
 =item B<--prettify>
 
 Prettify JSON output.
+
+=item B<--tags>
+
+Add tags (centreon-vmware connector minimum version 3.2.5 required).
 
 =back
 
