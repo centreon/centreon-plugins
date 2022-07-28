@@ -14,6 +14,7 @@ Depends:    ${misc:Depends},
             libjson-xs-perl,
             liblwp-protocol-https-perl,
             libzmq-constants-perl,
+            libtext-template-perl,
             zmq-libzmq4-perl,
             perl-vmware-vsphere
 Description: Perl daemon to monitor VSphere Infrastructure
