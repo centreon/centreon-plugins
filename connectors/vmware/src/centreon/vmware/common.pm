@@ -45,7 +45,7 @@ sub init_response {
     my (%options) = @_;
 
     $manager_response->{code} = 0;
-    $manager_response->{vmware_connector_version} = '3.2.4';
+    $manager_response->{vmware_connector_version} = '3.2.5';
     $manager_response->{short_message} = 'OK';
     $manager_response->{extra_message} = '';
     $manager_response->{identity} = $options{identity} if (defined($options{identity}));
@@ -109,11 +109,15 @@ sub connect_vsphere {
     eval {
         $SIG{ALRM} = sub { die('TIMEOUT'); };
         alarm($options{connect_timeout});
-        $options{connector}->{session1} = Vim->new(service_url => $options{url});
-        $options{connector}->{session1}->login(
+        $options{connector}->{session} = Vim->new(service_url => $options{url});
+        $options{connector}->{session}->login(
             user_name => $options{username},
             password => $options{password}
         );
+
+        $options{connector}->{service_url} = $options{url};
+        #$options{connector}->{session}->save_session(session_file => '/tmp/plop.save');
+        #$options{connector}->{session}->unset_logout_on_disconnect();
 
         get_vsan_vim(%options) if ($options{vsan_enabled} == 1);
 
@@ -125,13 +129,7 @@ sub connect_vsphere {
         $options{logger}->writeLogError("'$options{whoaim}' Login to VirtualCenter server failed: $@");
         return 1;
     }
-#    eval {
-#        $session_id = Vim::get_session_id();
-#    };
-#    if($@) {
-#        writeLogFile("Can't get session_id: $@\n");
-#        return 1;
-#    }
+
     return 0;
 }
 
@@ -140,14 +138,14 @@ sub heartbeat {
     my $stime;
 
     eval {
-        $stime = $options{connector}->{session1}->get_service_instance()->CurrentTime();
+        $stime = $options{connector}->{session}->get_service_instance()->CurrentTime();
         $options{connector}->{keeper_session_time} = time();
     };
     if ($@) {
         $options{connector}->{logger}->writeLogError("$@");
         # Try a second time
         eval {
-            $stime = $options{connector}->{session1}->get_service_instance()->CurrentTime();
+            $stime = $options{connector}->{session}->get_service_instance()->CurrentTime();
             $options{connector}->{keeper_session_time} = time();
         };
         if ($@) {
@@ -180,7 +178,7 @@ sub get_views {
     my $results;
 
     eval {
-        $results = $obj_vmware->{session1}->get_views(mo_ref_array => $_[0], properties => $_[1]);
+        $results = $obj_vmware->{session}->get_views(mo_ref_array => $_[0], properties => $_[1]);
     };
     if ($@) {
         vmware_error($obj_vmware, $@);
@@ -194,7 +192,7 @@ sub get_view {
     my $results;
 
     eval {
-        $results = $obj_vmware->{session1}->get_view(mo_ref => $_[0], properties => $_[1]);
+        $results = $obj_vmware->{session}->get_view(mo_ref => $_[0], properties => $_[1]);
     };
     if ($@) {
         vmware_error($obj_vmware, $@);
@@ -464,7 +462,7 @@ sub cache_perf_counters {
     my $obj_vmware = shift;
 
     eval {
-        $obj_vmware->{perfmanager_view} = $obj_vmware->{session1}->get_view(mo_ref => $obj_vmware->{session1}->get_service_content()->perfManager, properties => ['perfCounter', 'historicalInterval']);
+        $obj_vmware->{perfmanager_view} = $obj_vmware->{session}->get_view(mo_ref => $obj_vmware->{session}->get_service_content()->perfManager, properties => ['perfCounter', 'historicalInterval']);
         foreach (@{$obj_vmware->{perfmanager_view}->perfCounter}) {
             my $label = $_->groupInfo->key . "." . $_->nameInfo->key . "." . $_->rollupType->val;
             $obj_vmware->{perfcounter_cache}->{$label} = { key => $_->key, unitkey => $_->unitInfo->key, level => $_->level };
@@ -491,6 +489,7 @@ sub cache_perf_counters {
         $obj_vmware->{logger}->writeLogError("'" . $obj_vmware->{whoaim} . "' $@");
         return 1;
     }
+
     return 0;
 }
 
@@ -570,18 +569,18 @@ sub find_entity_views {
 
     eval {
         if (defined($options{begin_entity})) {
-            $entity_views = $options{connector}->{session1}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter}, begin_entity => $options{begin_entity});
+            $entity_views = $options{connector}->{session}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter}, begin_entity => $options{begin_entity});
         } else {
-            $entity_views = $options{connector}->{session1}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter});
+            $entity_views = $options{connector}->{session}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter});
         }
     };
     if ($@) {
         $options{connector}->{logger}->writeLogError("'" . $options{connector}->{whoaim} . "' $@");
         eval {
             if (defined($options{begin_entity})) {
-                $entity_views = $options{connector}->{session1}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter}, begin_entity => $options{begin_entity});
+                $entity_views = $options{connector}->{session}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter}, begin_entity => $options{begin_entity});
             } else {
-                $entity_views = $options{connector}->{session1}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter});
+                $entity_views = $options{connector}->{session}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter});
             }
         };
         if ($@) {
@@ -716,9 +715,9 @@ sub get_vsan_vim {
     my (%options) = @_;
 
     require URI::URL;
-    my $session_id = $options{connector}->{session1}->get_session_id();
-    my $url = URI::URL->new($options{connector}->{session1}->get_service_url());
-    my $api_type = $options{connector}->{session1}->get_service_content()->about->apiType;
+    my $session_id = $options{connector}->{session}->get_session_id();
+    my $url = URI::URL->new($options{connector}->{session}->get_service_url());
+    my $api_type = $options{connector}->{session}->get_service_content()->about->apiType;
 
     my $service_url_path = "sdk/vimService";
     my $path = "vsanHealth";

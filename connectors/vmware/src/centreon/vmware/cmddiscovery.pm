@@ -25,6 +25,7 @@ use base qw(centreon::vmware::cmdbase);
 use strict;
 use warnings;
 use centreon::vmware::common;
+use centreon::class::cisTags;
 
 sub new {
     my ($class, %options) = @_;
@@ -32,7 +33,7 @@ sub new {
     bless $self, $class;
 
     $self->{commandName} = 'discovery';
-    
+
     return $self;
 }
 
@@ -44,6 +45,7 @@ sub checkArgs {
         return 1;
     }
 
+    $self->{tags} = $options{arguments}->{tags} if (defined($options{arguments}->{tags}));
     $self->{resource_type} = $options{arguments}->{resource_type} if (defined($options{arguments}->{resource_type}));
 
     return 0;
@@ -73,18 +75,33 @@ sub get_folders {
 
 sub run {
     my $self = shift;
-    
+
     my @disco_data;
     my $disco_stats;
 
+    my ($rv, $tags);
     my $customFields = {};
 
-    my $api_type = $self->{connector}->{session1}->get_service_content()->about->apiType;
+    my $api_type = $self->{connector}->{session}->get_service_content()->about->apiType;
     if ($api_type eq 'VirtualCenter') {
-        my $entries = centreon::vmware::common::get_view($self->{connector}, $self->{connector}->{session1}->get_service_content()->customFieldsManager);
+        my $entries = centreon::vmware::common::get_view($self->{connector}, $self->{connector}->{session}->get_service_content()->customFieldsManager);
         if (defined($entries->{field})) {
             foreach (@{$entries->{field}}) {
                 $customFields->{ $_->{key} } = $_->{name};
+            }
+        }
+
+        if (defined($self->{tags})) {
+            my $cisTags = centreon::class::cisTags->new();
+            $cisTags->configuration(
+                url => $self->{connector}->{config_vsphere_url},
+                username => $self->{connector}->{config_vsphere_user},
+                password => $self->{connector}->{config_vsphere_pass},
+                logger => $self->{connector}->{logger}
+            );
+            ($rv, $tags) = $cisTags->tagsByResource();
+            if ($rv) {
+                 $self->{connector}->{logger}->writeLogError("cannot get tags: " . $cisTags->error());
             }
         }
     }
@@ -155,6 +172,10 @@ sub run {
                 $esx{datacenter} = $datacenter->name;
                 $esx{cluster} = $cluster->name;
                 $esx{custom_attributes} = $customValuesEsx;
+                if (defined($tags)) {
+                    $esx{tags} = [];
+                    $esx{tags} = $tags->{esx}->{ $esx->{mo_ref}->{value} } if (defined($tags->{esx}->{ $esx->{mo_ref}->{value} }));
+                }
 
                 foreach my $nic (@{$esx->{'config.virtualNicManagerInfo.netConfig'}}) {
                     my %lookup = map { $_->{'key'} => $_->{'spec'}->{'ip'}->{'ipAddress'} } @{$nic->{'candidateVnic'}};
@@ -205,6 +226,10 @@ sub run {
                     $entry->{cluster} = $cluster->name;
                     $entry->{custom_attributes} = $customValuesVm;
                     $entry->{esx} = $esx->name;
+                    if (defined($tags)) {
+                        $entry->{tags} = [];
+                        $entry->{tags} = $tags->{vm}->{ $vm->{mo_ref}->{value} } if (defined($tags->{vm}->{ $vm->{mo_ref}->{value} }));
+                    }
 
                     push @disco_data, $entry;
                 }

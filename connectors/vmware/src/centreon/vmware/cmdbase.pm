@@ -21,6 +21,8 @@ package centreon::vmware::cmdbase;
 use strict;
 use warnings;
 use centreon::vmware::common;
+use VMware::VIRuntime;
+use VMware::VILib;
 
 my %handlers = (ALRM => {});
 
@@ -30,7 +32,7 @@ sub new {
     bless $self, $class;
 
     $self->{logger} = $options{logger};
-    $self->{global_case_insensitive} = defined($options{case_insensitive}) ? $options{case_insensitive} : 0;
+    $self->{global_case_insensitive} = defined($options{case_insensitive}) ? $options{case_insensitive} : 0;    
 
     return $self;
 }
@@ -74,6 +76,11 @@ sub set_connector {
     my ($self, %options) = @_;
 
     $self->{connector} = $options{connector};
+
+    #$self->{connector}->{session_clone} = Vim::load_session(service_url => $self->{connector}->{service_url}, session_file => '/tmp/plop.save');
+    #$self->{connector}->{session_clone} = Vim->new(service_url => $self->{connector}->{service_url});
+    #$self->{connector}->{session_clone}->load_session(session_file => '/tmp/plop.save');
+
     $self->set_signal_handlers();
     alarm(300);
 }

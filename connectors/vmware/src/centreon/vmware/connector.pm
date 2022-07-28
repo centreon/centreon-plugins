@@ -28,6 +28,22 @@ use File::Basename;
 use POSIX ":sys_wait_h";
 use centreon::vmware::common;
 
+BEGIN {
+    # In new version version of LWP (version 6), the backend is now 'IO::Socket::SSL' (instead Crypt::SSLeay)
+    # it's a hack if you unset that
+    #$ENV{PERL_NET_HTTPS_SSL_SOCKET_CLASS} = "Net::SSL";
+
+    # The option is not omit to verify the certificate chain. 
+    $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
+    
+    eval {
+        # required for new IO::Socket::SSL versions
+        require IO::Socket::SSL;
+        IO::Socket::SSL->import();
+        IO::Socket::SSL::set_ctx_defaults(SSL_verify_mode => 0);
+    };
+}
+
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 my ($connector, $backend);
 
@@ -49,7 +65,7 @@ sub new {
     $connector->{perfcounter_refreshrate} = 20;
     $connector->{perfcounter_speriod} = -1;
     $connector->{stop} = 0;
-    $connector->{session1} = undef;
+    $connector->{session} = undef;
     
     $connector->{modules_registry} = $options{modules_registry};
     $connector->{logger} = $options{logger};
@@ -138,8 +154,11 @@ sub verify_child {
             delete $self->{return_child}->{$self->{child_proc}->{$_}->{pid}};
             delete $self->{child_proc}->{$_};
         } elsif (time() - $self->{child_proc}->{$_}->{ctime} > $self->{config_child_timeout}) {
-            $self->response_router(code => -1, msg => 'Timeout process',
-                                   identity => $_);
+            $self->response_router(
+                code => -1,
+                msg => 'Timeout process',
+                identity => $_
+            );
             kill('INT', $self->{child_proc}->{$_}->{pid});
             delete $self->{child_proc}->{$_};
         } else {
@@ -185,8 +204,11 @@ sub reqclient {
             exit(0);
         }
     } else {
-        $self->response_router(code => -1, msg => 'Container connection problem',
-                               identity => $result->{identity});
+        $self->response_router(
+            code => -1,
+            msg => 'Container connection problem',
+            identity => $result->{identity}
+        );
     }
 }
 
@@ -250,7 +272,7 @@ sub run {
         if ($connector->{stop} && !$progress) {
             if ($connector->{vsphere_connected}) {
                 eval {
-                    $connector->{session1}->logout();
+                    $connector->{session}->logout();
                 };
             }
             
@@ -267,9 +289,9 @@ sub run {
             $connector->{logger}->writeLogError("'" . $connector->{whoaim} . "' Disconnect");
             $connector->{vsphere_connected} = 0;
             eval {
-                $connector->{session1}->logout();
+                $connector->{session}->logout();
             };
-            delete $connector->{session1};
+            delete $connector->{session};
         }
         
         if ($connector->{vsphere_connected} == 0) {
@@ -281,7 +303,7 @@ sub run {
                 url => $connector->{config_vsphere_url}, 
                 username => $connector->{config_vsphere_user},
                 password => $connector->{config_vsphere_pass},
-                vsan_enabled => $connector->{vsan_enabled},
+                vsan_enabled => $connector->{vsan_enabled}
                 )
                ) {
                 $connector->{logger}->writeLogInfo("'" . $connector->{whoaim} . "' Vsphere connection ok");

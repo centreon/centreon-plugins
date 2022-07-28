@@ -47,14 +47,14 @@ BEGIN {
         # required for new IO::Socket::SSL versions
         require IO::Socket::SSL;
         IO::Socket::SSL->import();
-        IO::Socket::SSL::set_ctx_defaults( SSL_verify_mode => 0 );
+        IO::Socket::SSL::set_ctx_defaults( SSL_verify_mode => 0, SSL_no_shutdown => 1 );
     };
 }
 
 use base qw(centreon::vmware::script);
 use vars qw(%centreon_vmware_config);
 
-my $VERSION = '3.2.4';
+my $VERSION = '3.2.5';
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 
 my @load_modules = (
@@ -99,7 +99,7 @@ my @load_modules = (
     'centreon::vmware::cmdtoolsvm',
     'centreon::vmware::cmduptimehost',
     'centreon::vmware::cmdvmoperationcluster',
-    'centreon::vmware::cmdvsanclusterusage',
+    'centreon::vmware::cmdvsanclusterusage'
 );
 
 sub new {
@@ -108,7 +108,7 @@ sub new {
 
     bless $self, $class;
     $self->add_options(
-        'config-extra=s' => \$self->{opt_extra},
+        'config-extra=s' => \$self->{opt_extra}
     );
 
     %{$self->{centreon_vmware_default_config}} =
@@ -132,7 +132,7 @@ sub new {
                 #              'username' => 'XXXXX',
                 #              'password' => 'XXXXXX'}
             },
-            vsan_sdk_path => '/usr/local/share/perl5/VMware',
+            vsan_sdk_path => '/usr/local/share/perl5/VMware'
         );
 
     $self->{return_child} = {};
@@ -141,7 +141,7 @@ sub new {
     $self->{counter_stats} = {};
     $self->{whoaim} = undef; # to know which vsphere to connect
     $self->{modules_registry} = {};
-    
+
     return $self;
 }
 
@@ -151,7 +151,7 @@ sub init {
 
     # redefine to avoid out when we try modules
     $SIG{__DIE__} = undef;
-    
+
     if (!defined($self->{opt_extra})) {
         $self->{opt_extra} = "/etc/centreon/centreon_vmware.pm";
     }
@@ -244,7 +244,7 @@ sub handle_TERM {
     my $self = shift;
     $self->{logger}->writeLogInfo("$$ Receiving order to stop...");
     $self->{stop} = 1;
-    
+
     foreach (keys %{$self->{childs_vpshere_pid}}) {
         kill('TERM', $_);
         $self->{logger}->writeLogInfo("Send -TERM signal to '" . $self->{childs_vpshere_pid}->{$_} . "' process..");
@@ -264,7 +264,7 @@ sub handle_CHLD {
     while (($child_pid = waitpid(-1, &WNOHANG)) > 0) {
         $self->{return_child}{$child_pid} = {status => 1, rtime => time()};
     }
-    
+
     $SIG{CHLD} = \&class_handle_CHLD;
 }
 
@@ -275,17 +275,17 @@ sub load_module {
         (my $file = "$_.pm") =~ s{::}{/}g;
         require $file;
         my $obj = $_->new(logger => $self->{logger}, case_insensitive => $self->{centreon_vmware_config}->{case_insensitive});
-        $self->{modules_registry}->{$obj->getCommandName()} = $obj;
+        $self->{modules_registry}->{ $obj->getCommandName() } = $obj;
     }    
 }
 
 sub verify_child_vsphere {
     my $self = shift;
-    
+
     # Some dead process. need to relaunch it
     foreach (keys %{$self->{return_child}}) {
         delete $self->{return_child}->{$_};
-        
+
         if (defined($self->{childs_vpshere_pid}->{$_})) {
             if ($self->{stop} == 0) {
                 my $name = $self->{childs_vpshere_pid}->{$_};
@@ -327,23 +327,23 @@ sub waiting_ready {
     my ($self, %options) = @_;
 
     return 1 if ($self->{centreon_vmware_config}->{vsphere_server}->{$options{container}}->{ready} == 1);
-    
+
     # Need to check if we need to relaunch (maybe it can have a problem)
     $self->check_childs();
-    
+
     my $time = time();
     # We wait 10 seconds
     while ($self->{centreon_vmware_config}->{vsphere_server}->{$options{container}}->{ready} == 0 && 
            time() - $time < 10) {
         zmq_poll($self->{poll}, 5000);
     }
-    
+
     if ($self->{centreon_vmware_config}->{vsphere_server}->{$options{container}}->{ready} == 0) {
         centreon::vmware::common::set_response(code => -1, short_message => "connector still not ready.");
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return 0;
     }
-    
+
     return 1;
 }
 
@@ -356,7 +356,7 @@ sub request_dynamic {
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
-    
+
     my $container = md5_hex($options{result}->{vsphere_address} . $options{result}->{vsphere_username} . $options{result}->{vsphere_password});
     # Need to create fork
     if (!defined($self->{centreon_vmware_config}->{vsphere_server}->{$container})) {
@@ -374,7 +374,7 @@ sub request_dynamic {
         );
         $centreon_vmware->create_vsphere_child(vsphere_name => $container, dynamic => 1);
     }
-    
+
     return if ($self->waiting_ready(
         container => $container, manager => $options{manager},
         identity => $options{identity}) == 0);
@@ -392,7 +392,7 @@ sub request_dynamic {
 
 sub request {
     my ($self, %options) = @_;
-    
+
     # Decode json
     my $result;
     eval {
@@ -450,7 +450,7 @@ sub request {
 
 sub repserver {
     my ($self, %options) = @_;
-    
+
     # Decode json
     my $result;
     eval {
@@ -549,7 +549,7 @@ sub create_vsphere_child {
 
 sub bind_ipc {
     my ($self, %options) = @_;
-    
+
     if (zmq_bind($options{socket}, 'ipc://' . $options{ipc_file}) == -1) {
         $self->{logger}->writeLogError("Cannot bind ipc '$options{ipc_file}': $!");
         # try create dir
@@ -597,8 +597,8 @@ sub run {
         {
             socket  => $frontend,
             events  => ZMQ_POLLIN,
-            callback => \&router_event,
-        },
+            callback => \&router_event
+        }
     ];
 
     # Switch messages between sockets
