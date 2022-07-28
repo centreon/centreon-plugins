@@ -477,6 +477,15 @@ sub get_services_health {
     return $response;
 }
 
+sub get_applications {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->{graph_endpoint} . '/v1.0/applications';
+    my $response = $self->request_api_json(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
 1;
 
 __END__
