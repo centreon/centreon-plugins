@@ -43,7 +43,7 @@ sub checkArgs {
 sub run {
     my $self = shift;
 
-    my $entries = centreon::vmware::common::get_view($self->{connector}, $self->{connector}->{session1}->get_service_content()->licenseManager);
+    my $entries = centreon::vmware::common::get_view($self->{connector}, $self->{connector}->{session}->get_service_content()->licenseManager);
 
     my $data = {};
     if (defined($entries->licenses)) {
