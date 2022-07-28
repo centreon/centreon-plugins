@@ -451,20 +451,28 @@ sub teams_post_notification {
     return $response;
 }
 
+sub azuread_get_organization_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/beta/organization"; #/v1.0/reports/getEmailActivityUserDetail(" . $options{param} . ")";
+
+    return $url;
+}
+
+sub azuread_get_organization {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azuread_get_organization_set_url(%options);
+    my $response = $self->request_api_json(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
 sub get_services_health {
     my ($self, %options) = @_;
 
     my $full_url = $self->{graph_endpoint} . '/v1.0/admin/serviceAnnouncement/healthOverviews';
     my $response = $self->request_api_json(method => 'GET', full_url => $full_url, hostname => '', get_param => ['$expand=issues']);
-
-    return $response;
-}
-
-sub get_applications {
-    my ($self, %options) = @_;
-
-    my $full_url = $self->{graph_endpoint} . '/v1.0/applications';
-    my $response = $self->request_api_json(method => 'GET', full_url => $full_url, hostname => '');
 
     return $response;
 }
