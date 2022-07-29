@@ -35,7 +35,7 @@ sub custom_used_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        nlabel => 'azure.ad.directory.usage.percent',
+        nlabel => 'azure.ad.directory.usage.count',
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
@@ -107,8 +107,8 @@ sub new {
     
     $options{options}->add_options(arguments => {
         "units:s"           => { name => 'units', default => '%' },
-        "warning-used:s"    => { name => 'warning-used', default => 80 },
-        "critical-used:s"   => { name => 'critical-used', default => 90 }
+        "warning-used:s"    => { name => 'warning-used' },
+        "critical-used:s"   => { name => 'critical-used }
     });
 
     return $self;
