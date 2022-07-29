@@ -100,7 +100,7 @@ sub set_counters {
             }
         },
         { label => 'channel-usage', nlabel => 'trunk.channels.current.count', set => {
-                key_values => [ { name => 'busychan' }, { name => 'freechan' } ],
+                key_values => [ { name => 'busychan' }, { name => 'freechan' }, { name => 'display '} ],
                 closure_custom_calc => $self->can('custom_trunk_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),

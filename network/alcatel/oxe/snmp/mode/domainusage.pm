@@ -122,7 +122,7 @@ sub set_counters {
 
     $self->{maps_counters}->{domain} = [
         { label => 'cac-usage', nlabel => 'domain.communications.external.current.count', set => {
-                key_values => [ { name => 'cacUsed' }, { name => 'cacAllowed' } ],
+                key_values => [ { name => 'cacUsed' }, { name => 'cacAllowed' }, { name => 'display '} ],
                 closure_custom_calc => $self->can('custom_cac_usage_calc'),
                 closure_custom_calc_extra_options => { label_output => 'External Communication' },
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -139,7 +139,7 @@ sub set_counters {
             }
         },
         { label => 'conference-usage', nlabel => 'domain.conference.circuits.current.count', set => {
-                key_values => [ { name => 'confBusy' }, { name => 'confAvailable' } ],
+                key_values => [ { name => 'confBusy' }, { name => 'confAvailable' }, { name => 'display '} ],
                 closure_custom_calc => $self->can('custom_conference_usage_calc'),
                 closure_custom_calc_extra_options => { label_output => 'Conference circuits' },
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -156,7 +156,7 @@ sub set_counters {
             }
         },
         { label => 'dsp-usage', nlabel => 'domain.compressors.current.count', set => {
-                key_values => [ { name => 'dspRessBusy' }, { name => 'dspRessAvailable' } ],
+                key_values => [ { name => 'dspRessBusy' }, { name => 'dspRessAvailable' }, { name => 'display '} ],
                 closure_custom_calc => $self->can('custom_dsp_usage_calc'),
                 closure_custom_calc_extra_options => { label_output => 'DSP Compressors' },
                 closure_custom_output => $self->can('custom_usage_output'),
