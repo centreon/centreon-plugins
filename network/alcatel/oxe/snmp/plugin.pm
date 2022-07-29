@@ -38,6 +38,7 @@ sub new {
               'pbx-role'        => 'network::alcatel::oxe::snmp::mode::pbxrole',
               'storage'         => 'snmp_standard::mode::storage',
               'swap'            => 'snmp_standard::mode::swap',
+              'trunk-usage'     => 'network::alcatel::oxe::snmp::mode::trunkusage'
     );
 
     return $self;
