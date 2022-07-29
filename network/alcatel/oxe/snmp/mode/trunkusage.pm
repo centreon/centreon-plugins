@@ -151,8 +151,8 @@ my $mapping = {
     busychan     => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.8' },
     ooschan      => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.9' },
     trunkstatus  => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.10', map => $map_trunk_status },
-    cumuloos     => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.11' },
-    cumuloverrun => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.12' },
+    cumuloos     => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.11' }, # not used
+    cumuloverrun => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.12' }, # not used
 };
 
 sub manage_selection {
