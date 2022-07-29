@@ -93,6 +93,24 @@ sub custom_conference_usage_calc {
     return 0;
 }
 
+sub custom_dsp_usage_calc {
+    my ($self, %options) = @_;
+
+    if ($options{new_datas}->{$self->{instance} . '_dspRessAvailable'} <= 0) {
+        $self->{error_msg} = "skipped (no available)";
+        return -2;
+    }
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_dspRessAvailable'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_dspRessBusy'};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+    $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{label_perf} = $options{extra_options}->{label_perf};
+    $self->{result_values}->{label_output} = $options{extra_options}->{label_output};
+    return 0;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -110,6 +128,14 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
+        { label => 'cac-overrun', nlabel => 'domain.communications.external.overrun.count', set => {
+                key_values => [ { name => 'display' }, { name => 'cacOverrun' } ],
+                output_template => 'conference overrun: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
         { label => 'conference-usage', nlabel => 'domain.conference.circuits.current.count', set => {
                 key_values => [ { name => 'display' }, { name => 'confBusy' }, { name => 'confAvailable' } ],
                 closure_custom_calc => $self->can('custom_conference_usage_calc'),
@@ -119,6 +145,39 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
+        { label => 'conf-outoforder', nlabel => 'domain.conference.circuits.outoforder.count', set => {
+                key_values => [ { name => 'display' }, { name => 'confOutOfOrder' } ],
+                output_template => 'conference out of order: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'dsp-usage', nlabel => 'domain.compressors.current.count', set => {
+                key_values => [ { name => 'display' }, { name => 'dspRessBusy' }, { name => 'dspRessAvailable' } ],
+                closure_custom_calc => $self->can('custom_dsp_usage_calc'),
+                closure_custom_calc_extra_options => { label_output => 'DSP Compressors', label_perf => 'dsp' },
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+        { label => 'dsp-outofservice', nlabel => 'domain.compressors.outofservice.count', set => {
+                key_values => [ { name => 'display' }, { name => 'dspRessOutOfService' } ],
+                output_template => 'compressor out of service: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            },
+        },
+        { label => 'dsp-overrun', nlabel => 'domain.compressors.overrun.count', set => {
+                key_values => [ { name => 'display' }, { name => 'dspRessOverrun' } ],
+                output_template => 'compressor overrun: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            },
+        }
     ];
 }
 
@@ -141,11 +200,15 @@ sub new {
 }
 
 my $mapping = {
-    confAvailable   => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.2' },
-    confBusy        => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.3' },
-    confOutOfOrder  => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.4' },
-    cacAllowed      => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.9' },
-    cacUsed         => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.10' },
+    confAvailable        => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.2' },
+    confBusy             => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.3' },
+    confOutOfOrder       => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.4' },
+    dspRessAvailable     => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.5' },
+    dspRessBusy          => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.6' },
+    dspRessOutOfService  => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.7' },
+    dspRessOverrun       => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.8' },
+    cacAllowed           => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.9' },
+    cacUsed              => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.10' }
 };
 
 sub manage_selection {
@@ -197,12 +260,18 @@ Filter by domain (regexp can be used).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'cac-usage' (%), 'conference-usage' (%).
+Can be: 'cac-usage' (%), 'conference-usage' (%), 
+'cac-overrun' (absolute),  conf-outoforder (absolute),
+'dsp-usage' (absolute), 'dsp-outofservice' (absolute),
+'dsp-overrun' (absolute)
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'cac-usage' (%), 'conference-usage' (%).
+Can be: 'cac-usage' (%), 'conference-usage' (%), 
+'cac-overrun' (absolute),  conf-outoforder (absolute),
+'dsp-usage' (absolute), 'dsp-outofservice' (absolute),
+'dsp-overrun' (absolute)
 
 =back
 
