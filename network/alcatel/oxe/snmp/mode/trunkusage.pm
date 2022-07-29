@@ -88,7 +88,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'trunk', type => 1, cb_prefix_output => 'prefix_trunk_output', message_multiple => 'All domain are ok', skipped_code => { -2 => 1, -10 => 1 } }
+        { name => 'trunk', type => 1, cb_prefix_output => 'prefix_trunk_output', message_multiple => 'All trunks are ok', skipped_code => { -2 => 1, -10 => 1 } }
     ];
 
     $self->{maps_counters}->{domain} = [
