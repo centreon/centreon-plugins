@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'directory-size-usage'            => 'cloud::microsoft::office365::azuread::mode::directorysizeusage',
+        'directory-size-usage' => 'cloud::microsoft::office365::azuread::mode::directorysizeusage',
     );
 
     $self->{custom_modes}{graphapi} = 'cloud::microsoft::office365::custom::graphapi';
@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure AD.
+Check Microsoft Azure AD using GraphAPI
 
 =cut
