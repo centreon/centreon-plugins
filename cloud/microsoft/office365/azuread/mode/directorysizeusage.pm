@@ -108,7 +108,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "units:s"           => { name => 'units', default => '%' },
         "warning-used:s"    => { name => 'warning-used' },
-        "critical-used:s"   => { name => 'critical-used }
+        "critical-used:s"   => { name => 'critical-used' }
     });
 
     return $self;
