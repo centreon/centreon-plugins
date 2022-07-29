@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::oxe::snmp::mode::domainusage;
+package network::alcatel::oxe::snmp::mode::domains;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,9 +29,8 @@ sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => $self->{result_values}->{label_perf} . '_used',
         nlabel => $self->{nlabel},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        instances => $self->{result_values}->{display},
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -42,7 +41,13 @@ sub custom_usage_perfdata {
 sub custom_usage_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{prct_used},
+        threshold => [ 
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } 
+        ]
+    );
     return $exit;
 }
 
@@ -70,7 +75,6 @@ sub custom_cac_usage_calc {
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{label_perf} = $options{extra_options}->{label_perf};
     $self->{result_values}->{label_output} = $options{extra_options}->{label_output};
     return 0;
 }
@@ -88,7 +92,23 @@ sub custom_conference_usage_calc {
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{label_perf} = $options{extra_options}->{label_perf};
+    $self->{result_values}->{label_output} = $options{extra_options}->{label_output};
+    return 0;
+}
+
+sub custom_dsp_usage_calc {
+    my ($self, %options) = @_;
+
+    if ($options{new_datas}->{$self->{instance} . '_dspRessAvailable'} <= 0) {
+        $self->{error_msg} = "skipped (no available)";
+        return -2;
+    }
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_dspRessAvailable'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_dspRessBusy'};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+    $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{label_output} = $options{extra_options}->{label_output};
     return 0;
 }
@@ -97,28 +117,69 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'domain', type => 1, cb_prefix_output => 'prefix_domain_output', message_multiple => 'All domain are ok', skipped_code => { -2 => 1, -10 => 1 } }
+        { name => 'domain', type => 1, cb_prefix_output => 'prefix_domain_output', message_multiple => 'All domains are ok', skipped_code => { -2 => 1, -10 => 1 } }
     ];
 
     $self->{maps_counters}->{domain} = [
         { label => 'cac-usage', nlabel => 'domain.communications.external.current.count', set => {
-                key_values => [ { name => 'display' }, { name => 'cacUsed' }, { name => 'cacAllowed' } ],
+                key_values => [ { name => 'cacUsed' }, { name => 'cacAllowed' }, { name => 'display '} ],
                 closure_custom_calc => $self->can('custom_cac_usage_calc'),
-                closure_custom_calc_extra_options => { label_output => 'External Communication', label_perf => 'cac' },
+                closure_custom_calc_extra_options => { label_output => 'External Communication' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+        { label => 'cac-overrun', nlabel => 'domain.communications.external.overrun.count', set => {
+                key_values => [ { name => 'cacOverrun' } ],
+                output_template => 'conference overrun: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'conference-usage', nlabel => 'domain.conference.circuits.current.count', set => {
-                key_values => [ { name => 'display' }, { name => 'confBusy' }, { name => 'confAvailable' } ],
+                key_values => [ { name => 'confBusy' }, { name => 'confAvailable' }, { name => 'display '} ],
                 closure_custom_calc => $self->can('custom_conference_usage_calc'),
-                closure_custom_calc_extra_options => { label_output => 'Conference circuits', label_perf => 'conference' },
+                closure_custom_calc_extra_options => { label_output => 'Conference circuits' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
+        { label => 'conf-outoforder', nlabel => 'domain.conference.circuits.outoforder.count', set => {
+                key_values => [ { name => 'confOutOfOrder' } ],
+                output_template => 'conference out of order: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'dsp-usage', nlabel => 'domain.compressors.current.count', set => {
+                key_values => [ { name => 'dspRessBusy' }, { name => 'dspRessAvailable' }, { name => 'display '} ],
+                closure_custom_calc => $self->can('custom_dsp_usage_calc'),
+                closure_custom_calc_extra_options => { label_output => 'DSP Compressors' },
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+        { label => 'dsp-outofservice', nlabel => 'domain.compressors.outofservice.count', set => {
+                key_values => [ { name => 'dspRessOutOfService' } ],
+                output_template => 'compressor out of service: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            },
+        },
+        { label => 'dsp-overrun', nlabel => 'domain.compressors.overrun.count', set => {
+                key_values => [ { name => 'dspRessOverrun' } ],
+                output_template => 'compressor overrun: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            },
+        }
     ];
 }
 
@@ -130,7 +191,7 @@ sub prefix_domain_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -141,11 +202,16 @@ sub new {
 }
 
 my $mapping = {
-    confAvailable   => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.2' },
-    confBusy        => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.3' },
-    confOutOfOrder  => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.4' },
-    cacAllowed      => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.9' },
-    cacUsed         => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.10' },
+    confAvailable        => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.2' },
+    confBusy             => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.3' },
+    confOutOfOrder       => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.4' },
+    dspRessAvailable     => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.5' },
+    dspRessBusy          => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.6' },
+    dspRessOutOfService  => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.7' },
+    dspRessOverrun       => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.8' },
+    cacAllowed           => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.9' },
+    cacUsed              => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.10' },
+    cacOverrun           => { oid => '.1.3.6.1.4.1.637.64.4400.1.3.1.10' }
 };
 
 sub manage_selection {
@@ -197,12 +263,18 @@ Filter by domain (regexp can be used).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'cac-usage' (%), 'conference-usage' (%).
+Can be: 'cac-usage' (%), 'conference-usage' (%), 
+'cac-overrun' (absolute),  conf-outoforder (absolute),
+'dsp-usage' (absolute), 'dsp-outofservice' (absolute),
+'dsp-overrun' (absolute)
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'cac-usage' (%), 'conference-usage' (%).
+Can be: 'cac-usage' (%), 'conference-usage' (%), 
+'cac-overrun' (absolute),  conf-outoforder (absolute),
+'dsp-usage' (absolute), 'dsp-outofservice' (absolute),
+'dsp-overrun' (absolute)
 
 =back
 
