@@ -75,7 +75,6 @@ sub custom_cac_usage_calc {
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{label_perf} = $options{extra_options}->{label_perf};
     $self->{result_values}->{label_output} = $options{extra_options}->{label_output};
     return 0;
 }
@@ -93,7 +92,6 @@ sub custom_conference_usage_calc {
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{label_perf} = $options{extra_options}->{label_perf};
     $self->{result_values}->{label_output} = $options{extra_options}->{label_output};
     return 0;
 }
@@ -111,7 +109,6 @@ sub custom_dsp_usage_calc {
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{label_perf} = $options{extra_options}->{label_perf};
     $self->{result_values}->{label_output} = $options{extra_options}->{label_output};
     return 0;
 }
