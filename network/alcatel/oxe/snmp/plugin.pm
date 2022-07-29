@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-              'cpu'             => 'snmp_standard::mode::cpu',
-              'domain-usage'    => 'network::alcatel::oxe::snmp::mode::domainusage',
-              'memory'          => 'snmp_standard::mode::memory',
-              'pbx-state'       => 'network::alcatel::oxe::snmp::mode::pbxstate',
-              'pbx-role'        => 'network::alcatel::oxe::snmp::mode::pbxrole',
-              'storage'         => 'snmp_standard::mode::storage',
-              'swap'            => 'snmp_standard::mode::swap',
-              'trunk-usage'     => 'network::alcatel::oxe::snmp::mode::trunkusage'
+              'cpu'         => 'snmp_standard::mode::cpu',
+              'domains'     => 'network::alcatel::oxe::snmp::mode::domains',
+              'memory'      => 'snmp_standard::mode::memory',
+              'pbx-state'   => 'network::alcatel::oxe::snmp::mode::pbxstate',
+              'pbx-role'    => 'network::alcatel::oxe::snmp::mode::pbxrole',
+              'storage'     => 'snmp_standard::mode::storage',
+              'swap'        => 'snmp_standard::mode::swap',
+              'trunk-usage' => 'network::alcatel::oxe::snmp::mode::trunks'
     );
 
     return $self;

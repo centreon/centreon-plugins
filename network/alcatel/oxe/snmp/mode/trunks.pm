@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::oxe::snmp::mode::trunkusage;
+package network::alcatel::oxe::snmp::mode::trunks;
 
 use base qw(centreon::plugins::templates::counter);
 
