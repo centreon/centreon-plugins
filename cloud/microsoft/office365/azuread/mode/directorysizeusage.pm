@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Time::Local;
 
 sub custom_used_perfdata {
     my ($self, %options) = @_;
@@ -36,8 +35,7 @@ sub custom_used_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => 'directorysizeusage',
-        nlabel => 'directorysizeusage.used',
+        nlabel => 'azure.ad.directory.usage.percent',
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
@@ -87,19 +85,19 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'used', type => 0 }
-	];
+        { name => 'directory', type => 0 }
+    ];
 
-    $self->{maps_counters}->{used} = [
-        { label => 'used', set => {
+    $self->{maps_counters}->{directory} = [
+        { label => 'usage', set => {
 	    key_values => [ { name => 'used' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_used_calc'),
                 closure_custom_output => $self->can('custom_used_output'),
                 closure_custom_threshold_check => $self->can('custom_used_threshold'),
                 closure_custom_perfdata => $self->can('custom_used_perfdata')
-	  }
+	}
         },
-	];
+    ];
 }
 
 sub new {
@@ -108,10 +106,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "units:s"               => { name => 'units', default => '%' },
-	"filter-counters:s"     => { name => 'filter_counters', default => 'used|total' },
-        "warning-used:s"             => { name => 'warning-used', default => 80 },
-        "critical-used:s"            => { name => 'critical-used', default => 90 }
+        "units:s"           => { name => 'units', default => '%' },
+        "warning-used:s"    => { name => 'warning-used', default => 80 },
+        "critical-used:s"   => { name => 'critical-used', default => 90 }
     });
 
     return $self;
@@ -120,11 +117,12 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{used} = { used => 0, total => 0 };
-
     my $results = $options{custom}->azuread_get_organization();
-    $self->{used}->{used} = @{$results}[0]->{'directorySizeQuota'}->{'used'};
-    $self->{used}->{total} = @{$results}[0]->{'directorySizeQuota'}->{'total'};
+    
+    $self->{directory} = {
+        used => @{$results}[0]->{'directorySizeQuota'}->{'used'},
+        total => @{$results}[1]->{'directorySizeQuota'}->{'total'}
+    }
 }
 
 1;
@@ -137,25 +135,13 @@ Check Azure AD directory size usage/quota.
 
 =over 8
 
-=item B<--filter-user>
-
-Filter users.
-
-=item B<--warning-*>
+=item B<--warning-usage>
 
 Threshold warning.
-Can be: 'used'.
 
-=item B<--critical-*>
+=item B<--critical-usage>
 
 Threshold critical.
-Can be: 'used'.
-
-=item B<--filter-counters>
-
-Only display some counters (regexp can be used).
-Example to hide per user counters: --filter-counters='active|total'
-(Default: 'active|total')
 
 =item B<--units>
 
