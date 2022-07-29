@@ -91,7 +91,7 @@ sub set_counters {
         { name => 'trunk', type => 1, cb_prefix_output => 'prefix_trunk_output', message_multiple => 'All trunks are ok', skipped_code => { -2 => 1, -10 => 1 } }
     ];
 
-    $self->{maps_counters}->{domain} = [
+    $self->{maps_counters}->{trunk} = [
         { label => 'trunk-status', type => 2, critical_default => '%{trunkstatus} =~ /oos/i', set => {
                 key_values => [ { name => 'trunkstatus' } ],
                 closure_custom_output => $self->can('custom_status_output'),
