@@ -119,7 +119,7 @@ sub manage_selection {
     
     $self->{directory} = {
         used => @{$results}[0]->{'directorySizeQuota'}->{'used'},
-        total => @{$results}[1]->{'directorySizeQuota'}->{'total'}
+        total => @{$results}[0]->{'directorySizeQuota'}->{'total'}
     }
 }
 
