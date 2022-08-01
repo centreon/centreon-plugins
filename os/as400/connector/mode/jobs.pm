@@ -50,7 +50,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-active-status' => { name => 'filter_active_status', default => '.*' },
+        'filter-active-status' => { name => 'filter_active_status' },
         'filter-name:s'        => { name => 'filter_name' },
         'filter-subsystem:s'   => { name => 'filter_subsystem' },
         'display-jobs'         => { name => 'display_jobs' }
