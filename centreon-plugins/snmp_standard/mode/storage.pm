@@ -31,7 +31,7 @@ my %oids_hrStorageTable = (
     'hrstoragedescr'    => '.1.3.6.1.2.1.25.2.3.1.3',
     'hrfsmountpoint'    => '.1.3.6.1.2.1.25.3.8.1.2',
     'hrfsstorageindex'  => '.1.3.6.1.2.1.25.3.8.1.7',
-    'hrstoragetype'     => '.1.3.6.1.2.1.25.2.3.1.2',
+    'hrstoragetype'     => '.1.3.6.1.2.1.25.2.3.1.2'
 );
 my %storage_types_manage = (
     '.1.3.6.1.2.1.25.2.1.1'  => 'hrStorageOther',
@@ -492,7 +492,10 @@ sub reload_cache {
 
 sub filter_type {
     my ($self, %options) = @_;
-    
+
+    # some equipments doesn't have hrstoragetype
+    return 1 if ($self->{option_results}->{filter_storage_type} eq '');
+
     my $storage_type = $self->{statefile_cache}->get(name => "hrstoragetype_" . $options{id});
     if (defined($storage_type) && 
         ($storage_types_manage{$storage_type} =~ /$self->{option_results}->{filter_storage_type}/i)) {
