@@ -49,10 +49,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        'filter-name:s'      => { name => 'filter_name' },
-        'filter-subsystem:s' => { name => 'filter_subsystem' },
-        'display-jobs'       => { name => 'display_jobs' }
+    $options{options}->add_options(arguments => {
+        'filter-active-status' => { name => 'filter_active_status' },
+        'filter-name:s'        => { name => 'filter_name' },
+        'filter-subsystem:s'   => { name => 'filter_subsystem' },
+        'display-jobs'         => { name => 'display_jobs' }
     });
     
     return $self;
@@ -67,12 +68,17 @@ sub manage_selection {
     foreach my $entry (@{$jobs->{result}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $entry->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $entry->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping job '" . $entry->{name} . "': no matching filter (name).", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_subsystem}) && $self->{option_results}->{filter_subsystem} ne '' &&
             $entry->{subSystem} !~ /$self->{option_results}->{filter_subsystem}/) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $entry->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping job '" . $entry->{name} . "': no matching filter (subsystem).", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_active_status}) && $self->{option_results}->{filter_active_status} ne '' &&
+            $entry->{activeStatus} !~ /$self->{option_results}->{filter_active_status}/) {
+            $self->{output}->output_add(long_msg => "skipping job '" . $entry->{name} . "': no matching filter (activeStatus).", debug => 1);
             next;
         }
 
@@ -100,6 +106,11 @@ __END__
 Check active jobs.
 
 =over 8
+
+=item B<--filter-active-status>
+
+Filter jobs by ACTIVE_JOB_STATUS (can be a regexp).
+Example: --filter-active-status='MSGW' to count jobs with MSGW.
 
 =item B<--filter-name>
 
