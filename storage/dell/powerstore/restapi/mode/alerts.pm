@@ -120,7 +120,7 @@ sub manage_selection {
     $self->{alarms}->{global} = { alarm => {} };
     my $results = $options{custom}->request_api(
         endpoint => '/api/rest/alert',
-        get_param => ['select=id,name,severity,state,is_acknowledged,resource_name,generated_timestamp']
+        get_param => ['select=*']
     );
 
     my $alerts_mem;
@@ -139,16 +139,23 @@ sub manage_selection {
             $alerts_mem->{ $entry->{id} } = 1;
         }
 
+        my $name = '-';
+        if (defined($entry->{name})) {
+            $name = $entry->{name};
+        } elsif (defined($entry->{events}->[0]->{name})) {
+            $name = $entry->{events}->[0]->{name};
+        }
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $entry->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $entry->{name} . "': no matching filter.", debug => 1);
+            $name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
             next;
         }
 
         $self->{global}->{ lc($entry->{severity}) }++;
         $self->{alarms}->{global}->{alarm}->{ $entry->{id} } = {
             resource => $entry->{resource_name},
-            name => $entry->{name},
+            name => $name,
             severity => lc($entry->{severity}),
             timeraised => $entry->{generated_timestamp},
             acknowledged => ($entry->{is_acknowledged} =~ /True|1/i) ? 'yes' : 'no'
