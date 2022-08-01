@@ -35,6 +35,7 @@ sub new {
         'list-interfaces' => 'apps::monitoring::nodeexporter::windows::mode::listinterfaces',
         'list-storages'   => 'apps::monitoring::nodeexporter::windows::mode::liststorages',
         'memory'          => 'apps::monitoring::nodeexporter::windows::mode::memory',
+        'services'        => 'apps::monitoring::nodeexporter::windows::mode::services',
         'storage'         => 'apps::monitoring::nodeexporter::windows::mode::storage',
         'traffic'         => 'apps::monitoring::nodeexporter::windows::mode::traffic'
     );
