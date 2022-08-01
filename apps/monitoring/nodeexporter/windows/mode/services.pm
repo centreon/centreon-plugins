@@ -24,23 +24,14 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 use centreon::common::monitoring::openmetrics::scrape;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub custom_status_output {
+sub custom_state_output {
     my ($self, %options) = @_;
     
-    my $msg = 'Service : ' . $self->{result_values}->{display} . ', status : ' . $self->{result_values}->{status};
+    my $msg = 'Service : ' . $self->{result_values}->{display} . ', state : ' . $self->{result_values}->{status} . ', start mode : ' . $self->{result_values}->{start_mode};
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
 }
 
 sub set_counters {
@@ -51,12 +42,13 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{service} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
+        { label => 'status', type => 2,
+                critical_default => '%{start_mode} =~ /auto/ && %{status} !~ /^running$/',
+                set => {
+                key_values => [ { name => 'status' }, { name => 'start_mode' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
     ];
@@ -68,8 +60,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /ok/i' }
+        "service:s"         => { name => 'service' }
     });
 
     return $self;
@@ -79,53 +70,36 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
-
-# my %map_state = (
-#     1 => 'inService',
-#     2 => 'outOfService',
-#     4 => 'disabled',
-#     5 => 'sorry',
-#     6 => 'redirect',
-#     7 => 'errormsg',
-# );
-
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{service_status} = {};
-    $self->{service_starting_mode} = {};
-
-    use Data::Dumper;
+    $self->{service} = {};
 
     my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
 
     foreach my $metric (keys %{$raw_metrics}) {       
-        next if ($metric !~ /windows_service_status|windows_service_start_mode/i);
-        # print Dumper $raw_metrics->{$metric} ;
+        next if ($metric !~ /windows_service_state|windows_service_start_mode/i);
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            if ($metric =~ /windows_service_status/){
-                $self->{service_status}->{$data->{dimensions}->{name}} = $data->{dimensions}->{status} if $data->{value} == 1 ;
+            next if (defined($self->{option_results}->{service}) && $data->{dimensions}->{name} !~ /$self->{option_results}->{service}/i );
+            if ($metric =~ /windows_service_state/ && $data->{value} == 1){
+                $self->{service}->{$data->{dimensions}->{name}} = { 
+                    display => $data->{dimensions}->{name},
+                    status => $data->{dimensions}->{state} 
+                };
             }
-            if ($metric =~ /windows_service_start_mode/){
-                $self->{service_starting_mode}->{$data->{dimensions}->{name}} = $data->{dimensions}->{start_mode} if $data->{value} == 1 ;
+            if ($metric =~ /windows_service_start_mode/ && $data->{value} == 1){
+                $self->{service}->{$data->{dimensions}->{name}}->{start_mode} = $data->{dimensions}->{start_mode};
             }
-
         }
   
     }
-
-    # foreach my $service (keys %{$services}) {
-        
-    #     # $self->{vs}->{$nom_service} = { };
-    # }
     
-    # if (scalar(keys %{$self->{service}}) <= 0) {
-    #     $self->{output}->add_option_msg(short_msg => "No virtual server found.");
-    #     $self->{output}->option_exit();
-    # }
+    if (scalar(keys %{$self->{service}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No services found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -138,10 +112,20 @@ Check Windows services.
 
 =over 8
 
+=item B<--service>
+
+Inclusive filter. Specify which services to check. It can be a regex.
+Default: all services are included.
+
 =item B<--warning-status>
 
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}, %{start_mode}
 
 =item B<--critical-status>
+
+Set critical threshold for status (Default: '%{start_mode} =~ /auto/ && %{status} !~ /^running$/').
+Can used special variables like: %{status}, %{start_mode}
 
 
 =back
