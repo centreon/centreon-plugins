@@ -108,9 +108,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-in', nlabel => 'node.traffic.in.bitspersecond', set => {
-                key_values => [
-                    { name => 'windows_net_bytes_received_total', per_second => 1 }, { name => 'display' }
-                ],
+                key_values => [ { name => 'windows_net_bytes_received_total', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic in: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
