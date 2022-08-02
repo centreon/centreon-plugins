@@ -44,8 +44,7 @@ sub set_counters {
     $self->{maps_counters}->{service} = [
         { label => 'status', type => 2,
                 critical_default => '%{start_mode} =~ /auto/ && %{status} !~ /^running$/',
-                set => {
-                key_values => [ { name => 'status' }, { name => 'start_mode' }, { name => 'display' } ],
+                set => { key_values => [ { name => 'status' }, { name => 'start_mode' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
