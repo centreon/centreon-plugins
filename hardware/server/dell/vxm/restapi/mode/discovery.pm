@@ -18,20 +18,22 @@
 # limitations under the License.
 #
 
-package cloud::prometheus::restapi::mode::discovery;
+package hardware::server::dell::vxm::restapi::mode::discovery;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
+    
     $options{options}->add_options(arguments => {
-        "prettify" => { name => 'prettify' },
+        'resource-type:s' => { name => 'resource_type' },
+        'prettify'        => { name => 'prettify' }
     });
 
     return $self;
@@ -40,66 +42,70 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
+        $self->{option_results}->{resource_type} = 'host';
+    }
+    if ($self->{option_results}->{resource_type} !~ /^host$/) {
+        $self->{output}->add_option_msg(short_msg => 'unknown resource type');
+        $self->{output}->option_exit();
+    }
 }
 
-sub manage_selection {
+sub discovery_host {
     my ($self, %options) = @_;
 
-    my @disco_data;
-    my $disco_stats;
+    my $hosts = $options{custom}->request(endpoint => '/rest/vxm/v1/hosts');
 
-    $disco_stats->{start_time} = time();
+    my $disco_data = [];
+    foreach my $host (@$hosts) {
+        my $node = {};
+        $node->{id} = $host->{id};
+        $node->{serial_number} = $host->{sn};
+        $node->{name} = $host->{name};
+        $node->{hostname} = $host->{hostname};
+        $node->{manufacturer} = $host->{manufacturer};
+        $node->{slot} = $host->{slot};
 
-    my $disco_results = $options{custom}->get_endpoint(url_path => '/targets');
-
-    foreach my $target_information (@{$disco_results->{activeTargets}}) {
-        my %target;
-        $target{instance} = $target_information->{labels}->{instance};
-        $target{filter_instance} = "instance," . $target_information->{labels}->{instance};
-
-        foreach my $entry (keys %{$target_information}) {
-            next if (ref($target_information->{$entry}) ne "HASH" || $entry ne "labels");
-            my @array;
-            foreach my $key (keys %{$target_information->{$entry}}) {
-                push @array, { key => $key, value => $target_information->{$entry}->{$key} };
-            }
-            $target{$entry} = \@array;
-        }
-        $target_information->{labels}->{instance} =~ s/(.*):\d+$//;
-        $target{instance_address} = $1;
-
-        push @disco_data, \%target;
+        push @$disco_data, $node;
     }
 
-    $disco_stats->{end_time} = time();
-    $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
-    $disco_stats->{discovered_items} = @disco_data;
-    $disco_stats->{results} = \@disco_data;
-
-    return $disco_stats;
-
+    return $disco_data;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $encoded_data;
+    my $disco_stats;
+    $disco_stats->{start_time} = time();
 
+    my $results = [];
+    if ($self->{option_results}->{resource_type} eq 'host') {
+        $results = $self->discovery_host(
+            custom => $options{custom}
+        );
+    }
+
+    $disco_stats->{end_time} = time();
+    $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
+    $disco_stats->{discovered_items} = scalar(@$results);
+    $disco_stats->{results} = $results;
+
+    my $encoded_data;
     eval {
         if (defined($self->{option_results}->{prettify})) {
-            $encoded_data = JSON::XS->new->utf8->pretty->encode($self->manage_selection(%options));
+            $encoded_data = JSON::XS->new->utf8->pretty->encode($disco_stats);
         } else {
-            $encoded_data = JSON::XS->new->utf8->encode($self->manage_selection(%options));
+            $encoded_data = JSON::XS->new->utf8->encode($disco_stats);
         }
     };
     if ($@) {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
     }
-
+    
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();
-    
 }
 
 1;
@@ -108,9 +114,13 @@ __END__
 
 =head1 MODE
 
-Prometheus targets discovery.
+Resources discovery.
 
 =over 8
+
+=item B<--resource-type>
+
+Choose the type of resources to discover (Can be: 'host').
 
 =back
 

@@ -74,8 +74,8 @@ sub check {
                 )
             );
         }
-        
-        next if (!defined($result->{speed}));
+
+        next if (!defined($result->{speed}) || $result->{speed} =~ /^0$/);
         
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan.speed', instance => $instance, name => $result->{name}, value => $result->{speed});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
@@ -88,6 +88,7 @@ sub check {
                 )
             );
         }
+
         $self->{output}->perfdata_add(
             unit => 'rpm',
             nlabel => 'hardware.fan.speed.rpm',

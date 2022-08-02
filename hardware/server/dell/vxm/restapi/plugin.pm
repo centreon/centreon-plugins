@@ -18,29 +18,24 @@
 # limitations under the License.
 #
 
-package network::alcatel::oxe::snmp::plugin;
+package hardware::server::dell::vxm::restapi::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
+    my ( $class, %options ) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-              'cpu'       => 'snmp_standard::mode::cpu',
-              'domains'   => 'network::alcatel::oxe::snmp::mode::domains',
-              'memory'    => 'snmp_standard::mode::memory',
-              'pbx-state' => 'network::alcatel::oxe::snmp::mode::pbxstate',
-              'pbx-role'  => 'network::alcatel::oxe::snmp::mode::pbxrole',
-              'storage'   => 'snmp_standard::mode::storage',
-              'swap'      => 'snmp_standard::mode::swap',
-              'trunks'    => 'network::alcatel::oxe::snmp::mode::trunks'
-    );
+    $self->{modes} = {
+        'chassis'   => 'hardware::server::dell::vxm::restapi::mode::chassis',
+        'discovery' => 'hardware::server::dell::vxm::restapi::mode::discovery',
+        'hosts'     => 'hardware::server::dell::vxm::restapi::mode::hosts'
+    };
 
+    $self->{custom_modes}->{api} = 'hardware::server::dell::vxm::restapi::custom::api';
     return $self;
 }
 
@@ -50,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Alcatel OXE (A4400) in SNMP.
+Check VxRail Manager using Rest API.
 
 =cut

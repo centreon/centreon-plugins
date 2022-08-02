@@ -76,7 +76,7 @@ sub check {
         }
         
         next if (!defined($result->{power}) || $result->{power} =~ /^0$/);
-        
+
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu.power', instance => $instance, name => $result->{name}, value => $result->{power});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(

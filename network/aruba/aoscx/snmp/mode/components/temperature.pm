@@ -55,9 +55,11 @@ sub check {
         next if ($self->check_filter(section => 'temperature', instance => $instance, name => $result->{name}));
         $self->{components}->{temperature}->{total}++;
 
+        $result->{temperature} /= 1000;
+
         $self->{output}->output_add(
             long_msg => sprintf(
-                "temperature '%s' status is %s [instance: %s, current: %s C]",
+                "temperature '%s' status is %s [instance: %s, current: %.2f C]",
                 $result->{name},
                 $result->{state},
                 $instance,
@@ -82,7 +84,7 @@ sub check {
             $self->{output}->output_add(
                 severity => $exit2,
                 short_msg => sprintf(
-                    "temperature '%s' is %s C",
+                    "temperature '%s' is %.2f C",
                     $result->{name},
                     $result->{temperature}
                 )
@@ -92,10 +94,9 @@ sub check {
             unit => 'C',
             nlabel => 'hardware.temperature.celsius',
             instances => $result->{name},
-            value => $result->{temperature},
+            value => sprintf('%.2f', $result->{temperature}),
             warning => $warn,
-            critical => $crit,
-            min => 0
+            critical => $crit
         );
     }
 }

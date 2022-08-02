@@ -18,29 +18,23 @@
 # limitations under the License.
 #
 
-package network::alcatel::oxe::snmp::plugin;
+package cloud::microsoft::office365::azuread::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-              'cpu'       => 'snmp_standard::mode::cpu',
-              'domains'   => 'network::alcatel::oxe::snmp::mode::domains',
-              'memory'    => 'snmp_standard::mode::memory',
-              'pbx-state' => 'network::alcatel::oxe::snmp::mode::pbxstate',
-              'pbx-role'  => 'network::alcatel::oxe::snmp::mode::pbxrole',
-              'storage'   => 'snmp_standard::mode::storage',
-              'swap'      => 'snmp_standard::mode::swap',
-              'trunks'    => 'network::alcatel::oxe::snmp::mode::trunks'
+    $self->{version} = '0.1';
+    %{ $self->{modes} } = (
+        'directory-size-usage' => 'cloud::microsoft::office365::azuread::mode::directorysizeusage',
     );
 
+    $self->{custom_modes}{graphapi} = 'cloud::microsoft::office365::custom::graphapi';
     return $self;
 }
 
@@ -50,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Alcatel OXE (A4400) in SNMP.
+Check Microsoft Azure AD using GraphAPI
 
 =cut
