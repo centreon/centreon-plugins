@@ -41,8 +41,12 @@ sub prefix_interface_output {
 sub custom_usage_bandwidth_calc {
     my ($self, %options) = @_;
 
-    my $delta_time = $options{new_datas}->{bandwidth_windows_net_bytes_total} - $options{old_datas}->{bandwidth_windows_net_bytes_total} ;
-    my $bandwidth_usage = ($delta_time / $options{old_datas}->{bandwidth_windows_net_current_bandwidth_bytes}) * 100;
+    my $delta_time = $options{new_datas}->{bandwidth_windows_net_bytes_total} - $options{old_datas}->{bandwidth_windows_net_bytes_total};
+    
+    my $bandwidth_usage = 0;
+    if ($options{old_datas}->{bandwidth_windows_net_current_bandwidth_bytes} > 0){
+        my $bandwidth_usage = ($delta_time / $options{old_datas}->{bandwidth_windows_net_current_bandwidth_bytes}) * 100;
+    }
     $self->{result_values}->{bandwitdh_avg} = $bandwidth_usage;
 
     return 0;

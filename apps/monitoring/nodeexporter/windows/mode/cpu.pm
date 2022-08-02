@@ -156,9 +156,7 @@ sub manage_selection {
 
     my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
   
-    $self->{cache_name} = 'windows_nodeexporter' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_channel}) ? md5_hex($self->{option_results}->{filter_channel}) : md5_hex('all'));
+    $self->{cache_name} = 'windows_nodeexporter' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' . md5_hex('all');
     
     $self->{node_cpu} = {};
     my $cpu_number;
