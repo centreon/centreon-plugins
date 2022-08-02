@@ -56,10 +56,18 @@ sub manage_selection {
         my %target;
         $target{instance} = $target_information->{labels}->{instance};
         $target{filter_instance} = "instance," . $target_information->{labels}->{instance};
+
+        foreach my $entry (keys %{$target_information}) {
+            next if (ref($target_information->{$entry}) ne "HASH" || $entry ne "labels");
+            my @array;
+            foreach my $key (keys %{$target_information->{$entry}}) {
+                push @array, { key => $key, value => $target_information->{$entry}->{$key} };
+            }
+            $target{$entry} = \@array;
+        }
         $target_information->{labels}->{instance} =~ s/(.*):\d+$//;
         $target{instance_address} = $1;
-        $target{job} = $target_information->{labels}->{job};
-        $target{group} = $target_information->{labels}->{group};
+
         push @disco_data, \%target;
     }
 
