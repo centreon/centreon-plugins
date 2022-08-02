@@ -59,7 +59,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "service:s"         => { name => 'service' }
+        "service:s"  => { name => 'service' }
     });
 
     return $self;
