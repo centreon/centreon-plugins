@@ -59,8 +59,7 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $storage (sort keys %{$self->{storages}}) {
-        $self->{output}->output_add(long_msg => '[volume = ' . $storage . "]"
-        );
+        $self->{output}->output_add(long_msg => '[volume = ' . $storage . "]");
     }
 
     $self->{output}->output_add(severity => 'OK',
