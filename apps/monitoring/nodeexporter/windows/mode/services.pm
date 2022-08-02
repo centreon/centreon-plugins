@@ -30,7 +30,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_state_output {
     my ($self, %options) = @_;
     
-    my $msg = 'Service : ' . $self->{result_values}->{display} . ', state : ' . $self->{result_values}->{status} . ', start mode : ' . $self->{result_values}->{start_mode};
+    my $msg = "Service : '" . $self->{result_values}->{display} . "' [state: '" . $self->{result_values}->{status} . "' [start_mode:'" . $self->{result_values}->{start_mode} . "'";
     return $msg;
 }
 
