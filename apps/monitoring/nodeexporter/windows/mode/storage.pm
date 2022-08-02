@@ -165,6 +165,7 @@ sub manage_selection {
             }
         }
     }
+    
     if (scalar(keys %{$self->{node_storage}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No disk found.");
         $self->{output}->option_exit();
