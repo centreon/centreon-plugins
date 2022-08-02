@@ -59,7 +59,7 @@ sub set_counters {
 
     $self->{maps_counters}->{bandwidth} = [
         { label => 'bandwidth-usage', nlabel => 'node.bandwidth.usage', display_ok => 0, set => {
-                key_values => [ { name => 'windows_net_current_bandwidth_bytes' }, { name => 'windows_net_bytes_total' } ],
+                key_values => [ { name => 'windows_net_current_bandwidth_bytes', diff => 1  }, { name => 'windows_net_bytes_total' } ],
                 closure_custom_calc => $self->can('custom_usage_bandwidth_calc'),
                 output_template => '%.2f %%',
                 output_template => 'Average bandwidth usage : %.2f %%', output_use => 'bandwitdh_avg', threshold_use => 'bandwitdh_avg',
@@ -134,7 +134,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-         "filter:s"      =>   { name => 'filter', default => '' },
+         "interface:s"      =>   { name => 'interface' },
     });
 
     return $self;
@@ -146,8 +146,7 @@ sub manage_selection {
     my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
   
     $self->{cache_name} = 'windows_nodeexporter' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_channel}) ? md5_hex($self->{option_results}->{filter_channel}) : md5_hex('all'));
+        (defined($self->{option_results}->{interface}) ? md5_hex($self->{option_results}->{interface}) : md5_hex('all'));
     
 
     my $traffic_metrics;
@@ -157,7 +156,7 @@ sub manage_selection {
         next if ($metric !~ /windows_net_packets_received_total|windows_net_packets_sent_total|windows_net_bytes_received_total|windows_net_bytes_sent_total|windows_net_packets_received_errors_total|windows_net_packets_outbound_errors_total|windows_net_bytes_total|windows_net_current_bandwidth_bytes/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            next if (defined($self->{option_results}->{filter}) && $data->{dimensions}->{nic} =~ $self->{option_results}->{filter});
+            next if (defined($self->{option_results}->{interface}) && $data->{dimensions}->{nic} !~ /$self->{option_results}->{interface}/i);
 
             $self->{traffic}->{$data->{dimensions}->{nic}}->{$metric} = $data->{value} ;
             $self->{traffic}->{$data->{dimensions}->{nic}}->{display} = $data->{dimensions}->{nic} ;
@@ -169,7 +168,7 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{traffic}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->add_option_msg(short_msg => "No interface found.");
         $self->{output}->option_exit();
     }
 }
@@ -180,9 +179,11 @@ __END__
 
 =head1 MODE
 
-=item B<--filter> 
+=item B<--interface> 
 
-Filter to exclude interfaces. Can be a regex.
+Specify which interface to monitor. Can be a regex.
+
+Default: all interfaces are monitored.
 
 =item B<--warning-*> 
 

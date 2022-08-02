@@ -96,7 +96,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{service}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No services found.");
+        $self->{output}->add_option_msg(short_msg => "No service found.");
         $self->{output}->option_exit();
     }
 }
@@ -113,8 +113,9 @@ Check Windows services.
 
 =item B<--service>
 
-Inclusive filter. Specify which services to check. It can be a regex.
-Default: all services are included.
+Specify which service to monitor. Can be a regex.
+
+Default: all services are monitored.
 
 =item B<--warning-status>
 

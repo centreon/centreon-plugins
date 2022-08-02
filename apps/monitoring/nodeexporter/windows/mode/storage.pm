@@ -127,7 +127,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter:s"      => { name => 'filter' },
+        "storage:s"     => { name => 'storage' },
         "units:s"       => { name => 'units', default => '%' }
     });
 
@@ -157,7 +157,7 @@ sub manage_selection {
         next if ($metric !~ /windows_logical_disk_free_bytes|windows_logical_disk_size_bytes/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            next if (defined($self->{option_results}->{filter}) && $data->{dimensions}->{volume} !~ /$self->{option_results}->{filter}/i);
+            next if (defined($self->{option_results}->{storage}) && $data->{dimensions}->{volume} !~ /$self->{option_results}->{storage}/i);
 
             foreach my $volume ($data->{dimensions}->{volume}) {
                 $self->{node_storage}->{$volume}->{$metric} = $data->{value};
@@ -181,11 +181,11 @@ Check storage based on node exporter metrics.
 
 =over 8
 
-=item B<--filter>
+=item B<--storage>
 
-Inclusive filter. Specify which disks you want to monitor.
+Specify which disk to monitor. Can be a regex.
 
-Can be a regex.
+Default: all disks are monitored.
 
 =item B<--units>
 
