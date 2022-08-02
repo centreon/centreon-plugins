@@ -117,9 +117,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-out', nlabel => 'node.traffic.out.bitspersecond', set => {
-                key_values => [
-                    { name => 'windows_net_bytes_sent_total', per_second => 1 }, { name => 'display' }
-                ],
+                key_values => [ { name => 'windows_net_bytes_sent_total', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic out: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
