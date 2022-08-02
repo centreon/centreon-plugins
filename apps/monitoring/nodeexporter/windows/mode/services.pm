@@ -92,7 +92,6 @@ sub manage_selection {
                 $self->{service}->{$data->{dimensions}->{name}}->{start_mode} = $data->{dimensions}->{start_mode};
             }
         }
-  
     }
     
     if (scalar(keys %{$self->{service}}) <= 0) {
