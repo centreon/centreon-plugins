@@ -84,9 +84,7 @@ sub set_counters {
             }
         },
         { label => 'packets-out', nlabel => 'node.packets.out.count', display_ok => 0, set => {
-                key_values => [
-                    { name => 'windows_net_packets_sent_total', diff => 1 }, { name => 'display' }
-                ],
+                key_values => [ { name => 'windows_net_packets_sent_total', diff => 1 }, { name => 'display' } ],
                 output_template => 'packets out: %s',
                 perfdatas => [
                     { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
