@@ -20,7 +20,7 @@
 
 package apps::monitoring::nodeexporter::windows::mode::listservices;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
