@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'cpu'             => 'apps::monitoring::nodeexporter::windows::mode::cpu',
         'list-interfaces' => 'apps::monitoring::nodeexporter::windows::mode::listinterfaces',
+        'list-services'   => 'apps::monitoring::nodeexporter::windows::mode::listservices',
         'list-storages'   => 'apps::monitoring::nodeexporter::windows::mode::liststorages',
         'memory'          => 'apps::monitoring::nodeexporter::windows::mode::memory',
         'services'        => 'apps::monitoring::nodeexporter::windows::mode::services',

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::nodeexporter::windows::mode::listinterfaces;
+package apps::monitoring::nodeexporter::windows::mode::listservices;
 
 use base qw(centreon::plugins::mode);
 
@@ -45,28 +45,26 @@ sub manage_selection {
 
     my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
 
-    foreach my $metric (keys %{$raw_metrics}) {
-        next if ($metric ne "windows_net_bytes_received_total" );
-
-        foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            $self->{interfaces}->{$data->{dimensions}->{nic}}->{name} = $data->{dimensions}->{nic};
-        }
-    }
+    return $raw_metrics;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $interface (sort keys %{$self->{interfaces}}) {
-        $self->{output}->output_add(long_msg => '[name = ' . $interface . "]"
-        );
-    }
+    my $raw_services = $self->manage_selection(%options);
 
+    foreach my $metric (keys %{$raw_services}) {
+        next if ($metric ne "windows_service_state" );
+
+        foreach my $service (@{$raw_services->{$metric}->{data}}) {
+            $self->{output}->output_add(long_msg => '[name = ' . $service->{dimensions}->{name} . "]") if $service->{value} == 1;
+        }
+    }
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Interfaces:');
+                                short_msg => 'List Services:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
+
 }
 
 sub disco_format {
@@ -78,11 +76,16 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $interface (sort keys %{$self->{interfaces}}) {
-        $self->{output}->add_disco_entry(
-            name => $self->{interfaces}->{$interface}->{name}
-        );
+    my $raw_services = $self->manage_selection(%options);
+
+    foreach my $metric (keys %{$raw_services}) {
+        next if ($metric ne "windows_service_state" );
+
+        foreach my $service (@{$raw_services->{$metric}->{data}}) {
+            $self->{output}->add_disco_entry(             
+                name => $service->{dimensions}->{name}
+            ) if $service->{value} == 1;
+        }
     }
 }
 
@@ -92,7 +95,7 @@ __END__
 
 =head1 MODE
 
-List interfaces
+List services
 
 =over 8
 
