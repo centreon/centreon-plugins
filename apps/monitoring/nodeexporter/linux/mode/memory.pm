@@ -155,6 +155,10 @@ sub manage_selection {
 
         $self->{node_memory}->{$metric} = $raw_metrics->{$metric}->{data}[0]->{value};
     }
+    if (scalar(keys %{$self->{node_memory}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
