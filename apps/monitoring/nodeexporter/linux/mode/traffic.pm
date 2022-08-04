@@ -133,7 +133,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-         "filter:s"      =>   { name => 'filter', default => 'lo' },
+         "interface:s"      =>   { name => 'interface', default => '^(?!(lo$))' },
     });
 
     return $self;
@@ -145,8 +145,7 @@ sub manage_selection {
     my $raw_metrics = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
   
     $self->{cache_name} = 'linux_nodeexporter' . $options{custom}->get_uuid()  . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_channel}) ? md5_hex($self->{option_results}->{filter_channel}) : md5_hex('all'));
+        (defined($self->{option_results}->{interface}) ? md5_hex($self->{option_results}->{interface}) : md5_hex('all'));
     
 
     my $traffic_metrics;
@@ -156,7 +155,7 @@ sub manage_selection {
         next if ($metric !~ /node_network_receive_packets_total|node_network_transmit_packets_total|node_network_receive_bytes_total|node_network_transmit_bytes_total|node_network_up/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            next if (defined($self->{option_results}->{filter}) && $data->{dimensions}->{device} =~ $self->{option_results}->{filter});
+            next if (defined($self->{option_results}->{interface}) && $data->{dimensions}->{device} !~ /$self->{option_results}->{interface}/i);
             $self->{interface}->{$data->{dimensions}->{device}}->{traffic}->{$metric} = $data->{value} if ($metric ne 'node_network_up');
             $self->{interface}->{$data->{dimensions}->{device}}->{traffic}->{display} = $data->{dimensions}->{device} if ($metric ne 'node_network_up');
 
@@ -166,6 +165,11 @@ sub manage_selection {
             }
         }
     }
+
+    if (scalar(keys %{$self->{interface}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No interface found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -174,9 +178,11 @@ __END__
 
 =head1 MODE
 
-=item B<--filter> 
+=item B<--interface> 
 
-Filter to exclude interfaces. Is a regex.
+Specify which interface to monitor. Can be a regex.
+
+Default: all interfaces are monitored except 'lo' interface.
 
 =item B<--warning-*> 
 
