@@ -162,32 +162,16 @@ sub get_metrics_by_clusters {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /cluster/) {
-        $file = '/home/qgarnier/clients/plugins/powerstore/clusters.json';
-    } else {
-        $file = '/home/qgarnier/clients/plugins/powerstore/metrics.json';
-    }
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $file : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     $self->settings();
     my $content = $self->{http}->request(
         url_path => $options{endpoint},
         get_param => $options{get_param},
         header => $options{headers},
+        query_form_post => $options{query_form_post},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
     );
-=cut
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
