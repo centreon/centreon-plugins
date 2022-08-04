@@ -127,6 +127,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
+        "storage:s"    => { name => 'storage' },
         "units:s"      => { name => 'units', default => '%' },
         'fstype:s'     => { name => 'fstype', default => 'linuxfs|rootfs|tmpfs' },
     });
@@ -156,7 +157,7 @@ sub manage_selection {
         next if ($metric !~ /node_filesystem_free_bytes|node_filesystem_size_bytes/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            next if ( $data->{dimensions}->{fstype} !~ /$self->{option_results}->{fstype}/i );
+            next if ( ($data->{dimensions}->{fstype} !~ /$self->{option_results}->{fstype}/i) || $data->{dimensions}->{mountpoint} =~ /$self->{option_results}->{storage}/i );
 
             foreach my $mountpoint ($data->{dimensions}->{mountpoint}) {
                 $self->{node_storage}->{$mountpoint}->{$metric} = $data->{value};
@@ -164,6 +165,12 @@ sub manage_selection {
             }
         }
     }
+
+    if (scalar(keys %{$self->{node_storage}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No partition found.");
+        $self->{output}->option_exit();
+    }
+
 }
 
 1;
