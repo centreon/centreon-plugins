@@ -32,12 +32,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-<<<<<<< HEAD
         "prettify"      => { name => 'prettify' }
-=======
-        "service:s" => { name => 'service' },
-        "prettify"  => { name => 'prettify' }
->>>>>>> 4cdbb870b663049dadf4b390fce8d526bf63c9ef
     });
 
     $self->{services} = {
