@@ -85,7 +85,6 @@ sub run {
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();
-
 }
 
 1;
