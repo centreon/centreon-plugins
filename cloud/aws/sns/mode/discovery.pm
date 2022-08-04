@@ -55,9 +55,10 @@ sub run {
         service => 'sns',
         command => 'list-topics'
     );
-    
+
     foreach my $topic (@{$topics->{Topics}}) {
         my %topic;
+        $topic{type} = 'sns';
         $topic{name} = $topic->{TopicArn};
         $topic{name} =~ s/(.*)\://g;
         push @disco_data, \%topic;
@@ -79,7 +80,8 @@ sub run {
     if ($@) {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
     }
-    
+
+    return @disco_data if (defined($options{discover}));
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();

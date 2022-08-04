@@ -66,7 +66,8 @@ sub run {
             }
         $volume{id} = $volume->{VolumeId};
         $volume{name} = join(",", @name_tags);
-        $volume{type} = $volume->{VolumeType};
+        $volume{type} = 'ebs';
+        $volume{volumeType} = $volume->{VolumeType};
         $volume{state} = $volume->{State};
         $volume{snapshotid} = $volume->{SnapshotId};
         $volume{encrypted} = $volume->{Encrypted};
@@ -90,6 +91,8 @@ sub run {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
     }
 
+    return @disco_data if (defined($options{discover}));
+    
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();

@@ -58,6 +58,7 @@ sub run {
     
     foreach my $backup_vault (@{$backup_vaults->{BackupVaultList}}) {
         my %backup_vault;
+        $backup_vault{type} = 'backup_vault';
         $backup_vault{name} = $backup_vault->{BackupVaultName};
         push @disco_data, \%backup_vault;
     }
@@ -78,6 +79,8 @@ sub run {
     if ($@) {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
     }
+
+    return @disco_data if (defined($options{discover}));    
     
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);

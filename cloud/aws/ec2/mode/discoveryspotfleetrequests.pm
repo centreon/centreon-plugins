@@ -61,12 +61,18 @@ sub run {
 
     foreach my $fleet_request (@{$spot_fleet_requests->{SpotFleetRequestConfigs}}) {
         my %sfr;
+        $sfr{type} = 'spot_fleet_request';
         $sfr{state} = $fleet_request->{SpotFleetRequestState};
         $sfr{id} = $fleet_request->{SpotFleetRequestId};
         $sfr{activity_status} = $fleet_request->{ActivityStatus};
 
-        push @disco_data, \%sfr unless (defined($self->{option_results}->{filter_state})
-            && $sfr{state} !~ /$self->{option_results}->{filter_state}/);
+        if (defined($options{discover})) { 
+            push @disco_data, \%sfr;
+        
+        } else {
+            push @disco_data, \%sfr unless (defined($self->{option_results}->{filter_state})
+                && $sfr{state} !~ /$self->{option_results}->{filter_state}/);
+        }
     }
 
     $disco_stats->{end_time} = time();
@@ -85,6 +91,8 @@ sub run {
     if ($@) {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
     }
+
+    return @disco_data if (defined($options{discover}));
     
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);

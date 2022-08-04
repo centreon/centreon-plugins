@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::elb::network::mode::discovery;
+package cloud::aws::vpn::mode::discovery;
 
 use base qw(centreon::plugins::mode);
 
@@ -30,11 +30,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         "prettify"  => { name => 'prettify' },
     });
-    
+
     return $self;
 }
 
@@ -51,23 +51,24 @@ sub run {
 
     $disco_stats->{start_time} = time();
 
-    my $load_balancers = $options{custom}->discovery(
-        service => 'elbv2',
-        command => 'describe-load-balancers'
-    );
-
-    foreach my $load_balancer (@{$load_balancers->{LoadBalancers}}) {
-        next if (!defined($load_balancer->{LoadBalancerArn}) || $load_balancer->{Type} ne 'network');
-        my %elb;
-        $elb{type} = "network";
-        $elb{arn} = $load_balancer->{LoadBalancerArn};
-        $elb{name} = $1 if ($load_balancer->{LoadBalancerArn} =~ /arn:aws:elasticloadbalancing:.*:loadbalancer\/(.*)/);
-        $elb{dns_name} = $load_balancer->{DNSName};
-        $elb{availability_zones} = $load_balancer->{AvailabilityZones};
-        $elb{vpc_id} = $load_balancer->{VpcId};
-        $elb{security_groups} = $load_balancer->{SecurityGroups};
-        $elb{state} = $load_balancer->{State}->{Code};
-        push @disco_data, \%elb;
+    my $vpns = $options{custom}->discovery(region => $options{region},
+        service => 'ec2', command => 'describe-vpn-connections');
+    
+    foreach my $connection (@{$vpns->{VpnConnections}}) {
+        next if (!defined($connection->{VpnConnectionId}));
+        my %vpn;
+        $vpn{type} = "vpn";
+        $vpn{id} = $connection->{VpnConnectionId};
+        $vpn{connection_type} = $connection->{Type};
+        $vpn{state} = $connection->{State};
+        $vpn{category} = $connection->{Category};
+        foreach my $tag (@{$connection->{Tags}}) {
+            if ($tag->{Key} eq "Name" && defined($tag->{Value})) {
+                $vpn{name} = $tag->{Value};
+            }
+            push @{$vpn{tags}}, { key => $tag->{Key}, value => $tag->{Value} };
+        }
+        push @disco_data, \%vpn;
     }
 
     $disco_stats->{end_time} = time();
@@ -88,7 +89,7 @@ sub run {
     }
 
     return @disco_data if (defined($options{discover}));
- 
+    
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();
@@ -100,7 +101,7 @@ __END__
 
 =head1 MODE
 
-Network ELB discovery.
+Amazon VPN discovery.
 
 =over 8
 

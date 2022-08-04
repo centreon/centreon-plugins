@@ -58,6 +58,7 @@ sub run {
 
     foreach my $function (@{$functions->{Functions}}) {
         my %function;
+        $function{type} = 'lambda';
         $function{name} = $function->{FunctionName};
         push @disco_data, \%function;
     }
@@ -78,7 +79,9 @@ sub run {
     if ($@) {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
     }
-    
+
+    return @disco_data if (defined($options{discover}));
+
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();
