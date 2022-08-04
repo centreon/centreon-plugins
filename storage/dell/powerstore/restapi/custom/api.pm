@@ -133,17 +133,61 @@ sub get_port {
     return $self->{port};
 }
 
+sub get_metrics_by_clusters {
+    my ($self, %options) = @_;
+
+    my $clusters = $self->request_api(endpoint => '/api/rest/cluster');
+
+    my $results = {};
+    foreach (@$clusters) {
+        my $post_json = JSON::XS->new->utf8->encode(
+            {
+                entity => 'performance_metrics_by_cluster',
+                entity_id => $_->{id},
+                interval => 'Five_Mins'
+            }
+        );
+
+        my $perfs = $self->request_api(
+            endpoint => '/api/rest/metrics/generate',
+            header => ['Content-Type: application/json'],
+            query_form_post => $post_json
+        );
+        $results->{ $_->{id} } = $perfs;
+    }
+
+    return $results;
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
+    my $file;
+    if ($options{endpoint} =~ /cluster/) {
+        $file = '/home/qgarnier/clients/plugins/powerstore/clusters.json';
+    } else {
+        $file = '/home/qgarnier/clients/plugins/powerstore/metrics.json';
+    }
+    my $content = do {
+        local $/ = undef;
+        if (!open my $fh, "<", $file) {
+            $self->{output}->add_option_msg(short_msg => "Could not open file $file : $!");
+            $self->{output}->option_exit();
+        }
+        <$fh>;
+    };
+
+=pod
     $self->settings();
     my $content = $self->{http}->request(
         url_path => $options{endpoint},
         get_param => $options{get_param},
+        header => $options{headers},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
     );
+=cut
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
