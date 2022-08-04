@@ -127,8 +127,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "units:s"      => { name => 'units', default => '%' },
         'fstype:s'     => { name => 'fstype', default => 'linuxfs|rootfs|tmpfs' },
+        "storage:s"    => { name => 'storage' },
+        "units:s"      => { name => 'units', default => '%' }
     });
 
     return $self;
@@ -156,13 +157,18 @@ sub manage_selection {
         next if ($metric !~ /node_filesystem_free_bytes|node_filesystem_size_bytes/i );
 
         foreach my $data (@{$raw_metrics->{$metric}->{data}}) {
-            next if ( $data->{dimensions}->{fstype} !~ /$self->{option_results}->{fstype}/i );
+            next if ((defined($self->{option_results}->{fstype}) && $data->{dimensions}->{fstype} !~ /$self->{option_results}->{fstype}/i ) || (defined($self->{option_results}->{storage}) && $data->{dimensions}->{mountpoint} !~ /$self->{option_results}->{storage}/i));
 
             foreach my $mountpoint ($data->{dimensions}->{mountpoint}) {
                 $self->{node_storage}->{$mountpoint}->{$metric} = $data->{value};
                 $self->{node_storage}->{$mountpoint}->{display} = $mountpoint;
             }
         }
+    }
+
+    if (scalar(keys %{$self->{node_storage}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No partition found.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -181,6 +187,12 @@ Check storage based on node exporter metrics.
 Inclusion filter on fstype.
 
 Can be used to exclude fstypes. Example : --fstype='^(?!(tmpfs))'
+
+=item B<--storage>
+
+Specify which disk to monitor. Can be a regex.
+
+Default: all disks are monitored.
 
 =item B<--units>
 
