@@ -89,36 +89,6 @@ sub discover_vpc {
         push @disco_data, \%vpc;
     }
     my @disco_keys = keys $disco_data[0] if @disco_data != 0;
-<<<<<<< HEAD
-=======
-    return \@disco_data, \@disco_keys;
-}
-
-sub discover_vpn {
-    my (%options) = @_;
-
-    my @disco_data;
-
-    my $vpns = $options{custom}->discovery(region => $options{region},
-        service => 'ec2', command => 'describe-vpn-connections');
-    foreach my $connection (@{$vpns->{VpnConnections}}) {
-        next if (!defined($connection->{VpnConnectionId}));
-        my %vpn;
-        $vpn{type} = "vpn";
-        $vpn{id} = $connection->{VpnConnectionId};
-        $vpn{connection_type} = $connection->{Type};
-        $vpn{state} = $connection->{State};
-        $vpn{category} = $connection->{Category};
-        foreach my $tag (@{$connection->{Tags}}) {
-            if ($tag->{Key} eq "Name" && defined($tag->{Value})) {
-                $vpn{name} = $tag->{Value};
-            }
-            push @{$vpn{tags}}, { key => $tag->{Key}, value => $tag->{Value} };
-        }
-        push @disco_data, \%vpn;
-    }
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
->>>>>>> 4cdbb870b663049dadf4b390fce8d526bf63c9ef
     return \@disco_data, \@disco_keys;
 }
 
@@ -282,7 +252,6 @@ sub discover_sqs {
     use cloud::aws::sqs::mode::discovery;
     my @disco_data = cloud::aws::sqs::mode::discovery->run(custom => $options{custom}, discover => 1);
     my @disco_keys = keys $disco_data[0] if @disco_data != 0;
-<<<<<<< HEAD
     return \@disco_data, \@disco_keys;
 }
 
@@ -292,8 +261,6 @@ sub discover_vpn {
     use cloud::aws::vpn::mode::discovery;
     my @disco_data = cloud::aws::vpn::mode::discovery->run(custom => $options{custom}, discover => 1);
     my @disco_keys = keys $disco_data[0];
-=======
->>>>>>> 4cdbb870b663049dadf4b390fce8d526bf63c9ef
     return \@disco_data, \@disco_keys;
 }
 
@@ -306,11 +273,6 @@ sub run {
     my $disco_stats;
 
     my %asset_attr_keys;
-<<<<<<< HEAD
-
-    $disco_stats->{start_time} = time();
-=======
->>>>>>> 4cdbb870b663049dadf4b390fce8d526bf63c9ef
 
     $disco_stats->{start_time} = time();
 
