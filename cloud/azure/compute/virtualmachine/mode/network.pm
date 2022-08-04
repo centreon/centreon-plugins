@@ -149,7 +149,8 @@ Critical thresholds ($label$ can be: 'bytes-in', 'bytes-out').
 
 =item B<--per-sec>
 
-Change the data to be unit/sec.
+Transform value to obtain Bytes/second.
+(Inherited from base class)
 
 =back
 
