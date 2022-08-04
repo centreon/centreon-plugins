@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use DateTime;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
@@ -153,11 +154,16 @@ sub manage_selection {
         vault_name => $self->{option_results}->{vault_name},
         resource_group => $self->{option_results}->{resource_group}
     );
+
     foreach my $job (@{$jobs}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $job->{properties}->{entityFriendlyName} !~ /$self->{option_results}->{filter_name}/);
 
         my $duration = $options{custom}->convert_duration(time_string => $job->{properties}->{duration});
+        my $end_time = $options{custom}->convert_iso8601_to_epoch(time_string => $job->{properties}->{endTime});
+
+        my $ts_timeframe = time() - $self->{option_results}->{timeframe};
+        next if ($ts_timeframe > $end_time);
         
         $self->{jobs}->{$job->{id}} = {
             display => $job->{properties}->{entityFriendlyName},
