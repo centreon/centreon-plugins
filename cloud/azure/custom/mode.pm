@@ -68,7 +68,7 @@ sub custom_metric_perfdata {
     my $options = $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}};
     my $value = defined($self->{instance_mode}->{option_results}->{per_second}) ? $self->{result_values}->{value}->{per_second} : $self->{result_values}->{value}->{absolute};
     my $format = defined($self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{template}) ? $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{template} : '%.2f';
-    if (defined($self->{instance_mode}->{option_results}->{per_second})) {
+    if (defined($self->{instance_mode}->{option_results}->{per_second}) && $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{nlabel} !~ /\.persecond$/) {
         $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{nlabel} .= '.persecond';
         $self->{instance_mode}->{metrics_mapping}->{$self->{result_values}->{metric}}->{unit} .= '/s';
     }
