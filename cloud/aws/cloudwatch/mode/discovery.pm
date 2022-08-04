@@ -32,7 +32,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "service:s"    => { name => 'service' },
         "prettify"      => { name => 'prettify' }
     });
 
@@ -88,33 +87,6 @@ sub discover_vpc {
             push @{$vpc{tags}}, { key => $tag->{Key}, value => $tag->{Value} };
         }
         push @disco_data, \%vpc;
-    }
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
-    return \@disco_data, \@disco_keys;
-}
-
-sub discover_vpn {
-    my (%options) = @_;
-
-    my @disco_data;
-
-    my $vpns = $options{custom}->discovery(region => $options{region},
-        service => 'ec2', command => 'describe-vpn-connections');
-    foreach my $connection (@{$vpns->{VpnConnections}}) {
-        next if (!defined($connection->{VpnConnectionId}));
-        my %vpn;
-        $vpn{type} = "vpn";
-        $vpn{id} = $connection->{VpnConnectionId};
-        $vpn{connection_type} = $connection->{Type};
-        $vpn{state} = $connection->{State};
-        $vpn{category} = $connection->{Category};
-        foreach my $tag (@{$connection->{Tags}}) {
-            if ($tag->{Key} eq "Name" && defined($tag->{Value})) {
-                $vpn{name} = $tag->{Value};
-            }
-            push @{$vpn{tags}}, { key => $tag->{Key}, value => $tag->{Value} };
-        }
-        push @disco_data, \%vpn;
     }
     my @disco_keys = keys $disco_data[0] if @disco_data != 0;
     return \@disco_data, \@disco_keys;
@@ -283,6 +255,15 @@ sub discover_sqs {
     return \@disco_data, \@disco_keys;
 }
 
+sub discover_vpn {
+    my (%options) = @_;
+
+    use cloud::aws::vpn::mode::discovery;
+    my @disco_data = cloud::aws::vpn::mode::discovery->run(custom => $options{custom}, discover => 1);
+    my @disco_keys = keys $disco_data[0];
+    return \@disco_data, \@disco_keys;
+}
+
 sub run {
     my ($self, %options) = @_;
 
@@ -342,12 +323,6 @@ __END__
 Resources discovery.
 
 =over 8
-
-=item B<--service>
-
-Choose the service from which discover
-resources (Can be: 'VPC', 'EC2', 'RDS',
-'ELB', 'VPN') (Mandatory).
 
 =item B<--prettify>
 

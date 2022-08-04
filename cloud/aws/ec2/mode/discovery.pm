@@ -88,8 +88,8 @@ sub run {
             }
 
             if (defined($options{discover})) { 
-                push @disco_data, \%ec2 if $ec2{type} eq 'ec2';
-                push @disco_data, \%asg if $ec2{type} eq 'asg';
+                push @disco_data, \%ec2;
+                push @disco_data, \%asg if defined($asg{name});
 
             } else {
                 push @disco_data, \%ec2 unless (defined($self->{option_results}->{filter_type})
