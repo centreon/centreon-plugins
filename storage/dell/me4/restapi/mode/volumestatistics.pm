@@ -184,25 +184,15 @@ Check volumes statistics.
 
 Filter volume name (Can be a regexp).
 
-=item B<--warning-instance-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'volume-data-read-bytespersecond', 'volume-data-written-bytespersecond',
-'volume-reads-count', 'volume-writes-count',
-'volume-data-transfer-bytespersecond', 'volume-iops-ops',
-'volume-cache-write-usage-percentage', 'volume-cache-write-hits-count',
-'volume-cache-write-misses-count', 'volume-cache-read-hits-count',
-'volume-cache-read-misses-count'.
-
-=item B<--critical-instance-*>
-
-Threshold critical.
-Can be: 'volume-data-read-bytespersecond', 'volume-data-written-bytespersecond',
-'volume-reads-count', 'volume-writes-count',
-'volume-data-transfer-bytespersecond', 'volume-iops-ops',
-'volume-cache-write-usage-percentage', 'volume-cache-write-hits-count',
-'volume-cache-write-misses-count', 'volume-cache-read-hits-count',
-'volume-cache-read-misses-count'.
+Thresholds.
+Can be: 'data-read-bytespersecond', 'data-written-bytespersecond',
+'reads-count', 'writes-count',
+'data-transfer-bytespersecond', 'iops-ops',
+'cache-write-usage-percentage', 'cache-write-hits-count',
+'cache-write-misses-count', 'cache-read-hits-count',
+'cache-read-misses-count'.
 
 =back
 
