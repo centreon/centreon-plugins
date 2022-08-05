@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -91,12 +91,12 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{jobs} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', critical_default => '%{status} eq "Failed"', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'duration' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
     ];
@@ -119,8 +119,7 @@ sub new {
                                     "resource-group:s"      => { name => 'resource_group' },
                                     "filter-name:s"         => { name => 'filter_name' },
                                     "filter-counters:s"     => { name => 'filter_counters' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} eq "Failed"' },
+                                    "lookback:s"            => { name => 'lookback', default => '86400'}
                                 });
     
     return $self;
@@ -139,9 +138,6 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-
-    $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : 86400;
 }
 
 sub manage_selection {
@@ -163,8 +159,8 @@ sub manage_selection {
         my $duration = $options{custom}->convert_duration(time_string => $job->{properties}->{duration});
         my $end_time = $options{custom}->convert_iso8601_to_epoch(time_string => $job->{properties}->{endTime});
 
-        my $ts_timeframe = time() - $self->{timeframe};
-        next if ($ts_timeframe > $end_time);
+        my $ts_timeframe = (defined($self->{option_results}->{lookback}) && $self->{option_results}->{lookback} ne '') ? (time() - $self->{option_results}->{lookback}) : 0;
+        next if (defined($self->{option_results}->{lookback}) && $self->{option_results}->{lookback} ne '' && $ts_timeframe > $end_time);
         
         $self->{jobs}->{$job->{id}} = {
             display => $job->{properties}->{entityFriendlyName},
@@ -193,7 +189,7 @@ Check backup jobs status.
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::azure::management::recovery::plugin --custommode=azcli --mode=backup-jobs-status
---resource-group='MYRESOURCEGROUP' --vault-name='Loki' --filter-counters='^total-failed$' --critical-total-failed='0' --timeframe=43200 --verbose
+--resource-group='MYRESOURCEGROUP' --vault-name='Loki' --filter-counters='^total-failed$' --critical-total-failed='0' --lookback=43200 --verbose
 
 =over 8
 
@@ -213,6 +209,12 @@ Filter job name (Can be a regexp).
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^total-completed$'
+
+=item B<--lookback>
+
+Specify in seconds since when you want to have backup job status.
+Based on endTime property of the job.
+Default: 86400 (1 day)
 
 =item B<--warning-status>
 
