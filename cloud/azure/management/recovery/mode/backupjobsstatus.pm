@@ -119,7 +119,7 @@ sub new {
                                     "resource-group:s"      => { name => 'resource_group' },
                                     "filter-name:s"         => { name => 'filter_name' },
                                     "filter-counters:s"     => { name => 'filter_counters' },
-                                    "lookback:s"            => { name => 'lookback', default => '86400'}
+                                    "lookback:s"            => { name => 'lookback' }
                                 });
     
     return $self;
@@ -214,7 +214,7 @@ Example: --filter-counters='^total-completed$'
 
 Specify in seconds since when you want to have backup job status.
 Based on endTime property of the job.
-Default: 86400 (1 day)
+Default: all existing job statuses are displayed.
 
 =item B<--warning-status>
 
