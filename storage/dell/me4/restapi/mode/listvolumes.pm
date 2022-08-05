@@ -45,7 +45,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    return = $options{custom}->request_api(method => 'GET', url_path => '/api/show/volumes');
+    return $options{custom}->request_api(method => 'GET', url_path => '/api/show/volumes');
 }
 
 sub run {
