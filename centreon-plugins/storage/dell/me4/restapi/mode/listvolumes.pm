@@ -45,14 +45,14 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{result} = $options{custom}->request_api(method => 'GET', url_path => '/api/show/volumes');
+    return $options{custom}->request_api(method => 'GET', url_path => '/api/show/volumes');
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $volume (@{$self->{result}->{volumes}}) {
+    my $volumes = $self->manage_selection(%options);
+    foreach my $volume (@{$volumes->{volumes}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $volume->{'volume-name'} !~ /$self->{option_results}->{filter_name}/);
         
@@ -82,8 +82,8 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $volume (@{$self->{volumes}}) {
+    my $volumes = $self->manage_selection(%options);
+    foreach my $volume (@{$volumes->{volumes}}) {
         $self->{output}->add_disco_entry(
             name => $volume->{'volume-name'},
             volumegroup => $volume->{'volume-group'},
