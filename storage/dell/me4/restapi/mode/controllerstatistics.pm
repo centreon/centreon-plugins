@@ -200,27 +200,16 @@ Check controllers statistics.
 
 Filter controller name (Can be a regexp).
 
-=item B<--warning-instance-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'controller-data-read-bytespersecond', 'controller-data-written-bytespersecond',
-'controller-reads-count', 'controller-writes-count',
-'controller-data-transfer-bytespersecond', 'controller-iops-ops',
-'controller-commands-forwarded-count',
-'controller-cache-write-usage-percentage', 'controller-cache-write-hits-count',
-'controller-cache-write-misses-count', 'controller-cache-read-hits-count',
-'controller-cache-read-misses-count', 'controller-cpu-utilization-percentage'.
-
-=item B<--critical-instance-*>
-
-Threshold critical.
-Can be: 'controller-data-read-bytespersecond', 'controller-data-written-bytespersecond',
-'controller-reads-count', 'controller-writes-count',
-'controller-data-transfer-bytespersecond', 'controller-iops-ops',
-'controller-commands-forwarded-count',
-'controller-cache-write-usage-percentage', 'controller-cache-write-hits-count',
-'controller-cache-write-misses-count', 'controller-cache-read-hits-count',
-'controller-cache-read-misses-count', 'controller-cpu-utilization-percentage'.
+Thresholds.
+Can be: 'data-read-bytespersecond', 'data-written-bytespersecond',
+'reads-count', 'writes-count',
+'data-transfer-bytespersecond', 'controller-iops-ops',
+'commands-forwarded-count',
+'cache-write-usage-percentage', 'cache-write-hits-count',
+'cache-write-misses-count', 'cache-read-hits-count',
+'cache-read-misses-count', 'cpu-utilization-percentage'.
 
 =back
 

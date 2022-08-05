@@ -45,17 +45,17 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{result} = $options{custom}->request_api(method => 'GET', url_path => '/api/show/controllers');
+    return $options{custom}->request_api(method => 'GET', url_path => '/api/show/controllers');
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $controller (@{$self->{result}->{controllers}}) {
+    my $controllers = $self->manage_selection(%options);
+    foreach my $controller (@{$controllers->{controllers}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $controller->{'durable-id'} !~ /$self->{option_results}->{filter_name}/);
-        
+
         $self->{output}->output_add(
             long_msg => sprintf(
                 "[name = %s]",
@@ -81,10 +81,10 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $controller (@{$self->{controllers}}) {
+    my $controllers = $self->manage_selection(%options);
+    foreach my $controller (@{$controllers->{controllers}}) {
         $self->{output}->add_disco_entry(
-            name => $controller->{'durable-id'},
+            name => $controller->{'durable-id'}
         );
     }
 }
