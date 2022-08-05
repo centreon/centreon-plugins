@@ -203,13 +203,11 @@ Filter controller name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'data-read-bytespersecond', 'data-written-bytespersecond',
-'reads-count', 'writes-count',
-'data-transfer-bytespersecond', 'controller-iops-ops',
-'commands-forwarded-count',
-'cache-write-usage-percentage', 'cache-write-hits-count',
-'cache-write-misses-count', 'cache-read-hits-count',
-'cache-read-misses-count', 'cpu-utilization-percentage'.
+Can be: 'data-read', 'data-written',
+'reads', 'writes', 'data-transfer',
+'iops', 'forwarded-cmds',
+'write-cache-used', 'write-cache-hits', 'write-cache-misses',
+'read-cache-hits', 'read-cache-misses', 'cpu-utilization'.
 
 =back
 

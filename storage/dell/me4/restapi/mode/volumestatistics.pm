@@ -187,12 +187,11 @@ Filter volume name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'data-read-bytespersecond', 'data-written-bytespersecond',
-'reads-count', 'writes-count',
-'data-transfer-bytespersecond', 'iops-ops',
-'cache-write-usage-percentage', 'cache-write-hits-count',
-'cache-write-misses-count', 'cache-read-hits-count',
-'cache-read-misses-count'.
+Can be: 'data-read', 'data-written',
+'reads', 'writes',
+'data-transfer', 'iops',
+'write-cache-percent', 'write-cache-hits', 'write-cache-misses',
+'read-cache-hits', 'read-cache-misses'.
 
 =back
 
