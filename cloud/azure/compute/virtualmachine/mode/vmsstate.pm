@@ -24,22 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-    
-    my $msg = sprintf('state: %s', $self->{result_values}->{state});
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub prefix_global_output {
     my ($self, %options) = @_;
@@ -62,7 +47,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-running', set => {
+        { label => 'total-running', nlabel => 'azure.compute.vm.running.count', set => {
                 key_values => [ { name => 'running' }  ],
                 output_template => "running : %s",
                 perfdatas => [
@@ -70,7 +55,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-stopped', set => {
+        { label => 'total-stopped', nlabel => 'azure.compute.vm.stopped.count', set => {
                 key_values => [ { name => 'stopped' }  ],
                 output_template => "stopped : %s",
                 perfdatas => [
@@ -82,11 +67,10 @@ sub set_counters {
     
     $self->{maps_counters}->{vms} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
+                key_values => [ { name => 'state' }, { name => 'name' } ],
+                output_template => 'state: %s',
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
     ];
@@ -94,16 +78,13 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "filter-name:s"         => { name => 'filter_name' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+        "resource-group:s"      => { name => 'resource_group' },
+        "filter-name:s"         => { name => 'filter_name' },
+    });
     
     return $self;
 }
@@ -112,7 +93,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
