@@ -193,7 +193,7 @@ Check backup jobs status.
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::azure::management::recovery::plugin --custommode=azcli --mode=backup-jobs-status
---resource-group='MYRESOURCEGROUP' --vault-name='Loki' --filter-counters='^total-failed$' --critical-total-failed='0' --verbose
+--resource-group='MYRESOURCEGROUP' --vault-name='Loki' --filter-counters='^total-failed$' --critical-total-failed='0' --timeframe=43200 --verbose
 
 =over 8
 
