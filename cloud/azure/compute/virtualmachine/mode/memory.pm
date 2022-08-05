@@ -32,7 +32,7 @@ sub get_metrics_mapping {
         'Available Memory Bytes' => {
             'output'  => 'Available Memory Bytes',
             'label'   => 'memory-available',
-            'nlabel'  => 'memory.available.bytes',
+            'nlabel'  => 'azvm.memory.available.bytes',
             'unit'    => 'B'
         }
     };
