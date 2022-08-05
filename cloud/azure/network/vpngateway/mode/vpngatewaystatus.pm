@@ -50,12 +50,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{vpns} = [
-        { label => 'status', 
-          type => 2, 
-          critical_default => '%{provisioning_state} ne "Succeeded"',
-          set => { 
-              key_values => [ 
-                { name => 'provisioning_state' }, { name => 'gateway_type' }, { name => 'vpn_type' }, { name => 'name' } ],
+        { 
+            label => 'status', 
+            type => 2, 
+            critical_default => '%{provisioning_state} ne "Succeeded"',
+            set => { 
+                key_values => [ { name => 'provisioning_state' }, { name => 'gateway_type' }, { name => 'vpn_type' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
