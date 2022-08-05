@@ -95,6 +95,7 @@ sub check_options {
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
     $self->{az_aggregations} = ['Average'];
+
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -102,7 +103,7 @@ sub check_options {
                 push @{$self->{az_aggregations}}, ucfirst(lc($stat));
             }
         }
-    }
+    } 
 
     foreach my $metric (keys %{$self->{metrics_mapping}}) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
@@ -133,7 +134,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin
 --custommode=azcli --mode=cpu --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Compute/virtualMachines/xxx'
 --filter-metric='Credits' --critical-cpu-credits-remaining='10:' --verbose
 
-Default aggregation: 'average' / All aggregations are valid.
+Default aggregation: 'average'
 
 =over 8
 

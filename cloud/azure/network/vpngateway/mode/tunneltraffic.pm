@@ -20,142 +20,66 @@
 
 package cloud::azure::network::vpngateway::mode::tunneltraffic;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(cloud::azure::custom::mode);
 
 use strict;
 use warnings;
 
-sub prefix_metric_output {
-    my ($self, %options) = @_;
-    
-    return "VPN Gateway '" . $options{instance_value}->{display} . "' " . $options{instance_value}->{stat} . " ";
-}
-
-sub custom_metric_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{stat} = $options{new_datas}->{$self->{instance} . '_stat'};
-    $self->{result_values}->{metric_perf} = lc($options{extra_options}->{metric_perf});
-    $self->{result_values}->{metric_label} = lc($options{extra_options}->{metric_label});
-    $self->{result_values}->{metric_name} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{metric_perf} . '_' . $self->{result_values}->{stat} . '_name'};
-    $self->{result_values}->{timeframe} = $options{new_datas}->{$self->{instance} . '_timeframe'};
-    $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{metric_perf} . '_' . $self->{result_values}->{stat}};
-    $self->{result_values}->{value_per_sec} = $self->{result_values}->{value} / $self->{result_values}->{timeframe};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-
-    return 0;
-}
-
-sub custom_metric_threshold {
+sub get_metrics_mapping {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => defined($self->{instance_mode}->{option_results}->{per_sec}) ?  $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
-                                                  threshold => [ { label => 'critical-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}, exit_litteral => 'warning' } ]);
-    return $exit;
-}
-
-sub custom_traffic_perfdata {
-    my ($self, %options) = @_;
-
-    my $extra_label = '';
-    $extra_label = '_' . lc($self->{result_values}->{display}) if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-
-    $self->{output}->perfdata_add(label => $self->{result_values}->{metric_perf} . "_" . $self->{result_values}->{stat} . $extra_label,
-				                  unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ? 'B/s' : 'B',
-                                  value => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value}),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}),
-                                  min => 0
-                                 );
-}
-
-sub custom_traffic_output {
-    my ($self, %options) = @_;
-    my $msg = "";
-
-    if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
-        my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec});
-        $msg = $self->{result_values}->{metric_name}  . ": " . $value . $unit . "/s"; 
-    } else {
-        my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value});
-        $msg = $self->{result_values}->{metric_name}  . ": " . $value . $unit;
-    }
-    return $msg;
-}
-
-sub custom_packets_perfdata {
-    my ($self, %options) = @_;
-
-    my $extra_label = '';
-    $extra_label = '_' . lc($self->{result_values}->{display}) if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-
-    $self->{output}->perfdata_add(label => $self->{result_values}->{metric_perf} . "_" . $self->{result_values}->{stat} . $extra_label,
-                                  unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ? 'packets/s' : 'packets',
-                                  value => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value}),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{metric_label} . "-" . $self->{result_values}->{stat}),
-                                  min => 0
-                                 );
-}
-
-sub custom_packets_output {
-    my ($self, %options) = @_;
-    my $msg ="";
-
-    if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
-        $msg = sprintf("%s: %.2f packets/s", $self->{result_values}->{metric_name}, $self->{result_values}->{value_per_sec});
-    } else {
-        $msg = sprintf("%s: %.2f packets", $self->{result_values}->{metric_name}, $self->{result_values}->{value});
-    } 
-    return $msg;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All traffic metrics are ok", skipped_code => { -10 => 1 } },
-    ];
-
-    foreach my $aggregation ('minimum', 'maximum', 'average', 'total') {
-        foreach my $metric ('TunnelIngressBytes', 'TunnelEgressBytes') {
-            my $metric_perf = lc($metric);
-            my $metric_label = lc($metric);
-            $metric_perf =~ s/ /_/g;
-            $metric_label =~ s/ /-/g;
-            my $entry = { label => $metric_label . '-' . $aggregation, set => {
-                                key_values => [ { name => $metric_perf . '_' . $aggregation }, { name => 'display' },
-                                    { name => 'stat' }, { name => $metric_perf . '_' . $aggregation . '_name' }, { name => 'timeframe' } ],
-                                closure_custom_calc => $self->can('custom_metric_calc'),
-                                closure_custom_calc_extra_options => { metric_perf => $metric_perf,
-                                    metric_label => $metric_label },
-                                closure_custom_output => $self->can('custom_traffic_output'),
-                                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
+    my $metrics_mapping = {
+        'TunnelIngressBytes' => {
+            'output' => 'Ingress bytes',
+            'label'  => 'traffic-in',
+            'nlabel' => 'azvpngateway.tunnel.ingress.bytes',
+            'unit'   => 'B',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'TunnelEgressBytes' => {
+            'output' => 'Egress bytes',
+            'label'  => 'traffic-out',
+            'nlabel' => 'azvpngateway.tunnel.egress.bytes',
+            'unit'   => 'B',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'TunnelIngressPackets' => {
+            'output' => 'Ingress packets',
+            'label'  => 'packets-in',
+            'nlabel' => 'azvpngateway.tunnel.packets.in.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'TunnelEgressPackets' => {
+            'output' => 'Egress packets',
+            'label'  => 'packets-out',
+            'nlabel' => 'azvpngateway.tunnel.packets.out.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'TunnelIngressPacketDropTSMismatch' => {
+            'output' => 'Ingress packets dropped (TSmismatch)',
+            'label'  => 'dropped-packets-in',
+            'nlabel' => 'azvpngateway.tunnel.dropped.packets.in.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
+        },
+        'TunnelEgressPacketDropTSMismatch' => {
+            'output' => 'Egress packets dropped (TSmismatch)',
+            'label'  => 'dropped-packets-out',
+            'nlabel' => 'azvpngateway.tunnel.dropped.packets.out.count',
+            'unit'   => '',
+            'min'    => '0',
+            'max'    => ''
         }
-        foreach my $metric ('TunnelIngressPackets', 'TunnelEgressPackets', 'TunnelIngressPacketDropTSMismatch', 'TunnelEgressPacketDropTSMismatch') {
-            my $metric_perf = lc($metric);
-            my $metric_label = lc($metric);
-            $metric_perf =~ s/ /_/g;
-            $metric_label =~ s/ /-/g;
-            my $entry = { label => $metric_label . '-' . $aggregation, set => {
-                                key_values => [ { name => $metric_perf . '_' . $aggregation }, { name => 'display' },
-                                    { name => 'stat' }, { name => $metric_perf . '_' . $aggregation . '_name' }, { name => 'timeframe' } ],
-                                closure_custom_calc => $self->can('custom_metric_calc'),
-                                closure_custom_calc_extra_options => { metric_perf => $metric_perf,
-                                    metric_label => $metric_label },
-                                closure_custom_output => $self->can('custom_packets_output'),
-                                closure_custom_perfdata => $self->can('custom_packets_perfdata'),
-                                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
-        }
-    }
+    };
+
+    return $metrics_mapping;
 }
 
 sub new {
@@ -164,10 +88,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "resource:s@"           => { name => 'resource' },
-        "resource-group:s"      => { name => 'resource_group' },
-        "filter-metric:s"       => { name => 'filter_metric' },
-        "per-sec"               => { name => 'per_sec' },
+        "resource:s"       => { name => 'resource' },
+        "resource-group:s" => { name => 'resource_group' },
+        "filter-metric:s"  => { name => 'filter_metric' }
     });
 
     return $self;
@@ -177,18 +100,27 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{resource})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify either --resource <name> with --resource-group option or --resource <id>.");
+    if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
         $self->{output}->option_exit();
     }
+
+    my $resource = $self->{option_results}->{resource};
+    my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';
+
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Network\/virtualNetworkGateways\/(.*)$/) {
+        $resource_group = $1;
+        $resource = $2;
+    }
     
-    $self->{az_resource} = $self->{option_results}->{resource};
-    $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
+    $self->{az_resource} = $resource;
+    $self->{az_resource_group} = $resource_group;
     $self->{az_resource_type} = 'virtualNetworkGateways';
     $self->{az_resource_namespace} = 'Microsoft.Network';
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
     $self->{az_aggregations} = ['Total'];
+
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {
@@ -198,56 +130,10 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('TunnelIngressBytes', 'TunnelEgressBytes', 'TunnelIngressPackets', 'TunnelEgressPackets',
-        'TunnelIngressPacketDropTSMismatch', 'TunnelEgressPacketDropTSMismatch') {
+    foreach my $metric (keys %{$self->{metrics_mapping}}) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
-
         push @{$self->{az_metrics}}, $metric;
-    }
-}
-
-sub manage_selection {
-    my ($self, %options) = @_;
-
-    my %metric_results;
-    foreach my $resource (@{$self->{az_resource}}) {
-        my $resource_group = $self->{az_resource_group};
-        my $resource_name = $resource;
-        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Network\/virtualNetworkGateways\/(.*)$/) {
-            $resource_group = $1;
-            $resource_name = $2;
-        }
-
-        ($metric_results{$resource_name}, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource_name,
-            resource_group => $resource_group,
-            resource_type => $self->{az_resource_type},
-            resource_namespace => $self->{az_resource_namespace},
-            metrics => $self->{az_metrics},
-            aggregations => $self->{az_aggregations},
-            timeframe => $self->{az_timeframe},
-            interval => $self->{az_interval},
-        );
-        
-        foreach my $metric (@{$self->{az_metrics}}) {
-            my $metric_name = lc($metric);
-            $metric_name =~ s/ /_/g;
-            foreach my $aggregation (@{$self->{az_aggregations}}) {
-                next if (!defined($metric_results{$resource_name}->{$metric_name}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
-
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{display} = $resource_name;
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{timeframe} = $self->{az_timeframe};
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{stat} = lc($aggregation);
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{$metric_name . "_" . lc($aggregation) . '_name'} = $metric_results{$resource_name}->{$metric_name}->{name};
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{$metric_name . "_" . lc($aggregation)} = defined($metric_results{$resource_name}->{$metric_name}->{lc($aggregation)}) ? $metric_results{$resource_name}->{$metric_name}->{lc($aggregation)} : 0;
-            }
-        }
-    }
-
-    if (scalar(keys %{$self->{metric}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
-        $self->{output}->option_exit();
     }
 }
 
@@ -264,16 +150,14 @@ Example:
 Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=tunnel-traffic
---resource=MyResource --resource-group=MYRGROUP --aggregation='total' --critical-tunnelingressbytes-total='10'
+--resource=MyResource --resource-group=MYRGROUP --aggregation='total' --critical-traffic-in='10'
 --verbose
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=tunnel-traffic
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Network/virtualNetworkGateways/xxx'
---aggregation='total' --critical-tunnelingressbytes-total='10' --verbose
-
-Default aggregation: 'total' / All aggregations are valid.
+--aggregation='total' --critical-traffic-in='10' --verbose
 
 =over 8
 
@@ -291,17 +175,15 @@ Filter metrics (Can be: 'TunnelIngressBytes', 'TunnelEgressBytes', 'TunnelIngres
 'TunnelEgressPackets', 'TunnelIngressPacketDropTSMismatch', 'TunnelEgressPacketDropTSMismatch')
 (Can be a regexp).
 
-=item B<--warning-$metric$-$aggregation$>
+=item B<--warning-$label$>
 
-Thresholds warning ($metric$ can be: 'tunnelingressbytes', 'tunnelegressbytes',
-'tunnelingresspackets', 'tunnelegresspackets', 'tunnelingresspacketdroptsmismatch',
-'tunnelegresspacketdroptsmismatch', $aggregation$ can be: 'total', 'minimum', 'maximum', 'average').
+Warning thresholds.
+($label$ can be traffic-in, traffic-out,  packets-in, packets-out, dropped-packets-in, dropped-packets-out)
 
-=item B<--critical-$metric$-$aggregation$>
+=item B<--critical-$label$>
 
-Thresholds critical ($metric$ can be: 'tunnelingressbytes', 'tunnelegressbytes',
-'tunnelingresspackets', 'tunnelegresspackets', 'tunnelingresspacketdroptsmismatch',
-'tunnelegresspacketdroptsmismatch', $aggregation$ can be: 'total', 'minimum', 'maximum', 'average').
+Critical thresholds
+($label$ can be traffic-in, traffic-out,  packets-in, packets-out, dropped-packets-in, dropped-packets-out)
 
 =item B<--per-sec>
 

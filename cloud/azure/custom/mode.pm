@@ -31,8 +31,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-dimension:s' => { name => 'filter_dimension' },
-        'per-sec'            => { name => 'per_second'}
+        'filter-dimension:s'   => { name => 'filter_dimension' },
+        'per-sec'              => { name => 'per_second'}
     });
 
     $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM MODE OPTIONS', once => 1);
@@ -176,7 +176,8 @@ sub manage_selection {
         my $metric_name = lc($metric);
         $metric_name =~ s/ /_/g;
         foreach my $aggregation (@{$self->{az_aggregations}}) {
-            next if (!defined($metric_results{$self->{az_resource}}->{$metric_name}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
+            next if (!defined($metric_results{$self->{az_resource}}->{$metric_name}->{lc($aggregation)}) && !defined($aggregation) && !defined($self->{option_results}->{zeroed}));
+            next if (defined($self->{skip_aggregation}->{$metric}->{lc($aggregation)}) && $self->{skip_aggregation}->{$metric}->{lc($aggregation)} == 0);
             $self->{metrics}->{$self->{az_resource}}->{display} = $self->{az_resource};
             $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{display} = lc($aggregation);
             $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{timeframe} = $self->{az_timeframe};
