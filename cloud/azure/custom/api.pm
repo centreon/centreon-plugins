@@ -270,24 +270,23 @@ sub convert_iso8601_to_epoch {
     my ($self, %options) = @_;
     
     if ($options{time_string} =~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d.*)Z/) {
-        centreon::plugins::misc::mymodule_load(
-            output => $self->{output}, module => 'DateTime::Duration',
-            error_msg => "Cannot load module 'DateTime::Format::Duration'."
+        my $dt = DateTime->new(
+            year       => $1,
+            month      => $2,
+            day        => $3,
+            hour       => $4,
+            minute     => $5,
+            second     => $6,
+            nanosecond => $7
         );
+
+        my $epoch_time = $dt->epoch;
+        return $epoch_time;
+
     }
-
-    my $dt = DateTime->new(
-        year       => $1,
-        month      => $2,
-        day        => $3,
-        hour       => $4,
-        minute     => $5,
-        second     => $6,
-        nanosecond => $7
-    );
-
-    my $epoch_time = $dt->epoch;
-    return $epoch_time;
+    
+    $self->{output}->add_option_msg(short_msg => "Wrong date format: $options{time_string}");
+    $self->{output}->option_exit();
 
 }
 

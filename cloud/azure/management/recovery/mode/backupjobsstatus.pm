@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use DateTime;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
@@ -141,6 +140,8 @@ sub check_options {
     }
 
     $self->change_macros(macros => ['warning_status', 'critical_status']);
+
+    $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : 86400;
 }
 
 sub manage_selection {
@@ -162,7 +163,7 @@ sub manage_selection {
         my $duration = $options{custom}->convert_duration(time_string => $job->{properties}->{duration});
         my $end_time = $options{custom}->convert_iso8601_to_epoch(time_string => $job->{properties}->{endTime});
 
-        my $ts_timeframe = time() - $self->{option_results}->{timeframe};
+        my $ts_timeframe = time() - $self->{timeframe};
         next if ($ts_timeframe > $end_time);
         
         $self->{jobs}->{$job->{id}} = {
