@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -35,17 +35,6 @@ sub custom_status_output {
         $self->{result_values}->{provider_name},
         $self->{result_values}->{provider_location});
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{circuit_status} = $options{new_datas}->{$self->{instance} . '_circuit_status'};
-    $self->{result_values}->{provider_status} = $options{new_datas}->{$self->{instance} . '_provider_status'};
-    $self->{result_values}->{provider_name} = $options{new_datas}->{$self->{instance} . '_provider_name'};
-    $self->{result_values}->{provider_location} = $options{new_datas}->{$self->{instance} . '_provider_location'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
 }
 
 sub prefix_circuit_output {
@@ -62,15 +51,18 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{circuits} = [
-        { label => 'status', threshold => 0, set => {
+        { 
+            label => 'status',
+            type => 2,
+            critical_default => '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"' 
+            set => {
                 key_values => [ { name => 'circuit_status' }, { name => 'provider_status' }, { name => 'provider_name' },
-                                { name => 'provider_location' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                                { name => 'provider_location' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
-        },
+        }
     ];
 }
 
@@ -79,14 +71,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "location:s"            => { name => 'location' },
-                                    "filter-name:s"         => { name => 'filter_name' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"' },
-                                });
+    $options{options}->add_options(arguments => {
+        "resource-group:s"      => { name => 'resource_group' },
+        "location:s"            => { name => 'location' },
+        "filter-name:s"         => { name => 'filter_name' }
+    });
     
     return $self;
 }
@@ -95,7 +84,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -110,7 +98,7 @@ sub manage_selection {
             && $circuit->{location} !~ /$self->{option_results}->{location}/);
         
         $self->{circuits}->{$circuit->{id}} = {
-            display => $circuit->{name},
+            name => $circuit->{name},
             circuit_status => ($circuit->{circuitProvisioningState}) ? $circuit->{circuitProvisioningState} : $circuit->{properties}->{circuitProvisioningState},
             provider_status => ($circuit->{serviceProviderProvisioningState}) ? $circuit->{serviceProviderProvisioningState} : $circuit->{properties}->{serviceProviderProvisioningState},
             provider_name => ($circuit->{serviceProviderProperties}->{serviceProviderName}) ? $circuit->{serviceProviderProperties}->{serviceProviderName} : $circuit->{properties}->{serviceProviderProperties}->{serviceProviderName},
