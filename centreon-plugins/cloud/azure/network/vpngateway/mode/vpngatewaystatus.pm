@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -36,20 +36,10 @@ sub custom_status_output {
     return $msg;
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{provisioning_state} = $options{new_datas}->{$self->{instance} . '_provisioning_state'};
-    $self->{result_values}->{gateway_type} = $options{new_datas}->{$self->{instance} . '_gateway_type'};
-    $self->{result_values}->{vpn_type} = $options{new_datas}->{$self->{instance} . '_vpn_type'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
-
 sub prefix_vpn_output {
     my ($self, %options) = @_;
     
-    return "VPN Gateway '" . $options{instance_value}->{display} . "' ";
+    return "VPN Gateway '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -60,13 +50,15 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{vpns} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'provisioning_state' }, { name => 'gateway_type' }, { name => 'vpn_type' },
-                                { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+        { 
+            label => 'status', 
+            type => 2, 
+            critical_default => '%{provisioning_state} ne "Succeeded"',
+            set => { 
+                key_values => [ { name => 'provisioning_state' }, { name => 'gateway_type' }, { name => 'vpn_type' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
     ];
@@ -74,16 +66,13 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "filter-name:s"         => { name => 'filter_name' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{provisioning_state} ne "Succeeded"' },
-                                });
+    $options{options}->add_options(arguments => {
+            "resource-group:s"      => { name => 'resource_group' },
+            "filter-name:s"         => { name => 'filter_name' }
+    });
     
     return $self;
 }
@@ -97,7 +86,6 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
