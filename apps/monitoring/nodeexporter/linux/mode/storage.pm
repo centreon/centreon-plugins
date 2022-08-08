@@ -105,7 +105,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'node_storage', type => 1, message_multiple => 'All memory types are ok', display_long => 1, cb_prefix_output => 'prefix_storage_output', }
+        { name => 'node_storage', type => 1, message_multiple => 'All storages are ok', display_long => 1, cb_prefix_output => 'prefix_storage_output', }
     ];
 
     $self->{maps_counters}->{node_storage} = [
@@ -127,7 +127,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'fstype:s'     => { name => 'fstype', default => 'linuxfs|rootfs|tmpfs' },
+        'fstype:s'     => { name => 'fstype' },
         "storage:s"    => { name => 'storage' },
         "units:s"      => { name => 'units', default => '%' }
     });
