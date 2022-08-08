@@ -335,7 +335,7 @@ sub call_http {
         $self->{output}->option_exit();
     }
 
-    return $content;
+    return ($http->get_header(), $content);
 }
 
 sub parse_txt {
@@ -373,8 +373,10 @@ sub parse_txt {
         push @entries, $_;
     }
 
+    my $content = defined($options{conf}->{type}) && $options{conf}->{type} eq 'header' ? $options{headers} : $options{content}; 
+
     my $i = 0;
-    while ($options{content} =~ /(?$modifier)$options{conf}->{re}/g) {
+    while ($content =~ /(?$modifier)$options{conf}->{re}/g) {
         my $instance = $i;
         my $name = $options{name} . ucfirst($options{conf}->{name});
 
@@ -386,6 +388,8 @@ sub parse_txt {
                 $entry->{ $_->{id} } = '';
                 next;
             }
+
+            $entry->{ $_->{id} } = $value;
 
             if (defined($_->{map}) && $_->{map} ne '') {
                 if (!defined($self->{config}->{mapping}) || !defined($self->{config}->{mapping}->{ $_->{map} })) {
@@ -406,7 +410,7 @@ sub parse_txt {
         $i++;
 
         last if (!defined($options{conf}->{multiple}));
-    }
+    }    
 }
 
 sub parse_structure {
@@ -483,12 +487,12 @@ sub collect_http_tables {
     foreach my $rq (@{$self->{config}->{http}->{requests}}) {
         $self->validate_name(name => $rq->{name}, section => "[http > requests]");
 
-        my $content = $self->call_http(rq => $rq);
+        my ($headers, $content) = $self->call_http(rq => $rq);
         next if (!defined($rq->{parse}));
 
         foreach my $conf (@{$rq->{parse}}) {
             if ($rq->{rtype} eq 'txt') {
-                $self->parse_txt(name => $rq->{name}, content => $content, conf => $conf);
+                $self->parse_txt(name => $rq->{name}, headers => $headers, content => $content, conf => $conf);
             } else {
                 $self->parse_structure(name => $rq->{name}, content => $content, conf => $conf);
             }
@@ -590,13 +594,11 @@ sub display_variables {
     foreach my $tbl_name (keys %{$self->{http_collected}->{tables}}) {
         my $expr = 'http.tables.' . $tbl_name;
         foreach my $instance (keys %{$self->{http_collected}->{tables}->{$tbl_name}}) {
-            $expr .= ".[$instance]";
             foreach my $attr (keys %{$self->{http_collected}->{tables}->{$tbl_name}->{$instance}}) {
-                $expr .= ".$attr";
                 $self->{output}->output_add(
                     long_msg => sprintf(
                         '    %s = %s',
-                        $expr,
+                        $expr . ".[$instance].$attr",
                         $self->{http_collected}->{tables}->{$tbl_name}->{$instance}->{$attr}
                     ),
                     debug => 1
