@@ -294,7 +294,10 @@ sub call_http {
 
     my $post_param = $self->get_payload(rq => $options{rq});
 
-    my $http = centreon::plugins::http->new(noptions => 1, output => $self->{output});
+    my $http = $options{http};
+    if (!defined($http)) {
+        $http = centreon::plugins::http->new(noptions => 1, output => $self->{output});
+    }
 
     my $timing0 = [gettimeofday];
     my ($content) = $http->request(
@@ -335,7 +338,7 @@ sub call_http {
         $self->{output}->option_exit();
     }
 
-    return ($http->get_header(), $content);
+    return ($http->get_header(), $content, $http);
 }
 
 sub parse_txt {
@@ -482,12 +485,12 @@ sub parse_structure {
 sub collect_http_tables {
     my ($self, %options) = @_;
 
-    return if (!defined($self->{config}->{http}->{requests}));
+    return if (!defined($options{requests}));
 
-    foreach my $rq (@{$self->{config}->{http}->{requests}}) {
+    foreach my $rq (@{$options{requests}}) {
         $self->validate_name(name => $rq->{name}, section => "[http > requests]");
 
-        my ($headers, $content) = $self->call_http(rq => $rq);
+        my ($headers, $content, $http) = $self->call_http(rq => $rq, http => $options{http});
         next if (!defined($rq->{parse}));
 
         foreach my $conf (@{$rq->{parse}}) {
@@ -497,6 +500,8 @@ sub collect_http_tables {
                 $self->parse_structure(name => $rq->{name}, content => $content, conf => $conf);
             }
         }
+    
+        $self->collect_http_tables(requests => $rq->{requests}, http => $http);
     }
 }
 
@@ -621,7 +626,7 @@ sub collect_http {
         $self->{http_collected_sampling} = { tables => {}, epoch => time() };
         $self->{http_collected} = { tables => {}, epoch => time(), sampling => 0 };
 
-        $self->collect_http_tables();
+        $self->collect_http_tables(requests => $self->{config}->{http}->{requests});
 
         $self->{http_collected}->{sampling} = 1 if (
             scalar(keys(%{$self->{http_collected_sampling}->{tables}})) > 0
