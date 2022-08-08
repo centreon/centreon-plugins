@@ -263,10 +263,13 @@ sub call_http {
         $self->{output}->option_exit();
     }
 
+    $self->{current_section} = '[http > requests]';
+    $self->{expand} = $self->set_constants();
+
     my $creds = {};
     if (defined($options{rq}->{authorization}) && defined($options{rq}->{authorization}->{username})) {
-        $options{rq}->{authorization}->{username} = $self->substitute_constants(value => $options{rq}->{authorization}->{username});
-        $options{rq}->{authorization}->{password} = $self->substitute_constants(value => $options{rq}->{authorization}->{password});
+        $options{rq}->{authorization}->{username} = $self->substitute_string(value => $options{rq}->{authorization}->{username});
+        $options{rq}->{authorization}->{password} = $self->substitute_string(value => $options{rq}->{authorization}->{password});
         $creds = {
             credentials => 1,
             %{$options{rq}->{authorization}}
@@ -277,7 +280,7 @@ sub call_http {
     if (defined($options{rq}->{headers}) && ref($options{rq}->{headers}) eq 'ARRAY') {
         $headers = [];
         foreach my $header (@{$options{rq}->{headers}}) {
-            push @$headers, $self->substitute_constants(value => $header);
+            push @$headers, $self->substitute_string(value => $header);
         }
     }
 
@@ -285,7 +288,7 @@ sub call_http {
     if (defined($options{rq}->{get_params}) && ref($options{rq}->{get_params}) eq 'ARRAY') {
         $get_params = [];
         foreach my $param (@{$options{rq}->{get_params}}) {
-            push @$get_params, $self->substitute_constants(value => $param);
+            push @$get_params, $self->substitute_string(value => $param);
         }
     }
 
@@ -295,16 +298,17 @@ sub call_http {
 
     my $timing0 = [gettimeofday];
     my ($content) = $http->request(
-        backend => $self->substitute_constants(value => $options{rq}->{backend}),
-        method => $self->substitute_constants(value => $options{rq}->{method}),
-        hostname => $self->substitute_constants(value => $options{rq}->{hostname}),
-        proto => $self->substitute_constants(value => $options{rq}->{proto}),
-        port => $self->substitute_constants(value => $options{rq}->{port}),
-        url_path => $self->substitute_constants(value => $options{rq}->{endpoint}),
+        backend => $self->substitute_string(value => $options{rq}->{backend}),
+        method => $self->substitute_string(value => $options{rq}->{method}),
+        hostname => $self->substitute_string(value => $options{rq}->{hostname}),
+        proto => $self->substitute_string(value => $options{rq}->{proto}),
+        port => $self->substitute_string(value => $options{rq}->{port}),
+        url_path => $self->substitute_string(value => $options{rq}->{endpoint}),
+        proxyurl => $self->substitute_string(value => $options{rq}->{proxyurl}),
         header => $headers,
-        timeout => $self->substitute_constants(value => $options{rq}->{timeout}),
+        timeout => $self->substitute_string(value => $options{rq}->{timeout}),
         get_param => $get_params,
-        query_form_post => $self->substitute_constants(value => $post_param),
+        query_form_post => $self->substitute_string(value => $post_param),
         insecure => $options{rq}->{insecure},
         unknown_status => '',
         warning_status => '',
@@ -904,6 +908,8 @@ sub parse_special_variable {
 sub substitute_string {
     my ($self, %options) = @_;
 
+    return undef if (!defined($options{value}));
+
     my $arr = [split //, $options{value}];
     my $results = {};
     my $last_end = -1;
@@ -1481,18 +1487,6 @@ sub set_functions {
             $self->exec_func_scientific2number(%$_);
         }
     }
-}
-
-sub substitute_constants {
-    my ($self, %options) = @_;
-
-    return undef if (!defined($options{value}));
-    while ($options{value} =~ /%\((constants\.[a-zA-Z0-9\._:]+?)\)/g) {
-        my $value = defined($self->{constants}->{$1}) ? $self->{constants}->{$1} : '';
-        $options{value} =~ s/%\($1\)/$value/g;
-    }
-    
-    return $options{value};
 }
 
 sub prepare_variables {
