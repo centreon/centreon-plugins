@@ -263,10 +263,12 @@ sub call_http {
         $self->{output}->option_exit();
     }
 
+    $self->{current_section} = '[http > requests]';
+
     my $creds = {};
     if (defined($options{rq}->{authorization}) && defined($options{rq}->{authorization}->{username})) {
-        $options{rq}->{authorization}->{username} = $self->substitute_constants(value => $options{rq}->{authorization}->{username});
-        $options{rq}->{authorization}->{password} = $self->substitute_constants(value => $options{rq}->{authorization}->{password});
+        $options{rq}->{authorization}->{username} = $self->substitute_string(value => $options{rq}->{authorization}->{username});
+        $options{rq}->{authorization}->{password} = $self->substitute_string(value => $options{rq}->{authorization}->{password});
         $creds = {
             credentials => 1,
             %{$options{rq}->{authorization}}
@@ -277,7 +279,7 @@ sub call_http {
     if (defined($options{rq}->{headers}) && ref($options{rq}->{headers}) eq 'ARRAY') {
         $headers = [];
         foreach my $header (@{$options{rq}->{headers}}) {
-            push @$headers, $self->substitute_constants(value => $header);
+            push @$headers, $self->substitute_string(value => $header);
         }
     }
 
@@ -285,26 +287,30 @@ sub call_http {
     if (defined($options{rq}->{get_params}) && ref($options{rq}->{get_params}) eq 'ARRAY') {
         $get_params = [];
         foreach my $param (@{$options{rq}->{get_params}}) {
-            push @$get_params, $self->substitute_constants(value => $param);
+            push @$get_params, $self->substitute_string(value => $param);
         }
     }
 
     my $post_param = $self->get_payload(rq => $options{rq});
 
-    my $http = centreon::plugins::http->new(noptions => 1, output => $self->{output});
+    my $http = $options{http};
+    if (!defined($http)) {
+        $http = centreon::plugins::http->new(noptions => 1, output => $self->{output});
+    }
 
     my $timing0 = [gettimeofday];
     my ($content) = $http->request(
-        backend => $self->substitute_constants(value => $options{rq}->{backend}),
-        method => $self->substitute_constants(value => $options{rq}->{method}),
-        hostname => $self->substitute_constants(value => $options{rq}->{hostname}),
-        proto => $self->substitute_constants(value => $options{rq}->{proto}),
-        port => $self->substitute_constants(value => $options{rq}->{port}),
-        url_path => $self->substitute_constants(value => $options{rq}->{endpoint}),
+        backend => $self->substitute_string(value => $options{rq}->{backend}),
+        method => $self->substitute_string(value => $options{rq}->{method}),
+        hostname => $self->substitute_string(value => $options{rq}->{hostname}),
+        proto => $self->substitute_string(value => $options{rq}->{proto}),
+        port => $self->substitute_string(value => $options{rq}->{port}),
+        url_path => $self->substitute_string(value => $options{rq}->{endpoint}),
+        proxyurl => $self->substitute_string(value => $options{rq}->{proxyurl}),
         header => $headers,
-        timeout => $self->substitute_constants(value => $options{rq}->{timeout}),
+        timeout => $self->substitute_string(value => $options{rq}->{timeout}),
         get_param => $get_params,
-        query_form_post => $self->substitute_constants(value => $post_param),
+        query_form_post => $self->substitute_string(value => $post_param),
         insecure => $options{rq}->{insecure},
         unknown_status => '',
         warning_status => '',
@@ -331,7 +337,7 @@ sub call_http {
         $self->{output}->option_exit();
     }
 
-    return $content;
+    return ($http->get_header(), $content, $http);
 }
 
 sub parse_txt {
@@ -369,8 +375,11 @@ sub parse_txt {
         push @entries, $_;
     }
 
+    my $content = defined($options{conf}->{type}) && $options{conf}->{type} eq 'header' ? $options{headers} : $options{content}; 
+
+    my $local = {};
     my $i = 0;
-    while ($options{content} =~ /(?$modifier)$options{conf}->{re}/g) {
+    while ($content =~ /(?$modifier)$options{conf}->{re}/g) {
         my $instance = $i;
         my $name = $options{name} . ucfirst($options{conf}->{name});
 
@@ -382,6 +391,8 @@ sub parse_txt {
                 $entry->{ $_->{id} } = '';
                 next;
             }
+
+            $entry->{ $_->{id} } = $value;
 
             if (defined($_->{map}) && $_->{map} ne '') {
                 if (!defined($self->{config}->{mapping}) || !defined($self->{config}->{mapping}->{ $_->{map} })) {
@@ -399,10 +410,13 @@ sub parse_txt {
         }
 
         $self->{http_collected}->{tables}->{$name}->{$instance} = $entry;
+        $local->{$name}->{$instance} = $entry;
         $i++;
 
         last if (!defined($options{conf}->{multiple}));
     }
+
+    return $local;
 }
 
 sub parse_structure {
@@ -424,6 +438,7 @@ sub parse_structure {
     my $jpath = JSON::Path->new($options{conf}->{path});
     my @values = $jpath->values($options{content});
 
+    my $local = {};
     my $i = 0;
     foreach my $value (@values) {
         my $instance = $i;
@@ -467,27 +482,71 @@ sub parse_structure {
         }
 
         $self->{http_collected}->{tables}->{$name}->{$instance} = $entry;
+        $local->{$name}->{$instance} = $entry;
         $i++;
     }
+
+    return $local;
 }
 
 sub collect_http_tables {
     my ($self, %options) = @_;
 
-    return if (!defined($self->{config}->{http}->{requests}));
+    return if (!defined($options{requests}));
 
-    foreach my $rq (@{$self->{config}->{http}->{requests}}) {
-        $self->validate_name(name => $rq->{name}, section => "[http > requests]");
+    for (my $i = 0; $i < scalar(@{$options{requests}});) {
+        $self->validate_name(name => $options{requests}->[$i]->{name}, section => "[http > requests]");
 
-        my $content = $self->call_http(rq => $rq);
-        next if (!defined($rq->{parse}));
+        # first init
+        if ($options{level} == 1 && (!defined($self->{scenario_loop}) || $self->{scenario_loop} == 0)) {
+            $self->{scenario_stopped} = 0;
+            $self->{scenario_retry} = 0;
+            $self->{scenario_loop} = 0;
+        }
+        # quit recursive sub requests
+        if ($self->{scenario_stopped} == 1) {
+            return ;
+        }
 
-        foreach my $conf (@{$rq->{parse}}) {
-            if ($rq->{rtype} eq 'txt') {
-                $self->parse_txt(name => $rq->{name}, content => $content, conf => $conf);
-            } else {
-                $self->parse_structure(name => $rq->{name}, content => $content, conf => $conf);
+        my ($headers, $content, $http);
+        my ($rv, $local_http_cache);
+        ($rv, $local_http_cache) = $self->use_local_http_cache(rq => $options{requests}->[$i]);
+
+        if ($rv == 0) {
+            ($headers, $content, $http) = $self->call_http(rq => $options{requests}->[$i], http => $options{http});
+            $self->set_builtin();
+
+            next if (!defined($options{requests}->[$i]->{parse}));
+
+            my $local;
+            foreach my $conf (@{$options{requests}->[$i]->{parse}}) {
+                if ($options{requests}->[$i]->{rtype} eq 'txt') {
+                    $local = $self->parse_txt(name => $options{requests}->[$i]->{name}, headers => $headers, content => $content, conf => $conf);
+                } else {
+                    $local = $self->parse_structure(name => $options{requests}->[$i]->{name}, content => $content, conf => $conf);
+                }
             }
+
+            if (defined($options{requests}->[$i]->{scenario_stopped}) && $options{requests}->[$i]->{scenario_stopped} &&
+                $self->check_filter(filter => $options{requests}->[$i]->{scenario_stopped}, values => $self->{expand}) == 0) {
+                $self->{scenario_stopped} = 1;
+                if (defined($options{requests}->[$i]->{scenario_retry}) && $options{requests}->[$i]->{scenario_retry} =~ /^true|1$/i) {
+                    $self->{scenario_loop}++;
+                    $self->{scenario_retry} = 1;
+                }
+            } else {
+                $self->save_local_http_cache(local_http_cache => $local_http_cache, local => $local);
+            }
+        }
+
+        $self->collect_http_tables(requests => $options{requests}->[$i]->{requests}, http => $http, level => $options{level} + 1);
+
+        if ($options{level} == 1 && $self->{scenario_retry} == 1 && $self->{scenario_loop} == 1) {
+            $self->clean_local_cache(rq => $options{requests}->[$i]);
+            $self->{scenario_stopped} = 0;
+            $self->{scenario_retry} = 0;
+        } else {
+            $i++;
         }
     }
 }
@@ -502,6 +561,68 @@ sub is_http_cache_enabled {
     );
 
     return 1;
+}
+
+sub clean_local_cache {
+    my ($self, %options) = @_;
+
+    return 0 if (!defined($options{rq}->{cache_file}) || $options{rq}->{cache_file} eq '');
+
+    my $local_http_cache = centreon::plugins::statefile->new(output => $self->{output});
+    $local_http_cache->check_options(option_results => $self->{option_results});
+    $local_http_cache->read(
+        statefile => $self->substitute_string(value => $options{rq}->{cache_file})
+    );
+
+    $local_http_cache->write(data => {});
+}
+
+sub use_local_http_cache {
+    my ($self, %options) = @_;
+
+    return 0 if (!defined($options{rq}->{cache_file}) || $options{rq}->{cache_file} eq '');
+
+    my $local_http_cache = centreon::plugins::statefile->new(output => $self->{output});
+    $local_http_cache->check_options(option_results => $self->{option_results});
+
+    my $has_cache_file = $local_http_cache->read(
+        statefile => $self->substitute_string(value => $options{rq}->{cache_file})
+    );
+    $self->{local_http_collected} = $local_http_cache->get(name => 'http_collected');
+    my $reload = defined($options{rq}->{cache_reload}) && $options{rq}->{cache_reload} =~ /(\d+)/ ? 
+        $options{rq}->{cache_reload} : 60;
+    return (0, $local_http_cache) if (
+        $has_cache_file == 0 || 
+        !defined($self->{local_http_collected}) || 
+        ((time() - $self->{local_http_collected}->{epoch}) > ($reload * 60))
+    );
+
+    foreach my $name (keys %{$self->{local_http_collected}->{tables}}) {
+        $self->{http_collected}->{tables}->{$name} = {}
+            if (!defined($self->{http_collected}->{tables}->{$name}));
+        foreach my $instance (keys %{$self->{local_http_collected}->{tables}->{$name}}) {
+            $self->{http_collected}->{tables}->{$name}->{$instance} = {}
+                if (!defined($self->{http_collected}->{tables}->{$name}->{$instance}));
+            $self->{http_collected}->{tables}->{$name}->{$instance} = $self->{local_http_collected}->{tables}->{$name}->{$instance};
+        }
+    }
+
+    return 1;
+}
+
+sub save_local_http_cache {
+    my ($self, %options) = @_;
+
+    if (defined($options{local_http_cache})) {
+        $options{local_http_cache}->write(
+            data => {
+                http_collected => {
+                    tables => $options{local},
+                    epoch => time()
+                }
+            }
+        );
+    }
 }
 
 sub use_http_cache {
@@ -586,13 +707,11 @@ sub display_variables {
     foreach my $tbl_name (keys %{$self->{http_collected}->{tables}}) {
         my $expr = 'http.tables.' . $tbl_name;
         foreach my $instance (keys %{$self->{http_collected}->{tables}->{$tbl_name}}) {
-            $expr .= ".[$instance]";
             foreach my $attr (keys %{$self->{http_collected}->{tables}->{$tbl_name}->{$instance}}) {
-                $expr .= ".$attr";
                 $self->{output}->output_add(
                     long_msg => sprintf(
                         '    %s = %s',
-                        $expr,
+                        $expr . ".[$instance].$attr",
                         $self->{http_collected}->{tables}->{$tbl_name}->{$instance}->{$attr}
                     ),
                     debug => 1
@@ -611,11 +730,14 @@ sub collect_http {
     }
 
     $self->add_builtin(name => 'currentTime', value => time());
+    # to use substitute_string
+    $self->{expand} = $self->set_constants();
+
     if ($self->use_http_cache() == 0) {
         $self->{http_collected_sampling} = { tables => {}, epoch => time() };
         $self->{http_collected} = { tables => {}, epoch => time(), sampling => 0 };
 
-        $self->collect_http_tables();
+        $self->collect_http_tables(requests => $self->{config}->{http}->{requests}, level => 1);
 
         $self->{http_collected}->{sampling} = 1 if (
             scalar(keys(%{$self->{http_collected_sampling}->{tables}})) > 0
@@ -903,6 +1025,8 @@ sub parse_special_variable {
 
 sub substitute_string {
     my ($self, %options) = @_;
+
+    return undef if (!defined($options{value}));
 
     my $arr = [split //, $options{value}];
     my $results = {};
@@ -1483,18 +1607,6 @@ sub set_functions {
     }
 }
 
-sub substitute_constants {
-    my ($self, %options) = @_;
-
-    return undef if (!defined($options{value}));
-    while ($options{value} =~ /%\((constants\.[a-zA-Z0-9\._:]+?)\)/g) {
-        my $value = defined($self->{constants}->{$1}) ? $self->{constants}->{$1} : '';
-        $options{value} =~ s/%\($1\)/$value/g;
-    }
-    
-    return $options{value};
-}
-
 sub prepare_variables {
     my ($self, %options) = @_;
 
@@ -1608,6 +1720,11 @@ sub add_selection {
         $config->{formatting_warning} = $self->prepare_formatting(section => "selection > $i > formatting_warning", formatting => $_->{formatting_warning});
         $config->{formatting_critical} = $self->prepare_formatting(section => "selection > $i > formatting_critical", formatting => $_->{formatting_critical});
         $self->{selections}->{'s' . $i} = { expand => $self->{expand}, config => $config };
+
+        if ($self->check_filter(filter => $_->{exit}, values => $self->{expand}) == 0) {
+            $self->{exit_selection} = 1;
+            return ;
+        }
     }
 }
 
@@ -1615,6 +1732,9 @@ sub add_selection_loop {
     my ($self, %options) = @_;
 
     return if (!defined($self->{config}->{selection_loop}));
+
+    return if (defined($self->{exit_selection}) && $self->{exit_selection} == 1);
+
     my $i = -1;
     foreach (@{$self->{config}->{selection_loop}}) {
         $i++;
@@ -1653,6 +1773,11 @@ sub add_selection_loop {
             $config->{formatting_warning} = $self->prepare_formatting(section => "selection_loop > $i > formatting_warning", formatting => $_->{formatting_warning});
             $config->{formatting_critical} = $self->prepare_formatting(section => "selection_loop > $i > formatting_critical", formatting => $_->{formatting_critical});
             $self->{selections}->{'s' . $i . '-' . $instance} = { expand => $self->{expand}, config => $config };
+
+            if ($self->check_filter(filter => $_->{exit}, values => $self->{expand}) == 0) {
+                $self->{exit_selection} = 1;
+                return ;
+            }
         }
     }
 }
