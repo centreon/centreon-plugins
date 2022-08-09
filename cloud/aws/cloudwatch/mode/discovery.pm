@@ -88,7 +88,7 @@ sub discover_vpc {
         }
         push @disco_data, \%vpc;
     }
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -106,7 +106,7 @@ sub discover_dynamodb_table {
         $table{name} = $table;
         push @disco_data, \%table;
     }
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -115,7 +115,7 @@ sub discover_api {
 
     use cloud::aws::apigateway::mode::discovery;
     my @disco_data = cloud::aws::apigateway::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -124,7 +124,7 @@ sub discover_backup_vault {
 
     use cloud::aws::backup::mode::discovery;
     my @disco_data = cloud::aws::backup::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -133,7 +133,7 @@ sub discover_ebs {
 
     use cloud::aws::ebs::mode::discovery;
     my @disco_data = cloud::aws::ebs::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -142,7 +142,7 @@ sub discover_ec2 {
 
     use cloud::aws::ec2::mode::discovery;
     my @disco_data = cloud::aws::ec2::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -151,7 +151,7 @@ sub discover_efs {
 
     use cloud::aws::efs::mode::discovery;
     my @disco_data = cloud::aws::efs::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -160,7 +160,7 @@ sub discover_elb_app {
 
     use cloud::aws::elb::application::mode::discovery;
     my @disco_data = cloud::aws::elb::application::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -169,7 +169,7 @@ sub discover_elb_classic {
 
     use cloud::aws::elb::classic::mode::discovery;
     my @disco_data = cloud::aws::elb::classic::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -178,7 +178,7 @@ sub discover_elb_network {
 
     use cloud::aws::elb::network::mode::discovery;
     my @disco_data = cloud::aws::elb::network::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -187,7 +187,7 @@ sub discover_fsx {
 
     use cloud::aws::fsx::mode::discovery;
     my @disco_data = cloud::aws::fsx::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -196,7 +196,7 @@ sub discover_kinesis_stream {
 
     use cloud::aws::kinesis::mode::discovery;
     my @disco_data = cloud::aws::kinesis::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -205,7 +205,7 @@ sub discover_lambda {
 
     use cloud::aws::lambda::mode::discovery;
     my @disco_data = cloud::aws::lambda::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -215,7 +215,7 @@ sub discover_rds {
     use cloud::aws::rds::mode::discovery;
     my @disco_data = cloud::aws::rds::mode::discovery->run(custom => $options{custom}, discover => 1);
     next if (\@disco_data == 0);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -224,7 +224,7 @@ sub discover_s3_bucket {
 
     use cloud::aws::s3::mode::discovery;
     my @disco_data = cloud::aws::s3::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -233,7 +233,7 @@ sub discover_sns {
 
     use cloud::aws::sns::mode::discovery;
     my @disco_data = cloud::aws::sns::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -242,7 +242,7 @@ sub discover_spotfleetrequest {
 
     use cloud::aws::ec2::mode::discoveryspotfleetrequests;
     my @disco_data = cloud::aws::ec2::mode::discoveryspotfleetrequests->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -251,7 +251,7 @@ sub discover_sqs {
 
     use cloud::aws::sqs::mode::discovery;
     my @disco_data = cloud::aws::sqs::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
@@ -260,7 +260,7 @@ sub discover_vpn {
 
     use cloud::aws::vpn::mode::discovery;
     my @disco_data = cloud::aws::vpn::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
+    my @disco_keys = keys %{$disco_data[0]} if (@disco_data != 0);
     return \@disco_data, \@disco_keys;
 }
 
