@@ -41,7 +41,7 @@ sub prefix_peer_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Peer [localAddr: %s, remoteAddr: %s remoteAs: %s] ",
+        "Peer [localAddr: %s, remoteAddr: %s, remoteAs: %s] ",
         $options{instance_value}->{localAddr},
         $options{instance_value}->{remoteAddr},
         $options{instance_value}->{remoteAs}
