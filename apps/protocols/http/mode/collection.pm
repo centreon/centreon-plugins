@@ -1720,6 +1720,11 @@ sub add_selection {
         $config->{formatting_warning} = $self->prepare_formatting(section => "selection > $i > formatting_warning", formatting => $_->{formatting_warning});
         $config->{formatting_critical} = $self->prepare_formatting(section => "selection > $i > formatting_critical", formatting => $_->{formatting_critical});
         $self->{selections}->{'s' . $i} = { expand => $self->{expand}, config => $config };
+
+        if ($self->check_filter(filter => $_->{exit}, values => $self->{expand}) == 0) {
+            $self->{exit_selection} = 1;
+            return ;
+        }
     }
 }
 
@@ -1727,6 +1732,9 @@ sub add_selection_loop {
     my ($self, %options) = @_;
 
     return if (!defined($self->{config}->{selection_loop}));
+
+    return if (defined($self->{exit_selection}) && $self->{exit_selection} == 1);
+
     my $i = -1;
     foreach (@{$self->{config}->{selection_loop}}) {
         $i++;
@@ -1765,6 +1773,11 @@ sub add_selection_loop {
             $config->{formatting_warning} = $self->prepare_formatting(section => "selection_loop > $i > formatting_warning", formatting => $_->{formatting_warning});
             $config->{formatting_critical} = $self->prepare_formatting(section => "selection_loop > $i > formatting_critical", formatting => $_->{formatting_critical});
             $self->{selections}->{'s' . $i . '-' . $instance} = { expand => $self->{expand}, config => $config };
+
+            if ($self->check_filter(filter => $_->{exit}, values => $self->{expand}) == 0) {
+                $self->{exit_selection} = 1;
+                return ;
+            }
         }
     }
 }
