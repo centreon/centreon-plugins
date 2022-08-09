@@ -1,3 +1,6 @@
+2022-08-09 Quentin Garnier <qgarnier@centreon.com> - 3.2.5
+ * Enhancement: add tags in discovery
+
 2022-04-14 Quentin Garnier <qgarnier@centreon.com> - 3.2.4
  * Fix: custom attributes retrieved for vcenter only
 

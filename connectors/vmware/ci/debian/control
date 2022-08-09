@@ -11,6 +11,7 @@ Architecture: all
 Depends:    ${misc:Depends},
             ${shlibs:Depends},
             libio-socket-inet6-perl,
+            libnet-curl-perl,
             libjson-xs-perl,
             liblwp-protocol-https-perl,
             libzmq-constants-perl,
