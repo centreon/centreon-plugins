@@ -33,6 +33,7 @@ sub new {
     $self->{modes} = {
         'aaa-servers'         => 'centreon::common::cisco::standard::snmp::mode::aaaservers',
         'arp'                 => 'snmp_standard::mode::arp',
+        'bgp'                 => 'centreon::common::cisco::standard::snmp::mode::bgp',
         'configuration'       => 'centreon::common::cisco::standard::snmp::mode::configuration',
         'cpu'                 => 'centreon::common::cisco::standard::snmp::mode::cpu',
         'environment'         => 'centreon::common::cisco::standard::snmp::mode::environment',
