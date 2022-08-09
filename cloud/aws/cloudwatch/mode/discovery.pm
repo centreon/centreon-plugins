@@ -115,7 +115,7 @@ sub discover_api {
 
     use cloud::aws::apigateway::mode::discovery;
     my @disco_data = cloud::aws::apigateway::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0];
+    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
     return \@disco_data, \@disco_keys;
 }
 
@@ -260,7 +260,7 @@ sub discover_vpn {
 
     use cloud::aws::vpn::mode::discovery;
     my @disco_data = cloud::aws::vpn::mode::discovery->run(custom => $options{custom}, discover => 1);
-    my @disco_keys = keys $disco_data[0];
+    my @disco_keys = keys $disco_data[0] if @disco_data != 0;
     return \@disco_data, \@disco_keys;
 }
 
