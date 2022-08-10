@@ -213,7 +213,7 @@ sub do_selection {
         };
 
         # ip addr patterns
-        if ($values =~ /RX:\s+bytes.*?(\d+).*?TX: bytes.*?(\d+)/msi) {
+        if ($values =~ /RX:\s+bytes.*?(\d+).*?TX:\s+bytes.*?(\d+)/msi) {
            $self->{interface}->{$interface_name}->{in} = $1;
            $self->{interface}->{$interface_name}->{out} = $2;
         } elsif ($values =~ /RX bytes:(\S+).*?TX bytes:(\S+)/msi || $values =~ /RX packets\s+\d+\s+bytes\s+(\S+).*?TX packets\s+\d+\s+bytes\s+(\S+)/msi) {
