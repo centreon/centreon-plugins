@@ -34,7 +34,7 @@ sub new {
         'cpu'              => 'network::brocade::snmp::mode::cpu',
         'hardware'         => 'network::brocade::snmp::mode::hardware',
         'interfaces'       => 'network::brocade::snmp::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-interfaces'  => 'network::brocade::snmp::mode::listinterfaces',
         'memory'           => 'network::brocade::snmp::mode::memory'
     };
 
