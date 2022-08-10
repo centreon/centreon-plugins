@@ -172,8 +172,8 @@ sub run {
                 $esx{datacenter} = $datacenter->name;
                 $esx{cluster} = $cluster->name;
                 $esx{custom_attributes} = $customValuesEsx;
+                $esx{tags} = [];
                 if (defined($tags)) {
-                    $esx{tags} = [];
                     $esx{tags} = $tags->{esx}->{ $esx->{mo_ref}->{value} } if (defined($tags->{esx}->{ $esx->{mo_ref}->{value} }));
                 }
 
@@ -226,8 +226,8 @@ sub run {
                     $entry->{cluster} = $cluster->name;
                     $entry->{custom_attributes} = $customValuesVm;
                     $entry->{esx} = $esx->name;
+                    $entry->{tags} = [];
                     if (defined($tags)) {
-                        $entry->{tags} = [];
                         $entry->{tags} = $tags->{vm}->{ $vm->{mo_ref}->{value} } if (defined($tags->{vm}->{ $vm->{mo_ref}->{value} }));
                     }
 
