@@ -168,10 +168,10 @@ sub execute {
         redirect_stderr => ($self->{output}->is_debug()) ? 0 : 1
     );
 
-    my $raw_results;
+    my $raw_results = {};
 
     eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
+        $raw_results = JSON::XS->new->utf8->decode($response) if ($response ne ''); # avoid decode error if empty response
     };
     if ($@) {
         $self->{output}->output_add(long_msg => $response, debug => 1);
