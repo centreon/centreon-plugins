@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'ssCpuRawUser' } ],
                 output_template => 'CPU user: %.2f %%',
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'ssCpuRawSystem' } ],
                 output_template => 'CPU system: %.2f %%',
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'ssCpuRawIdle' } ],
                 output_template => 'CPU idle: %.2f %%',
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         }
@@ -103,7 +103,7 @@ __END__
 
 =head1 MODE
 
-Check system CPUs (UCD-SNMP-MIB) (User, System, Idle)
+Check system CPUs (User, System, Idle)
 An average of all CPUs.
 
 =over 8

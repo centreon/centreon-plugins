@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'usage' } ],
                 output_template => 'Storage usage: %.2f %%',
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
