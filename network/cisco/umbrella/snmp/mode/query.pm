@@ -93,7 +93,7 @@ __END__
 
 =head1 MODE
 
-Check number of DNS queries per second over the last 5 ans 15 minutes.
+Check number of DNS queries per second over the last 5 and 15 minutes.
 
 =over 8
 

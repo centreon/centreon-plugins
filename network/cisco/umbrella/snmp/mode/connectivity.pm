@@ -93,7 +93,7 @@ __END__
 
 =head1 MODE
 
-Check connectivity between Umbrella server and dns, localdns, cloud and ad.
+Check connectivity between Umbrella server and DNS, local DNS, Umbrella dashboard (cloud) and AD connectors.
 
 =over 8
 
