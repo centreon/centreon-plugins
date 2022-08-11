@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return "VA status: '" . $self->{result_values}->{operStatus} . "' ";
+    return "'" . $self->{result_values}->{status} . "' ";
 }
 
 sub set_counters {
@@ -40,8 +40,8 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', type => 2, critical_default => '%{operStatus} !~ /green/', set => {
-                key_values => [ { name => 'operStatus' } ],
+        { label => 'status', type => 2, critical_default => '%{status} !~ /green/', set => {
+                key_values => [ { name => 'status' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -69,13 +69,13 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_OperStatus = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.7.116.104.105.115.100.110.115.1';
+    my $oid_AVstatus = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.7.116.104.105.115.100.110.115.1';
     my $result = $options{snmp}->get_leef(
-        oids => [ $oid_OperStatus ],
+        oids => [ $oid_AVstatus ],
         nothing_quit => 1
     );
 
-    $self->{global} = { operStatus => $result->{$oid_OperStatus}};
+    $self->{global} = { status => $result->{$oid_AVstatus}};
 }
 
 1;
@@ -91,12 +91,12 @@ Check VA health.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{operStatus}
+Can used special variables like: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{operStatus} =~ /green/').
-Can used special variables like: %{operStatus}
+Set critical threshold for status (Default: '%{status} =~ /green/').
+Can used special variables like: %{status}
 
 =back
 

@@ -29,49 +29,19 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return  $self->{result_values}->{status} ;
+    return $self->{result_values}->{dns} . " - " . $self->{result_values}->{localdns} . " - " . $self->{result_values}->{cloud} . " - " . $self->{result_values}->{ad} ;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'dns', type => 0, message_separator => ' - ' },
-        { name => 'localdns', type => 0, message_separator => ' - ' },
-        { name => 'cloud', type => 0, message_separator => ' - ' },
-        { name => 'ad', type => 0 }
+        { name => 'global', type => 0 }
     ];
 
-    $self->{maps_counters}->{dns} = [
-        { label => 'dns-connectivity', type => 2, critical_default => '%{status} !~ /green/', set => {
-                key_values => [ { name => 'status' } ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        }
-    ];
-    $self->{maps_counters}->{localdns} = [
-        { label => 'localdns-connectivity', type => 2, critical_default => '%{status} !~ /green/', set => {
-                key_values => [ { name => 'status' } ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        }
-    ];
-    $self->{maps_counters}->{cloud} = [
-        { label => 'cloud-connectivity', type => 2, critical_default => '%{status} !~ /green/', set => {
-                key_values => [ { name => 'status' } ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        }
-    ];
-    $self->{maps_counters}->{ad} = [
-        { label => 'ad-connectivity', type => 2, critical_default => '%{status} !~ /green/', set => {
-                key_values => [ { name => 'status' } ],
+    $self->{maps_counters}->{global} = [
+        { label => 'connectivity', type => 2, critical_default => '(%{dns} && %{localdns} && %{cloud} && %{ad}) !~ /green/' , set => {
+                key_values => [ { name => 'dns' }, { name => 'localdns' }, { name => 'cloud' }, { name => 'ad' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -109,17 +79,11 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    $self->{dns} = { 
-        status => $result->{$oid_dnsConnectivity}
-    };
-    $self->{localdns} = { 
-        status => $result->{$oid_localdnsConnectivity}
-    };
-    $self->{cloud} = { 
-        status => $result->{$oid_cloudConnectivity}
-    };
-    $self->{ad} = { 
-        status => $result->{$oid_cloudAd}
+    $self->{global} = { 
+        dns => $result->{$oid_dnsConnectivity},
+        localdns => $result->{$oid_localdnsConnectivity},
+        cloud => $result->{$oid_cloudConnectivity},
+        ad => $result->{$oid_cloudAd}
     };
 }
 
@@ -133,18 +97,18 @@ Check connectivity between Umbrella server and dns, localdns, cloud and ad.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-connectivity>
 
-Set warning threshold for status. (Default: '%{status} =~ /green/').
+Set warning threshold for status. 
+
+Can used special variables like: %{dns}, %{localdns}, %{cloud}, %{ad}
+
+=item B<--critical-connectivity>
+
+Set critical threshold for status. (Default: '(%{dns} && %{localdns} && %{cloud} && %{ad}) !~ /green/').
 Can be: 'dns-connectivity', 'localdns-connectivity', 'cloud-connectivity', 'ad-connectivity'.
-Can used special variables like: %{status}
 
-=item B<--critical-*>
-
-Set critical threshold for status. (Default: '%{status} =~ /green/').
-Can be: 'dns-connectivity', 'localdns-connectivity', 'cloud-connectivity', 'ad-connectivity'.
-
-Can used special variables like: %{status}
+Can used special variables like: %{dns}, %{localdns}, %{cloud}, %{ad}
 
 =back
 
