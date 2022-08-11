@@ -91,7 +91,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{jobs} = [
-        { label => 'status', critical_default => '%{status} eq "Failed"', threshold => 0, set => {
+        { label => 'status', critical_default => '%{status} eq "Failed"', type => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'duration' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
