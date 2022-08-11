@@ -57,16 +57,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => { });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
 }
 
 sub manage_selection {
@@ -84,7 +77,6 @@ sub manage_selection {
         '5m' => $result->{$oid_dnsQueriesLast5m},
         '15m' => $result->{$oid_dnsQueriesLast15m}
     };
-
 }
 
 1;

@@ -33,7 +33,7 @@ sub set_counters {
     ];
     $self->{maps_counters}->{global} = [
         { label => 'user', nlabel => 'cpu.user.utilization.percentage', set => {
-                key_values => [ { name => 'ssCpuRawUser' } ],
+                key_values => [ { name => 'ssCpuUser' } ],
                 output_template => 'CPU user: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
@@ -41,7 +41,7 @@ sub set_counters {
             }
         },
         { label => 'system', nlabel => 'cpu.system.utilization.percentage', set => {
-                key_values => [ { name => 'ssCpuRawSystem' } ],
+                key_values => [ { name => 'ssCpuSystem' } ],
                 output_template => 'CPU system: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
@@ -49,7 +49,7 @@ sub set_counters {
             }
         },
         { label => 'idle', nlabel => 'cpu.idle.utilization.percentage', set => {
-                key_values => [ { name => 'ssCpuRawIdle' } ],
+                key_values => [ { name => 'ssCpuIdle' } ],
                 output_template => 'CPU idle: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
@@ -70,16 +70,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1 );
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => { });
 
     return $self;
 }
 
 my $mapping = {
-    ssCpuRawUser    => { oid => '.1.3.6.1.4.1.2021.11.9' },
-    ssCpuRawSystem  => { oid => '.1.3.6.1.4.1.2021.11.10' },
-    ssCpuRawIdle    => { oid => '.1.3.6.1.4.1.2021.11.11' },
+    ssCpuUser    => { oid => '.1.3.6.1.4.1.2021.11.9' },
+    ssCpuSystem  => { oid => '.1.3.6.1.4.1.2021.11.10' },
+    ssCpuIdle    => { oid => '.1.3.6.1.4.1.2021.11.11' },
 };
 
 sub manage_selection {
@@ -88,7 +87,7 @@ sub manage_selection {
     my $oid_systemStats = '.1.3.6.1.4.1.2021.11';
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_systemStats,
-        start => $mapping->{ssCpuRawUser}->{oid},
+        start => $mapping->{ssCpuUser}->{oid},
         nothing_quit => 1
     );
 

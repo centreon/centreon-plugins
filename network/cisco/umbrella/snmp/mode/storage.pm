@@ -48,8 +48,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1 );
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => { });
 
     return $self;
 }
@@ -58,15 +57,12 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $oid_storageUsage = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.9.100.105.115.107.117.115.97.103.101.1';
-
     my $snmp_results = $options{snmp}->get_leef(
         oids => [ $oid_storageUsage ],
         nothing_quit => 1
     );
 
     $self->{global} = { usage => $snmp_results->{$oid_storageUsage} };
-    
-    
 }
 
 1;
