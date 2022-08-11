@@ -151,7 +151,7 @@ sub get_metrics_by_clusters {
         my $perfs = $self->request_api(
             method => 'POST',
             endpoint => '/api/rest/metrics/generate',
-            header => ['Content-Type: application/json'],
+            headers => ['Content-Type: application/json'],
             query_form_post => $post_json
         );
         $results->{ $_->{id} } = $perfs;
