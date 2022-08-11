@@ -71,9 +71,9 @@ stage('RPM Delivery') {
               do
                   if [ -z "$FILELIST" ]
                   then
-                      FILELIST=$file
+                      FILELIST=$package
                   fi
-                  FILELIST=${FILELIST},$file
+                  FILELIST=${FILELIST},$package
               done
               curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H \"Content-Type: multipart/form-data\" -T \"{$FILELIST}\" https://apt.centreon.com/repository/$REPO/"
           '''   
