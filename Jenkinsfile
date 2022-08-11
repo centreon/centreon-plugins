@@ -75,7 +75,7 @@ stage('RPM Delivery') {
                   fi
                   FILELIST=${FILELIST},$package
               done
-              curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H \"Content-Type: multipart/form-data\" -T \"{$FILELIST}\" https://apt.centreon.com/repository/$REPO/"
+              curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H \"Content-Type: multipart/form-data\" -T \"{$FILELIST}\" https://apt.centreon.com/repository/$REPO/
           '''   
       }
     }
