@@ -95,7 +95,7 @@ Can used special variables like: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /green/').
+Set critical threshold for status (Default: '%{status} !~ /green/').
 Can used special variables like: %{status}
 
 =back
