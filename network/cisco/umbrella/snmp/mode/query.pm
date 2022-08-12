@@ -25,17 +25,23 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_query_output {
+    my ($self, %options) = @_;
+
+    return 'Query rate: ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'query', type => 0 }
+        { name => 'query', type => 0, cb_prefix_output => 'prefix_query_output' }
     ];
 
     $self->{maps_counters}->{query} = [
         { label => '5m', nlabel => 'dns.query.last.5m.persecond.count', set => {
                 key_values => [ { name => '5m' } ],
-                output_template => 'Queries rate over last 5 minutes: %s/s',
+                output_template => '%s/s (5m)',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -43,7 +49,7 @@ sub set_counters {
         },
         { label => '15m', nlabel => 'dns.query.last.15m.persecond.count', set => {
                 key_values => [ { name => '15m' } ],
-                output_template => 'Queries rate over last 15 minutes: %s/s',
+                output_template => '%s/s (15m)',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
