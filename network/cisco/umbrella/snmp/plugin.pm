@@ -33,7 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'appliance'            => 'network::cisco::umbrella::snmp::mode::appliance',
         'load'                 => 'snmp_standard::mode::loadaverage',
-        'cpu'                  => 'network::cisco::umbrella::snmp::mode::cpu',   
+        'cpu'                  => 'snmp_standard::mode::cpudetailed',  
         'connectivity'         => 'network::cisco::umbrella::snmp::mode::connectivity',
         'memory'               => 'snmp_standard::mode::memory',
         'storage'              => 'network::cisco::umbrella::snmp::mode::storage',
