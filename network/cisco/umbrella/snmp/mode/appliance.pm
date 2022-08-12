@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return "'" . $self->{result_values}->{status} . "' ";
+    return "'Virtual Appliance health: " . $self->{result_values}->{status} . "' ";
 }
 
 sub set_counters {
@@ -40,7 +40,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', type => 2, critical_default => '%{status} !~ /green/', set => {
+        { label => 'status', type => 2, 
+        critical_default => '%{status} =~ /red/' , 
+        warning_default => '%{status} =~ /yellow/', 
+        unknown_default => '%{status} !~ /(green|yellow|red|white)/',
+        set => {
                 key_values => [ { name => 'status' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -69,7 +73,11 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    $self->{global} = { status => $result->{$oid_AVstatus}};
+    my $status_output = $result->{$oid_AVstatus};
+    if ($status_output =~ /\((.*?)\)/){
+        $self->{global} = { status => $1};
+    }
+
 }
 
 1;
@@ -84,12 +92,12 @@ Check VA health.
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Set warning threshold for status. (Default: '%{status} =~ /yellow/')
 Can used special variables like: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /green/').
+Set critical threshold for status. (Default: '%{status} =~ /red/').
 Can used special variables like: %{status}
 
 =back
