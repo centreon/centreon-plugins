@@ -29,19 +29,65 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return $self->{result_values}->{dns} . " - " . $self->{result_values}->{localdns} . " - " . $self->{result_values}->{cloud} . " - " . $self->{result_values}->{ad} ;
+    return "'" . uc($self->{result_values}->{display}) . " health: " . $self->{result_values}->{status} . "'" ;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 }
+        { name => 'dns', type => 0 },
+        { name => 'localdns', type => 0 },
+        { name => 'cloud', type => 0 },
+        { name => 'ad', type => 0 }
     ];
 
-    $self->{maps_counters}->{global} = [
-        { label => 'connectivity', type => 2, critical_default => '(%{dns} && %{localdns} && %{cloud} && %{ad}) !~ /green/' , set => {
-                key_values => [ { name => 'dns' }, { name => 'localdns' }, { name => 'cloud' }, { name => 'ad' } ],
+    $self->{maps_counters}->{dns} = [
+        { label => 'dns-status', type => 2, 
+        critical_default => '%{status} =~ /red/' , 
+        warning_default => '%{status} =~ /yellow/', 
+        unknown_default => '%{status} !~ /(green|yellow|red|white)/', 
+        set => {
+                key_values => [ { name => 'status' }, { name => 'display' }],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+    $self->{maps_counters}->{localdns} = [  
+        { label => 'localdns-status', type => 2, 
+        critical_default => '%{status} =~ /red/' , 
+        warning_default => '%{status} =~ /yellow/', 
+        unknown_default => '%{status} !~ /(green|yellow|red|white)/',
+        set => {
+                key_values => [ { name => 'status' }, { name => 'display' }],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+    $self->{maps_counters}->{cloud} = [  
+        { label => 'cloud-status', type => 2, 
+        critical_default => '%{status} =~ /red/' , 
+        warning_default => '%{status} =~ /yellow/', 
+        unknown_default => '%{status} !~ /(green|yellow|red|white)/',
+        set => {
+                key_values => [ { name => 'status' }, { name => 'display' }],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+    $self->{maps_counters}->{ad} = [  
+        { label => 'ad-status', type => 2, 
+        critical_default => '%{status} =~ /red/' , 
+        warning_default => '%{status} =~ /yellow/', 
+        unknown_default => '%{status} !~ /(green|yellow|red|white)/',
+        set => {
+                key_values => [ { name => 'status' }, { name => 'display' }],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -63,22 +109,27 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_dnsConnectivity = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.3.100.110.115.1';
-    my $oid_localdnsConnectivity = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.8.108.111.99.97.108.100.110.115.1';
-    my $oid_cloudConnectivity = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.5.99.108.111.117.100.1';
-    my $oid_cloudAd = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.2.97.100.1';
+    my $oid_dns = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.3.100.110.115.1';
+    my $oid_localdns = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.8.108.111.99.97.108.100.110.115.1';
+    my $oid_cloud = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.5.99.108.111.117.100.1';
+    my $oid_ad = '.1.3.6.1.4.1.8072.1.3.2.4.1.2.2.97.100.1';
 
     my $result = $options{snmp}->get_leef(
-        oids => [ $oid_dnsConnectivity, $oid_localdnsConnectivity, $oid_cloudConnectivity, $oid_cloudAd ],
+        oids => [ $oid_dns, $oid_localdns, $oid_cloud, $oid_ad ],
         nothing_quit => 1
     );
 
-    $self->{global} = { 
-        dns => $result->{$oid_dnsConnectivity},
-        localdns => $result->{$oid_localdnsConnectivity},
-        cloud => $result->{$oid_cloudConnectivity},
-        ad => $result->{$oid_cloudAd}
-    };
+    foreach my $umbrella_component ('dns', 'localdns', 'cloud', 'ad') {
+        my $status_output = $result->{eval("\$oid_" . "$umbrella_component")};
+        if ($status_output =~ /\((.*?)\)/){
+            my $status = $1;
+            $self->{$umbrella_component} = { 
+                display => $umbrella_component,
+                status => $status
+            };
+        }
+    }
+
 }
 
 1;
@@ -91,18 +142,19 @@ Check connectivity between Umbrella server and DNS, local DNS, Umbrella dashboar
 
 =over 8
 
-=item B<--warning-connectivity>
+=item B<--warning-*>
 
-Set warning threshold for status. 
+Set warning threshold for status. (Default: '%{status} =~ /yellow/').
+Can be: 'dns-status', 'localdns-status', 'cloud-status', 'ad-status'.
 
-Can used special variables like: %{dns}, %{localdns}, %{cloud}, %{ad}
+Can use special variables like: %{status}, %{display}
 
-=item B<--critical-connectivity>
+=item B<--critical-*>
 
-Set critical threshold for status. (Default: '(%{dns} && %{localdns} && %{cloud} && %{ad}) !~ /green/').
+Set critical threshold for status. (Default: %{status} =~ /red/).
 Can be: 'dns-connectivity', 'localdns-connectivity', 'cloud-connectivity', 'ad-connectivity'.
 
-Can used special variables like: %{dns}, %{localdns}, %{cloud}, %{ad}
+Can use special variables like: %{status}, %{display}
 
 =back
 
