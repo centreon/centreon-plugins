@@ -34,7 +34,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'user', nlabel => 'cpu.user.utilization.percentage', set => {
                 key_values => [ { name => 'ssCpuUser' } ],
-                output_template => 'CPU user: %.2f %%',
+                output_template => 'user: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
@@ -42,7 +42,7 @@ sub set_counters {
         },
         { label => 'system', nlabel => 'cpu.system.utilization.percentage', set => {
                 key_values => [ { name => 'ssCpuSystem' } ],
-                output_template => 'CPU system: %.2f %%',
+                output_template => 'system: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
@@ -50,7 +50,7 @@ sub set_counters {
         },
         { label => 'idle', nlabel => 'cpu.idle.utilization.percentage', set => {
                 key_values => [ { name => 'ssCpuIdle' } ],
-                output_template => 'CPU idle: %.2f %%',
+                output_template => 'idle: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
