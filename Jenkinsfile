@@ -67,15 +67,8 @@ stage('RPM Delivery') {
       withCredentials([usernamePassword(credentialsId: 'nexus-credentials', passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
         checkout scm
         unstash "Debian11"
-        sh '''for package in $(echo *.deb)
-              do
-                  if [ -z "$FILELIST" ]
-                  then
-                      FILELIST=$package
-                  fi
-                  FILELIST=${FILELIST},$package
-              done
-              curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H \"Content-Type: multipart/form-data\" -T \"{$FILELIST}\" https://apt.centreon.com/repository/$REPO/
+        sh '''
+               find -name "*.deb" -print0 | xargs -0 -t -I % -P 8 curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/$REPO/
           '''   
       }
     }
