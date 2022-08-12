@@ -40,11 +40,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'status', type => 2, 
-        critical_default => '%{status} =~ /red/' , 
-        warning_default => '%{status} =~ /yellow/', 
-        unknown_default => '%{status} !~ /(green|yellow|red|white)/',
-        set => {
+        {
+            label => 'status', type => 2, 
+            critical_default => '%{status} =~ /red/' , 
+            warning_default => '%{status} =~ /yellow/', 
+            unknown_default => '%{status} =~ /(green|yellow|red|white)/',
+            set => {
                 key_values => [ { name => 'status' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -74,8 +75,9 @@ sub manage_selection {
     );
 
     my $status_output = $result->{$oid_AVstatus};
+    $self->{global} = { status => 'unknown' };
     if ($status_output =~ /\((.*?)\)/){
-        $self->{global} = { status => $1};
+        $self->{global} = { status => $1 };
     }
 
 }

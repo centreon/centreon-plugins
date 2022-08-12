@@ -18,26 +18,17 @@
 # limitations under the License.
 #
 
-package network::cisco::umbrella::snmp::plugin;
+package network::cisco::umbrella::snmp::mode::load;
+
+use base qw(snmp_standard::mode::loadaverage);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-
-    $self->{modes} = {
-        'appliance'    => 'network::cisco::umbrella::snmp::mode::appliance',
-        'connectivity' => 'network::cisco::umbrella::snmp::mode::connectivity',
-        'cpu'          => 'network::cisco::umbrella::snmp::mode::cpudetailed',  
-        'load'         => 'network::cisco::umbrella::snmp::mode::load',
-        'memory'       => 'network::cisco::umbrella::snmp::mode::memory',
-        'query'        => 'network::cisco::umbrella::snmp::mode::query',
-        'storage'      => 'network::cisco::umbrella::snmp::mode::storage'
-    };
 
     return $self;
 }
@@ -46,8 +37,24 @@ sub new {
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Check Cisco Umbrella.
+Check system load-average.
+
+=over 8
+
+=item B<--warning>
+
+Threshold warning (1min,5min,15min).
+
+=item B<--critical>
+
+Threshold critical (1min,5min,15min).
+
+=item B<--average>
+
+Load average for the number of CPUs.
+
+=back
 
 =cut

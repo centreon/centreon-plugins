@@ -18,26 +18,17 @@
 # limitations under the License.
 #
 
-package network::cisco::umbrella::snmp::plugin;
+package network::cisco::umbrella::snmp::mode::cpudetailed;
+
+use base qw(snmp_standard::mode::cpudetailed);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-
-    $self->{modes} = {
-        'appliance'    => 'network::cisco::umbrella::snmp::mode::appliance',
-        'connectivity' => 'network::cisco::umbrella::snmp::mode::connectivity',
-        'cpu'          => 'network::cisco::umbrella::snmp::mode::cpudetailed',  
-        'load'         => 'network::cisco::umbrella::snmp::mode::load',
-        'memory'       => 'network::cisco::umbrella::snmp::mode::memory',
-        'query'        => 'network::cisco::umbrella::snmp::mode::query',
-        'storage'      => 'network::cisco::umbrella::snmp::mode::storage'
-    };
 
     return $self;
 }
@@ -46,8 +37,23 @@ sub new {
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Check Cisco Umbrella.
+Check system CPUs (UCD-SNMP-MIB) (User, Nice, System, Idle, Wait, Kernel, Interrupt, SoftIRQ, Steal, Guest, GuestNice)
+An average of all CPUs.
+
+=over 8
+
+=item B<--warning-*>
+
+Threshold warning in percent.
+Can be: 'user', 'nice', 'system', 'idle', 'wait', 'kernel', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
+
+=item B<--critical-*>
+
+Threshold critical in percent.
+Can be: 'user', 'nice', 'system', 'idle', 'wait', 'kernel', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
+
+=back
 
 =cut
