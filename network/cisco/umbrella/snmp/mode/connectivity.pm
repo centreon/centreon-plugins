@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return "'" . uc($self->{result_values}->{display}) . " health: " . $self->{result_values}->{status} . "'" ;
+    return uc($self->{result_values}->{display}) . " health: " . $self->{result_values}->{status};
 }
 
 sub set_counters {
@@ -42,58 +42,22 @@ sub set_counters {
         { name => 'ad', type => 0 }
     ];
 
-    $self->{maps_counters}->{dns} = [
-        { label => 'dns-status', type => 2, 
-        critical_default => '%{status} =~ /red/' , 
-        warning_default => '%{status} =~ /yellow/', 
-        unknown_default => '%{status} !~ /(green|yellow|red|white)/', 
-        set => {
-                key_values => [ { name => 'status' }, { name => 'display' }],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
+    foreach ('dns', 'localdns', 'cloud', 'ad') {
+        $self->{maps_counters}->{$_} = [
+            {
+                label => $_ . '-status', type => 2, 
+                critical_default => '%{status} =~ /red/' , 
+                warning_default => '%{status} =~ /yellow/', 
+                unknown_default => '%{status} !~ /(green|yellow|red|white)/', 
+                set => {
+                    key_values => [ { name => 'status' }, { name => 'display' }],
+                    closure_custom_output => $self->can('custom_status_output'),
+                    closure_custom_perfdata => sub { return 0; },
+                    closure_custom_threshold_check => \&catalog_status_threshold_ng
+                }
             }
-        }
-    ];
-    $self->{maps_counters}->{localdns} = [  
-        { label => 'localdns-status', type => 2, 
-        critical_default => '%{status} =~ /red/' , 
-        warning_default => '%{status} =~ /yellow/', 
-        unknown_default => '%{status} !~ /(green|yellow|red|white)/',
-        set => {
-                key_values => [ { name => 'status' }, { name => 'display' }],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        }
-    ];
-    $self->{maps_counters}->{cloud} = [  
-        { label => 'cloud-status', type => 2, 
-        critical_default => '%{status} =~ /red/' , 
-        warning_default => '%{status} =~ /yellow/', 
-        unknown_default => '%{status} !~ /(green|yellow|red|white)/',
-        set => {
-                key_values => [ { name => 'status' }, { name => 'display' }],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        }
-    ];
-    $self->{maps_counters}->{ad} = [  
-        { label => 'ad-status', type => 2, 
-        critical_default => '%{status} =~ /red/' , 
-        warning_default => '%{status} =~ /yellow/', 
-        unknown_default => '%{status} !~ /(green|yellow|red|white)/',
-        set => {
-                key_values => [ { name => 'status' }, { name => 'display' }],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        }
-    ];
+        ];
+    }
 }
 
 sub new {
