@@ -1,7 +1,7 @@
 
 env.REF_BRANCH = 'master'
 if ((env.BRANCH_NAME == env.REF_BRANCH)) {
-  env.BUILD = 'CI'
+  env.BUILD = 'REFERENCE'
   env.REPO = '22.04-unstable'
 }
 
