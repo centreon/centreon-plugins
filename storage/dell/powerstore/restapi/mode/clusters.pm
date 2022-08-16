@@ -118,11 +118,11 @@ sub set_counters {
         $self->{maps_counters}->{$_ . '_latency'} = [];
         foreach my $sampling ('5m', '30m', '1h', '24h') {
             push @{$self->{maps_counters}->{$_ . '_latency'}}, {
-                label => $_ . '-latency-' . $sampling, nlabel => 'cluster.io.'. $_ . '.latency.' . $sampling . '.microseconds', set => {
+                label => $_ . '-latency-' . $sampling, nlabel => 'cluster.io.'. $_ . '.latency.' . $sampling . '.milliseconds', set => {
                     key_values => [ { name => $sampling } ],
-                    output_template => '%.2f µs (' . $sampling . ')',
+                    output_template => '%.3f ms (' . $sampling . ')',
                     perfdatas => [
-                        { template => '%.2f', min => 0, label_extra_instance => 1 }
+                        { template => '%.3f', unit => 'ms', min => 0, label_extra_instance => 1 }
                     ]
                 }
             };
@@ -223,12 +223,21 @@ sub manage_selection {
         }
 
         foreach ('latency', 'iops', 'bandwidth') {
-            $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'30m'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_30m};
-            $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'30m'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_30m};
-            $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'1h'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_1h};
-            $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'1h'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_1h};
-            $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'24h'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_24h};
-            $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'24h'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_24h};
+            if ($_ eq 'latency') {
+                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'30m'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_30m} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'30m'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_30m} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'1h'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_1h} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'1h'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_1h} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'24h'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_24h} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'24h'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_24h} / 1000;
+            } else {
+                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'30m'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_30m};
+                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'30m'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_30m};
+                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'1h'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_1h};
+                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'1h'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_1h};
+                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'24h'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_24h};
+                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'24h'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_24h};
+            }
         }
     }
 }
