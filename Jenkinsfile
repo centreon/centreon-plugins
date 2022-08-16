@@ -68,7 +68,7 @@ stage('RPM Delivery') {
         checkout scm
         unstash "Debian11"
         sh '''
-               find -name "*.deb" -print0 | xargs -0 -t -I % -P 8 curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/$REPO/
+               find -name "*.deb" -print0 | xargs -0 -t -I % -P 2 curl -u $NEXUS_USERNAME:$NEXUS_PASSWORD -H "Content-Type: multipart/form-data" --data-binary "@%" https://apt.centreon.com/repository/$REPO/
           '''   
       }
     }
