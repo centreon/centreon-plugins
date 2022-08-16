@@ -18,13 +18,13 @@
 # limitations under the License.
 #
 
-package centreon::class::http::backend::curl;
+package centreon::vmware::http::backend::curl;
 
 use strict;
 use warnings;
 use URI;
 use Net::Curl::Easy;
-use centreon::class::http::backend::curlconstants;
+use centreon::vmware::http::backend::curlconstants;
 
 sub new {
     my ($class, %options) = @_;
@@ -39,7 +39,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{constant_cb} = \&centreon::class::http::backend::curlconstants::get_constant_value;
+    $self->{constant_cb} = \&centreon::vmware::http::backend::curlconstants::get_constant_value;
 
     if (!defined($options{request}->{curl_opt})) {
         $options{request}->{curl_opt} = [];

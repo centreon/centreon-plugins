@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package centreon::class::http::backend::lwp;
+package centreon::vmware::http::backend::lwp;
 
 use strict;
 use warnings;
-use centreon::class::http::backend::useragent;
+use centreon::vmware::http::backend::useragent;
 use URI;
 use IO::Socket::SSL;
 

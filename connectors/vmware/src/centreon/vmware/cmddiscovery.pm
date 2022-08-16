@@ -25,7 +25,7 @@ use base qw(centreon::vmware::cmdbase);
 use strict;
 use warnings;
 use centreon::vmware::common;
-use centreon::class::cisTags;
+use centreon::vmware::cisTags;
 
 sub new {
     my ($class, %options) = @_;
@@ -92,7 +92,7 @@ sub run {
         }
 
         if (defined($self->{tags})) {
-            my $cisTags = centreon::class::cisTags->new();
+            my $cisTags = centreon::vmware::cisTags->new();
             $cisTags->configuration(
                 url => $self->{connector}->{config_vsphere_url},
                 username => $self->{connector}->{config_vsphere_user},
