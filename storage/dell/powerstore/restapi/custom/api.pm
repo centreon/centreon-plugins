@@ -133,13 +133,43 @@ sub get_port {
     return $self->{port};
 }
 
+sub get_metrics_by_clusters {
+    my ($self, %options) = @_;
+
+    my $clusters = $self->request_api(endpoint => '/api/rest/cluster');
+
+    my $results = {};
+    foreach (@$clusters) {
+        my $post_json = JSON::XS->new->utf8->encode(
+            {
+                entity => 'performance_metrics_by_cluster',
+                entity_id => $_->{id},
+                interval => 'Five_Mins'
+            }
+        );
+
+        my $perfs = $self->request_api(
+            method => 'POST',
+            endpoint => '/api/rest/metrics/generate',
+            headers => ['Content-Type: application/json'],
+            query_form_post => $post_json
+        );
+        $results->{ $_->{id} } = $perfs;
+    }
+
+    return $results;
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
     my $content = $self->{http}->request(
+        method => defined($options{method}) ? $options{method} : 'GET',
         url_path => $options{endpoint},
         get_param => $options{get_param},
+        header => $options{headers},
+        query_form_post => $options{query_form_post},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
