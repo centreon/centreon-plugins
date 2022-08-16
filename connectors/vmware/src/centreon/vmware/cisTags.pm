@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package centreon::class::cisTags;
+package centreon::vmware::cisTags;
 
 use strict;
 use warnings;
-use centreon::class::http::http;
+use centreon::vmware::http::http;
 use JSON::XS;
 
 # https://developer.vmware.com/apis/vsphere-automation/v7.0U2/cis/
@@ -91,7 +91,7 @@ sub configuration {
         $self->{curl_opts} = $curl_opts;
     }
 
-    $self->{http} = centreon::class::http::http->new(logger => $options{logger});
+    $self->{http} = centreon::vmware::http::http->new(logger => $options{logger});
     $self->{is_error} = 0;
     return 0;
 }

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::class::http::http;
+package centreon::vmware::http::http;
 
 use strict;
 use warnings;
@@ -86,17 +86,17 @@ sub check_options {
 
     if (!defined($self->{backend_lwp}) && !defined($self->{backend_curl})) {
         if ($options{request}->{http_backend} eq 'lwp' && $self->mymodule_load(
-            logger => $options{logger}, module => 'centreon::class::http::backend::lwp',
-            error_msg => "Cannot load module 'centreon::class::http::backend::lwp'."
+            logger => $options{logger}, module => 'centreon::vmware::http::backend::lwp',
+            error_msg => "Cannot load module 'centreon::vmware::http::backend::lwp'."
             ) == 0) {
-            $self->{backend_lwp} = centreon::class::http::backend::lwp->new(%options, logger => $self->{logger});
+            $self->{backend_lwp} = centreon::vmware::http::backend::lwp->new(%options, logger => $self->{logger});
         }
 
         if ($options{request}->{http_backend} eq 'curl' && $self->mymodule_load(
-            logger => $options{logger}, module => 'centreon::class::http::backend::curl',
-            error_msg => "Cannot load module 'centreon::class::http::backend::curl'."
+            logger => $options{logger}, module => 'centreon::vmware::http::backend::curl',
+            error_msg => "Cannot load module 'centreon::vmware::http::backend::curl'."
             ) == 0) {
-            $self->{backend_curl} = centreon::class::http::backend::curl->new(%options, logger => $self->{logger});
+            $self->{backend_curl} = centreon::vmware::http::backend::curl->new(%options, logger => $self->{logger});
         }
     }
 

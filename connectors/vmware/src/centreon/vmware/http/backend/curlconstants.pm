@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::class::http::backend::curlconstants;
+package centreon::vmware::http::backend::curlconstants;
 
 use strict;
 use warnings;

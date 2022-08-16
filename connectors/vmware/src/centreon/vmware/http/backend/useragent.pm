@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::class::http::backend::useragent;
+package centreon::vmware::http::backend::useragent;
 
 use strict;
 use warnings;
@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self = LWP::UserAgent::new(@_);
-    $self->agent('centreon::class::http::backend::useragent');
+    $self->agent('centreon::vmware::http::backend::useragent');
 
     $self->{credentials} = $options{credentials} if defined($options{credentials});
     $self->{username} = $options{username} if defined($options{username});
