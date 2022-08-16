@@ -172,6 +172,8 @@ sub new {
     $options{options}->add_options(arguments => {
         'exec-only'            => { name => 'exec_only' },
         'filter-policy-name:s' => { name => 'filter_policy_name' },
+        'filter-client-name:s' => { name => 'filter_client_name' },
+        'filter-server-name:s' => { name => 'filter_server_name' },
         'filter-type:s'        => { name => 'filter_type' },
         'filter-end-time:s'    => { name => 'filter_end_time', default => 86400 },
         'filter-start-time:s'  => { name => 'filter_start_time' },
@@ -237,23 +239,22 @@ sub manage_selection {
     my $current_time = time();
     foreach my $line (split /\n/, $stdout) {
         my @values = split /,/, $line;
-        my ($job_id, $job_type, $job_state, $job_status, $job_pname, $job_schedule, $job_start_time, $job_end_time, $job_kb, $job_parentid) = 
-            ($values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[8], $values[10], $values[14], $values[33]);
+        my ($job_id, $job_type, $job_state, $job_status, $job_pname, $job_client_name, $job_server_name, $job_schedule, $job_start_time, $job_end_time, $job_kb, $job_parentid) = 
+            ($values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[6], $values[7], $values[8], $values[10], $values[14], $values[33]);
 
         $job_pname = defined($job_pname) && $job_pname ne '' ? $job_pname : 'unknown';
         $job_status = defined($job_status) && $job_status =~ /[0-9]/ ? $job_status : -1;
         # when the job is running, end_time = 000000
         $job_end_time = undef if (defined($job_end_time) && int($job_end_time) == 0);
-        if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
-            $job_pname !~ /$self->{option_results}->{filter_policy_name}/) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $job_type{$job_type} !~ /$self->{option_results}->{filter_type}/) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': no matching filter type.", debug => 1);
-            next;
-        }
+        next if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
+            $job_pname !~ /$self->{option_results}->{filter_policy_name}/);
+        next if (defined($self->{option_results}->{filter_client_name}) && $self->{option_results}->{filter_client_name} ne '' &&
+            $job_client_name !~ /$self->{option_results}->{filter_client_name}/);
+        next if (defined($self->{option_results}->{filter_server_name}) && $self->{option_results}->{filter_server_name} ne '' &&
+            $job_server_name !~ /$self->{option_results}->{filter_server_name}/);
+        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+            $job_type{$job_type} !~ /$self->{option_results}->{filter_type}/);
+
         if (defined($self->{option_results}->{filter_end_time}) && $self->{option_results}->{filter_end_time} =~ /[0-9]+/ &&
             defined($job_end_time) && $job_end_time =~ /[0-9]+/ && $job_end_time < $current_time - $self->{option_results}->{filter_end_time}) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': end time too old.", debug => 1);
@@ -301,6 +302,14 @@ Print command output
 =item B<--filter-policy-name>
 
 Filter job policy name (can be a regexp).
+
+=item B<--filter-client-name>
+
+Filter jobs by client name (can be a regexp).
+
+=item B<--filter-server-name>
+
+Filter jobs by server name (can be a regexp).
 
 =item B<--filter-type>
 
