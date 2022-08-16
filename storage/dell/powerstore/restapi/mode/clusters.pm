@@ -122,7 +122,7 @@ sub set_counters {
                     key_values => [ { name => $sampling } ],
                     output_template => '%.2f µs (' . $sampling . ')',
                     perfdatas => [
-                        { template => '%.2f', unit => 'µs', min => 0, label_extra_instance => 1 }
+                        { template => '%.2f', min => 0, label_extra_instance => 1 }
                     ]
                 }
             };
