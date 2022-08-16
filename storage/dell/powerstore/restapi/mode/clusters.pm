@@ -145,7 +145,7 @@ sub set_counters {
                 label => $_ . '-bandwidth-' . $sampling, nlabel => 'cluster.io.'. $_ . '.bandwidth.' . $sampling . '.bytespersecond', set => {
                     key_values => [ { name => $sampling } ],
                     output_template => '%.2f%s/s (' . $sampling . ')',
-                     output_change_bytes => 1,
+                    output_change_bytes => 1,
                     perfdatas => [
                         { template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1 }
                     ]
