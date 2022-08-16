@@ -238,9 +238,19 @@ sub manage_selection {
     $self->{policy} = {};
     my $current_time = time();
     foreach my $line (split /\n/, $stdout) {
-        my @values = split /,/, $line;
-        my ($job_id, $job_type, $job_state, $job_status, $job_pname, $job_client_name, $job_server_name, $job_schedule, $job_start_time, $job_end_time, $job_kb, $job_parentid) = 
-            ($values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[6], $values[7], $values[8], $values[10], $values[14], $values[33]);
+        my @values = split(/,/, $line);
+        my $job_id = $values[0];
+        my $job_type = $values[1];
+        my $job_state = $values[2];
+        my $job_status = $values[3];
+        my $job_pname = $values[4];
+        my $job_schedule = $values[5];
+        my $job_client_name = $values[6];
+        my $job_server_name = $values[7];
+        my $job_start_time = $values[8];
+        my $job_end_time = $values[10];
+        my $job_kb = $values[14];
+        my $job_parentid = $values[33]; 
 
         $job_pname = defined($job_pname) && $job_pname ne '' ? $job_pname : 'unknown';
         $job_status = defined($job_status) && $job_status =~ /[0-9]/ ? $job_status : -1;
