@@ -35,7 +35,7 @@ sub store_long_output {
     );
 }
 
-sub store_appliance_output {
+sub prefix_store_output {
     my ($self, %options) = @_;
 
     return sprintf(
