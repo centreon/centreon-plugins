@@ -44,7 +44,7 @@ sub set_counters {
             label => 'status', type => 2, 
             critical_default => '%{status} =~ /red/' , 
             warning_default => '%{status} =~ /yellow/', 
-            unknown_default => '%{status} =~ /(green|yellow|red|white)/',
+            unknown_default => '%{status} !~ /(green|yellow|red|white)/',
             set => {
                 key_values => [ { name => 'status' } ],
                 closure_custom_output => $self->can('custom_status_output'),
