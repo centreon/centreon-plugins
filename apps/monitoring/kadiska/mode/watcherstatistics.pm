@@ -42,7 +42,7 @@ sub set_counters {
     $self->{maps_counters}->{watchers} = [
         { label => 'errors-prct', nlabel => 'watcher.errors.percentage', set => {
                 key_values => [ { name => 'errors_prct' } ],
-                output_template => 'errors: %.2f%%',
+                output_template => 'Errors: %.2f%%',
                 perfdatas => [
                     { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
@@ -50,7 +50,7 @@ sub set_counters {
         },
         { label => 'sessions', nlabel => 'watcher.sessions.count', set => {
                 key_values => [ { name => 'sessions' } ],
-                output_template => 'sessions: %s',
+                output_template => 'Sessions: %s',
                 perfdatas => [
                     { template => '%s', min => 0, label_extra_instance => 1 },
                 ],
@@ -58,28 +58,44 @@ sub set_counters {
         },
         { label => 'requests', nlabel => 'watcher.requests.count', set => {
                 key_values => [ { name => 'requests' } ],
-                output_template => 'requests: %s',
+                output_template => 'Requests: %s',
                 perfdatas => [
                     { template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'loading-page', nlabel => 'watcher.loading.page.duration.seconds', set => {
+        { label => 'loading-page', nlabel => 'watcher.loading.page.duration.milliseconds', set => {
                 key_values => [ { name => 'loading_page' } ],
                 output_template => 'Loading page duration: %.2f s',
                 perfdatas => [
-                    { template => '%.2f', unit => 's', min => 0, label_extra_instance => 1 },
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
                 ],
             }
         },   
         { label => 'pages', nlabel => 'watcher.pages.count', set => {
                 key_values => [ { name => 'pages' } ],
-                output_template => 'pages: %d',
+                output_template => 'Loaded pages: %d',
                 perfdatas => [
                     { template => '%d', min => 0, label_extra_instance => 1 },
                 ],
             }
-        }              
+        },
+        { label => 'processing', nlabel => 'watcher.processing.duration.milliseconds', set => {
+                key_values => [ { name => 'processing' } ],
+                output_template => 'Processing duration: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },  
+        { label => 'users', nlabel => 'users.count', set => {
+                key_values => [ { name => 'users' } ],
+                output_template => 'Connected users: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        }        
     ];
 }
 
@@ -106,13 +122,13 @@ sub manage_selection {
     my $raw_form_post = {
         "select" => [
             {
+                "user_id:distinct" => ["distinct","user_id"]
+            },
+            {
                 "watcher_id:group" => "watcher_name"
             },
             {
-                "\%errors:avg|hits" => 
-                    [
-                        "*",100,["/",["sumFor","hits","error_count"],["countFor","hits"]]
-                    ]                
+                "\%errors:avg|hits" => ["avgFor","hits","error_count"]            
             },
             {
                 "session:sum|hits" => ["sumFor","hits","session_count"]
@@ -125,6 +141,9 @@ sub manage_selection {
             },
             {
                 "lcp:p75|pages" => ["p75For","pages","lcp"]
+            },
+            {
+                "processing_whole:avg|requests" => ["avgFor","requests",["+",["+",["+",["+","full_local_time_spent","full_network_time_spent"],"srt_spent"],"dtt_spent"],"dom_waiting_time_spent"]]
             }
         ],
         "from" => "rum",
@@ -152,10 +171,12 @@ sub manage_selection {
 
         $self->{watchers}->{$instance} = {
             errors_prct => $watcher->{'%errors:avg|hits'},
-            loading_page => (defined($watcher->{'lcp:p75|pages'}) && $watcher->{'lcp:p75|pages'} != 0 ) ? ($watcher->{'lcp:p75|pages'} / 10**6) : 0,
+            loading_page => (defined($watcher->{'lcp:p75|pages'}) && $watcher->{'lcp:p75|pages'} != 0 ) ? ($watcher->{'lcp:p75|pages'} / 10**3) : 0,
             pages => $watcher->{'item:count|pages'},
             requests => $watcher->{'item:count|requests'},
-            sessions => $watcher->{'session:sum|hits'}
+            sessions => $watcher->{'session:sum|hits'},
+            processing => ( $watcher->{'processing_whole:avg|requests'} / 10**3 ),
+            users => $watcher->{'user_id:distinct'}
         };
     };
 
@@ -214,11 +235,11 @@ Critical threshold for requested pages by the application.
 
 =item B<--warning-loading-page>
 
-Warning threshold loading page duration in seconds.
+Warning threshold loading page duration in milliseconds.
 
 =item B<--critical-loading-page>
 
-Critical threshold for loading page duration in seconds.
+Critical threshold for loading page duration in milliseconds.
 
 =back
 
