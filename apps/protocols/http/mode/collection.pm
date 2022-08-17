@@ -528,7 +528,7 @@ sub collect_http_tables {
             }
 
             if (defined($options{requests}->[$i]->{scenario_stopped}) && $options{requests}->[$i]->{scenario_stopped} &&
-                $self->check_filter(filter => $options{requests}->[$i]->{scenario_stopped}, values => $self->{expand}) == 0) {
+                $self->check_filter2(filter => $options{requests}->[$i]->{scenario_stopped}, values => $self->{expand})) {
                 $self->{scenario_stopped} = 1;
                 if (defined($options{requests}->[$i]->{scenario_retry}) && $options{requests}->[$i]->{scenario_retry} =~ /^true|1$/i) {
                     $self->{scenario_loop}++;
@@ -1633,7 +1633,24 @@ sub check_filter {
         $self->{output}->option_exit();
     }
     return 0 if ($result);
+
     return 1;
+}
+
+sub check_filter2 {
+    my ($self, %options) = @_;
+
+    return 0 if (!defined($options{filter}) || $options{filter} eq '');
+    our $expand = $options{values};
+    $options{filter} =~ s/%\(([a-zA-Z0-9\._:]+?)\)/\$expand->{'$1'}/g;
+    my $result = $self->{safe}->reval("$options{filter}");
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => 'Unsafe code evaluation: ' . $@);
+        $self->{output}->option_exit();
+    }
+    return 1 if ($result);
+
+    return 0;
 }
 
 sub check_filter_option {
@@ -1721,7 +1738,7 @@ sub add_selection {
         $config->{formatting_critical} = $self->prepare_formatting(section => "selection > $i > formatting_critical", formatting => $_->{formatting_critical});
         $self->{selections}->{'s' . $i} = { expand => $self->{expand}, config => $config };
 
-        if ($self->check_filter(filter => $_->{exit}, values => $self->{expand}) == 0) {
+        if ($self->check_filter2(filter => $_->{exit}, values => $self->{expand})) {
             $self->{exit_selection} = 1;
             return ;
         }
@@ -1774,7 +1791,7 @@ sub add_selection_loop {
             $config->{formatting_critical} = $self->prepare_formatting(section => "selection_loop > $i > formatting_critical", formatting => $_->{formatting_critical});
             $self->{selections}->{'s' . $i . '-' . $instance} = { expand => $self->{expand}, config => $config };
 
-            if ($self->check_filter(filter => $_->{exit}, values => $self->{expand}) == 0) {
+            if ($self->check_filter2(filter => $_->{exit}, values => $self->{expand})) {
                 $self->{exit_selection} = 1;
                 return ;
             }
