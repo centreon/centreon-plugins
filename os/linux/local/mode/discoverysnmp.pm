@@ -81,15 +81,22 @@ sub check_options {
     $self->{oid_sysName} = '.1.3.6.1.2.1.1.5.0';
 
     $self->{oids} = [$self->{oid_sysDescr}, $self->{oid_sysName}];
-    $self->{extra_oids} = [];
+    $self->{extra_oids} = {};
     if (defined($self->{option_results}->{extra_oids})) {
         my @extra_oids = split(/,/, $self->{option_results}->{extra_oids});
         foreach my $extra_oid (@extra_oids) {
             next if ($extra_oid eq '');
 
-            $extra_oid =~ s/^(\d+)/\.$1/;
-            push @{$self->{extra_oids}}, $extra_oid;
-            push @{$self->{oids}}, $extra_oid;
+            my @values = split(/=/, $extra_oid);
+            my ($name, $oid) = ('', $values[0]);
+            if (defined($values[1])) {
+                $name = $values[0];
+                $oid = $values[1];
+            }
+
+            $oid =~ s/^(\d+)/\.$1/;
+            $self->{extra_oids}->{$oid} = $name;
+            push @{$self->{oids}}, $oid;
         }
     }
 }
@@ -160,8 +167,9 @@ sub run {
         $host{snmp_community} = $last_community;
         $host{snmp_port} = $self->{option_results}->{snmp_port};
         $host{extra_oids} = {};
-        foreach (@{$self->{extra_oids}}) {
-            $host{extra_oids}->{$_} = defined($result->{$_}) ? $result->{$_} : 'unknown';
+        foreach (keys %{$self->{extra_oids}}) {
+            my $label = defined($self->{extra_oids}->{$_}) && $self->{extra_oids}->{$_} ne '' ? $self->{extra_oids}->{$_} : $_;
+            $host{extra_oids}->{$label} = defined($result->{$_}) ? $result->{$_} : 'unknown';
         }
 
         push @disco_data, \%host;
@@ -226,7 +234,7 @@ Prettify JSON output.
 
 =item B<--extra-oids>
 
-Specify extra OIDs to get (Eg: --extra-oids='.1.3.6.1.2.1.25.1.4.0,.1.3.6.1.2.1.1.1.0').
+Specify extra OIDs to get (Eg: --extra-oids='hrSystemInitialLoadParameters=1.3.6.1.2.1.25.1.4.0,sysDescr=.1.3.6.1.2.1.1.1.0').
 
 =back
 
