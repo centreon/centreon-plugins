@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Socket;
+use Digest::MD5;
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -59,7 +60,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-        { name => 'peers', type => 1, cb_prefix_output => 'prefix_peer_output', message_multiple => 'All BGP peers are ok' },
+        { name => 'peers', type => 1, cb_prefix_output => 'prefix_peer_output', message_multiple => 'All BGP peers are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -91,13 +92,29 @@ sub set_counters {
                     { template => '%s', unit => 's', min => 0, label_extra_instance => 1 }
                 ]
             }
+        },
+        { label => 'peer-prefixes-accepted', nlabel => 'bgp.peer.prefixes.accepted.count', set => {
+                key_values => [ { name => 'acceptedPrefixes', diff => 1 } ],
+                output_template => 'prefixes accepted: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'peer-prefixes-denied', nlabel => 'bgp.peer.prefixes.denied.count', set => {
+                key_values => [ { name => 'deniedPrefixes', diff => 1 } ],
+                output_template => 'prefixes denied: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
         }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -128,7 +145,7 @@ my $mapping = {
     localAddr           => { oid => '.1.3.6.1.4.1.9.9.187.1.2.5.1.6' }, # cbgpPeer2LocalAddr
     localPort           => { oid => '.1.3.6.1.4.1.9.9.187.1.2.5.1.7' }, # cbgpPeer2LocalPort
     remoteAs            => { oid => '.1.3.6.1.4.1.9.9.187.1.2.5.1.11' }, # cbgpPeer2RemoteAs
-    inUpdateElapsedTime => { oid => '.1.3.6.1.4.1.9.9.187.1.2.5.1.27' }, # cbgpPeer2InUpdateElapsedTime
+    inUpdateElapsedTime => { oid => '.1.3.6.1.4.1.9.9.187.1.2.5.1.27' }  # cbgpPeer2InUpdateElapsedTime
 };
 
 sub get_ipv6 {
@@ -144,6 +161,13 @@ sub get_ipv6 {
 
 sub manage_selection {
     my ($self, %options) = @_;
+
+    $self->{cache_name} = 'cisco_standard_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+        Digest::MD5::md5_hex(
+            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
+            (defined($self->{option_results}->{filter_remote_addr}) ? $self->{option_results}->{filter_remote_addr} : '') . '_' .
+            (defined($self->{option_results}->{filter_remote_as}) ? $self->{option_results}->{filter_remote_ass} : '')
+        );
 
     my $oid_remotePort = '.1.3.6.1.4.1.9.9.187.1.2.5.1.10'; # cbgpPeer2RemotePort
     my $snmp_result = $options{snmp}->get_table(oid => $oid_remotePort, nothing_quit => 1);
@@ -179,6 +203,11 @@ sub manage_selection {
         instance_regexp => '^(.*)$'
     );
     $snmp_result = $options{snmp}->get_leef();
+
+    my $oid_acceptedPrefixes = '.1.3.6.1.4.1.9.9.187.1.2.8.1.1'; # cbgpPeer2AcceptedPrefixes
+    my $oid_deniedPrefixes   = '.1.3.6.1.4.1.9.9.187.1.2.8.1.2'; # cbgpPeer2DeniedPrefixes
+    my $snmp_family = $options{snmp}->get_table(oid => '.1.3.6.1.4.1.9.9.187.1.2.8.1', end => $oid_deniedPrefixes); # cbgpPeer2AddrFamilyPrefixEntry
+
     foreach (keys %{$self->{peers}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $self->{peers}->{$_}->{instance});
 
@@ -201,6 +230,13 @@ sub manage_selection {
         $self->{peers}->{$_}->{remoteAs} = $result->{remoteAs};
         $self->{peers}->{$_}->{localAddr} = $local;
         $self->{peers}->{$_}->{last_update} = $result->{inUpdateElapsedTime};
+
+        foreach my $oid (keys %$snmp_family) {
+            next if ($oid !~ /^$oid_acceptedPrefixes\.$self->{peers}->{$_}->{instance}\.(.*)$/);
+
+            $self->{peers}->{$_}->{acceptedPrefixes} = $snmp_family->{$oid};
+            $self->{peers}->{$_}->{deniedPrefixes} = $snmp_family->{$oid_deniedPrefixes . '.' . $self->{peers}->{$_}->{instance} . '.' . $1};
+        }
     }
 }
 
@@ -240,7 +276,7 @@ Can used special variables like: %{adminStatus}, %{state}, %{localAddr}, %{remot
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'peers-detected', 'peer-update-last'.
+Can be: 'peers-detected', 'peer-update-last', 'peer-prefixes-accepted', 'peer-prefixes-denied'.
 
 =back
 
