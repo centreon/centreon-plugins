@@ -30,16 +30,23 @@ my $map_disk_status = {
     4 => 'SystemPartitionFailed',
     5 => 'Crashed'
 };
+my $map_disk_health = {
+    1 => 'normal',
+    2 => 'warning',
+    3 => 'critical',
+    4 => 'failing'
+};
 
 my $mapping = {
-    status     => { oid => '.1.3.6.1.4.1.6574.2.1.1.5', map => $map_disk_status }, # synoDiskdiskStatus
-    badSectors => { oid => '.1.3.6.1.4.1.6574.2.1.1.9' }  # diskBadSector
+    status       => { oid => '.1.3.6.1.4.1.6574.2.1.1.5', map => $map_disk_status }, # synoDiskdiskStatus
+    badSectors   => { oid => '.1.3.6.1.4.1.6574.2.1.1.9' }, # diskBadSector
+    healthStatus => { oid => '.1.3.6.1.4.1.6574.2.1.1.13', map => $map_disk_health } # diskHealthStatus
 };
 my $oid_diskName = '.1.3.6.1.4.1.6574.2.1.1.2'; # synoDiskdiskName
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_diskName };
 }
 
@@ -74,9 +81,10 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "disk '%s' status is %s [instance: %s%s]",
+                "disk '%s' status is %s [instance: %s%s%s]",
                 $name, $result->{status}, $instance,
-                defined($result->{badSectors}) ? ', bad sectors: ' . $result->{badSectors} : ''
+                defined($result->{badSectors}) ? ', bad sectors: ' . $result->{badSectors} : '',
+                defined($result->{healthStatus}) ? ', health: ' . $result->{healthStatus} : ''
             )
         );
         my $exit = $self->get_severity(section => 'disk', value => $result->{status});
@@ -85,6 +93,16 @@ sub check {
                 severity => $exit,
                 short_msg => sprintf("Disk '%s' status is %s", $name, $result->{status})
             );
+        }
+
+        if (defined($result->{healthStatus})) {
+            $exit = $self->get_severity(section => 'disk', value => $result->{healthStatus});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Disk '%s' health is %s", $name, $result->{healthStatus})
+                );
+            }
         }
 
         next if (!defined($result->{badSectors}));
@@ -96,6 +114,7 @@ sub check {
                 short_msg => sprintf("Disk '%s' has %s bad sector(s)", $name, $result->{badSectors})
             );
         }
+
         $self->{output}->perfdata_add(
             nlabel => 'hardware.disk.bad_sectors.count',
             instances => $name,
