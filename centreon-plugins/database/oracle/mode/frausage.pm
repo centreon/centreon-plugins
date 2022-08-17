@@ -25,32 +25,62 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_file_output {
+    my ($self, %options) = @_;
+
+    return "File type '" . $options{instance_value}->{display} . "' recovery area ";
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return "Recovery area ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'file', type => 1, cb_prefix_output => 'prefix_file_output', message_multiple => 'All recovery areas are ok', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
+        { name => 'file', type => 1, cb_prefix_output => 'prefix_file_output', message_multiple => 'All recovery areas are ok', skipped_code => { -10 => 1 } }
     ];
 
-    $self->{maps_counters}->{file} = [
+    $self->{maps_counters}->{global} = [
         { label => 'space-usage', nlabel => 'recoveryarea.space.usage.percentage', set => {
-                key_values => [ { name => 'percent_space_usage' }, { name => 'display' } ],
-                output_template => 'used : %.2f %%',
+                key_values => [ { name => 'percent_space_usage' } ],
+                output_template => 'used: %.2f %%',
                 perfdatas => [
-                    { value => 'percent_space_usage', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'space-reclaimable', nlabel => 'recoveryarea.space.reclaimable.percentage', set => {
-                key_values => [ { name => 'percent_space_reclaimable' }, { name => 'display' } ],
-                output_template => 'reclaimable : %.2f %%',
+                key_values => [ { name => 'percent_space_reclaimable' } ],
+                output_template => 'reclaimable: %.2f %%',
                 perfdatas => [
-                    { value => 'percent_space_reclaimable', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{file} = [
+        { label => 'file-space-usage', nlabel => 'recoveryarea.space.usage.percentage', set => {
+                key_values => [ { name => 'percent_space_usage' } ],
+                output_template => 'used: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
+        { label => 'file-space-reclaimable', nlabel => 'recoveryarea.space.reclaimable.percentage', set => {
+                key_values => [ { name => 'percent_space_reclaimable' } ],
+                output_template => 'reclaimable: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        }
     ];
 }
 
@@ -60,21 +90,15 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-type:s' => { name => 'filter_type' },
+        'filter-type:s' => { name => 'filter_type' }
     });
     
     return $self;
 }
 
-sub prefix_file_output {
-    my ($self, %options) = @_;
-
-    return "File type '" . $options{instance_value}->{display} . "' recovery area ";
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     $options{sql}->connect();
     if ($options{sql}->is_version_minimum(version => '11')) {
         $options{sql}->query(query => q{
@@ -90,6 +114,7 @@ sub manage_selection {
     my $result = $options{sql}->fetchall_arrayref();
     $options{sql}->disconnect();
 
+    $self->{global} = { percent_space_usage => 0, percent_space_reclaimable => 0 };
     $self->{file} = {};
     foreach my $row (@$result) {
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
@@ -98,14 +123,17 @@ sub manage_selection {
             next;
         }
 
-        $self->{file}->{$row->[0]} = { display => $row->[0] };
+        $self->{file}->{ $row->[0] } = { display => $row->[0] };
         if ($options{sql}->is_version_minimum(version => '11')) {
-            $self->{file}->{$row->[0]}->{percent_space_usage} = $row->[1];
-            $self->{file}->{$row->[0]}->{percent_space_reclaimable} = $row->[2];
+            $self->{file}->{ $row->[0] }->{percent_space_usage} = $row->[1];
+            $self->{file}->{ $row->[0] }->{percent_space_reclaimable} = $row->[2];
         } else {
-            $self->{file}->{$row->[0]}->{percent_space_usage} = $row->[1] * 100 / $row->[3];
-            $self->{file}->{$row->[0]}->{percent_space_reclaimable} = $row->[2] * 100 / $row->[3];
+            $self->{file}->{ $row->[0] }->{percent_space_usage} = $row->[1] * 100 / $row->[3];
+            $self->{file}->{ $row->[0] }->{percent_space_reclaimable} = $row->[2] * 100 / $row->[3];
         }
+
+        $self->{global}->{percent_space_usage} += $self->{file}->{ $row->[0] }->{percent_space_usage};
+        $self->{global}->{percent_space_reclaimable} += $self->{file}->{ $row->[0] }->{percent_space_reclaimable};
     }
 
     if (scalar(keys %{$self->{file}}) <= 0) {
@@ -135,7 +163,7 @@ Filter file type (can be a regexp).
 =item B<--warning-*> B<--critical-*> 
 
 Thresholds.
-Can be: 'space-usage', 'space-reclaimable'.
+Can be: 'space-usage', 'space-reclaimable', 'file-space-usage', 'file-space-reclaimable'.
 
 =back
 
