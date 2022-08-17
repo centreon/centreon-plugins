@@ -40,7 +40,8 @@ sub new {
         'snmp-version:s@'   => { name => 'snmp_version' },
         'snmp-community:s@' => { name => 'snmp_community' },
         'snmp-timeout:s'    => { name => 'snmp_timeout', default => 1 },
-        'prettify'          => { name => 'prettify' }
+        'prettify'          => { name => 'prettify' },
+        'extra-oids:s'      => { name => 'extra_oids' }
     });
 
     $self->{snmp} = centreon::plugins::snmp->new(%options, noptions => 1);
@@ -75,6 +76,29 @@ sub check_options {
     $self->{snmp}->set_snmp_params(subsetleef => 1);
     $self->{snmp}->set_snmp_params(snmp_autoreduce => 0);
     $self->{snmp}->set_snmp_params(snmp_errors_exit => 'unknown');
+
+    $self->{oid_sysDescr} = '.1.3.6.1.2.1.1.1.0';
+    $self->{oid_sysName} = '.1.3.6.1.2.1.1.5.0';
+
+    $self->{oids} = [$self->{oid_sysDescr}, $self->{oid_sysName}];
+    $self->{extra_oids} = {};
+    if (defined($self->{option_results}->{extra_oids})) {
+        my @extra_oids = split(/,/, $self->{option_results}->{extra_oids});
+        foreach my $extra_oid (@extra_oids) {
+            next if ($extra_oid eq '');
+
+            my @values = split(/=/, $extra_oid);
+            my ($name, $oid) = ('', $values[0]);
+            if (defined($values[1])) {
+                $name = $values[0];
+                $oid = $values[1];
+            }
+
+            $oid =~ s/^(\d+)/\.$1/;
+            $self->{extra_oids}->{$oid} = $name;
+            push @{$self->{oids}}, $oid;
+        }
+    }
 }
 
 sub define_type {
@@ -99,16 +123,13 @@ sub snmp_request {
     $self->{snmp}->set_snmp_connect_params(RemotePort => $options{port});
     return undef if ($self->{snmp}->connect(dont_quit => 1) != 0);
     return $self->{snmp}->get_leef(
-        oids => [ $self->{oid_sysDescr}, $self->{oid_sysName} ],
+        oids => $self->{oids},
         nothing_quit => 0, dont_quit => 1
     );
 }
 
 sub run {
     my ($self, %options) = @_;
-
-    $self->{oid_sysDescr} = '.1.3.6.1.2.1.1.1.0';
-    $self->{oid_sysName} = '.1.3.6.1.2.1.1.5.0';
 
     my @disco_data;
     my $disco_stats;
@@ -145,6 +166,12 @@ sub run {
         $host{snmp_version} = $last_version;
         $host{snmp_community} = $last_community;
         $host{snmp_port} = $self->{option_results}->{snmp_port};
+        $host{extra_oids} = {};
+        foreach (keys %{$self->{extra_oids}}) {
+            my $label = defined($self->{extra_oids}->{$_}) && $self->{extra_oids}->{$_} ne '' ? $self->{extra_oids}->{$_} : $_;
+            $host{extra_oids}->{$label} = defined($result->{$_}) ? $result->{$_} : 'unknown';
+        }
+
         push @disco_data, \%host;
     }
     
@@ -204,6 +231,10 @@ Specify SNMP timeout in second (Default: 1).
 =item B<--prettify>
 
 Prettify JSON output.
+
+=item B<--extra-oids>
+
+Specify extra OIDs to get (Eg: --extra-oids='hrSystemInitialLoadParameters=1.3.6.1.2.1.25.1.4.0,sysDescr=.1.3.6.1.2.1.1.1.0').
 
 =back
 
