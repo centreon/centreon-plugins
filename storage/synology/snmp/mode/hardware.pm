@@ -43,7 +43,11 @@ sub set_system {
             ['Initialized', 'OK'],
             ['NotInitialized', 'OK'],
             ['SystemPartitionFailed', 'CRITICAL'],
-            ['Crashed', 'CRITICAL']
+            ['Crashed', 'CRITICAL'],
+
+            ['warning', 'WARNING'],
+            ['critical', 'CRITICAL'],
+            ['failing', 'failing']
         ],
         raid => [
             ['Normal', 'OK'],
