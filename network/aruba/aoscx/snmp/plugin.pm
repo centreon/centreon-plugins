@@ -29,14 +29,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
+        'cpu'             => 'network::aruba::aoscx::snmp::mode::cpu',
         'hardware'        => 'network::aruba::aoscx::snmp::mode::hardware',
         'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'memory'          => 'network::aruba::aoscx::snmp::mode::memory',
         'vsf'             => 'network::aruba::aoscx::snmp::mode::vsf',
         'vsx'             => 'network::aruba::aoscx::snmp::mode::vsx'
-    );
+    };
 
     return $self;
 }
