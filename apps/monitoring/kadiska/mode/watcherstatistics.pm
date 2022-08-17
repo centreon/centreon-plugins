@@ -82,7 +82,7 @@ sub set_counters {
         },
         { label => 'processing', nlabel => 'watcher.processing.duration.milliseconds', set => {
                 key_values => [ { name => 'processing' } ],
-                output_template => 'Processing duration: %.2f ms',
+                output_template => 'API Processing duration: %.2f ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
                 ],
