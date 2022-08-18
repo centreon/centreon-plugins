@@ -122,7 +122,7 @@ sub json_decode {
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($options{content});
+        $decoded = JSON::XS->new->utf8->allow_nonref(1)->decode($options{content});
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
@@ -132,71 +132,126 @@ sub json_decode {
     return $decoded;
 }
 
-sub clean_session_id {
+sub clean_session {
     my ($self, %options) = @_;
 
     my $datas = { last_timestamp => time() };
-    $options{statefile}->write(data => $datas);
-    $self->{session_id} = undef;
-    $self->{http}->add_header(key => 'vmware-api-session-id', value => undef);
+    $self->{cache}->write(data => $datas);
+}
+
+sub authv2 {
+    my ($self, %options) = @_;
+
+    my $content = $self->{http}->request(
+        method => 'POST',
+        query_form_post => '',
+        url_path => '/api/session',
+        credentials => 1,
+        basic => 1,
+        username => $self->{api_username},
+        password => $self->{api_password},
+        warning_status => '',
+        unknown_status => '',
+        critical_status => ''
+    );
+    my $http_code = $self->{http}->get_code();
+    return ($http_code, $self->{http}->get_message()) if ($http_code < 200 || $http_code >= 300);
+
+    my $decoded = $self->json_decode(content => $content);
+
+    if (defined($decoded) && ref($decoded) eq '' && $decoded ne '') {
+        return (200, 'ok', $decoded);
+    }
+
+    return (500, 'Error retrieving session_id');
+}
+
+sub authv1 {
+    my ($self, %options) = @_;
+
+    my $content = $self->{http}->request(
+        method => 'POST',
+        query_form_post => '',
+        url_path => '/rest/com/vmware/cis/session',
+        credentials => 1,
+        basic => 1,
+        username => $self->{api_username},
+        password => $self->{api_password},
+        warning_status => '',
+        unknown_status => '',
+        critical_status => ''
+    );
+    my $http_code = $self->{http}->get_code();
+    return ($http_code, $self->{http}->get_message()) if ($http_code < 200 || $http_code >= 300);
+
+    my $decoded = $self->json_decode(content => $content);
+
+    if (defined($decoded) && defined($decoded->{value})) {
+        return (200, 'ok', $decoded->{value});
+    }
+
+    return (500, 'Error retrieving session_id');
 }
 
 sub authenticate {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'vcsa_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
-    my $session_id = $options{statefile}->get(name => 'session_id');
+    my ($http_code, $http_message);
+    my $has_cache_file = $self->{cache}->read(statefile => 'vcsa_api_' . md5_hex($self->{option_results}->{hostname} . '_' . $self->{option_results}->{api_username}));
+    my $session_id = $self->{cache}->get(name => 'session_id');
+    my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
+    my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
 
-    if ($has_cache_file == 0 || !defined($session_id)) {
-        my $content = $self->{http}->request(
-            method => 'POST',
-            query_form_post => '',
-            url_path => '/rest/com/vmware/cis/session',
-            credentials => 1, basic => 1,
-            username => $self->{api_username},
-            password => $self->{api_password},
-            warning_status => '', unknown_status => '', critical_status => ''
-        );
-        if ($self->{http}->get_code() != 200) {
-            $self->{output}->add_option_msg(short_msg => "Login error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-            $self->{output}->option_exit();
-        }
-
-        my $decoded = $self->json_decode(content => $content);
-
-        if (defined($decoded) && defined($decoded->{value})) {
-            $session_id = $decoded->{value};
-        } else {
-            $self->{output}->add_option_msg(short_msg => "Error retrieving session_id");
-            $self->{output}->option_exit();
-        }
-
-        my $datas = { last_timestamp => time(), session_id => $session_id };
-        $options{statefile}->write(data => $datas);
+    if ($has_cache_file != 0 &&
+        defined($session_id) &&
+        (defined($md5_secret_cache) && $md5_secret_cache eq $md5_secret)) {
+        return $session_id;
     }
 
-    $self->{session_id} = $session_id;
-    $self->{http}->add_header(key => 'vmware-api-session-id', value => $self->{session_id});
+    ($http_code, $http_message, $session_id) = $self->authv2();
+    if ($http_code != 200) {
+        ($http_code, $http_message, $session_id) = $self->authv1();
+    }
+
+    if (!defined($session_id)) {
+        $self->{output}->add_option_msg(short_msg => "authenticate error [code: '" . $http_code . "'] [message: '" . $http_message . "']");
+        $self->{output}->option_exit();
+    }
+
+    my $datas = { last_timestamp => time(), session_id => $session_id, md5_secret => $md5_secret };
+    $self->{cache}->write(data => $datas);
+
+    return $session_id;
 }
 
 sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-    if (!defined($self->{session_id})) {
-        $self->authenticate(statefile => $self->{cache});
-    }
+    my $session_id = $self->authenticate();
     
-    my $content = $self->{http}->request(%options, 
-        warning_status => '', unknown_status => '', critical_status => ''
+    my $content = $self->{http}->request(
+        %options,
+        header => [
+            'vmware-api-session-id: ' . $session_id
+        ],
+        warning_status => '',
+        unknown_status => '',
+        critical_status => ''
     );
 
     # Maybe there is an issue with the session_id. So we retry.
     if ($self->{http}->get_code() != 200) {
-        $self->clean_session_id(statefile => $self->{cache});
-        $self->authenticate(statefile => $self->{cache});
-        $content = $self->{http}->request(%options, 
-            warning_status => '', unknown_status => '', critical_status => ''
+        $self->clean_session();
+        $session_id = $self->authenticate();
+        $content = $self->{http}->request(
+            %options,
+            header => [
+                'vmware-api-session-id: ' . $session_id
+            ],
+            warning_status => '',
+            unknown_status => '',
+            critical_status => ''
         );
     }
 
