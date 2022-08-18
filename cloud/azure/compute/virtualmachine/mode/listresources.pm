@@ -32,6 +32,7 @@ sub new {
     
     $options{options}->add_options(arguments =>
                                 {
+                                    "api-version:s"         => { name => 'api_version', default => "2022-03-01"},
                                     "resource-group:s"      => { name => 'resource_group' },
                                     "filter-name:s"         => { name => 'filter_name' },
                                 });
@@ -42,7 +43,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    $self->{api_version} = (defined($self->{option_results}->{api_version}) && $self->{option_results}->{api_version} ne '') ? $self->{option_results}->{api_version} : "2022-03-01";
 }
+
+
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -57,6 +62,7 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
+
     foreach my $vm (@{$self->{vms}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $vm->{name} !~ /$self->{option_results}->{filter_name}/);
@@ -73,7 +79,7 @@ sub run {
         }
 
         $self->{output}->output_add(long_msg => sprintf("[name = %s][computername = %s][resourcegroup = %s]" .
-            "[location = %s][vmid = %s][vmsize = %s][os = %s][state = %s][tags = %s]",
+            "[location = %s][vmid = %s][vmsize = %s][os = %s][tags = %s]",
             $vm->{name},
             $computer_name,
             $resource_group,
@@ -81,7 +87,6 @@ sub run {
             (defined($vm->{properties}->{vmId})) ? $vm->{properties}->{vmId} : $vm->{vmId},
             (defined($vm->{properties}->{hardwareProfile}->{vmSize})) ? $vm->{properties}->{hardwareProfile}->{vmSize} : $vm->{hardwareProfile}->{vmSize},
             (defined($vm->{properties}->{storageProfile}->{osDisk}->{osType})) ? $vm->{properties}->{storageProfile}->{osDisk}->{osType} : $vm->{storageProfile}->{osDisk}->{osType},
-            (defined($vm->{powerState})) ? $vm->{powerState} : "-",
             join(',', @tags),
         ));
     }
@@ -95,7 +100,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'computername', 'resourcegroup', 'location', 'vmid', 'vmsize', 'os', 'state', 'tags']);
+    $self->{output}->add_disco_format(elements => ['name', 'computername', 'resourcegroup', 'location', 'vmid', 'vmsize', 'os', 'tags']);
 }
 
 sub disco_show {
@@ -123,7 +128,6 @@ sub disco_show {
             vmid => (defined($vm->{properties}->{vmId})) ? $vm->{properties}->{vmId} : $vm->{vmId},
             vmsize => (defined($vm->{properties}->{hardwareProfile}->{vmSize})) ? $vm->{properties}->{hardwareProfile}->{vmSize} : $vm->{hardwareProfile}->{vmSize},
             os => (defined($vm->{properties}->{storageProfile}->{osDisk}->{osType})) ? $vm->{properties}->{storageProfile}->{osDisk}->{osType} : $vm->{storageProfile}->{osDisk}->{osType},
-            state => (defined($vm->{powerState})) ? $vm->{powerState} : "-",
             tags => join(',', @tags),
         );
     }
@@ -135,7 +139,7 @@ __END__
 
 =head1 MODE
 
-List vitual machines.
+List virtual machines.
 
 =over 8
 

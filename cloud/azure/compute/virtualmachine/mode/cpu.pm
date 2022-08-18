@@ -64,6 +64,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'api-version:s'    => { name => 'api_version', default => '2018-01-01'},
         'filter-metric:s'  => { name => 'filter_metric' },
         'resource:s'       => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' }
@@ -79,6 +80,8 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
         $self->{output}->option_exit();
     }
+
+    $self->{api_version} = (defined($self->{option_results}->{api_version}) && $self->{option_results}->{api_version} ne "") ? $self->{option_results}->{api_version} : "2018-01-01";
 
     my $resource = $self->{option_results}->{resource};
     my $resource_group = defined($self->{option_results}->{resource_group}) ? $self->{option_results}->{resource_group} : '';

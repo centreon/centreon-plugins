@@ -68,6 +68,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        "api-version:s"         => { name => 'api_version', default => '2018-01-01'},
         "resource:s"            => { name => 'resource' },
         "resource-group:s"      => { name => 'resource_group' },
         "resource-type:s"       => { name => 'resource_type' },
@@ -90,6 +91,8 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    $self->{api_version} = (defined($self->{option_results}->{api_version}) && $self->{option_results}->{api_version} ne "") ? $self->{option_results}->{api_version} : 2018-01-01;
+    
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group};
     $self->{az_resource_type} = $self->{option_results}->{resource_type};
