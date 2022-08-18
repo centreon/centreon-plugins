@@ -29,10 +29,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
         'cpu'             => 'network::hp::moonshot::snmp::mode::cpu',
-        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'interfaces'      => 'network::hp::moonshot::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'network::hp::moonshot::snmp::mode::memory'
     };
