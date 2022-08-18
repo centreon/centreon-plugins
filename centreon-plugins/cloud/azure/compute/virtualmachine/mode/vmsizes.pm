@@ -122,6 +122,7 @@ sub new {
     
     $options{options}->add_options(arguments =>
                                 {
+                                    "api-version:s"         => { name => 'api_version', default => "2022-03-01"},
                                     "resource-group:s"      => { name => 'resource_group' },
                                     "filter-type:s"         => { name => 'filter_type' },
                                     "filter-size:s"         => { name => 'filter_size' },
@@ -134,6 +135,9 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    $self->{api_version} = (defined($self->{option_results}->{api_version}) && $self->{option_results}->{api_version} ne "") ? $self->{option_results}->{api_version} : "2022-03-01";
+
 }
 
 sub manage_selection {

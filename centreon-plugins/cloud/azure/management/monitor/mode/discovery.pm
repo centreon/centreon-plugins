@@ -32,6 +32,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        "api-version:s"         => { name => 'api_version', default => '2018-01-01'},
         "namespace:s"           => { name => 'namespace' },
         "type:s"                => { name => 'type' },
         "resource-group:s"      => { name => 'resource_group' },
@@ -45,6 +46,8 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    $self->{api_version} = (defined($self->{option_results}->{api_version}) && $self->{option_results}->{api_version} ne "") ? $self->{option_results}->{api_version} : 2018-01-01;
 
     $self->{namespace} = $self->{option_results}->{namespace};
     $self->{type} = $self->{option_results}->{type};
