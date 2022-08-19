@@ -29,6 +29,7 @@ use IO::Socket::INET;
 use IO::Socket::SSL;
 use Net::SSLeay 1.42;
 use DateTime;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -86,13 +87,10 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    my $append = '';
-    foreach (@{$self->{option_results}->{ssl_opt}}) {
-        if ($_ ne '') {
-            $self->{ssl_context} .= $append . $_;
-            $append = ', ';
-        }
-    }
+    $self->{ssl_context} = centreon::plugins::misc::eval_ssl_options(
+        output => $self->{output},
+        ssl_opt => $self->{option_results}->{ssl_opt}
+    );
 
     return 0;
 }
@@ -190,8 +188,8 @@ sub connect_starttls {
 sub get_certificate_informations {
     my ($self, %options) = @_;
 
-    if (defined($self->{ssl_context}) && $self->{ssl_context} ne '') {
-        my $context = new IO::Socket::SSL::SSL_Context(eval $self->{ssl_context});
+    if (scalar(keys %{$self->{ssl_context}}) > 0) {
+        my $context = new IO::Socket::SSL::SSL_Context(%{$self->{ssl_context}});
         eval { IO::Socket::SSL::set_default_context($context) };
         if ($@) {
             $self->{output}->add_option_msg(short_msg => sprintf("Error setting SSL context: %s", $@));
@@ -265,7 +263,7 @@ Examples:
 
 Do not verify certificate: --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE"
 
-Verify certificate: --ssl-opt="SSL_verify_mode => SSL_VERIFY_PEER" --ssl-opt="SSL_version => TLSv1"
+Verify certificate: --ssl-opt="SSL_verify_mode => SSL_VERIFY_PEER" --ssl-opt="SSL_version => 'TLSv1'"
 
 =item B<--ssl-ignore-errors>
 

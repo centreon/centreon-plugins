@@ -548,6 +548,55 @@ sub uniq {
     return grep { !$seen{$_}++ } @_;
 }
 
+sub eval_ssl_options {
+    my (%options) = @_;
+
+    my $ssl_context = {};
+    return $ssl_context if (!defined($options{ssl_opt}));
+    
+    my ($rv) = centreon::plugins::misc::mymodule_load(
+        output => $options{output}, module => 'Safe',
+        no_quit => 1
+    );
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output}, module => 'IO::Socket::SSL',
+        no_quit => 1
+    );
+
+    my $safe;
+    if ($rv == 0) {
+        $safe = Safe->new();
+        $safe->permit_only(':base_core', 'rv2gv', 'padany');
+        $safe->share('$values');
+        $safe->share('$assign_var');
+        $safe->share_from('IO::Socket::SSL', [
+            'SSL_VERIFY_NONE', 'SSL_VERIFY_PEER', 'SSL_VERIFY_FAIL_IF_NO_PEER_CERT', 'SSL_VERIFY_CLIENT_ONCE',
+            'SSL_RECEIVED_SHUTDOWN', 'SSL_SENT_SHUTDOWN',
+            'SSL_OCSP_NO_STAPLE', 'SSL_OCSP_MUST_STAPLE', 'SSL_OCSP_FAIL_HARD', 'SSL_OCSP_FULL_CHAIN', 'SSL_OCSP_TRY_STAPLE'
+        ]);
+    }
+    
+    foreach (@{$options{ssl_opt}}) {
+        if (/(SSL_[A-Za-z_]+)\s+=>\s*(\S+)/) {
+            my ($label, $eval) = ($1, $2);
+
+            our $assign_var;
+            if (defined($safe)) {
+                $safe->reval("\$assign_var = $eval", 1);
+                if ($@) {
+                    die 'Unsafe code evaluation: ' . $@;
+                }
+            } else {
+                eval "\$assign_var = $eval";
+            }
+
+            $ssl_context->{$label} = $assign_var;
+        }
+    }
+
+    return $ssl_context;
+}
+
 1;
 
 __END__

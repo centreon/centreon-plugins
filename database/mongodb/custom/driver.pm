@@ -26,6 +26,7 @@ use DateTime;
 use MongoDB;
 use Hash::Ordered;
 use URI::Encode;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -83,10 +84,10 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    foreach (@{$self->{option_results}->{ssl_opt}}) {
-        $_ =~ /(\w+)\s*=>\s*(\w+)/;
-        $self->{ssl_opts}->{$1} = $2;
-    }
+    $self->{ssl_opts} = centreon::plugins::misc::eval_ssl_options(
+        output => $self->{output},
+        ssl_opt => $self->{option_results}->{ssl_opt}
+    );
 
     return 0;
 }
