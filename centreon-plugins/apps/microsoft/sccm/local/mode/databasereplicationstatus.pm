@@ -117,7 +117,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'link-status', threshold => 0, set => {
+        { label => 'link-status', type => 2, set => {
                 key_values => [ { name => 'LinkStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
@@ -128,7 +128,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{sites} = [
-        { label => 'site-status', threshold => 0, set => {
+        { label => 'site-status', type => 2, set => {
                 key_values => [ { name => 'SiteType' }, { name => 'SiteStatus' }, { name => 'SiteToSiteGlobalState' },
                     { name => 'SiteToSiteGlobalSyncTime' } ],
                 closure_custom_calc => $self->can('custom_site_status_calc'),
