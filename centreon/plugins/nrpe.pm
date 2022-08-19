@@ -46,26 +46,26 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'nrpe-version:s'    => { name => 'nrpe_version', default => 2 },
-            'nrpe-port:s'       => { name => 'nrpe_port', default => 5666 },
-            'nrpe-payload:s'    => { name => 'nrpe_payload', default => 1024 },
-            'nrpe-bindaddr:s'   => { name => 'nrpe_bindaddr' },
-            'nrpe-use-ipv4'     => { name => 'nrpe_use_ipv4' },
-            'nrpe-use-ipv6'     => { name => 'nrpe_use_ipv6' },
-            'nrpe-timeout:s'    => { name => 'nrpe_timeout', default => 10 },
-            'ssl-opt:s@'        => { name => 'ssl_opt' },
+            'nrpe-version:s'  => { name => 'nrpe_version', default => 2 },
+            'nrpe-port:s'     => { name => 'nrpe_port', default => 5666 },
+            'nrpe-payload:s'  => { name => 'nrpe_payload', default => 1024 },
+            'nrpe-bindaddr:s' => { name => 'nrpe_bindaddr' },
+            'nrpe-use-ipv4'   => { name => 'nrpe_use_ipv4' },
+            'nrpe-use-ipv6'   => { name => 'nrpe_use_ipv6' },
+            'nrpe-timeout:s'  => { name => 'nrpe_timeout', default => 10 },
+            'ssl-opt:s@'      => { name => 'ssl_opt' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'NRPE CLASS OPTIONS');
 
     $self->{output} = $options{output};
-    
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    
+
     $options{option_results}->{nrpe_version} =~ s/^v//;
     if ($options{option_results}->{nrpe_version} !~ /2|3|4/) {
         $self->{output}->add_option_msg(short_msg => "Unknown NRPE version.");
@@ -88,58 +88,11 @@ sub check_options {
         $self->{nrpe_params}->{Domain} = AF_INET6;
     }
 
-    $self->{ssl_context} = {};
-    foreach (@{$options{option_results}->{ssl_opt}}) {
-        if (/(SSL_[A-Za-z_]+)\s+=>\s*(\S+)/) {
-            my $value = $2;
-            $value = $self->assign_eval(eval => $value);
-            $self->{ssl_context}->{$1} = $value;
-        }
-    }
-}
-
-sub load_eval {
-    my ($self) = @_;
-
-    my ($code) = centreon::plugins::misc::mymodule_load(
-        output => $self->{output}, module => 'Safe',
-        no_quit => 1
+    $self->{ssl_context} = centreon::plugins::misc::eval_ssl_options(
+        output => $self->{output},
+        ssl_opt => $self->{option_results}->{ssl_opt}
     );
-    if ($code == 0) {
-        $self->{safe} = Safe->new();
-        $self->{safe}->permit_only(':base_core', 'rv2gv', 'padany');
-        $self->{safe}->share('$values');
-        $self->{safe}->share('$assign_var');
-        $self->{safe}->share_from('IO::Socket::SSL', [
-            'SSL_VERIFY_NONE', 'SSL_VERIFY_PEER', 'SSL_VERIFY_FAIL_IF_NO_PEER_CERT', 'SSL_VERIFY_CLIENT_ONCE',
-            'SSL_RECEIVED_SHUTDOWN', 'SSL_SENT_SHUTDOWN',
-            'SSL_OCSP_NO_STAPLE', 'SSL_OCSP_MUST_STAPLE', 'SSL_OCSP_FAIL_HARD', 'SSL_OCSP_FULL_CHAIN', 'SSL_OCSP_TRY_STAPLE'
-        ]);
-    }
-
-    $self->{safe_test} = 1;
 }
-
-sub assign_eval {
-    my ($self, %options) = @_;
-
-    $self->load_eval() if (!defined($self->{safe_test}) || $self->{safe_test} == 0);
-
-    our $assign_var;
-    if (defined($self->{safe})) {
-        our $values = $options{values};
-        $self->{safe}->reval("\$assign_var = $options{eval}", 1);
-        if ($@) {
-            die 'Unsafe code evaluation: ' . $@;
-        }
-    } else {
-        my $values = $options{values};
-        eval "\$assign_var = $options{eval}";
-    }
-
-    return $assign_var;
-}
-
 
 sub create_socket {
     my ($self, %options) = @_;
