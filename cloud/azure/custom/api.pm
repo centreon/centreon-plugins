@@ -459,6 +459,25 @@ sub azure_list_resources {
     return $full_response;
 }
 
+sub azure_list_replication_protected_items_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
+        $options{resource_group} . "/providers/Microsoft.RecoveryServices/vaults/" .
+        $options{vault_name} . "/replicationProtectedItems?api-version=" . $self->{api_version};
+
+    return $url;
+} 
+
+sub azure_list_replication_protected_items {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_list_replication_protected_items_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+} 
+
 sub azure_list_subscriptions_set_url {
     my ($self, %options) = @_;
 

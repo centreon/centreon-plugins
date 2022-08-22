@@ -36,6 +36,7 @@ sub new {
         'discovery'             => 'cloud::azure::management::recovery::mode::discovery',
         'list-backup-jobs'      => 'cloud::azure::management::recovery::mode::listbackupjobs',
         'list-vaults'           => 'cloud::azure::management::recovery::mode::listvaults',
+        'replication-health'    => 'cloud::azure::management::recovery::mode::replicationhealth'
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
@@ -58,6 +59,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure backup service.
+Check Microsoft Azure backup service and replication health status.
 
 =cut
