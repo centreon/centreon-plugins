@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_replication_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Replicated status '%s'", $self->{result_values}->{replication_status});
+    my $msg = sprintf("Replication status '%s'", $self->{result_values}->{replication_status});
     return $msg;
 }
 
