@@ -30,8 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'health' => 'network::fortinet::fortigate::restapi::mode::health',
-        'system' => 'network::fortinet::fortigate::restapi::mode::system'
+        'ha'       => 'network::fortinet::fortigate::restapi::mode::ha',
+        'health'   => 'network::fortinet::fortigate::restapi::mode::health',
+        'licenses' => 'network::fortinet::fortigate::restapi::mode::licenses',
+        'system'   => 'network::fortinet::fortigate::restapi::mode::system'
     };
 
     $self->{custom_modes}->{api} = 'network::fortinet::fortigate::restapi::custom::api';

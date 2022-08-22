@@ -130,7 +130,7 @@ sub request_api {
     if ($options{endpoint} =~ /vdom-resource/) {
         $file = '/home/qgarnier/clients/plugins/fortigate/vdom-system-resource.json';
     } elsif ($options{endpoint} =~ /ha-statistics/) {
-        $file = '/home/qgarnier/clients/plugins/fortigate/8444-api-v2-monitor-system-ha-statistics-select.json';
+        $file = '/home/qgarnier/clients/plugins/fortigate/8444-api-v2-monitor-system-ha-statistics-select2.json';
     } elsif ($options{endpoint} =~ /license/) {
         $file = '/home/qgarnier/clients/plugins/fortigate/8444-api-v2-monitor-license-status-select.json';
     } elsif ($options{endpoint} =~ /firewall/) {
