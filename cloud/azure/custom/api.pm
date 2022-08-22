@@ -462,7 +462,7 @@ sub azure_list_resources {
 sub azure_list_replication_protected_items_set_url {
     my ($self, %options) = @_;
 
-    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" .
         $options{resource_group} . "/providers/Microsoft.RecoveryServices/vaults/" .
         $options{vault_name} . "/replicationProtectedItems?api-version=" . $self->{api_version};
 
