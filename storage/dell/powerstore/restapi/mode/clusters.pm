@@ -224,12 +224,20 @@ sub manage_selection {
 
         foreach ('latency', 'iops', 'bandwidth') {
             if ($_ eq 'latency') {
-                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'30m'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_30m} / 1000;
-                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'30m'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_30m} / 1000;
-                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'1h'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_1h} / 1000;
-                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'1h'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_1h} / 1000;
-                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'24h'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_24h} / 1000;
-                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'24h'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_24h} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'5m'} = $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'5m'} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'5m'} = $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'5m'} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'30m'} =
+                    $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'30m'} / $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_30m} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'30m'} =
+                    $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'30m'} / $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_30m} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'1h'} =
+                    $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'1h'} / $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_1h} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'1h'} =
+                    $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'1h'} / $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_1h} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'24h'} =
+                    $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'24h'} / $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_24h} / 1000;
+                $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'24h'} =
+                    $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'24h'} / $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_24h} / 1000;
             } else {
                 $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{'30m'} /= $self->{clusters}->{ $cluster_id }->{'read_' . $_}->{num_30m};
                 $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{'30m'} /= $self->{clusters}->{ $cluster_id }->{'write_' . $_}->{num_30m};
