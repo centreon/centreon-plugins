@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'health' => 'network::fortinet::fortigate::restapi::mode::health',
         'system' => 'network::fortinet::fortigate::restapi::mode::system'
     };
 
