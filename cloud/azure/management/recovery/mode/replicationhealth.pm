@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_replication_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Replication status '%s'", $self->{result_values}->{replication_status});
+    my $msg = sprintf("Replicated status '%s'", $self->{result_values}->{replication_status});
     return $msg;
 }
 
@@ -43,14 +43,14 @@ sub custom_failover_status_output {
 sub prefix_replication_item_output {
     my ($self, %options) = @_;
     
-    return "Replication item '" . $options{instance_value}->{display} . "' ";
+    return "Replicated item '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'items', type => 1, cb_prefix_output => 'prefix_replication_item_output', message_multiple => 'All replication items are OK' }
+        { name => 'items', type => 1, cb_prefix_output => 'prefix_replication_item_output', message_multiple => 'All replicated items are OK' }
     ];
 
     $self->{maps_counters}->{items} = [
@@ -80,9 +80,7 @@ sub new {
                                 {
                                     "api-version:s"         => { name => 'api_version', default => '2021-08-01'},
                                     "vault-name:s"          => { name => 'vault_name' },
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "filter-name:s"         => { name => 'filter_name' },
-                                    "filter-counters:s"     => { name => 'filter_counters' }
+                                    "resource-group:s"      => { name => 'resource_group' }
                                 });
     
     return $self;
@@ -110,9 +108,6 @@ sub manage_selection {
         vault_name => $self->{option_results}->{vault_name},
         resource_group => $self->{option_results}->{resource_group}
     );
-    
-    # use Data::Dumper;
-    # print Dumper $replicated_items;
 
     foreach my $replicated_item (@{$replicated_items->{value}}) {
 
@@ -123,10 +118,10 @@ sub manage_selection {
         };
     }
     
-    # if (scalar(keys %{$self->{items}}) <= 0) {
-    #     $self->{output}->add_option_msg(short_msg => "No replication site found.");
-    #     $self->{output}->option_exit();
-    # }
+    if (scalar(keys %{$self->{items}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No replicated item found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -135,7 +130,7 @@ __END__
 
 =head1 MODE
 
-Check replication site health status. 
+Check replicated items health status and failover status. 
 
 =over 8
 
@@ -147,15 +142,25 @@ Set vault name (Required).
 
 Set resource group (Required).
 
-=item B<--warning-status>
+=item B<--warning-replication-status>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Set warning threshold for replication health (Default: '').
+Can used special variables like: %{status}, %{display}
 
-=item B<--critical-status>
+=item B<--critical-replication-status>
 
-Set critical threshold for status (Default: '%{status} eq "Failed"').
-Can used special variables like: %{status}
+Set critical threshold for replication health (Default: '%{replication_status} eq "Critical"').
+Can used special variables like: %{status}, %{display}
+
+=item B<--warning-failover-status>
+
+Set warning threshold for failover status (Default: '').
+Can used special variables like: %{status}, %{display}
+
+=item B<--critical-failover-status>
+
+Set critical threshold for failover status (Default: '%{failover_status} eq "Critical"').
+Can used special variables like: %{status}, %{display}
 
 =back
 
