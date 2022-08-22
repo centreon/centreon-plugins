@@ -40,6 +40,7 @@ sub custom_expires_perfdata {
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
         unit => $self->{instance_mode}->{option_results}->{unit},
+        instances => $self->{result_values}->{to},
         value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -117,7 +118,7 @@ sub set_counters {
             }
         },
         { label => 'expires', nlabel => 'license.expires', set => {
-                key_values      => [ { name => 'expires_seconds' }, { name => 'expires_human' } ],
+                key_values      => [ { name => 'expires_seconds' }, { name => 'expires_human' }, { name => 'to' } ],
                 output_template => 'expires in %s',
                 output_use => 'expires_human',
                 closure_custom_perfdata => $self->can('custom_expires_perfdata'),
