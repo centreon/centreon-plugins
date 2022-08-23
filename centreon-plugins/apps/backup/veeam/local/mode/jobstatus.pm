@@ -80,7 +80,8 @@ sub set_counters {
         { label => 'status', threshold => 0, set => {
                 key_values => [
                     { name => 'status' }, { name => 'display' },
-                    { name => 'type' }, { name => 'is_running' }, { name => 'is_continuous' }
+                    { name => 'type' }, { name => 'is_running' },
+                    { name => 'is_continuous' }, { name => 'scheduled' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -116,6 +117,7 @@ sub new {
         'ps-exec-only'        => { name => 'ps_exec_only' },
         'ps-display'          => { name => 'ps_display' },
         'filter-name:s'       => { name => 'filter_name' },
+        'exclude-name:s'      => { name => 'exclude_name' },
         'filter-type:s'       => { name => 'filter_type' },
         'filter-end-time:s'   => { name => 'filter_end_time', default => 86400 },
         'filter-start-time:s' => { name => 'filter_start_time' },
@@ -185,9 +187,9 @@ sub manage_selection {
     }
 
     #[
-    #  { "name": "backup 1", "type": 0, "isRunning": false, "isContinuous": 0, "sessions": { "result": 0, "creationTimeUTC": 1512875246.2, "endTimeUTC": 1512883615.377 } },
-    #  { "name": "backup 2", "type": 0, "isRunning": false, "isContinuous": 0, "sessions": { "result": -10, "creationTimeUTC": "", "endTimeUTC": "" } },
-    #  { "name": "backup 3", "type": 1, "isRunning": true, "isContinuous": 0, "sessions": { "result": 0, "creationTimeUTC": 1513060425.027, "endTimeUTC": -2208992400 } }
+    #  { "name": "backup 1", "type": 0, "isRunning": false, "scheduled": true, "isContinuous": 0, "sessions": { "result": 0, "creationTimeUTC": 1512875246.2, "endTimeUTC": 1512883615.377 } },
+    #  { "name": "backup 2", "type": 0, "isRunning": false, "scheduled": true, "isContinuous": 0, "sessions": { "result": -10, "creationTimeUTC": "", "endTimeUTC": "" } },
+    #  { "name": "backup 3", "type": 1, "isRunning": true, "scheduled": true, "isContinuous": 0, "sessions": { "result": 0, "creationTimeUTC": 1513060425.027, "endTimeUTC": -2208992400 } }
     #]
 
     $self->{global} = { total => 0 };
@@ -203,12 +205,12 @@ sub manage_selection {
         $session->{creationTimeUTC} =~ s/,/\./;
         $session->{endTimeUTC} =~ s/,/\./;
 
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $job->{name} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne '' &&
+            $job->{name} =~ /$self->{option_results}->{exclude_name}/);
+
         my $job_type = defined($job_type->{ $job->{type} }) ? $job_type->{ $job->{type} } : 'unknown';
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $job->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter.", debug => 1);
-            next;
-        }
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $job_type !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter type.", debug => 1);
@@ -235,6 +237,7 @@ sub manage_selection {
             type => $job_type,
             is_continuous => $job->{isContinuous},
             is_running => $job->{isRunning} =~ /True|1/ ? 1 : ($session->{creationTimeUTC} !~ /[0-9]/ ? 2 : 0),
+            scheduled => $job->{scheduled} =~ /True|1/i ? 1 : 0, 
             status => defined($job_result->{ $session->{result} }) && $job_result->{ $session->{result} } ne '' ?
                 $job_result->{ $session->{result} } : '-'
         };
@@ -285,6 +288,10 @@ Print powershell output.
 
 Filter job name (can be a regexp).
 
+=item B<--exclude-name>
+
+Exclude job name (regexp can be used).
+
 =item B<--filter-type>
 
 Filter job type (can be a regexp).
@@ -299,27 +306,27 @@ Filter job with end time greater than current time less value in seconds (Defaul
 
 =item B<--ok-status>
 
-Set ok threshold for status (Default: '')
-Can used special variables like: %{display}, %{status}, %{type}, %{is_running}.
+Set ok threshold for status.
+Can used special variables like: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '')
-Can used special variables like: %{display}, %{status}, %{type}, %{is_running}.
+Set warning threshold for status.
+Can used special variables like: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{is_running} == 0 and not %{status} =~ /Success/i').
-Can used special variables like: %{display}, %{status}, %{type}, %{is_running}.
+Can used special variables like: %{display}, %{status}, %{type}, %{is_running}, %{scheduled}.
 
 =item B<--warning-long>
 
-Set warning threshold for long jobs (Default: none)
+Set warning threshold for long jobs.
 Can used special variables like:  %{display}, %{status}, %{type}, %{elapsed}.
 
 =item B<--critical-long>
 
-Set critical threshold for long jobs (Default: none).
+Set critical threshold for long jobs.
 Can used special variables like:  %{display}, %{status}, %{type}, %{elapsed}.
 
 =item B<--warning-total>
