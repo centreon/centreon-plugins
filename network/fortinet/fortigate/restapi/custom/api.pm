@@ -130,7 +130,7 @@ sub request_api {
     my $content = $self->{http}->request(
         url_path => $options{endpoint},
         get_param => $options{get_param},
-        header => ['Authorization: Bearer ' . $self->{access_token}]
+        header => ['Authorization: Bearer ' . $self->{access_token}],
         query_form_post => $options{query_form_post},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
