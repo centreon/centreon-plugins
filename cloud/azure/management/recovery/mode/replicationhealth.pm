@@ -79,6 +79,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "api-version:s"         => { name => 'api_version', default => '2021-08-01'},
+                                    "filter-name:s"         => { name => 'filter_name' },
                                     "vault-name:s"          => { name => 'vault_name' },
                                     "resource-group:s"      => { name => 'resource_group' }
                                 });
@@ -110,6 +111,8 @@ sub manage_selection {
     );
 
     foreach my $replicated_item (@{$replicated_items->{value}}) {
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
+            && $replicated_item->{properties}->{friendlyName} !~ /$self->{option_results}->{filter_name}/);
 
         $self->{items}->{$replicated_item->{properties}->{friendlyName}} = {
             display => $replicated_item->{properties}->{friendlyName},
@@ -130,7 +133,7 @@ __END__
 
 =head1 MODE
 
-Check replicated items health status and failover status. 
+Check replicated items replication and failover health. 
 
 =over 8
 
@@ -141,6 +144,10 @@ Set vault name (Required).
 =item B<--resource-group>
 
 Set resource group (Required).
+
+=item B<--filter-name>
+
+Filter item name (Can be a regexp).
 
 =item B<--warning-replication-status>
 
