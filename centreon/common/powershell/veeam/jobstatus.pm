@@ -71,6 +71,7 @@ Try {
         $item.name = $_.Name
         $item.type = $_.JobType.value__
         $item.isRunning = $_.isRunning
+        $item.scheduled = $_.IsScheduleEnabled
         $item.isContinuous = 0
         
         if ($_.isContinuous -eq $true) {
