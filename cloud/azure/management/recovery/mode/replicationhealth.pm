@@ -54,14 +54,20 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{items} = [
-        { label => 'replication-status', critical_default => '%{replication_status} eq "Critical"', type => 2, set => {
+        { label => 'replication-status', 
+          critical_default => '%{replication_status} eq "Critical"', 
+          warning_default => '%{replication_status} eq "Warning"',
+          type => 2, set => {
                 key_values => [ { name => 'replication_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_replication_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'failover-status', critical_default => '%{failover_status} eq "Critical"', type => 2, set => {
+        { label => 'failover-status', 
+          critical_default => '%{failover_status} eq "Critical"',
+          warning_default => '%{failover_status} eq "Warning"',
+          type => 2, set => {
                 key_values => [ { name => 'failover_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_failover_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -151,7 +157,7 @@ Filter item name (Can be a regexp).
 
 =item B<--warning-replication-status>
 
-Set warning threshold for replication health (Default: '').
+Set warning threshold for replication health (Default: '%{replication_status} eq "Warning"').
 Can used special variables like: %{status}, %{display}
 
 =item B<--critical-replication-status>
@@ -161,7 +167,7 @@ Can used special variables like: %{status}, %{display}
 
 =item B<--warning-failover-status>
 
-Set warning threshold for failover status (Default: '').
+Set warning threshold for failover status (Default: '%{failover_status} eq "Warning"').
 Can used special variables like: %{status}, %{display}
 
 =item B<--critical-failover-status>
