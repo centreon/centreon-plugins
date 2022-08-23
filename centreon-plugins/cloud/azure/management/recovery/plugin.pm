@@ -31,11 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'backup-items-status'   => 'cloud::azure::management::recovery::mode::backupitemsstatus',
-        'backup-jobs-status'    => 'cloud::azure::management::recovery::mode::backupjobsstatus',
-        'discovery'             => 'cloud::azure::management::recovery::mode::discovery',
-        'list-backup-jobs'      => 'cloud::azure::management::recovery::mode::listbackupjobs',
-        'list-vaults'           => 'cloud::azure::management::recovery::mode::listvaults',
+        'backup-items-status'    => 'cloud::azure::management::recovery::mode::backupitemsstatus',
+        'backup-jobs-status'     => 'cloud::azure::management::recovery::mode::backupjobsstatus',
+        'discovery'              => 'cloud::azure::management::recovery::mode::discovery',
+        'list-backup-jobs'       => 'cloud::azure::management::recovery::mode::listbackupjobs',
+        'list-vaults'            => 'cloud::azure::management::recovery::mode::listvaults',
+        'list-replicated-items'  => 'cloud::azure::management::recovery::mode::listreplicateditems',
+        'replication-health'     => 'cloud::azure::management::recovery::mode::replicationhealth'
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
@@ -58,6 +60,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure backup service.
+Check Microsoft Azure backup service, replication and failover health.
 
 =cut
