@@ -105,7 +105,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-name:s' => { name => 'filter_name' },
+        'unit:s'        => { name => 'unit', default => 's' }
     });
 
     return $self;
