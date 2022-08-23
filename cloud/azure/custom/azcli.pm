@@ -264,7 +264,6 @@ sub azure_list_replication_protected_items {
 
     $self->{output}->add_option_msg(short_msg => "Unsupported custom mode for plugin mode 'replication-health'. Please use --custommode='api'.");
     $self->{output}->option_exit();
-
 } 
 
 sub azure_list_vm_sizes_set_cmd {
