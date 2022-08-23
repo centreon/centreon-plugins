@@ -60,6 +60,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Azure backup service and replication health status.
+Check Microsoft Azure backup service, replication and failover health.
 
 =cut
