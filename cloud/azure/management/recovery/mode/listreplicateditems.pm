@@ -36,7 +36,6 @@ sub new {
                                     "resource-group:s"      => { name => 'resource_group' },
                                     "filter-name:s"         => { name => 'filter_name' },
                                 });
-
     return $self;
 }
 
