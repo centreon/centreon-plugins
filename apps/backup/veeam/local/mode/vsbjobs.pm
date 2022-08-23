@@ -127,6 +127,7 @@ sub new {
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
         'filter-name:s'     => { name => 'filter_name' },
+        'exclude-name:s'    => { name => 'exclude_name' },
         'filter-type:s'     => { name => 'filter_type' }
     });
 
@@ -188,11 +189,11 @@ sub manage_selection {
         $job->{creationTimeUTC} =~ s/,/\./;
         $job->{endTimeUTC} =~ s/,/\./;
 
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $job->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter.", debug => 1);
-            next;
-        }
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $job->{name} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne '' &&
+            $job->{name} =~ /$self->{option_results}->{exclude_name}/);
+
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $job->{type} !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter type.", debug => 1);
@@ -261,6 +262,10 @@ Print powershell output.
 =item B<--filter-name>
 
 Filter job name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude job name (regexp can be used).
 
 =item B<--filter-type>
 

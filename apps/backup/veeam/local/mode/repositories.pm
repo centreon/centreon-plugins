@@ -143,6 +143,7 @@ sub new {
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
         'filter-name:s'     => { name => 'filter_name' },
+        'exclude-name:s'    => { name => 'exclude_name' },
         'filter-type:s'     => { name => 'filter_type' }
     });
 
@@ -198,11 +199,11 @@ sub manage_selection {
 
     $self->{repositories} = {};
     foreach my $repo (@$decoded) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $repo->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping repository '$repo->{name}'.", debug => 1);
-            next;
-        }
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $repo->{name} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne '' &&
+            $repo->{name} =~ /$self->{option_results}->{exclude_name}/);
+
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $repo->{type} !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping repository '$repo->{name}'.", debug => 1);
@@ -272,6 +273,10 @@ Print powershell output.
 =item B<--filter-name>
 
 Filter repositories by name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude repositories by name (regexp can be used).
 
 =item B<--filter-type>
 
