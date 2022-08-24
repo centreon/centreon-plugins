@@ -56,6 +56,7 @@ sub set_counters {
                 { name => 'global', type => 0 },
                 { name => 'ac', type => 0 },
                 { name => 'dc', type => 0 },
+                { name => 'fan', type => 0 },
                 { name => 'battery', type => 0 }
             ]
         }
@@ -75,7 +76,7 @@ sub set_counters {
         }
     ];
 
-    foreach ('ac', 'dc', 'battery') {
+    foreach ('ac', 'dc', 'fan', 'battery') {
         $self->{maps_counters}->{$_} = [
             {
                 label => $_ . '-status',
@@ -200,11 +201,13 @@ sub manage_selection {
             global => { node_id => $node_id, psu_id => $psu_id },
             ac => { node_id => $node_id, psu_id => $psu_id },
             dc => { node_id => $node_id, psu_id => $psu_id },
+            fan => { node_id => $node_id, psu_id => $psu_id },
             battery => { node_id => $node_id, psu_id => $psu_id },
         };
         $self->{psu}->{ $node_id . ':' . $psu_id }->{global}->{status} = $1 if ($entry =~ /^State\s*:\s*(\S+)/msi);
         $self->{psu}->{ $node_id . ':' . $psu_id }->{ac}->{status} = $1 if ($entry =~ /^AC\s+State\s*:\s*(\S+)/msi);
         $self->{psu}->{ $node_id . ':' . $psu_id }->{dc}->{status} = $1 if ($entry =~ /^DC\s+State\s*:\s*(\S+)/msi);
+        $self->{psu}->{ $node_id . ':' . $psu_id }->{fan}->{status} = $1 if ($entry =~ /^Fan\s+State\s*:\s*(\S+)/msi);
         $self->{psu}->{ $node_id . ':' . $psu_id }->{battery}->{status} = $1 if ($entry =~ /^Battery\s+State\s*:\s*(\S+)/msi);
         $self->{psu}->{ $node_id . ':' . $psu_id }->{battery}->{capacity} = $1 if ($entry =~ /^Battery\s+Charge\s+Level.*?:\s*(\S+)/msi);
         $self->{psu}->{ $node_id . ':' . $psu_id }->{battery}->{time} = $1 if ($entry =~ /^Max\s+Battery\s+Life.*?:\s*(\S+)/msi);
@@ -272,6 +275,21 @@ Can used special variables like: %{status}, %{node_id}, %{psu_id}
 =item B<--critical-dc-status>
 
 Set critical threshold for DC status (Default: '%{status} !~ /ok/i').
+Can used special variables like: %{status}, %{node_id}, %{psu_id}
+
+=item B<--unknown-fan-status>
+
+Set unknown threshold for fan status.
+Can used special variables like: %{status}, %{node_id}, %{psu_id}
+
+=item B<--warning-fan-status>
+
+Set warning threshold for fan status.
+Can used special variables like: %{status}, %{node_id}, %{psu_id}
+
+=item B<--critical-fan-status>
+
+Set critical threshold for fan status (Default: '%{status} !~ /ok/i').
 Can used special variables like: %{status}, %{node_id}, %{psu_id}
 
 =item B<--unknown-battery-status>
