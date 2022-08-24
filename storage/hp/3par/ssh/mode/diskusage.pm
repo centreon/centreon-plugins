@@ -24,13 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
+    return 'status: ' . $self->{result_values}->{status};
 }
 
 sub custom_usage_output {
@@ -39,56 +38,59 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
+}
+
+sub prefix_disk_output {
+    my ($self, %options) = @_;
+
+    return "Disk '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All disks are ok', sort_method => 'num' },
+        { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All disks are ok', sort_method => 'num' }
     ];
     
     $self->{maps_counters}->{disk} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} !~ /normal/i', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'usage', nlabel => 'disk.space.usage.bytes', set => {
-                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' },  ],
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'disk.space.free.bytes', set => {
-                    key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' },  ],
-                    closure_custom_output => $self->can('custom_usage_output'),
-                    perfdatas => [
-                        { label => 'free', value => 'free', template => '%d', min => 0, max => 'total',
-                          unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
-                    ],
-                }
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'disk.space.usage.percentage', set => {
-                    key_values => [ { name => 'prct_used' }, { name => 'display' } ],
-                    output_template => 'Used : %.2f %%',
-                    perfdatas => [
-                        { label => 'used_prct', value => 'prct_used', template => '%.2f', min => 0, max => 100,
-                          unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                    ],
-                }
-        },
+                key_values => [ { name => 'prct_used' }, { name => 'display' } ],
+                output_template => 'Used : %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
     ];
 }
 
@@ -98,25 +100,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s"       => { name => 'filter_name' },
-        "warning-status:s"    => { name => 'warning_status', default => '' },
-        "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /normal/i' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_disk_output {
-    my ($self, %options) = @_;
-    
-    return "Disk '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
@@ -148,10 +135,10 @@ sub manage_selection {
             used => $total - $free,
             free => $free,
             prct_used => ($total - $free) * 100 / $total,
-            prct_free => 100 - (($total - $free) * 100 / $total),
+            prct_free => 100 - (($total - $free) * 100 / $total)
         };
     }
-    
+
     if (scalar(keys %{$self->{disk}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No disk found.");
         $self->{output}->option_exit();
