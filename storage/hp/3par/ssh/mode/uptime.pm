@@ -77,7 +77,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All node uptimes are ok' }
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All nodes uptime are ok' }
     ];
 
     $self->{maps_counters}->{nodes} = [
@@ -149,11 +149,18 @@ sub manage_selection {
 
         next if (defined($self->{option_results}->{filter_node_id}) && $self->{option_results}->{filter_node_id} ne '' &&
             $node_id !~ /$self->{option_results}->{filter_node_id}/);
+        my $uptime = $self->get_diff_time(date => $date);
+        next if (!defined($uptime));
 
         $self->{nodes}->{$node_id} = {
             id => $node_id,
-            uptime => $self->get_diff_time(date => $date)
+            uptime => $uptime
         };
+    }
+
+    if (scalar(%{$self->{nodes}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "Couldn't get nodes uptime");
+        $self->{output}->option_exit();
     }
 }
 

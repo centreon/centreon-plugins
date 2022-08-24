@@ -32,6 +32,7 @@ sub new {
     $self->{modes} = {
         'components'   => 'storage::hp::3par::ssh::mode::hardware',
         'disk-usage'   => 'storage::hp::3par::ssh::mode::diskusage',
+        'time'         => 'storage::hp::3par::ssh::mode::time',
         'uptime'       => 'storage::hp::3par::ssh::mode::uptime',
         'volume-usage' => 'storage::hp::3par::ssh::mode::volumeusage'
     };
