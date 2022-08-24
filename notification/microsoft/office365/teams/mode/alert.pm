@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use base qw(centreon::plugins::mode);
 use URI::Encode;
+use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
@@ -149,36 +150,121 @@ sub build_message {
             $self->{output}->option_exit();
         }
         my $uri = URI::Encode->new({encode_reserved => 0});
-        my $link_url_path = '/main.php?p=2020'; # only for the 'old' pages for now
-        $link_url_path .= ($resource_type eq 'service') ?
-            '1&o=svc&host_search=' . $self->{option_results}->{host_name} . '&search=' . $self->{option_results}->{service_name} :
-            '2&o=svc&host_search=' . $self->{option_results}->{host_name};
+
+        my $raw_stuff = {
+            "id" => "",
+            "name" => "New+filter",
+            "criterias" => [
+                {
+                    "name" => "resource_types",
+                    "object_type" => undef,
+                    "type" => "multi_select",
+                    "value" => [
+                        {
+                            "id" => "service",
+                            "name" => "Service"
+                        }
+                    ]
+                },
+                {
+                    "name" => "states",
+                    "object_type" => undef,
+                    "type" => "multi_select",
+                    "value" => [
+                        
+                    ]
+                },
+                {
+                    "name" => "statuses",
+                    "object_type" => undef,
+                    "type" => "multi_select",
+                    "value" => [
+                        
+                    ]
+                },
+                {
+                    "name" => "status_types",
+                    "object_type" => undef,
+                    "type" => "multi_select",
+                    "value" => [
+                        
+                    ]
+                },
+                {
+                    "name" => "host_groups",
+                    "object_type" => "host_groups",
+                    "type" => "multi_select",
+                    "value" => [
+                        
+                    ]
+                },
+                {
+                    "name" => "service_groups",
+                    "object_type" => "service_groups",
+                    "type" => "multi_select",
+                    "value" => [
+                        
+                    ]
+                },
+                {
+                    "name" => "monitoring_servers",
+                    "object_type" => "monitoring_servers",
+                    "type" => "multi_select",
+                    "value" => [
+                        
+                    ]
+                },
+                {
+                    "name" => "search",
+                    "object_type" => undef,
+                    "type" => "text",
+                    "value"=> "s.description:Swap h.name:linux-test"
+                },
+                {
+                    "name" => "sort",
+                    "object_type" => undef,
+                    "type" => "array",
+                    "value" => [
+                        "status_severity_code",
+                        "asc"
+                    ]
+                }
+            ]
+        };
+        my $link_url_path = 'centreon/monitoring/resources?filter='; 
+        my $encoded_raw_stuff = JSON::XS->new->utf8->encode($raw_stuff);
+        $link_url_path .= $encoded_raw_stuff;
 
         my $link_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $link_url_path);
 
-        push @{$self->{potentialAction}}, {
-            '@type' => 'OpenUri',
-            name    => 'Details',
-            targets => [{
-                'os'  => 'default',
-                'uri' => $link_uri_encoded
-            }]
-        };
+        print $link_uri_encoded . "\n";
+        # my $new_link = $link_uri_encoded =~ s/%2B/+/r;
+        # print $new_link . "\n";
+        exit 1;
 
-        if ($resource_type eq 'service') {
-            my $graph_url_path = '/main.php?p=204&mode=0&svc_id=';
+        # push @{$self->{potentialAction}}, {
+        #     '@type' => 'OpenUri',
+        #     name    => 'Details',
+        #     targets => [{
+        #         'os'  => 'default',
+        #         'uri' => $link_uri_encoded
+        #     }]
+        # };
 
-            $graph_url_path .= $self->{option_results}->{host_name} . ';' . $self->{option_results}->{service_name};
-            my $graph_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $graph_url_path);
-            push @{$self->{potentialAction}}, {
-                '@type' => 'OpenUri',
-                name    => 'Graph',
-                targets => [{
-                    'os'  => 'default',
-                    'uri' => $graph_uri_encoded
-                }]
-            };
-        }
+        # if ($resource_type eq 'service') {
+        #     my $graph_url_path = '/main.php?p=204&mode=0&svc_id=';
+
+        #     $graph_url_path .= $self->{option_results}->{host_name} . ';' . $self->{option_results}->{service_name};
+        #     my $graph_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $graph_url_path);
+        #     push @{$self->{potentialAction}}, {
+        #         '@type' => 'OpenUri',
+        #         name    => 'Graph',
+        #         targets => [{
+        #             'os'  => 'default',
+        #             'uri' => $graph_uri_encoded
+        #         }]
+        #     };
+        # }
     }
     return $self;
 }
