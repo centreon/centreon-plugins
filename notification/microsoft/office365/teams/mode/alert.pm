@@ -218,7 +218,7 @@ sub build_message {
                     "name" => "search",
                     "object_type" => undef,
                     "type" => "text",
-                    "value"=> "s.description:Swap h.name:linux-test"
+                    "value"=> "s.description:$self->{option_results}->{service_name} h.name:$self->{option_results}->{host_name}"
                 },
                 {
                     "name" => "sort",
