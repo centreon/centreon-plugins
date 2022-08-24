@@ -177,17 +177,13 @@ __END__
 
 =head1 MODE
 
-Check time offset (use local time if ntp-host option is not set). 
+Check nodes time offset (use local time if ntp-host option is not set). 
 
 =over 8
 
-=item B<--warning-offset>
+=item B<--filter-node-id>
 
-Time offset warning threshold (in seconds).
-
-=item B<--critical-offset>
-
-Time offset critical Threshold (in seconds).
+Filter nodes by id (can be a regexp).
 
 =item B<--ntp-hostname>
 
@@ -200,6 +196,14 @@ Set the ntp port (Default: 123).
 =item B<--timezone>
 
 Set the timezone for displaying the date (Default: UTC).
+
+=item B<--warning-offset>
+
+Time offset warning threshold (in seconds).
+
+=item B<--critical-offset>
+
+Time offset critical Threshold (in seconds).
 
 =back
 
