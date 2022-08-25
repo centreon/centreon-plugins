@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'cages'        => 'storage::hp::3par::ssh::mode::cages',
+        'capacity'     => 'storage::hp::3par::ssh::mode::capacity',
         'components'   => 'storage::hp::3par::ssh::mode::hardware',
         'disk-usage'   => 'storage::hp::3par::ssh::mode::diskusage',
         'nodes'        => 'storage::hp::3par::ssh::mode::nodes',

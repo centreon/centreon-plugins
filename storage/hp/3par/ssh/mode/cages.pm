@@ -240,6 +240,9 @@ sub manage_selection {
     while ($content =~ /(Cage\s+detail\s+info\s+for\s+cage(\d+).*?)(?=Cage\s+detail\s+info\s+for\s+cage|\Z$)/msig) {
         my ($cage_id, $entry) = ($2, $1);
 
+        next if (defined($self->{option_results}->{filter_cage_id}) && $self->{option_results}->{filter_cage_id} ne '' &&
+            $cage_id !~ /$self->{option_results}->{filter_cage_id}/);
+
         $self->{cages}->{ 'cage' . $cage_id } = {
             cage_id => $cage_id,
             global => { cage_id => $cage_id },
