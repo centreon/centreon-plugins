@@ -51,21 +51,32 @@ sub check {
         next if ($self->check_filter(section => 'cim', instance => $instance));
         $self->{components}->{cim}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("cim service state is '%s' [status: '%s'] [SLP on port %d is %s] [HTTP on port %d is %s] [HTTPS on port %d is %s] [instance: %s]",
-                                    $service_state, $service_status, $slp_port, $slp_state, $http_port, $http_state, $https_port ,$https_state, $instance)
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "cim service state is '%s' [status: '%s'] [SLP on port %d is %s] [HTTP on port %d is %s] [HTTPS on port %d is %s] [instance: %s]",
+                $service_state, $service_status, $slp_port, $slp_state, $http_port, $http_state, $https_port ,$https_state, $instance
+            )
+        );
         my $exit = $self->get_severity(label => 'default.state', section => 'cim.state', value => $service_state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("cim service state is '%s' [instance: %s]",
-                                                             $service_state, $instance));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "cim service state is '%s' [instance: %s]",
+                    $service_state, $instance
+                )
+            );
         }
 
         $exit = $self->get_severity(label => 'default.status', section => 'cim.status', value => $service_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("cim service status is '%s' [instance: %s]",
-                                                             $service_status, $instance));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "cim service status is '%s' [instance: %s]",
+                    $service_status, $instance
+                )
+            );
         }
     }
 }

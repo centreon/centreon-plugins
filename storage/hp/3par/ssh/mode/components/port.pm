@@ -59,14 +59,22 @@ sub check {
         next if ($self->check_filter(section => 'port', instance => $instance));
         $self->{components}->{port}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("port '%s' state is '%s' [instance: '%s']",
-                                    $nsp, $state, $instance)
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "port '%s' state is '%s' [instance: '%s']",
+                $nsp, $state, $instance
+            )
+        );
+
         my $exit = $self->get_severity(section => 'port', value => $state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("port '%s' state is '%s'",
-                                                             $nsp, $state));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "port '%s' state is '%s'",
+                    $nsp, $state
+                )
+            );
         }
     }
 }

@@ -78,14 +78,17 @@ sub check {
             my ($name, $reading, $unit, $lo_limit, $hi_limit)  = (centreon::plugins::misc::trim($1), $2, $3, $4, $5);
             my $instance = 'node' . $node_id . '.' . $name;
 
-            next if ($self->check_filter(section => 'sensor', instance => $instance));
+            next if ($self->check_filter(section => 'sensor', instance => $instance, name => $name));
             $self->{components}->{sensor}->{total}++;
 
-            $self->{output}->output_add(long_msg => sprintf("sensor '%s' on node '%s' is %s %s [instance: %s]",
-                                        $name, $node_id, $reading, $unit, $instance)
-                                        );
-            
-            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensor', instance => $instance, value => $reading);
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "sensor '%s' on node '%s' is %s %s [instance: %s]",
+                    $name, $node_id, $reading, $unit, $instance
+                )
+            );
+
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensor', instance => $instance, name => $name, value => $reading);
             $lo_limit = ($lo_limit =~ s/.*?(\d+(\.\d+)?).*/$1/) ? $lo_limit : undef;
             $hi_limit = ($hi_limit =~ s/.*?(\d+(\.\d+)?).*/$1/) ? $hi_limit : undef;  
             if ($checked == 0 && (defined($lo_limit) || defined($hi_limit))) {
@@ -96,19 +99,25 @@ sub check {
 
                 $exit = $self->{perfdata}->threshold_check(
                     value => $reading,
-                    threshold => [ { label => 'critical-sensor-instance-' . $instance, exit_litteral => 'critical' },
-                                   { label => 'warning-sensor-instance-' . $instance, exit_litteral => 'warning' } ]);
+                    threshold => [
+                        { label => 'critical-sensor-instance-' . $instance, exit_litteral => 'critical' },
+                        { label => 'warning-sensor-instance-' . $instance, exit_litteral => 'warning' }
+                    ]
+                );
                 $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-sensor-instance-' . $instance);
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-sensor-instance-' . $instance);
             }
 
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Sensor '%s' on node '%s' is %s %s ", $name, $node_id, $reading, $unit));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Sensor '%s' on node '%s' is %s %s ", $name, $node_id, $reading, $unit)
+                );
             }
+
             $self->{output}->perfdata_add(
-                label => 'sensor', unit => $unit,
                 nlabel => 'hardware.sensor.' . $unit_new_perf->{$unit},
+                unit => $unit,
                 instances => ['node' . $node_id, $name],
                 value => $reading,
                 warning => $warn,
