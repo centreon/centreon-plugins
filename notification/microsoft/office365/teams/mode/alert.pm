@@ -43,6 +43,7 @@ sub new {
         'host-name:s'           => { name => 'host_name' },
         'host-output:s'         => { name => 'host_output', default => '' },
         'host-state:s'          => { name => 'host_state' },
+        'legacy:s'              => { name => 'legacy' },
         'notification-type:s'   => { name => 'notif_type'},
         'service-description:s' => { name => 'service_name' },
         'service-output:s'      => { name => 'service_output', default => '' },
@@ -66,6 +67,99 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to specify the --notification-type option.");
         $self->{output}->option_exit();
     }
+}
+
+sub build_resource_status_filters {
+    my ($self, %options) = @_;
+
+    my $data_format = URI::Encode->new({encode_reserved => 1});
+    my $raw_resource_status_filters = {
+        "id" => "",
+        "name" => "New+filter",
+        "criterias" => [
+            {
+                "name" => "resource_types",
+                "object_type" => undef,
+                "type" => "multi_select",
+                "value" => [
+                    {
+                        "id" => "service",
+                        "name" => "Service"
+                    }
+                ]                
+            },
+            {
+                "name" => "states",
+                "object_type" => undef,
+                "type" => "multi_select",
+                "value" => [
+                    
+                ]
+            },
+            {
+                "name" => "statuses",
+                "object_type" => undef,
+                "type" => "multi_select",
+                "value" => [
+                    
+                ]
+            },
+            {
+                "name" => "status_types",
+                "object_type" => undef,
+                "type" => "multi_select",
+                "value" => [
+                        
+                ]
+            },
+            {
+                "name" => "host_groups",
+                "object_type" => "host_groups",
+                "type" => "multi_select",
+                "value" => [
+                    
+                ]
+            },
+            {
+                "name" => "service_groups",
+                "object_type" => "service_groups",
+                "type" => "multi_select",
+                "value" => [
+                    
+                ]
+            },
+            {
+                "name" => "monitoring_servers",
+                "object_type" => "monitoring_servers",
+                "type" => "multi_select",
+                "value" => [
+                    
+                ]
+            },
+            {
+                "name" => "search",
+                "object_type" => undef,
+                "type" => "text",
+                "value"=> "s.description:$self->{option_results}->{service_name} h.name:$self->{option_results}->{host_name}"
+            },
+            {
+                "name" => "sort",
+                "object_type" => undef,
+                "type" => "array",
+                "value" => [
+                    "status_severity_code",
+                    "asc"
+                ]
+            }
+        ]
+    };
+
+    my $link_url_path = '/monitoring/resources?filter='; 
+    my $encoded_resource_status_filters = JSON::XS->new->utf8->encode($raw_resource_status_filters);
+    my $encoded_data_for_uri = $data_format->encode($encoded_resource_status_filters);
+    $link_url_path .= $encoded_data_for_uri;
+
+    return $link_url_path;
 }
 
 sub build_payload {
@@ -150,121 +244,45 @@ sub build_message {
             $self->{output}->option_exit();
         }
         my $uri = URI::Encode->new({encode_reserved => 0});
+        my $link_url_path;
+        
+        if (defined($self->{option_results}->{legacy})){
+            $link_url_path = '/main.php?p=2020'; # deprecated pages
+            $link_url_path .= ($resource_type eq 'service') ?
+                '1&o=svc&host_search=' . $self->{option_results}->{host_name} . '&search=' . $self->{option_results}->{service_name} :
+                '2&o=svc&host_search=' . $self->{option_results}->{host_name};
 
-        my $raw_stuff = {
-            "id" => "",
-            "name" => "New+filter",
-            "criterias" => [
-                {
-                    "name" => "resource_types",
-                    "object_type" => undef,
-                    "type" => "multi_select",
-                    "value" => [
-                        {
-                            "id" => "service",
-                            "name" => "Service"
-                        }
-                    ]
-                },
-                {
-                    "name" => "states",
-                    "object_type" => undef,
-                    "type" => "multi_select",
-                    "value" => [
-                        
-                    ]
-                },
-                {
-                    "name" => "statuses",
-                    "object_type" => undef,
-                    "type" => "multi_select",
-                    "value" => [
-                        
-                    ]
-                },
-                {
-                    "name" => "status_types",
-                    "object_type" => undef,
-                    "type" => "multi_select",
-                    "value" => [
-                        
-                    ]
-                },
-                {
-                    "name" => "host_groups",
-                    "object_type" => "host_groups",
-                    "type" => "multi_select",
-                    "value" => [
-                        
-                    ]
-                },
-                {
-                    "name" => "service_groups",
-                    "object_type" => "service_groups",
-                    "type" => "multi_select",
-                    "value" => [
-                        
-                    ]
-                },
-                {
-                    "name" => "monitoring_servers",
-                    "object_type" => "monitoring_servers",
-                    "type" => "multi_select",
-                    "value" => [
-                        
-                    ]
-                },
-                {
-                    "name" => "search",
-                    "object_type" => undef,
-                    "type" => "text",
-                    "value"=> "s.description:$self->{option_results}->{service_name} h.name:$self->{option_results}->{host_name}"
-                },
-                {
-                    "name" => "sort",
-                    "object_type" => undef,
-                    "type" => "array",
-                    "value" => [
-                        "status_severity_code",
-                        "asc"
-                    ]
-                }
-            ]
+            my $link_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $link_url_path);
+        } else {
+            $link_url_path = $self->build_resource_status_filters();
+        }        
+
+        my $link_uri_encoded = $uri->encode($self->{option_results}->{centreon_url}) . $link_url_path;
+
+        push @{$self->{potentialAction}}, {
+            '@type' => 'OpenUri',
+            name    => 'Details',
+            targets => [{
+                'os'  => 'default',
+                'uri' => $link_uri_encoded
+            }]
         };
-        my $link_url_path = 'centreon/monitoring/resources?filter='; 
-        my $encoded_raw_stuff = JSON::XS->new->utf8->encode($raw_stuff);
-        $link_url_path .= $encoded_raw_stuff;
 
-        my $link_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $link_url_path);
+        if ($resource_type eq 'service') {
+            my $graph_url_path = '/main.php?p=204&mode=0&svc_id=';
 
-        print $link_uri_encoded . "\n";
-        # my $new_link = $link_uri_encoded =~ s/%2B/+/r;
-        # print $new_link . "\n";
-        exit 1;
-
-        # push @{$self->{potentialAction}}, {
-        #     '@type' => 'OpenUri',
-        #     name    => 'Details',
-        #     targets => [{
-        #         'os'  => 'default',
-        #         'uri' => $link_uri_encoded
-        #     }]
-        # };
-
-        # if ($resource_type eq 'service') {
-        #     my $graph_url_path = '/main.php?p=204&mode=0&svc_id=';
-
-        #     $graph_url_path .= $self->{option_results}->{host_name} . ';' . $self->{option_results}->{service_name};
-        #     my $graph_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $graph_url_path);
-        #     push @{$self->{potentialAction}}, {
-        #         '@type' => 'OpenUri',
-        #         name    => 'Graph',
-        #         targets => [{
-        #             'os'  => 'default',
-        #             'uri' => $graph_uri_encoded
-        #         }]
-        #     };
-        # }
+            $graph_url_path .= $self->{option_results}->{host_name} . ';' . $self->{option_results}->{service_name};
+            my $graph_uri_encoded = $uri->encode($self->{option_results}->{centreon_url} . $graph_url_path);
+            push @{$self->{potentialAction}}, {
+                '@type' => 'OpenUri',
+                name    => 'Graph',
+                targets => [{
+                    'os'  => 'default',
+                    'uri' => $graph_uri_encoded
+                }]
+            };
+        }
+        
     }
     return $self;
 }
@@ -350,6 +368,12 @@ Specify extra information about author and comment (only for ACK and DOWNTIME ty
 =item B<--extra-info-format>
 
 Specify the extra info display format (Default: 'Author: %s, Comment: %s').
+
+=item B<--legacy>
+
+Only to be used with Centreon.
+Permit redirection to Centreon legacy resource status pages.
+To be used with --action-links.
 
 =back
 
