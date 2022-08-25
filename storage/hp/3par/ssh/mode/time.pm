@@ -158,7 +158,7 @@ sub manage_selection {
         );
         my $offset = $distant_time - $ref_time;
 
-        $self->{nodes}->{$node_id} = {
+        $self->{nodes}->{'node' . $node_id} = {
             id => $node_id,
             offset => sprintf('%d', $offset),
             date => $remote_date_formated

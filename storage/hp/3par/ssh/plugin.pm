@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'afc'          => 'storage::hp::3par::ssh::mode::afc',
         'cages'        => 'storage::hp::3par::ssh::mode::cages',
         'capacity'     => 'storage::hp::3par::ssh::mode::capacity',
         'components'   => 'storage::hp::3par::ssh::mode::hardware',

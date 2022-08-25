@@ -46,7 +46,7 @@ sub custom_uptime_perfdata {
     $self->{output}->perfdata_add(
         nlabel => 'node.uptime.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
         unit => $self->{instance_mode}->{option_results}->{unit},
-        instances => $self->{result_values}->{id},
+        instances => 'node' . $self->{result_values}->{id},
         value => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
