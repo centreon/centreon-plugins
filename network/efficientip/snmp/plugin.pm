@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'dhcp-usage'   => 'network::efficientip::snmp::mode::dhcpusage',
         'dns-usage'    => 'network::efficientip::snmp::mode::dnsusage',
+        'status'       => 'network::efficientip::snmp::mode::status'
     );
 
     return $self;
