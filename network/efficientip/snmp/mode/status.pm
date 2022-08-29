@@ -69,8 +69,7 @@ my $map_role = {
     0 => 'standalone',
     1 => 'master',
     2 => 'hot-standby',
-    3 => 'master recovered',
-    4 => 'toto'
+    3 => 'master recovered'
 };
 
 my $map_state = {
