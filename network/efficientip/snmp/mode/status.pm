@@ -42,8 +42,8 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         {
             label => 'status', type => 2, 
-            critical_default => '%{status} =~ /(invalid credentials|replication stopped|timeout)/' , 
-            warning_default => '%{status} =~ /(upgrading|split-brain)/', 
+            critical_default => '%{status} =~ /invalid credentials|replication stopped|timeout/' , 
+            warning_default => '%{status} =~ /upgrading|split-brain/', 
             unknown_default => '%{status} =~ /not configured/',
             set => {
                 key_values => [ { name => 'status' }, { name => 'role' } ],
@@ -69,7 +69,8 @@ my $map_role = {
     0 => 'standalone',
     1 => 'master',
     2 => 'hot-standby',
-    3 => 'master recovered'
+    3 => 'master recovered',
+    4 => 'toto'
 };
 
 my $map_state = {
@@ -113,12 +114,12 @@ Check Efficient IP SOLIDserver role and status.
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '%{status} =~ /(upgrading|split-brain)/')
+Set warning threshold for status. (Default: '%{status} =~ /upgrading|split-brain/')
 Can be used with special variables like: %{status}, %{role}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{status} =~ /(invalid credentials|replication stopped|timeout)/')
+Set critical threshold for status. (Default: '%{status} =~ /invalid credentials|replication stopped|timeout/')
 Can be used with special variables like: %{status}, %{role}
 
 =back
