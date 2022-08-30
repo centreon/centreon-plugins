@@ -46,8 +46,6 @@ sub new {
             'api-username:s'    => { name => 'api_username' },
             'api-password:s'    => { name => 'api_password' },
             'region:s'          => { name => 'region' },
-            'port:s'            => { name => 'port' },
-            'proto:s'           => { name => 'proto' },
             'timeout:s'         => { name => 'timeout' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
@@ -75,8 +73,6 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{option_results}->{region} = (defined($self->{option_results}->{region}) && $self->{option_results}->{region} =~ /^eu|us|asia$/i) ? lc($self->{option_results}->{region}) : 'eu';
-    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
@@ -195,7 +191,10 @@ sub request_api {
         hostname => '',
         full_url => $url . $options{endpoint},
         get_param => $options{get_param},
-        header => ['icSessionId: ' . $token]
+        header => ['icSessionId: ' . $token],
+        unknown_status => '',
+        warning_status => '',
+        critical_status => ''
     );
 
     # Maybe token is invalid. so we retry
@@ -247,14 +246,6 @@ Informatica Intelligent Cloud Services API
 =item B<--region>
 
 Set region (default: 'eu'). Can be: asia, eu, us.
-
-=item B<--port>
-
-Port used (Default: 443)
-
-=item B<--proto>
-
-Specify https if needed (Default: 'https')
 
 =item B<--api-username>
 
