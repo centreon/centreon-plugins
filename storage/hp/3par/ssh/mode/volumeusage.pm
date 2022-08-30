@@ -31,11 +31,12 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub set_counters {
@@ -50,29 +51,26 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'volume.space.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'free', value => 'free', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'volume.space.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -82,7 +80,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s"       => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
@@ -125,10 +123,10 @@ sub manage_selection {
             used => $used,
             free => ($total - $used) >= 0 ? ($total - $used) : 0,
             prct_used => $used * 100 / $total,
-            prct_free => (100 - ($used * 100 / $total) >= 0) ? (100 - ($used * 100 / $total)) : 0,
+            prct_free => (100 - ($used * 100 / $total) >= 0) ? (100 - ($used * 100 / $total)) : 0
         };
     }
-    
+
     if (scalar(keys %{$self->{volume}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No volume found.");
         $self->{output}->option_exit();

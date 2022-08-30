@@ -42,7 +42,7 @@ sub check {
     return if ($self->check_filter(section => 'node'));
 
     return if ($self->{results} !~ /===shownode===.*?\n(.*?)(===|\Z)/msi);
-    my @results = split /\n/, $1;
+    my @results = split(/\n/, $1);
 
     foreach (@results) {
         next if (!/^\s*(\d+)\s+(\S+)\s+(\S+)/);
@@ -51,14 +51,22 @@ sub check {
         next if ($self->check_filter(section => 'node', instance => $instance));
         $self->{components}->{node}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("node '%s' state is '%s' [instance: '%s'] [detailed state: %s]",
-                                    $instance, $state, $instance, $detail_state)
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "node '%s' state is '%s' [instance: '%s'] [detailed state: %s]",
+                $instance, $state, $instance, $detail_state
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'node', value => $state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Node '%s' state is '%s'",
-                                                             $instance, $state));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Node '%s' state is '%s'",
+                    $instance, $state
+                )
+            );
         }
     }
 }

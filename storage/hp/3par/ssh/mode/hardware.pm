@@ -38,21 +38,21 @@ sub set_system {
             ['ok', 'OK'],
             ['new', 'OK'],
             ['degraded', 'WARNING'],
-            ['failed', 'CRITICAL'],
+            ['failed', 'CRITICAL']
         ],
         'default.status' => [
             ['enabled', 'OK'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ],
         'default.state' => [
             ['active', 'OK'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ],
         port => [
             ['ready', 'OK'],
             ['loss_sync', 'WARNING'],
-            ['offline', 'CRITICAL'],
-        ],
+            ['offline', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'storage::hp::3par::ssh::mode::components';
@@ -69,7 +69,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {});
 
     $self->{commands} = [];
@@ -89,12 +89,16 @@ Check components.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'battery'.
+Can be: 'battery', 'cim', 'port', 'node', 'disk', 'psu', 'sensor', 'wsapi'.
 
 =item B<--filter>
 
 Exclude some parts (comma seperated list) (Example: --filter=battery --filter=cim)
 Can also exclude specific instance: --filter=port,free
+
+=item B<--add-name-instance>
+
+Add literal description for instance value (used in filter and threshold options).
 
 =item B<--no-component>
 
