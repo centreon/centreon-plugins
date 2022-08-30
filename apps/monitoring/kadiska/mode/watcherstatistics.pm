@@ -40,11 +40,27 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{watchers} = [
+        { label => 'dtt_spent', nlabel => 'watcher.dtt.spent.count', set => {
+                key_values => [ { name => 'dtt_spent' } ],
+                output_template => 'DTT spent: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
         { label => 'errors-prct', nlabel => 'watcher.errors.percentage', set => {
                 key_values => [ { name => 'errors_prct' } ],
                 output_template => 'Errors: %.2f%%',
                 perfdatas => [
                     { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'full-time-network-spent', nlabel => 'watcher.network.spent.time.milliseconds', set => {
+                key_values => [ { name => 'full_time_network_spent' } ],
+                output_template => 'Full time network spent: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -56,6 +72,14 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'srt_spent', nlabel => 'watcher.srt.spent.count', set => {
+                key_values => [ { name => 'srt_spent' } ],
+                output_template => 'SRT spent: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
         { label => 'requests', nlabel => 'watcher.requests.count', set => {
                 key_values => [ { name => 'requests' } ],
                 output_template => 'Requests: %s',
@@ -64,9 +88,17 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
+                key_values => [ { name => 'redirect_time_avg' } ],
+                output_template => 'Redirect time avg: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
         { label => 'loading-page', nlabel => 'watcher.loading.page.duration.milliseconds', set => {
                 key_values => [ { name => 'loading_page' } ],
-                output_template => 'Loading page duration: %.2f s',
+                output_template => 'Loading page duration: %.2f ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
                 ],
@@ -95,7 +127,15 @@ sub set_counters {
                     { template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
-        }        
+        },
+        { label => 'waiting-time-avg', nlabel => 'watcher.waiting.time.milliseconds', set => {
+                key_values => [ { name => 'waiting_time_avg' } ],
+                output_template => 'Waiting time avg: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        }   
     ];
 }
 
@@ -129,6 +169,21 @@ sub manage_selection {
             },
             {
                 "\%errors:avg|hits" => ["avgFor","hits","error_count"]            
+            },
+            {
+                "redirect_time_spent:avg|requests" => ["avgFor","requests","redirect_time_spent"]
+            },
+            {
+                "waiting_time_spent:avg|requests" => ["avgFor","requests","waiting_time_spent"]
+            },
+            {
+                "full_network_time_spent:avg|requests" => ["avgFor","requests","full_network_time_spent"]
+            },
+            {
+                "srt_spent:avg|requests" => ["avgFor","requests","srt_spent"]
+            },
+            {
+                "dtt_spent:avg|requests" => ["avgFor","requests","dtt_spent"]
             },
             {
                 "session:sum|hits" => ["sumFor","hits","session_count"]
@@ -170,13 +225,18 @@ sub manage_selection {
         my $instance = $watcher->{'watcher_id:group'};
 
         $self->{watchers}->{$instance} = {
+            dtt_spent => $watcher->{'srt_spent:avg|requests'},
             errors_prct => $watcher->{'%errors:avg|hits'},
+            full_time_network_spent => ( $watcher->{'full_network_time_spent:avg|requests'} / 10**3 ),
             loading_page => (defined($watcher->{'lcp:p75|pages'}) && $watcher->{'lcp:p75|pages'} != 0 ) ? ($watcher->{'lcp:p75|pages'} / 10**3) : 0,
             pages => $watcher->{'item:count|pages'},
-            requests => $watcher->{'item:count|requests'},
-            sessions => $watcher->{'session:sum|hits'},
             processing => ( $watcher->{'processing_whole:avg|requests'} / 10**3 ),
-            users => $watcher->{'user_id:distinct'}
+            requests => $watcher->{'item:count|requests'},
+            redirect_time_avg => ( $watcher->{'redirect_time_spent:avg|requests'} / 10**3),
+            srt_spent => $watcher->{'srt_spent:avg|requests'},
+            sessions => $watcher->{'session:sum|hits'},
+            users => $watcher->{'user_id:distinct'},
+            waiting_time_avg => ( $watcher->{'waiting_time_spent:avg|requests'} / 10**3 ) 
         };
     };
 
