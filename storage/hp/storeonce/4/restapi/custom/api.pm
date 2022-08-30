@@ -190,7 +190,10 @@ sub request_api {
     my ($content) = $self->{http}->request(
         url_path => $options{endpoint},
         get_param => $options{get_param},
-        header => ['Authorization: Bearer ' . $token]
+        header => ['Authorization: Bearer ' . $token],
+        unknown_status => '',
+        warning_status => '',
+        critical_status => ''	
     );
 
     # Maybe token is invalid. so we retry
