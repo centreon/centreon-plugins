@@ -44,7 +44,7 @@ sub check {
     return if ($self->check_filter(section => 'disk'));
 
     return if ($self->{results} !~ /===showdisk===.*?\n(.*?)(===|\Z)/msi);
-    my @results = split /\n/, $1;
+    my @results = split(/\n/, $1);
 
     foreach (@results) {
         next if (!/^\s*(\d+)\s+(\S+)/);
@@ -53,14 +53,22 @@ sub check {
         next if ($self->check_filter(section => 'disk', instance => $instance));
         $self->{components}->{disk}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("disk '%s' state is '%s' [instance: '%s']",
-                                    $instance, $state, $instance)
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "disk '%s' state is '%s' [instance: '%s']",
+                $instance, $state, $instance
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'disk', value => $state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Disk '%s' state is '%s'",
-                                                             $instance, $state));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Disk '%s' state is '%s'",
+                    $instance, $state
+                )
+            );
         }
     }
 }

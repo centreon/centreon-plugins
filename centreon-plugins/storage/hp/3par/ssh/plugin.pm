@@ -29,14 +29,20 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
+        'afc'          => 'storage::hp::3par::ssh::mode::afc',
+        'cages'        => 'storage::hp::3par::ssh::mode::cages',
+        'capacity'     => 'storage::hp::3par::ssh::mode::capacity',
         'components'   => 'storage::hp::3par::ssh::mode::hardware',
         'disk-usage'   => 'storage::hp::3par::ssh::mode::diskusage',
-        'volume-usage' => 'storage::hp::3par::ssh::mode::volumeusage',
-    );
+        'nodes'        => 'storage::hp::3par::ssh::mode::nodes',
+        'psu'          => 'storage::hp::3par::ssh::mode::psu',
+        'time'         => 'storage::hp::3par::ssh::mode::time',
+        'uptime'       => 'storage::hp::3par::ssh::mode::uptime',
+        'volume-usage' => 'storage::hp::3par::ssh::mode::volumeusage'
+    };
 
-    $self->{custom_modes}{ssh} = 'storage::hp::3par::ssh::custom::custom';
+    $self->{custom_modes}->{ssh} = 'storage::hp::3par::ssh::custom::custom';
     return $self;
 }
 

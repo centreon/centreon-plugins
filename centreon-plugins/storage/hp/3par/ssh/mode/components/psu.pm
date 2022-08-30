@@ -51,14 +51,22 @@ sub check {
         next if ($self->check_filter(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' state is '%s' [instance: '%s'] [ac state: %s] [dc state: %s]",
-                                    $instance, $psu_state, $instance, $ac_state, $dc_state)
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' state is '%s' [instance: '%s'] [ac state: %s] [dc state: %s]",
+                $instance, $psu_state, $instance, $ac_state, $dc_state
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'psu', value => $psu_state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Power supply '%s' state is '%s'",
-                                                             $instance, $psu_state));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Power supply '%s' state is '%s'",
+                    $instance, $psu_state
+                )
+            );
         }
     }
 }
