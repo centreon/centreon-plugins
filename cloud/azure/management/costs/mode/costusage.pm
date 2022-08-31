@@ -35,7 +35,7 @@ sub custom_cost_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        nlabel => 'azure.budget.cost',
+        nlabel => 'azure.budget.consumption.currency',
         value => sprintf("%.2f", $self->{result_values}->{cost}),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %budget_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %budget_options),
