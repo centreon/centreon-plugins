@@ -295,7 +295,7 @@ sub manage_selection {
         }
     }
 
-    if (scalar(%{$self->{cages}}) <= 0) {
+    if (scalar(keys %{$self->{cages}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Couldn't get cages information");
         $self->{output}->option_exit();
     }
