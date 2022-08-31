@@ -795,7 +795,7 @@ sub azure_get_budget_set_url {
 
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
-    $url .= "/providers/Microsoft.Consumption/budgets/" . $options{budget_name} if (defined($options{budget_name}) && $options{budget_name} ne '');
+    $url .= "/providers/Microsoft.Consumption/budgets/" . $options{budget_name};
     $url .= "?api-version=" . $self->{api_version};
 
     return $url;
