@@ -150,7 +150,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-watcher-name:s' => { name => 'filter_watcher_name' },
+        'filter-watcher-name:s' => { name => 'watcher_name' },
+        'filter-site-name:s'    => { name => 'site_name'},
+        'filter-gateway-name:s' => { name => 'gateway_name'},
+        'filter-wfh:s'          => { name => 'filter_wfh'},
     });
 
     return $self;
@@ -209,9 +212,21 @@ sub manage_selection {
         "options" => {"sampling" => \1 }
     };  
 
-    if (defined($self->{option_results}->{filter_watcher_name}) && $self->{option_results}->{filter_watcher_name} ne ''){
-        $raw_form_post->{where} = ["=","watcher_name",["\$", $self->{option_results}->{filter_watcher_name}]],
-    }
+    # if (defined($self->{option_results}->{filter_watcher_name}) && $self->{option_results}->{filter_watcher_name} ne ''){
+    #     $raw_form_post->{where} = ["=","watcher_name",["\$", $self->{option_results}->{filter_watcher_name}]],
+    # }
+
+    my $filter = $options{custom}->forge_filter(
+        site_name => $self->{option_results}->{site_name},
+        gateway_name => $self->{option_results}->{gateway_name},
+        watcher_name => $self->{option_results}->{watcher_name},
+        filter_wfh => $self->{option_results}->{filter_wfh}
+    );
+
+    print $filter . "\n";
+
+    $raw_form_post->{where} = $filter;
+    print $raw_form_post->{where} . "\n";
 
     my $results = $options{custom}->request_api(
         method => 'POST',
