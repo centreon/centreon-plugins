@@ -213,7 +213,7 @@ sub manage_selection {
         $self->{psu}->{ $node_id . ':' . $psu_id }->{battery}->{time} = $1 if ($entry =~ /^Max\s+Battery\s+Life.*?:\s*(\S+)/msi);
     }
 
-    if (scalar(%{$self->{psu}}) <= 0) {
+    if (scalar(keys %{$self->{psu}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Couldn't get power supplies information");
         $self->{output}->option_exit();
     }

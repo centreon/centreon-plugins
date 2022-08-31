@@ -158,7 +158,7 @@ sub manage_selection {
         };
     }
 
-    if (scalar(%{$self->{nodes}}) <= 0) {
+    if (scalar(keys %{$self->{nodes}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Couldn't get nodes uptime");
         $self->{output}->option_exit();
     }
