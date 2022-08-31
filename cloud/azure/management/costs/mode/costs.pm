@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::costs::mode::costusage;
+package cloud::azure::management::costs::mode::costs;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -175,7 +175,7 @@ __END__
 Check cost status.
 
 Example:
-perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --custommode=api --mode=cost-status
+perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --custommode=api --mode=costs
 --resource-group='MYRESOURCEGROUP' --budget-name='MYBUDGET
 
 You should NOT execute the plugin for a given subscription/resource group more than once a day otherwise,
