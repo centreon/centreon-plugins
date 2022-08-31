@@ -248,7 +248,7 @@ sub manage_selection {
         }
     }
 
-    if (scalar(%{$self->{nodes}}) <= 0 && scalar(%{$self->{volumes}}) <= 0) {
+    if (scalar(keys %{$self->{nodes}}) <= 0 && scalar(keys %{$self->{volumes}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Couldn't get afc information");
         $self->{output}->option_exit();
     }
