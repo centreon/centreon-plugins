@@ -26,6 +26,7 @@ use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
+use Digest::SHA;
 
 sub new {
     my ($class, %options) = @_;
@@ -48,7 +49,8 @@ sub new {
             'hostname:s'     => { name => 'hostname' },
             'port:s'         => { name => 'port' },
             'proto:s'        => { name => 'proto' },
-            'timeout:s'      => { name => 'timeout' }
+            'timeout:s'      => { name => 'timeout' },
+            'digest-sha256'  => { name => 'digest_sha256' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -79,15 +81,15 @@ sub check_options {
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_username}) || $self->{api_username} eq '') {
+    if ($self->{api_username} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_password}) || $self->{api_password} eq '') {
+    if ($self->{api_password} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
         $self->{output}->option_exit();
     }
@@ -137,7 +139,7 @@ sub get_session_key {
 
     if ($has_cache_file == 0 || !defined($session_key) || (($expires_on - time()) < 10)) {
         my $digest_data = $self->{api_username} . '_' . $self->{api_password};
-        my $digest_hash = md5_hex($digest_data);
+        my $digest_hash = defined($self->{option_results}->{digest_sha256}) ? Digest::SHA::sha256_hex($digest_data) : md5_hex($digest_data);
 
         $self->settings();
 
@@ -233,11 +235,15 @@ Specify https if needed (Default: 'https')
 
 =item B<--api-username>
 
-Dell ME4 API username.
+API username.
 
 =item B<--api-password>
 
-Dell ME4 API password.
+API password.
+
+=item B<--digest-sha256>
+
+New digest to use since firmware GT280R010-01 (md5 deprecated).
 
 =item B<--timeout>
 
