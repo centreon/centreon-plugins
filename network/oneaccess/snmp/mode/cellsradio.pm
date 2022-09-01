@@ -116,7 +116,6 @@ sub set_counters {
                     { name => 'simStatus' }, { name => 'signalQuality' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
-                output_template => "sim status: %s",
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
