@@ -34,7 +34,9 @@ sub new {
         'cells-radio'     => 'network::oneaccess::snmp::mode::cellsradio',
         'interfaces'      => 'network::oneaccess::snmp::mode::interfaces', 
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'memory'          => 'network::oneaccess::snmp::mode::memory'
+        'list-rtt-probes' => 'network::oneaccess::snmp::mode::listrttprobes',
+        'memory'          => 'network::oneaccess::snmp::mode::memory',
+        'rtt-probes'      => 'network::oneaccess::snmp::mode::rttprobes'
     };
 
     return $self;
