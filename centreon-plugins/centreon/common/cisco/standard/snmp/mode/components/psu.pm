@@ -146,7 +146,7 @@ sub check {
     return if ($self->check_filter(section => 'psu'));
 
     check_psu_envmon($self);
-    check_psu_entity($self);
+    check_psu_entity($self) if (defined($self->{option_results}->{add_fru_power}));
 }
 
 1;

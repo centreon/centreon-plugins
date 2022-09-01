@@ -78,8 +78,8 @@ sub set_system {
         module => [
             ['unknown|mdr', 'UNKNOWN'],
             ['disabled|okButDiagFailed|missing|mismatchWithParent|mismatchConfig|dormant|outOfServiceAdmin|outOfServiceEnvTemp|powerCycled|okButPowerOverWarning|okButAuthFailed|fwMismatchFound|fwDownloadFailure', 'WARNING'],
-            ['failed|diagFailed|poweredDown|powerDenied|okButPowerOverCritical', 'CRITICAL'],
-            ['boot|selfTest|poweredUp|syncInProgress|upgrading|fwDownloadSuccess|ok', 'OK']
+            ['failed|diagFailed|powerDenied|okButPowerOverCritical', 'CRITICAL'],
+            ['boot|selfTest|poweredUp|syncInProgress|upgrading|fwDownloadSuccess|ok|poweredDown', 'OK']
         ],
         physical => [
             ['other', 'UNKNOWN'],
@@ -141,7 +141,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'use-physical-name' => { name => 'use_physical_name' }
+        'use-physical-name' => { name => 'use_physical_name' },
+        'add-fru-power'     => { name => 'add_fru_power' }
     });
 
     return $self;
@@ -174,6 +175,10 @@ Add literal description for instance value (used in filter, absent-problem and t
 =item B<--use-physical-name>
 
 Use entPhysicalName OID instead of entPhysicalDescr.
+
+=item B<--add-fru-power>
+
+Check FRU power status.
 
 =item B<--absent-problem>
 
