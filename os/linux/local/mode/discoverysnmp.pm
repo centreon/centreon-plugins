@@ -166,10 +166,11 @@ sub run {
         $host{snmp_version} = $last_version;
         $host{snmp_community} = $last_community;
         $host{snmp_port} = $self->{option_results}->{snmp_port};
-        $host{extra_oids} = {};
+        $host{extra_oids} = [];
         foreach (keys %{$self->{extra_oids}}) {
             my $label = defined($self->{extra_oids}->{$_}) && $self->{extra_oids}->{$_} ne '' ? $self->{extra_oids}->{$_} : $_;
-            $host{extra_oids}->{$label} = defined($result->{$_}) ? $result->{$_} : 'unknown';
+            my $value = defined($result->{$_}) ? $result->{$_} : 'unknown';
+            push @{$host{extra_oids}}, { oid => $label, value => $value };
         }
 
         push @disco_data, \%host;
