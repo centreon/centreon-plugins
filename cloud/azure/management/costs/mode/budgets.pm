@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::costs::mode::costs;
+package cloud::azure::management::costs::mode::budgets;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -56,7 +56,7 @@ sub custom_cost_threshold {
             { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
             { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
         ]
-	);
+    );
     return $exit;
 }
 
@@ -88,7 +88,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'cost', type => 0 }
-	];
+    ];
 
     $self->{maps_counters}->{cost} = [
         { label => 'cost', set => {
@@ -99,7 +99,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_cost_perfdata')
 	  }
         },
-	];
+    ];
 }
 
 sub new {
@@ -112,7 +112,7 @@ sub new {
 	"resource-group:s"  => { name => 'resource_group' },
 	"lookup-days:s"     => { name => 'lookup_days', default => 30 },
 	"units:s"           => { name => 'units', default => '%' },
-	"timeout:s"           => { name => 'timeout', default => '60' },
+	"timeout:s"         => { name => 'timeout', default => '60' },
     });   
 
     return $self;
@@ -134,9 +134,9 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $budget = $options{custom}->azure_get_budget(
-	resource_group => $self->{option_results}->{resource_group},
+        resource_group => $self->{option_results}->{resource_group},
 	budget_name => $self->{option_results}->{budget_name}
-	);
+    );
 
     my $usage_start = DateTime->now()->add(days => - $self->{option_results}->{lookup_days} + 1);
     my $usage_end = DateTime->now();
@@ -144,7 +144,8 @@ sub manage_selection {
 	resource_group => $self->{option_results}->{resource_group},
 	usage_start    => $usage_start,
 	usage_end      => $usage_end
-	);
+    );
+    
     my $cost = 0;
     for (my $i = 0; $costs->[$i]; $i++) {
 	$cost += $costs->[$i]->{properties}->{cost};
@@ -154,6 +155,7 @@ sub manage_selection {
 	$self->{output}->add_option_msg(short_msg => "No " . $self->{option_results}->{budget_name} . " found (or missing permissions)");
 	$self->{output}->option_exit();
     }
+    
     if (!$costs || $cost < 0.01) {
 	$self->{output}->add_option_msg(short_msg => "Null or < 0.01 " . $budget->{properties}->{currentSpend}->{unit} . "cost found on the specified scope.");
 	$self->{output}->option_exit();
