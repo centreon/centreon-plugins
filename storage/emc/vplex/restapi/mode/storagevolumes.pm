@@ -83,10 +83,10 @@ sub manage_selection {
 
     $self->{volumes} = {};
     foreach my $item (@$items) {
-        next if (defined($self->{option_results}->{filter_volume_name}) && $self->{option_results}->{filter_volume_name} ne '' &&
-            $item->{name} !~ /$self->{option_results}->{filter_volume_name}/);
         next if (defined($self->{option_results}->{filter_cluster_name}) && $self->{option_results}->{filter_cluster_name} ne '' &&
             $item->{cluster_name} !~ /$self->{option_results}->{filter_cluster_name}/);
+        next if (defined($self->{option_results}->{filter_volume_name}) && $self->{option_results}->{filter_volume_name} ne '' &&
+            $item->{name} !~ /$self->{option_results}->{filter_volume_name}/);
 
         $self->{volumes}->{ $item->{name} } = $item;
         $self->{volumes}->{ $item->{name} }->{volume_name} = $item->{name};

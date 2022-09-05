@@ -297,6 +297,20 @@ sub get_storage_volumes {
     return $results;
 }
 
+sub get_fans {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_option_msg(short_msg => 'fans information unsupported by rest api v2');
+    $self->{output}->option_exit();
+}
+
+sub get_psus {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_option_msg(short_msg => 'power supplies information unsupported by rest api v2');
+    $self->{output}->option_exit();
+}
+
 1;
 
 __END__

@@ -119,6 +119,10 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/cluster-communication-old.json';
     } elsif ($options{endpoint} =~ /storage-volumes/) {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/storage-volumes-old.json';
+    } elsif ($options{endpoint} =~ /fans/) {
+        $file = '/home/qgarnier/clients/plugins/vplex/vplex/fans-old.json';
+    } elsif ($options{endpoint} =~ /power-supplies/) {
+        $file = '/home/qgarnier/clients/plugins/vplex/vplex/psus-old.json';
     }
 
     my $content = do {
@@ -178,7 +182,52 @@ sub get_storage_volumes {
             $entry->{ $attribute->{name} } = $attribute->{value};
         }
         my $cluster_name = 'unknown';
-        $entry->{cluster_name} = $1 if ($context->{parent} =~ /^\/clusters\/(.*?)\//);
+        $cluster_name = $1 if ($context->{parent} =~ /^\/clusters\/(.*?)\//);
+        $entry->{cluster_name} = $cluster_name;
+
+        push @$results, $entry;
+    }
+
+    return $results;
+}
+
+sub get_fans {
+    my ($self, %options) = @_;
+
+    my $items = $self->request_api(endpoint => '/vplex/engines/*/fans/*');
+
+    my $results = [];
+    foreach my $context (@{$items->{response}->{context}}) {
+        my $entry = {};
+        foreach my $attribute (@{$context->{attributes}}) {
+            $attribute->{name} =~ s/-/_/g;
+            $entry->{ $attribute->{name} } = $attribute->{value};
+        }
+        my $engine_name = 'unknown';
+        $engine_name = $1 if ($context->{parent} =~ /^\/engines\/(.*?)\//);
+        $entry->{engine_name} = $engine_name;
+
+        push @$results, $entry;
+    }
+
+    return $results;
+}
+
+sub get_psus {
+    my ($self, %options) = @_;
+
+    my $items = $self->request_api(endpoint => '/vplex/engines/*/power-supplies/*');
+
+    my $results = [];
+    foreach my $context (@{$items->{response}->{context}}) {
+        my $entry = {};
+        foreach my $attribute (@{$context->{attributes}}) {
+            $attribute->{name} =~ s/-/_/g;
+            $entry->{ $attribute->{name} } = $attribute->{value};
+        }
+        my $engine_name = 'unknown';
+        $engine_name = $1 if ($context->{parent} =~ /^\/engines\/(.*?)\//);
+        $entry->{engine_name} = $engine_name;
 
         push @$results, $entry;
     }

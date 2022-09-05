@@ -20,161 +20,75 @@
 
 package storage::emc::vplex::restapi::mode::fans;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my $thresholds = {
-    fan_opstatus => [
-        ['online', 'OK'],
-        ['.*', 'CRITICAL'],
-    ],
-    fan => [
-        ['false', 'OK'],
-        ['.*', 'CRITICAL'],
-    ],
-};
+sub prefix_fan_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "fan '%s' [engine: %s] ",
+        $options{instance_value}->{fan_name},
+        $options{instance_value}->{engine_name}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'fans', type => 1, cb_prefix_output => 'prefix_fan_output', message_multiple => 'All fans are ok' }
+    ];
+
+    $self->{maps_counters}->{fans} = [
+        { label => 'operational-status', type => 2, critical_default => '%{operational_status} ne "online"', set => {
+                key_values => [ { name => 'operational_status' }, { name => 'engine_name' }, { name => 'fan_name' } ],
+                output_template => 'operational status: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'speed-status', type => 2, critical_default => '%{speed_threshold_exceeded} ne "false"', set => {
+                key_values => [ { name => 'speed_threshold_exceeded' }, { name => 'engine_name' }, { name => 'fan_name' } ],
+                output_template => 'speed threshold exceeded: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-               {
-                   "engine:s"       => { name => 'engine' },
-                   "filter:s@"      => { name => 'filter' },
-                   "threshold-overload:s@"   => { name => 'threshold_overload' },
-               });
+    $options{options}->add_options(arguments => {
+        'filter-engine-name:s' => { name => 'filter_engine_name' },
+        'filter-fan-name:s'    => { name => 'filter_fan_name' }
+    });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    $self->{filter} = [];
-    foreach my $val (@{$self->{option_results}->{filter}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
-    }
-
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        if (scalar(@values) < 3) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $instance, $status, $filter);
-        if (scalar(@values) == 3) {
-            ($section, $status, $filter) = @values;
-            $instance = '.*';
-        } else {
-             ($section, $instance, $status, $filter) = @values;
-        }
-        if ($section !~ /^fan|fan_opstatus$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    my $vplex = $options{custom};
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All Fans are OK');
-
-    my $items = $vplex->get_items(
-        url => '/vplex/engines/',
-        parent => 1,
-        parent_filter => $self->{option_results}->{engine},
-        parent_filter_prefix => 'engine-',
-        parent_select => '/engines/(.*?)/',
-        obj => 'fans'
-    );
-    foreach my $engine_name (sort keys %{$items}) {
-        foreach my $fan_name (sort keys %{$items->{$engine_name}}) {
-            my $instance = $engine_name . '_' . $fan_name;
-
-            next if ($self->check_filter(section => 'fan', instance => $instance));
-            
-            $self->{output}->output_add(long_msg => sprintf("Fan '%s' state is '%s' and speed-threshold-exceeded is '%s'", 
-                                                            $instance, 
-                                                            $items->{$engine_name}->{$fan_name}->{'operational-status'},
-                                                            $items->{$engine_name}->{$fan_name}->{'speed-threshold-exceeded'}));
-
-            my $exit = $self->get_severity(section => 'fan_opstatus', instance => $instance, value => $items->{$engine_name}->{$fan_name}->{'operational-status'});
-            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Fan '%s' operational status is %s", 
-                                                            $instance, $items->{$engine_name}->{$fan_name}->{'operational-status'}));
-            }
-            $exit = $self->get_severity(section => 'fan', instance => $instance, value => $items->{$engine_name}->{$fan_name}->{'speed-threshold-exceeded'});
-            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Fan '%s' is over speed threshold (%s)", 
-                                                                 $instance, $items->{$engine_name}->{$fan_name}->{'speed-threshold-exceeded'}));
-            }
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub check_filter {
+sub manage_selection {
     my ($self, %options) = @_;
 
-    foreach (@{$self->{filter}}) {
-        if ($options{section} =~ /$_->{filter}/) {
-            if (!defined($options{instance}) && !defined($_->{instance})) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-                return 1;
-            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-                return 1;
-            }
-        }
-    }
-    
-    return 0;
-}
+    my $items = $options{custom}->get_fans();
 
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-        
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i && 
-                (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
-                $status = $_->{status};
-                return $status;
-            }
-        }
+    $self->{fans} = {};
+    foreach my $item (@$items) {
+        next if (defined($self->{option_results}->{filter_engine_name}) && $self->{option_results}->{filter_engine_name} ne '' &&
+            $item->{engine_name} !~ /$self->{option_results}->{filter_engine_name}/);
+        next if (defined($self->{option_results}->{filter_fan_name}) && $self->{option_results}->{filter_fan_name} ne '' &&
+            $item->{name} !~ /$self->{option_results}->{filter_fan_name}/);
+
+        $self->{fans}->{ $item->{name} } = $item;
+        $self->{fans}->{ $item->{name} }->{fan_name} = $item->{name};
     }
-    my $label = defined($options{label}) ? $options{label} : $options{section};
-    foreach (@{$thresholds->{$label}}) {
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-    
-    return $status;
 }
 
 1;
@@ -183,24 +97,37 @@ __END__
 
 =head1 MODE
 
-Check Fan state for VPlex
+Check fans.
 
 =over 8
 
-=item B<--engine>
+=item B<--filter-engine-name>
 
-Specify the engine number to be checked (1-1 or 2-1 usually)
+Filter fans by engine name (can be a regexp).
 
-=item B<--filter>
+=item B<--filter-fan-name>
 
-Filter some parts (comma seperated list)
-Can also exclude specific instance: --filter=fan,engine-1-1_fan-psa0-intake
+Filter fans by fan name (can be a regexp).
 
-=item B<--threshold-overload>
+=item B<--warning-operational-status>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
-Example: --threshold-overload='fan,CRITICAL,^(?!(false)$)'
+Set warning threshold for status.
+Can used special variables like: %{operational_status}, %{engine_name}, %{fan_name}
+
+=item B<--critical-operational-status>
+
+Set critical threshold for status (Default: '%{operational_status} ne "online"').
+Can used special variables like: %{operational_status}, %{engine_name}, %{fan_name}
+
+=item B<--warning-speed-status>
+
+Set warning threshold for status.
+Can used special variables like: %{speed_threshold_exceeded}, %{engine_name}, %{fan_name}
+
+=item B<--critical-speed-status>
+
+Set critical threshold for status (Default: '%{operational_status} ne "online"').
+Can used special variables like: %{speed_threshold_exceeded}, %{engine_name}, %{fan_name}
 
 =back
 
