@@ -20,18 +20,45 @@
 
 package storage::emc::vplex::restapi::mode::clustercommunication;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my $thresholds = {
-    component_opstatus => [
-        ['cluster-in-contact', 'OK'],
-        ['in-contact', 'OK'],
-        ['.*', 'CRITICAL']
-    ]
-};
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'operational state: %s [admin: %s]',
+        $self->{result_values}->{operational_state},
+        $self->{result_values}->{admin_state}
+    );
+}
+
+sub prefix_component_output {
+    my ($self, %options) = @_;
+
+    return "Cluster witness component '" . $options{instance_value}->{name} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'components', type => 1, cb_prefix_output => 'prefix_component_output', message_multiple => 'All cluster witness components are ok' }
+    ];
+
+    $self->{maps_counters}->{components} = [
+        { label => 'status', type => 2, critical_default => '%{admin_state} eq "enabled" and %{operational_state} !~ /cluster-in-contact|in-contact/i', set => {
+                key_values => [ { name => 'operational_state' }, { name => 'admin_state' }, { name => 'name' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -39,121 +66,24 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter:s@'             => { name => 'filter' },
-        'threshold-overload:s@' => { name => 'threshold_overload' }
+        'filter-component-name:s' => { name => 'filter_component_name' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
- 
-    $self->{filter} = [];
-    foreach my $val (@{$self->{option_results}->{filter}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
-    }
-
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        if (scalar(@values) < 3) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $instance, $status, $filter);
-        if (scalar(@values) == 3) {
-            ($section, $status, $filter) = @values;
-            $instance = '.*';
-        } else {
-             ($section, $instance, $status, $filter) = @values;
-        }
-        if ($section !~ /^component/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    my $vplex = $options{custom};
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All Cluster Witness components are OK');
-
-    my $items = $vplex->get_items(url => '/vplex/cluster-witness/components/');
-    foreach my $name (sort keys %{$items}) {
-        my $instance = $name;
-
-        next if ($self->check_filter(section => 'component', instance => $instance));
-        
-        $self->{output}->output_add(long_msg => sprintf("Cluster Witness component '%s' state is '%s'", 
-                                                        $instance, 
-                                                        $items->{$name}->{'operational-state'}));
-
-        my $exit = $self->get_severity(section => 'component_opstatus', instance => $instance, value => $items->{$name}->{'operational-state'});
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Cluster Witness component '%s' state is '%s'", 
-                                                        $instance, $items->{$name}->{'operational-state'}));
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub check_filter {
+sub manage_selection {
     my ($self, %options) = @_;
 
-    foreach (@{$self->{filter}}) {
-        if ($options{section} =~ /$_->{filter}/) {
-            if (!defined($options{instance}) && !defined($_->{instance})) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-                return 1;
-            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-                return 1;
-            }
-        }
-    }
-    
-    return 0;
-}
+    my $items = $options{custom}->get_cluster_communication();
 
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-    
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-           if ($options{value} =~ /$_->{filter}/i && 
-                (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
-                $status = $_->{status};
-                return $status;
-            }
-        }
+    $self->{components} = {};
+    foreach my $item (@$items) {
+        next if (defined($self->{option_results}->{filter_component_name}) && $self->{option_results}->{filter_component_name} ne '' &&
+            $item->{name} !~ /$self->{option_results}->{filter_component_name}/);
+
+        $self->{components}->{ $item->{name} } = $item;
     }
-    my $label = defined($options{label}) ? $options{label} : $options{section};
-    foreach (@{$thresholds->{$label}}) {
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-    
-    return $status;
 }
 
 1;
@@ -162,20 +92,23 @@ __END__
 
 =head1 MODE
 
-Check Cluster communication state for VPlex
+Check cluster communication state.
 
 =over 8
 
-=item B<--filter>
+=item B<--filter-component-name>
 
-Filter some parts (comma seperated list)
-Can also exclude specific instance: --filter=component,cluster-1
+Filter components by name (can be a regexp).
 
-=item B<--threshold-overload>
+=item B<--warning-status>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
-Example: --threshold-overload='component_opstatus,CRITICAL,^(?!(in-contact|cluster-in-contact)$)'
+Set warning threshold for status.
+Can used special variables like: %{operational_state}, %{admin_state}, %{name}
+
+=item B<--critical-status>
+
+Set critical threshold for status.
+Can used special variables like: %{operational_state}, %{admin_state}, %{name}
 
 =back
 

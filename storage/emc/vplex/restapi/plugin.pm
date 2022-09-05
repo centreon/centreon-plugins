@@ -29,18 +29,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
-        'psus'                  => 'storage::emc::vplex::restapi::mode::psus',
-        'fans'                  => 'storage::emc::vplex::restapi::mode::fans',
-        'distributed-devices'   => 'storage::emc::vplex::restapi::mode::distributeddevices',
+        'cluster-communication' => 'storage::emc::vplex::restapi::mode::clustercommunication',
         'cluster-devices'       => 'storage::emc::vplex::restapi::mode::clusterdevices',
-        'storage-volumes'       => 'storage::emc::vplex::restapi::mode::storagevolumes',
         'directors'             => 'storage::emc::vplex::restapi::mode::directors',
-        'cluster-communication' => 'storage::emc::vplex::restapi::mode::clustercommunication'
+        'distributed-devices'   => 'storage::emc::vplex::restapi::mode::distributeddevices',
+        'fans'                  => 'storage::emc::vplex::restapi::mode::fans',
+        'psus'                  => 'storage::emc::vplex::restapi::mode::psus',
+        'storage-volumes'       => 'storage::emc::vplex::restapi::mode::storagevolumes'
     };
 
-    $self->{custom_modes}->{vplexapi} = 'storage::emc::vplex::restapi::custom::vplexapi';
+    $self->{custom_modes}->{apiv1} = 'storage::emc::vplex::restapi::custom::apiv1';
+    $self->{custom_modes}->{apiv2} = 'storage::emc::vplex::restapi::custom::apiv2';
     return $self;
 }
 
@@ -51,3 +51,5 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check EMC Vplex through HTTP/REST API.
+
+=cut
