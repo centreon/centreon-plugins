@@ -215,6 +215,8 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/storage_volumes-new-cluster2.json';
     } elsif ($options{endpoint} =~ /directors/) {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/directors-new.json';
+    } elsif ($options{endpoint} =~ /distributed_devices/) {
+        $file = '/home/qgarnier/clients/plugins/vplex/vplex/distributed-devices-new.json';
     }
 
     my $content = do {
@@ -317,6 +319,12 @@ sub get_directors {
     my ($self, %options) = @_;
 
     return $self->request_api(endpoint => '/vplex/v2/directors');
+}
+
+sub get_distributed_devices {
+    my ($self, %options) = @_;
+
+    return $self->request_api(endpoint => '/vplex/v2/distributed_storage/distributed_devices');
 }
 
 1;

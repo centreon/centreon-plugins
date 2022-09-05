@@ -125,6 +125,8 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/psus-old.json';
     } elsif ($options{endpoint} =~ /directors/) {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/directors-old.json';
+    } elsif ($options{endpoint} =~ /distributed-devices/) {
+        $file = '/home/qgarnier/clients/plugins/vplex/vplex/distributed-devices-old.json';
     }
 
     my $content = do {
@@ -155,7 +157,26 @@ sub request_api {
 sub get_cluster_communication {
     my ($self, %options) = @_;
 
-    my $items = $self->request_api(endpoint => '/vplex/cluster-witness/components/');
+    my $items = $self->request_api(endpoint => '/vplex/cluster-witness/components/*');
+
+    my $results = [];
+    foreach my $context (@{$items->{response}->{context}}) {
+        my $entry = {};
+        foreach my $attribute (@{$context->{attributes}}) {
+            $attribute->{name} =~ s/-/_/g;
+            $entry->{ $attribute->{name} } = $attribute->{value};
+        }
+
+        push @$results, $entry;
+    }
+
+    return $results;
+}
+
+sub get_distributed_devices {
+    my ($self, %options) = @_;
+
+    my $items = $self->request_api(endpoint => '/vplex/distributed-storage/distributed-devices/*');
 
     my $results = [];
     foreach my $context (@{$items->{response}->{context}}) {
