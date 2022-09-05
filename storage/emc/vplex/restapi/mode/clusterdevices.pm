@@ -20,151 +20,77 @@
 
 package storage::emc::vplex::restapi::mode::clusterdevices;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my $thresholds = {
-    device_health => [
-        ['ok', 'ok'],
-        ['.*', 'CRITICAL'],
-    ],
-};
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'health state: %s',
+        $self->{result_values}->{health_state}
+    );
+}
+
+sub prefix_device_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "device '%s' [cluster: %s] ",
+        $options{instance_value}->{device_name},
+        $options{instance_value}->{cluster_name}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'devices', type => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'All devices are ok' }
+    ];
+
+    $self->{maps_counters}->{devices} = [
+        { label => 'health-status', type => 2, critical_default => '%{health_state} ne "ok"', set => {
+                key_values => [ { name => 'health_state' }, { name => 'cluster_name' }, { name => 'device_name' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                "cluster:s"             => { name => 'cluster' },
-                                "filter:s@"             => { name => 'filter' },
-                                "threshold-overload:s@" => { name => 'threshold_overload' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-cluster-name:s' => { name => 'filter_cluster_name' },
+        'filter-device-name:s'  => { name => 'filter_device_name' }
+    });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    $self->{filter} = [];
-    foreach my $val (@{$self->{option_results}->{filter}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
-    }
-
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        if (scalar(@values) < 3) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $instance, $status, $filter);
-        if (scalar(@values) == 3) {
-            ($section, $status, $filter) = @values;
-            $instance = '.*';
-        } else {
-             ($section, $instance, $status, $filter) = @values;
-        }
-        if ($section !~ /^device/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    my $vplex = $options{custom};
-
-    my $items = $vplex->get_items(
-        url => '/vplex/clusters/',
-        parent => 1,
-        parent_filter => $self->{option_results}->{cluster},
-        parent_filter_prefix => 'cluster-',
-        parent_select => '/clusters/(.*?)/',
-        obj => 'devices'
-    );
-
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All Cluster Devices are OK');
-                                
-    foreach my $cluster_name (sort keys %{$items}) {
-        foreach my $device_name (sort keys %{$items->{$cluster_name}}) {
-            my $instance = $cluster_name . '_' . $device_name;
-
-            next if ($self->check_filter(section => 'device', instance => $instance));
-            
-            $self->{output}->output_add(long_msg => sprintf("Device '%s' health state is '%s'", 
-                                                            $instance, 
-                                                            $items->{$cluster_name}->{$device_name}->{'health-state'}));
-
-            my $exit = $self->get_severity(section => 'device_health', instance => $instance, value => $items->{$cluster_name}->{$device_name}->{'health-state'});
-            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Device '%s' health state is '%s'", 
-                                                            $instance, $items->{$cluster_name}->{$device_name}->{'health-state'}));
-            }
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub check_filter {
+sub manage_selection {
     my ($self, %options) = @_;
 
-    foreach (@{$self->{filter}}) {
-        if ($options{section} =~ /$_->{filter}/) {
-            if (!defined($options{instance}) && !defined($_->{instance})) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-                return 1;
-            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-                return 1;
-            }
-        }
-    }
-    
-    return 0;
-}
+    my $items = $options{custom}->get_devices();
 
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-    
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-           if ($options{value} =~ /$_->{filter}/i && 
-                (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
-                $status = $_->{status};
-                return $status;
-            }
-        }
+    $self->{devices} = {};
+    foreach my $item (@$items) {
+        next if (defined($self->{option_results}->{filter_cluster_name}) && $self->{option_results}->{filter_cluster_name} ne '' &&
+            $item->{cluster_name} !~ /$self->{option_results}->{filter_cluster_name}/);
+        next if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
+            $item->{name} !~ /$self->{option_results}->{filter_device_name}/);
+
+        $self->{devices}->{ $item->{name} } = $item;
+        $self->{devices}->{ $item->{name} }->{device_name} = $item->{name};
     }
-    my $label = defined($options{label}) ? $options{label} : $options{section};
-    foreach (@{$thresholds->{$label}}) {
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-    
-    return $status;
 }
 
 1;
@@ -173,24 +99,27 @@ __END__
 
 =head1 MODE
 
-Check Cluster devices health for VPlex
+Check cluster devices.
 
 =over 8
 
-=item B<--cluster>
+=item B<--filter-cluster-name>
 
-Set cluster name to check (Example: '1')
+Filter devices by cluster name (can be a regexp).
 
-=item B<--filter>
+=item B<--filter-device-name>
 
-Filter some parts (comma seperated list)
-Can also exclude specific instance: --filter=device,cluster-1_xxxx
+Filter devices by device name (can be a regexp).
 
-=item B<--threshold-overload>
+=item B<--warning-health-status>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
-Example: --threshold-overload='device_health,CRITICAL,^(?!(ok)$)'
+Set warning threshold for status.
+Can used special variables like: %{health_state}, %{cluster_name}, %{device_name}
+
+=item B<--critical-health-status>
+
+Set critical threshold for status (Default: '%{health_state} ne "ok"').
+Can used special variables like: %{health_state}, %{cluster_name}, %{device_name}
 
 =back
 
