@@ -117,6 +117,8 @@ sub request_api {
     my $file;
     if ($options{endpoint} =~ /\/vplex\/cluster-witness\/components\//) {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/cluster-communication-old.json';
+    } elsif ($options{endpoint} =~ /storage-volumes/) {
+        $file = '/home/qgarnier/clients/plugins/vplex/vplex/storage-volumes-old.json';
     }
 
     my $content = do {
@@ -156,6 +158,27 @@ sub get_cluster_communication {
             $attribute->{name} =~ s/-/_/g;
             $entry->{ $attribute->{name} } = $attribute->{value};
         }
+
+        push @$results, $entry;
+    }
+
+    return $results;
+}
+
+sub get_storage_volumes {
+    my ($self, %options) = @_;
+
+    my $items = $self->request_api(endpoint => '/vplex/clusters/*/storage-elements/storage-volumes/*');
+
+    my $results = [];
+    foreach my $context (@{$items->{response}->{context}}) {
+        my $entry = {};
+        foreach my $attribute (@{$context->{attributes}}) {
+            $attribute->{name} =~ s/-/_/g;
+            $entry->{ $attribute->{name} } = $attribute->{value};
+        }
+        my $cluster_name = 'unknown';
+        $entry->{cluster_name} = $1 if ($context->{parent} =~ /^\/clusters\/(.*?)\//);
 
         push @$results, $entry;
     }

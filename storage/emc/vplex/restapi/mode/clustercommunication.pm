@@ -62,7 +62,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -107,7 +107,7 @@ Can used special variables like: %{operational_state}, %{admin_state}, %{name}
 
 =item B<--critical-status>
 
-Set critical threshold for status.
+Set critical threshold for status (Default: '%{admin_state} eq "enabled" and %{operational_state} !~ /cluster-in-contact|in-contact/i').
 Can used special variables like: %{operational_state}, %{admin_state}, %{name}
 
 =back
