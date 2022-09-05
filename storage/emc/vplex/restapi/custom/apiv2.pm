@@ -213,6 +213,8 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/storage_volumes-new-cluster1.json';
     } elsif ($options{endpoint} =~ /\/vplex\/v2\/clusters\/cluster-2\/storage_volumes$/) {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/storage_volumes-new-cluster2.json';
+    } elsif ($options{endpoint} =~ /directors/) {
+        $file = '/home/qgarnier/clients/plugins/vplex/vplex/directors-new.json';
     }
 
     my $content = do {
@@ -309,6 +311,12 @@ sub get_psus {
 
     $self->{output}->add_option_msg(short_msg => 'power supplies information unsupported by rest api v2');
     $self->{output}->option_exit();
+}
+
+sub get_directors {
+    my ($self, %options) = @_;
+
+    return $self->request_api(endpoint => '/vplex/v2/directors');
 }
 
 1;

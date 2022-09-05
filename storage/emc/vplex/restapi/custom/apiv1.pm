@@ -123,6 +123,8 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/fans-old.json';
     } elsif ($options{endpoint} =~ /power-supplies/) {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/psus-old.json';
+    } elsif ($options{endpoint} =~ /directors/) {
+        $file = '/home/qgarnier/clients/plugins/vplex/vplex/directors-old.json';
     }
 
     my $content = do {
@@ -204,8 +206,8 @@ sub get_fans {
             $entry->{ $attribute->{name} } = $attribute->{value};
         }
         my $engine_name = 'unknown';
-        $engine_name = $1 if ($context->{parent} =~ /^\/engines\/(.*?)\//);
-        $entry->{engine_name} = $engine_name;
+        $engine_name = $1 if ($context->{parent} =~ /^\/engines\/engine-(.*?)\//);
+        $entry->{engine_id} = $engine_name;
 
         push @$results, $entry;
     }
@@ -226,8 +228,30 @@ sub get_psus {
             $entry->{ $attribute->{name} } = $attribute->{value};
         }
         my $engine_name = 'unknown';
-        $engine_name = $1 if ($context->{parent} =~ /^\/engines\/(.*?)\//);
-        $entry->{engine_name} = $engine_name;
+        $engine_name = $1 if ($context->{parent} =~ /^\/engines\/engine-(.*?)\//);
+        $entry->{engine_id} = $engine_name;
+
+        push @$results, $entry;
+    }
+
+    return $results;
+}
+
+sub get_directors {
+    my ($self, %options) = @_;
+
+    my $items = $self->request_api(endpoint => '/vplex/engines/*/directors/*');
+
+    my $results = [];
+    foreach my $context (@{$items->{response}->{context}}) {
+        my $entry = {};
+        foreach my $attribute (@{$context->{attributes}}) {
+            $attribute->{name} =~ s/-/_/g;
+            $entry->{ $attribute->{name} } = $attribute->{value};
+        }
+        my $engine_name = 'unknown';
+        $engine_name = $1 if ($context->{parent} =~ /^\/engines\/engine-(.*?)\//);
+        $entry->{engine_id} = $engine_name;
 
         push @$results, $entry;
     }

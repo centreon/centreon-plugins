@@ -31,7 +31,7 @@ sub prefix_psu_output {
     return sprintf(
         "power supply '%s' [engine: %s] ",
         $options{instance_value}->{psu_name},
-        $options{instance_value}->{engine_name}
+        $options{instance_value}->{engine_id}
     );
 }
 
@@ -44,14 +44,14 @@ sub set_counters {
 
     $self->{maps_counters}->{psu} = [
         { label => 'operational-status', type => 2, critical_default => '%{operational_status} ne "online"', set => {
-                key_values => [ { name => 'operational_status' }, { name => 'engine_name' }, { name => 'psu_name' } ],
+                key_values => [ { name => 'operational_status' }, { name => 'engine_id' }, { name => 'psu_name' } ],
                 output_template => 'operational status: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'temperature-status', type => 2, critical_default => '%{temperature_threshold_exceeded} ne "false"', set => {
-                key_values => [ { name => 'temperature_threshold_exceeded' }, { name => 'engine_name' }, { name => 'psu_name' } ],
+                key_values => [ { name => 'temperature_threshold_exceeded' }, { name => 'engine_id' }, { name => 'psu_name' } ],
                 output_template => 'temperature threshold exceeded: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -66,8 +66,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-engine-name:s' => { name => 'filter_engine_name' },
-        'filter-psu-name:s'    => { name => 'filter_psu_name' }
+        'filter-engine-id:s' => { name => 'filter_engine_id' },
+        'filter-psu-name:s'  => { name => 'filter_psu_name' }
     });
 
     return $self;
@@ -80,8 +80,8 @@ sub manage_selection {
 
     $self->{psu} = {};
     foreach my $item (@$items) {
-        next if (defined($self->{option_results}->{filter_engine_name}) && $self->{option_results}->{filter_engine_name} ne '' &&
-            $item->{engine_name} !~ /$self->{option_results}->{filter_engine_name}/);
+        next if (defined($self->{option_results}->{filter_engine_id}) && $self->{option_results}->{filter_engine_id} ne '' &&
+            $item->{engine_id} !~ /$self->{option_results}->{filter_engine_id}/);
         next if (defined($self->{option_results}->{filter_psu_name}) && $self->{option_results}->{filter_psu_name} ne '' &&
             $item->{name} !~ /$self->{option_results}->{filter_psu_name}/);
 
@@ -100,9 +100,9 @@ Check power-supplies.
 
 =over 8
 
-=item B<--filter-engine-name>
+=item B<--filter-engine-id>
 
-Filter power supplies by engine name (can be a regexp).
+Filter power supplies by engine id (can be a regexp).
 
 =item B<--filter-psu-name>
 
@@ -111,22 +111,22 @@ Filter power supplies by power supply name (can be a regexp).
 =item B<--warning-operational-status>
 
 Set warning threshold for status.
-Can used special variables like: %{operational_status}, %{engine_name}, %{psu_name}
+Can used special variables like: %{operational_status}, %{engine_id}, %{psu_name}
 
 =item B<--critical-operational-status>
 
 Set critical threshold for status (Default: '%{operational_status} ne "online"').
-Can used special variables like: %{operational_status}, %{engine_name}, %{psu_name}
+Can used special variables like: %{operational_status}, %{engine_id}, %{psu_name}
 
 =item B<--warning-temperature-status>
 
 Set warning threshold for status.
-Can used special variables like: %{temperature_threshold_exceeded}, %{engine_name}, %{psu_name}
+Can used special variables like: %{temperature_threshold_exceeded}, %{engine_id}, %{psu_name}
 
 =item B<--critical-temperature-status>
 
 Set critical threshold for status (Default: '%{operational_status} ne "online"').
-Can used special variables like: %{temperature_threshold_exceeded}, %{engine_name}, %{psu_name}
+Can used special variables like: %{temperature_threshold_exceeded}, %{engine_id}, %{psu_name}
 
 =back
 
