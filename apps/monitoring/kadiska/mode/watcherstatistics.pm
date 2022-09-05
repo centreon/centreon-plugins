@@ -212,10 +212,6 @@ sub manage_selection {
         "options" => {"sampling" => \1 }
     };  
 
-    # if (defined($self->{option_results}->{filter_watcher_name}) && $self->{option_results}->{filter_watcher_name} ne ''){
-    #     $raw_form_post->{where} = ["=","watcher_name",["\$", $self->{option_results}->{filter_watcher_name}]],
-    # }
-
     my $filter = $options{custom}->forge_filter(
         site_name => $self->{option_results}->{site_name},
         gateway_name => $self->{option_results}->{gateway_name},
@@ -223,10 +219,7 @@ sub manage_selection {
         filter_wfh => $self->{option_results}->{filter_wfh}
     );
 
-    print $filter . "\n";
-
     $raw_form_post->{where} = $filter;
-    print $raw_form_post->{where} . "\n";
 
     my $results = $options{custom}->request_api(
         method => 'POST',

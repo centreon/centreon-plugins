@@ -187,22 +187,20 @@ sub forge_filter {
     $filters{watcher_name} = $options{watcher_name} if defined($options{watcher_name}) && $options{watcher_name} ne '';
     $filters{wfh} = $options{filter_wfh} if defined($options{filter_wfh}) && $options{filter_wfh} ne '';
 
-    my $filter;
+    my @filter;
 
     if (keys %filters > 1){
-        $filter = '["and"';
         foreach my $filter_name (keys %filters){
-            $filter .= ',["=","' . $filter_name . '",["$", "' . $filters{$filter_name} . '"]]';
+            unshift(@filter, ["=", $filter_name,["\$", $filters{$filter_name}]]);
         }
-        $filter .= ']';
-        return $filter;
+        unshift(@filter, 'and');
+        return \@filter;
     } else {
         my ($filter_name) = %filters;
         my $filter_value = $filters{$filter_name};
-        $filter = '["=","' . $filter_name . '",["$","' . $filter_value . '"]]';
-        return $filter;
+        unshift(@filter, "=", $filter_name ,["\$", $filter_value ]);
+        return \@filter;
     }
-
 }
 
 sub request_api {
