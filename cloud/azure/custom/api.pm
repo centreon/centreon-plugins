@@ -790,6 +790,56 @@ sub azure_get_publicip {
     return $response;
 }
 
+sub azure_get_budget_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Consumption/budgets/" . $options{budget_name};
+    $url .= "?api-version=" . $self->{api_version};
+
+    return $url;
+}
+
+sub azure_get_budget {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_get_budget_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
+sub azure_get_usagedetails_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Consumption/usageDetails?\$filter=properties%2FusageStart ge %27" . $options{usage_start} . "%27 and properties%2FusageEnd le %27" . $options{usage_end} . "%27";
+    $url .= "&metric=actualcost";
+    $url .= "&api-version=" . $self->{api_version};
+
+    return $url;
+}
+
+sub azure_get_usagedetails {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_get_usagedetails_set_url(%options);
+    while (1) {
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
+
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
 1;
 
 __END__
