@@ -114,33 +114,7 @@ sub request_api {
 
     $self->settings();
 
-    my $file;
-    if ($options{endpoint} =~ /\/vplex\/cluster-witness\/components\//) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/cluster-communication-old.json';
-    } elsif ($options{endpoint} =~ /storage-volumes/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/storage-volumes-old.json';
-    } elsif ($options{endpoint} =~ /fans/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/fans-old.json';
-    } elsif ($options{endpoint} =~ /power-supplies/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/psus-old.json';
-    } elsif ($options{endpoint} =~ /directors/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/directors-old.json';
-    } elsif ($options{endpoint} =~ /distributed-devices/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/distributed-devices-old.json';
-    }
-
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     my $content = $self->{http}->request(url_path => $options{endpoint});
-=cut
 
     my $decoded;
     eval {

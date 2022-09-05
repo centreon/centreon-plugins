@@ -148,7 +148,7 @@ sub clean_token {
     my ($self, %options) = @_;
 
     my $datas = {};
-    $options{statefile}->write(data => $datas);
+    $self->{cache}->write(data => $datas);
     $self->{access_token} = undef;
     $self->{http}->add_header(key => 'Authorization', value => undef);
 }
@@ -156,9 +156,9 @@ sub clean_token {
 sub get_auth_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'emc_vplex_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
-    my $access_token = $options{statefile}->get(name => 'access_token');
-    my $expires_on = $options{statefile}->get(name => 'expires_on');
+    my $has_cache_file = $self->{cache}->read(statefile => 'emc_vplex_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{api_username}));
+    my $access_token = $self->{cache}->get(name => 'access_token');
+    my $expires_on = $self->{cache}->get(name => 'expires_on');
     my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
     my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
 
@@ -204,38 +204,9 @@ sub get_auth_token {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /\/vplex\/v2\/cluster_witness/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/cluster-communication-new.json';
-    } elsif ($options{endpoint} =~ /\/vplex\/v2\/clusters$/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/clusters-new.json';
-    } elsif ($options{endpoint} =~ /\/vplex\/v2\/clusters\/cluster-1\/storage_volumes$/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/storage_volumes-new-cluster1.json';
-    } elsif ($options{endpoint} =~ /\/vplex\/v2\/clusters\/cluster-2\/storage_volumes$/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/storage_volumes-new-cluster2.json';
-    } elsif ($options{endpoint} =~ /directors/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/directors-new.json';
-    } elsif ($options{endpoint} =~ /distributed_devices/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/distributed-devices-new.json';
-    } elsif ($options{endpoint} =~ /\/vplex\/v2\/clusters\/cluster-1\/devices$/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/cluster-devices-new-cluster1.json';
-    } elsif ($options{endpoint} =~ /\/vplex\/v2\/clusters\/cluster-2\/devices$/) {
-        $file = '/home/qgarnier/clients/plugins/vplex/vplex/cluster-devices-new-cluster2.json';
-    }
-
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     $self->settings();
     if (!defined($self->{access_token})) {
-        $self->get_auth_token(statefile => $self->{cache});
+        $self->get_auth_token();
     }
 
     my $content = $self->{http}->request(
@@ -250,8 +221,8 @@ sub request_api {
 
     # Maybe there is an issue with the token. So we retry.
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        $self->clean_token(statefile => $self->{cache});
-        $self->get_auth_token(statefile => $self->{cache});
+        $self->clean_token();
+        $self->get_auth_token();
         $content = $self->{http}->request(
             method => 'GET',
             hostname => $self->{hostname},
@@ -262,14 +233,9 @@ sub request_api {
     }
 
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        my $message = 'api request error';
-        if (defined($decoded->{message})) {
-            $message .= ': ' . $decoded->{message};
-        }
-        $self->{output}->add_option_msg(short_msg => $message);
+        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
-=cut
 
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
