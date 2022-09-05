@@ -184,6 +184,7 @@ sub forge_filter {
     my %filters;
     $filters{gateway_name} = $options{gateway_name} if defined($options{gateway_name}) && $options{gateway_name} ne '';
     $filters{site_name} = $options{site_name} if defined($options{site_name}) && $options{site_name} ne '';
+    $filters{site_id} = $options{site_name} if defined($options{site_name}) && $options{site_name} eq '';
     $filters{watcher_name} = $options{watcher_name} if defined($options{watcher_name}) && $options{watcher_name} ne '';
     $filters{wfh} = $options{filter_wfh} if defined($options{filter_wfh}) && $options{filter_wfh} ne '';
 
@@ -195,12 +196,14 @@ sub forge_filter {
         }
         unshift(@filter, 'and');
         return \@filter;
-    } else {
+    } elsif ( keys %filters == 1) {
         my ($filter_name) = %filters;
         my $filter_value = $filters{$filter_name};
         unshift(@filter, "=", $filter_name ,["\$", $filter_value ]);
         return \@filter;
     }
+
+    return undef;
 }
 
 sub request_api {

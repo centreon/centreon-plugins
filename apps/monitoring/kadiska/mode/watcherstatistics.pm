@@ -219,7 +219,7 @@ sub manage_selection {
         filter_wfh => $self->{option_results}->{filter_wfh}
     );
 
-    $raw_form_post->{where} = $filter;
+    $raw_form_post->{where} = $filter if (defined($filter));
 
     my $results = $options{custom}->request_api(
         method => 'POST',
