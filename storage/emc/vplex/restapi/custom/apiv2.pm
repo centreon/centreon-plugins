@@ -217,6 +217,10 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/directors-new.json';
     } elsif ($options{endpoint} =~ /distributed_devices/) {
         $file = '/home/qgarnier/clients/plugins/vplex/vplex/distributed-devices-new.json';
+    } elsif ($options{endpoint} =~ /\/vplex\/v2\/clusters\/cluster-1\/devices$/) {
+        $file = '/home/qgarnier/clients/plugins/vplex/vplex/cluster-devices-new-cluster1.json';
+    } elsif ($options{endpoint} =~ /\/vplex\/v2\/clusters\/cluster-2\/devices$/) {
+        $file = '/home/qgarnier/clients/plugins/vplex/vplex/cluster-devices-new-cluster2.json';
     }
 
     my $content = do {
@@ -292,6 +296,23 @@ sub get_storage_volumes {
     my $results = [];
     foreach my $cluster (@$clusters) {
         my $items = $self->request_api(endpoint => '/vplex/v2/clusters/' . $cluster->{name} . '/storage_volumes');
+        foreach my $item (@$items) {
+            $item->{cluster_name} = $cluster->{name};
+            push @$results, $item;
+        }
+    }
+
+    return $results;
+}
+
+sub get_devices {
+    my ($self, %options) = @_;
+
+    my $clusters = $self->request_api(endpoint => '/vplex/v2/clusters');
+
+    my $results = [];
+    foreach my $cluster (@$clusters) {
+        my $items = $self->request_api(endpoint => '/vplex/v2/clusters/' . $cluster->{name} . '/devices');
         foreach my $item (@$items) {
             $item->{cluster_name} = $cluster->{name};
             push @$results, $item;

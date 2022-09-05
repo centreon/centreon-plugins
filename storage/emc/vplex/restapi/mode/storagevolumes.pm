@@ -53,7 +53,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{volumes} = [
-        { label => 'status', type => 2, critical_default => '%{health_state} ne "ok"', set => {
+        { label => 'health-status', type => 2, critical_default => '%{health_state} ne "ok"', set => {
                 key_values => [ { name => 'health_state' }, { name => 'cluster_name' }, { name => 'volume_name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -111,12 +111,12 @@ Filter volumes by cluster name (can be a regexp).
 
 Filter volumes by volume name (can be a regexp).
 
-=item B<--warning-status>
+=item B<--warning-health-status>
 
 Set warning threshold for status.
 Can used special variables like: %{health_state}, %{cluster_name}, %{volume_name}
 
-=item B<--critical-status>
+=item B<--critical-health-status>
 
 Set critical threshold for status (Default: '%{health_state} ne "ok"').
 Can used special variables like: %{health_state}, %{cluster_name}, %{volume_name}

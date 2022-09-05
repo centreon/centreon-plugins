@@ -214,6 +214,28 @@ sub get_storage_volumes {
     return $results;
 }
 
+sub get_devices {
+    my ($self, %options) = @_;
+
+    my $items = $self->request_api(endpoint => '/vplex/clusters/*/devices/*');
+
+    my $results = [];
+    foreach my $context (@{$items->{response}->{context}}) {
+        my $entry = {};
+        foreach my $attribute (@{$context->{attributes}}) {
+            $attribute->{name} =~ s/-/_/g;
+            $entry->{ $attribute->{name} } = $attribute->{value};
+        }
+        my $cluster_name = 'unknown';
+        $cluster_name = $1 if ($context->{parent} =~ /^\/clusters\/(.*?)\//);
+        $entry->{cluster_name} = $cluster_name;
+
+        push @$results, $entry;
+    }
+
+    return $results;
+}
+
 sub get_fans {
     my ($self, %options) = @_;
 

@@ -50,7 +50,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{components} = [
-        { label => 'status', type => 2, critical_default => '%{admin_state} eq "enabled" and %{operational_state} !~ /cluster-in-contact|in-contact/i', set => {
+        { label => 'operational-status', type => 2, critical_default => '%{admin_state} eq "enabled" and %{operational_state} !~ /cluster-in-contact|in-contact/i', set => {
                 key_values => [ { name => 'operational_state' }, { name => 'admin_state' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -100,12 +100,12 @@ Check cluster communication state.
 
 Filter components by name (can be a regexp).
 
-=item B<--warning-status>
+=item B<--warning-operational-status>
 
 Set warning threshold for status.
 Can used special variables like: %{operational_state}, %{admin_state}, %{name}
 
-=item B<--critical-status>
+=item B<--critical-operational-status>
 
 Set critical threshold for status (Default: '%{admin_state} eq "enabled" and %{operational_state} !~ /cluster-in-contact|in-contact/i').
 Can used special variables like: %{operational_state}, %{admin_state}, %{name}
