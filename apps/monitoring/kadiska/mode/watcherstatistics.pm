@@ -28,112 +28,131 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 
 sub prefix_output {
     my ($self, %options) = @_;
-    
-    return "Watcher '" . $options{instance} . "' ";
+
+    return sprintf(
+        "Watcher '%s' [Site name: %s] [Gateway: %s] : ",
+        $options{instance_value}->{watcher_name},
+        $options{instance_value}->{site_name},
+        $options{instance_value}->{gateway_name}
+    );
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'watchers', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All Watchers are OK' }
+        { name => 'sites', type => 3, cb_prefix_output => 'prefix_output', message_multiple => 'All Watchers are OK', 
+            group => [
+                { name => 'waiting_time', type => 0, cb_prefix_output => 'prefix_output',  skipped_code => { -10 => 1 }}
+            ]
+        }
     ];
 
-    $self->{maps_counters}->{watchers} = [
-        { label => 'dtt-spent', nlabel => 'watcher.dtt.spent.count', set => {
-                key_values => [ { name => 'dtt_spent' } ],
-                output_template => 'DTT spent: %.2f ms',
-                perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'errors-prct', nlabel => 'watcher.errors.percentage', set => {
-                key_values => [ { name => 'errors_prct' } ],
-                output_template => 'Errors: %.2f%%',
-                perfdatas => [
-                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'full-time-network-spent', nlabel => 'watcher.network.spent.time.milliseconds', set => {
-                key_values => [ { name => 'full_time_network_spent' } ],
-                output_template => 'Full time network spent: %.2f ms',
-                perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'sessions', nlabel => 'watcher.sessions.count', set => {
-                key_values => [ { name => 'sessions' } ],
-                output_template => 'Sessions: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'srt-spent', nlabel => 'watcher.srt.spent.count', set => {
-                key_values => [ { name => 'srt_spent' } ],
-                output_template => 'SRT spent: %.2f ms',
-                perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'requests', nlabel => 'watcher.requests.count', set => {
-                key_values => [ { name => 'requests' } ],
-                output_template => 'Requests: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
-                key_values => [ { name => 'redirect_time_avg' } ],
-                output_template => 'Redirect time avg: %.2f ms',
-                perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'loading-page', nlabel => 'watcher.loading.page.duration.milliseconds', set => {
-                key_values => [ { name => 'loading_page' } ],
-                output_template => 'Loading page duration: %.2f ms',
-                perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },   
-        { label => 'pages', nlabel => 'watcher.pages.count', set => {
-                key_values => [ { name => 'pages' } ],
-                output_template => 'Loaded pages: %d',
-                perfdatas => [
-                    { template => '%d', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'processing', nlabel => 'watcher.processing.duration.milliseconds', set => {
-                key_values => [ { name => 'processing' } ],
-                output_template => 'API Processing duration: %.2f ms',
-                perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },  
-        { label => 'users', nlabel => 'users.count', set => {
-                key_values => [ { name => 'users' } ],
-                output_template => 'Connected users: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 },
-                ],
-            }
-        },
-        { label => 'waiting-time-avg', nlabel => 'watcher.waiting.time.milliseconds', set => {
-                key_values => [ { name => 'waiting_time_avg' } ],
+    $self->{maps_counters}->{waiting_time} = [
+        # { label => 'dtt-spent', nlabel => 'watcher.dtt.spent.count', set => {
+        #         key_values => [ { name => 'dtt_spent' } ],
+        #         output_template => 'DTT spent: %.2f ms',
+        #         perfdatas => [
+        #             { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        # { label => 'errors-prct', nlabel => 'watcher.errors.percentage', set => {
+        #         key_values => [ { name => 'errors_prct' } ],
+        #         output_template => 'Errors: %.2f%%',
+        #         perfdatas => [
+        #             { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        # { label => 'full-time-network-spent', nlabel => 'watcher.network.spent.time.milliseconds', set => {
+        #         key_values => [ { name => 'full_time_network_spent' } ],
+        #         output_template => 'Full time network spent: %.2f ms',
+        #         perfdatas => [
+        #             { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        # { label => 'sessions', nlabel => 'watcher.sessions.count', set => {
+        #         key_values => [ { name => 'sessions' } ],
+        #         output_template => 'Sessions: %s',
+        #         perfdatas => [
+        #             { template => '%s', min => 0, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        # { label => 'srt-spent', nlabel => 'watcher.srt.spent.count', set => {
+        #         key_values => [ { name => 'srt_spent' } ],
+        #         output_template => 'SRT spent: %.2f ms',
+        #         perfdatas => [
+        #             { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        # { label => 'requests', nlabel => 'watcher.requests.count', set => {
+        #         key_values => [ { name => 'requests' } ],
+        #         output_template => 'Requests: %s',
+        #         perfdatas => [
+        #             { template => '%s', min => 0, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        # { label => 'redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
+        #         key_values => [ { name => 'redirect_time_avg' } ],
+        #         output_template => 'Redirect time avg: %.2f ms',
+        #         perfdatas => [
+        #             { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        # { label => 'loading-page', nlabel => 'watcher.loading.page.duration.milliseconds', set => {
+        #         key_values => [ { name => 'loading_page' } ],
+        #         output_template => 'Loading page duration: %.2f ms',
+        #         perfdatas => [
+        #             { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },   
+        # { label => 'pages', nlabel => 'watcher.pages.count', set => {
+        #         key_values => [ { name => 'pages' } ],
+        #         output_template => 'Loaded pages: %d',
+        #         perfdatas => [
+        #             { template => '%d', min => 0, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        # { label => 'processing', nlabel => 'watcher.processing.duration.milliseconds', set => {
+        #         key_values => [ { name => 'processing' } ],
+        #         output_template => 'API Processing duration: %.2f ms',
+        #         perfdatas => [
+        #             { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },  
+        # { label => 'users', nlabel => 'users.count', set => {
+        #         key_values => [ { name => 'users' } ],
+        #         output_template => 'Connected users: %s',
+        #         perfdatas => [
+        #             { template => '%s', min => 0, label_extra_instance => 1 },
+        #         ],
+        #     }
+        # },
+        { label => 'waiting-time', nlabel => 'watcher.waiting.time.milliseconds', set => {
+                key_values => [ { name => 'waiting_time' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Waiting time avg: %.2f ms',
-                perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'ms',
+                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
+                        value => sprintf('%.2f', $self->{result_values}->{waiting_time}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
+                    );
+                }
             }
         }   
     ];
@@ -244,25 +263,39 @@ sub manage_selection {
     $self->{watchers} = {};
     foreach my $watcher (@{$results->{data}}) {
 
-        my $instance = $watcher->{'watcher_id:group'};
+        # use Data::Dumper;
+        # print Dumper $watcher;
 
-        $self->{watchers}->{$instance} = {
-            dtt_spent => $watcher->{'srt_spent:avg|requests'},
-            errors_prct => $watcher->{'%errors:avg|hits'},
-            full_time_network_spent => ( $watcher->{'full_network_time_spent:avg|requests'} / 10**3 ),
-            loading_page => (defined($watcher->{'lcp:p75|pages'}) && $watcher->{'lcp:p75|pages'} != 0 ) ? ($watcher->{'lcp:p75|pages'} / 10**3) : 0,
-            pages => $watcher->{'item:count|pages'},
-            processing => ( $watcher->{'processing_whole:avg|requests'} / 10**3 ),
-            requests => $watcher->{'item:count|requests'},
-            redirect_time_avg => ( $watcher->{'redirect_time_spent:avg|requests'} / 10**3),
-            srt_spent => $watcher->{'srt_spent:avg|requests'},
-            sessions => $watcher->{'session:sum|hits'},
-            users => $watcher->{'user_id:distinct'},
-            waiting_time_avg => ( $watcher->{'waiting_time_spent:avg|requests'} / 10**3 ) 
+        my $instance = defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "WFH";
+
+        $self->{sites}->{$instance}->{site_name} = $watcher->{'site:group'};
+        $self->{sites}->{$instance}->{gateway_name} = $watcher->{'gateway:group'};
+        $self->{sites}->{$instance}->{watcher_name} = $watcher->{'watcher_id:group'};
+
+        $self->{sites}->{$instance}->{waiting_time} = { 
+            watcher_name => $watcher->{'watcher_id:group'},
+            waiting_time => ( $watcher->{'waiting_time_spent:avg|requests'} / 10**3 ),
+            site_name => $watcher->{'site:group'},
+            gateway_name => $watcher->{'gateway:group'}
         };
+
+        # $self->{watchers}->{$instance} = {
+        #     dtt_spent => $watcher->{'srt_spent:avg|requests'},
+        #     errors_prct => $watcher->{'%errors:avg|hits'},
+        #     full_time_network_spent => ( $watcher->{'full_network_time_spent:avg|requests'} / 10**3 ),
+        #     loading_page => (defined($watcher->{'lcp:p75|pages'}) && $watcher->{'lcp:p75|pages'} != 0 ) ? ($watcher->{'lcp:p75|pages'} / 10**3) : 0,
+        #     pages => $watcher->{'item:count|pages'},
+        #     processing => ( $watcher->{'processing_whole:avg|requests'} / 10**3 ),
+        #     requests => $watcher->{'item:count|requests'},
+        #     redirect_time_avg => ( $watcher->{'redirect_time_spent:avg|requests'} / 10**3),
+        #     srt_spent => $watcher->{'srt_spent:avg|requests'},
+        #     sessions => $watcher->{'session:sum|hits'},
+        #     users => $watcher->{'user_id:distinct'},
+        #     waiting_time_avg => ( $watcher->{'waiting_time_spent:avg|requests'} / 10**3 ) 
+        # };
     };
 
-    if (scalar(keys %{$self->{watchers}}) <= 0) {
+    if (scalar(keys %{$self->{sites}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No instances or results found.");
         $self->{output}->option_exit();
     }
