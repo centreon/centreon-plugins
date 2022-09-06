@@ -157,7 +157,7 @@ sub manage_selection {
     }
     
     if (!$costs || $cost < 0.01) {
-	$self->{output}->add_option_msg(short_msg => "Null or < 0.01 " . $budget->{properties}->{currentSpend}->{unit} . "cost found on the specified scope.");
+	$self->{output}->add_option_msg(short_msg => "Null or < 0.01 " . $budget->{properties}->{currentSpend}->{unit} . " cost found on the specified scope.");
 	$self->{output}->option_exit();
     }
 
