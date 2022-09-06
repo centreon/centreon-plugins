@@ -40,7 +40,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{watchers} = [
-        { label => 'dtt_spent', nlabel => 'watcher.dtt.spent.count', set => {
+        { label => 'dtt-spent', nlabel => 'watcher.dtt.spent.count', set => {
                 key_values => [ { name => 'dtt_spent' } ],
                 output_template => 'DTT spent: %.2f ms',
                 perfdatas => [
@@ -72,7 +72,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'srt_spent', nlabel => 'watcher.srt.spent.count', set => {
+        { label => 'srt-spent', nlabel => 'watcher.srt.spent.count', set => {
                 key_values => [ { name => 'srt_spent' } ],
                 output_template => 'SRT spent: %.2f ms',
                 perfdatas => [
@@ -150,6 +150,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'country'               => { name => 'country'},
         'filter-watcher-name:s' => { name => 'watcher_name' },
         'filter-site-name:s'    => { name => 'site_name'},
         'filter-gateway-name:s' => { name => 'gateway_name'},
@@ -169,6 +170,12 @@ sub manage_selection {
             },
             {
                 "watcher_id:group" => "watcher_name"
+            },
+            {
+                "site:group" => "site_name"
+            },
+            {   
+                "gateway:group" => "gateway_name"
             },
             {
                 "\%errors:avg|hits" => ["avgFor","hits","error_count"]            
@@ -206,11 +213,18 @@ sub manage_selection {
         ],
         "from" => "rum",
         "groupby" => [
-            "watcher_name"
+            "watcher_name",
+            "site:group",
+            "gateway:group"
         ],
         "offset" => 0,
         "options" => {"sampling" => \1 }
-    };  
+    }; 
+
+    if (defined($self->{option_results}->{country})){
+        push @{$raw_form_post->{select}}, { 'country:group' => "country" };
+        push @{$raw_form_post->{groupby}}, 'country:group';
+    }
 
     my $filter = $options{custom}->forge_filter(
         site_name => $self->{option_results}->{site_name},

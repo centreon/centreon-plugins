@@ -206,6 +206,15 @@ sub forge_filter {
     return undef;
 }
 
+sub forge_country_opts {
+    my ($self, %options) = @_;
+
+    my $select = {};
+    $select->{'country:group'} = "country";
+
+    return $select;
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
