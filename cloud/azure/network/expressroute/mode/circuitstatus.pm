@@ -40,7 +40,7 @@ sub custom_status_output {
 sub prefix_circuit_output {
     my ($self, %options) = @_;
     
-    return "Circuit '" . $options{instance_value}->{display} . "' ";
+    return "Circuit '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -54,7 +54,7 @@ sub set_counters {
         { 
             label => 'status',
             type => 2,
-            critical_default => '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"' 
+            critical_default => '%{circuit_status} ne "Enabled" || %{provider_status} ne "Provisioned"',
             set => {
                 key_values => [ { name => 'circuit_status' }, { name => 'provider_status' }, { name => 'provider_name' },
                                 { name => 'provider_location' }, { name => 'name' } ],
