@@ -208,7 +208,7 @@ If not set, we check all VMs.
 
 =item B<--filter>
 
-VM hostname is a regexp.
+VM hostname is a regexp. Exemple : --vm-hostname='^((VM-PROD-*))' --filter
 
 =item B<--filter-description>
 
