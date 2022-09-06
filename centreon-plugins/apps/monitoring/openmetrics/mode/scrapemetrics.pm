@@ -63,8 +63,8 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    $self->{metrics} = centreon::common::monitoring::openmetrics::scrape::parse(%options);
-    
+    $self->{metrics} = centreon::common::monitoring::openmetrics::scrape::parse(%options,strip_chars => "[\"']");
+
     my @exits;
     my $short_msg = 'All metrics are ok';
     
