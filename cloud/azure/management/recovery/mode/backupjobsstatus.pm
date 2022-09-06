@@ -157,7 +157,7 @@ sub manage_selection {
             && $job->{properties}->{entityFriendlyName} !~ /$self->{option_results}->{filter_name}/);
 
         my $duration = $options{custom}->convert_duration(time_string => $job->{properties}->{duration});
-        my $end_time = $options{custom}->convert_iso8601_to_epoch(time_string => $job->{properties}->{endTime});
+        my $end_time = $options{custom}->convert_iso8601_to_epoch(time_string => $job->{properties}->{startTime});
 
         my $ts_timeframe = (defined($self->{option_results}->{lookback}) && $self->{option_results}->{lookback} ne '') ? (time() - $self->{option_results}->{lookback}) : 0;
         next if (defined($self->{option_results}->{lookback}) && $self->{option_results}->{lookback} ne '' && $ts_timeframe > $end_time);
@@ -213,7 +213,7 @@ Example: --filter-counters='^total-completed$'
 =item B<--lookback>
 
 Specify in seconds since when you want to have backup job status.
-Based on endTime property of the job.
+Based on startTime property of the job.
 Default: all existing job statuses are displayed.
 
 =item B<--warning-status>
