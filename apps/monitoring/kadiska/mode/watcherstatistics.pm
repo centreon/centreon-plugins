@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use Data::Dumper; 
 
 sub prefix_output {
     my ($self, %options) = @_;
@@ -37,18 +38,42 @@ sub prefix_output {
     );
 }
 
-sub set_counters {
+sub watcher_long_output {
     my ($self, %options) = @_;
 
+    return sprintf(
+        "checking watcher '%s' [Site name: %s] [Gateway: %s]:",
+        $options{instance_value}->{watcher_name},
+        $options{instance_value}->{site_name},
+        $options{instance_value}->{gateway_name}
+    );
+}
+
+sub prefix_watcher_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Watcher '%s' [Site name: %s] [Gateway: %s] : ",
+        $options{instance_value}->{watcher_name},
+        $options{instance_value}->{site_name},
+        $options{instance_value}->{gateway_name}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+# type 2 => alarm
+# type 3 => group 
     $self->{maps_counters_type} = [
-        { name => 'sites', type => 3, cb_prefix_output => 'prefix_output', message_multiple => 'All Watchers are OK', 
+        { name => 'watcher', type => 3, cb_prefix_output => 'prefix_watcher_output', message_multiple => 'All Watchers are OK', 
+          cb_long_output => 'watcher_long_output', indent_long_output => '    ',
             group => [
-                { name => 'waiting_time', type => 0, cb_prefix_output => 'prefix_output',  skipped_code => { -10 => 1 }}
+                { name => 'users', skipped_code => { -10 => 1 }},
+                { name => 'waiting_time', skipped_code => { -10 => 1 }}
             ]
         }
     ];
 
-    $self->{maps_counters}->{waiting_time} = [
         # { label => 'dtt-spent', nlabel => 'watcher.dtt.spent.count', set => {
         #         key_values => [ { name => 'dtt_spent' } ],
         #         output_template => 'DTT spent: %.2f ms',
@@ -129,17 +154,21 @@ sub set_counters {
         #         ],
         #     }
         # },  
-        # { label => 'users', nlabel => 'users.count', set => {
-        #         key_values => [ { name => 'users' } ],
-        #         output_template => 'Connected users: %s',
-        #         perfdatas => [
-        #             { template => '%s', min => 0, label_extra_instance => 1 },
-        #         ],
-        #     }
-        # },
+    $self->{maps_counters}->{users} = [
+        { label => 'users', nlabel => 'users.count', set => {
+                key_values => [ { name => 'connected_users' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
+                output_template => 'Connected users: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+
+    $self->{maps_counters}->{waiting_time} = [
         { label => 'waiting-time', nlabel => 'watcher.waiting.time.milliseconds', set => {
                 key_values => [ { name => 'waiting_time' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
-                output_template => 'Waiting time avg: %.2f ms',
+                output_template => 'Waiting time: %.2f ms',
                 closure_custom_perfdata => sub {
                     my ($self, %options) = @_;
 
@@ -260,23 +289,30 @@ sub manage_selection {
         query_form_post => $raw_form_post
     );
 
-    $self->{watchers} = {};
+    $self->{watcher} = {};
     foreach my $watcher (@{$results->{data}}) {
-
-        # use Data::Dumper;
-        # print Dumper $watcher;
-
-        my $instance = defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "WFH";
-
-        $self->{sites}->{$instance}->{site_name} = $watcher->{'site:group'};
-        $self->{sites}->{$instance}->{gateway_name} = $watcher->{'gateway:group'};
-        $self->{sites}->{$instance}->{watcher_name} = $watcher->{'watcher_id:group'};
-
-        $self->{sites}->{$instance}->{waiting_time} = { 
+        my $instance = $watcher->{'watcher_id:group'};
+        $instance .= defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH";
+        $instance .= defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW";
+        
+        $self->{watcher}->{$instance} = {
+            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW",
+            watcher_name => $watcher->{'watcher_id:group'},
+        };
+        
+        $self->{watcher}->{$instance}->{waiting_time} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             waiting_time => ( $watcher->{'waiting_time_spent:avg|requests'} / 10**3 ),
-            site_name => $watcher->{'site:group'},
-            gateway_name => $watcher->{'gateway:group'}
+            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+        };
+
+        $self->{watcher}->{$instance}->{users} = { 
+            watcher_name => $watcher->{'watcher_id:group'},
+            connected_users => $watcher->{'user_id:distinct'},
+            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
         };
 
         # $self->{watchers}->{$instance} = {
@@ -295,7 +331,7 @@ sub manage_selection {
         # };
     };
 
-    if (scalar(keys %{$self->{sites}}) <= 0) {
+    if (scalar(keys %{$self->{watcher}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No instances or results found.");
         $self->{output}->option_exit();
     }
