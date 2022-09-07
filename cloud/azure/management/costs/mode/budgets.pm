@@ -108,11 +108,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-	"budget-name:s"     => { name => 'budget_name' },
-	"resource-group:s"  => { name => 'resource_group' },
-	"lookup-days:s"     => { name => 'lookup_days', default => 30 },
-	"units:s"           => { name => 'units', default => '%' },
-	"timeout:s"         => { name => 'timeout', default => '60' },
+	    "budget-name:s"     => { name => 'budget_name' },
+	    "resource-group:s"  => { name => 'resource_group' },
+	    "lookup-days:s"     => { name => 'lookup_days', default => 30 },
+	    "units:s"           => { name => 'units', default => '%' },
+	    "timeout:s"         => { name => 'timeout', default => '60' },
     });   
 
     return $self;
@@ -123,8 +123,8 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{budget_name}) || $self->{option_results}->{budget_name} eq '') {
-	$self->{output}->add_option_msg(short_msg => "Need to specify --budget-name option");
-	$self->{output}->option_exit();
+	    $self->{output}->add_option_msg(short_msg => "Need to specify --budget-name option");
+	    $self->{output}->option_exit();
     }
 
     $self->{lookup_days} = $self->{option_results}->{lookup_days};
@@ -135,36 +135,36 @@ sub manage_selection {
 
     my $budget = $options{custom}->azure_get_budget(
         resource_group => $self->{option_results}->{resource_group},
-	budget_name => $self->{option_results}->{budget_name}
+	    budget_name => $self->{option_results}->{budget_name}
     );
 
     my $usage_start = DateTime->now()->add(days => - $self->{option_results}->{lookup_days} + 1);
     my $usage_end = DateTime->now();
     my $costs = $options{custom}->azure_get_usagedetails(
-	resource_group => $self->{option_results}->{resource_group},
-	usage_start    => $usage_start,
-	usage_end      => $usage_end
+	    resource_group => $self->{option_results}->{resource_group},
+	    usage_start    => $usage_start,
+	    usage_end      => $usage_end
     );
     
     my $cost = 0;
     for (my $i = 0; $costs->[$i]; $i++) {
-	$cost += $costs->[$i]->{properties}->{cost};
+	    $cost += $costs->[$i]->{properties}->{cost};
     }
 
     if (!$budget) {
-	$self->{output}->add_option_msg(short_msg => "No " . $self->{option_results}->{budget_name} . " found (or missing permissions)");
-	$self->{output}->option_exit();
+	    $self->{output}->add_option_msg(short_msg => "No " . $self->{option_results}->{budget_name} . " found (or missing permissions)");
+	    $self->{output}->option_exit();
     }
     
     if (!$costs || $cost < 0.01) {
-	$self->{output}->add_option_msg(short_msg => "Null or < 0.01 " . $budget->{properties}->{currentSpend}->{unit} . " cost found on the specified scope.");
-	$self->{output}->option_exit();
+	    $self->{output}->add_option_msg(short_msg => "Null or < 0.01 " . $budget->{properties}->{currentSpend}->{unit} . " cost found on the specified scope.");
+	    $self->{output}->option_exit();
     }
 
     $self->{currency} = $budget->{properties}->{currentSpend}->{unit};
     $self->{cost} = {
-	cost      => $cost,
-	budget    => $budget->{properties}->{amount},
+	    cost   => $cost,
+	    budget => $budget->{properties}->{amount},
     };
 }
 
