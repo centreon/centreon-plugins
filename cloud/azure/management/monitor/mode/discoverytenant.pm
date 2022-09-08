@@ -64,7 +64,7 @@ sub run {
         );
 
         foreach my $resource (@{$resources}) {
-            next if (defined($self->{option_results}->{select_type}) && $resource->{type} !~ /$self->{option_results}->{select_type}/i);
+            next if (defined($self->{option_results}->{select_type}) && $self->{option_results}->{select_type} ne '' && $resource->{type} !~ /$self->{option_results}->{select_type}/i);
 
             my $resource_group = '';
             $resource_group = $resource->{resourceGroup} if (defined($resource->{resourceGroup}));
@@ -83,7 +83,7 @@ sub run {
             $resource->{tags} = [] if !defined($resource->{tags});
 
             $resource->{subscriptionId} = $subscription->{id};
-            $resource->{subscriptionId} =~ s/\/.*\///g;
+            $resource->{subscriptionId} =~ s/\/subscriptions\///g;
             $resource->{subscriptionName} = $subscription->{displayName};
 
             foreach my $tag (keys %{$subscription}) {
@@ -95,6 +95,7 @@ sub run {
                 }
                 $resource->{subscriptionTags} = \@array;
             }
+            $resource->{subscriptionTags} = [] if !defined($resource->{subscriptionTags});
 
             push @disco_data, $resource;
 
