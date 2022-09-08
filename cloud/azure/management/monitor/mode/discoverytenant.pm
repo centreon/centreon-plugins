@@ -64,7 +64,7 @@ sub run {
         );
 
         foreach my $resource (@{$resources}) {
-            next if ($resource->{type} !~ /$self->{option_results}->{select_type}/i);
+            next if (defined($self->{option_results}->{select_type}) && $resource->{type} !~ /$self->{option_results}->{select_type}/i);
 
             my $resource_group = '';
             $resource_group = $resource->{resourceGroup} if (defined($resource->{resourceGroup}));
