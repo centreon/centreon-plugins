@@ -32,7 +32,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "prettify"              => { name => 'prettify' },
+        "prettify"        => { name => "prettify" },
+        "select-type:s"   => { name => "select_type" }
     });
 
     return $self;
@@ -63,6 +64,8 @@ sub run {
         );
 
         foreach my $resource (@{$resources}) {
+            next if (defined($self->{option_results}->{select_type}) && $self->{option_results}->{select_type} ne '' && $resource->{type} !~ /$self->{option_results}->{select_type}/i);
+
             my $resource_group = '';
             $resource_group = $resource->{resourceGroup} if (defined($resource->{resourceGroup}));
             $resource_group = $1 if ($resource_group eq '' && defined($resource->{id}) && $resource->{id} =~ /resourceGroups\/(.*)\/providers/);
@@ -77,7 +80,10 @@ sub run {
                 }
                 $resource->{$entry} = \@array;
             }
+            $resource->{tags} = [] if !defined($resource->{tags});
+
             $resource->{subscriptionId} = $subscription->{id};
+            $resource->{subscriptionId} =~ s/\/subscriptions\///g;
             $resource->{subscriptionName} = $subscription->{displayName};
 
             foreach my $tag (keys %{$subscription}) {
@@ -89,6 +95,7 @@ sub run {
                 }
                 $resource->{subscriptionTags} = \@array;
             }
+            $resource->{subscriptionTags} = [] if !defined($resource->{subscriptionTags});
 
             push @disco_data, $resource;
 
