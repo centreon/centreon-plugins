@@ -810,6 +810,25 @@ sub azure_get_budget {
     return $response;
 }
 
+sub azure_list_budget_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/providers/Microsoft.Consumption/budgets";
+    $url .= "?api-version=" . $self->{api_version};
+
+    return $url;
+}
+
+sub azure_list_budget {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_list_budget_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
 sub azure_get_usagedetails_set_url {
     my ($self, %options) = @_;
 
