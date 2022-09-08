@@ -32,7 +32,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "prettify"              => { name => 'prettify' },
+        "prettify"        => { name => "prettify" },
+        "select-type:s"   => { name => "select_type" }
     });
 
     return $self;
@@ -63,6 +64,8 @@ sub run {
         );
 
         foreach my $resource (@{$resources}) {
+            next if ($resource->{type} !~ /$self->{option_results}->{select_type}/i);
+
             my $resource_group = '';
             $resource_group = $resource->{resourceGroup} if (defined($resource->{resourceGroup}));
             $resource_group = $1 if ($resource_group eq '' && defined($resource->{id}) && $resource->{id} =~ /resourceGroups\/(.*)\/providers/);
