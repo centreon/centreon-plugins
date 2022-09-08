@@ -77,7 +77,10 @@ sub run {
                 }
                 $resource->{$entry} = \@array;
             }
+            $resource->{tags} = [] if !defined($resource->{tags});
+
             $resource->{subscriptionId} = $subscription->{id};
+            $resource->{subscriptionId} =~ s/\/.*\///g;
             $resource->{subscriptionName} = $subscription->{displayName};
 
             foreach my $tag (keys %{$subscription}) {
