@@ -1,4 +1,5 @@
 2022-09-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Azure Management Costs (Consumption API)
  * Plugin added: Cisco Umbrella SNMP
  * Plugin added: Dell VXM Rest API
  * Plugin added: Fortinet Fortigate Rest API
