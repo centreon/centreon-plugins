@@ -25,7 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use Data::Dumper; 
 
 sub prefix_output {
     my ($self, %options) = @_;
@@ -36,6 +35,12 @@ sub prefix_output {
         $options{instance_value}->{site_name},
         $options{instance_value}->{gateway_name}
     );
+}
+
+sub country_prefix_output {
+    my ($self, %options) = @_;
+
+    return sprintf( "Country '%s' ", $options{instance});
 }
 
 sub watcher_long_output {
@@ -64,6 +69,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'country', type => 1, cb_prefix_output => 'country_prefix_output', message_multiple => 'All country are OK'},
         { name => 'watcher', type => 3, cb_prefix_output => 'prefix_watcher_output', message_multiple => 'All Watchers are OK', 
           cb_long_output => 'watcher_long_output', indent_long_output => '    ',
             group => [
@@ -81,6 +87,105 @@ sub set_counters {
                 { name => 'waiting_time', type => 0, skipped_code => { -10 => 1 }}
             ]
         }
+    ];
+
+    $self->{maps_counters}->{country} = [
+        { label => 'dtt_spent', nlabel => 'watcher.dtt.spent.count', set => {
+                key_values => [ { name => 'dtt_spent' } ],
+                output_template => 'DTT spent: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'errors-prct', nlabel => 'watcher.errors.percentage', set => {
+                key_values => [ { name => 'errors_prct' } ],
+                output_template => 'Errors: %.2f%%',
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'full-time-network-spent', nlabel => 'watcher.network.spent.time.milliseconds', set => {
+                key_values => [ { name => 'full_time_network_spent' } ],
+                output_template => 'Full time network spent: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'sessions', nlabel => 'watcher.sessions.count', set => {
+                key_values => [ { name => 'sessions' } ],
+                output_template => 'Sessions: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'srt_spent', nlabel => 'watcher.srt.spent.count', set => {
+                key_values => [ { name => 'srt_spent' } ],
+                output_template => 'SRT spent: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'requests', nlabel => 'watcher.requests.count', set => {
+                key_values => [ { name => 'requests' } ],
+                output_template => 'Requests: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
+                key_values => [ { name => 'redirect_time_avg' } ],
+                output_template => 'Redirect time avg: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'loading-page', nlabel => 'watchers.loading.page.duration.milliseconds', set => {
+                key_values => [ { name => 'loading_page' } ],
+                output_template => 'Loading page duration: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },   
+        { label => 'pages', nlabel => 'watchers.pages.count', set => {
+                key_values => [ { name => 'pages' } ],
+                output_template => 'Loaded pages: %d',
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'processing', nlabel => 'watchers.processing.duration.milliseconds', set => {
+                key_values => [ { name => 'processing' } ],
+                output_template => 'API Processing duration: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },  
+        { label => 'users', nlabel => 'users.count', set => {
+                key_values => [ { name => 'users' } ],
+                output_template => 'Connected users: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'waiting-time-avg', nlabel => 'watchers.waiting.time.milliseconds', set => {
+                key_values => [ { name => 'waiting_time_avg' } ],
+                output_template => 'Waiting time avg: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        } 
     ];
 
     $self->{maps_counters}->{dtt_spent} = [
@@ -359,15 +464,6 @@ sub manage_selection {
                 "user_id:distinct" => ["distinct","user_id"]
             },
             {
-                "watcher_id:group" => "watcher_name"
-            },
-            {
-                "site:group" => "site_name"
-            },
-            {   
-                "gateway:group" => "gateway_name"
-            },
-            {
                 "\%errors:avg|hits" => ["avgFor","hits","error_count"]            
             },
             {
@@ -402,18 +498,16 @@ sub manage_selection {
             }
         ],
         "from" => "rum",
-        "groupby" => [
-            "watcher_name",
-            "site:group",
-            "gateway:group"
-        ],
         "offset" => 0,
         "options" => {"sampling" => \1 }
     }; 
 
     if (defined($self->{option_results}->{country})){
-        push @{$raw_form_post->{select}}, { 'country:group' => "country" };
-        push @{$raw_form_post->{groupby}}, 'country:group';
+        unshift @{$raw_form_post->{select}}, { 'country:group' => "country" };
+        unshift @{$raw_form_post->{groupby}}, 'country:group';
+    } else {
+        push @{$raw_form_post->{select}}, { "watcher_id:group" => "watcher_name" }, { "site:group" => "site_name" }, { "gateway:group" => "gateway_name" };
+        push @{$raw_form_post->{groupby}}, [ "watcher_name", "site:group", "gateway:group" ] ;
     }
 
     my $filter = $options{custom}->forge_filter(
@@ -432,7 +526,9 @@ sub manage_selection {
     );
 
     $self->{watcher} = {};
+    $self->{country} = {};
     foreach my $watcher (@{$results->{data}}) {
+        last if (!defined($watcher->{'watcher_id:group'}));
         my $instance = $watcher->{'watcher_id:group'};
         $instance .= defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH";
         $instance .= defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW";
@@ -528,10 +624,19 @@ sub manage_selection {
         };
     };
 
-    if (scalar(keys %{$self->{watcher}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No instances or results found.");
-        $self->{output}->option_exit();
-    }
+    foreach my $country (@{$results->{data}}) {
+        my $instance = $country->{'country:group'};
+
+        $self->{country}->{$instance} = {
+            errors_prct => $country->{'%errors:avg|hits'}
+        };
+
+    };
+
+    # if (scalar(keys %{$self->{watcher}}) <= 0) {
+    #     $self->{output}->add_option_msg(short_msg => "No instances or results found.");
+    #     $self->{output}->option_exit();
+    # }
 
 }
 
