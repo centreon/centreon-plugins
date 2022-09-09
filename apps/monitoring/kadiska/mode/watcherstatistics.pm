@@ -445,7 +445,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'country'               => { name => 'country'},
+        'country:s'               => { name => 'country'},
         'filter-watcher-name:s' => { name => 'watcher_name' },
         'filter-site-name:s'    => { name => 'site_name'},
         'filter-gateway-name:s' => { name => 'gateway_name'},
@@ -507,7 +507,7 @@ sub manage_selection {
         unshift @{$raw_form_post->{groupby}}, 'country:group';
     } else {
         push @{$raw_form_post->{select}}, { "watcher_id:group" => "watcher_name" }, { "site:group" => "site_name" }, { "gateway:group" => "gateway_name" };
-        push @{$raw_form_post->{groupby}}, [ "watcher_name", "site:group", "gateway:group" ] ;
+        push @{$raw_form_post->{groupby}}, "watcher_name", "site:group", "gateway:group" ;
     }
 
     my $filter = $options{custom}->forge_filter(
@@ -625,18 +625,32 @@ sub manage_selection {
     };
 
     foreach my $country (@{$results->{data}}) {
+        last if (!defined($country->{'country:group'}));
+        next if (defined($self->{option_results}->{country}) && $self->{option_results}->{country} ne '' &&
+        $country->{'country:group'} !~ /$self->{option_results}->{country}/i);
         my $instance = $country->{'country:group'};
 
         $self->{country}->{$instance} = {
-            errors_prct => $country->{'%errors:avg|hits'}
+            dtt_spent => $country->{'srt_spent:avg|requests'},
+            errors_prct => $country->{'%errors:avg|hits'},
+            full_time_network_spent => ( $country->{'full_network_time_spent:avg|requests'} / 10**3 ),
+            loading_page => (defined($country->{'lcp:p75|pages'}) && $country->{'lcp:p75|pages'} != 0 ) ? ($country->{'lcp:p75|pages'} / 10**3) : 0,
+            pages => $country->{'item:count|pages'},
+            processing => ( $country->{'processing_whole:avg|requests'} / 10**3 ),
+            requests => $country->{'item:count|requests'},
+            redirect_time_avg => ( $country->{'redirect_time_spent:avg|requests'} / 10**3),
+            srt_spent => $country->{'srt_spent:avg|requests'},
+            sessions => $country->{'session:sum|hits'},
+            users => $country->{'user_id:distinct'},
+            waiting_time_avg => ( $country->{'waiting_time_spent:avg|requests'} / 10**3 ) 
         };
 
-    };
+    }
 
-    # if (scalar(keys %{$self->{watcher}}) <= 0) {
-    #     $self->{output}->add_option_msg(short_msg => "No instances or results found.");
-    #     $self->{output}->option_exit();
-    # }
+    if (scalar(keys %{$self->{watcher}}) <= 0 || scalar(keys %{$self->{country}})) {
+        $self->{output}->add_option_msg(short_msg => "No instances or results found.");
+        $self->{output}->option_exit();
+    }
 
 }
 
