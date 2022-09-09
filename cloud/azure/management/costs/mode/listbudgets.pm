@@ -52,7 +52,7 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $budget (@{$self->{budget}->{value}) {
+    foreach my $budget (@{$self->{budget}->{value}}) {
         $self->{output}->output_add(
             long_msg => sprintf("[budget = %s][category = %s][amount = %s][timegrain = %s][id = %s]",
             $budget->{name}, $budget->{properties}->{category}, $budget->{properties}->{amount}, $budget->{properties}->{timeGrain}, $budget->{id})
@@ -77,7 +77,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $budget (@{$self->{budget}->value}) {
+    foreach my $budget (@{$self->{budget}->{value}}) {
         $self->{output}->add_disco_entry(
             name => $budget->{name},
             category => $budget->{properties}->{category},
