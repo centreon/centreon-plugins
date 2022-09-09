@@ -74,7 +74,7 @@ sub manage_selection {
 	    $output_error .= "Found " . $self->{vms}->{no_tag} . " VM(s) with no " . $self->{option_results}->{tag_name}  . " tag ( " . $self->{vms}->{name} . ")\n";
 	}
 	else {
-	    $output .= "All " . $self->{vms}->{total} . "VM(s) have a " . $self->{option_results}->{tag_name}  . " tag\n";
+	    $output .= "All " . $self->{vms}->{total} . " VM(s) have a " . $self->{option_results}->{tag_name}  . " tag\n";
 	}
     }
     
