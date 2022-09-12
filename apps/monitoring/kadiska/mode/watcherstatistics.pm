@@ -626,8 +626,8 @@ sub manage_selection {
 
     foreach my $country (@{$results->{data}}) {
         last if (!defined($country->{'country:group'}));
-        next if (defined($self->{option_results}->{country}) && $self->{option_results}->{country} ne '' &&
-        $country->{'country:group'} !~ /$self->{option_results}->{country}/i);
+        # next if (defined($self->{option_results}->{country}) && $self->{option_results}->{country} ne '' &&
+        # $country->{'country:group'} !~ /$self->{option_results}->{country}/i);
         my $instance = $country->{'country:group'};
 
         $self->{country}->{$instance} = {
@@ -647,7 +647,7 @@ sub manage_selection {
 
     }
 
-    if (scalar(keys %{$self->{watcher}}) <= 0 || scalar(keys %{$self->{country}})) {
+    if (scalar(keys %{$self->{watcher}}) <= 0 && scalar(keys %{$self->{country}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No instances or results found.");
         $self->{output}->option_exit();
     }
