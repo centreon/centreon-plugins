@@ -29,16 +29,24 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
         { name => 'updates', type => 1 }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'updates.total.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Number of pending updates : %d',
                 perfdatas => [
                     { label => 'total', template => '%d', min => 0 }
+                ]
+            }
+        },
+        { label => 'total-security', nlabel => 'security.updates.total.count', set => {
+                key_values => [ { name => 'total_security' } ],
+                output_template => 'Number of security pending updates : %d',
+                perfdatas => [
+                    { label => 'total_security', template => '%d', min => 0 }
                 ]
             }
         }
@@ -68,10 +76,11 @@ sub custom_updates_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'check-security:s'    => { name => 'check_security' },
         'os-mode:s'           => { name => 'os_mode', default => 'rhel' },
         'filter-package:s'    => { name => 'filter_package' },
         'filter-repository:s' => { name => 'filter_repository' }
@@ -90,6 +99,7 @@ sub check_options {
         ) {
         $self->{command} = 'yum';
         $self->{command_options} = 'check-update 2>&1';
+        $self->{command_options} .= ' --security' if defined($self->{option_results}->{check_security});
     } elsif ($self->{option_results}->{os_mode} eq 'debian') {
         $self->{command} = 'apt-get';
         $self->{command_options} = 'upgrade -sVq 2>&1';
@@ -102,18 +112,10 @@ sub check_options {
     }    
 }
 
-sub manage_selection {
+sub parse_check_update {
     my ($self, %options) = @_;
 
-    my ($stdout) = $options{custom}->execute_command(
-        command => $self->{command},
-        command_options => $self->{command_options},
-        no_quit => 1
-    );
-
-    $self->{global}->{total} = 0;
-    $self->{updates} = {};
-    my @lines = split /\n/, $stdout;
+    my @lines = split /\n/, $options{stdout};
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\d+\S+)\s+(\S+)/
             && $line !~ /\s+(\S+)\s+\(\S+\s\=\>\s(\S+)\)/
@@ -138,8 +140,25 @@ sub manage_selection {
             repository => $repository,
         };
 
-        $self->{global}->{total}++;
+        $self->{global}->{total}++ if !defined($self->{option_results}->{check_security});
+        $self->{global}->{total_security}++ if defined($self->{option_results}->{check_security});
     }
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my ($stdout) = $options{custom}->execute_command(
+        command => $self->{command},
+        command_options => $self->{command_options},
+        no_quit => 1
+    );
+
+    $self->{global}->{total} = 0 if !defined($self->{option_results}->{check_security});
+    $self->{global}->{total_security} = 0 if defined($self->{option_results}->{check_security});
+    $self->{updates} = {};
+    parse_check_update($self, stdout => $stdout);
+
 }
 
 1;
