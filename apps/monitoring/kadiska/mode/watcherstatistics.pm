@@ -46,6 +46,12 @@ sub country_prefix_output {
     return sprintf( "Country '%s' ", $options{instance});
 }
 
+sub isp_prefix_output {
+    my ($self, %options) = @_;
+
+    return sprintf( "ISP '%s' ", $options{instance});
+}
+
 sub watcher_long_output {
     my ($self, %options) = @_;
 
@@ -73,6 +79,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'country', type => 1, cb_prefix_output => 'country_prefix_output', message_multiple => 'All countries are OK'},
+        { name => 'isp', type => 1, cb_prefix_output => 'isp_prefix_output', message_multiple => 'All ISP are OK'},
         { name => 'watcher', type => 3, cb_prefix_output => 'prefix_watcher_output', message_multiple => 'All watchers are OK', 
           cb_long_output => 'watcher_long_output', indent_long_output => '    ',
             group => [
@@ -90,6 +97,105 @@ sub set_counters {
                 { name => 'waiting_time', type => 0, skipped_code => { -10 => 1 }}
             ]
         }
+    ];
+
+    $self->{maps_counters}->{isp} = [
+        { label => 'dtt_spent', nlabel => 'isp.dtt.spent.count', set => {
+                key_values => [ { name => 'dtt_spent' } ],
+                output_template => 'DTT spent: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'errors-prct', nlabel => 'isp.errors.percentage', set => {
+                key_values => [ { name => 'errors_prct' } ],
+                output_template => 'Errors: %.2f%%',
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'full-time-network-spent', nlabel => 'isp.network.spent.time.milliseconds', set => {
+                key_values => [ { name => 'full_time_network_spent' } ],
+                output_template => 'Full time network spent: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'sessions', nlabel => 'isp.sessions.count', set => {
+                key_values => [ { name => 'sessions' } ],
+                output_template => 'Sessions: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'srt_spent', nlabel => 'isp.srt.spent.count', set => {
+                key_values => [ { name => 'srt_spent' } ],
+                output_template => 'SRT spent: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'requests', nlabel => 'isp.requests.count', set => {
+                key_values => [ { name => 'requests' } ],
+                output_template => 'Requests: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'redirect-time-avg', nlabel => 'isp.redirect.time.milliseconds', set => {
+                key_values => [ { name => 'redirect_time_avg' } ],
+                output_template => 'Redirect time avg: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'loading-page', nlabel => 'isp.loading.page.duration.milliseconds', set => {
+                key_values => [ { name => 'loading_page' } ],
+                output_template => 'Loading page duration: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },   
+        { label => 'pages', nlabel => 'isp.pages.count', set => {
+                key_values => [ { name => 'pages' } ],
+                output_template => 'Loaded pages: %d',
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'processing', nlabel => 'isp.processing.duration.milliseconds', set => {
+                key_values => [ { name => 'processing' } ],
+                output_template => 'API Processing duration: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },  
+        { label => 'users', nlabel => 'users.count', set => {
+                key_values => [ { name => 'users' } ],
+                output_template => 'Connected users: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'waiting-time-avg', nlabel => 'isp.waiting.time.milliseconds', set => {
+                key_values => [ { name => 'waiting_time_avg' } ],
+                output_template => 'Waiting time avg: %.2f ms',
+                perfdatas => [
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        } 
     ];
 
     $self->{maps_counters}->{country} = [
@@ -312,6 +418,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'country:s'             => { name => 'country'},
+        'isp:s'                 => { name => 'isp'},
         'select-watcher-name:s' => { name => 'watcher_name' },
         'select-site-name:s'    => { name => 'site_name'},
         'select-gateway-name:s' => { name => 'gateway_name'}
@@ -367,11 +474,12 @@ sub manage_selection {
         "options" => {"sampling" => \1 }
     }; 
 
-    #  "where": ["=","isp",["$",""]],
-
     if (defined($self->{option_results}->{country})){
         unshift @{$raw_form_post->{select}}, { 'country:group' => "country" };
         unshift @{$raw_form_post->{groupby}}, 'country:group';
+    } elsif (defined($self->{option_results}->{isp})) {
+        unshift @{$raw_form_post->{select}}, { 'isp:group' => "isp" };
+        unshift @{$raw_form_post->{groupby}}, 'isp:group';
     } else {
         push @{$raw_form_post->{select}}, { "watcher_id:group" => "watcher_name" }, { "site:group" => "site_name" }, { "gateway:group" => "gateway_name" };
         push @{$raw_form_post->{groupby}}, "watcher_name", "site:group", "gateway:group" ;
@@ -393,6 +501,7 @@ sub manage_selection {
 
     $self->{watcher} = {};
     $self->{country} = {};
+    $self->{isp} = {};
     foreach my $watcher (@{$results->{data}}) {
         last if (!defined($watcher->{'watcher_id:group'}));
         my $instance = $watcher->{'watcher_id:group'};
@@ -492,6 +601,7 @@ sub manage_selection {
 
     foreach my $country (@{$results->{data}}) {
         last if (!defined($country->{'country:group'}));
+        next if (defined($country->{'country:group'}) && $country->{'country:group'} !~ /$self->{option_results}->{country}/i);
         my $instance = $country->{'country:group'};
 
         $self->{country}->{$instance} = {
@@ -508,10 +618,30 @@ sub manage_selection {
             users => $country->{'user_id:distinct'},
             waiting_time_avg => ( $country->{'waiting_time_spent:avg|requests'} / 10**3 ) 
         };
-
     }
 
-    if (scalar(keys %{$self->{watcher}}) <= 0 && scalar(keys %{$self->{country}}) <= 0) {
+    foreach my $isp (@{$results->{data}}) {
+        last if (!defined($isp->{'isp:group'}));
+        next if (defined($isp->{'isp:group'}) && $isp->{'isp:group'} !~ /$self->{option_results}->{isp}/i);
+        my $instance = $isp->{'isp:group'};
+
+        $self->{isp}->{$instance} = {
+            dtt_spent => $isp->{'srt_spent:avg|requests'},
+            errors_prct => $isp->{'%errors:avg|hits'},
+            full_time_network_spent => ( $isp->{'full_network_time_spent:avg|requests'} / 10**3 ),
+            loading_page => (defined($isp->{'lcp:p75|pages'}) && $isp->{'lcp:p75|pages'} != 0 ) ? ($isp->{'lcp:p75|pages'} / 10**3) : 0,
+            pages => $isp->{'item:count|pages'},
+            processing => ( $isp->{'processing_whole:avg|requests'} / 10**3 ),
+            requests => $isp->{'item:count|requests'},
+            redirect_time_avg => ( $isp->{'redirect_time_spent:avg|requests'} / 10**3),
+            srt_spent => $isp->{'srt_spent:avg|requests'},
+            sessions => $isp->{'session:sum|hits'},
+            users => $isp->{'user_id:distinct'},
+            waiting_time_avg => ( $isp->{'waiting_time_spent:avg|requests'} / 10**3 ) 
+        };
+    }
+
+    if (scalar(keys %{$self->{watcher}}) <= 0 && scalar(keys %{$self->{country}}) <= 0 && scalar(keys %{$self->{isp}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No instances or results found.");
         $self->{output}->option_exit();
     }
@@ -548,7 +678,11 @@ Display statistics per country.
 
 Leave empty to get statistics from all countries, or specify particular country.
 
-# --isp
+=item B<--isp>
+
+Display statistics per ISP. 
+
+Leave empty to get statistics from all ISP, or specify particular ISP.
 
 =item B<--warning-errors-prct>
 
