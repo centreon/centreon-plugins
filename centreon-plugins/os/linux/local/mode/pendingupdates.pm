@@ -29,16 +29,24 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
         { name => 'updates', type => 1 }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'pending.updates.total.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Number of pending updates : %d',
                 perfdatas => [
                     { label => 'total', template => '%d', min => 0 }
+                ]
+            }
+        },
+        { label => 'security', nlabel => 'security.updates.total.count', set => {
+                key_values => [ { name => 'total_security' } ],
+                output_template => 'Number of pending security updates : %d',
+                perfdatas => [
+                    { label => 'total_security', template => '%d', min => 0 }
                 ]
             }
         }
@@ -68,10 +76,11 @@ sub custom_updates_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'check-security'      => { name => 'check_security' },
         'os-mode:s'           => { name => 'os_mode', default => 'rhel' },
         'filter-package:s'    => { name => 'filter_package' },
         'filter-repository:s' => { name => 'filter_repository' }
@@ -84,12 +93,18 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    if ((defined($self->{option_results}->{os_mode}) && $self->{option_results}->{os_mode} ne 'rhel') && defined($self->{option_results}->{check_security})){
+            $self->{output}->add_option_msg(severity => 'UNKNOWN', short_msg => "--check-security is only available with rhel.");
+            $self->{output}->option_exit();
+        }
+
     if (!defined($self->{option_results}->{os_mode}) ||
         $self->{option_results}->{os_mode} eq '' ||
         $self->{option_results}->{os_mode} eq 'rhel'
         ) {
         $self->{command} = 'yum';
         $self->{command_options} = 'check-update 2>&1';
+        $self->{command_options} .= ' --security' if defined($self->{option_results}->{check_security});
     } elsif ($self->{option_results}->{os_mode} eq 'debian') {
         $self->{command} = 'apt-get';
         $self->{command_options} = 'upgrade -sVq 2>&1';
@@ -102,23 +117,20 @@ sub check_options {
     }    
 }
 
-sub manage_selection {
+sub parse_updates {
     my ($self, %options) = @_;
 
-    my ($stdout) = $options{custom}->execute_command(
-        command => $self->{command},
-        command_options => $self->{command_options},
-        no_quit => 1
-    );
-
-    $self->{global}->{total} = 0;
-    $self->{updates} = {};
-    my @lines = split /\n/, $stdout;
+    my @lines = split /\n/, $options{stdout};
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\d+\S+)\s+(\S+)/
             && $line !~ /\s+(\S+)\s+\(\S+\s\=\>\s(\S+)\)/
-            && $line !~ /.*\|.*\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/);
+            && $line !~ /.*\|.*\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/
+            && $line !~ /.*\|\s+(\S+)\s+\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/);
         my ($package, $version, $repository) = ($1, $2, $3);
+        if ($self->{option_results}->{os_mode} =~ /suse/i && $line =~ /.*\|\s+(\S+)\s+\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/){
+            ($repository, $package, $version) = ($1, $2, $3);
+        }
+        
         $repository = "-" if (!defined($repository) || $repository eq '');
 
         if (defined($self->{option_results}->{filter_package}) && $self->{option_results}->{filter_package} ne '' &&
@@ -139,6 +151,43 @@ sub manage_selection {
         };
 
         $self->{global}->{total}++;
+    }
+}
+
+sub parse_security_updates {
+    my ($self, %options) = @_;
+
+    my @lines = split /\n/, $options{stdout};
+    foreach my $line (@lines) {
+        next if ($line !~ /^(\d+).package\(s\)/);
+        my $security_updates = $1;
+        $self->{global}->{total_security} = $security_updates;
+    }
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my ($stdout) = $options{custom}->execute_command(
+        command => $self->{command},
+        command_options => $self->{command_options},
+        no_quit => 1
+    );
+
+    if ((defined($self->{option_results}->{check_security}) && 
+        (!defined($self->{option_results}->{os_mode}) ||
+        $self->{option_results}->{os_mode} eq '' ||
+        $self->{option_results}->{os_mode} eq 'rhel'
+        ))){
+        $self->{global}->{total_security} = 0;
+
+        parse_security_updates($self, stdout => $stdout);
+    }
+    else { 
+        $self->{global}->{total} = 0;
+        $self->{updates} = {};
+
+        parse_updates($self, stdout => $stdout);
     }
 }
 
@@ -168,6 +217,14 @@ Threshold warning for total amount of pending updates.
 
 Threshold critical for total amount of pending updates.
 
+=item B<--warning-security>
+
+Threshold warning for total amount of pending security updates.
+
+=item B<--critical-security>
+
+Threshold critical for total amount of pending security updates.
+
 =item B<--filter-package>
 
 Filter package name.
@@ -175,6 +232,12 @@ Filter package name.
 =item B<--filter-repository>
 
 Filter repository name.
+
+=item B<--check-security>
+
+Display number of pending security updates. 
+
+Only available for Red Hat-Based distributions.
 
 =back
 
