@@ -176,8 +176,6 @@ sub manage_selection {
         ))){
         $self->{global}->{total_security} = 0;
 
-        print $self->{option_results}->{check_security} . " " . $self->{option_results}->{os_mode} . "\n";
-
         parse_security_updates($self, stdout => $stdout);
     }
     else { 
