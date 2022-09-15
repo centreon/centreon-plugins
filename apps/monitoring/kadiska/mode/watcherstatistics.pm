@@ -26,14 +26,17 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub prefix_output {
+sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    return sprintf(
-        "Watcher '%s' [Site name: %s] [Gateway: %s] : ",
-        $options{instance_value}->{watcher_name},
-        $options{instance_value}->{site_name},
-        $options{instance_value}->{gateway_name}
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        unit => 'ms',
+        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
+        value => sprintf('%s', print $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
     );
 }
 
@@ -69,8 +72,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'country', type => 1, cb_prefix_output => 'country_prefix_output', message_multiple => 'All country are OK'},
-        { name => 'watcher', type => 3, cb_prefix_output => 'prefix_watcher_output', message_multiple => 'All Watchers are OK', 
+        { name => 'country', type => 1, cb_prefix_output => 'country_prefix_output', message_multiple => 'All countries are OK'},
+        { name => 'watcher', type => 3, cb_prefix_output => 'prefix_watcher_output', message_multiple => 'All watchers are OK', 
           cb_long_output => 'watcher_long_output', indent_long_output => '    ',
             group => [
                 { name => 'dtt_spent', type => 0, skipped_code => { -10 => 1 }},
@@ -192,18 +195,7 @@ sub set_counters {
         { label => 'dtt-spent', nlabel => 'watcher.dtt.spent.count', set => {
                 key_values => [ { name => 'dtt_spent' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'DTT spent: %d',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%d', $self->{result_values}->{dtt_spent}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }
     ];
@@ -212,18 +204,7 @@ sub set_counters {
         { label => 'errors-prct', nlabel => 'watcher.errors.percentage', set => {
                 key_values => [ { name => 'errors_prct' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Errors: %.2f%%',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%s', $self->{result_values}->{errors_prct}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }
     ];
@@ -232,19 +213,7 @@ sub set_counters {
         { label => 'full-network-time-spent',  nlabel => 'watcher.network.spent.time.milliseconds', set => {
                 key_values => [ { name => 'full_network_time_spent' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Full network time spent: %.2f ms',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'ms',
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%s', $self->{result_values}->{full_network_time_spent}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }
     ];
@@ -253,19 +222,7 @@ sub set_counters {
         { label => 'loading-page', nlabel => 'watcher.loading.page.duration.milliseconds', set => {
                 key_values => [ { name => 'loading_page' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Loading page duration: %.2f ms',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'ms',
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%s', $self->{result_values}->{loading_page}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }
     ];
@@ -274,18 +231,7 @@ sub set_counters {
         { label => 'pages', nlabel => 'watcher.pages.count', set => {
                 key_values => [ { name => 'pages' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Loaded pages: %d',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%d', $self->{result_values}->{pages}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }
     ];
@@ -294,19 +240,7 @@ sub set_counters {
         { label => 'processing', nlabel => 'watcher.processing.duration.milliseconds', set => {
                 key_values => [ { name => 'processing' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'API Processing duration: %.2f ms',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'ms',
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%.2f', $self->{result_values}->{processing}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }
     ];
@@ -315,19 +249,7 @@ sub set_counters {
         { label => 'redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
                 key_values => [ { name => 'redirect_time_avg' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Redirect time avg: %.2f ms',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'ms',
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%s', $self->{result_values}->{redirect_time_avg}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }        
     ];
@@ -336,18 +258,7 @@ sub set_counters {
         { label => 'requests', nlabel => 'watcher.requests.count', set => {
                 key_values => [ { name => 'requests' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Requests: %s',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%s', $self->{result_values}->{requests}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }        
     ];
@@ -356,18 +267,7 @@ sub set_counters {
         { label => 'sessions', nlabel => 'watcher.sessions.count', set => {
                 key_values => [ { name => 'sessions' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Sessions: %s',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%s', $self->{result_values}->{sessions}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }        
     ];
@@ -376,18 +276,7 @@ sub set_counters {
         { label => 'srt-spent', nlabel => 'watcher.srt.spent.count', set => {
                 key_values => [ { name => 'srt_spent' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'SRT spent: %d',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%d', $self->{result_values}->{srt_spent}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }        
     ];
@@ -396,18 +285,7 @@ sub set_counters {
         { label => 'users', nlabel => 'users.count', set => {
                 key_values => [ { name => 'connected_users' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Connected users: %s',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%s', $self->{result_values}->{connected_users}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         },
     ];
@@ -416,19 +294,7 @@ sub set_counters {
         { label => 'waiting-time', nlabel => 'watcher.waiting.time.milliseconds', set => {
                 key_values => [ { name => 'waiting_time' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Waiting time: %.2f ms',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'ms',
-                        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-                        value => sprintf('%.2f', $self->{result_values}->{waiting_time}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
-                    );
-                }
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
         }   
     ];
@@ -445,11 +311,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'country:s'               => { name => 'country'},
-        'filter-watcher-name:s' => { name => 'watcher_name' },
-        'filter-site-name:s'    => { name => 'site_name'},
-        'filter-gateway-name:s' => { name => 'gateway_name'},
-        'filter-wfh:s'          => { name => 'filter_wfh'},
+        'country:s'             => { name => 'country'},
+        'select-watcher-name:s' => { name => 'watcher_name' },
+        'select-site-name:s'    => { name => 'site_name'},
+        'select-gateway-name:s' => { name => 'gateway_name'}
     });
 
     return $self;
@@ -510,14 +375,13 @@ sub manage_selection {
         push @{$raw_form_post->{groupby}}, "watcher_name", "site:group", "gateway:group" ;
     }
 
-    my $filter = $options{custom}->forge_filter(
+    my $select = $options{custom}->forge_select(
         site_name => $self->{option_results}->{site_name},
         gateway_name => $self->{option_results}->{gateway_name},
-        watcher_name => $self->{option_results}->{watcher_name},
-        filter_wfh => $self->{option_results}->{filter_wfh}
+        watcher_name => $self->{option_results}->{watcher_name}
     );
 
-    $raw_form_post->{where} = $filter if (defined($filter));
+    $raw_form_post->{where} = $select if (defined($select));
 
     my $results = $options{custom}->request_api(
         method => 'POST',
@@ -626,8 +490,6 @@ sub manage_selection {
 
     foreach my $country (@{$results->{data}}) {
         last if (!defined($country->{'country:group'}));
-        # next if (defined($self->{option_results}->{country}) && $self->{option_results}->{country} ne '' &&
-        # $country->{'country:group'} !~ /$self->{option_results}->{country}/i);
         my $instance = $country->{'country:group'};
 
         $self->{country}->{$instance} = {
@@ -660,13 +522,29 @@ __END__
 
 =head1 MODE
 
-Check Kadiska application watchers' statistics during the period specified.
+Check Kadiska application watchers statistics during the period specified.
 
 =over 8
 
-=item B<--filter-watcher-name>
+=item B<--select-site-name>
 
-Filter on an application watcher to only display related statistics.
+Display statistics for watchers on a particular site.
+
+Leave empty to get work-from-home watchers statistics: --select-site-name="" --select-watcher-name="GitHub"
+
+=item B<--select-gateway-name>
+
+Display statistics for watchers attached to a particular gateway.
+
+=item B<--select-watcher-name>
+
+Display statistics for a particular watcher.
+
+=item B<--country>
+
+Display statistics per country. 
+
+Leave empty to get statistics from all countries, or specify particular country.
 
 =item B<--warning-errors-prct>
 

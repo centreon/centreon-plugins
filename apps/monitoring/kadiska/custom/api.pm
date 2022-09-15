@@ -178,7 +178,7 @@ sub get_access_token {
     return $access_token;
 }
 
-sub forge_filter {
+sub forge_select {
     my ($self, %options) = @_;
 
     my %filters;
@@ -186,7 +186,6 @@ sub forge_filter {
     $filters{site_name} = $options{site_name} if defined($options{site_name}) && $options{site_name} ne '';
     $filters{site_id} = $options{site_name} if defined($options{site_name}) && $options{site_name} eq '';
     $filters{watcher_name} = $options{watcher_name} if defined($options{watcher_name}) && $options{watcher_name} ne '';
-    $filters{wfh} = $options{filter_wfh} if defined($options{filter_wfh}) && $options{filter_wfh} ne '';
 
     my @filter;
 
@@ -204,15 +203,6 @@ sub forge_filter {
     }
 
     return undef;
-}
-
-sub forge_country_opts {
-    my ($self, %options) = @_;
-
-    my $select = {};
-    $select->{'country:group'} = "country";
-
-    return $select;
 }
 
 sub request_api {
