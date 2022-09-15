@@ -169,12 +169,14 @@ sub manage_selection {
         no_quit => 1
     );
 
-    if (defined($self->{option_results}->{check_security} && 
-        (defined($self->{option_results}->{os_mode}) ||
+    if ((defined($self->{option_results}->{check_security} && $self->{option_results}->{check_security} ne '') && 
+        (!defined($self->{option_results}->{os_mode}) ||
         $self->{option_results}->{os_mode} eq '' ||
         $self->{option_results}->{os_mode} eq 'rhel'
         ))){
         $self->{global}->{total_security} = 0;
+
+        print $self->{option_results}->{check_security} . " " . $self->{option_results}->{os_mode} . "\n";
 
         parse_security_updates($self, stdout => $stdout);
     }
