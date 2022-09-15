@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'updates.total.count', set => {
+        { label => 'total', nlabel => 'pending.updates.total.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Number of pending updates : %d',
                 perfdatas => [
@@ -44,7 +44,7 @@ sub set_counters {
         },
         { label => 'total-security', nlabel => 'security.updates.total.count', set => {
                 key_values => [ { name => 'total_security' } ],
-                output_template => 'Number of security pending updates : %d',
+                output_template => 'Number of pending security updates : %d',
                 perfdatas => [
                     { label => 'total_security', template => '%d', min => 0 }
                 ]
@@ -112,7 +112,7 @@ sub check_options {
     }    
 }
 
-sub parse_check_update {
+sub parse_updates {
     my ($self, %options) = @_;
 
     my @lines = split /\n/, $options{stdout};
@@ -122,7 +122,7 @@ sub parse_check_update {
             && $line !~ /.*\|.*\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/
             && $line !~ /.*\|\s+(\S+)\s+\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/);
         my ($package, $version, $repository) = ($1, $2, $3);
-        if ($self->{option_results}->{os_mode} == 'suse' && $line =~ /.*\|\s+(\S+)\s+\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/){
+        if ($self->{option_results}->{os_mode} =~ /suse/i && $line =~ /.*\|\s+(\S+)\s+\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/){
             ($repository, $package, $version) = ($1, $2, $3);
         }
         
@@ -145,8 +145,18 @@ sub parse_check_update {
             repository => $repository,
         };
 
-        $self->{global}->{total}++ if !defined($self->{option_results}->{check_security});
-        $self->{global}->{total_security}++ if defined($self->{option_results}->{check_security});
+        $self->{global}->{total}++;
+    }
+}
+
+sub parse_security_updates {
+    my ($self, %options) = @_;
+
+    my @lines = split /\n/, $options{stdout};
+    foreach my $line (@lines) {
+        next if ($line !~ /^(\d+).package\(s\)/);
+        my $security_updates = $1;
+        $self->{global}->{total_security} = $security_updates;
     }
 }
 
@@ -159,13 +169,17 @@ sub manage_selection {
         no_quit => 1
     );
 
-    $self->{global}->{total} = 0 if !defined($self->{option_results}->{check_security});
-    $self->{global}->{total_security} = 0 if defined($self->{option_results}->{check_security});
-    $self->{updates} = {};
-    parse_check_update($self, stdout => $stdout);
+    if (defined($self->{option_results}->{check_security})){
+        $self->{global}->{total_security} = 0;
 
-    # suse
+        parse_security_updates($self, stdout => $stdout);
+    }
+    else { 
+        $self->{global}->{total} = 0;
+        $self->{updates} = {};
 
+        parse_updates($self, stdout => $stdout);
+    }
 }
 
 1;
@@ -201,6 +215,12 @@ Filter package name.
 =item B<--filter-repository>
 
 Filter repository name.
+
+=item B<--check-security>
+
+Display number of pending security updates. 
+
+Only available for Red Hat-Based distributions.
 
 =back
 
