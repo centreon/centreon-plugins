@@ -212,13 +212,13 @@ Threshold warning for total amount of pending updates.
 
 Threshold critical for total amount of pending updates.
 
-=item B<--warning-total>
+=item B<--warning-security>
 
-Threshold warning for total amount of pending updates.
+Threshold warning for total amount of pending security updates.
 
-=item B<--critical-total>
+=item B<--critical-security>
 
-Threshold critical for total amount of pending updates.
+Threshold critical for total amount of pending security updates.
 
 =item B<--filter-package>
 
