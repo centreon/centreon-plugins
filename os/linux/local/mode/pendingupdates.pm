@@ -80,7 +80,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'check-security:s'    => { name => 'check_security' },
+        'check-security'      => { name => 'check_security' },
         'os-mode:s'           => { name => 'os_mode', default => 'rhel' },
         'filter-package:s'    => { name => 'filter_package' },
         'filter-repository:s' => { name => 'filter_repository' }
@@ -92,6 +92,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if ((defined($self->{option_results}->{os_mode}) && $self->{option_results}->{os_mode} ne 'rhel') && defined($self->{option_results}->{check_security})){
+            $self->{output}->add_option_msg(severity => 'UNKNOWN', short_msg => "--check-security is only available with rhel.");
+            $self->{output}->option_exit();
+        }
 
     if (!defined($self->{option_results}->{os_mode}) ||
         $self->{option_results}->{os_mode} eq '' ||
@@ -169,7 +174,7 @@ sub manage_selection {
         no_quit => 1
     );
 
-    if ((defined($self->{option_results}->{check_security} && $self->{option_results}->{check_security} ne '') && 
+    if ((defined($self->{option_results}->{check_security}) && 
         (!defined($self->{option_results}->{os_mode}) ||
         $self->{option_results}->{os_mode} eq '' ||
         $self->{option_results}->{os_mode} eq 'rhel'
