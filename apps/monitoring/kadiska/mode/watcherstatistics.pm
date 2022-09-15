@@ -367,6 +367,8 @@ sub manage_selection {
         "options" => {"sampling" => \1 }
     }; 
 
+    #  "where": ["=","isp",["$",""]],
+
     if (defined($self->{option_results}->{country})){
         unshift @{$raw_form_post->{select}}, { 'country:group' => "country" };
         unshift @{$raw_form_post->{groupby}}, 'country:group';
@@ -545,6 +547,8 @@ Display statistics for a particular watcher.
 Display statistics per country. 
 
 Leave empty to get statistics from all countries, or specify particular country.
+
+# --isp
 
 =item B<--warning-errors-prct>
 
