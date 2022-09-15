@@ -42,7 +42,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-security', nlabel => 'security.updates.total.count', set => {
+        { label => 'security', nlabel => 'security.updates.total.count', set => {
                 key_values => [ { name => 'total_security' } ],
                 output_template => 'Number of pending security updates : %d',
                 perfdatas => [
@@ -203,6 +203,14 @@ For Suse: zypper list-updates 2>&1
 =item B<--os-mode>
 
 Default mode for parsing and command: 'rhel' (default), 'debian', 'suse'.
+
+=item B<--warning-total>
+
+Threshold warning for total amount of pending updates.
+
+=item B<--critical-total>
+
+Threshold critical for total amount of pending updates.
 
 =item B<--warning-total>
 
