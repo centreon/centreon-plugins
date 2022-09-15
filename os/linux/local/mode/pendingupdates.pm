@@ -119,8 +119,13 @@ sub parse_check_update {
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\d+\S+)\s+(\S+)/
             && $line !~ /\s+(\S+)\s+\(\S+\s\=\>\s(\S+)\)/
-            && $line !~ /.*\|.*\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/);
+            && $line !~ /.*\|.*\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/
+            && $line !~ /.*\|\s+(\S+)\s+\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/);
         my ($package, $version, $repository) = ($1, $2, $3);
+        if ($self->{option_results}->{os_mode} == 'suse' && $line =~ /.*\|\s+(\S+)\s+\|\s+(\S+)\s+\|.*\|\s+(\d+\S+)\s+\|.*/){
+            ($repository, $package, $version) = ($1, $2, $3);
+        }
+        
         $repository = "-" if (!defined($repository) || $repository eq '');
 
         if (defined($self->{option_results}->{filter_package}) && $self->{option_results}->{filter_package} ne '' &&
@@ -158,6 +163,8 @@ sub manage_selection {
     $self->{global}->{total_security} = 0 if defined($self->{option_results}->{check_security});
     $self->{updates} = {};
     parse_check_update($self, stdout => $stdout);
+
+    # suse
 
 }
 
