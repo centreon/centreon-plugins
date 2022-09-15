@@ -1,3 +1,18 @@
+2022-09-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Azure Management Costs (Consumption API)
+ * Plugin added: Cisco Umbrella SNMP
+ * Plugin added: Dell VXM Rest API
+ * Plugin added: Fortinet Fortigate Rest API
+ * Plugin added: Node exporter Linux metrics
+ * Plugin added: Node exporter Windows metrics
+ * Mode added: [aruba/aoscx/snmp] 'cpu', 'memory'
+ * Mode added: [dell/powerstore] 'clusters'
+ * Mode added: [cisco/standard/snmp] 'bgp'
+ * Mode added: [hp/3par] 'afc', 'capacity', 'nodes', 'psu', 'uptime', 'time'
+ * Mode added: [oneaccess/snmp] 'rtt-probes'
+ * Mode added: [postgres] 'bloat'
+ * Core: add option --change-long-output
+
 2022-06-16 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Speedtest
  * Plugin added: Protocol WHOIS

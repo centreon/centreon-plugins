@@ -63,7 +63,7 @@ sub run {
     );
 
     my ($uptime, $idletime);
-    if ($stdout =~ /([0-9\.]+)\s+([0-9\.]+)/) {
+    if ($stdout =~ /^([0-9\.]+)\s+([0-9\.]+)/m) {
         ($uptime, $idletime) = ($1, $2)
     }
     
