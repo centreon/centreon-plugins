@@ -26,12 +26,25 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub custom_usage_perfdata {
+sub custom_usage_perfdata_ms {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
         unit => 'ms',
+        instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
+        value => sprintf('%s', print $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_usage_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
         instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
         value => sprintf('%s', print $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
@@ -100,7 +113,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{isp} = [
-        { label => 'dtt_spent', nlabel => 'isp.dtt.spent.count', set => {
+        { label => 'dtt_spent', nlabel => 'isp.dtt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'dtt_spent' } ],
                 output_template => 'DTT spent: %.2f ms',
                 perfdatas => [
@@ -132,7 +145,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'srt_spent', nlabel => 'isp.srt.spent.count', set => {
+        { label => 'srt_spent', nlabel => 'isp.srt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'srt_spent' } ],
                 output_template => 'SRT spent: %.2f ms',
                 perfdatas => [
@@ -199,7 +212,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{country} = [
-        { label => 'dtt_spent', nlabel => 'watcher.dtt.spent.count', set => {
+        { label => 'dtt_spent', nlabel => 'watcher.dtt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'dtt_spent' } ],
                 output_template => 'DTT spent: %.2f ms',
                 perfdatas => [
@@ -231,7 +244,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'srt_spent', nlabel => 'watcher.srt.spent.count', set => {
+        { label => 'srt_spent', nlabel => 'watcher.srt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'srt_spent' } ],
                 output_template => 'SRT spent: %.2f ms',
                 perfdatas => [
@@ -298,10 +311,10 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{dtt_spent} = [
-        { label => 'dtt-spent', nlabel => 'watcher.dtt.spent.count', set => {
+        { label => 'dtt-spent', nlabel => 'watcher.dtt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'dtt_spent' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
-                output_template => 'DTT spent: %d',
-                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+                output_template => 'DTT spent: %.2f ms',
+                closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
             }
         }
     ];
@@ -319,7 +332,7 @@ sub set_counters {
         { label => 'full-network-time-spent',  nlabel => 'watcher.network.spent.time.milliseconds', set => {
                 key_values => [ { name => 'full_network_time_spent' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Full network time spent: %.2f ms',
-                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+                closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
             }
         }
     ];
@@ -328,7 +341,7 @@ sub set_counters {
         { label => 'loading-page', nlabel => 'watcher.loading.page.duration.milliseconds', set => {
                 key_values => [ { name => 'loading_page' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Loading page duration: %.2f ms',
-                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+                closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
             }
         }
     ];
@@ -346,7 +359,7 @@ sub set_counters {
         { label => 'processing', nlabel => 'watcher.processing.duration.milliseconds', set => {
                 key_values => [ { name => 'processing' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'API Processing duration: %.2f ms',
-                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+                closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
             }
         }
     ];
@@ -355,7 +368,7 @@ sub set_counters {
         { label => 'redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
                 key_values => [ { name => 'redirect_time_avg' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Redirect time avg: %.2f ms',
-                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+                closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
             }
         }        
     ];
@@ -379,10 +392,10 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{srt_spent} = [
-        { label => 'srt-spent', nlabel => 'watcher.srt.spent.count', set => {
+        { label => 'srt-spent', nlabel => 'watcher.srt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'srt_spent' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
-                output_template => 'SRT spent: %d',
-                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+                output_template => 'SRT spent: %.2f ms',
+                closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
             }
         }        
     ];
@@ -400,7 +413,7 @@ sub set_counters {
         { label => 'waiting-time', nlabel => 'watcher.waiting.time.milliseconds', set => {
                 key_values => [ { name => 'waiting_time' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Waiting time: %.2f ms',
-                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+                closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
             }
         }   
     ];
@@ -504,12 +517,15 @@ sub manage_selection {
     $self->{isp} = {};
     foreach my $watcher (@{$results->{data}}) {
         last if (!defined($watcher->{'watcher_id:group'}));
+        #next if ((defined($watcher->{'site:group'}) && $watcher->{'site:group'} ne $self->{option_results}->{site_name}) || (defined($watcher->{'gateway:group'}) && $watcher->{'gateway:group'} ne $self->{option_results}->{gateway_name}));
+        #do we really want to have to specify each parameter ? site + gw. Else, how to handle WFH ? 
+        #now each watcher is grouped by gw and site. We dont have global watcher metric
         my $instance = $watcher->{'watcher_id:group'};
         $instance .= defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH";
-        $instance .= defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW";
+        $instance .= defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "";
         
         $self->{watcher}->{$instance} = {
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
             gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
             watcher_name => $watcher->{'watcher_id:group'}
         };
@@ -517,85 +533,85 @@ sub manage_selection {
         $self->{watcher}->{$instance}->{waiting_time} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             waiting_time => ( $watcher->{'waiting_time_spent:avg|requests'} / 10**3 ),
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH"
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
 
         $self->{watcher}->{$instance}->{users} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             connected_users => $watcher->{'user_id:distinct'},
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH"
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
 
         $self->{watcher}->{$instance}->{errors_prct} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             errors_prct => $watcher->{'%errors:avg|hits'},
-            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
-            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
 
         $self->{watcher}->{$instance}->{dtt_spent} = { 
             watcher_name => $watcher->{'watcher_id:group'},
-            dtt_spent => $watcher->{'dtt_spent:avg|requests'},
-            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
-            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+            dtt_spent => ( $watcher->{'dtt_spent:avg|requests'} / 10**3 ) ,
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
 
         $self->{watcher}->{$instance}->{full_network_time_spent} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             full_network_time_spent => ( $watcher->{'full_network_time_spent:avg|requests'} / 10**3 ),
-            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
-            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
 
         $self->{watcher}->{$instance}->{loading_page} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             loading_page => (defined($watcher->{'lcp:p75|pages'}) && $watcher->{'lcp:p75|pages'} != 0 ) ? ($watcher->{'lcp:p75|pages'} / 10**3) : 0,
-            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
-            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
 
         $self->{watcher}->{$instance}->{pages} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             pages => $watcher->{'item:count|pages'},
-            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
-            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
 
         $self->{watcher}->{$instance}->{processing} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             processing => ( $watcher->{'processing_whole:avg|requests'} / 10**3 ),
-            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
-            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
 
         $self->{watcher}->{$instance}->{redirect_time_avg} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             redirect_time_avg => ( $watcher->{'redirect_time_spent:avg|requests'} / 10**3),
-            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
-            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
 
         $self->{watcher}->{$instance}->{requests} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             requests => $watcher->{'item:count|requests'},
-            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
-            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
 
         $self->{watcher}->{$instance}->{sessions} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             sessions => $watcher->{'session:sum|hits'},
-            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
-            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
     
         $self->{watcher}->{$instance}->{srt_spent} = { 
             watcher_name => $watcher->{'watcher_id:group'},
-            srt_spent => $watcher->{'srt_spent:avg|requests'},
-            site_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
-            gateway_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "NOGW"
+            srt_spent => ( $watcher->{'srt_spent:avg|requests'} / 10**3 ),
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
         };
     };
 
@@ -605,7 +621,7 @@ sub manage_selection {
         my $instance = $country->{'country:group'};
 
         $self->{country}->{$instance} = {
-            dtt_spent => $country->{'srt_spent:avg|requests'},
+            dtt_spent => ( $country->{'dtt_spent:avg|requests'} / 10**3 ),
             errors_prct => $country->{'%errors:avg|hits'},
             full_time_network_spent => ( $country->{'full_network_time_spent:avg|requests'} / 10**3 ),
             loading_page => (defined($country->{'lcp:p75|pages'}) && $country->{'lcp:p75|pages'} != 0 ) ? ($country->{'lcp:p75|pages'} / 10**3) : 0,
@@ -613,7 +629,7 @@ sub manage_selection {
             processing => ( $country->{'processing_whole:avg|requests'} / 10**3 ),
             requests => $country->{'item:count|requests'},
             redirect_time_avg => ( $country->{'redirect_time_spent:avg|requests'} / 10**3),
-            srt_spent => $country->{'srt_spent:avg|requests'},
+            srt_spent => ( $country->{'srt_spent:avg|requests'} / 10**3 ),
             sessions => $country->{'session:sum|hits'},
             users => $country->{'user_id:distinct'},
             waiting_time_avg => ( $country->{'waiting_time_spent:avg|requests'} / 10**3 ) 
@@ -626,7 +642,7 @@ sub manage_selection {
         my $instance = $isp->{'isp:group'};
 
         $self->{isp}->{$instance} = {
-            dtt_spent => $isp->{'srt_spent:avg|requests'},
+            dtt_spent => ( $isp->{'dtt_spent:avg|requests'} / 10**3 ),
             errors_prct => $isp->{'%errors:avg|hits'},
             full_time_network_spent => ( $isp->{'full_network_time_spent:avg|requests'} / 10**3 ),
             loading_page => (defined($isp->{'lcp:p75|pages'}) && $isp->{'lcp:p75|pages'} != 0 ) ? ($isp->{'lcp:p75|pages'} / 10**3) : 0,
@@ -634,7 +650,7 @@ sub manage_selection {
             processing => ( $isp->{'processing_whole:avg|requests'} / 10**3 ),
             requests => $isp->{'item:count|requests'},
             redirect_time_avg => ( $isp->{'redirect_time_spent:avg|requests'} / 10**3),
-            srt_spent => $isp->{'srt_spent:avg|requests'},
+            srt_spent => ( $isp->{'srt_spent:avg|requests'} / 10**3 ),
             sessions => $isp->{'session:sum|hits'},
             users => $isp->{'user_id:distinct'},
             waiting_time_avg => ( $isp->{'waiting_time_spent:avg|requests'} / 10**3 ) 
