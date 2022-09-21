@@ -261,14 +261,16 @@ sub internal_api_info {
 
 sub internal_api_list_containers {
     my ($self, %options) = @_;
-    
+
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/containers/json?all=true',
+        url_path => '/containers/json',
+        get_param => ['all=true'],
         unknown_status => '',
         critical_status => '',
         warning_status => ''
     );
+
     my $containers;
     eval {
         $containers = JSON::XS->new->utf8->decode($response);
@@ -284,16 +286,44 @@ sub internal_api_list_containers {
     return $containers;
 }
 
+sub internal_api_get_container_inspector {
+    my ($self, %options) = @_;
+
+    my $response = $self->{http}->request(
+        hostname => $options{node_name},
+        url_path => '/containers/' . $options{container_id} . '/json',
+        unknown_status => '',
+        critical_status => '',
+        warning_status => ''
+    );
+
+    my $container_inspector;
+    eval {
+        $container_inspector = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $container_inspector = {};
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json get container inspector response: $@"
+        );
+    }
+
+    return $container_inspector;
+}
+
 sub internal_api_get_container_stats {
     my ($self, %options) = @_;
 
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/containers/' . $options{container_id} . '/stats?stream=false',
+        url_path => '/containers/' . $options{container_id} . '/stats',
+        get_param => ['stream=false', 'one-shot=true'],
         unknown_status => '',
         critical_status => '',
         warning_status => ''
     );
+
     my $container_stats;
     eval {
         $container_stats = JSON::XS->new->utf8->decode($response);
@@ -315,7 +345,8 @@ sub internal_api_list_services {
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/services',
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => ''
+    );
     my $services;
     eval {
         $services = JSON::XS->new->utf8->decode($response);
@@ -432,11 +463,14 @@ sub api_get_containers {
     my $content_total = $self->cache_containers(statefile => $options{statefile});
     if (defined($options{container_id}) && $options{container_id} ne '') {
         if (defined($content_total->{$options{container_id}})) {
-            $content_total->{$options{container_id}}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$options{container_id}}->{NodeName}, container_id => $options{container_id});
+            $content_total->{ $options{container_id} }->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{ $options{container_id} }->{NodeName}, container_id => $options{container_id});
+            if (defined($options{add_health})) {
+                $content_total->{ $options{container_id} }->{Inspector} = $self->internal_api_get_container_inspector(node_name => $content_total->{ $options{container_id} }->{NodeName}, container_id => $options{container_id});
+            }
         }
     } elsif (defined($options{container_name}) && $options{container_name} ne '') {
         my $container_id;
-        
+
         foreach (keys %$content_total) {
             if ($content_total->{$_}->{Name} eq $options{container_name}) {
                 $container_id = $_;
@@ -446,10 +480,16 @@ sub api_get_containers {
 
         if (defined($container_id)) {
             $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
+            if (defined($options{add_health})) {
+                $content_total->{$container_id}->{Inspector} = $self->internal_api_get_container_inspector(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
+            }
         }
     } else {
         foreach my $container_id (keys %{$content_total}) {
             $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
+            if (defined($options{add_health})) {
+                $content_total->{$container_id}->{Inspector} = $self->internal_api_get_container_inspector(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
+            }
         }
     }
 
