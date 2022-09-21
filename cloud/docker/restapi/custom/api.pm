@@ -463,10 +463,10 @@ sub api_get_containers {
     my $content_total = $self->cache_containers(statefile => $options{statefile});
     if (defined($options{container_id}) && $options{container_id} ne '') {
         if (defined($content_total->{$options{container_id}})) {
-            $content_total->{ $options{container_id} }->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{ $options{container_id} }->{NodeName}, container_id => $options{container_id});
-            if (defined($options{add_health})) {
-                $content_total->{ $options{container_id} }->{Inspector} = $self->internal_api_get_container_inspector(node_name => $content_total->{ $options{container_id} }->{NodeName}, container_id => $options{container_id});
-            }
+            $content_total->{ $options{container_id} }->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{ $options{container_id} }->{NodeName}, container_id => $options{container_id})
+                if (!defined($options{no_stats}));
+            $content_total->{ $options{container_id} }->{Inspector} = $self->internal_api_get_container_inspector(node_name => $content_total->{ $options{container_id} }->{NodeName}, container_id => $options{container_id})
+                if (defined($options{add_health}));
         }
     } elsif (defined($options{container_name}) && $options{container_name} ne '') {
         my $container_id;
@@ -479,17 +479,17 @@ sub api_get_containers {
         }
 
         if (defined($container_id)) {
-            $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
-            if (defined($options{add_health})) {
-                $content_total->{$container_id}->{Inspector} = $self->internal_api_get_container_inspector(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
-            }
+            $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id)
+                if (!defined($options{no_stats}));
+            $content_total->{$container_id}->{Inspector} = $self->internal_api_get_container_inspector(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id)
+                if (defined($options{add_health}));
         }
     } else {
         foreach my $container_id (keys %{$content_total}) {
-            $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
-            if (defined($options{add_health})) {
-                $content_total->{$container_id}->{Inspector} = $self->internal_api_get_container_inspector(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
-            }
+            $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id)
+                if (!defined($options{no_stats}));
+            $content_total->{$container_id}->{Inspector} = $self->internal_api_get_container_inspector(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id)
+                if (defined($options{add_health}));
         }
     }
 
