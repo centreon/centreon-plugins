@@ -63,6 +63,7 @@ sub manage_selection {
         return_type => 1,
         nothing_quit => 1
     );
+
     $self->{disk} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{dstState}->{oid}\.(.*)$/);
@@ -75,7 +76,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{disk}->{$result->{dstDiskId}} = { %{$result} };
+        $self->{disk}->{ $result->{dstDiskId} } = $result;
     }
 }
 
