@@ -277,7 +277,7 @@ sub manage_selection {
             disk => {}
         };
 
-        $controllervm_name_mapping-> {$controllervm_result->{crtControllerVMId} } = $controllervm_result->{crtName};
+        $controllervm_name_mapping->{ $controllervm_result->{crtControllerVMId} } = $controllervm_result->{crtName};
     }
     
     my $disk_snmp_result = $options{snmp}->get_table(
