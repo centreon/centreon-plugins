@@ -49,7 +49,7 @@ sub prefix_disk_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Disk '%s'",
+        "Disk '%s' ",
         $options{instance_value}->{display}
     );
 }
@@ -57,11 +57,10 @@ sub prefix_disk_output {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-        return sprintf(
-            "state: '%s'",
-            $self->{result_values}->{state}
-        );
-
+    return sprintf(
+        "state: '%s'",
+        $self->{result_values}->{state}
+    );
 }
 
 sub custom_status_calc {
@@ -127,7 +126,7 @@ sub custom_usage_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
-        'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        'usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
@@ -179,25 +178,25 @@ sub set_counters {
         },
         { label => 'inodes', nlabel => 'disk.storage.inodes.usage.percentage', set => {
                 key_values => [ { name => 'inodes_used' }, { name => 'display' } ],
-                output_template => 'Inodes Used : %s %%',
+                output_template => 'inodes used: %s %%',
                 perfdatas => [
                     { label => 'inodes', template => '%s', unit => '%',
                       min => 0, label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'avg-latency', nlabel => 'disk.average.io.latency.microseconds', set => {
+        { label => 'avg-latency', nlabel => 'disk.average.io.latency.milliseconds', set => {
                 key_values => [ { name => 'dstAverageLatency' } ],
-                output_template => 'Average Latency : %s µs',
+                output_template => 'average latency: %.3f ms',
                 perfdatas => [
-                    { label => 'avg_latency', template => '%s', unit => 'µs',
+                    { label => 'avg_latency', template => '%.3f', unit => 'ms',
                       min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'iops', nlabel => 'disk.operations.iops', set => {
                 key_values => [ { name => 'dstNumberIops' }, { name => 'display' } ],
-                output_template => 'IOPs : %s',
+                output_template => 'IOPs: %s',
                 perfdatas => [
                     { label => 'iops', template => '%s', unit => 'iops',
                       min => 0, label_extra_instance => 1 }
@@ -220,11 +219,6 @@ sub new {
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 }
 
 my %map_state = (1 => 'online', 2 => 'offline');
@@ -269,19 +263,21 @@ sub manage_selection {
         my $controllervm_instance = $1;
         my $controllervm_result = $options{snmp}->map_instance(mapping => $controllervm_mapping, results => $controllervm_snmp_result, instance => $controllervm_instance);
 
+        $controllervm_result->{crtName} = centreon::plugins::misc::trim($controllervm_result->{crtName});
+
         if (defined($self->{option_results}->{filter_controllervm}) && $self->{option_results}->{filter_controllervm} ne '' &&
             $controllervm_result->{crtName} !~ /$self->{option_results}->{filter_controllervm}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $controllervm_result->{crtName} . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{controllervm}->{$controllervm_result->{crtName}} = {
+        $self->{controllervm}->{ $controllervm_result->{crtName} } = {
             id => $controllervm_result->{crtControllerVMId},
             name => $controllervm_result->{crtName},
             disk => {}
         };
 
-        $controllervm_name_mapping->{$controllervm_result->{crtControllerVMId}} = $controllervm_result->{crtName};
+        $controllervm_name_mapping->{ $controllervm_result->{crtControllerVMId} } = $controllervm_result->{crtName};
     }
     
     my $disk_snmp_result = $options{snmp}->get_table(
@@ -305,11 +301,13 @@ sub manage_selection {
         }
 
         $disk_result->{dstDiskId} = centreon::plugins::misc::trim($disk_result->{dstDiskId});
-        
+
         my $inodes_used;
         $inodes_used = 100 - ($disk_result->{dstNumFreeInodes} * 100 / $disk_result->{dstNumTotalInodes}) if ($disk_result->{dstNumTotalInodes} > 0);
 
-        $self->{controllervm}->{$controllervm_name_mapping->{$disk_result->{dstControllerVMId}}}->{disk}->{$disk_result->{dstDiskId}} = {
+        $disk_result->{dstAverageLatency} /= 1000;
+
+        $self->{controllervm}->{ $controllervm_name_mapping->{ $disk_result->{dstControllerVMId} } }->{disk}->{ $disk_result->{dstDiskId} } = {
             name => $controllervm_name_mapping->{$disk_result->{dstControllerVMId}},
             display => $disk_result->{dstDiskId}, 
             %$disk_result,
