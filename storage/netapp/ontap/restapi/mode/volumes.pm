@@ -238,7 +238,7 @@ sub manage_selection {
             total_space => $_->{space}->{size},
             used_space => $_->{space}->{used},
             free_space => $_->{space}->{available},
-            prct_used_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{used} * 100 / $_->{space}->{size} : undef,
+            prct_used_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? (($_->{space}->{size} - $_->{space}->{available}) * 100 / $_->{space}->{size}) : undef,
             prct_free_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{available} * 100 / $_->{space}->{size} : undef,
 
             read          => $_->{metric}->{throughput}->{read},
