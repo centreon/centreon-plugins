@@ -243,7 +243,6 @@ sub manage_selection {
     $self->{containers} = {};
     $self->{containers_traffic} = {};
     foreach my $container_id (keys %$result) {
-        next if (!defined($result->{$container_id}->{Stats}));
 
         my $name = $result->{$container_id}->{Name};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -252,22 +251,26 @@ sub manage_selection {
             next;
         }
 
-        my $read_io = $result->{$container_id}->{Stats}->{blkio_stats}->{io_service_bytes_recursive}->[0]->{value};
-        my $write_io = $result->{$container_id}->{Stats}->{blkio_stats}->{io_service_bytes_recursive}->[1]->{value};
         $self->{containers}->{$container_id} = {
             display => defined($self->{option_results}->{use_name}) ? $name : $container_id,
             health => defined($result->{$container_id}->{Inspector}) ? $result->{$container_id}->{Inspector}->{State}->{Health}->{Status} : '-',
             name => $name,
-            state => $result->{$container_id}->{State},
-            read_io => $read_io,
-            write_io => $write_io,
-            cpu_total_usage => $result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{total_usage},
-            cpu_system_usage => $result->{$container_id}->{Stats}->{cpu_stats}->{system_cpu_usage},
-            cpu_number => defined($result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}) ?
-                scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}}) : 1,
-            memory_usage => $result->{$container_id}->{Stats}->{memory_stats}->{usage},
-            memory_total => $result->{$container_id}->{Stats}->{memory_stats}->{limit}
+            state => $result->{$container_id}->{State}
         };
+
+        next if (!defined($result->{$container_id}->{Stats}));
+
+        my $read_io = $result->{$container_id}->{Stats}->{blkio_stats}->{io_service_bytes_recursive}->[0]->{value};
+        my $write_io = $result->{$container_id}->{Stats}->{blkio_stats}->{io_service_bytes_recursive}->[1]->{value};
+
+        $self->{containers}->{$container_id}->{read_io} = $read_io;
+        $self->{containers}->{$container_id}->{write_io} = $write_io;
+        $self->{containers}->{$container_id}->{cpu_total_usage} = $result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{total_usage};
+        $self->{containers}->{$container_id}->{cpu_system_usage} = $result->{$container_id}->{Stats}->{cpu_stats}->{system_cpu_usage};
+        $self->{containers}->{$container_id}->{cpu_number} = defined($result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}) ?
+            scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}}) : 1;
+        $self->{containers}->{$container_id}->{memory_usage} = $result->{$container_id}->{Stats}->{memory_stats}->{usage};
+        $self->{containers}->{$container_id}->{memory_total} = $result->{$container_id}->{Stats}->{memory_stats}->{limit};
 
         foreach my $interface (keys %{$result->{$container_id}->{Stats}->{networks}}) {
             my $name = defined($self->{option_results}->{use_name}) ? $name : $container_id;
