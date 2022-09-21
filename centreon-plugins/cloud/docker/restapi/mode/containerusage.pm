@@ -214,7 +214,8 @@ sub new {
         'container-name:s' => { name => 'container_name' },
         'filter-name:s'    => { name => 'filter_name' },
         'use-name'         => { name => 'use_name' },
-        'add-health'       => { name => 'add_health' }
+        'add-health'       => { name => 'add_health' },
+        'no-stats'         => { name => 'no_stats' }
     });
 
     $self->{statefile_cache_containers} = centreon::plugins::statefile->new(%options);
@@ -235,7 +236,8 @@ sub manage_selection {
         container_id => $self->{option_results}->{container_id}, 
         container_name => $self->{option_results}->{container_name},
         statefile => $self->{statefile_cache_containers},
-        add_health => $self->{option_results}->{add_health}
+        add_health => $self->{option_results}->{add_health},
+        no_stats => $self->{option_results}->{no_stats}
     );
 
     $self->{containers} = {};
@@ -318,6 +320,10 @@ Use docker name for perfdata and display.
 =item B<--add-health>
 
 Get container health status (call inspector endpoint).
+
+=item B<--no-stats>
+
+Don't get container statistics.
 
 =item B<--filter-name>
 
