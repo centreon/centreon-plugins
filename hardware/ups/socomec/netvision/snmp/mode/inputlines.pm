@@ -82,34 +82,61 @@ sub new {
 }
 
 my $mapping = {
-    voltage   => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.3.3.1.2' }, # upsInputVoltage (dV)
-    current   => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.3.3.1.3' }  # upsInputCurrent (dA)
+    netvision5 => {
+        voltage   => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.3.3.1.2' }, # upsInputVoltage (dV)
+        current   => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.3.3.1.3' }  # upsInputCurrent (dA)
+    },
+    netvision6 => {
+        voltage   => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.3.3.1.2' }, # upsInputVoltage (dV)
+        current   => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.3.3.1.3' }  # upsInputCurrent (dA)
+    }
 };
 my $mapping2 = {
-    frequency => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.3.2' } # upsInputFrequency (dHZ)
+    netvision5 => {
+        frequency => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.3.2' } # upsInputFrequency (dHZ)
+    },
+    netvision6 => {
+        frequency => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.3.2' } # upsInputFrequency (dHZ)
+    }
 };
-
-my $oid_upsInput = '.1.3.6.1.4.1.4555.1.1.7.1.3';
-my $oid_upsInputEntry = '.1.3.6.1.4.1.4555.1.1.7.1.3.3.1';
+my $tables = {
+    netvision5 => {
+        upsInput => '.1.3.6.1.4.1.4555.1.1.1.1.3',
+        upsInputEntry => '.1.3.6.1.4.1.4555.1.1.1.1.3.3.1'
+    },
+    netvision6 => {
+        upsInput => '.1.3.6.1.4.1.4555.1.1.7.1.3',
+        upsInputEntry => '.1.3.6.1.4.1.4555.1.1.7.1.3.3.1'
+    }
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
- 
+
+    my $label = 'netvision6';
     my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_upsInput,
-        start => $mapping2->{frequency}->{oid},
-        end => $mapping->{current}->{oid},
-        nothing_quit => 1
+        oid => $tables->{$label}->{upsInput},
+        start => $mapping2->{$label}->{frequency}->{oid},
+        end => $mapping->{$label}->{current}->{oid}
     );
+    if (scalar(keys %$snmp_result) <= 0) {
+        $label = 'netvision5';
+        $snmp_result = $options{snmp}->get_table(
+            oid => $tables->{$label}->{upsInput},
+            start => $mapping2->{$label}->{frequency}->{oid},
+            end => $mapping->{$label}->{current}->{oid},
+            nothing_quit => 1
+        );
+    }
 
     $self->{iline} = {};
     foreach my $oid (keys %$snmp_result) {
-        next if ($oid !~ /^$oid_upsInputEntry\.\d+\.(.*)$/);
+        next if ($oid !~ /^$tables->{$label}->{upsInputEntry}\.\d+\.(.*)$/);
         my $instance = $1;
         next if (defined($self->{iline}->{$instance}));
 
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        foreach (('current', 'voltage')) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$label}, results => $snmp_result, instance => $instance);
+        foreach ('current', 'voltage') {
             $result->{$_} = 0 if (defined($result->{$_}) && (
                 $result->{$_} eq '' || $result->{$_} == -1 || $result->{$_} == 65535 || $result->{$_} == 655350));
             $result->{$_} *= 0.1;
@@ -126,7 +153,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    $self->{global} = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => 0);
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping2->{$label}, results => $snmp_result, instance => 0);
     $self->{global}->{frequency} = defined($self->{global}->{frequency}) && $self->{global}->{frequency} != -1 && $self->{global}->{frequency} != 65535
         ? ($self->{global}->{frequency} * 0.1) : 0;
 }

@@ -72,7 +72,7 @@ sub set_counters {
             }
         },
         { label => 'charge-remaining-minutes', nlabel => 'battery.charge.remaining.minutes', display_ok => 0, set => {
-                key_values => [ { name => 'minute_remain' } ],
+                key_values => [ { name => 'minute_remain', no_value => 'unknown' } ],
                 output_template => 'minutes remaining: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
@@ -117,35 +117,57 @@ sub new {
     return $self;
 }
 
-my $map_status = {
+my $map_status_v6 = {
     1 => 'unknown', 2 => 'normal', 3 => 'charging', 4 => 'test',
     5 => 'discharging', 6 => 'low', 7 => 'depleted', 8 => 'failure',
     9 => 'disconnected'
 };
+my $map_status_v5 = {
+    1 => 'unknown', 2 => 'normal', 3 => 'low',
+    4 => 'depleted', 5 => 'discharging',
+    6 => 'failure', 7 => 'upsOff'
+};
 
 my $mapping = {
-    status        => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.1', map => $map_status }, # upsBatteryStatus
-    minute_remain => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.3' }, # upsEstimatedMinutesRemaining
-    charge_remain => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.4' }, # upsEstimatedChargeRemaining
-    voltage       => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.5' }, # upsBatteryVoltage (dV)
-    temperature   => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.6' }, # upsBatteryTemperature (degrees Centigrade)
-    current       => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.8' }  # upsBatteryCurrent (dA)
+    netvision5 => {
+        status        => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.1', map => $map_status_v5 }, # upsBatteryStatus
+        minute_remain => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.3' }, # upsEstimatedMinutesRemaining
+        charge_remain => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.4' }, # upsEstimatedChargeRemaining
+        voltage       => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.5' }, # upsBatteryVoltage (dV)
+        temperature   => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.2.6' }  # upsBatteryTemperature (degrees Centigrade)
+    },
+    netvision6 => {
+        status        => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.1', map => $map_status_v6 }, # upsBatteryStatus
+        minute_remain => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.3' }, # upsEstimatedMinutesRemaining
+        charge_remain => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.4' }, # upsEstimatedChargeRemaining
+        voltage       => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.5' }, # upsBatteryVoltage (dV)
+        temperature   => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.6' }, # upsBatteryTemperature (degrees Centigrade)
+        current       => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.2.8' }  # upsBatteryCurrent (dA)
+    }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $label = 'netvision6';
     my $snmp_result = $options{snmp}->get_leef(
-        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
-        nothing_quit => 1
+        oids => [ map($_->{oid} . '.0', values(%{$mapping->{$label}})) ]
     );
-    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
+    if (!defined($snmp_result->{ $mapping->{netvision6}->{status} . '.0' })) {
+        $label = 'netvision5';
+        $snmp_result = $options{snmp}->get_leef(
+            oids => [ map($_->{oid} . '.0', values(%{$mapping->{$label}})) ],
+            nothing_quit => 1
+        );
+    }
+
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping->{$label}, results => $snmp_result, instance => 0);
     $self->{global}->{current} = (defined($self->{global}->{current}) && $self->{global}->{current} =~ /\d/ && $self->{global}->{current} != -1 && $self->{global}->{current} != 65535) ? 
         $self->{global}->{current} * 0.1 : 0;
     $self->{global}->{voltage} = (defined($self->{global}->{voltage}) && $self->{global}->{voltage} =~ /\d/ && $self->{global}->{voltage} != -1 && $self->{global}->{voltage} != 65535) ?
         $self->{global}->{voltage} * 0.1 : 0;
     $self->{global}->{temperature} = (defined($self->{global}->{temperature}) && $self->{global}->{temperature} =~ /\d/) ? $self->{global}->{temperature} * 0.1 : 0;
-    $self->{global}->{minute_remain} = (defined($self->{global}->{minute_remain}) && $self->{global}->{minute_remain} =~ /\d/) ? $self->{global}->{minute_remain} : 'unknown';
+    $self->{global}->{minute_remain} = (defined($self->{global}->{minute_remain}) && $self->{global}->{minute_remain} =~ /\d/ && $self->{global}->{minute_remain} != -1) ? $self->{global}->{minute_remain} : 'unknown';
     $self->{global}->{charge_remain} = (defined($self->{global}->{charge_remain}) && $self->{global}->{charge_remain} =~ /\d/) ? $self->{global}->{charge_remain} : undef;
 }
 
