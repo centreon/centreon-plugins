@@ -33,9 +33,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'query-matches', nlabel => 'graylog.query.match.count', set => {
+        { label => 'query-matches', nlabel => 'splunk.query.matches.count', set => {
                 key_values => [ { name => 'query_matches' } ],
-                output_template => 'current queue messages: %s',
+                output_template => 'query matches: %s',
                 perfdatas => [
                     { template => '%d', min => 0 }
                 ]
@@ -46,7 +46,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -61,31 +61,28 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    # if (!defined($self->{option_results}->{query}) || $self->{option_results}->{query} eq '') {
-    #     $self->{output}->add_option_msg(short_msg => 'Please set --query option.');
-    #     $self->{output}->option_exit();
-    # }
+    if (!defined($self->{option_results}->{query}) || $self->{option_results}->{query} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Please set --query option.');
+        $self->{output}->option_exit();
+    }
     
-    # if (defined($self->{option_results}->{timeframe}) && $self->{option_results}->{timeframe} eq '') {
-    #     $self->{output}->add_option_msg(short_msg => 'Please set --timeframe value.');
-    #     $self->{output}->option_exit();
-    # }
+    if (defined($self->{option_results}->{timeframe}) && $self->{option_results}->{timeframe} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Please set --timeframe value.');
+        $self->{output}->option_exit();
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->query_count(
-        query => 'host="xxxx" "tata" earliest=',
-        timeframe => '-15000min'
+    my $query_count = $options{custom}->query_count(
+        query => $self->{option_results}->{query},
+        timeframe => $self->{option_results}->{timeframe}
     );
 
-    use Data::Dumper;
-    print Dumper $result;
-
-    # $self->{global} = {
-    #     query_matches => $result->{total_results}
-    # };
+    $self->{global} = {
+        query_matches => $query_count
+    };
 }
 
 1;

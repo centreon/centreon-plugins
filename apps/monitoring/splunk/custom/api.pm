@@ -123,33 +123,7 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-# sub get_connection_info {
-#     my ($self, %options) = @_;
-
-#     return $self->{hostname} . ":" . $self->{port};
-# }
-
-# sub get_hostname {
-#     my ($self, %options) = @_;
-
-#     return $self->{hostname};
-# }
-
-# sub get_port {
-#     my ($self, %options) = @_;
-    
-#     return $self->{port};
-# }
-
-sub clean_session_token {
-    my ($self, %options) = @_;
-
-    my $datas = {};
-    $options{statefile}->write(data => $datas);
-    $self->{session_token} = undef;
-}
-
-sub authenticate {
+sub get_access_token {
     my ($self, %options) = @_;
    
     my $has_cache_file = $options{statefile}->read(statefile => 'splunk_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
@@ -200,43 +174,61 @@ sub authenticate {
         $options{statefile}->write(data => $datas);
     }
 
-    $self->{session_token} = $session_token;
+    return $session_token;
+}
+
+sub clean_session_token {
+    my ($self, %options) = @_;
+
+    my $datas = {};
+    $options{statefile}->write(data => $datas);
+    $self->{http}->remove_header(key => 'Authorization');
+    $self->{session_token} = undef;
 }
 
 sub query_count {
     my ($self, %options) = @_;
+    use Data::Dumper;
 
     my $query_sid = $self->request_api(
         method => 'POST',
         endpoint => '/services/search/jobs',
         post_param => [
-        'search=' . 'search ' . $options{query} . $options{timeframe} . ' latest=now | stats count'
+        'search=' . 'search ' . $options{query} . 'earliest=' . $options{timeframe} . ' latest=now | stats count'
         ]
     );
-    sleep(1);
+    sleep(1.5);
 
-    my $query_count = $self->request_api(
+    my $query_status = $self->request_api(
         method => 'GET',
         endpoint => '/services/search/jobs/' . $query_sid->{sid},
-        # post_param => ''
     );
 
-    my $content = $query_count->{content}->{'s:dict'}->{'s:key'};
+    foreach (@{$query_status->{content}->{'s:dict'}->{'s:key'}}) {
+        if ($_->{name} eq 'isDone' && $_->{content} == 0){
+            $self->{output}->add_option_msg(short_msg => "Search command wasn't completed.");
+            $self->{output}->option_exit();
+        } elsif ($_->{name} eq 'isFailed' && $_->{content} == 1) {
+            $self->{output}->add_option_msg(short_msg => "Search command failed.");
+            $self->{output}->option_exit();  
+        }
+    }
 
-    use Data::Dumper;
-    print Dumper $content;
-    exit 1;
-
-    # return $query_sid;
+    my $query_res = $self->request_api(
+        method => 'GET',
+        endpoint => '/services/search/jobs/' . $query_sid->{sid} . '/results',
+    );
+    my $query_count = $query_res->{result}->{field}->{value}->{text};
+    return $query_count;
 }
 
 sub request_api {
     my ($self, %options) = @_;
 
-    $self->settings();
     if (!defined($self->{session_token})) {
-        $self->authenticate(statefile => $self->{cache});
+        $self->{session_token} = $self->get_access_token(statefile => $self->{cache});
     }
+    $self->settings();
     
     my $content = $self->{http}->request(
         method => $options{method},
@@ -248,8 +240,9 @@ sub request_api {
     );
 
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+        $self->settings();
         $self->clean_session_token(statefile => $self->{cache});     
-        $self->authenticate(statefile => $self->{cache});
+        $self->get_access_token(statefile => $self->{cache});
         $content = $self->{http}->request(
             method => $options{method},
             url_path => $options{endpoint},
