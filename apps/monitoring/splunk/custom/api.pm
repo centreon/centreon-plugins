@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
+use DateTime;
 use XML::LibXML::Simple;
 use URI::Encode;
 use Digest::MD5 qw(md5_hex);
@@ -56,7 +57,7 @@ sub new {
             'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'XMLAPI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
@@ -113,6 +114,40 @@ sub build_options_for_httplib {
     $self->{option_results}->{proto} = $self->{proto};
 }
 
+sub clean_session_token {
+    my ($self, %options) = @_;
+
+    my $datas = {};
+    $options{statefile}->write(data => $datas);
+    $self->{http}->remove_header(key => 'Authorization');
+    $self->{session_token} = undef;
+}
+
+sub convert_iso8601_to_epoch {
+    my ($self, %options) = @_;
+    
+    if ($options{time_string} =~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\+|\-)(\d{4})/) {
+        my $dt = DateTime->new(
+            year       => $1,
+            month      => $2,
+            day        => $3,
+            hour       => $4,
+            minute     => $5,
+            second     => $6,
+            time_zone  => $7 . $8
+        );
+
+        my $epoch_time = $dt->epoch;
+        return $epoch_time;
+
+    }
+    
+    $self->{output}->add_option_msg(short_msg => "Wrong date format: $options{time_string}");
+    $self->{output}->option_exit();
+
+}
+
+
 sub settings {
     my ($self, %options) = @_;
 
@@ -125,7 +160,8 @@ sub settings {
 
 sub get_access_token {
     my ($self, %options) = @_;
-   
+
+    $self->settings();
     my $has_cache_file = $options{statefile}->read(statefile => 'splunk_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $session_token = $options{statefile}->get(name => 'session_token');
 
@@ -177,24 +213,38 @@ sub get_access_token {
     return $session_token;
 }
 
-sub clean_session_token {
+sub get_index_info {
     my ($self, %options) = @_;
 
-    my $datas = {};
-    $options{statefile}->write(data => $datas);
-    $self->{http}->remove_header(key => 'Authorization');
-    $self->{session_token} = undef;
+    my $index_res_info = $self->request_api(
+        method => 'GET',
+        endpoint => '/services/data/indexes'
+    );    
+
+    my @index_update_time;
+    foreach (@{$index_res_info->{entry}}){
+        next if defined($_->{title}) && $_->{title} !~ $options{index_name};
+        foreach my $attribute (@{$_->{content}->{'s:dict'}->{'s:key'}}){
+            next if $attribute->{name} ne 'maxTime';
+            my $epoch_time = ( time() - $self->convert_iso8601_to_epoch( time_string => $attribute->{content}) );
+            push @index_update_time, { index_name => $_->{title}, ts_last_update => $epoch_time }
+        }
+    }
+
+    # foreach my $value (@index_update_time){
+    #     print Dumper $value;
+    # }
+    return \@index_update_time;
 }
 
 sub query_count {
     my ($self, %options) = @_;
-    use Data::Dumper;
 
     my $query_sid = $self->request_api(
         method => 'POST',
         endpoint => '/services/search/jobs',
         post_param => [
-        'search=' . 'search ' . $options{query} . 'earliest=' . $options{timeframe} . ' latest=now | stats count'
+        'search=' . 'search ' . $options{query} . '| stats count'
         ]
     );
     sleep(1.5);
@@ -233,7 +283,6 @@ sub request_api {
     my $content = $self->{http}->request(
         method => $options{method},
         url_path => $options{endpoint},
-        post_param => $options{post_param},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
@@ -246,7 +295,6 @@ sub request_api {
         $content = $self->{http}->request(
             method => $options{method},
             url_path => $options{endpoint},
-            post_param => $options{post_param},
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status}

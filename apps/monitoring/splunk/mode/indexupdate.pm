@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::splunk::mode::query;
+package apps::monitoring::splunk::mode::indexupdate;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,19 +29,26 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
+        { name => 'index', type => 1, cb_prefix_output => 'index_prefix_output', message_multiple => 'All indexes are OK' }
     ];
 
-    $self->{maps_counters}->{global} = [
-        { label => 'query-matches', nlabel => 'splunk.query.matches.count', set => {
-                key_values => [ { name => 'query_matches' } ],
-                output_template => 'query matches: %s',
+    $self->{maps_counters}->{index} = [
+        { label => 'index-last-update-seconds', nlabel => 'splunk.index.last.updated.seconds', set => {
+                key_values => [ { name => 'index_last_update' }, { name => 'expires_human' } ],
+                output_use => 'expires_human',
+                output_template => 'last update %s ',
                 perfdatas => [
-                    { template => '%d', min => 0 }
+                    { template => '%s', min => 0, unit => 's', label_extra_instance => 1 }
                 ]
             }
         }
     ];
+}
+
+sub index_prefix_output {
+    my ($self, %options) = @_;
+
+    return sprintf( "Index '%s' ", $options{instance});
 }
 
 sub new {
@@ -50,7 +57,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'query:s'     => { name => 'query' }
+        'index-name:s'     => { name => 'index_name' }
     });
 
     return $self;
@@ -59,24 +66,24 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{query}) || $self->{option_results}->{query} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Please set --query option.');
-        $self->{output}->option_exit();
-    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $query_count = $options{custom}->query_count(
-        query => $self->{option_results}->{query},
-        timeframe => $self->{option_results}->{timeframe}
+    my $index_info = $options{custom}->get_index_info(
+        index_name => $self->{option_results}->{index_name},
     );
 
-    $self->{global} = {
-        query_matches => $query_count
-    };
+
+
+    foreach my $value (@{$index_info}){
+        $self->{index}->{$value->{index_name}} = {
+            index_last_update => $value->{ts_last_update},
+            expires_human => centreon::plugins::misc::change_seconds(value => $value->{ts_last_update})
+        }
+    }
+
 }
 
 1;
@@ -85,11 +92,9 @@ __END__
 
 =head1 MODE
 
-WIP for Splunk query mode.
+WIP for Splunk index update mode.
 
 =over 8
-
-=item B<--query>
 
 =back
 

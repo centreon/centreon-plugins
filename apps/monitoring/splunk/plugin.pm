@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = { 
-        query         => 'apps::monitoring::splunk::mode::query'
+        'index-update'  => 'apps::monitoring::splunk::mode::indexupdate',
+        'query'         => 'apps::monitoring::splunk::mode::query'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::splunk::custom::api';
