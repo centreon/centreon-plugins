@@ -127,30 +127,12 @@ sub get_port {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} eq '/appliance') {
-        $file = '/home/qgarnier/clients/plugins/aruba_orchestrator/get_appliance.json';
-    } elsif ($options{endpoint} =~ /alarm/) {
-        $file = '/home/qgarnier/clients/plugins/aruba_orchestrator/alarms.json';
-    } elsif ($options{endpoint} =~ /group/) {
-        $file = '/home/qgarnier/clients/plugins/aruba_orchestrator/group.json';
-    }
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
     if (defined($options{query_form_post})) {
-        $options{query_form_post} = JSON::XS->new->utf8->encode($options{query_form_post});
+        $options{query_form_post} = JSON::XS->new->encode($options{query_form_post});
     }
-
-=pod
     $self->settings();
     my $content = $self->{http}->request(
+        method => defined($options{method}) ? $options{method} : 'GET',
         url_path => '/gms/rest' . $options{endpoint},
         get_param => $options{get_param},
         header => ['X-Auth-Token: ' . $self->{access_token}],
@@ -159,7 +141,6 @@ sub request_api {
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
     );
-=cut
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");

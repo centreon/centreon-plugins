@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package snetwork::aruba::orchestrator::restapi::mode::alarms;
+package network::aruba::orchestrator::restapi::mode::alarms;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -117,6 +117,7 @@ sub manage_selection {
 
     my $appliances = $options{custom}->request_api(endpoint => '/appliance');
     my $post = { ids => [] };
+
     foreach my $appliance (@$appliances) {
         next if (defined($self->{option_results}->{filter_hostname}) && $self->{option_results}->{filter_hostname} ne '' &&
             $appliance->{hostname} !~ /$self->{option_results}->{filter_hostname}/);
@@ -125,6 +126,7 @@ sub manage_selection {
     }
 
     my $results = $options{custom}->request_api(
+        method => 'POST',
         endpoint => '/alarm/appliance',
         get_param => ['view=active'],
         query_form_post => $post
@@ -132,7 +134,9 @@ sub manage_selection {
 
     foreach my $entry (@$results) {
         my $dt = DateTime->from_epoch(epoch => $entry->{timeOccurredInMills} / 1000, time_zone => $self->{option_results}->{timezone});
-        my $timeraised = sprintf("%d%02d%02d%02d%02d%02d", substr($dt->year(), 2), $dt->month(), $dt->day(), $dt->hour(), $dt->minute(), $dt->second());
+        my $timeraised = sprintf(
+            '%02d-%02d-%02dT%02d:%02d:%02d (%s)', $dt->year, $dt->month, $dt->day, $dt->hour, $dt->minute, $dt->second, $self->{option_results}->{timezone}
+        );
 
         $self->{global}->{ lc($entry->{severity}) }++;
         $self->{alarms}->{global}->{alarm}->{ $entry->{id} } = {
