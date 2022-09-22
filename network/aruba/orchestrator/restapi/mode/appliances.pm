@@ -121,9 +121,7 @@ sub manage_selection {
         3 => 'unsupportedVersion', 4 => 'outOfSynchronization', 5 => 'synchronizationInProgress'
     };
 
-    my $appliances = $options{custom}->request_api(
-        endpoint => '/appliance'
-    );
+    my $appliances = $options{custom}->request_api(endpoint => '/appliance');
     my $groups = $self->get_groups(custom => $options{custom});
 
     $self->{global} = { num_appliances => 0 };

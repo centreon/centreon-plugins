@@ -144,6 +144,10 @@ sub request_api {
         <$fh>;
     };
 
+    if (defined($options{query_form_post})) {
+        $options{query_form_post} = JSON::XS->new->utf8->encode($options{query_form_post});
+    }
+
 =pod
     $self->settings();
     my $content = $self->{http}->request(

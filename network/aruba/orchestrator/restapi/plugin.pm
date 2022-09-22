@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'alarms'     => 'network::aruba::orchestrator::restapi::mode::alarms',
         'appliances' => 'network::aruba::orchestrator::restapi::mode::appliances',
         'discovery'  => 'network::aruba::orchestrator::restapi::mode::discovery'
     };
