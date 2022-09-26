@@ -115,6 +115,9 @@ sub connect {
     $self->{imap}->Ssl(1) if ($self->{use_ssl} == 1);
     $self->{imap}->port($self->{port}) if ($self->{port} ne '');
     $self->{imap}->Timeout($self->{timeout}) if ($self->{timeout} ne '');
+    if ($self->{output}->is_debug()) {
+        $self->{imap}->Debug(1);
+    }
 
     my $sslargs = [];
     if ($self->{use_ssl} == 1) {
