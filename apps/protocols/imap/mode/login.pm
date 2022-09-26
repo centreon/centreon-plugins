@@ -25,23 +25,15 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use apps::protocols::imap::lib::imap;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'hostname:s' => { name => 'hostname' },
-        'port:s'     => { name => 'port', },
-        'ssl'        => { name => 'use_ssl' },
-        'ssl-opt:s@' => { name => 'ssl_opt' },
-        'username:s' => { name => 'username' },
-        'password:s' => { name => 'password' },
         'warning:s'  => { name => 'warning' },
-        'critical:s' => { name => 'critical' },
-        'timeout:s'  => { name => 'timeout', default => '30' }
+        'critical:s' => { name => 'critical' }
     });
 
     return $self;
@@ -59,28 +51,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-
-    my $append = '';
-    $self->{ssl_options} = '';
-    foreach (@{$self->{option_results}->{ssl_opt}}) {
-        if ($_ ne '') {
-            $self->{ssl_options} .= $append . $_;
-            $append = ', ';
-        }
-    }
 }
 
 sub run {
     my ($self, %options) = @_;
 
     my $timing0 = [gettimeofday];
-    apps::protocols::imap::lib::imap::connect($self, connection_exit => 'critical');  
-    apps::protocols::imap::lib::imap::quit();
+    $options{custom}->connect(connection_exit => 'critical');
+    $options{custom}->disconnect();
 
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
 
@@ -93,7 +71,7 @@ sub run {
         short_msg => sprintf("Response time %.3f ", $timeelapsed)
     );
     $self->{output}->perfdata_add(
-        label => 'time',
+        nlabel => 'connection.time.seconds',
         value => sprintf('%.3f', $timeelapsed),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
@@ -109,37 +87,9 @@ __END__
 
 =head1 MODE
 
-Check Connection (also login) to an IMAP Server.
+Check connection (also login) to an IMAP Server.
 
 =over 8
-
-=item B<--hostname>
-
-IP Addr/FQDN of the imap host
-
-=item B<--port>
-
-Port used
-
-=item B<--ssl>
-
-Use SSL connection.
-
-=item B<--ssl-opt>
-
-Set SSL options: --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE" --ssl-opt="SSL_version => 'TLSv1'"
-
-=item B<--username>
-
-Specify username for authentification
-
-=item B<--password>
-
-Specify password for authentification
-
-=item B<--timeout>
-
-Connection timeout in seconds (Default: 30)
 
 =item B<--warning>
 
