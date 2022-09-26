@@ -48,7 +48,7 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
     # Check if the user provided a value for --hostname option. If not, display a message and exit
     if (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
@@ -231,3 +231,39 @@ sub manage_selection {
 }
 
 1;
+
+__END__
+
+=head1 MODE
+
+Check my-awesome-app metrics exposed through its API
+
+=over 8
+
+=item B<--warning/critical-health>
+
+Warning and critical threshold for application health string. 
+
+Defaults values are: --warning-health='%{health} eq "yellow"' --critical-health='%{health} eq "red"'
+
+=item B<--warning/critical-select>
+
+Warning and critical threshold for select queries
+
+=item B<--warning/critical-update>
+
+Warning and critical threshold for update queries
+
+=item B<--warning/critical-delete>
+
+Warning and critical threshold for delete queries
+
+=item B<--warning/critical-connections>
+
+Warning and critical threshold for connections
+
+=item B<--warning/critical-errors>
+
+Warning and critical threshold for errors
+
+=back
