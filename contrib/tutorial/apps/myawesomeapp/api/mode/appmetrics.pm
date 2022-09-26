@@ -79,12 +79,12 @@ sub set_counters {
     $self->{maps_counters}->{health} = [
         # This counter is specific because it deals with a string value
         {
-            label => 'status',
+            label => 'health',
             # All properties below (before set) are related to the catalog_status_ng catalog function imported at the top of our mode
             type => 2,
             # These properties allow you to define default thresholds for each status but not mandatory.
             warning_default => '%{health} eq "yellow"', 
-            critical_default => '%{health} eq "yellow"', 
+            critical_default => '%{health} eq "red"', 
             # To simplify, manage things related to how get value in the counter, what to display and specific threshold 
             # check because of the type of the data (string)
             set => {
