@@ -85,11 +85,28 @@ __END__
 
 =head1 MODE
 
-WIP for Splunk query mode.
+Check number of results for a query. 
 
 =over 8
 
 =item B<--query>
+
+Specify a query to be made and check matching number. 
+
+Query has to start with "search ".
+Example: --query='search host="prod-server" "ERROR" earliest=-150000min'
+
+=item B<--warning-query-matches> 
+
+Warning threshold for query matches.
+
+Example: --warning-query-matches=5
+
+=item B<--critical-query-matches>
+
+Critical threshold for query matches.
+
+Example: --critical-query-matches=15
 
 =back
 

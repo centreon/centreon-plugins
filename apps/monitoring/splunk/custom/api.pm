@@ -223,18 +223,37 @@ sub get_index_info {
 
     my @index_update_time;
     foreach (@{$index_res_info->{entry}}){
-        next if defined($_->{title}) && $_->{title} !~ $options{index_name};
+        next if defined($_->{title}) && $_->{title} !~ /$options{index_name}/;
         foreach my $attribute (@{$_->{content}->{'s:dict'}->{'s:key'}}){
-            next if $attribute->{name} ne 'maxTime';
+            next if $attribute->{name} ne 'maxTime' || !defined($attribute->{content});
             my $epoch_time = ( time() - $self->convert_iso8601_to_epoch( time_string => $attribute->{content}) );
             push @index_update_time, { index_name => $_->{title}, ts_last_update => $epoch_time }
         }
     }
 
-    # foreach my $value (@index_update_time){
-    #     print Dumper $value;
-    # }
     return \@index_update_time;
+}
+
+sub get_splunkd_health {
+    my ($self, %options) = @_;
+
+    my $splunkd_health_details = $self->request_api(
+        method => 'GET',
+        endpoint => '/services/server/health/splunkd/details',
+    );
+
+    my @splunkd_features_health;
+    foreach (@{$splunkd_health_details->{entry}->{content}->{'s:dict'}->{'s:key'}[1]->{'s:dict'}->{'s:key'}}){
+        my $feature_name = $_->{name};
+        $feature_name =~ s/ /-/g;
+        foreach my $sub_feature (@{$_->{'s:dict'}->{'s:key'}}){
+            next if $sub_feature->{name} ne 'health';
+            push @splunkd_features_health, { feature_name => lc($feature_name), global_health => $sub_feature->{content} }
+        }
+    }
+
+    return \@splunkd_features_health;
+
 }
 
 sub query_count {
@@ -244,9 +263,15 @@ sub query_count {
         method => 'POST',
         endpoint => '/services/search/jobs',
         post_param => [
-        'search=' . 'search ' . $options{query} . '| stats count'
+        'search=' . $options{query} . '| stats count'
         ]
     );
+
+    if (!defined($query_sid->{sid}) || $query_sid->{sid} eq ''){
+        $self->{output}->add_option_msg(short_msg => "Error during process. No SID where returned after query was made. Please check your query and splunkd health.");
+        $self->{output}->option_exit();
+    }
+
     sleep(1.5);
 
     my $query_status = $self->request_api(
@@ -269,6 +294,7 @@ sub query_count {
         endpoint => '/services/search/jobs/' . $query_sid->{sid} . '/results',
     );
     my $query_count = $query_res->{result}->{field}->{value}->{text};
+
     return $query_count;
 }
 
@@ -283,6 +309,7 @@ sub request_api {
     my $content = $self->{http}->request(
         method => $options{method},
         url_path => $options{endpoint},
+        post_param => $options{post_param},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
@@ -295,6 +322,7 @@ sub request_api {
         $content = $self->{http}->request(
             method => $options{method},
             url_path => $options{endpoint},
+            post_param => $options{post_param},
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status}

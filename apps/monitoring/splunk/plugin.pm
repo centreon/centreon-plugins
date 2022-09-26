@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = { 
-        'index-update'  => 'apps::monitoring::splunk::mode::indexupdate',
-        'query'         => 'apps::monitoring::splunk::mode::query'
+        'index-update'   => 'apps::monitoring::splunk::mode::indexupdate',
+        'query'          => 'apps::monitoring::splunk::mode::query',
+        'splunkd-health' => 'apps::monitoring::splunk::mode::splunkdhealth'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::splunk::custom::api';
@@ -44,5 +45,7 @@ sub new {
 __END__
 
 =head1 PLUGIN DESCRIPTION
+
+Check Splunk server.
 
 =cut

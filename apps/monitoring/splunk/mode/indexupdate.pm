@@ -75,8 +75,6 @@ sub manage_selection {
         index_name => $self->{option_results}->{index_name},
     );
 
-
-
     foreach my $value (@{$index_info}){
         $self->{index}->{$value->{index_name}} = {
             index_last_update => $value->{ts_last_update},
@@ -92,9 +90,21 @@ __END__
 
 =head1 MODE
 
-WIP for Splunk index update mode.
+Check Splunk index last update time.
 
 =over 8
+
+=item B<--warning-index-last-update-seconds> 
+
+Warning threshold in seconds for last update.
+
+Example: --warning-index-last-update-seconds=15000
+
+=item B<--critical-index-last-update-seconds>
+
+Critical threshold in seconds for last update.
+
+Example: --critical-index-last-update-seconds=25000
 
 =back
 
