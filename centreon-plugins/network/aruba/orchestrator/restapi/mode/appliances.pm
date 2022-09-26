@@ -90,7 +90,7 @@ sub get_groups {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->request_api(
-        endpoint => '/group'
+        endpoint => '/gms/group'
     );
     my $groups = {};
     foreach (@$results) {
