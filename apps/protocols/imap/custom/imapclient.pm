@@ -149,6 +149,10 @@ sub connect {
             $self->{output}->exit();
         }
     }
+
+    #my $oauth_sign = encode_base64("user=". $username ."\x01auth=Bearer ". $oauth_token ."\x01\x01", '');
+    #$imap->authenticate('XOAUTH2', sub { return $oauth_sign }) or die("Auth error: ". $imap->LastError);
+    # detail: https://developers.google.com/google-apps/gmail/xoauth2_protocol
 }
 
 sub search {
