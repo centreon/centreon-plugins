@@ -107,32 +107,60 @@ my $map_status = {
 };
 
 my $mapping = {
-    voltage      => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1.2' }, # upsOutputVoltage (Volt) 
-    current      => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1.3' }, # upsOutputCurrent (dA)
-    percent_load => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1.4' }  # upsOutputPercentLoad
+    netvision5 => {
+        voltage      => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.4.4.1.2' }, # upsOutputVoltage (Volt) 
+        current      => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.4.4.1.3' }, # upsOutputCurrent (dA)
+        percent_load => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.4.4.1.4' }  # upsOutputPercentLoad
+    },
+    netvision6 => {
+        voltage      => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1.2' }, # upsOutputVoltage (Volt) 
+        current      => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1.3' }, # upsOutputCurrent (dA)
+        percent_load => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1.4' }  # upsOutputPercentLoad
+    }
 };
 my $mapping2 = {
-    status => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.1', map => $map_status } # upsOutputSource
+    netvision5 => {
+        status => { oid => '.1.3.6.1.4.1.4555.1.1.1.1.4.1', map => $map_status } # upsOutputSource
+    },
+    netvision6 => {
+        status => { oid => '.1.3.6.1.4.1.4555.1.1.7.1.4.1', map => $map_status } # upsOutputSource
+    }
 };
-my $oid_upsOutput = '.1.3.6.1.4.1.4555.1.1.7.1.4';
-my $oid_upsOutputEntry = '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1';
+my $tables = {
+    netvision5 => {
+        upsOutput => '.1.3.6.1.4.1.4555.1.1.1.1.4',
+        upsOutputEntry => '.1.3.6.1.4.1.4555.1.1.1.1.4.4.1'
+    },
+    netvision6 => {
+        upsOutput => '.1.3.6.1.4.1.4555.1.1.7.1.4',
+        upsOutputEntry => '.1.3.6.1.4.1.4555.1.1.7.1.4.4.1'
+    }
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $label = 'netvision6';
     my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_upsOutput,
-        end => $mapping->{percent_load}->{oid},
-        nothing_quit => 1
+        oid => $tables->{$label}->{upsOutput},
+        end => $mapping->{$label}->{percent_load}->{oid}
     );
+    if (scalar(keys %$snmp_result) <= 0) {
+        $label = 'netvision5';
+        $snmp_result = $options{snmp}->get_table(
+            oid => $tables->{$label}->{upsOutput},
+            end => $mapping->{$label}->{percent_load}->{oid},
+            nothing_quit => 1
+        );
+    }
 
     $self->{oline} = {};
     foreach my $oid (keys %$snmp_result) {
-        next if ($oid !~ /^$oid_upsOutputEntry\.\d+\.(.*)$/);
+        next if ($oid !~ /^$tables->{$label}->{upsOutputEntry}\.\d+\.(.*)$/);
         my $instance = $1;
         next if (defined($self->{oline}->{$instance}));
 
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$label}, results => $snmp_result, instance => $instance);
         foreach (keys %$result) {
             delete $result->{$_} if (
                 (defined($self->{option_results}->{ignore_zero_counters}) && $result->{$_} == 0) ||
@@ -146,7 +174,7 @@ sub manage_selection {
         }
     }
 
-    $self->{global} = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => 0);
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping2->{$label}, results => $snmp_result, instance => 0);
 }
 
 1;
