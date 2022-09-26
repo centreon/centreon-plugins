@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use DBI;
 use Digest::MD5 qw(md5_hex);
+use POSIX qw(:signal_h);
 
 my %handlers = ( ALRM => {} );
 
@@ -54,6 +55,7 @@ sub new {
             'connect-query:s@'   => { name => 'connect_query' },
             'sql-errors-exit:s'  => { name => 'sql_errors_exit', default => 'unknown' },
             'timeout:s'          => { name => 'timeout' },
+            'exec-timeout:s'     => { name => 'exec_timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'DBI OPTIONS', once => 1);
@@ -145,6 +147,10 @@ sub check_options {
     if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
         $self->{option_results}->{timeout} > 0) {
         $self->{timeout} = $self->{option_results}->{timeout};
+    }
+    if (defined($self->{option_results}->{exec_timeout}) && $self->{option_results}->{exec_timeout} =~ /^\d+$/ &&
+        $self->{option_results}->{exec_timeout} > 0) {
+        $self->{exec_timeout} = $self->{option_results}->{exec_timeout};
     }
 
     if (!defined($self->{data_source}) || $self->{data_source} eq '') {
@@ -303,7 +309,27 @@ sub query {
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
 
-    my $rv = $self->{statement_handle}->execute();
+    my $rv;
+    if (defined($self->{exec_timeout})) {
+        my $mask = POSIX::SigSet->new(SIGALRM);
+        my $action = POSIX::SigAction->new(
+            sub { $self->handle_ALRM() },
+            $mask,
+        );
+        my $oldaction = POSIX::SigAction->new();
+        sigaction(SIGALRM, $action, $oldaction);
+        eval {
+            eval {
+                alarm($self->{exec_timeout});
+                $rv = $self->{statement_handle}->execute();
+            };
+            alarm(0);
+        };
+        sigaction(SIGALRM, $oldaction);
+    } else {
+        $rv = $self->{statement_handle}->execute();
+    }   
+
     if (!$rv) {
         return 1 if ($continue_error == 1);
         $self->{output}->add_option_msg(short_msg => 'Cannot execute query: ' . $self->{statement_handle}->errstr);
@@ -358,6 +384,10 @@ Exit code for DB Errors (default: unknown)
 =item B<--timeout>
 
 Timeout in seconds for connection
+
+=item B<--exec-timeout>
+
+Timeout in seconds for query execution
 
 =back
 
