@@ -22,18 +22,19 @@ package apps::protocols::imap::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'login'            => 'apps::protocols::imap::mode::login',
-        'search-message'   => 'apps::protocols::imap::mode::searchmessage',
-    );
+    $self->{modes} = {
+        'login'          => 'apps::protocols::imap::mode::login',
+        'search-message' => 'apps::protocols::imap::mode::searchmessage'
+    };
+
+    $self->{custom_modes}->{imapclient} = 'apps::protocols::imap::custom::imapclient';
 
     return $self;
 }
