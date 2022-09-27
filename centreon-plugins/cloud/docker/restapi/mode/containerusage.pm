@@ -267,8 +267,14 @@ sub manage_selection {
         $self->{containers}->{$container_id}->{write_io} = $write_io;
         $self->{containers}->{$container_id}->{cpu_total_usage} = $result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{total_usage};
         $self->{containers}->{$container_id}->{cpu_system_usage} = $result->{$container_id}->{Stats}->{cpu_stats}->{system_cpu_usage};
-        $self->{containers}->{$container_id}->{cpu_number} = defined($result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}) ?
-            scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}}) : 1;
+        
+        $self->{containers}->{$container_id}->{cpu_number} = 1;
+        if (defined($result->{$container_id}->{Stats}->{cpu_stats}->{online_cpus})) {
+            $self->{containers}->{$container_id}->{cpu_number} = $result->{$container_id}->{Stats}->{cpu_stats}->{online_cpus};
+        } elsif (defined($result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage})) {
+            $self->{containers}->{$container_id}->{cpu_number} = scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}});
+        }
+
         $self->{containers}->{$container_id}->{memory_usage} = $result->{$container_id}->{Stats}->{memory_stats}->{usage};
         $self->{containers}->{$container_id}->{memory_total} = $result->{$container_id}->{Stats}->{memory_stats}->{limit};
 
