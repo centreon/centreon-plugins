@@ -128,7 +128,7 @@ sub manage_selection {
     $self->{appliances} = {};
     foreach my $appliance (@$appliances) {
         next if (defined($self->{option_results}->{filter_hostname}) && $self->{option_results}->{filter_hostname} ne '' &&
-            $appliance->{hostname} !~ /$self->{option_results}->{filter_hostname}/);
+            $appliance->{hostName} !~ /$self->{option_results}->{filter_hostname}/);
 
         my $group = $self->get_group(groups => $groups, groupId => $appliance->{groupId});
         next if (defined($self->{option_results}->{filter_group}) && $self->{option_results}->{filter_group} ne '' &&
