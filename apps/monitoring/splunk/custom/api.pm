@@ -316,9 +316,9 @@ sub request_api {
     );
 
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        $self->settings();
         $self->clean_session_token(statefile => $self->{cache});     
         $self->get_access_token(statefile => $self->{cache});
+        $self->settings();
         $content = $self->{http}->request(
             method => $options{method},
             url_path => $options{endpoint},

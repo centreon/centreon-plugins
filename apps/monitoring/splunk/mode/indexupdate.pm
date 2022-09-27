@@ -94,6 +94,12 @@ Check Splunk index last update time.
 
 =over 8
 
+=item B<--index-name> 
+
+Specify index name to get last updates. 
+
+If not specified, all indexes are checked by default.
+
 =item B<--warning-index-last-update-seconds> 
 
 Warning threshold in seconds for last update.
