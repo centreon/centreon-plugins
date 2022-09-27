@@ -120,9 +120,14 @@ sub manage_selection {
 
     foreach my $appliance (@$appliances) {
         next if (defined($self->{option_results}->{filter_hostname}) && $self->{option_results}->{filter_hostname} ne '' &&
-            $appliance->{hostname} !~ /$self->{option_results}->{filter_hostname}/);
+            $appliance->{hostName} !~ /$self->{option_results}->{filter_hostname}/);
 
         push @{$post->{ids}}, $appliance->{id};
+    }
+
+    if (scalar(@{$post->{ids}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'no appliances selected');
+        $self->{output}->option_exit();
     }
 
     my $results = $options{custom}->request_api(
