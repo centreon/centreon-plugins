@@ -33,6 +33,17 @@ my %auth_method_map = (
     ntlm         => $openwsman::NTLM_AUTH_STR,
     gssnegotiate => $openwsman::GSSNEGOTIATE_AUTH_STR
 );
+my %debug_level = (
+    always => -1,
+    none => 0,
+    error => 1,
+    critical => 2,
+    warning => 3,
+    message => 4,
+    info => 5,
+    debug => 6
+);
+
 
 sub new {
     my ($class, %options) = @_;
@@ -56,10 +67,10 @@ sub new {
         'wsman-username:s'       => { name => 'wsman_username' },
         'wsman-password:s'       => { name => 'wsman_password' },
         'wsman-timeout:s'        => { name => 'wsman_timeout', default => 30 },
-        'wsman-proxy-url:s'      => { name => 'wsman_proxy_url', },
-        'wsman-proxy-username:s' => { name => 'wsman_proxy_username', },
-        'wsman-proxy-password:s' => { name => 'wsman_proxy_password', },
-        'wsman-debug'            => { name => 'wsman_debug', },
+        'wsman-proxy-url:s'      => { name => 'wsman_proxy_url' },
+        'wsman-proxy-username:s' => { name => 'wsman_proxy_username' },
+        'wsman-proxy-password:s' => { name => 'wsman_proxy_password' },
+        'wsman-debug:s'          => { name => 'wsman_debug' },
         'wsman-auth-method:s'    => { name => 'wsman_auth_method', default => 'basic' },
         'wsman-errors-exit:s'    => { name => 'wsman_errors_exit', default => 'unknown' }
     });
@@ -84,7 +95,13 @@ sub connect {
         $self->{output}->option_exit(exit_litteral => 'unknown');
     }
 
-    openwsman::set_debug(1) if (defined($self->{wsman_params}->{wsman_debug}));
+    if (defined($self->{wsman_params}->{wsman_debug})) {
+        if (!defined($debug_level{ $self->{wsman_params}->{wsman_debug} })) {
+            openwsman::set_debug($debug_level{info});
+        } else {
+            openwsman::set_debug($debug_level{ $self->{wsman_params}->{wsman_debug} });
+        }
+    }
     $self->{client} = new openwsman::Client::(
         $self->{wsman_params}->{host}, $self->{wsman_params}->{wsman_port}, 
         $self->{wsman_params}->{wsman_path}, $self->{wsman_params}->{wsman_scheme},
@@ -592,7 +609,7 @@ Set the proxy password.
 
 =item B<--wsman-debug>
 
-Set openwsman debug on (Only for test purpose).
+Set openwsman debug on (Default: --wsman-debug=info).
 
 =item B<--wsman-errors-exit>
 

@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use Digest::MD5 qw(md5_hex);
+use Digest::SHA;
 use XML::LibXML::Simple;
 
 sub new {
@@ -42,13 +43,14 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s@'      => { name => 'hostname' },
-            'port:s@'          => { name => 'port' },
-            'proto:s@'         => { name => 'proto' },
-            'urlpath:s@'       => { name => 'url_path' },
-            'username:s@'      => { name => 'username' },
-            'password:s@'      => { name => 'password' },
-            'timeout:s@'       => { name => 'timeout' },
+            'hostname:s'      => { name => 'hostname' },
+            'port:s'          => { name => 'port' },
+            'proto:s'         => { name => 'proto' },
+            'urlpath:s'       => { name => 'url_path' },
+            'username:s'      => { name => 'username' },
+            'password:s'      => { name => 'password' },
+            'digest-sha256'   => { name => 'digest_sha256' },
+            'timeout:s'       => { name => 'timeout' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' }
@@ -77,31 +79,31 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
-    $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
-    $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : undef;
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 45;
-    $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : undef;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/api/';
+    $self->{hostname} = defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : '';
+    $self->{username} = defined($self->{option_results}->{username}) ? $self->{option_results}->{username} : '';
+    $self->{password} = defined($self->{option_results}->{password}) ? $self->{option_results}->{password} : '';
+    $self->{timeout} = defined($self->{option_results}->{timeout}) ? $self->{option_results}->{timeout} : 45;
+    $self->{port} = defined($self->{option_results}->{port}) ? $self->{option_results}->{port} : 80;
+    $self->{proto} = defined($self->{option_results}->{proto}) ? $self->{option_results}->{proto} : 'http';
+    $self->{url_path} = defined($self->{option_results}->{url_path}) ? $self->{option_results}->{url_path} : '/api/';
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
         
-    if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
+    if ($self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{username}) || !defined($self->{password})) {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify username or/and password option.');
+    if ($self->{username} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --username option.");
         $self->{output}->option_exit();
     }
-    
-    if (!defined($self->{hostname}) ||
-        scalar(@{$self->{option_results}->{hostname}}) == 0) {
-        return 0;
+    if ($self->{password} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --password option.");
+        $self->{output}->option_exit();
     }
-    return 1;
+
+    return 0;
 }
 
 sub build_options_for_httplib {
@@ -259,12 +261,14 @@ sub login {
     $self->{http}->set_options(%{$self->{option_results}});
 
     # Login First
-    my $md5_hash = md5_hex($self->{username} . '_' . $self->{password});
+    my $digest_data = $self->{username} . '_' . $self->{password};
+    my $digest_hash = defined($self->{option_results}->{digest_sha256}) ? Digest::SHA::sha256_hex($digest_data) : md5_hex($digest_data);
+
     my $response = $self->{http}->request(
-        url_path => $self->{url_path} . 'login/' . $md5_hash,
+        url_path => $self->{url_path} . 'login/' . $digest_hash,
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
-        critical_status => $self->{critical_http_status},
+        critical_status => $self->{critical_http_status}
     );
 
     $self->check_login(content => $response);
@@ -309,6 +313,10 @@ Username to connect.
 =item B<--password>
 
 Password to connect.
+
+=item B<--digest-sha256>
+
+New digest to use (md5 deprecated).
 
 =item B<--timeout>
 

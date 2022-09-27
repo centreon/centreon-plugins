@@ -37,7 +37,8 @@ sub new {
         'list-spanning-trees' => 'snmp_standard::mode::listspanningtrees',
         'flash-memory'        => 'network::alcatel::omniswitch::snmp::mode::flashmemory',
         'memory'              => 'network::alcatel::omniswitch::snmp::mode::memory',
-        'spanning-tree'       => 'snmp_standard::mode::spanningtree'
+        'spanning-tree'       => 'snmp_standard::mode::spanningtree',
+        'virtual-chassis'     => 'network::alcatel::omniswitch::snmp::mode::virtualchassis'
     };
 
     return $self;

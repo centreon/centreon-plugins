@@ -18,24 +18,24 @@
 # limitations under the License.
 #
 
-package hardware::ups::socomec::netvision::snmp::plugin;
+package network::aruba::orchestrator::restapi::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
+    my ( $class, %options ) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{modes} = {
-        'alarms'        => 'hardware::ups::socomec::netvision::snmp::mode::alarms',
-        'battery'       => 'hardware::ups::socomec::netvision::snmp::mode::battery',
-        'input-lines'   => 'hardware::ups::socomec::netvision::snmp::mode::inputlines',
-        'output-lines'  => 'hardware::ups::socomec::netvision::snmp::mode::outputlines'
+        'alarms'     => 'network::aruba::orchestrator::restapi::mode::alarms',
+        'appliances' => 'network::aruba::orchestrator::restapi::mode::appliances',
+        'discovery'  => 'network::aruba::orchestrator::restapi::mode::discovery'
     };
 
+    $self->{custom_modes}->{api} = 'network::aruba::orchestrator::restapi::custom::api';
     return $self;
 }
 
@@ -45,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Socomec Net Vision UPS in SNMP.
+Check Aruba Orchestrator using Rest API.
 
 =cut

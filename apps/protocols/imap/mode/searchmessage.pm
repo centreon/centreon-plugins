@@ -24,23 +24,15 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use apps::protocols::imap::lib::imap;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'hostname:s' => { name => 'hostname' },
-        'port:s'     => { name => 'port', },
-        'ssl'        => { name => 'use_ssl' },
-        'ssl-opt:s@' => { name => 'ssl_opt' },
-        'username:s' => { name => 'username' },
-        'password:s' => { name => 'password' },
         'warning:s'  => { name => 'warning' },
         'critical:s' => { name => 'critical' },
-        'timeout:s'  => { name => 'timeout', default => '30' },
         'search:s'   => { name => 'search' },
         'delete'     => { name => 'delete' },
         'folder:s'   => { name => 'folder', default => 'INBOX' }
@@ -62,31 +54,22 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => 'Please set the --hostname option');
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{search})) {
         $self->{output}->add_option_msg(short_msg => 'Please set the --search option');
         $self->{output}->option_exit();
-    }
-
-    my $append = '';
-    $self->{ssl_options} = '';
-    foreach (@{$self->{option_results}->{ssl_opt}}) {
-        if ($_ ne '') {
-            $self->{ssl_options} .= $append . $_;
-            $append = ', ';
-        }
     }
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    apps::protocols::imap::lib::imap::connect($self);    
-    my ($num) = apps::protocols::imap::lib::imap::search($self);
-    apps::protocols::imap::lib::imap::quit();
+    $options{custom}->connect(connection_exit => 'critical');
+    my ($num) = $options{custom}->search(
+        folder => $self->{option_results}->{folder},
+        search => $self->{option_results}->{search},
+        delete => $self->{option_results}->{delete}
+    );
+    $options{custom}->disconnect();
 
     my $exit = $self->{perfdata}->threshold_check(
         value => $num,
@@ -97,7 +80,7 @@ sub run {
         short_msg => sprintf('%d message(s) found', $num)
     );
     $self->{output}->perfdata_add(
-        label => 'numbers',
+        nlabel => 'messages.found.count',
         value => $num,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
@@ -117,34 +100,6 @@ __END__
 Check messages in a mailbox with IMAP filter.
 
 =over 8
-
-=item B<--hostname>
-
-IP Addr/FQDN of the imap host
-
-=item B<--port>
-
-Port used
-
-=item B<--ssl>
-
-Use SSL connection.
-
-=item B<--ssl-opt>
-
-Set SSL options: --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE" --ssl-opt="SSL_version => 'TLSv1'"
-
-=item B<--username>
-
-Specify username for authentification
-
-=item B<--password>
-
-Specify password for authentification
-
-=item B<--timeout>
-
-Connection timeout in seconds (Default: 30)
 
 =item B<--search>
 
