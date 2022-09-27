@@ -1,7 +1,7 @@
 #
 # Copyright 2022 Centreon (http://www.centreon.com/)
 #
-# Centreon is a full-fledged industry-strength solution that meets
+# Centreon is a full-fledged instry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
 # service performance.
 #
@@ -33,7 +33,7 @@ sub custom_usage_perfdata_ms {
         nlabel => $self->{nlabel},
         unit => 'ms',
         instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-        value => sprintf('%s', print $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
+        value => sprintf('%s', $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
@@ -46,7 +46,7 @@ sub custom_usage_perfdata {
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
         instances => [ $self->{result_values}->{watcher_name}, $self->{result_values}->{site_name}, $self->{result_values}->{gateway_name} ],
-        value => sprintf('%s', print $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
+        value => sprintf('%s', $self->{result_values}->{ $self->{key_values}->[0]->{name} } ),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
@@ -434,7 +434,8 @@ sub new {
         'isp:s'                 => { name => 'isp'},
         'select-watcher-name:s' => { name => 'watcher_name' },
         'select-site-name:s'    => { name => 'site_name'},
-        'select-gateway-name:s' => { name => 'gateway_name'}
+        'select-gateway-name:s' => { name => 'gateway_name'},
+        'wfa:s'                 => { name => 'wfa'}
     });
 
     return $self;
@@ -498,11 +499,15 @@ sub manage_selection {
         push @{$raw_form_post->{groupby}}, "watcher_name", "site:group", "gateway:group" ;
     }
 
-    my $select = $options{custom}->forge_select(
+    my $select;
+    $select = $options{custom}->forge_select(
         site_name => $self->{option_results}->{site_name},
         gateway_name => $self->{option_results}->{gateway_name},
         watcher_name => $self->{option_results}->{watcher_name}
     );
+    if (defined($self->{option_results}->{wfa})){
+        $select = ["=", "wfa", \1];
+    }
 
     $raw_form_post->{where} = $select if (defined($select));
 
