@@ -522,101 +522,98 @@ sub manage_selection {
     $self->{isp} = {};
     foreach my $watcher (@{$results->{data}}) {
         last if (!defined($watcher->{'watcher_id:group'}));
-        #next if ((defined($watcher->{'site:group'}) && $watcher->{'site:group'} ne $self->{option_results}->{site_name}) || (defined($watcher->{'gateway:group'}) && $watcher->{'gateway:group'} ne $self->{option_results}->{gateway_name}));
-        #do we really want to have to specify each parameter ? site + gw. Else, how to handle WFH ? 
-        #now each watcher is grouped by gw and site. We dont have global watcher metric
         my $instance = $watcher->{'watcher_id:group'};
-        $instance .= defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH";
-        $instance .= defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "";
+        $instance .= defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa";
+        $instance .= defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site";
         
         $self->{watcher}->{$instance} = {
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
             watcher_name => $watcher->{'watcher_id:group'}
         };
         
         $self->{watcher}->{$instance}->{waiting_time} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             waiting_time => ( $watcher->{'waiting_time_spent:avg|requests'} / 10**3 ),
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
 
         $self->{watcher}->{$instance}->{users} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             connected_users => $watcher->{'user_id:distinct'},
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
 
         $self->{watcher}->{$instance}->{errors_prct} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             errors_prct => $watcher->{'%errors:avg|hits'},
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
 
         $self->{watcher}->{$instance}->{dtt_spent} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             dtt_spent => ( $watcher->{'dtt_spent:avg|requests'} / 10**3 ) ,
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
 
         $self->{watcher}->{$instance}->{full_network_time_spent} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             full_network_time_spent => ( $watcher->{'full_network_time_spent:avg|requests'} / 10**3 ),
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
 
         $self->{watcher}->{$instance}->{loading_page} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             loading_page => (defined($watcher->{'lcp:p75|pages'}) && $watcher->{'lcp:p75|pages'} != 0 ) ? ($watcher->{'lcp:p75|pages'} / 10**3) : 0,
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
 
         $self->{watcher}->{$instance}->{pages} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             pages => $watcher->{'item:count|pages'},
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
 
         $self->{watcher}->{$instance}->{processing} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             processing => ( $watcher->{'processing_whole:avg|requests'} / 10**3 ),
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
 
         $self->{watcher}->{$instance}->{redirect_time_avg} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             redirect_time_avg => ( $watcher->{'redirect_time_spent:avg|requests'} / 10**3),
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
 
         $self->{watcher}->{$instance}->{requests} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             requests => $watcher->{'item:count|requests'},
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
 
         $self->{watcher}->{$instance}->{sessions} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             sessions => $watcher->{'session:sum|hits'},
             site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
     
         $self->{watcher}->{$instance}->{srt_spent} = { 
             watcher_name => $watcher->{'watcher_id:group'},
             srt_spent => ( $watcher->{'srt_spent:avg|requests'} / 10**3 ),
-            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "",
-            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "WFH",
+            site_name => defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : "no-site",
+            gateway_name => defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : "wfa",
         };
     };
 
