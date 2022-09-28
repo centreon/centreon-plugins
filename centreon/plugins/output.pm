@@ -154,6 +154,7 @@ sub check_options {
     if (defined($self->{option_results}->{filter_perfdata_adv}) && $self->{option_results}->{filter_perfdata_adv} ne '') {
         $self->{option_results}->{filter_perfdata_adv} =~ s/%\{(.*?)\}/\$values->{$1}/g;
         $self->{option_results}->{filter_perfdata_adv} =~ s/%\((.*?)\)/\$values->{$1}/g;
+        $self->{option_results}->{filter_perfdata_adv} =~ s/alert_triggered\(\)/alert_triggered\(%\$values\)/g;
     }
 
     $self->load_perfdata_extend_args();
@@ -956,6 +957,7 @@ sub load_eval {
         $self->{safe} = Safe->new();
         $self->{safe}->share('$values');
         $self->{safe}->share('$assign_var');
+        $self->{safe}->share_from('centreon::plugins::misc', ['alert_triggered']);
     }
 
     $self->{safe_test} = 1;
