@@ -30,12 +30,13 @@ sub check {
     $self->{components}->{fru} = {name => 'frus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fru'));
 
-    my ($entries) = $self->{custom}->get_infos(
+    my ($entries, $rv) = $self->{custom}->get_infos(
         cmd => 'show frus', 
         base_type => 'enclosure-fru',
         properties_name => '^fru-status|fru-location|oid$',
-        no_quit => 1,
+        no_quit => 1
     );
+    return if ($rv == 0);
 
     my ($results, $duplicated) = ({}, {});
     foreach (@$entries) {

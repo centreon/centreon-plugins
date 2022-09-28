@@ -44,11 +44,12 @@ sub check {
     return if ($self->check_filter(section => 'sensor'));
 
     # We don't use status-numeric. Values are buggy !!!???
-    my ($entries) = $self->{custom}->get_infos(
+    my ($entries, $rv) = $self->{custom}->get_infos(
         cmd => 'show sensor-status', 
         base_type => 'sensors',
         properties_name => '^(?:sensor-name|value|sensor-type|status|enclosure-id)$'
     );
+    return if ($rv == 0);
 
     my ($results, $duplicated) = ({}, {});
     foreach (@$entries) {
