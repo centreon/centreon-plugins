@@ -44,6 +44,28 @@ sub prefix_cpu_output {
     return 'cpu usage: ';
 }
 
+sub custom_conn_output {
+    my ($self, %options) = @_;
+
+    my $msg;
+    if ($self->{result_values}->{activeConnTotal} > 0) {
+        $msg = sprintf(
+            'active connections total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
+            $self->{result_values}->{activeConnTotal},
+            $self->{result_values}->{activeConnUsed},
+            $self->{result_values}->{activeConnPrct},
+            $self->{result_values}->{activeConnTotal} - $self->{result_values}->{activeConnUsed},
+            100 - $self->{result_values}->{activeConnPrct}
+        );
+    } else {
+        $msg = sprintf(
+            'active connections used: %s',
+            $self->{result_values}->{activeConnUsed}
+        );
+    }
+
+    return $msg;
+}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -54,7 +76,7 @@ sub set_counters {
             group => [
                 { name => 'vsx_cpu', type => 0, cb_prefix_output => 'prefix_cpu_output', skipped_code => { -10 => 1 } },
                 { name => 'vsx_memory', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'vsx_connection', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'vsx_connection', type => 0, cb_prefix_output => 'prefix_conn_output', skipped_code => { -10 => 1 } },
                 { name => 'vsx_traffic', type => 0, skipped_code => { -10 => 1 } }
             ]
         }
@@ -93,10 +115,18 @@ sub set_counters {
 
     $self->{maps_counters}->{vsx_connection} = [
         { label => 'connections-active', nlabel => 'virtualsystem.connections.active.count', set => {
-                key_values => [ { name => 'active_connections' }, { name => 'display' } ],
-                output_template => 'active connections: %d',
+                key_values => [ { name => 'activeConnUsed' }, { name => 'activeConnPrct' }, { name => 'activeConnTotal' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_conn_output'),
                 perfdatas => [
                     { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'connections-active-prct', nlabel => 'virtualsystem.connections.active.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'activeConnPrct' }, { name => 'activeConnUsed' }, { name => 'activeConnTotal' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_conn_output'),
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -150,6 +180,7 @@ my $mapping = {
     cpu_1hour          => { oid => '.1.3.6.1.4.1.2620.1.16.22.2.1.4' },  # vsxStatusCPUUsage1hr
     memory_used        => { oid => '.1.3.6.1.4.1.2620.1.16.22.3.1.3' },  # vsxStatusMemoryUsage (KB)
     active_connections => { oid => '.1.3.6.1.4.1.2620.1.16.23.1.1.2' },  # vsxCountersConnNum
+    connLimit          => { oid => '.1.3.6.1.4.1.2620.1.16.23.1.1.4' },  # vsxCountersConnTableLimit
     traffic_accepted   => { oid => '.1.3.6.1.4.1.2620.1.16.23.1.1.9' },  # vsxCountersBytesAcceptedTotal
     traffic_dropped    => { oid => '.1.3.6.1.4.1.2620.1.16.23.1.1.10' }, # vsxCountersBytesDroppedTotal
     traffic_rejected   => { oid => '.1.3.6.1.4.1.2620.1.16.23.1.1.11' }  # vsxCountersBytesRejectedTotal
@@ -198,7 +229,13 @@ sub manage_selection {
         $self->{vsx}->{$_}->{vsx_cpu}->{cpu_1min} = $result->{cpu_1min};
         $self->{vsx}->{$_}->{vsx_cpu}->{cpu_1hour} = $result->{cpu_1hour};
         $self->{vsx}->{$_}->{vsx_memory}->{memory_used} = $result->{memory_used} * 1024;
-        $self->{vsx}->{$_}->{vsx_connection}->{active_connections} = $result->{active_connections};
+        $self->{vsx}->{$_}->{vsx_connection}->{activeConnUsed} = $result->{active_connections};
+        $self->{vsx}->{$_}->{vsx_connection}->{activeConnTotal} = 0;
+        $self->{vsx}->{$_}->{vsx_connection}->{activeConnPrct} = 0;
+        if (defined($result->{connLimit}) && $result->{connLimit} > 0) {
+            $self->{vsx}->{$_}->{vsx_connection}->{activeConnPrct} = $result->{active_connections} * 100 / $result->{connLimit};
+            $self->{vsx}->{$_}->{vsx_connection}->{activeConnTotal} = $result->{connLimit};
+        }
         $self->{vsx}->{$_}->{vsx_traffic}->{traffic_accepted} = $result->{traffic_accepted} * 8;
         $self->{vsx}->{$_}->{vsx_traffic}->{traffic_dropped} = $result->{traffic_dropped} * 8;
         $self->{vsx}->{$_}->{vsx_traffic}->{traffic_rejected} = $result->{traffic_rejected} * 8;
@@ -228,7 +265,7 @@ Filter by virtual system name (can be a regexp).
 Thresholds.
 Can be: 'memory-usage', 'traffic-accepted', 'traffic-dropped',
 'traffic-rejected', 'cpu-utilization-1hour', 'cpu-utilization-1min',
-'connections-active'.
+'connections-active', 'connections-active-prct'.
 
 =back
 
