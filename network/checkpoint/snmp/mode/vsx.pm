@@ -76,7 +76,7 @@ sub set_counters {
             group => [
                 { name => 'vsx_cpu', type => 0, cb_prefix_output => 'prefix_cpu_output', skipped_code => { -10 => 1 } },
                 { name => 'vsx_memory', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'vsx_connection', type => 0, cb_prefix_output => 'prefix_conn_output', skipped_code => { -10 => 1 } },
+                { name => 'vsx_connection', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'vsx_traffic', type => 0, skipped_code => { -10 => 1 } }
             ]
         }
