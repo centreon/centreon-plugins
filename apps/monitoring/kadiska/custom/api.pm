@@ -184,7 +184,6 @@ sub forge_select {
     my %filters;
     $filters{gateway_name} = $options{gateway_name} if defined($options{gateway_name}) && $options{gateway_name} ne '';
     $filters{site_name} = $options{site_name} if defined($options{site_name}) && $options{site_name} ne '';
-    $filters{site_id} = $options{site_name} if defined($options{site_name}) && $options{site_name} eq '';
     $filters{watcher_name} = $options{watcher_name} if defined($options{watcher_name}) && $options{watcher_name} ne '';
 
     my @filter;
