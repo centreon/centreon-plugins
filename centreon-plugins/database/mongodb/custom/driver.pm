@@ -50,7 +50,8 @@ sub new {
             'username:s' => { name => 'username' },
             'password:s' => { name => 'password' },
             'timeout:s'  => { name => 'timeout' },
-            'ssl-opt:s@' => { name => 'ssl_opt' }
+            'ssl-opt:s@' => { name => 'ssl_opt' },
+            'no-ssl'     => { name => 'no_ssl' }
         });
     }
 
@@ -78,6 +79,7 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
+    $self->{no_ssl} = (defined($self->{option_results}->{no_ssl})) ? 1 : 0;
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -118,8 +120,12 @@ sub connect {
 
     $self->{output}->output_add(long_msg => 'Connection URI: ' . $uri, debug => 1);
 
-    my $ssl = (defined($self->{ssl_opts})) ? $self->{ssl_opts} : 0;
-    $self->{client} = MongoDB::MongoClient->new(host => $uri, ssl => $ssl);
+    my %mongodb_options = ();
+    if ($self->{no_ssl} == 0) {
+        $mongodb_options{ssl} = (defined($self->{ssl_opts}) && scalar(keys %{$self->{ssl_opts}}) > 0) ? $self->{ssl_opts} : 1;
+    }
+
+    $self->{client} = MongoDB::MongoClient->new(host => $uri, %mongodb_options);
     $self->{client}->connect();
 
     eval {
@@ -222,6 +228,10 @@ Set timeout in seconds (Default: 10).
 =item B<--ssl-opt>
 
 Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
+
+=item B<--no-ssl>
+
+Don't use ssl connection.
 
 =back
 
