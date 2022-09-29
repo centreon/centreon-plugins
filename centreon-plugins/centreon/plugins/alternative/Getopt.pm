@@ -61,17 +61,20 @@ sub GetOptions {
     for (my $i = 0; $i < $num_args;) {
         if (defined($ARGV[$i]) && $ARGV[$i] =~ /^--(.*?)(?:=|$)((?s).*)/) {
             my ($option, $value) = ($1, $2);
-            
+
             # find type of option
             if ($search_str !~ /,((?:[^,]*?\|){0,}$option(?:\|.*?){0,}(:.*?){0,1}),/) {
                 warn "Unknown option: $option" if ($warn_message == 1);
                 $i++;
                 next;
             }
-            
+
             my ($option_selected, $type_opt) = ($1, $2);
             if (!defined($type_opt)) {
-                ${$opts{$option_selected}} = 1;
+                ($num_args, my $assigned) = get_assigned_value(num_args => $num_args, pos => $i, val => $value);
+                if ($assigned ne '0') {
+                    ${$opts{$option_selected}} = 1;
+                }
             } elsif ($type_opt =~ /:s$/) {
                 ($num_args, my $assigned) = get_assigned_value(num_args => $num_args, pos => $i, val => $value);
                 ${$opts{$option_selected}} = $assigned;
