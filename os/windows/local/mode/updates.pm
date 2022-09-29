@@ -61,6 +61,7 @@ sub new {
         'ps-exec-only'       => { name => 'ps_exec_only' },
         'ps-display'         => { name => 'ps_display' },
         'filter-title:s'     => { name => 'filter_title' },
+        'exclude-title:s'    => { name => 'exclude_title' },
         'filter-mandatory:s' => { name => 'filter_mandatory' },
         'display-updates'    => { name => 'display_updates' }
     });
@@ -120,6 +121,8 @@ sub manage_selection {
     foreach my $update (@$decoded) {
         next if (defined($self->{option_results}->{filter_title}) && $self->{option_results}->{filter_title} ne '' &&
             $update->{title} !~ /$self->{option_results}->{filter_title}/);
+        next if (defined($self->{option_results}->{exclude_title}) && $self->{option_results}->{exclude_title} ne '' &&
+            $update->{title} =~ /$self->{option_results}->{exclude_title}/);
 
         $update->{isMandatory} = $update->{isMandatory} =~ /^(?:true|1)$/i ? 'yes' : 'no';
         next if (defined($self->{option_results}->{filter_mandatory}) && $self->{option_results}->{filter_mandatory} ne '' &&
@@ -182,6 +185,10 @@ Print powershell output.
 =item B<--filter-title>
 
 Filter windows updates by title (can be a regexp).
+
+=item B<--exclude-title>
+
+Exclude windows updates by title (regexp can be used).
 
 =item B<--display-updates>
 
