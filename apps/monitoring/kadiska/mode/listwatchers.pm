@@ -76,7 +76,7 @@ sub manage_selection {
         $application{watcher_name} = $watcher->{'watcher_id:group'};
         $application{site_name} = defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : '';
         $application{gateway_name} = defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : '';
-        $application{wfa} = !defined($watcher->{'gateway:group'}) && !defined($watcher->{'site:group'}) ? 'yes' : 'no';
+        $application{wfa} = !defined($watcher->{'gateway:group'}) && !defined($watcher->{'site:group'}) ? '--wfa' : '';
         push @disco_data, \%application;
     }
     
