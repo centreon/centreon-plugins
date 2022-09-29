@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vservers', type => 1, cb_prefix_output => 'prefix_vservers_output', message_multiple => 'All Virtual Servers are ok' }
+        { name => 'vservers', type => 1, cb_prefix_output => 'prefix_vservers_output', message_multiple => 'All virtual servers are ok', skipped_code => { -10 => 1 } }
     ];
     
     $self->{maps_counters}->{vservers} = [
@@ -43,7 +43,7 @@ sub set_counters {
         },
         { label => 'health', nlabel => 'vserver.health.percentage', set => {
                 key_values => [ { name => 'health' }, { name => 'display' } ],
-                output_template => 'Health: %.2f %%', output_error_template => 'Health: %s',
+                output_template => 'health: %.2f %%',
                 perfdatas => [
                     { label => 'health', template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
@@ -52,7 +52,7 @@ sub set_counters {
         },
         { label => 'in-traffic', nlabel => 'vserver.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Traffic In: %s %s/s',
+                output_template => 'traffic in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_in', template => '%.2f',
@@ -62,7 +62,7 @@ sub set_counters {
         },
         { label => 'out-traffic', nlabel => 'vserver.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Traffic Out: %s %s/s',
+                output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_out', template => '%.2f',
@@ -72,7 +72,7 @@ sub set_counters {
         },
         { label => 'clients', nlabel => 'vserver.connections.client.count', set => {
                 key_values => [ { name => 'clients', diff => 1 }, { name => 'display' } ],
-                output_template => 'Total Client Connections : %s',
+                output_template => 'total client connections: %s',
                 perfdatas => [
                     { label => 'clients', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
@@ -81,7 +81,7 @@ sub set_counters {
         },
         { label => 'servers', nlabel => 'vserver.connections.server.count', set => {
                 key_values => [ { name => 'servers', diff => 1 }, { name => 'display' } ],
-                output_template => 'Total Server Connections : %s',
+                output_template => 'total server connections: %s',
                 perfdatas => [
                     { label => 'servers', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
@@ -94,7 +94,7 @@ sub set_counters {
 sub prefix_vservers_output {
     my ($self, %options) = @_;
     
-    return "Virtual Server '" . $options{instance_value}->{display} . "' ";
+    return "Virtual server '" . $options{instance_value}->{display} . "' ";
 }
 
 my $overload_th = {};
@@ -103,8 +103,8 @@ my $thresholds = {
     vs => [
         ['unknown', 'UNKNOWN'],
         ['down|outOfService|transitionToOutOfService|transitionToOutOfServiceDown', 'CRITICAL'],
-        ['up', 'OK'],
-    ],
+        ['up', 'OK']
+    ]
 };
 
 sub get_severity {
@@ -138,7 +138,7 @@ sub custom_threshold_output {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'State : ' . $self->{result_values}->{state};
+    return 'state: ' . $self->{result_values}->{state};
 }
 
 sub new {
@@ -159,7 +159,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         if ($val !~ /^(.*?),(.*)$/) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
@@ -191,13 +191,13 @@ my %map_vs_status = (
     4 => 'outOfService', 
     5 => 'transitionToOutOfService', 
     7 => 'up',
-    8 => 'transitionToOutOfServiceDown',
+    8 => 'transitionToOutOfServiceDown'
 );
 
 my $mapping = {
     vsvrState                   => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.5', map => \%map_vs_status },
     vsvrFullName                => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.59' },
-    vsvrEntityType              => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.64', map => \%map_vs_type },   
+    vsvrEntityType              => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.64', map => \%map_vs_type }
 };
 my $mapping2 = {
     vsvrTotalRequestBytesLow    => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.13' },
@@ -208,7 +208,7 @@ my $mapping2 = {
     vsvrTotalResponseBytes      => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.33' },
     vsvrTotalClients            => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.56' },
     vsvrHealth                  => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.62' },
-    vsvrTotalServers            => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.65' },
+    vsvrTotalServers            => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.65' }
 };
 
 sub manage_selection {
@@ -241,14 +241,18 @@ sub manage_selection {
             next;
         }
         
-        $self->{vservers}->{$instance} = { display => $result->{vsvrFullName}, state => $result->{vsvrState} };
+        $self->{vservers}->{$instance} = {
+            display => $result->{vsvrFullName},
+            type => $result->{vsvrEntityType},
+            state => $result->{vsvrState}
+        };
     }
 
     if (scalar(keys %{$self->{vservers}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No virtual server found.");
         $self->{output}->option_exit();
     }
-    
+
     $options{snmp}->load(
         oids => defined($self->{option_results}->{force_counters64}) ? [
             $mapping2->{vsvrTotalRequestBytes}->{oid}, $mapping2->{vsvrTotalResponseBytes}->{oid},
@@ -270,7 +274,9 @@ sub manage_selection {
             (($result->{vsvrTotalResponseBytesHigh} << 32) + $result->{vsvrTotalResponseBytesLow}) * 8;
         $self->{vservers}->{$_}->{in} = defined($result->{vsvrTotalRequestBytes}) ? $result->{vsvrTotalRequestBytes} * 8 :
             (($result->{vsvrTotalRequestBytesHigh} << 32) + $result->{vsvrTotalRequestBytesLow}) * 8;
-        $self->{vservers}->{$_}->{health} = $result->{vsvrHealth};
+        if ($self->{vservers}->{$_}->{type} ne 'sslvpn') {
+            $self->{vservers}->{$_}->{health} = $result->{vsvrHealth};
+        }
         $self->{vservers}->{$_}->{clients} = $result->{vsvrTotalClients};
         $self->{vservers}->{$_}->{servers} = $result->{vsvrTotalServers};
     }
