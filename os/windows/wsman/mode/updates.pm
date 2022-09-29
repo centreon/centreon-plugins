@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::windows::local::mode::updates;
+package os::windows::wsman::mode::updates;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -49,15 +49,10 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'timeout:s'          => { name => 'timeout', default => 50 },
-        'command:s'          => { name => 'command', default => 'powershell.exe' },
-        'command-path:s'     => { name => 'command_path' },
-        'command-options:s'  => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        'no-ps'              => { name => 'no_ps' },
         'ps-exec-only'       => { name => 'ps_exec_only' },
         'ps-display'         => { name => 'ps_display' },
         'filter-title:s'     => { name => 'filter_title' },
@@ -71,31 +66,25 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::windows::updates::get_powershell();
-        if (defined($self->{option_results}->{ps_display})) {
-            $self->{output}->output_add(
-                severity => 'OK',
-                short_msg => $ps
-            );
-            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
-            $self->{output}->exit();
-        }
-
-        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    my $ps = centreon::common::powershell::windows::updates::get_powershell();
+    if (defined($self->{option_results}->{ps_display})) {
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $ps
+        );
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+        $self->{output}->exit();
     }
 
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my $result = $options{wsman}->execute_powershell(
+        label => 'pendingupdates',
+        content => centreon::plugins::misc::powershell_encoded($ps)
     );
+
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(
             severity => 'OK',
-            short_msg => $stdout
+            short_msg => $result->{pendingupdates}->{stdout}
         );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
@@ -103,7 +92,7 @@ sub manage_selection {
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->decode($self->{output}->decode($stdout));
+        $decoded = JSON::XS->new->decode($self->{output}->decode($result->{pendingupdates}->{stdout}));
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
@@ -149,27 +138,6 @@ __END__
 Check windows pending updates.
 
 =over 8
-
-=item B<--timeout>
-
-Set timeout time for command execution (Default: 50 sec)
-
-=item B<--no-ps>
-
-Don't encode powershell. To be used with --command and 'type' command.
-
-=item B<--command>
-
-Command to get information (Default: 'powershell.exe').
-Can be changed if you have output in a file. To be used with --no-ps option!!!
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
 
 =item B<--ps-display>
 
