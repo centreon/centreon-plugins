@@ -219,7 +219,7 @@ sub get_infos {
             }
 
             if ($return_code != 0) {
-                return ({}, 0) if (defined($options{no_quit}) && $options{no_quit} == 1);
+                return (!defined($options{key}) ? [] : {}, 0) if (defined($options{no_quit}) && $options{no_quit} == 1);
                 $self->{output}->add_option_msg(short_msg => $response);
                 $self->{output}->option_exit();
             }

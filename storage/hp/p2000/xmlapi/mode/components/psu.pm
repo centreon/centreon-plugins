@@ -31,12 +31,13 @@ sub check {
     $self->{components}->{psu} = { name => 'psu', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'psu'));
 
-    my ($entries) = $self->{custom}->get_infos(
+    my ($entries, $rv) = $self->{custom}->get_infos(
         cmd => 'show power-supplies', 
         base_type => 'power-supplies',
         properties_name => '^durable-id|health-numeric|name$',
         no_quit => 1
     );
+    return if ($rv == 0);
 
     my ($results, $duplicated) = ({}, {});
     foreach (@$entries) {

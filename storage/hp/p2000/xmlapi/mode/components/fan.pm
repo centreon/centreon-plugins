@@ -31,12 +31,13 @@ sub check {
     $self->{components}->{fan} = { name => 'fan', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
 
-    my ($entries) = $self->{custom}->get_infos(
+    my ($entries, $rv) = $self->{custom}->get_infos(
         cmd => 'show fans', 
         base_type => 'fan',
         properties_name => '^health-numeric|location|durable-id|speed$',
         no_quit => 1
     );
+    return if ($rv == 0);
 
     my ($results, $duplicated) = ({}, {});
     foreach (@$entries) {
