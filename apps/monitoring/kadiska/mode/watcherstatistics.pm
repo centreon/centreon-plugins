@@ -503,11 +503,9 @@ sub manage_selection {
     $select = $options{custom}->forge_select(
         site_name => $self->{option_results}->{site_name},
         gateway_name => $self->{option_results}->{gateway_name},
-        watcher_name => $self->{option_results}->{watcher_name}
+        watcher_name => $self->{option_results}->{watcher_name},
+        wfa => defined($self->{option_results}->{wfa}) ? 'yes' : 'no'
     );
-    if (defined($self->{option_results}->{wfa})){
-        $select = ["=", "wfa", \1];
-    }
 
     $raw_form_post->{where} = $select if (defined($select));
 

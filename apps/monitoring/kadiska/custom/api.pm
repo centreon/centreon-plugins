@@ -185,12 +185,17 @@ sub forge_select {
     $filters{gateway_name} = $options{gateway_name} if defined($options{gateway_name}) && $options{gateway_name} ne '';
     $filters{site_name} = $options{site_name} if defined($options{site_name}) && $options{site_name} ne '';
     $filters{watcher_name} = $options{watcher_name} if defined($options{watcher_name}) && $options{watcher_name} ne '';
+    $filters{wfa} = $options{wfa} eq 'yes' ? 1 : undef ;
 
     my @filter;
 
     if (keys %filters > 1){
         foreach my $filter_name (keys %filters){
-            unshift(@filter, ["=", $filter_name,["\$", $filters{$filter_name}]]);
+            if ($filter_name eq 'wfa'){
+                unshift(@filter, ["=", "wfa", \1]) if defined($filters{$filter_name});
+                next;
+            }
+            unshift(@filter, ["=", $filter_name,["\$", $filters{$filter_name}]]);          
         }
         unshift(@filter, 'and');
         return \@filter;
