@@ -700,6 +700,10 @@ Display statistics per ISP.
 
 Leave empty to get statistics from all ISP, or specify particular ISP.
 
+=item B<--wfa>
+
+Display statistics for watchers used by work-from-anywhere users. 
+
 =item B<--warning-errors-prct>
 
 Warning threshold for web browser errors (4xx and 5xx types) in percentage.
