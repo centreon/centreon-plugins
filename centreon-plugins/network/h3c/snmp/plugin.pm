@@ -29,14 +29,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'              => 'centreon::common::h3c::snmp::mode::cpu',
         'hardware'         => 'centreon::common::h3c::snmp::mode::hardware',
-        'interfaces'       => 'snmp_standard::mode::interfaces', 
+        'interfaces'       => 'centreon::common::h3c::snmp::mode::interfaces', 
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'centreon::common::h3c::snmp::mode::memory',
-    );
+    };
 
     return $self;
 }
