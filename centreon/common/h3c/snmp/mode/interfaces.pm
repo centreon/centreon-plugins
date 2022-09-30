@@ -18,46 +18,17 @@
 # limitations under the License.
 #
 
-package network::hp::procurve::snmp::mode::interfaces;
+package centreon::common::h3c::snmp::mode::interfaces;
 
 use base qw(snmp_standard::mode::interfaces);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-
-sub custom_poe_status_output {
-    my ($self, %options) = @_;
-
-    return 'poe status: ' . $self->{result_values}->{poestatus};
-}
 
 sub set_counters_errors {
     my ($self, %options) = @_;
 
     $self->SUPER::set_counters_errors(%options);
-
-    push @{$self->{maps_counters}->{int}},
-        { label => 'poe-status', filter => 'add_poe', type => 2, set => {
-                key_values => [
-                    { name => 'poestatus' }, { name => 'opstatus' }, 
-                    { name => 'admstatus' }, { name => 'display' }
-                ],
-                closure_custom_output => $self->can('custom_poe_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                 closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        },
-        { label => 'poe-power-actual', filter => 'add_poe', nlabel => 'interface.poe.power.actual.milliwatt', set => {
-                key_values => [ { name => 'poe_actual_power' }, { name => 'display' } ],
-                output_template => 'poe actual power: %s mW',
-                perfdatas => [
-                    { label => 'power_actual', template => '%.2f',
-                      unit => 'mW', label_extra_instance => 1, instance_use => 'display' }
-                ]
-            }
-        }
-    ;
 
     push @{$self->{maps_counters}->{int}},
         { label => 'input-power', filter => 'add_optical', nlabel => 'interface.input.power.dbm', set => {
@@ -109,7 +80,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'add-poe'     => { name => 'add_poe' },
         'add-optical' => { name => 'add_optical' }
     });
 
@@ -119,7 +89,7 @@ sub new {
 sub skip_interface {
     my ($self, %options) = @_;
 
-    return ($self->{checking} =~ /cast|errors|traffic|poe|status|volume|optical/ ? 0 : 1);
+    return ($self->{checking} =~ /cast|errors|traffic|status|volume|optical/ ? 0 : 1);
 }
 
 sub check_options {
@@ -127,7 +97,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{checking} = '';
-    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed', 'add_volume', 'add_poe', 'add_optical')) {
+    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed', 'add_volume', 'add_optical')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{checking} .= $_;
         }
@@ -137,54 +107,26 @@ sub check_options {
 sub reload_cache_custom {
     my ($self, %options) = @_;
 
-    $options{datas}->{poe_ports} = {};
-    my $oid_hpicfPoePethPsePortOperStatus = '.1.3.6.1.4.1.11.2.14.11.1.9.1.1.1.9';
-    my $snmp_result = $self->{snmp}->get_table(oid => $oid_hpicfPoePethPsePortOperStatus);
-    foreach (keys %$snmp_result) {
-        next if (! /^$oid_hpicfPoePethPsePortOperStatus\.(\d+)\.(\d+)$/);
-        $options{datas}->{poe_ports}->{$2} = $1 . '.' . $2;
-    }
-
     $options{datas}->{optical_ports} = {};
-    my $oid_hpicfXcvrPortDesc = '.1.3.6.1.4.1.11.2.14.11.5.1.82.1.1.1.1.2';
-    $snmp_result = $self->{snmp}->get_table(oid => $oid_hpicfXcvrPortDesc);
+    my $oid_hh3cTransceiverVendorName = '.1.3.6.1.4.1.25506.2.70.1.1.1.4';
+    my $snmp_result = $self->{snmp}->get_table(oid => $oid_hh3cTransceiverVendorName);
+
     foreach (keys %$snmp_result) {
-        next if (! /^$oid_hpicfXcvrPortDesc\.(\d+)$/);
+        next if (! /^$oid_hh3cTransceiverVendorName\.(\d+)$/);
         $options{datas}->{optical_ports}->{$1} = $snmp_result->{$_};
     }
 }
 
 my $mapping_optical = {
-    module_temperature => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.82.1.1.1.1.11'  }, # hpicfXcvrTemp (/1000)
-    voltage            => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.82.1.1.1.1.12'  }, # hpicfXcvrVoltage
-    bias_current       => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.82.1.1.1.1.13'  }, # hpicfXcvrBias (microamp / 1000)
-    output_power       => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.82.1.1.1.1.14'  }, # hpicfXcvrTxPower (/1000)
-    input_power        => { oid => '.1.3.6.1.4.1.11.2.14.11.5.1.82.1.1.1.1.15'  }  # hpicfXcvrRxPower (/1000)
+    output_power       => { oid => '.1.3.6.1.4.1.25506.2.70.1.1.1.9'  }, # hh3cTransceiverCurTXPower
+    input_power        => { oid => '.1.3.6.1.4.1.25506.2.70.1.1.1.12'  }, # hh3cTransceiverCurRXPower
+    module_temperature => { oid => '.1.3.6.1.4.1.25506.2.70.1.1.1.15'  }, # hh3cTransceiverTemperature
+    voltage            => { oid => '.1.3.6.1.4.1.25506.2.70.1.1.1.16'  }, # hh3cTransceiverVoltage
+    bias_current       => { oid => '.1.3.6.1.4.1.25506.2.70.1.1.1.17'  } # hh3cTransceiverBiasCurrent
 };
-
-my $oid_poe_status = '.1.3.6.1.4.1.11.2.14.11.1.9.1.1.1.9'; # hpicfPoePethPsePortOperStatus
-my $oid_poe_actual_power = '.1.3.6.1.4.1.11.2.14.11.1.9.1.1.1.8'; # hpicfPoePethPsePortActualPower
-
-my $map_poe_status = { 1 => 'deny', 2 => 'off', 3 => 'on' };
 
 sub custom_load {
     my ($self, %options) = @_;
-
-    if (defined($self->{option_results}->{add_poe})) {
-        my $ports = $self->{statefile_cache}->get(name => 'poe_ports');
-        my $instances = [];
-        foreach (@{$self->{array_interface_selected}}) {
-            push @$instances, $ports->{$_} if (defined($ports->{$_}));
-        }
-
-        if (scalar(@$instances) > 0) {
-            $self->{snmp}->load(
-                oids => [ $oid_poe_status, $oid_poe_actual_power ],
-                instances => $instances,
-                instance_regexp => '^(.*)$'
-            );
-        }
-    }
 
     return if (!defined($self->{option_results}->{add_optical}));
 
@@ -198,21 +140,6 @@ sub custom_load {
 sub custom_add_result {
     my ($self, %options) = @_;
 
-    if (defined($self->{option_results}->{add_poe})) {
-        my $ports = $self->{statefile_cache}->get(name => 'poe_ports');
-
-        if (defined($ports->{ $options{instance} })) {
-            my $index = $ports->{ $options{instance} };
-            if (defined($self->{results}->{$oid_poe_actual_power . '.' . $index})) {
-                $self->{int}->{ $options{instance} }->{poe_actual_power} = $self->{results}->{$oid_poe_actual_power . '.' . $index};
-            }
-
-            if (defined($self->{results}->{$oid_poe_status . '.' . $index})) {
-                $self->{int}->{ $options{instance} }->{poestatus} = $map_poe_status->{ $self->{results}->{$oid_poe_status . '.' . $index} };
-            }
-        }
-    }
-
     return if (!defined($self->{option_results}->{add_optical}));
 
     my $optical_ports = $self->{statefile_cache}->get(name => 'optical_ports');
@@ -221,28 +148,28 @@ sub custom_add_result {
     my $result = $self->{snmp}->map_instance(mapping => $mapping_optical, results => $self->{results}, instance => $options{instance});
 
     $self->{int}->{ $options{instance} }->{input_power} = undef;
-    if (defined($result->{input_power}) && $result->{input_power} != 0 && $result->{input_power} != -99999999) {
-        $self->{int}->{ $options{instance} }->{input_power} = $result->{input_power} / 1000;
+    if (defined($result->{input_power}) && $result->{input_power} != 0 && $result->{input_power} != 2147483647) {
+        $self->{int}->{ $options{instance} }->{input_power} = $result->{input_power} / 100;
     }
 
     $self->{int}->{$options{instance}}->{bias_current} = undef;
-    if (defined($result->{bias_current}) && $result->{bias_current} != 0) {
-        $self->{int}->{$options{instance}}->{bias_current} = $result->{bias_current} / 1000;
+    if (defined($result->{bias_current}) && $result->{bias_current} != 0 && $result->{bias_current} != 2147483647) {
+        $self->{int}->{$options{instance}}->{bias_current} = $result->{bias_current} / 100;
     }
 
     $self->{int}->{$options{instance}}->{output_power} = undef;
-    if (defined($result->{output_power}) && $result->{output_power} != 0 && $result->{output_power} != -99999999) {
-        $self->{int}->{$options{instance}}->{output_power} = $result->{output_power} / 1000;
+    if (defined($result->{output_power}) && $result->{output_power} != 0 && $result->{output_power} != 2147483647) {
+        $self->{int}->{$options{instance}}->{output_power} = $result->{output_power} / 100;
     }
 
     $self->{int}->{$options{instance}}->{module_temperature} = undef;
-    if (defined($result->{module_temperature}) && $result->{module_temperature} != 0) {
-        $self->{int}->{$options{instance}}->{module_temperature} = $result->{module_temperature} / 1000;
+    if (defined($result->{module_temperature}) && $result->{module_temperature} != 0  && $result->{module_temperature} != 2147483647) {
+        $self->{int}->{$options{instance}}->{module_temperature} = $result->{module_temperature};
     }
 
     $self->{int}->{$options{instance}}->{voltage} = undef;
-    if (defined($result->{voltage}) && $result->{voltage} != 0) {
-        $self->{int}->{$options{instance}}->{voltage} = $result->{voltage} / 10000;
+    if (defined($result->{voltage}) && $result->{voltage} != 0 && $result->{voltage} != 2147483647) {
+        $self->{int}->{$options{instance}}->{voltage} = $result->{voltage} / 100;
     }
 }
 
@@ -288,10 +215,6 @@ Check interface speed.
 
 Check interface data volume between two checks (not supposed to be graphed, useful for BI reporting).
 
-=item B<--add-poe>
-
-Check power over thernet.
-
 =item B<--add-optical>
 
 Check interface optical metrics.
@@ -310,16 +233,6 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{d
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
-=item B<--warning-poe-status>
-
-Set warning threshold for poe status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{poestatus}, %{display}
-
-=item B<--critical-poe-status>
-
-Set critical threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{poestatus}, %{display}
-
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
@@ -328,7 +241,7 @@ Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'to
 'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 
-And also: 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'voltage' (mV), 'module-temperature' (C), 'poe-power-actual'.
+And also: 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'voltage' (mV), 'module-temperature' (C).
 
 =item B<--units-traffic>
 
