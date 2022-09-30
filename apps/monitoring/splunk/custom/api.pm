@@ -80,7 +80,6 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8089;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
@@ -152,7 +151,6 @@ sub settings {
     my ($self, %options) = @_;
 
     $self->build_options_for_httplib();
-    # $self->{http}->add_header(key => 'Content-Type', value => 'Content-Type: application/x-www-form-urlencoded');
     $self->{http}->add_header(key => 'X-Requested-By', value => $self->{requested_by});
     $self->{http}->add_header(key => 'Authorization', value => 'Splunk ' . $self->{session_token}) if defined($self->{session_token});
     $self->{http}->set_options(%{$self->{option_results}});
@@ -352,6 +350,46 @@ __END__
 
 =head1 NAME
 
+Splunk API.
+
+=head1 SYNOPSIS
+
+Splunk API custom mode.
+
 =head1 REST API OPTIONS
+
+Splunk API.
+
+=over 8
+
+=item B<--hostname>
+
+Splunk server address.
+
+=item B<--port>
+
+API port (Default: 8089)
+
+=item B<--proto>
+
+Specify http if needed (Default: 'https')
+
+=item B<--api-username>
+
+Specify api username.
+
+=item B<--api-password>
+
+Specify api password.
+
+=item B<--timeout>
+
+Set HTTP timeout.
+
+=back
+
+=head1 DESCRIPTION
+
+B<custom>.
 
 =cut

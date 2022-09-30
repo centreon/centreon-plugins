@@ -94,7 +94,7 @@ sub manage_selection {
     my $splunkd_health_details = $options{custom}->get_splunkd_health();
 
     foreach my $feature (@{$splunkd_health_details}){
-        $self->{features}->{global}->{$feature->{feature_name}} = { 
+        $self->{features}->{global}->{ $feature->{feature_name} } = { 
                 display => $feature->{feature_name},
                 status => $feature->{global_health}
         };
