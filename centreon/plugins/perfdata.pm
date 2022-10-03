@@ -110,7 +110,7 @@ sub threshold_check {
     if ($options{value} =~ /[.,]/) {
         $options{value} = sprintf("%.$self->{output}->{option_results}->{float_precision}f", $options{value});
     }
-    
+
     foreach (@{$options{threshold}}) {
         next if (!defined($self->{threshold_label}->{$_->{label}}));
         next if (!defined($self->{threshold_label}->{$_->{label}}->{value}) || $self->{threshold_label}->{$_->{label}}->{value} eq '');

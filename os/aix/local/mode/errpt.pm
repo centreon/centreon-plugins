@@ -60,10 +60,10 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $extra_options = '';
-    if (defined($self->{option_results}->{error_type})){
+    if (defined($self->{option_results}->{error_type}) && $self->{option_results}->{error_type} ne '') {
         $extra_options .= ' -T '.$self->{option_results}->{error_type};
     }
-    if (defined($self->{option_results}->{error_class})){
+    if (defined($self->{option_results}->{error_class}) && $self->{option_results}->{error_class} ne '') {
         $extra_options .= ' -d '.$self->{option_results}->{error_class};
     }
     if (defined($self->{option_results}->{error_id}) && $self->{option_results}->{error_id} ne ''){
@@ -110,7 +110,7 @@ sub manage_selection {
     shift @lines;
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
-        
+
         my ($identifier, $timestamp, $resource_name, $description) = ($1, $2, $5, $6);
         $results->{ $timestamp . '~' . $identifier . '~' . $resource_name } = { description => $description };
     }
