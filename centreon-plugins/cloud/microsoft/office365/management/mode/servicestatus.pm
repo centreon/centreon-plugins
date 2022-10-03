@@ -40,9 +40,10 @@ sub custom_status_output {
     my $msg = "status is '" . $self->{result_values}->{status} . "'";
     if (!$self->{output}->is_status(value => $self->{instance_mode}->{last_status}, compare => 'ok', litteral => 1)) {
         $msg .= sprintf(
-            ' [issue: %s %s]',
+            ' [issue: %s %s %s]',
             $self->{result_values}->{issue_startDateTime},
-            $self->{result_values}->{issue_title}
+            $self->{result_values}->{issue_title},
+            $self->{result_values}->{classification}
         );
     }
     return $msg;
@@ -64,7 +65,7 @@ sub set_counters {
     $self->{maps_counters}->{services} = [
         { label => 'status', type => 2, critical_default => '%{status} !~ /serviceOperational|serviceRestored/i', set => {
                 key_values => [
-                    { name => 'status' }, { name => 'service_name' },
+                    { name => 'status' }, { name => 'service_name' }, { name => 'classification' },
                     { name => 'issue_startDateTime' }, { name => 'issue_title' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -103,10 +104,12 @@ sub manage_selection {
         $self->{services}->{ $service->{id} }->{status} = $service->{status};
         $self->{services}->{ $service->{id} }->{issue_startDateTime} = '-';
         $self->{services}->{ $service->{id} }->{issue_title} = '-';
+        $self->{services}->{ $service->{id} }->{classification} = '-';
         if (defined($service->{issues}) && scalar(@{$service->{issues}}) > 0) {
             my $issue = pop @{$service->{issues}};
             $self->{services}->{ $service->{id} }->{issue_startDateTime} = $issue->{startDateTime};
             $self->{services}->{ $service->{id} }->{issue_title} = $issue->{title};
+            $self->{services}->{ $service->{id} }->{classification} = $issue->{classification};
         }
     }
 
@@ -133,12 +136,12 @@ Filter services (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{service_name}, %{status}
+Can used special variables like: %{service_name}, %{status}, %{classification}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} !~ /serviceOperational|serviceRestored/i').
-Can used special variables like: %{service_name}, %{status}
+Can used special variables like: %{service_name}, %{status}, %{classification}
 
 =back
 
