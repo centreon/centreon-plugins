@@ -29,71 +29,85 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf(
+    return sprintf(
         'status: %s [state: %s] [reason: %s]',
         $self->{result_values}->{status},
         $self->{result_values}->{state},
         $self->{result_values}->{reason}
     );
-    return $msg;
+}
+
+sub pool_long_output {
+    my ($self, %options) = @_;
+
+    return "checking pool '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_pool_output {
+    my ($self, %options) = @_;
+
+    return "Pool '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All Pools are ok', skipped_code => { -10 => 1 } }
+        { name => 'pools', type => 3, cb_prefix_output => 'prefix_pool_output', cb_long_output => 'pool_long_output', indent_long_output => '    ', message_multiple => 'All pools are ok',
+            group => [
+                { name => 'pool_status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'pool_connections', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'compact_flash', display_long => 1, cb_prefix_output => 'prefix_compact_flash_output', message_multiple => 'compact flash are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
     ];
 
-    $self->{maps_counters}->{pool} = [
+    $self->{maps_counters}->{pool_status} = [
         {
-            label => 'status', type => 2, warning_default => '%{state} eq "enabled" and %{status} eq "yellow"', critical_default => '%{state} eq "enabled" and %{status} eq "red"',  
+            label => 'status',
+            type => 2,
+            warning_default => '%{state} eq "enabled" and %{status} eq "yellow"',
+            critical_default => '%{state} eq "enabled" and %{status} eq "red"',  
             set => {
-                key_values => [ { name => 'state' }, { name => 'status' }, { name => 'reason' },{ name => 'display' } ],
+                key_values => [ { name => 'state' }, { name => 'status' }, { name => 'reason' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
-        { label => 'current-server-connections', set => {
+        }
+    ];
+
+    $self->{maps_counters}->{pool_connections} = [
+        { label => 'current-server-connections', nlabel => 'pool.connections.server.count', set => {
                 key_values => [ { name => 'ltmPoolStatServerCurConns' }, { name => 'display' } ],
                 output_template => 'current server connections: %s',
                 perfdatas => [
-                    { label => 'current_server_connections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'current-active-members', display_ok => 0, set => {
+        { label => 'current-active-members', nlabel => 'pool.members.active.count', set => {
                 key_values => [ { name => 'ltmPoolActiveMemberCnt' }, { name => 'display' } ],
                 output_template => 'current active members: %s',
                 perfdatas => [
-                    { label => 'current_active_members', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'current-total-members', display_ok => 0, set => {
+        { label => 'current-total-members', display_ok => 0, nlabel => 'pool.members.total.count', set => {
                 key_values => [ { name => 'ltmPoolMemberCnt' }, { name => 'display' } ],
                 output_template => 'current total members: %s',
                 perfdatas => [
-                    { label => 'current_total_members', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
     ];
 }
 
-sub prefix_pool_output {
-    my ($self, %options) = @_;
-    
-    return "Pool '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
@@ -115,15 +129,15 @@ my $map_pool_enabled = {
 # New OIDS
 my $mapping = {
     new => {
-        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.2', map => $map_pool_status },
-        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.3', map => $map_pool_enabled },
-        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.5' }
+        status => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.2', map => $map_pool_status }, # AvailState
+        state => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.3', map => $map_pool_enabled }, # EnabledState
+        reason => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.5' } # StatusReason
     },
     old => {
-        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.18', map => $map_pool_status },
-        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.19', map => $map_pool_enabled },
-        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.21' }
-    },
+        status => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.18', map => $map_pool_status }, # AvailState
+        state => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.19', map => $map_pool_enabled }, # EnabledState
+        reason => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.21' } # StatusReason
+    }
 };
 my $mapping2 = {
     ltmPoolStatServerCurConns => { oid => '.1.3.6.1.4.1.3375.2.2.5.2.3.1.8' },
@@ -133,68 +147,72 @@ my $mapping2 = {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $mapping->{new}->{AvailState}->{oid} },
-            { oid => $mapping->{old}->{AvailState}->{oid} },
-        ],
-        nothing_quit => 1
-    );
-    
-    my ($branch_name, $map) = ($mapping->{new}->{AvailState}->{oid}, 'new');
-    if (!defined($snmp_result->{$mapping->{new}->{AvailState}->{oid}}) || scalar(keys %{$snmp_result->{$mapping->{new}->{AvailState}->{oid}}}) == 0)  {
-        ($branch_name, $map) = ($mapping->{old}->{AvailState}->{oid}, 'old');
+
+    my ($branch_name, $map) = ($mapping->{new}->{status}->{oid}, 'new');
+    my $snmp_result = $options{snmp}->get_table(oid => $mapping->{new}->{status}->{oid} );
+
+    if (scalar(keys %$snmp_result) == 0)  {
+        ($branch_name, $map) = ($mapping->{old}->{status}->{oid}, 'old');
+        $snmp_result = $options{snmp}->get_table(
+            oid => $mapping->{old}->{status}->{oid},
+            nothing_quit => 1
+        );
     }
 
-    $self->{pool} = {};
-    foreach my $oid (keys %{$snmp_result->{$branch_name}}) {
+    $self->{pools} = {};
+    foreach my $oid (keys %$snmp_result) {
         $oid =~ /^$branch_name\.(.*?)\.(.*)$/;
         my ($num, $index) = ($1, $2);
-        
-        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch_name}, instance => $num . '.' . $index);
+
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result, instance => $num . '.' . $index);
         my $name = $self->{output}->decode(join('', map(chr($_), split(/\./, $index))));
-        
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping pool '" . $name . "'.", debug => 1);
             next;
         }
 
-        $self->{pool}->{$num . '.' . $index} = {
+        $self->{pools}->{$num . '.' . $index} = {
             display => $name,
-            status => $result->{AvailState}
+            pool_status => {
+                display => $name,
+                status => $result->{status}
+            }
         };
+    }
+
+    if (scalar(keys %{$self->{pools}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->option_exit();
     }
 
     $options{snmp}->load(
         oids => [
-            $mapping->{$map}->{EnabledState}->{oid},
-            $mapping->{$map}->{StatusReason}->{oid},
+            $mapping->{$map}->{state}->{oid},
+            $mapping->{$map}->{reason}->{oid},
             $mapping2->{ltmPoolStatServerCurConns}->{oid},
             $mapping2->{ltmPoolActiveMemberCnt}->{oid},
             $mapping2->{ltmPoolMemberCnt}->{oid},
         ], 
-        instances => [keys %{$self->{pool}}], 
+        instances => [keys %{$self->{pools}}], 
         instance_regexp => '^(.*)$'
     );
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
 
-    foreach (keys %{$self->{pool}}) {
+    foreach (keys %{$self->{pools}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result, instance => $_);
         my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
-        
-        $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
-        $self->{pool}->{$_}->{reason} = $result->{StatusReason};
-        $self->{pool}->{$_}->{state} = $result->{EnabledState};
-        $self->{pool}->{$_}->{ltmPoolStatServerCurConns} = $result2->{ltmPoolStatServerCurConns};
-        $self->{pool}->{$_}->{ltmPoolActiveMemberCnt} = $result2->{ltmPoolActiveMemberCnt};
-        $self->{pool}->{$_}->{ltmPoolMemberCnt} = $result2->{ltmPoolMemberCnt};
-    }
 
-    if (scalar(keys %{$self->{pool}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
-        $self->{output}->option_exit();
+        $result->{reason} = '-' if (!defined($result->{reason}) || $result->{reason} eq '');
+        $self->{pools}->{$_}->{pool_status}->{reason} = $result->{reason};
+        $self->{pools}->{$_}->{pool_status}->{state} = $result->{state};
+        $self->{pools}->{$_}->{pool_connections} = {
+            display => $self->{pools}->{$_}->{display},
+            ltmPoolStatServerCurConns => $result2->{ltmPoolStatServerCurConns},
+            ltmPoolActiveMemberCnt => $result2->{ltmPoolActiveMemberCnt},
+            ltmPoolMemberCnt => $result2->{ltmPoolMemberCnt}
+        };
     }
 }
 
