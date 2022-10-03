@@ -200,7 +200,7 @@ sub set_counters {
     }
 
     push @{$self->{maps_counters}->{drives}}, 
-        { label => 'drive-temperature', nlabel => 'battery.charge.remaining.percent', set => {
+        { label => 'drive-temperature', nlabel => 'drive.temperature.celsius', set => {
                 key_values => [ { name => 'temperature' }, { name => 'cage_id' }, { name => 'drive_id' } ],
                 output_template => 'temperature: %s C',
                 closure_custom_perfdata => sub {
