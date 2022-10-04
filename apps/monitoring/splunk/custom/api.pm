@@ -216,7 +216,8 @@ sub get_index_info {
 
     my $index_res_info = $self->request_api(
         method => 'GET',
-        endpoint => '/services/data/indexes'
+        endpoint => '/services/data/indexes',
+        get_param => ['count=-1']
     );    
 
     my @index_update_time;
@@ -261,7 +262,7 @@ sub query_count {
         method => 'POST',
         endpoint => '/services/search/jobs',
         post_param => [
-        'search=' . $options{query} . '| stats count'
+            'search=' . $options{query} . '| stats count'
         ]
     );
 
@@ -307,6 +308,7 @@ sub request_api {
     my $content = $self->{http}->request(
         method => $options{method},
         url_path => $options{endpoint},
+        get_param => $options{get_param},
         post_param => $options{post_param},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
@@ -356,7 +358,7 @@ Splunk API.
 
 Splunk API custom mode.
 
-=head1 REST API OPTIONS
+=head1 XMLAPI OPTIONS
 
 Splunk API.
 
