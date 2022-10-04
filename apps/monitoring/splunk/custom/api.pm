@@ -125,7 +125,7 @@ sub clean_session_token {
 sub convert_iso8601_to_epoch {
     my ($self, %options) = @_;
     
-    if ($options{time_string} =~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\+|\-)(\d{4})/) {
+    if ($options{time_string} =~ /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})([+-]\d{4})/) {
         my $dt = DateTime->new(
             year       => $1,
             month      => $2,
@@ -133,12 +133,11 @@ sub convert_iso8601_to_epoch {
             hour       => $4,
             minute     => $5,
             second     => $6,
-            time_zone  => $7 . $8
+            time_zone  => $7
         );
 
-        my $epoch_time = $dt->epoch;
+        my $epoch_time = $dt->epoch();
         return $epoch_time;
-
     }
     
     $self->{output}->add_option_msg(short_msg => "Wrong date format: $options{time_string}");
@@ -224,8 +223,8 @@ sub get_index_info {
     foreach (@{$index_res_info->{entry}}){
         next if (defined($_->{title}) && defined($options{index_name}) && $options{index_name} ne '' && $_->{title} !~ /$options{index_name}/);
         foreach my $attribute (@{$_->{content}->{'s:dict'}->{'s:key'}}){
-            next if $attribute->{name} ne 'maxTime' || !defined($attribute->{content});
-            my $epoch_time = ( time() - $self->convert_iso8601_to_epoch( time_string => $attribute->{content}) );
+            next if ($attribute->{name} ne 'maxTime' || !defined($attribute->{content}));
+            my $epoch_time = ( time() - $self->convert_iso8601_to_epoch(time_string => $attribute->{content}) );
             push @index_update_time, { index_name => $_->{title}, ts_last_update => $epoch_time }
         }
     }
