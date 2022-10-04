@@ -72,7 +72,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $index_info = $options{custom}->get_index_info(
-        index_name => $self->{option_results}->{index_name},
+        index_name => $self->{option_results}->{index_name}
     );
 
     foreach my $value (@{$index_info}){

@@ -222,7 +222,7 @@ sub get_index_info {
 
     my @index_update_time;
     foreach (@{$index_res_info->{entry}}){
-        next if defined($_->{title}) && $_->{title} !~ /$options{index_name}/;
+        next if (defined($_->{title}) && defined($options{index_name}) && $options{index_name} ne '' && $_->{title} !~ /$options{index_name}/);
         foreach my $attribute (@{$_->{content}->{'s:dict'}->{'s:key'}}){
             next if $attribute->{name} ne 'maxTime' || !defined($attribute->{content});
             my $epoch_time = ( time() - $self->convert_iso8601_to_epoch( time_string => $attribute->{content}) );
