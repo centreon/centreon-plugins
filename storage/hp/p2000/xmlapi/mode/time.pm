@@ -83,21 +83,41 @@ sub check_options {
     }
 }
 
-sub get_from_epoch {
+sub get_from_datetime {
     my ($self, %options) = @_;
 
-    my $timezone = 'UTC';
-    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
-        $timezone = $self->{option_results}->{timezone};
+    if ($options{date} !~ /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})$/i) {
+        $self->{output}->add_option_msg(short_msg => "unknown date format: $options{date}");
+        $self->{output}->option_exit();
     }
 
+    my $timezone = 'UTC';
+    if (defined($options{timezone}) && $options{timezone} ne '') {
+        $timezone = $options{timezone};
+    } elsif (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+        $timezone = $self->{option_results}->{timezone};
+    }
     my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
-    my $dt = DateTime->from_epoch(
-        epoch => $options{date},
+    
+    my $dt = DateTime->new(
+        year       => $1,
+        month      => $2,
+        day        => $3,
+        hour       => $4,
+        minute     => $5,
+        second     => $6,
         %$tz
     );
+
+    my $epoch = $dt->epoch();
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+        $timezone = $self->{option_results}->{timezone};
+        $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
+        $dt->set_time_zone($tz->{time_zone}) if (defined($tz->{time_zone}));
+    }
+
     my @remote_date = ($dt->year, $dt->month, $dt->day, $dt->hour, $dt->minute, $dt->second);
-    return ($dt->epoch, \@remote_date, $timezone);
+    return ($dt->epoch(), \@remote_date, $timezone);
 }
 
 sub get_target_time {
@@ -106,7 +126,7 @@ sub get_target_time {
     my ($result) = $options{custom}->get_infos(
         cmd => 'show controller-date', 
         base_type => 'time-settings-table',
-        properties_name => '^date-time-numeric$'
+        properties_name => '^(?:date-time|time-zone-offset)$'
     );
 
     if (!defined($result->[0])) {
@@ -114,7 +134,7 @@ sub get_target_time {
         $self->{output}->option_exit();
     }
 
-    return $self->get_from_epoch(date => $result->[0]->{'date-time-numeric'});
+    return $self->get_from_datetime(date => $result->[0]->{'date-time'}, timezone => $result->[0]->{'time-zone-offset'});
 }
 
 sub manage_selection {
