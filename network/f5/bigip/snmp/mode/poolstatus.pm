@@ -228,7 +228,7 @@ sub add_members {
         my $result = $options{snmp}->map_instance(mapping => $mapping_members->{ $options{map} }, results => $snmp_result, instance => $instance);
         $result->{reason} = '-' if (!defined($result->{reason}) || $result->{reason} eq '');
 
-        if ($result->{state} ne 'disabled') {
+        if ($result->{state} !~ /disabled/) {
             $self->{pools}->{$poolInstance}->{pool_status}->{membersAllDisabled} = 'no';
         }
 
