@@ -181,9 +181,9 @@ sub manage_selection {
             'echo "===spaceSSD==="',
             'showsys -space -devtype SSD',
             'echo "===spaceFC==="',
-            'showsys -space -devtype SSD',
+            'showsys -space -devtype FC',
             'echo "===spaceNL==="',
-            'showsys -space -devtype SSD'
+            'showsys -space -devtype NL'
         ]
     );
 
@@ -195,11 +195,11 @@ sub manage_selection {
             $type !~ /$self->{option_results}->{filter_type}/);
 
         my ($total, $free, $allocated, $unavailable, $failed);
-        $total = $1 * 1000 * 1000 if ($entry =~ /^Total\s+Capacity\s+:\s*(\d+)/m);
-        $free = $1 * 1000 * 1000 if ($entry =~ /^  Free\s+:\s*(\d+)/m);
-        $allocated = $1 * 1000 * 1000 if ($entry =~ /^  Allocated\s+:\s*(\d+)/m);
-        $unavailable = $1 * 1000 * 1000 if ($entry =~ /^  Unavailable\s+:\s*(\d+)/m);
-        $failed = $1 * 1000 * 1000 if ($entry =~ /^  Failed\s+:\s*(\d+)/m);
+        $total = $1 * 1024 * 1024 if ($entry =~ /^Total\s+Capacity\s+:\s*(\d+)/m);
+        $free = $1 * 1024 * 1024 if ($entry =~ /^  Free\s+:\s*(\d+)/m);
+        $allocated = $1 * 1024 * 1024 if ($entry =~ /^  Allocated\s+:\s*(\d+)/m);
+        $unavailable = $1 * 1024 * 1024 if ($entry =~ /^  Unavailable\s+:\s*(\d+)/m);
+        $failed = $1 * 1024 * 1024 if ($entry =~ /^  Failed\s+:\s*(\d+)/m);
 
         next if (!defined($total) || $total == 0);
 
