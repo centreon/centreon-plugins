@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_oline_output {
+    my ($self, %options) = @_;
+
+    return "Output Line '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -38,20 +44,18 @@ sub set_counters {
                 key_values => [ { name => 'xupsOutputLoad', no_value => -1 } ],
                 output_template => 'Load : %.2f %%',
                 perfdatas => [
-                    { value => 'xupsOutputLoad', template => '%.2f', 
-                      min => 0, max => 100 },
-                ],
+                    { template => '%.2f', min => 0, max => 100 }
+                ]
             }
         },
         { label => 'frequence', nlabel => 'lines.output.frequence.hertz', set => {
                 key_values => [ { name => 'xupsOutputFrequency', no_value => 0 } ],
                 output_template => 'Frequence : %.2f Hz',
                 perfdatas => [
-                    { value => 'xupsOutputFrequency', template => '%.2f', 
-                      unit => 'Hz' },
-                ],
+                    { template => '%.2f', unit => 'Hz' }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{oline} = [
@@ -59,29 +63,26 @@ sub set_counters {
                 key_values => [ { name => 'xupsOutputCurrent', no_value => 0 } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { value => 'xupsOutputCurrent', template => '%.2f', 
-                      min => 0, unit => 'A', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', min => 0, unit => 'A', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'voltage', nlabel => 'line.output.voltage.volt', set => {
                 key_values => [ { name => 'xupsOutputVoltage', no_value => 0 } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { value => 'xupsOutputVoltage', template => '%.2f', 
-                      unit => 'V', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => 'V', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'power', nlabel => 'line.output.power.watt', set => {
                 key_values => [ { name => 'xupsOutputWatts', no_value => 0 } ],
                 output_template => 'Power: %.2f W',
                 perfdatas => [
-                    { value => 'xupsOutputWatts', template => '%.2f', 
-                      unit => 'W', label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => 'W', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -96,20 +97,14 @@ sub new {
     return $self;
 }
 
-sub prefix_oline_output {
-    my ($self, %options) = @_;
-
-    return "Output Line '" . $options{instance_value}->{display} . "' ";
-}
-
 my $mapping = {
     xupsOutputVoltage   => { oid => '.1.3.6.1.4.1.534.1.4.4.1.2' }, # in V
     xupsOutputCurrent   => { oid => '.1.3.6.1.4.1.534.1.4.4.1.3' }, # in A
-    xupsOutputWatts     => { oid => '.1.3.6.1.4.1.534.1.4.4.1.4' }, # in W
+    xupsOutputWatts     => { oid => '.1.3.6.1.4.1.534.1.4.4.1.4' }  # in W
 };
 my $mapping2 = {
     xupsOutputLoad      => { oid => '.1.3.6.1.4.1.534.1.4.1' }, # in %
-    xupsOutputFrequency => { oid => '.1.3.6.1.4.1.534.1.4.2' }, # in dHZ
+    xupsOutputFrequency => { oid => '.1.3.6.1.4.1.534.1.4.2' }  # in dHZ
 };
 
 my $oid_xupsOutput = '.1.3.6.1.4.1.534.1.4';
@@ -123,16 +118,16 @@ sub manage_selection {
         oid => $oid_xupsOutput,
         nothing_quit => 1
     );
-    
+
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$oid_xupsOutputEntry\.\d+\.(.*)$/);
         my $instance = $1;
         next if (defined($self->{oline}->{$instance}));
-        
+
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         $self->{oline}->{$instance} = { display => $instance, %$result };
     }
-    
+
     if (scalar(keys %{$self->{oline}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No output lines found.");
         $self->{output}->option_exit();
