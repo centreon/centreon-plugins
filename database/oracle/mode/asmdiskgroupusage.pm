@@ -24,47 +24,18 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_offline_output {
     my ($self, %options) = @_;
-    my $msg = 'Offline disks : ' . $self->{result_values}->{offline_disks};
-    
-    return $msg;
-}
-
-sub custom_offline_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{offline_disks} = $options{new_datas}->{$self->{instance} . '_offline_disks'};
-    $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+ 
+    return 'Offline disks : ' . $self->{result_values}->{offline_disks};
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status: ' . $self->{result_values}->{status};
-    return $msg;
-}
-
-sub custom_status_threshold {
-    my ($self, %options) = @_;
-
-    my $status = catalog_status_threshold($self, %options);
-    $self->{instance_mode}->{last_status} = 0;
-    if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-        $self->{instance_mode}->{last_status} = 1;
-    }
-    return $status;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    return 0;
+    return 'status: ' . $self->{result_values}->{status};
 }
 
 sub custom_usage_perfdata {
@@ -98,7 +69,7 @@ sub custom_usage_perfdata {
 
 sub custom_usage_threshold {
     my ($self, %options) = @_;
-    
+
     # cannot use '%' or free option with unlimited system 
     return 'ok' if ($self->{result_values}->{total} <= 0 && ($self->{instance_mode}->{option_results}->{units} eq '%' || $self->{instance_mode}->{option_results}->{free}));
     my ($exit, $threshold_value);
@@ -108,6 +79,7 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_used};
         $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
+
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
@@ -127,11 +99,13 @@ sub custom_usage_output {
     } else {
         my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
         my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-        $msg = sprintf("%s Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $label,
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+        $msg = sprintf(
+            "%s Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+            $label,
+            $total_size_value . " " . $total_size_unit,
+            $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+            $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+        );
     }
 
     return $msg;
@@ -139,8 +113,6 @@ sub custom_usage_output {
 
 sub custom_usage_calc {
     my ($self, %options) = @_;
-
-    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     
     my $label_used = 'used';
     $label_used .= '_' . $options{extra_options}->{label_ref}
@@ -159,28 +131,37 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_dg_output {
+    my ($self, %options) = @_;
+
+    return "Diskgroup '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'dg', type => 1, cb_prefix_output => 'prefix_dg_output', message_multiple => 'All diskgroups are ok', skipped_code => { -10 => 1 } },
+        { name => 'dg', type => 1, cb_prefix_output => 'prefix_dg_output', message_multiple => 'All diskgroups are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{dg} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+        { label => 'status', type => 2, set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'offline-disks', set => {
+        {
+            label => 'offline-disks',
+            type => 2,
+            warning_default => '(%{offline_disks} > 0 && %{type} eq "extern") || (%{offline_disks} > 1 && %{type} eq "high")',
+            critical_default => '%{offline_disks} > 0 && %{type} =~ /^normal|high$/',
+            set => {
                 key_values => [ { name => 'offline_disks' }, { name => 'type' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_offline_calc'),
                 closure_custom_output =>  $self->can('custom_offline_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'usage', set => {
@@ -188,7 +169,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'usage-failure', set => {
@@ -196,45 +177,24 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'failure' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
-}
-
-sub prefix_dg_output {
-    my ($self, %options) = @_;
-
-    return "Diskgroup '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "unknown-status:s"          => { name => 'unknown_status', default => '' },
-        "warning-status:s"          => { name => 'warning_status', default => '' },
-        "critical-status:s"         => { name => 'critical_status', default => '' },
-        "warning-offline-disks:s"   => { name => 'warning_offline_disks', default => '(%{offline_disks} > 0 && %{type} eq "extern") || (%{offline_disks} > 1 && %{type} eq "high")' },
-        "critical-offline-disks:s"  => { name => 'critical_offline_disks', default => '%{offline_disks} > 0 && %{type} =~ /^normal|high$/' },
-        "filter-name:s"             => { name => 'filter_name', },
-        "units:s"                   => { name => 'units', default => '%' },
-        "free"                      => { name => 'free' },
+        'filter-name:s' => { name => 'filter_name', },
+        'units:s'       => { name => 'units', default => '%' },
+        'free'          => { name => 'free' }
     });
- 
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [
-        'warning_offline_disks', 'critical_offline_disks',
-        'warning_status', 'critical_status', 'unknown_status',
-    ]);
 }
 
 sub manage_selection {
@@ -245,11 +205,11 @@ sub manage_selection {
     $options{sql}->query(query => $query);
     my $result = $options{sql}->fetchall_arrayref();
     $options{sql}->disconnect();
-    
+
     $self->{dg} = {};
     foreach my $row (@$result) {
         my ($name, $state, $type, $total_mb, $usable_file_mb, $offline_disks, $free_mb) = @$row;
-        
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter name.", debug => 1);
@@ -270,7 +230,7 @@ sub manage_selection {
             offline_disks => $offline_disks
         };                        
     }
-    
+
     if (scalar(keys %{$self->{dg}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No diskgroup found.");
         $self->{output}->option_exit();
@@ -305,17 +265,17 @@ Threshold critical.
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '').
+Set warning threshold for status.
 Can used special variables like: %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Set warning threshold for status.
 Can used special variables like: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Set critical threshold for status.
 Can used special variables like: %{status}, %{display}
 
 =item B<--warning-offline-disks>
