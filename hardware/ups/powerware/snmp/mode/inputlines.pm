@@ -25,6 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_iline_output {
+    my ($self, %options) = @_;
+
+    return "Input Line '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -84,12 +90,6 @@ sub new {
     return $self;
 }
 
-sub prefix_iline_output {
-    my ($self, %options) = @_;
-
-    return "Input Line '" . $options{instance_value}->{display} . "' ";
-}
-
 my $mapping = {
     xupsInputVoltage   => { oid => '.1.3.6.1.4.1.534.1.3.4.1.2' }, # in V
     xupsInputCurrent   => { oid => '.1.3.6.1.4.1.534.1.3.4.1.3' }, # in A
@@ -145,15 +145,15 @@ sub manage_selection {
     my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => '0');
 
     $result->{xupsInputFrequency} = defined($result->{xupsInputFrequency}) ? ($result->{xupsInputFrequency} * 0.1) : 0;
-    $self->{global} = { %$result };
+    $self->{global} = $result;
 
     $result = $options{snmp}->map_instance(mapping => $mapping3, results => $snmp_result, instance => '0');
     if ((!defined($self->{option_results}->{'warning-voltage'}) || $self->{option_results}->{'warning-voltage'} eq '') &&
         (!defined($self->{option_results}->{'critical-voltage'}) || $self->{option_results}->{'critical-voltage'} eq '')
     ) {
         my $th = '';
-        $th .= $result->{upsConfigHighVoltageTransferPoint} if (defined($result->{upsConfigHighVoltageTransferPoint}) && $result->{upsConfigHighVoltageTransferPoint} =~ /\d+/);
-        $th = $result->{upsConfigLowVoltageTransferPoint} . ':' . $th if (defined($result->{upsConfigLowVoltageTransferPoint}) && $result->{upsConfigLowVoltageTransferPoint} =~ /\d+/);
+        $th .= $result->{upsConfigHighVoltageTransferPoint} if (defined($result->{upsConfigHighVoltageTransferPoint}) && $result->{upsConfigHighVoltageTransferPoint} =~ /\d+/ && $result->{upsConfigHighVoltageTransferPoint} != 0);
+        $th = $result->{upsConfigLowVoltageTransferPoint} . ':' . $th if (defined($result->{upsConfigLowVoltageTransferPoint}) && $result->{upsConfigLowVoltageTransferPoint} =~ /\d+/ && $result->{upsConfigLowVoltageTransferPoint} != 0);
         $self->{perfdata}->threshold_validate(label => 'critical-voltage', value => $th) if ($th ne '');
     }
 }

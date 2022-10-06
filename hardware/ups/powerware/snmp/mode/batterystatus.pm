@@ -46,41 +46,41 @@ sub set_counters {
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'charge-remaining', , nlabel => 'battery.charge.remaining.percent', set => {
                 key_values => [ { name => 'xupsBatCapacity' } ],
                 output_template => 'remaining capacity: %s %%',
                 perfdatas => [
-                    { value => 'xupsBatCapacity', template => '%s', min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%s', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'charge-remaining-minutes', nlabel => 'battery.charge.remaining.minutes', display_ok => 0, set => {
                 key_values => [ { name => 'xupsBatTimeRemaining' } ],
                 output_template => 'remaining time: %s minutes',
                 perfdatas => [
-                    { value => 'xupsBatTimeRemaining', template => '%s', min => 0, unit => 'm' },
-                ],
+                    { template => '%s', min => 0, unit => 'm' }
+                ]
             }
         },
         { label => 'current', nlabel => 'battery.current.ampere', display_ok => 0, set => {
                 key_values => [ { name => 'xupsBatCurrent', no_value => 0 } ],
                 output_template => 'current: %s A',
                 perfdatas => [
-                    { value => 'xupsBatCurrent', template => '%s', unit => 'A' },
-                ],
+                    { template => '%s', unit => 'A' }
+                ]
             }
         },
         { label => 'voltage', nlabel => 'battery.voltage.volt', display_ok => 0, set => {
                 key_values => [ { name => 'xupsBatVoltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { value => 'xupsBatVoltage', template => '%s', unit => 'V' },
-                ],
+                    { template => '%s', unit => 'V' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -92,7 +92,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
         'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /batteryDischarging/i' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' }
     });
 
     return $self;
@@ -108,7 +108,7 @@ sub check_options {
 my $map_battery_status = {
     1 => 'batteryCharging', 2 => 'batteryDischarging',
     3 => 'batteryFloating', 4 => 'batteryResting',
-    5 => 'unknown',
+    5 => 'unknown'
 };
 
 my $mapping = {
@@ -116,12 +116,12 @@ my $mapping = {
     xupsBatVoltage       => { oid => '.1.3.6.1.4.1.534.1.2.2' }, # in V
     xupsBatCurrent       => { oid => '.1.3.6.1.4.1.534.1.2.3' }, # in dA
     xupsBatCapacity      => { oid => '.1.3.6.1.4.1.534.1.2.4' },
-    xupsBatteryAbmStatus => { oid => '.1.3.6.1.4.1.534.1.2.5', map => $map_battery_status },
+    xupsBatteryAbmStatus => { oid => '.1.3.6.1.4.1.534.1.2.5', map => $map_battery_status }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $snmp_result = $options{snmp}->get_leef(
         oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
         nothing_quit => 1
