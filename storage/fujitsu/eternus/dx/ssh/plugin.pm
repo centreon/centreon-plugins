@@ -22,22 +22,23 @@ package storage::fujitsu::eternus::dx::ssh::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'physicaldisk'     => 'storage::fujitsu::eternus::dx::ssh::mode::physicaldisk',
-                         'psu'              => 'storage::fujitsu::eternus::dx::ssh::mode::psu',
-                         'raid-groups'      => 'storage::fujitsu::eternus::dx::ssh::mode::raidgroups',
-                         'volume-stats'     => 'storage::fujitsu::eternus::dx::ssh::mode::volumestats',
-                         'cpu'              => 'storage::fujitsu::eternus::dx::ssh::mode::cpu',
-                         'port-stats'		=> 'storage::fujitsu::eternus::dx::ssh::mode::portstats',
-						);
+    $self->{modes} = {
+        'cpu'          => 'storage::fujitsu::eternus::dx::ssh::mode::cpu',
+        'physicaldisk' => 'storage::fujitsu::eternus::dx::ssh::mode::physicaldisk',
+        'port-stats'   => 'storage::fujitsu::eternus::dx::ssh::mode::portstats',
+        'psu'          => 'storage::fujitsu::eternus::dx::ssh::mode::psu',
+        'raid-groups'  => 'storage::fujitsu::eternus::dx::ssh::mode::raidgroups',
+        'volume-stats' => 'storage::fujitsu::eternus::dx::ssh::mode::volumestats'
+    };
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }

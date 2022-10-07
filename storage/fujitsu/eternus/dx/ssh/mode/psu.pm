@@ -44,18 +44,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        'hostname:s'              => { name => 'hostname' },
-        'ssh-option:s@'           => { name => 'ssh_option' },
-        'ssh-path:s'              => { name => 'ssh_path' },
-        'ssh-command:s'           => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'               => { name => 'timeout', default => 30 },
-        'command:s'               => { name => 'command', default => 'show' },
-        'command-path:s'          => { name => 'command_path' },
-        'command-options:s'       => { name => 'command_options', default => 'enclosure-status -type all' },
-        'filter:s@'               => { name => 'filter' },
-        'threshold-overload:s@'   => { name => 'threshold_overload' },
-        'no-component:s'          => { name => 'no_component' }
+    $options{options}->add_options(arguments => {
+        'filter:s@'             => { name => 'filter' },
+        'threshold-overload:s@' => { name => 'threshold_overload' },
+        'no-component:s'        => { name => 'no_component' }
     });
 
     $self->{no_components} = undef;
@@ -65,10 +57,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
     
     $self->{filter} = [];
     foreach my $val (@{$self->{option_results}->{filter}}) {
@@ -104,13 +92,10 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        ssh_pipe => 1,
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'show',
+        command_options => "enclosure-status -type all\n",
+        ssh_pipe => 1
     );
 
     #Controller Enclosure #0 Information
@@ -242,40 +227,9 @@ __END__
 
 Check power supplies.
 
+Command used: show enclosure-status -type all
+
 =over 8
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--command>
-
-Command to get information (Default: 'show').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: 'enclosure-status -type all').
 
 =item B<--filter>
 
