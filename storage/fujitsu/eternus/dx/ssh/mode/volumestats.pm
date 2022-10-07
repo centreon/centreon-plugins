@@ -150,7 +150,7 @@ sub manage_selection {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'show',
-        command_options => 'performance -type host-io',
+        command_options => "performance -type host-io\n",
         ssh_pipe => 1
     );
 
@@ -181,6 +181,8 @@ sub manage_selection {
             next;
         }
         next if (/----|Name/i);
+        next if (/^CLI>/);
+
         my $value = centreon::plugins::misc::trim($_);
         my @matches = split(/\s+/, $value);
 

@@ -69,7 +69,7 @@ sub manage_selection {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'show',
-        command_options => 'performance -type cm',
+        command_options => "performance -type cm\n",
         ssh_pipe => 1
     );
 

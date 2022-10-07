@@ -100,7 +100,7 @@ sub run {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'show',
-        command_options => 'disks',
+        command_options => "disks\n",
         ssh_pipe => 1
     );
 

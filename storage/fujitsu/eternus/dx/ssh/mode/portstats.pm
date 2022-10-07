@@ -96,7 +96,7 @@ sub manage_selection {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'show',
-        command_options => 'performance -type port',
+        command_options => "performance -type port\n",
         ssh_pipe => 1
     );
     

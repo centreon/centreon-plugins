@@ -94,7 +94,7 @@ sub run {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'show',
-        command_options => 'enclosure-status -type all',
+        command_options => "enclosure-status -type all\n",
         ssh_pipe => 1
     );
 

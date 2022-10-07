@@ -151,7 +151,7 @@ sub manage_selection {
 
     my ($stdout) = $options{custom}->execute_command(
         command => 'show',
-        command_options => 'raid-groups -csv',
+        command_options => "raid-groups -csv\n",
         ssh_pipe => 1
     );
     
