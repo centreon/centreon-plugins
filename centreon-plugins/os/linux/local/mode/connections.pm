@@ -84,13 +84,12 @@ sub netstat_build {
     my ($self, %options) = @_;
 
     foreach my $line (split /\n/, $self->{stdout}) {
-        next if ($line !~ /^(tcp|udp)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s*(\S*)/);
+        next if ($line !~ /^(tcp|udp|tcp6|udp6)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s*(\S*)/);
         my ($type, $src, $dst, $state) = ($1, $2, $3, $4);
         $src =~ /(.*):(\d+|\*)$/;
         my ($src_addr, $src_port) = ($1, $2);
         $dst =~ /(.*):(\d+|\*)$/;
         my ($dst_addr, $dst_port) = ($1, $2);
-        $type .= '6' if ($src_addr !~ /^\d+\.\d+\.\d+\.\d+$/);
         
         if ($type =~ /^udp/) {
             if ($dst_port eq '*') {
@@ -102,7 +101,7 @@ sub netstat_build {
             $state = $map_states{$state};
             $self->{states}->{$state}++;
         }
-        
+
         push @{$self->{connections}}, $type . "#$src_addr#$src_port#$dst_addr#$dst_port#" . lc($state);
     }
 }
