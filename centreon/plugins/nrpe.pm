@@ -90,7 +90,7 @@ sub check_options {
 
     $self->{ssl_context} = centreon::plugins::misc::eval_ssl_options(
         output => $self->{output},
-        ssl_opt => $self->{option_results}->{ssl_opt}
+        ssl_opt => $options{option_results}->{ssl_opt}
     );
 }
 
