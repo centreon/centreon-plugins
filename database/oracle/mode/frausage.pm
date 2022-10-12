@@ -132,6 +132,9 @@ sub manage_selection {
             $self->{file}->{ $row->[0] }->{percent_space_reclaimable} = $row->[2] * 100 / $row->[3];
         }
 
+        $self->{file}->{ $row->[0] }->{percent_space_usage} =~ s/,/./;
+        $self->{file}->{ $row->[0] }->{percent_space_reclaimable} =~ s/,/./;
+
         $self->{global}->{percent_space_usage} += $self->{file}->{ $row->[0] }->{percent_space_usage};
         $self->{global}->{percent_space_reclaimable} += $self->{file}->{ $row->[0] }->{percent_space_reclaimable};
     }
