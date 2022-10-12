@@ -120,7 +120,7 @@ sub new {
         'warning:s'             => { name => 'warning', redirect => 'warning-jobs-failed-count' },  # legacy
         'critical:s'            => { name => 'critical', redirect => 'critical-jobs-failed-count' }, # legacy
         'lookback:s'            => { name => 'lookback' },
-        'add-duration-perfdata' => {  name => 'add_duration_perfdata' }
+        'add-duration-perfdata' => { name => 'add_duration_perfdata' }
     });
 
     return $self;
@@ -222,6 +222,10 @@ Filter job.
 =item B<--lookback>
 
 Check job history in minutes.
+
+=item B<--add-duration-perfdata>
+
+Display job duration time.
 
 =item B<--warning-status>
 
