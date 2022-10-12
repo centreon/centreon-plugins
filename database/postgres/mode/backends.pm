@@ -61,7 +61,7 @@ sub run {
     
     my $noidle = '';
     if (defined($self->{option_results}->{noidle})) {
-        if ($self->{sql}->is_version_minimum(version => '9.2')) {
+        if ($options{sql}->is_version_minimum(version => '9.2')) {
             $noidle = " AND state <> 'idle'";
         } else {
             $noidle = " AND current_query <> '<IDLE>'";
