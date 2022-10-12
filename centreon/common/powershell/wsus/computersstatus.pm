@@ -64,7 +64,7 @@ Try {
     $computerTargetScopeNotContactedSince = new-object Microsoft.UpdateServices.Administration.ComputerTargetScope
     $computerTargetScopeNotContactedSince.ToLastReportedStatusTime = [DateTime]::UtcNow.Subtract($notUpdatedSinceTimespan)
     $computerTargetScopeNotContactedSince.IncludeDownstreamComputerTargets = $true
-    $computersNotContactedSinceCount = $wsusObject.GetComputerTargetCount($computerTargetScopeNotUpdatedSince)
+    $computersNotContactedSinceCount = $wsusObject.GetComputerTargetCount($computerTargetScopeNotContactedSince)
 
     $computerTargetScopeUnassigned = new-object Microsoft.UpdateServices.Administration.ComputerTargetScope
     $computerTargetScopeUnassigned.IncludeDownstreamComputerTargets = $true
