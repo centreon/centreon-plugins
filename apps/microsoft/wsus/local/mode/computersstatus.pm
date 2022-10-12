@@ -100,7 +100,7 @@ sub new {
         'ps-display'          => { name => 'ps_display' },
         'wsus-server:s'       => { name => 'wsus_server', default => 'localhost' },
         'wsus-port:s'         => { name => 'wsus_port', default => 8530 },
-        'not-updated-since:s' => { name => 'not_updated_since', default => 10 },
+        'not-updated-since:s' => { name => 'not_updated_since', default => 30 },
         'use-ssl'             => { name => 'use_ssl' }
     });
 
@@ -210,21 +210,15 @@ Set WSUS port.
 
 =item B<--not-updated-since>
 
-Time in minutes to count computers not updated since.
+Time in days to count computers not updated since (Default: 30).
 
 =item B<--use-ssl>
 
 Set if WSUS use ssl.
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning thresholds.
-Can be: 'needing-updates', 'with-update-errors',
-'up-to-date', 'not-contacted', 'unassigned'
-
-=item B<--critical-*>
-
-Critical thresholds.
+Thresholds.
 Can be: 'needing-updates', 'with-update-errors',
 'up-to-date', 'not-contacted', 'unassigned'
 

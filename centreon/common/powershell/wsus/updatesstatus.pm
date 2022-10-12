@@ -54,7 +54,9 @@ Try {
 
     $wsusObject = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
 
-    $wsusStatus = $wsusObject.GetStatus()
+    $updateScope = New-Object Microsoft.UpdateServices.Administration.UpdateScope
+    $updateScope.IncludeDownstreamComputerTargets = $true
+    $wsusStatus = $wsusObject.GetUpdateStatus($UpdateScope, $True)
 
     $item = @{
         UpdatesWithClientErrorsCount = $wsusStatus.UpdatesWithClientErrorsCount;

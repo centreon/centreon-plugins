@@ -54,7 +54,10 @@ Try {
 
     $wsusObject = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
 
-    $wsusStatus = $wsusObject.GetStatus()
+    $computerTargetScope = New-object Microsoft.UpdateServices.Administration.ComputerTargetScope
+    $computerTargetScope.IncludeDownstreamComputerTargets = $true
+    $updateSource = "All"
+    $wsusStatus = $wsusObject.GetComputerStatus($computerTargetScope, $updateSource)
     
     $item = @{
         ComputerTargetCount = $wsusStatus.ComputerTargetCount;
