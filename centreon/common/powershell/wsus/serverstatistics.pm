@@ -59,8 +59,7 @@ Try {
     $updateSource = "All"
     $wsusStatus = $wsusObject.GetComputerStatus($computerTargetScope, $updateSource)
 
-    $updateScope = New-Object Microsoft.UpdateServices.Administration.UpdateScope
-    $wsusUpdateStatus = $wsusObject.GetUpdateStatus($UpdateScope, $True)
+    $wsusUpdateStatus = $wsusObject.GetStatus()
 
     $item = @{
         ComputerTargetCount = $wsusStatus.ComputerTargetCount;
