@@ -55,13 +55,22 @@ Try {
 
     $wsusObject = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
 
-    $wsusStatus = $wsusObject.GetStatus()
+    $computerTargetScope = New-object Microsoft.UpdateServices.Administration.ComputerTargetScope
+    $computerTargetScope.IncludeDownstreamComputerTargets = $true
+    $updateSource = "All"
+    $wsusStatus = $wsusObject.GetComputerStatus($computerTargetScope, $updateSource)
 
     $notUpdatedSinceTimespan = new-object TimeSpan($notUpdatedSince, 0, 0, 0)
-    $computersNotContactedSinceCount = $wsusObject.GetComputersNotContactedSinceCount([DateTime]::UtcNow.Subtract($notUpdatedSinceTimespan))
+    $computerTargetScopeNotContactedSince = new-object Microsoft.UpdateServices.Administration.ComputerTargetScope
+    $computerTargetScopeNotContactedSince.ToLastReportedStatusTime = [DateTime]::UtcNow.Subtract($notUpdatedSinceTimespan)
+    $computerTargetScopeNotContactedSince.IncludeDownstreamComputerTargets = $true
+    $computersNotContactedSinceCount = $wsusObject.GetComputerTargetCount($computerTargetScopeNotContactedSince)
 
-    $computerTargetScope = new-object Microsoft.UpdateServices.Administration.ComputerTargetScope
-    $unassignedComputersCount = $wsusObject.GetComputerTargetGroup([Microsoft.UpdateServices.Administration.ComputerTargetGroupId]::UnassignedComputers).GetComputerTargets().Count
+    $computerTargetScopeUnassigned = new-object Microsoft.UpdateServices.Administration.ComputerTargetScope
+    $computerTargetScopeUnassigned.IncludeDownstreamComputerTargets = $true
+    $group = $wsusObject.GetComputerTargetGroups() | ? {$_.Name -like "Unassigned Computers"}
+    $computerTargetScopeUnassigned.ComputerTargetGroups.Add($group)
+    $unassignedComputersCount = $wsusObject.GetComputerTargetCount($computerTargetScopeUnassigned)
 
     $item = @{
         ComputerTargetsNeedingUpdatesCount = $wsusStatus.ComputerTargetsNeedingUpdatesCount;
