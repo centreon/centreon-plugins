@@ -41,12 +41,13 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
-            'hostname:s'        => { name => 'hostname' },
-            'timeout:s'         => { name => 'timeout', default => 45 },
-            'command:s'         => { name => 'command' },
-            'command-path:s'    => { name => 'command_path' },
-            'command-options:s' => { name => 'command_options' },
-            'sudo:s'            => { name => 'sudo' }
+            'hostname:s'         => { name => 'hostname' },
+            'timeout:s'          => { name => 'timeout', default => 45 },
+            'command:s'          => { name => 'command' },
+            'command-path:s'     => { name => 'command_path' },
+            'command-options:s'  => { name => 'command_options' },
+            'sudo:s'             => { name => 'sudo' },
+            'ignore-exit-code:s' => { name => 'ignore_exit_code' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CLI OPTIONS', once => 1);
@@ -78,7 +79,12 @@ sub check_options {
 sub execute_command {
     my ($self, %options) = @_;
 
-     my ($stdout, $exit_code);
+    my $no_quit = defined($self->{option_results}->{ignore_exit_code}) && $self->{option_results}->{ignore_exit_code} ne '' ? 1 : 0;
+    if (defined($options{no_quit})) {
+        $no_quit = $options{no_quit};
+    }
+
+    my ($stdout, $exit_code);
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
         ($stdout, $exit_code) = $self->{ssh}->execute(
             hostname => $self->{option_results}->{hostname},
@@ -87,7 +93,7 @@ sub execute_command {
             command_path => $self->{option_results}->{command_path},
             command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : $options{command_options},
             timeout => $self->{option_results}->{timeout},
-            no_quit => $options{no_quit}
+            no_quit => $no_quit
         );
     } else {
         ($stdout, $exit_code) = centreon::plugins::misc::execute(
@@ -97,11 +103,17 @@ sub execute_command {
             command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $options{command},
             command_path => $self->{option_results}->{command_path},
             command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : $options{command_options},
-            no_quit => $options{no_quit}
+            no_quit => $no_quit
         );
     }
 
     $self->{output}->output_add(long_msg => "command response: $stdout", debug => 1);
+
+    if (defined($self->{option_results}->{ignore_exit_code}) && $self->{option_results}->{ignore_exit_code} ne '' &&
+        $exit_code != 0 && $exit_code !~ /$self->{option_results}->{ignore_exit_code}/) {
+        $self->{output}->add_option_msg(short_msg => sprintf('command execution error [exit code: %s]', $exit_code));
+        $self->{output}->option_exit();
+    }
 
     return ($stdout, $exit_code);
 }
@@ -145,6 +157,10 @@ Command options.
 =item B<--sudo>
 
 sudo command.
+
+=item B<--ignore-exit-code>
+
+Don't quit if the exit code matches that option.
 
 =back
 
