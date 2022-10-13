@@ -101,7 +101,7 @@ sub set_counters {
                 output_template => 'read: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%d', unit => 'B/s' }
+                    { template => '%d', unit => 'B/s', label_extra_instance => 1 }
                 ]
             }
         },
@@ -110,7 +110,7 @@ sub set_counters {
                 output_template => 'write: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%d', unit => 'B/s', min => 0 }
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
