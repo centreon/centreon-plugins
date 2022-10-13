@@ -54,17 +54,22 @@ Try {
 
     $wsusObject = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
 
-    $wsusStatus = $wsusObject.GetStatus()
-    
+    $computerTargetScope = New-object Microsoft.UpdateServices.Administration.ComputerTargetScope
+    $computerTargetScope.IncludeDownstreamComputerTargets = $true
+    $updateSource = "All"
+    $wsusStatus = $wsusObject.GetComputerStatus($computerTargetScope, $updateSource)
+
+    $wsusUpdateStatus = $wsusObject.GetStatus()
+
     $item = @{
         ComputerTargetCount = $wsusStatus.ComputerTargetCount;
         CustomComputerTargetGroupCount = $wsusStatus.CustomComputerTargetGroupCount;
-        UpdateCount = $wsusStatus.UpdateCount;
-        ApprovedUpdateCount = $wsusStatus.ApprovedUpdateCount;
-        DeclinedUpdateCount = $wsusStatus.DeclinedUpdateCount;
-        NotApprovedUpdateCount = $wsusStatus.NotApprovedUpdateCount;
-        UpdatesWithStaleUpdateApprovalsCount = $wsusStatus.UpdatesWithStaleUpdateApprovalsCount;
-        ExpiredUpdateCount = $wsusStatus.ExpiredUpdateCount
+        UpdateCount = $wsusUpdateStatus.UpdateCount;
+        ApprovedUpdateCount = $wsusUpdateStatus.ApprovedUpdateCount;
+        DeclinedUpdateCount = $wsusUpdateStatus.DeclinedUpdateCount;
+        NotApprovedUpdateCount = $wsusUpdateStatus.NotApprovedUpdateCount;
+        UpdatesWithStaleUpdateApprovalsCount = $wsusUpdateStatus.UpdatesWithStaleUpdateApprovalsCount;
+        ExpiredUpdateCount = $wsusUpdateStatus.ExpiredUpdateCount
     }
     
     $jsonString = $item | ConvertTo-JSON-20
