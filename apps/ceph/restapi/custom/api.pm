@@ -195,6 +195,9 @@ sub request_api {
             'Authorization: Bearer ' . $token,
             'Accept: application/vnd.ceph.api.v1.0+json',
         ],
+        unknown_status => '',
+        warning_status => '',
+        critical_status => ''
     );
 
     # Maybe token is invalid. so we retry
