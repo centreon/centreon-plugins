@@ -40,7 +40,6 @@ sub custom_status_output {
     );
 }
 
-
 sub prefix_global_output {
     my ($self, %options) = @_;
 
@@ -90,7 +89,21 @@ sub set_counters {
                     { name => 'runtime'}, { name => 'duration' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    if (defined($self->{instance_mode}->{option_results}->{add_duration_perfdata})) {
+                        $self->{output}->perfdata_add(
+                            nlabel => 'job.duration.seconds',
+                            unit => 's',
+                            instances => $self->{result_values}->{name},
+                            value => sprintf('%s', $self->{result_values}->{duration}),
+                            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                            min => 0
+                        );
+                    }
+                },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -103,10 +116,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter:s'            => { name => 'filter' },
-        'warning:s'           => { name => 'warning', redirect => 'warning-jobs-failed-count' },  # legacy
-        'critical:s'          => { name => 'critical', redirect => 'critical-jobs-failed-count' }, # legacy
-        'lookback:s'          => { name => 'lookback' }
+        'filter:s'              => { name => 'filter' },
+        'warning:s'             => { name => 'warning', redirect => 'warning-jobs-failed-count' },  # legacy
+        'critical:s'            => { name => 'critical', redirect => 'critical-jobs-failed-count' }, # legacy
+        'lookback:s'            => { name => 'lookback' },
+        'add-duration-perfdata' => { name => 'add_duration_perfdata' }
     });
 
     return $self;
@@ -162,7 +176,7 @@ sub manage_selection {
     foreach my $row (@$result) {
         next if (defined($self->{option_results}->{filter}) && $row->[0] !~ /$self->{option_results}->{filter}/);
         next if (defined($self->{option_results}->{lookback}) && $row->[5] > $self->{option_results}->{lookback});
-    
+
         my $job_name = $row->[0];
         my $run_duration;
         my $run_date = $row->[3];
@@ -208,6 +222,10 @@ Filter job.
 =item B<--lookback>
 
 Check job history in minutes.
+
+=item B<--add-duration-perfdata>
+
+Display job duration time.
 
 =item B<--warning-status>
 
