@@ -145,7 +145,7 @@ sub set_counters {
                 output_template => 'svctm: %.2f',
                 output_use => 'svctm', threshold_use => 'svctm',
                 perfdatas => [
-                    { label => 'svctm', value => 'svctm',  template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { label => 'svctm', value => 'svctm', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -167,7 +167,7 @@ sub set_counters {
                 output_template => '%%utils: %.2f %%',
                 output_use => 'utils', threshold_use => 'utils',
                 perfdatas => [
-                    { label => 'utils', value => 'utils',  template => '%.2f',
+                    { label => 'utils', value => 'utils', template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
