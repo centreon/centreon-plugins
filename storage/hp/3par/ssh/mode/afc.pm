@@ -287,7 +287,7 @@ Can used special variables like: %{status}, %{node_id}
 
 Thresholds.
 Can be: 'flashcache-usage', 'flashcache-usage-free', 'flashcache-usage-prct'.
-'flashcache-node-readhits', 'flashcache-volume-readhit'.
+'flashcache-node-readhits', 'flashcache-volume-readhits'.
 
 =back
 
