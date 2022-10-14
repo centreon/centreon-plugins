@@ -36,8 +36,8 @@ sub set_system {
     $self->{thresholds} = {
         sensors => [
             ['on', 'CRITICAL'],
-            ['off', 'OK'],
-        ],
+            ['off', 'OK']
+        ]
     };
 
     $self->{components_path} = 'centreon::common::fortinet::fortigate::snmp::mode::components';
@@ -139,7 +139,7 @@ my %alarm_map = (
 my $mapping = {
     fgHwSensorEntName        => { oid => '.1.3.6.1.4.1.12356.101.4.3.2.1.2' },
     fgHwSensorEntValue       => { oid => '.1.3.6.1.4.1.12356.101.4.3.2.1.3' },
-    fgHwSensorEntAlarmStatus => { oid => '.1.3.6.1.4.1.12356.101.4.3.2.1.4', map => \%alarm_map },
+    fgHwSensorEntAlarmStatus => { oid => '.1.3.6.1.4.1.12356.101.4.3.2.1.4', map => \%alarm_map }
 };
 my $oid_fgHwSensorEntry = '.1.3.6.1.4.1.12356.101.4.3.2.1';
 
@@ -183,6 +183,8 @@ sub check {
         }
 
         next if (!defined($result->{fgHwSensorEntValue}));
+        # can be: ON
+        next if ($result->{fgHwSensorEntValue} !~ /^[0-9.]+$/);
 
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensors', instance => $instance, name => $name, value => $result->{fgHwSensorEntValue});
 
@@ -197,7 +199,7 @@ sub check {
             instances => $name,
             value => $result->{fgHwSensorEntValue},
             warning => $warn,
-            critical => $crit,
+            critical => $crit
         );
     }
 }
