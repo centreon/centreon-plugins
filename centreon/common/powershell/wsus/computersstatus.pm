@@ -69,7 +69,7 @@ Try {
     $computerTargetScopeUnassigned = new-object Microsoft.UpdateServices.Administration.ComputerTargetScope
     $computerTargetScopeUnassigned.IncludeDownstreamComputerTargets = $true
     $group = $wsusObject.GetComputerTargetGroups() | ? {$_.Name -like "Unassigned Computers"}
-    $computerTargetScopeUnassigned.ComputerTargetGroups.Add($group)
+    $computerTargetScopeUnassigned.ComputerTargetGroups.Add($group) >$null
     $unassignedComputersCount = $wsusObject.GetComputerTargetCount($computerTargetScopeUnassigned)
 
     $item = @{
