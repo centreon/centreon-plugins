@@ -35,7 +35,9 @@ sub new {
         'hardware'           => 'storage::huawei::oceanstor::snmp::mode::hardware',
         'list-controllers'   => 'storage::huawei::oceanstor::snmp::mode::listcontrollers',
         'list-storage-pools' => 'storage::huawei::oceanstor::snmp::mode::liststoragepools',
-        'storage-pools'      => 'storage::huawei::oceanstor::snmp::mode::storagepools'
+        'storage-pools'      => 'storage::huawei::oceanstor::snmp::mode::storagepools',
+        'list-luns'          => 'storage::huawei::oceanstor::snmp::mode::listluns',
+        'luns'               => 'storage::huawei::oceanstor::snmp::mode::luns'
     };
 
     return $self;
