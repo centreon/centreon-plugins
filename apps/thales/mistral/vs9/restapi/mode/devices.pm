@@ -223,6 +223,17 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{interfaces} = [
+        {
+            label => 'interface-status',
+            type => 2,
+            warning_default => '%{operatingStatus} !~ /up/i',
+            set => {
+                key_values => [ { name => 'operatingStatus' }, { name => 'name' }, { name => 'sn' } ],
+                output_template => "operating status: %s",
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
         { label => 'interface-traffic-in', nlabel => 'interface.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'speed_in' }, { name => 'name' }, { name => 'sn' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
@@ -323,6 +334,7 @@ sub add_interfaces {
         $self->{devices}->{ $options{device}->{id} }->{interfaces}->{ $interface->{name} } = {
             name => $interface->{name},
             sn => $options{device}->{serialNumber},
+            operatingStatus => $interface->{operatingStatus},
             in => $interface->{interfaceStats}->{inOctets} * 8,
             out => $interface->{interfaceStats}->{outOctets} * 8,
             speed_in => defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' ? $self->{option_results}->{speed} : $interface->{speed},
@@ -404,6 +416,21 @@ Can used special variables like: %{sn}, %{connectionStatus}
 
 Set critical threshold for status.
 Can used special variables like: %{sn}, %{connectionStatus}
+
+=item B<--unknown-interface-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{sn}, %{name}, %{operatingStatus}
+
+=item B<--warning-interface-status>
+
+Set warning threshold for status.
+Can used special variables like: %{sn}, %{name}, %{operatingStatus}
+
+=item B<--critical-interface-status>
+
+Set critical threshold for status  (Default: '%{operatingStatus} !~ /up/i').
+Can used special variables like: %{sn}, %{name}, %{operatingStatus}
 
 =item B<--timezone>
 
