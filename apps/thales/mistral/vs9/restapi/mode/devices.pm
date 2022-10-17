@@ -33,6 +33,62 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
 
+sub custom_time_offset_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'time offset %d second(s): %s',
+        $self->{result_values}->{offset},
+        $self->{result_values}->{date}
+    );
+}
+
+sub custom_uptime_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'uptime: %s',
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{uptime}, start => 'd')
+    );
+}
+
+sub custom_uptime_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => 'system.uptime.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{time_uptime_unit} },
+        unit => $self->{instance_mode}->{option_results}->{time_uptime_unit},
+        instances => $self->{result_values}->{sn},
+        value => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{time_uptime_unit} }),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_uptime_threshold {
+    my ($self, %options) = @_;
+
+    return $self->{perfdata}->threshold_check(
+        value => floor($self->{result_values}->{uptime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{time_uptime_unit} }),
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
+}
+
+sub custom_system_version_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'system osName: %s, osRelease: %s',
+        $self->{result_values}->{osName},
+        $self->{result_values}->{osRelease}
+    );
+}
+
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
 
@@ -93,6 +149,7 @@ sub custom_traffic_output {
         defined($self->{result_values}->{traffic_prct}) ? sprintf('%.2f%%', $self->{result_values}->{traffic_prct}) : '-'
     );
 }
+
 sub custom_traffic_calc {
     my ($self, %options) = @_;
 
@@ -118,10 +175,10 @@ sub custom_connection_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{time_unit} },
-        unit => $self->{instance_mode}->{option_results}->{time_unit},
+        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{time_connection_unit} },
+        unit => $self->{instance_mode}->{option_results}->{time_connection_unit},
         instances => $self->{result_values}->{sn},
-        value => floor($self->{result_values}->{connection_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{time_unit} }),
+        value => floor($self->{result_values}->{connection_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{time_connection_unit} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
@@ -132,7 +189,7 @@ sub custom_connection_threshold {
     my ($self, %options) = @_;
 
     return $self->{perfdata}->threshold_check(
-        value => floor($self->{result_values}->{connection_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{time_unit} }),
+        value => floor($self->{result_values}->{connection_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{time_connection_unit} }),
         threshold => [
             { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
             { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
@@ -183,6 +240,7 @@ sub set_counters {
             name => 'devices', type => 3, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output', indent_long_output => '    ', message_multiple => 'All devices are ok',
             group => [
                 { name => 'connection', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'system', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'interfaces are ok', display_long => 1, skipped_code => { -10 => 1 } }
             ]
         }
@@ -218,6 +276,43 @@ sub set_counters {
                 output_use => 'connection_human',
                 closure_custom_perfdata => $self->can('custom_connection_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_connection_threshold')
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{system} = [
+        {
+            label => 'system-version',
+            type => 2,
+            set => {
+                key_values => [ { name => 'osName' }, { name => 'osRelease' } ],
+                closure_custom_output => $self->can('custom_system_version_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'system-uptime', set => {
+                key_values => [ { name => 'uptime' }, { name => 'sn' } ],
+                closure_custom_output => $self->can('custom_uptime_output'),
+                closure_custom_perfdata => $self->can('custom_uptime_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_uptime_threshold')
+            }
+        },
+        { label => 'system-time-offset', nlabel => 'system.time.offset.seconds', set => {
+                key_values => [ { name => 'offset' }, { name => 'date' }, { name => 'sn' } ],
+                closure_custom_output => $self->can('custom_time_offset_output'),
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 's',
+                        instances => $self->{result_values}->{sn},
+                        value => $self->{result_values}->{offset},
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
+                    );
+                }
             }
         }
     ];
@@ -272,13 +367,17 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s'    => { name => 'filter_id' },
-        'filter-sn:s'    => { name => 'filter_sn' },
-        'add-status'     => { name => 'add_status' },
-        'time-unit:s'    => { name => 'time_unit', default => 's' },
-        'timezone:s'     => { name => 'timezone' },
-        'add-interfaces' => { name => 'add_interfaces' },
-        'traffic-unit:s' => { name => 'traffic_unit', default => 'percent_delta' },
+        'filter-id:s'            => { name => 'filter_id' },
+        'filter-sn:s'            => { name => 'filter_sn' },
+        'add-interfaces'         => { name => 'add_interfaces' },
+        'add-status'             => { name => 'add_status' },
+        'add-system'             => { name => 'add_system' },
+        'time-connection-unit:s' => { name => 'time_connection_unit', default => 's' },
+        'time-uptime-unit:s'     => { name => 'time_uptime_unit', default => 's' },
+        'timezone:s'             => { name => 'timezone' },
+        'traffic-unit:s'         => { name => 'traffic_unit', default => 'percent_delta' },
+        'ntp-hostname:s'         => { name => 'ntp_hostname' },
+        'ntp-port:s'             => { name => 'ntp_port', default => 123 },
     });
 
     return $self;
@@ -300,8 +399,11 @@ sub check_options {
         $self->{option_results}->{add_status} = 1;
     }
 
-    if ($self->{option_results}->{time_unit} eq '' || !defined($unitdiv->{$self->{option_results}->{time_unit}})) {
-        $self->{option_results}->{time_unit} = 's';
+    if ($self->{option_results}->{time_connection_unit} eq '' || !defined($unitdiv->{$self->{option_results}->{time_connection_unit}})) {
+        $self->{option_results}->{time_connection_unit} = 's';
+    }
+    if ($self->{option_results}->{time_uptime_unit} eq '' || !defined($unitdiv->{$self->{option_results}->{time_uptime_unit}})) {
+        $self->{option_results}->{time_uptime_unit} = 's';
     }
     $self->{option_results}->{timezone} = 'UTC' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
 
@@ -322,6 +424,13 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Wrong option --traffic-unit');
         $self->{output}->option_exit();
     }
+
+    if (defined($self->{option_results}->{ntp_hostname}) && $self->{option_results}->{ntp_hostname} ne '') {
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'Net::NTP',
+            error_msg => "Cannot load module 'Net::NTP'."
+        );
+    }
 }
 
 sub add_interfaces {
@@ -340,6 +449,69 @@ sub add_interfaces {
             speed_in => defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' ? $self->{option_results}->{speed} : $interface->{speed},
             speed_out => defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' ? $self->{option_results}->{speed} : $interface->{speed}
         };
+    }
+}
+
+sub add_system {
+    my ($self, %options) = @_;
+
+    my $system = $options{custom}->request_api(endpoint => '/ssIpsecGwHws/' . $options{device}->{id} . '/systemStateStatistics');
+    $self->{devices}->{ $options{device}->{id} }->{system} = {
+        sn => $options{device}->{serialNumber},
+        osName => $system->{platform}->{osName},
+        osRelease => $system->{platform}->{osRelease}
+    };
+
+    if ($system->{clock}->{bootDatetime} =~ /^\s*(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.\d+([+-].*)$/) {
+        my $dt = DateTime->new(
+            year       => $1,
+            month      => $2,
+            day        => $3,
+            hour       => $4,
+            minute     => $5,
+            second     => $6,
+            time_zone  => $7
+        );
+        $self->{devices}->{ $options{device}->{id} }->{system}->{uptime} = time() - $dt->epoch();
+    }
+
+    if ($system->{clock}->{currentDatetime} =~ /^\s*(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.\d+([+-].*)$/) {
+        my $ref_time;
+        if (defined($self->{option_results}->{ntp_hostname}) && $self->{option_results}->{ntp_hostname} ne '') {
+            my %ntp;
+
+            eval {
+                %ntp = Net::NTP::get_ntp_response($self->{option_results}->{ntp_hostname}, $self->{option_results}->{ntp_port});
+            };
+            if ($@) {
+                $self->{output}->add_option_msg(short_msg => "Couldn't connect to ntp server: " . $@);
+                $self->{output}->option_exit();
+            }
+
+            $ref_time = $ntp{'Transmit Timestamp'};
+        } else {
+            $ref_time = time();
+        }
+
+        my $timezone = $7;
+        my $dt = DateTime->new(
+            year       => $1,
+            month      => $2,
+            day        => $3,
+            hour       => $4,
+            minute     => $5,
+            second     => $6,
+            time_zone  => $timezone
+        );
+         my $remote_date_formated = sprintf(
+            'local time: %02d-%02d-%02dT%02d:%02d:%02d (%s)',
+            $dt->year, $dt->month, $dt->day, $dt->hour, $dt->minute, $dt->second, $timezone
+        );
+       
+        my $offset = $dt->epoch() - $ref_time;
+
+        $self->{devices}->{ $options{device}->{id} }->{system}->{offset} = sprintf('%d', $offset);
+        $self->{devices}->{ $options{device}->{id} }->{system}->{date} = $remote_date_formated;
     }
 }
 
@@ -373,6 +545,9 @@ sub manage_selection {
 
         $self->add_interfaces(custom => $options{custom}, device => $device)
             if (defined($self->{option_results}->{add_interfaces}));
+
+        $self->add_system(custom => $options{custom}, device => $device)
+            if (defined($self->{option_results}->{add_system}));
     }
 
     $self->{cache_name} = 'thales_mistral_' . $options{custom}->get_connection_info()  . '_' . $self->{mode} . '_' .
@@ -401,6 +576,18 @@ Filter devices by id.
 =item B<--filter-sn>
 
 Filter devices by serial number.
+
+=item B<--add-status>
+
+Check connection status.
+
+=item B<--add-interfaces>
+
+Check interfaces.
+
+=item B<--add-system>
+
+Check system.
 
 =item B<--unknown-connection-status>
 
@@ -432,13 +619,22 @@ Can used special variables like: %{sn}, %{name}, %{operatingStatus}
 Set critical threshold for status  (Default: '%{operatingStatus} !~ /up/i').
 Can used special variables like: %{sn}, %{name}, %{operatingStatus}
 
-=item B<--timezone>
+=item B<--ntp-hostname>
 
-Set timezone for ntp contact time (Default is 'UTC').
+Set the ntp hostname (if not set, localtime is used).
 
-=item B<--time-unit>
+=item B<--ntp-port>
+
+Set the ntp port (Default: 123).
+
+=item B<--time-connection-unit>
 
 Select the time unit for connection threshold. May be 's' for seconds, 'm' for minutes,
+'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+
+=item B<--time-uptime-unit>
+
+Select the time unit for uptime threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
 =item B<--traffic-unit>
@@ -453,7 +649,8 @@ Set interface speed (in Mb).
 
 Thresholds.
 Can be: 'devices-detected', 'connection-last-time',
-'interface-traffic-in', 'interface-traffic-out'.
+'interface-traffic-in', 'interface-traffic-out',
+'system-uptime', 'system-time-offset'.
 
 =back
 
