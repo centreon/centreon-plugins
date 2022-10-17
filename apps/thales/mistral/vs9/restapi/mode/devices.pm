@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5;
 use DateTime;
 use POSIX;
 use centreon::plugins::misc;
@@ -31,6 +32,87 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
+
+sub custom_traffic_perfdata {
+    my ($self, %options) = @_;
+
+    my ($warning, $critical);
+    if ($self->{instance_mode}->{option_results}->{traffic_unit} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{traffic_unit} =~ /bps|counter/) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
+    }
+
+    if ($self->{instance_mode}->{option_results}->{traffic_unit} eq 'counter') {
+        my $nlabel = $self->{nlabel};
+        $nlabel =~ s/bitspersecond/bits/;
+        $self->{output}->perfdata_add(
+            nlabel => $nlabel,
+            unit => 'b',
+            instances => [$self->{result_values}->{sn}, $self->{result_values}->{name}],
+            value => $self->{result_values}->{traffic_counter},
+            warning => $warning,
+            critical => $critical,
+            min => 0
+        );
+    } else {
+        $self->{output}->perfdata_add(
+            nlabel => $self->{nlabel},
+            instances => [$self->{result_values}->{sn}, $self->{result_values}->{name}],
+            value => sprintf('%.2f', $self->{result_values}->{traffic_per_seconds}),
+            warning => $warning,
+            critical => $critical,
+            min => 0, max => $self->{result_values}->{speed}
+        );
+    }
+}
+
+sub custom_traffic_threshold {
+    my ($self, %options) = @_;
+
+    my $exit = 'ok';
+    if ($self->{instance_mode}->{option_results}->{traffic_unit} eq 'percent_delta' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{traffic_unit} eq 'bps') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{traffic_unit} eq 'counter') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_counter}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    }
+    return $exit;
+}
+
+sub custom_traffic_output {
+    my ($self, %options) = @_;
+
+    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);
+    return sprintf(
+        'traffic %s: %s/s (%s)',
+        $self->{result_values}->{label}, $traffic_value . $traffic_unit,
+        defined($self->{result_values}->{traffic_prct}) ? sprintf('%.2f%%', $self->{result_values}->{traffic_prct}) : '-'
+    );
+}
+sub custom_traffic_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{traffic_per_seconds} = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} } - $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} }) / $options{delta_time};
+    $self->{result_values}->{traffic_counter} = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} };
+
+    $self->{result_values}->{traffic_per_seconds} = sprintf('%d', $self->{result_values}->{traffic_per_seconds});
+
+    if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) &&
+        $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} ne '' &&
+        $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
+        $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
+    }
+
+    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+    $self->{result_values}->{sn} = $options{new_datas}->{$self->{instance} . '_sn'};
+    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
+    return 0;
+}
 
 sub custom_connection_perfdata {
     my ($self, %options) = @_;
@@ -83,12 +165,12 @@ sub prefix_global_output {
     return 'Number of devices ';
 }
 
-sub prefix_service_output {
+sub prefix_interface_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "service '%s' ",
-        $options{instance_value}->{service}
+        "interface '%s' ",
+        $options{instance_value}->{name}
     );
 }
 
@@ -101,7 +183,7 @@ sub set_counters {
             name => 'devices', type => 3, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output', indent_long_output => '    ', message_multiple => 'All devices are ok',
             group => [
                 { name => 'connection', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'services', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'services are ok', display_long => 1, skipped_code => { -10 => 1 } }
+                { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'interfaces are ok', display_long => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -140,6 +222,25 @@ sub set_counters {
         }
     ];
 
+    $self->{maps_counters}->{interfaces} = [
+        { label => 'interface-traffic-in', nlabel => 'interface.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'in', diff => 1 }, { name => 'speed_in' }, { name => 'name' }, { name => 'sn' } ],
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_traffic_output'),
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
+            }
+        },
+        { label => 'interface-traffic-out', nlabel => 'interface.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'out', diff => 1 }, { name => 'speed_out' }, { name => 'name' }, { name => 'sn' } ],
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_traffic_output'),
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
+            }
+        }
+    ];
+
 =pod
     $self->{maps_counters}->{dedup} = [
         { label => 'dedup', nlabel => 'appliance.deduplication.ratio.count', set => {
@@ -156,15 +257,17 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s' => { name => 'filter_id' },
-        'filter-sn:s' => { name => 'filter_sn' },
-        'add-status'  => { name => 'add_status' },
-        'time-unit:s' => { name => 'time_unit', default => 's' },
-        'timezone:s'  => { name => 'timezone' }
+        'filter-id:s'    => { name => 'filter_id' },
+        'filter-sn:s'    => { name => 'filter_sn' },
+        'add-status'     => { name => 'add_status' },
+        'time-unit:s'    => { name => 'time_unit', default => 's' },
+        'timezone:s'     => { name => 'timezone' },
+        'add-interfaces' => { name => 'add_interfaces' },
+        'traffic-unit:s' => { name => 'traffic_unit', default => 'percent_delta' },
     });
 
     return $self;
@@ -174,9 +277,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    $self->{checking} = '';
     my $selected = 0;
     foreach ('status', 'interfaces', 'tunnels', 'mistral', 'system') {
-        $selected = 1 if (defined($self->{option_results}->{'add_' . $_}));
+        if (defined($self->{option_results}->{'add_' . $_})) {
+            $selected = 1;
+            $self->{checking} .= $_;
+        }
     }
     if ($selected == 0) {
         $self->{option_results}->{add_status} = 1;
@@ -186,6 +293,42 @@ sub check_options {
         $self->{option_results}->{time_unit} = 's';
     }
     $self->{option_results}->{timezone} = 'UTC' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
+
+    if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
+        if ($self->{option_results}->{speed} !~ /^[0-9]+(\.[0-9]+){0,1}$/) {
+            $self->{output}->add_option_msg(short_msg => "Speed must be a positive number '" . $self->{option_results}->{speed} . "' (can be a float also)");
+            $self->{output}->option_exit();
+        } else {
+            $self->{option_results}->{speed} *= 1000000;
+        }
+    }
+
+    $self->{option_results}->{traffic_unit} = 'percent_delta'
+        if (!defined($self->{option_results}->{traffic_unit}) ||
+            $self->{option_results}->{traffic_unit} eq '' ||
+            $self->{option_results}->{traffic_unit} eq '%');
+    if ($self->{option_results}->{traffic_unit} !~ /^(?:percent|percent_delta|bps|counter)$/) {
+        $self->{output}->add_option_msg(short_msg => 'Wrong option --traffic-unit');
+        $self->{output}->option_exit();
+    }
+}
+
+sub add_interfaces {
+    my ($self, %options) = @_;
+
+    $self->{devices}->{ $options{device}->{id} }->{interfaces} = {};
+
+    my $interfaces = $options{custom}->request_api(endpoint => '/ssIpsecGwHws/' . $options{device}->{id} . '/interfacesStatistics');
+    foreach my $interface (@{$interfaces->{listInterfaces}}) {
+        $self->{devices}->{ $options{device}->{id} }->{interfaces}->{ $interface->{name} } = {
+            name => $interface->{name},
+            sn => $options{device}->{serialNumber},
+            in => $interface->{interfaceStats}->{inOctets} * 8,
+            out => $interface->{interfaceStats}->{outOctets} * 8,
+            speed_in => defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' ? $self->{option_results}->{speed} : $interface->{speed},
+            speed_out => defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' ? $self->{option_results}->{speed} : $interface->{speed}
+        };
+    }
 }
 
 sub manage_selection {
@@ -210,16 +353,23 @@ sub manage_selection {
                 connectionStatus => lc($device->{status}->{connectedStatus})
             };
 
-            my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
-            my $dt = DateTime->from_epoch(epoch => $device->{status}->{statusEpochMilli} / 1000);
-            $self->{devices}->{ $device->{id} }->{connection}->{connection_seconds} = time() - $dt->epoch();
+            $self->{devices}->{ $device->{id} }->{connection}->{connection_seconds} = time() - ($device->{status}->{statusEpochMilli} / 1000);
             $self->{devices}->{ $device->{id} }->{connection}->{connection_human} = centreon::plugins::misc::change_seconds(
                 value => $self->{devices}->{ $device->{id} }->{connection}->{connection_seconds}
             );
         }
 
-        
+        $self->add_interfaces(custom => $options{custom}, device => $device)
+            if (defined($self->{option_results}->{add_interfaces}));
     }
+
+    $self->{cache_name} = 'thales_mistral_' . $options{custom}->get_connection_info()  . '_' . $self->{mode} . '_' .
+        Digest::MD5::md5_hex(
+            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
+            (defined($self->{option_results}->{filter_id}) ? $self->{option_results}->{filter_id} : '') . '_' .
+            (defined($self->{option_results}->{filter_sn}) ? $self->{option_results}->{filter_sn} : '') . '_' .
+            $self->{checking}
+        );
 }
 
 1;
@@ -255,10 +405,28 @@ Can used special variables like: %{sn}, %{connectionStatus}
 Set critical threshold for status.
 Can used special variables like: %{sn}, %{connectionStatus}
 
+=item B<--timezone>
+
+Set timezone for ntp contact time (Default is 'UTC').
+
+=item B<--time-unit>
+
+Select the time unit for connection threshold. May be 's' for seconds, 'm' for minutes,
+'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+
+=item B<--traffic-unit>
+
+Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+
+=item B<--speed>
+
+Set interface speed (in Mb).
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'devices-detected', 'connection-last-time'.
+Can be: 'devices-detected', 'connection-last-time',
+'interface-traffic-in', 'interface-traffic-out'.
 
 =back
 
