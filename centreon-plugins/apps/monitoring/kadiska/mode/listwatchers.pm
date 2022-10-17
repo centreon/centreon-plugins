@@ -74,6 +74,9 @@ sub manage_selection {
     foreach my $watcher (@{$results->{data}}) {
         my %application;
         $application{watcher_name} = $watcher->{'watcher_id:group'};
+        $application{watcher_display_name} = $watcher->{'watcher_id:group'};
+        $application{watcher_display_name} .= '_' . $watcher->{'site:group'} if defined($watcher->{'site:group'});
+        $application{watcher_display_name} .= '_' . $watcher->{'gateway:group'} if defined($watcher->{'gateway:group'});
         $application{site_name} = defined($watcher->{'site:group'}) ? $watcher->{'site:group'} : '';
         $application{gateway_name} = defined($watcher->{'gateway:group'}) ? $watcher->{'gateway:group'} : '';
         $application{wfa} = !defined($watcher->{'gateway:group'}) && !defined($watcher->{'site:group'}) ? '--wfa --verbose' : '';
