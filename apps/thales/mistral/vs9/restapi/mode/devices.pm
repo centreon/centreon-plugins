@@ -217,6 +217,8 @@ sub manage_selection {
                 value => $self->{devices}->{ $device->{id} }->{connection}->{connection_seconds}
             );
         }
+
+        
     }
 }
 
@@ -256,7 +258,7 @@ Can used special variables like: %{sn}, %{connectionStatus}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'devices-detected'.
+Can be: 'devices-detected', 'connection-last-time'.
 
 =back
 
