@@ -1,3 +1,15 @@
+2022-10-17 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Aruba Orchestrator Rest API
+ * Plugin added: Splunk
+ * Plugin added: Kadiska
+ * Plugin added: VMWare VCSA SNMP
+ * Mode added: [linux/local] 'pending-updates'
+ * Mode added: [alcatel/omniswitch/snmp] 'virtual-chassis'
+ * Enhancement: [ups/socomec/netvision] support v5 version
+ * Core: can use variable to defined unitary options
+ * Break: [protocol/imap] new imap library
+ * Break: [fujitsu/eternux/dx/ssh] use ssh backends
+
 2022-09-13 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Azure Management Costs (Consumption API)
  * Plugin added: Cisco Umbrella SNMP
