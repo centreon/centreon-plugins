@@ -436,6 +436,7 @@ sub new {
         'add-status'             => { name => 'add_status' },
         'add-system'             => { name => 'add_system' },
         'add-mistral'            => { name => 'add_mistral' },
+        'add-certificates'       => { name => 'add_certificates' },
         'time-connection-unit:s' => { name => 'time_connection_unit', default => 's' },
         'time-uptime-unit:s'     => { name => 'time_uptime_unit', default => 's' },
         'timezone:s'             => { name => 'timezone' },
@@ -453,7 +454,7 @@ sub check_options {
 
     $self->{checking} = '';
     my $selected = 0;
-    foreach ('status', 'interfaces', 'tunnels', 'mistral', 'system') {
+    foreach ('status', 'interfaces', 'tunnels', 'mistral', 'system', 'certificates') {
         if (defined($self->{option_results}->{'add_' . $_})) {
             $selected = 1;
             $self->{checking} .= $_;
@@ -681,6 +682,10 @@ Check system.
 =item B<--add-mistral>
 
 Check mistral (operating status, temperature, autotests).
+
+=item B<--add-certificates>
+
+Check certificates.
 
 =item B<--unknown-connection-status>
 

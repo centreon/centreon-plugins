@@ -270,12 +270,28 @@ sub get_gateway_inventory {
             get_param => ['projection=gatewayHwData']
         );
         $inventory = $result->{content};
+
         $result = $self->request_api(endpoint => '/ssIpsecGwHws/status');
         for (my $i = 0; $i < scalar(@$inventory); $i++) {
             if (defined($result->{ $inventory->[$i]->{serialNumber} })) {
                 $inventory->[$i]->{status} = $result->{ $inventory->[$i]->{serialNumber} };
             }
         }
+
+        $result = $self->request_api(
+            endpoint => '/certificateGws',
+            get_param => ['projection=withGatewayHw']
+        );
+        for (my $i = 0; $i < scalar(@$inventory); $i++) {
+            $inventory->[$i]->{certificates} = [];
+            foreach my $cert (@{$result->{content}}) {
+                if ($inventory->[$i]->{serialNumber} eq $cert->{ssIpsecGwHw}->{serialNumber}) {
+                    push @{$inventory->[$i]->{certificates}}, $cert;
+                    last;
+                }
+            }
+        }
+
         $cache->{gwInventory} = $inventory;
         $self->{cache}->write(data => $cache);
     }
