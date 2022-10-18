@@ -33,6 +33,33 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
 
+sub custom_certificate_expires_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{time_certificate_unit} },
+        unit => $self->{instance_mode}->{option_results}->{time_certificate_unit},
+        instances => [$self->{result_values}->{sn}, $self->{result_values}->{name}],
+        value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{time_certificate_unit} }),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_certificate_expires_threshold {
+    my ($self, %options) = @_;
+
+    return $self->{perfdata}->threshold_check(
+        value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{time_certificate_unit} }),
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
+}
+
 sub custom_time_offset_output {
     my ($self, %options) = @_;
 
@@ -250,6 +277,15 @@ sub prefix_autotest_output {
     );
 }
 
+sub prefix_certificate_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "certificate '%s' ",
+        $options{instance_value}->{name}
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -262,7 +298,8 @@ sub set_counters {
                 { name => 'connection', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'mistral', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'autotests', type => 1, cb_prefix_output => 'prefix_autotest_output', message_multiple => 'autotests are ok', display_long => 1, skipped_code => { -10 => 1 } },
-                { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'interfaces are ok', display_long => 1, skipped_code => { -10 => 1 } }
+                { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'interfaces are ok', display_long => 1, skipped_code => { -10 => 1 } },
+                { name => 'certificates', type => 1, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'certificates are ok', display_long => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -422,6 +459,17 @@ sub set_counters {
             }
         }
     ];
+
+    $self->{maps_counters}->{certificates} = [
+        { label => 'certificate-expires', nlabel => 'certificate.expires', set => {
+                key_values      => [ { name => 'expires_seconds' }, { name => 'expires_human' }, { name => 'name' }, { name => 'sn' } ],
+                output_template => 'expires in %s',
+                output_use => 'expires_human',
+                closure_custom_perfdata => $self->can('custom_certificate_expires_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_certificate_expires_threshold')
+            }
+        }
+    ];
 }
 
 sub new {
@@ -430,18 +478,19 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s'            => { name => 'filter_id' },
-        'filter-sn:s'            => { name => 'filter_sn' },
-        'add-interfaces'         => { name => 'add_interfaces' },
-        'add-status'             => { name => 'add_status' },
-        'add-system'             => { name => 'add_system' },
-        'add-mistral'            => { name => 'add_mistral' },
-        'add-certificates'       => { name => 'add_certificates' },
-        'time-connection-unit:s' => { name => 'time_connection_unit', default => 's' },
-        'time-uptime-unit:s'     => { name => 'time_uptime_unit', default => 's' },
-        'traffic-unit:s'         => { name => 'traffic_unit', default => 'percent_delta' },
-        'ntp-hostname:s'         => { name => 'ntp_hostname' },
-        'ntp-port:s'             => { name => 'ntp_port', default => 123 },
+        'filter-id:s'             => { name => 'filter_id' },
+        'filter-sn:s'             => { name => 'filter_sn' },
+        'add-interfaces'          => { name => 'add_interfaces' },
+        'add-status'              => { name => 'add_status' },
+        'add-system'              => { name => 'add_system' },
+        'add-mistral'             => { name => 'add_mistral' },
+        'add-certificates'        => { name => 'add_certificates' },
+        'time-connection-unit:s'  => { name => 'time_connection_unit', default => 's' },
+        'time-uptime-unit:s'      => { name => 'time_uptime_unit', default => 's' },
+        'time-certificate-unit:s' => { name => 'time_certificate_unit', default => 's' },
+        'traffic-unit:s'          => { name => 'traffic_unit', default => 'percent_delta' },
+        'ntp-hostname:s'          => { name => 'ntp_hostname' },
+        'ntp-port:s'              => { name => 'ntp_port', default => 123 },
     });
 
     return $self;
@@ -468,6 +517,9 @@ sub check_options {
     }
     if ($self->{option_results}->{time_uptime_unit} eq '' || !defined($unitdiv->{$self->{option_results}->{time_uptime_unit}})) {
         $self->{option_results}->{time_uptime_unit} = 's';
+    }
+    if ($self->{option_results}->{time_certificate_unit} eq '' || !defined($unitdiv->{$self->{option_results}->{time_certificate_unit}})) {
+        $self->{option_results}->{time_certificate_unit} = 's';
     }
 
     if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
@@ -600,6 +652,35 @@ sub add_mistral {
     }
 }
 
+sub add_certificates {
+    my ($self, %options) = @_;
+
+    $self->{devices}->{ $options{device}->{id} }->{certificates} = {};
+    foreach my $cert (@{$options{device}->{certificates}}) {
+        if ($cert->{validityPeriodEnd} =~ /^\s*(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.\d+([+-].*)$/) {
+            my $dt = DateTime->new(
+                year       => $1,
+                month      => $2,
+                day        => $3,
+                hour       => $4,
+                minute     => $5,
+                second     => $6,
+                time_zone  => $7
+            );
+            $self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} } = {
+                sn => $options{device}->{serialNumber},
+                name => $cert->{gwCertificateName},
+                expires_seconds => $dt->epoch() - time()
+            };
+            $self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} }->{expires_seconds} = 0
+                if ($self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} }->{expires_seconds} < 0);
+            $self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} }->{expires_human} = centreon::plugins::misc::change_seconds(
+                value => $self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} }->{expires_seconds}
+            );
+        }
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -636,6 +717,9 @@ sub manage_selection {
 
         $self->add_mistral(custom => $options{custom}, device => $device)
             if (defined($self->{option_results}->{add_mistral}));
+
+        $self->add_certificates(custom => $options{custom}, device => $device)
+            if (defined($self->{option_results}->{add_certificates}));
     }
 
     $self->{cache_name} = 'thales_mistral_' . $options{custom}->get_connection_info()  . '_' . $self->{mode} . '_' .
@@ -763,6 +847,11 @@ Select the time unit for connection threshold. May be 's' for seconds, 'm' for m
 Select the time unit for uptime threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
+=item B<--time-certificate-unit>
+
+Select the time unit for certificate threshold. May be 's' for seconds, 'm' for minutes,
+'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+
 =item B<--traffic-unit>
 
 Units of thresholds for the traffic (Default: 'percent_delta') ('percent_delta', 'bps', 'counter').
@@ -776,7 +865,8 @@ Set interface speed (in Mb).
 Thresholds.
 Can be: 'devices-detected', 'connection-last-time',
 'interface-traffic-in', 'interface-traffic-out',
-'system-uptime', 'system-time-offset', temperature'.
+'system-uptime', 'system-time-offset', temperature',
+'certificate-expires'.
 
 =back
 
