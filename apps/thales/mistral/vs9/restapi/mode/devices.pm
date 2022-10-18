@@ -79,11 +79,21 @@ sub custom_uptime_threshold {
     );
 }
 
+sub custom_mistral_version_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'firmware version: %s (current) %s (other)',
+        $self->{result_values}->{firmwareCurrentVersion},
+        $self->{result_values}->{firmwareOtherVersion}
+    );
+}
+
 sub custom_system_version_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'system osName: %s, osRelease: %s',
+        'system os: %s %s',
         $self->{result_values}->{osName},
         $self->{result_values}->{osRelease}
     );
@@ -239,8 +249,9 @@ sub set_counters {
         {
             name => 'devices', type => 3, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output', indent_long_output => '    ', message_multiple => 'All devices are ok',
             group => [
-                { name => 'connection', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'system', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'connection', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'mistral', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'interfaces are ok', display_long => 1, skipped_code => { -10 => 1 } }
             ]
         }
@@ -278,6 +289,30 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_connection_threshold')
             }
         }
+    ];
+
+    $self->{maps_counters}->{mistral} = [
+        {
+            label => 'mistral-version',
+            type => 2,
+            set => {
+                key_values => [ { name => 'firmwareCurrentVersion' }, { name => 'firmwareOtherVersion' } ],
+                closure_custom_output => $self->can('custom_mistral_version_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        {
+            label => 'operating-state',
+            type => 2,
+            critical_default => '%{operatingState} !~ /operating/i',
+            set => {
+                key_values => [ { name => 'operatingState' }, { name => 'sn' } ],
+                output_template => "operating state: %s",
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
     ];
 
     $self->{maps_counters}->{system} = [
@@ -372,6 +407,7 @@ sub new {
         'add-interfaces'         => { name => 'add_interfaces' },
         'add-status'             => { name => 'add_status' },
         'add-system'             => { name => 'add_system' },
+        'add-mistral'            => { name => 'add_mistral' },
         'time-connection-unit:s' => { name => 'time_connection_unit', default => 's' },
         'time-uptime-unit:s'     => { name => 'time_uptime_unit', default => 's' },
         'timezone:s'             => { name => 'timezone' },
@@ -515,6 +551,18 @@ sub add_system {
     }
 }
 
+sub add_mistral {
+    my ($self, %options) = @_;
+
+    my $mistral = $options{custom}->request_api(endpoint => '/ssIpsecGwHws/' . $options{device}->{id} . '/mistralStateStatistics');
+    $self->{devices}->{ $options{device}->{id} }->{mistral} = {
+        sn => $options{device}->{serialNumber},
+        firmwareCurrentVersion => $mistral->{firmwareCurrent}->{version},
+        firmwareOtherVersion => $mistral->{firmwareOther}->{version},
+        operatingState => lc($mistral->{operatingState})
+    };
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -548,6 +596,9 @@ sub manage_selection {
 
         $self->add_system(custom => $options{custom}, device => $device)
             if (defined($self->{option_results}->{add_system}));
+
+        $self->add_mistral(custom => $options{custom}, device => $device)
+            if (defined($self->{option_results}->{add_mistral}));
     }
 
     $self->{cache_name} = 'thales_mistral_' . $options{custom}->get_connection_info()  . '_' . $self->{mode} . '_' .
@@ -589,6 +640,10 @@ Check interfaces.
 
 Check system.
 
+=item B<--add-mistral>
+
+Check mistral (operating status, temperature, autotests).
+
 =item B<--unknown-connection-status>
 
 Set unknown threshold for status (Default: '%{connectionStatus} =~ /unknown/i').
@@ -603,6 +658,21 @@ Can used special variables like: %{sn}, %{connectionStatus}
 
 Set critical threshold for status.
 Can used special variables like: %{sn}, %{connectionStatus}
+
+=item B<--unknown-operating-state>
+
+Set unknown threshold for status.
+Can used special variables like: %{sn}, %{operatingState}
+
+=item B<--warning-operating-state>
+
+Set warning threshold for status.
+Can used special variables like: %{sn}, %{operatingState}
+
+=item B<--critical-operating-state>
+
+Set critical threshold for status  (Default: '%{operatingState} !~ /operating/i').
+Can used special variables like: %{sn}, %{operatingState}
 
 =item B<--unknown-interface-status>
 
