@@ -241,6 +241,15 @@ sub prefix_interface_output {
     );
 }
 
+sub prefix_autotest_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "autotest '%s' ",
+        $options{instance_value}->{name}
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -252,6 +261,7 @@ sub set_counters {
                 { name => 'system', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'connection', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'mistral', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'autotests', type => 1, cb_prefix_output => 'prefix_autotest_output', message_multiple => 'autotests are ok', display_long => 1, skipped_code => { -10 => 1 } },
                 { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'interfaces are ok', display_long => 1, skipped_code => { -10 => 1 } }
             ]
         }
@@ -313,6 +323,37 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
+        { label => 'temperature', nlabel => 'device.temperature.celsius', set => {
+                key_values => [ { name => 'temperature' }, { name => 'sn' } ],
+                output_template => 'temperature: %.2f C',
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'C',
+                        instances => $self->{result_values}->{sn},
+                        value => $self->{result_values}->{temperature},
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
+                    );
+                }
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{autotests} = [
+        {
+            label => 'autotest-state',
+            type => 2,
+            critical_default => '%{state} !~ /success/i',
+            set => {
+                key_values => [ { name => 'state' }, { name => 'name' }, { name => 'sn' } ],
+                output_template => "state: %s",
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
     ];
 
     $self->{maps_counters}->{system} = [
@@ -381,19 +422,6 @@ sub set_counters {
             }
         }
     ];
-
-=pod
-    $self->{maps_counters}->{dedup} = [
-        { label => 'dedup', nlabel => 'appliance.deduplication.ratio.count', set => {
-                key_values => [ { name => 'dedup' }, { name => 'name' } ],
-                output_template => 'deduplication ratio: %.2f',
-                perfdatas => [
-                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'name' }
-                ]
-            }
-        }
-    ];
-=cut
 }
 
 sub new {
@@ -559,8 +587,18 @@ sub add_mistral {
         sn => $options{device}->{serialNumber},
         firmwareCurrentVersion => $mistral->{firmwareCurrent}->{version},
         firmwareOtherVersion => $mistral->{firmwareOther}->{version},
-        operatingState => lc($mistral->{operatingState})
+        operatingState => lc($mistral->{operatingState}),
+        temperature => $mistral->{temperature}
     };
+
+    $self->{devices}->{ $options{device}->{id} }->{autotests} = {};
+    foreach (@{$mistral->{autotestStates}}) {
+        $self->{devices}->{ $options{device}->{id} }->{autotests}->{ name => $_->{name} } = {
+            sn => $options{device}->{serialNumber},
+            name => $_->{name},
+            state => lc($_->{state})
+        };
+    }
 }
 
 sub manage_selection {
@@ -673,6 +711,21 @@ Can used special variables like: %{sn}, %{operatingState}
 
 Set critical threshold for status  (Default: '%{operatingState} !~ /operating/i').
 Can used special variables like: %{sn}, %{operatingState}
+
+=item B<--unknown-autotest-state>
+
+Set unknown threshold for status.
+Can used special variables like: %{sn}, %{name}, %{state}
+
+=item B<--warning-autotest-state>
+
+Set warning threshold for status.
+Can used special variables like: %{sn}, %{name}, %{state}
+
+=item B<--critical-autotest-state>
+
+Set critical threshold for status  (Default: '%{state} !~ /success/i').
+Can used special variables like: %{sn}, %{name}, %{state}
 
 =item B<--unknown-interface-status>
 
