@@ -30,7 +30,8 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'devices' => 'apps::thales::mistral::vs9::restapi::mode::devices'
+        'devices'   => 'apps::thales::mistral::vs9::restapi::mode::devices',
+        'discovery' => 'apps::thales::mistral::vs9::restapi::mode::discovery'
     };
 
     $self->{custom_modes}->{api} = 'apps::thales::mistral::vs9::restapi::custom::api';
