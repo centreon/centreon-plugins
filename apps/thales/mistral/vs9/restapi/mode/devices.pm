@@ -773,7 +773,7 @@ Set interface speed (in Mb).
 Thresholds.
 Can be: 'devices-detected', 'connection-last-time',
 'interface-traffic-in', 'interface-traffic-out',
-'system-uptime', 'system-time-offset'.
+'system-uptime', 'system-time-offset', temperature'.
 
 =back
 
