@@ -439,7 +439,6 @@ sub new {
         'add-certificates'       => { name => 'add_certificates' },
         'time-connection-unit:s' => { name => 'time_connection_unit', default => 's' },
         'time-uptime-unit:s'     => { name => 'time_uptime_unit', default => 's' },
-        'timezone:s'             => { name => 'timezone' },
         'traffic-unit:s'         => { name => 'traffic_unit', default => 'percent_delta' },
         'ntp-hostname:s'         => { name => 'ntp_hostname' },
         'ntp-port:s'             => { name => 'ntp_port', default => 123 },
@@ -470,7 +469,6 @@ sub check_options {
     if ($self->{option_results}->{time_uptime_unit} eq '' || !defined($unitdiv->{$self->{option_results}->{time_uptime_unit}})) {
         $self->{option_results}->{time_uptime_unit} = 's';
     }
-    $self->{option_results}->{timezone} = 'UTC' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
 
     if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
         if ($self->{option_results}->{speed} !~ /^[0-9]+(\.[0-9]+){0,1}$/) {
