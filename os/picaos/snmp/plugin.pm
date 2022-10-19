@@ -30,7 +30,11 @@ sub new {
     bless $self, $class;
 
     %{$self->{modes}} = (
-        'cpu'              => 'os::picaos::snmp::mode::cpu'
+        'cpu'              => 'os::picaos::snmp::mode::cpu',
+        'hardware'         => 'os::picaos::snmp::mode::hardware',
+        'interfaces'       => 'os::picaos::snmp::mode::interfaces',
+        'memory'           => 'os::picaos::snmp::mode::memory',
+        'temperature'      => 'os::picaos::snmp::mode::temperature'
     );
 
     return $self;

@@ -29,19 +29,26 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'cpu_usage', type => 0 },
+        { name => 'global', type => 0 },
     ];
     
-    $self->{maps_counters}->{cpu_usage} = [
+    $self->{maps_counters}->{global} = [
         { label => 'cpu', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'CPU Usage %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'prct_used', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
+                    { label => 'cpu', template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
         },
+        { label => 'temperature', nlabel => 'cpu.temperature.celsius', set => {
+                key_values => [ { name => 'temperature' } ],
+                output_template => 'CPU Temperature: %s C',
+                perfdatas => [
+                    { label => 'cpu', template => '%s', unit => 'C' },
+                ],
+            }
+        }
     ];
 }
 
@@ -61,9 +68,14 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $oid_cpuUsage = '.1.3.6.1.4.1.35098.1.1.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_cpuUsage], nothing_quit => 1);
+    my $oid_cpuTemperature = '.1.3.6.1.4.1.35098.1.6.0';
 
-    $self->{cpu_usage} = { prct_used => $snmp_result->{$oid_cpuUsage} };
+    my $oids = [$oid_cpuUsage, $oid_cpuTemperature];
+    my $snmp_result = $options{snmp}->get_leef(oids => $oids, nothing_quit => 1);
+
+    $self->{global} = { prct_used => $snmp_result->{$oid_cpuUsage},
+                     temperature => $snmp_result->{$oid_cpuTemperature} =~ s/\s\C.*//r
+                    };
 }
 
 1;
@@ -72,7 +84,7 @@ __END__
 
 =head1 MODE
 
-Check CPU usage.
+Check CPU usage and temperature.
 
 =over 8
 
@@ -83,6 +95,14 @@ Threshold warning.
 =item B<--critical-usage>
 
 Threshold critical.
+
+=item B<--warning-temperature>
+
+Threshold warning in celsius degrees for CPU.
+
+=item B<--critical-temperature>
+
+Threshold critical in celsius degrees for CPU.
 
 =back
 
