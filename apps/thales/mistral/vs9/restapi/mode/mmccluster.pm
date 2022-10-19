@@ -63,7 +63,8 @@ sub set_counters {
         {
             label => 'cluster-status',
             type => 2,
-            warning_default => '%{replicationStatus} !~ /synchronized/i',
+            unknown_default => '%{replicationStatus} =~ /unknown/i',
+            warning_default => '%{replicationStatus} =~ /not_synchronized/i',
             set => {
                 key_values => [ { name => 'replicationStatus' }, { name => 'enabled' } ],
                 closure_custom_output => $self->can('custom_cluster_status_output'),
@@ -139,12 +140,12 @@ Check MMC cluster status.
 
 =item B<--unknown-cluster-status>
 
-Set unknown threshold for status.
+Set unknown threshold for status  (Default: '%{replicationStatus} =~ /unknown/i').
 Can used special variables like: %{enabled}, %{replicationStatus}
 
 =item B<--warning-cluster-status>
 
-Set warning threshold for status (Default: '%{replicationStatus} !~ /synchronized/i').
+Set warning threshold for status (Default: '%{replicationStatus} =~ /not_synchronized/i').
 Can used special variables like: %{enabled}, %{replicationStatus}
 
 =item B<--critical-cluster-status>
