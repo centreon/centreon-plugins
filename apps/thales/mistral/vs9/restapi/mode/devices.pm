@@ -341,7 +341,7 @@ sub set_counters {
             label => 'connection-status',
             type => 2,
             unknown_default => '%{connectionStatus} =~ /unknown/i',
-            warning_default => '%{connectionStatus} =~ /disconnected/i',
+            warning_default => '%{connectionStatus} =~ /disconnected|unpaired/i',
             set => {
                 key_values => [ { name => 'connectionStatus' }, { name => 'sn' } ],
                 output_template => "connection status: %s",
@@ -819,17 +819,21 @@ sub manage_selection {
 
         $self->{global}->{detected}++;
 
-        $self->{devices}->{ $device->{id} } = { sn => $device->{serialNumber} };
-        if (defined($self->{option_results}->{add_status}) && defined($device->{status})) {
+        $self->{devices}->{ $device->{id} } = {
+            sn => $device->{serialNumber},
+            name => defined($device->{name}) ? $device->{name} : ''
+        };
+        if (defined($self->{option_results}->{add_status})) {
             $self->{devices}->{ $device->{id} }->{connection} = {
                 sn => $device->{serialNumber},
-                connectionStatus => lc($device->{status}->{connectedStatus})
+                connectionStatus => defined($device->{status}) ? lc($device->{status}->{connectedStatus}) : 'unpaired'
             };
-
-            $self->{devices}->{ $device->{id} }->{connection}->{connection_seconds} = time() - ($device->{status}->{statusEpochMilli} / 1000);
-            $self->{devices}->{ $device->{id} }->{connection}->{connection_human} = centreon::plugins::misc::change_seconds(
-                value => $self->{devices}->{ $device->{id} }->{connection}->{connection_seconds}
-            );
+            if (defined($device->{status})) {
+                $self->{devices}->{ $device->{id} }->{connection}->{connection_seconds} = time() - ($device->{status}->{statusEpochMilli} / 1000);
+                $self->{devices}->{ $device->{id} }->{connection}->{connection_human} = centreon::plugins::misc::change_seconds(
+                    value => $self->{devices}->{ $device->{id} }->{connection}->{connection_seconds}
+                );
+            }
         }
 
         $self->add_interfaces(custom => $options{custom}, device => $device)
@@ -906,7 +910,7 @@ Can used special variables like: %{sn}, %{connectionStatus}
 
 =item B<--warning-connection-status>
 
-Set warning threshold for status (Default: '%{connectionStatus} =~ /disconnected/i').
+Set warning threshold for status (Default: '%{connectionStatus} =~ /disconnected|unpaired/i').
 Can used special variables like: %{sn}, %{connectionStatus}
 
 =item B<--critical-connection-status>

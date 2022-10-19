@@ -85,7 +85,7 @@ sub set_counters {
         {
             label => 'node-status',
             type => 2,
-            warning_default => '%{status} !~ /true/i',
+            warning_default => '%{status} =~ /disconnected/i',
             set => {
                 key_values => [ { name => 'status' }, { name => 'name' } ],
                 output_template => 'status: %s',
@@ -122,7 +122,7 @@ sub manage_selection {
     foreach (keys %{$cluster->{statusList}}) {
         $self->{nodes}->{$_} = {
             name => $_,
-            status => $cluster->{statusList}->{$_} =~ /true|1/i ? 'true' : 'false',
+            status => $cluster->{statusList}->{$_} =~ /true|1/i ? 'connected' : 'disconnected'
         };
     }
 }
@@ -159,7 +159,7 @@ Can used special variables like: %{status}, %{name}
 
 =item B<--warning-node-status>
 
-Set warning threshold for status (Default: '%{status} !~ /true/i').
+Set warning threshold for status (Default: '%{status} =~ /disconnected/i').
 Can used special variables like: %{status}, %{name}
 
 =item B<--critical-node-status>
