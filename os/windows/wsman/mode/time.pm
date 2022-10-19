@@ -105,12 +105,14 @@ sub get_from_datetime {
         time_zone => 'UTC'
     );
 
+    my $timezone = 'UTC';
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+        $timezone = $self->{option_results}->{timezone};
         my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
         dt->set_time_zone($tz->{time_zone});
     }
 
-    return ($dt->epoch, \@remote_date, $timezone);
+    return ($dt->epoch(), \@remote_date, $timezone);
 }
 
 sub get_target_time {
