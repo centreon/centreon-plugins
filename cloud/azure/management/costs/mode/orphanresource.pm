@@ -25,19 +25,64 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub custom_orphaned_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf(" orphaned resources %s (total: %s)", $self->{result_values}->{count}, $self->{result_values}->{total});
+    
+    return $msg;
+}
+
+sub prefix_disks_output {
+    my ($self, %options) = @_;
+
+    return 'Managed disks';
+}
+
+sub prefix_nsgs_output {
+    my ($self, %options) = @_;
+
+    return 'NSGs';
+}
+
+sub prefix_nics_output {
+    my ($self, %options) = @_;
+
+    return 'NICs';
+}
+
+sub prefix_publicips_output {
+    my ($self, %options) = @_;
+
+    return 'Public IPs';
+}
+
+sub prefix_routetables_output {
+    my ($self, %options) = @_;
+
+    return 'Route tables';
+}
+
+sub prefix_snapshots_output {
+    my ($self, %options) = @_;
+
+    return 'Snapshots';    
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'no-managed-disks'   => { name => 'no_managed_disks' },
-        'no-nics'            => { name => 'no_nics' },
-        'no-nsgs'            => { name => 'no_nsgs' },
-        'no-public-ips'      => { name => 'no_public_ips' },
-        'no-route-tables'    => { name => 'no_route_tables' },
-        'no-snapshots'       => { name => 'no_snapshots' },
-	'exclude-name:s'     => { name => 'exclude_name' }
+        'show-details'         => { name => 'show_details'},
+        'skip-managed-disks'   => { name => 'skip_managed_disks' },
+        'skip-nics'            => { name => 'skip_nics' },
+        'skip-nsgs'            => { name => 'skip_nsgs' },
+        'skip-public-ips'      => { name => 'skip_public_ips' },
+        'skip-route-tables'    => { name => 'skip_route_tables' },
+        'skip-snapshots'       => { name => 'skip_snapshots' },
+        'exclude-name:s'       => { name => 'exclude_name' }
     });
 
     return $self;
@@ -48,158 +93,247 @@ sub check_options {
     $self->SUPER::check_options(%options);
 }
 
+sub set_counters { 
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'orphaned_resources', type => 0 },
+        { name => 'orphaned_disks', type => 0, cb_prefix_output => 'prefix_disks_output' },
+        { name => 'orphaned_nics', type => 0, cb_prefix_output => 'prefix_nics_output' },
+        { name => 'orphaned_nsgs', type => 0, cb_prefix_output => 'prefix_nsgs_output' },
+        { name => 'orphaned_publicips', type => 0, cb_prefix_output => 'prefix_publicips_output' },
+        { name => 'orphaned_routetables', type => 0, cb_prefix_output => 'prefix_routetables_output' },
+        { name => 'orphaned_snapshots', type => 0, cb_prefix_output => 'prefix_snapshots_output' }
+    ];
+
+# nics, nsgs, public-ips, route-tables, snapshots
+    $self->{maps_counters}->{orphaned_resources} = [
+        { label => 'orphaned-resources', nlabel => 'azure.resources.orphaned.count', set => {
+                key_values => [ { name => 'count' } ],
+                output_template => 'Orphaned resources: %s',
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{orphaned_disks} = [
+        { label => 'orphaned-managed-disks', display_ok => 0, nlabel => 'azure.manageddisks.orphaned.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_orphaned_output'),
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{orphaned_nics} = [
+        { label => 'orphaned-nics', display_ok => 0, nlabel => 'azure.nics.orphaned.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_orphaned_output'),
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{orphaned_nsgs} = [
+        { label => 'orphaned-nsgs', display_ok => 0, nlabel => 'azure.nsgs.orphaned.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_orphaned_output'),
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{orphaned_publicips} = [
+        { label => 'orphaned-publicips', display_ok => 0, nlabel => 'azure.publicips.orphaned.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_orphaned_output'),
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{orphaned_routetables} = [
+        { label => 'orphaned-routetables', display_ok => 0, nlabel => 'azure.routetables.orphaned.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_orphaned_output'),
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{orphaned_snapshots} = [
+        { label => 'orphaned-snapshots', display_ok => 0, nlabel => 'azure.snapshots.orphaned.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_orphaned_output'),
+                perfdatas => [
+                    { template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $output_error = "";
-    my $output = "";
-    my $items;
+    my $resultset;
+    my @item_list;
+    my $display_long = 'no';
 
     # orphan managed disks
-    if (!defined($self->{option_results}->{no_managed_disks})) {
-	$items = $options{custom}->azure_list_compute_disks(
-	    resource_group => $self->{option_results}->{resource_group},
-	    api_version_override => "2022-07-02"
+    if (!defined($self->{option_results}->{skip_managed_disks})) {
+        $self->{orphaned_disks}->{count} = 0;
+        $self->{orphaned_disks}->{total} = 0;
+	    $resultset = $options{custom}->azure_list_compute_disks(
+	        resource_group => $self->{option_results}->{resource_group},
+	        force_api_version => "2022-07-02"
 	    );
-	$self->{disks} = {orphan => 0, total => 0, name => ""};
-	foreach my $item (@{$items}) {
-	    $self->{disks}->{total}++;;
-	    next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
-		     && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
-	    next if ($item->{properties}->{diskState} !~ /Unattached/);
-	    $self->{disks}->{orphan}++;
-	    $self->{disks}->{name} .= $item->{name} . " ";
-	}
-	if ($self->{disks}->{orphan}) {
-	    $output_error .= "Found " . $self->{disks}->{orphan} . " orphan managed disk(s) ( " . $self->{disks}->{name} . ")\n";
-	}
-	else {
-	    $output .= "No orphan managed disk found on " . $self->{disks}->{total} . " total disk(s)\n";
-	}
+	    foreach my $item (@{$resultset}) {
+	        next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
+	    	     && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
+            $self->{orphaned_disks}->{total}++;
+	        next if ($item->{properties}->{diskState} !~ /Unattached/);
+            $self->{orphaned_disks}->{count}++;
+            $self->{orphaned_resources}->{count}++;
+            push @item_list, $item->{name};
+	    }
+        $display_long = 'yes';
     }
 
-    # orphan NICs
-    if (!defined($self->{option_results}->{no_nics})) {
-        $items = $options{custom}->azure_list_nics(
-            resource_group => $self->{option_results}->{resource_group},
-	    api_version_override => "2022-05-01"
-            );
-        $self->{nics} = {orphan => 0, total => 0, name => ""};
-        foreach my $item (@{$items}) {
-            $self->{nics}->{total}++;;
-            next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
-                     && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
-            next if (scalar(keys %{$item->{properties}->{virtualMachine}}) != 0 || defined($item->{properties}->{privateEndpoint}));
-            $self->{nics}->{orphan}++;
-	    $self->{nics}->{name} .= $item->{name} . " ";
-        }
-        if ($self->{nics}->{orphan}) {
-            $output_error .= "Found " . $self->{nics}->{orphan} . " orphan NIC(s) ( " . $self->{nics}->{name} . ")\n";
-        }
-	else {
-	    $output .= "No orphan NIC found on " . $self->{nics}->{total} . " total NIC(s)\n";
-	}
+    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
+        $self->{output}->output_add(long_msg => "Managed Disks orphaned list:" . "[" . join(", ", @item_list) . "]");
     }
+    @item_list = ();
+
+     # orphan NICs
+    if (!defined($self->{option_results}->{skip_nics})) {
+        $self->{orphaned_nics}->{count} = 0;
+        $self->{orphaned_nics}->{total} = 0;
+        $resultset = $options{custom}->azure_list_nics(
+            resource_group => $self->{option_results}->{resource_group},
+	        force_api_version => "2022-05-01"
+        );
+	    foreach my $item (@{$resultset}) {
+	        next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
+	    	     && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
+            $self->{orphaned_nics}->{total}++;
+            next if (scalar(keys %{$item->{properties}->{virtualMachine}}) != 0 || defined($item->{properties}->{privateEndpoint}));
+            $self->{orphaned_nics}->{count}++;
+            $self->{orphaned_resources}->{count}++;
+            push @item_list, $item->{name};
+	    }
+    }
+
+    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
+        $self->{output}->output_add(long_msg => "NICs orphaned list:" . "[" . join(", ", @item_list) . "]");
+    }
+    @item_list = (); 
 
     # orphan NSGs
-    if (!defined($self->{option_results}->{no_nsgs})) {
-        $items = $options{custom}->azure_list_nsgs(
+    if (!defined($self->{option_results}->{skip_nsgs})) {
+        $self->{orphaned_nsgs}->{count} = 0;
+        $self->{orphaned_nsgs}->{total} = 0;
+
+        $resultset = $options{custom}->azure_list_nsgs(
             resource_group => $self->{option_results}->{resource_group},
-            api_version_override => "2022-05-01"
-            );
-        $self->{nsgs} = {orphan => 0, total => 0, name => ""};
-        foreach my $item (@{$items}) {
-            $self->{nsgs}->{total}++;;
+            force_api_version => "2022-05-01"
+        );
+	    foreach my $item (@{$resultset}) {          
             next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
                      && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
+            $self->{orphaned_nsgs}->{total}++;
             next if (defined($item->{properties}->{subnets}) && scalar($item->{properties}->{subnets}) != 0);
             next if (defined($item->{properties}->{networkInterface}) && scalar($item->{properties}->{networkInterface}) != 0);
             next if (defined($item->{properties}->{networkInterfaces}) && scalar($item->{properties}->{networkInterfaces}) != 0);
-            $self->{nsgs}->{orphan}++;
-            $self->{nsgs}->{name} .= $item->{name} . " ";
-        }
-        if ($self->{nsgs}->{orphan}) {
-            $output_error .= "Found " . $self->{nsgs}->{orphan} . " orphan NSG(s) ( " . $self->{nsgs}->{name} . ")\n";
-        }
-        else {
-            $output .= "No orphan NSG found on " . $self->{nsgs}->{total} . " total NSG(s)\n";
-        }
+            $self->{orphaned_nsgs}->{count}++;
+            $self->{orphaned_resources}->{count}++;
+            push @item_list, $item->{name};
+	    }
     }
+
+    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
+        $self->{output}->output_add(long_msg => "NSGs orphaned list:" . "[" . join(", ", @item_list) . "]");
+    }
+    @item_list = (); 
 
     # orphan public IPs
-    if (!defined($self->{option_results}->{no_public_ips})) {
-        $items = $options{custom}->azure_list_publicips(
+    if (!defined($self->{option_results}->{skip_public_ips})) {
+        $self->{orphaned_publicips}->{count} = 0;
+        $self->{orphaned_publicips}->{total} = 0;
+        $resultset = $options{custom}->azure_list_publicips(
             resource_group => $self->{option_results}->{resource_group},
-            api_version_override => "2022-01-01"
-            );
-        $self->{public_ips} = {orphan => 0, total => 0, name => ""};
-        foreach my $item (@{$items}) {
-            $self->{public_ips}->{total}++;;
+            force_api_version => "2022-01-01"
+        );
+        foreach my $item (@{$resultset}) {
             next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
                      && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
+            $self->{orphaned_nics}->{total}++;
             next if (defined($item->{properties}->{ipConfiguration}) && scalar($item->{properties}->{ipConfiguration}) != 0);
-            $self->{public_ips}->{orphan}++;
-            $self->{public_ips}->{name} .= $item->{name} . " ";
-        }
-        if ($self->{public_ips}->{orphan}) {
-            $output_error .= "Found " . $self->{public_ips}->{orphan} . " orphan public IP(s) ( " . $self->{public_ips}->{name} . ")\n";
-        }
-        else {
-            $output .= "No orphan public IP found on " . $self->{public_ips}->{total} . " total public IP(s)\n";
-        }
+            $self->{orphaned_nics}->{count}++;
+            $self->{orphaned_resources}->{count}++;
+            push @item_list, $item->{name};
+	    }
     }
+
+    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
+        $self->{output}->output_add(long_msg => "Public IPs orphaned list:" . "[" . join(", ", @item_list) . "]");
+    }
+    @item_list = ();
 
     # orphan route tables
-    if (!defined($self->{option_results}->{no_route_tables})) {
-        $items = $options{custom}->azure_list_route_tables(
+    if (!defined($self->{option_results}->{skip_route_tables})) {
+        $self->{orphaned_routetables}->{count} = 0;
+        $self->{orphaned_routetables}->{total} = 0;
+        $resultset = $options{custom}->azure_list_publicips(
             resource_group => $self->{option_results}->{resource_group},
-            api_version_override => "2022-01-01"
-            );
-        $self->{route_tables} = {orphan => 0, total => 0, name => ""};
-        foreach my $item (@{$items}) {
-            $self->{route_tables}->{total}++;;
+            force_api_version => "2022-01-01"
+        );
+        foreach my $item (@{$resultset}) {
             next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
                      && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
+            $self->{orphaned_routetables}->{total}++;
             next if (defined($item->{properties}->{subnets}) && scalar($item->{properties}->{subnets}) != 0);
-            $self->{route_tables}->{orphan}++;
-            $self->{route_tables}->{name} .= $item->{name} . " ";
-        }
-        if ($self->{route_tables}->{orphan}) {
-            $output_error .= "Found " . $self->{route_tables}->{orphan} . " orphan route table(s) ( " . $self->{route_tables}->{name} . ")\n";
-        }
-        else {
-            $output .= "No orphan route table found on " . $self->{route_tables}->{total} . " total route table(s)\n";
-        }
+            $self->{orphaned_routetables}->{count}++;
+            $self->{orphaned_resources}->{count}++;
+            push @item_list, $item->{name};
+	    }
     }
 
-    # orphan snapshots
-    if (!defined($self->{option_results}->{no_snapshots})) {
-        $items = $options{custom}->azure_list_snapshots(
+    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
+        $self->{output}->output_add(long_msg => "Route tables orphaned list:" . "[" . join(", ", @item_list) . "]");
+    }
+    @item_list = ();
+
+#    # orphan snapshots
+    if (!defined($self->{option_results}->{skip_snapshots})) {
+        $self->{orphaned_snapshots}->{count} = 0;
+        $self->{orphaned_snapshots}->{total} = 0;
+        $resultset = $options{custom}->azure_list_snapshots(
             resource_group => $self->{option_results}->{resource_group},
-            api_version_override => "2021-12-01"
-            );
-        $self->{snapshots} = {orphan => 0, total => 0, name => ""};
-        foreach my $item (@{$items}) {
-            $self->{snapshots}->{total}++;;
+            force_api_version => "2021-12-01"
+        );
+        foreach my $item (@{$resultset}) {
             next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
                      && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
-            $self->{snapshots}->{orphan}++;
-            $self->{snapshots}->{name} .= $item->{name} . " ";
-        }
-        if ($self->{snapshots}->{orphan}) {
-            $output_error .= "Found " . $self->{snapshots}->{orphan} . " orphan snapshot(s) ( " . $self->{snapshots}->{name} . ")\n";
-        }
-        else {
-            $output .= "No orphan snapshot found on " . $self->{snapshots}->{total} . " total snapshot(s)\n";
-        }
+            $self->{orphaned_snapshots}->{total}++;
+            next if (defined($item->{properties}->{subnets}) && scalar($item->{properties}->{subnets}) != 0);
+            $self->{orphaned_snapshots}->{count}++;
+            $self->{orphaned_resources}->{count}++;
+            push @item_list, $item->{name};
+	    }
     }
 
-    if ($output_error) {
-	$self->{output}->output_add(severity => "CRITICAL", short_msg => $output_error . $output);
+    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
+        $self->{output}->output_add(long_msg => "Snapshots orphaned list:" . "[" . join(", ", @item_list) . "]");
     }
-    else {
-	$self->{output}->output_add(severity => "OK", short_msg => "No orphan resource found\n" . $output);
-    }
+    @item_list = ();
+
 }
 
 1;
@@ -208,28 +342,39 @@ __END__
 
 =head1 MODE
 
-Check orphan resources.
-
-Since there are multiple calls to multiple Rest APIs versions, api-version parameter is hardcoded in the mode code.
+Check orphaned resource within an Azure subscription.
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --custommode=api --mode=orphan-resource
-{--resource-group='MYRESOURCEGROUP'] --exclude-name='MyDisk|DataDisk.*' [--no-managed-disks] [--no-nics] [--no-nsgs] [--no-public-ips] [--no-route-tables] [--no-snapshots]
-
+{--resource-group='MYRESOURCEGROUP'] --exclude-name='MyDisk|DataDisk.*' [--skip-managed-disks] [--skip-nics] [--skip-nsgs] [--skip-public-ips] [--skip-route-tables] [--skip-snapshots]
 
 =over 8
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group.
 
-=item B<--exclude-name>
+=item B<--filter-name>
 
 Exclude resource from check (Can be a regexp).
 
-=item B--no-managed-disks --no-nics --no-nsgs --no-public-ips --no-route-tables --no-snapshots
+=item B<--warning-*>
 
-Exclude resource type from check
+Warning threshold on the number of orphaned resources. 
+Substitue '*' by the resource type amongst this list: 
+    (orphaned-snapshots orphaned-routetables orphaned-managed-disks orphaned-nsgs orphaned-nics orphaned-resources orphaned-publicips)
+
+=îtem B<--critical-*>
+
+Critical threshold on the number of orphaned resources. 
+Substitue '*' by the resource type amongst this list: 
+    (orphaned-snapshots orphaned-routetables orphaned-managed-disks orphaned-nsgs orphaned-nics orphaned-resources orphaned-publicips)
+
+=item B<--skip-*>
+
+Skip a specific kind of resource. Can be multiple.
+
+Accepted values: disks, nics, nsgs, public-ips, route-tables, snapshots
 
 =back
 

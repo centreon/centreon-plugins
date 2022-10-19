@@ -504,14 +504,7 @@ sub azure_list_vms_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Compute/virtualMachines";
-
-    if (defined($options{api_version_override})) {
-	$url .= "?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "?api-version=" . $self->{api_version};
-    }
-
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
@@ -699,13 +692,7 @@ sub azure_list_sqlservers_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Sql/servers";
-
-    if (defined($options{api_version_override})) {
-	$url .= "?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "?api-version=" . $self->{api_version};
-    }
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
@@ -733,13 +720,7 @@ sub azure_list_sqldatabases_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Sql/servers/" . $options{server} if (defined($options{server}) && $options{server} ne '');
-
-    if (defined($options{api_version_override})) {
-	$url .= "/databases?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "/databases?api-version=" . $self->{api_version};
-    }
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
@@ -882,7 +863,6 @@ sub azure_get_usagedetails_set_url {
     $url .= "/providers/Microsoft.Consumption/usageDetails?\$filter=properties%2FusageStart ge %27" . $options{usage_start} . "%27 and properties%2FusageEnd le %27" . $options{usage_end} . "%27";
     $url .= "&metric=actualcost";
     $url .= "&api-version=" . $self->{api_version};
-
     return $url;
 }
 
@@ -910,13 +890,7 @@ sub azure_list_compute_disks_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Compute/disks";
-
-    if (defined($options{api_version_override})) {
-	$url .= "?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "?api-version=" . $self->{api_version};
-    }
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
@@ -944,13 +918,7 @@ sub azure_list_nics_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Network/networkInterfaces";
-
-    if (defined($options{api_version_override})) {
-	$url .= "?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "?api-version=" . $self->{api_version};
-    }
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
@@ -978,13 +946,7 @@ sub azure_list_nsgs_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Network/networkSecurityGroups";
-
-    if (defined($options{api_version_override})) {
-	$url .= "?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "?api-version=" . $self->{api_version};
-    }
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
@@ -1012,13 +974,7 @@ sub azure_list_publicips_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Network/publicIPAddresses";
-
-    if (defined($options{api_version_override})) {
-	$url .= "?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "?api-version=" . $self->{api_version};
-    }
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
@@ -1046,13 +1002,7 @@ sub azure_list_route_tables_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Network/routeTables";
-
-    if (defined($options{api_version_override})) {
-	$url .= "?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "?api-version=" . $self->{api_version};
-    }
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
@@ -1080,13 +1030,7 @@ sub azure_list_snapshots_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Compute/snapshots";
-
-    if (defined($options{api_version_override})) {
-	$url .= "?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "?api-version=" . $self->{api_version};
-    }
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
@@ -1114,13 +1058,7 @@ sub azure_list_sqlvms_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.SqlVirtualMachine/sqlVirtualMachines";
-
-    if (defined($options{api_version_override})) {
-	$url .= "?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "?api-version=" . $self->{api_version};
-    }
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version}; 
     return $url;
 }
 
@@ -1148,13 +1086,7 @@ sub azure_list_sqlelasticpools_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Sql/servers/" . $options{server} if (defined($options{server}) && $options{server} ne '');
-
-    if (defined($options{api_version_override})) {
-	$url .= "/elasticPools?api-version=" . $options{api_version_override};
-    }
-    else {
-	$url .= "/elasticPools?api-version=" . $self->{api_version};
-    }
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "/elasticPools?api-version=" . $options{force_api_version} : "/elasticPools?api-version=" . $self->{api_version};
     return $url;
 }
 
