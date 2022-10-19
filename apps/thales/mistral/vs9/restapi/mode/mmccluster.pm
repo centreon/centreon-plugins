@@ -110,7 +110,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $cluster = my $system = $options{custom}->request_api(endpoint => '/managementCenters/cluster');
+    my $cluster = $options{custom}->request_api(endpoint => '/managementCenters/cluster');
 
     $self->{cluster} = {
         enabled => $cluster->{enabled} =~ /true|1/i ? 'yes' : 'no',

@@ -206,7 +206,7 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/4.28_GetVPNstatistics.json';
     } elsif ($options{endpoint} =~ /managementCenters\/cluster/) {
         $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/12.13_GetClusterStatus.json';
-    } 
+    }
 
     my $content = do {
         local $/ = undef;

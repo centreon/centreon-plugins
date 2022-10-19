@@ -30,9 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'devices'     => 'apps::thales::mistral::vs9::restapi::mode::devices',
-        'discovery'   => 'apps::thales::mistral::vs9::restapi::mode::discovery',
-        'mmc-cluster' => 'apps::thales::mistral::vs9::restapi::mode::mmccluster'
+        'devices'          => 'apps::thales::mistral::vs9::restapi::mode::devices',
+        'discovery'        => 'apps::thales::mistral::vs9::restapi::mode::discovery',
+        'mmc-certificates' => 'apps::thales::mistral::vs9::restapi::mode::mmccertificates',
+        'mmc-cluster'      => 'apps::thales::mistral::vs9::restapi::mode::mmccluster'
     };
 
     $self->{custom_modes}->{api} = 'apps::thales::mistral::vs9::restapi::custom::api';
