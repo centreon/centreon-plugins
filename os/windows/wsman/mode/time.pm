@@ -82,23 +82,6 @@ sub check_options {
     }
 }
 
-sub get_from_epoch {
-    my ($self, %options) = @_;
-
-    my $timezone = 'UTC';
-    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
-        $timezone = $self->{option_results}->{timezone};
-    }
-
-    my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
-    my $dt = DateTime->from_epoch(
-        epoch => $options{date},
-        %$tz
-    );
-    my @remote_date = ($dt->year, $dt->month, $dt->day, $dt->hour, $dt->minute, $dt->second);
-    return ($dt->epoch, \@remote_date, $timezone);
-}
-
 sub get_from_datetime {
     my ($self, %options) = @_;
 
@@ -111,26 +94,26 @@ sub get_from_datetime {
         $options{second},
         $options{ms}
     );
+    
+    my $dt = DateTime->new(
+        year      => $remote_date[0],
+        month     => $remote_date[1],
+        day       => $remote_date[2],
+        hour      => $remote_date[3],
+        minute    => $remote_date[4],
+        second    => $remote_date[5],
+        time_zone => 'UTC'
+    );
 
     my $timezone = 'UTC';
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $timezone = $self->{option_results}->{timezone};
-    } elsif (defined($remote_date[9])) {
-        $timezone = sprintf('%s%02d%02d', $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
+        my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
+        $dt->set_time_zone($tz->{time_zone});
+        @remote_date = ($dt->year, $dt->month, $dt->day, $dt->hour, $dt->minute, $dt->second);
     }
 
-    my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
-    my $dt = DateTime->new(
-        year       => $remote_date[0],
-        month      => $remote_date[1],
-        day        => $remote_date[2],
-        hour       => $remote_date[3],
-        minute     => $remote_date[4],
-        second     => $remote_date[5],
-        %$tz
-    );
-
-    return ($dt->epoch, \@remote_date, $timezone);
+    return ($dt->epoch(), \@remote_date, $timezone);
 }
 
 sub get_target_time {
