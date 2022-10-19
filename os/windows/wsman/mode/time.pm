@@ -109,7 +109,8 @@ sub get_from_datetime {
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $timezone = $self->{option_results}->{timezone};
         my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
-        dt->set_time_zone($tz->{time_zone});
+        $dt->set_time_zone($tz->{time_zone});
+        @remote_date = ($dt->year, $dt->month, $dt->day, $dt->hour, $dt->minute, $dt->second);
     }
 
     return ($dt->epoch(), \@remote_date, $timezone);
