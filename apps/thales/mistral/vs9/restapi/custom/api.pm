@@ -185,39 +185,6 @@ sub clean_token {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /ssIpsecGwHws$/) {
-        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/4.3_ListInventory.json';
-    } elsif ($options{endpoint} =~ /ssIpsecGwHws\/status$/) {
-        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/4.10_GetAllStatus.json';
-    } elsif ($options{endpoint} =~ /interfacesStatistics$/) {
-        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/4.22_GetInterfacesStatistics.json';
-    } elsif ($options{endpoint} =~ /mistralStateStatistics$/) {
-        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/4.24_GetMistralState.json';
-    } elsif ($options{endpoint} =~ /systemStateStatistics$/) {
-        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/4.25_GetSystemState.json';
-    } elsif ($options{endpoint} =~ /managementCenters$/) {
-        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/12.3_ListManagementCentersWithSmallData.json';
-    } elsif ($options{endpoint} =~ /certificateCas$/) {
-        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/13.2_GetCACertificateswithSignedCertificates.json';
-    } elsif ($options{endpoint} =~ /certificateGws$/) {
-        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/13.12_GetGatewayCertificates.json';
-    } elsif ($options{endpoint} =~ /vpnStatistics$/) {
-        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/4.28_GetVPNstatistics.json';
-    } elsif ($options{endpoint} =~ /managementCenters\/cluster/) {
-        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/12.13_GetClusterStatus.json';
-    }
-
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $file : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     $self->settings();
     my $token = $self->get_token();
     my ($content) = $self->{http}->request(
@@ -242,7 +209,6 @@ sub request_api {
             critical_status => $self->{critical_http_status}
         );
     }
-=cut
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
