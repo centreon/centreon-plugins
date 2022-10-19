@@ -572,6 +572,7 @@ sub new {
         'time-uptime-unit:s'      => { name => 'time_uptime_unit', default => 's' },
         'time-certificate-unit:s' => { name => 'time_certificate_unit', default => 's' },
         'traffic-unit:s'          => { name => 'traffic_unit', default => 'percent_delta' },
+        'speed:s'                 => { name => 'speed' },
         'ntp-hostname:s'          => { name => 'ntp_hostname' },
         'ntp-port:s'              => { name => 'ntp_port', default => 123 }
     });
