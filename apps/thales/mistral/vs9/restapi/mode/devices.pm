@@ -286,6 +286,24 @@ sub prefix_certificate_output {
     );
 }
 
+sub prefix_ike_sa_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "vpn ike sa '%s' ",
+        $options{instance_value}->{name}
+    );
+}
+
+sub prefix_sa_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "vpn sa '%s' ",
+        $options{instance_value}->{name}
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -299,7 +317,10 @@ sub set_counters {
                 { name => 'mistral', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'autotests', type => 1, cb_prefix_output => 'prefix_autotest_output', message_multiple => 'autotests are ok', display_long => 1, skipped_code => { -10 => 1 } },
                 { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'interfaces are ok', display_long => 1, skipped_code => { -10 => 1 } },
-                { name => 'certificates', type => 1, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'certificates are ok', display_long => 1, skipped_code => { -10 => 1 } }
+                { name => 'certificates', type => 1, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'certificates are ok', display_long => 1, skipped_code => { -10 => 1 } },
+                { name => 'ike_service', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'ike_sa', type => 1, cb_prefix_output => 'prefix_ike_sa_output', message_multiple => 'ike sa are ok', display_long => 1, skipped_code => { -10 => 1 } },
+                { name => 'sa', type => 1, cb_prefix_output => 'prefix_sa_output', message_multiple => 'sa are ok', display_long => 1, skipped_code => { -10 => 1 } },
             ]
         }
     ];
@@ -470,6 +491,67 @@ sub set_counters {
             }
         }
     ];
+
+    $self->{maps_counters}->{ike_service} = [
+        {
+            label => 'vpn-ike-service-state',
+            type => 2,
+            critical_default => '%{state} =~ /stopped/i',
+            set => {
+                key_values => [ { name => 'state' }, { name => 'sn' } ],
+                output_template => 'vpn ike service state: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{ike_sa} = [
+        {
+            label => 'vpn-ike-sa-state',
+            type => 2,
+            critical_default => '%{state} =~ /down/i',
+            set => {
+                key_values => [ { name => 'state' }, { name => 'name' }, { name => 'sn' } ],
+                output_template => 'vpn state: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        }
+    ];
+
+     $self->{maps_counters}->{sa} = [
+        {
+            label => 'vpn-sa-state',
+            type => 2,
+            critical_default => '%{state} =~ /down/i',
+            set => {
+                key_values => [ { name => 'state' }, { name => 'name' }, { name => 'sn' } ],
+                output_template => 'state: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        { label => 'vpn-sa-traffic', nlabel => 'vpn.sa.traffic.bitspersecond', set => {
+                key_values => [ { name => 'traffic', per_second => 1 }, { name => 'name' }, { name => 'sn' } ],
+                output_template => 'traffic: %s %s/s',
+                output_change_bytes => 2,
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'b/s',
+                        instances => [$self->{result_values}->{sn}, $self->{result_values}->{name}],
+                        value => $self->{result_values}->{traffic},
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
+                    );
+                }
+            }
+        }
+    ];
 }
 
 sub new {
@@ -485,12 +567,13 @@ sub new {
         'add-system'              => { name => 'add_system' },
         'add-mistral'             => { name => 'add_mistral' },
         'add-certificates'        => { name => 'add_certificates' },
+        'add-tunnels'             => { name => 'add_tunnels' },
         'time-connection-unit:s'  => { name => 'time_connection_unit', default => 's' },
         'time-uptime-unit:s'      => { name => 'time_uptime_unit', default => 's' },
         'time-certificate-unit:s' => { name => 'time_certificate_unit', default => 's' },
         'traffic-unit:s'          => { name => 'traffic_unit', default => 'percent_delta' },
         'ntp-hostname:s'          => { name => 'ntp_hostname' },
-        'ntp-port:s'              => { name => 'ntp_port', default => 123 },
+        'ntp-port:s'              => { name => 'ntp_port', default => 123 }
     });
 
     return $self;
@@ -681,6 +764,46 @@ sub add_certificates {
     }
 }
 
+sub add_tunnels {
+    my ($self, %options) = @_;
+
+    my $tunnels = $options{custom}->request_api(endpoint => '/ssIpsecGwHws/' . $options{device}->{id} . '/vpnStatistics');
+    $self->{devices}->{ $options{device}->{id} }->{ike_service} = {
+        sn => $options{device}->{serialNumber},
+        state => lc($tunnels->{ikev2State}->{serviceState})
+    };
+
+    $self->{devices}->{ $options{device}->{id} }->{ike_sa} = {};
+    foreach (@{$tunnels->{ikev2State}->{ikeSaState}}) {
+        $self->{devices}->{ $options{device}->{id} }->{ike_sa}->{ $_->{name} } = {
+            sn => $options{device}->{serialNumber},
+            name => $_->{name},
+            state => lc($_->{saState})
+        };
+    }
+
+    $self->{devices}->{ $options{device}->{id} }->{sa} = {};
+    foreach my $sa (@{$tunnels->{sadState}->{listSaName}}) {
+        foreach my $saState (@{$sa->{listSaState}}) {
+            my $name = $sa->{name};
+
+            foreach my $spd (@{$tunnels->{spdState}->{listSpState}}) {
+                if ($saState->{spi} eq $spd->{spi}) {
+                    $name .= '.' . lc($spd->{direction}) . '(src:' . $spd->{sourceTs}->{ipAddress} . ',dst:' . $spd->{destinationTs}->{ipAddress} . ')';
+                    last;
+                }
+            }
+
+            $self->{devices}->{ $options{device}->{id} }->{sa}->{$name} = {
+                sn => $options{device}->{serialNumber},
+                name => $name,
+                state => lc($saState->{state}),
+                traffic => $saState->{lifetime}->{byteCurrent} * 1000
+            };
+        }
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -720,6 +843,9 @@ sub manage_selection {
 
         $self->add_certificates(custom => $options{custom}, device => $device)
             if (defined($self->{option_results}->{add_certificates}));
+
+        $self->add_tunnels(custom => $options{custom}, device => $device)
+            if (defined($self->{option_results}->{add_tunnels}));
     }
 
     $self->{cache_name} = 'thales_mistral_' . $options{custom}->get_connection_info()  . '_' . $self->{mode} . '_' .
@@ -768,6 +894,10 @@ Check mistral (operating status, temperature, autotests).
 =item B<--add-certificates>
 
 Check certificates.
+
+=item B<--add-tunnels>
+
+Check tunnels.
 
 =item B<--unknown-connection-status>
 
@@ -829,6 +959,51 @@ Can used special variables like: %{sn}, %{name}, %{operatingStatus}
 Set critical threshold for status  (Default: '%{operatingStatus} !~ /up/i').
 Can used special variables like: %{sn}, %{name}, %{operatingStatus}
 
+=item B<--unknown-vpn-ike-service-state>
+
+Set unknown threshold for status.
+Can used special variables like: %{sn}, %{state}
+
+=item B<--warning-vpn-ike-service-state>
+
+Set warning threshold for status.
+Can used special variables like: %{sn}, %{state}
+
+=item B<--critical-vpn-ike-service-state>
+
+Set critical threshold for status  (Default: '%{state} =~ /stopped/i').
+Can used special variables like: %{sn}, %{state}
+
+=item B<--unknown-vpn-ike-sa-state>
+
+Set unknown threshold for status.
+Can used special variables like: %{sn}, %{name}, %{state}
+
+=item B<--warning-vpn-ike-sa-state>
+
+Set warning threshold for status.
+Can used special variables like: %{sn}, %{name}, %{state}
+
+=item B<--critical-vpn-ike-sa-state>
+
+Set critical threshold for status  (Default: '%{state} =~ /down/i').
+Can used special variables like: %{sn}, %{name}, %{state}
+
+=item B<--unknown-vpn-sa-state>
+
+Set unknown threshold for status.
+Can used special variables like: %{sn}, %{name}, %{state}
+
+=item B<--warning-vpn-sa-state>
+
+Set warning threshold for status.
+Can used special variables like: %{sn}, %{name}, %{state}
+
+=item B<--critical-vpn-sa-state>
+
+Set critical threshold for status  (Default: '%{state} =~ /down/i').
+Can used special variables like: %{sn}, %{name}, %{state}
+
 =item B<--ntp-hostname>
 
 Set the ntp hostname (if not set, localtime is used).
@@ -866,7 +1041,7 @@ Thresholds.
 Can be: 'devices-detected', 'connection-last-time',
 'interface-traffic-in', 'interface-traffic-out',
 'system-uptime', 'system-time-offset', temperature',
-'certificate-expires'.
+'certificate-expires', 'vpn-sa-traffic'.
 
 =back
 

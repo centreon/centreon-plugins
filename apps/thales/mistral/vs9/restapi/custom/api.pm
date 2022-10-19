@@ -202,6 +202,8 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/13.2_GetCACertificateswithSignedCertificates.json';
     } elsif ($options{endpoint} =~ /certificateGws$/) {
         $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/13.12_GetGatewayCertificates.json';
+    } elsif ($options{endpoint} =~ /vpnStatistics$/) {
+        $file = '/home/qgarnier/clients/plugins/mistral/Mistral_API_Centreon/ExemplesCommandesAPI/4.28_GetVPNstatistics.json';
     } 
 
     my $content = do {
