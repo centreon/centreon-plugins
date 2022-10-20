@@ -33,6 +33,7 @@ sub new {
         'cpu'              => 'os::picaos::snmp::mode::cpu',
         'hardware'         => 'os::picaos::snmp::mode::hardware',
         'interfaces'       => 'os::picaos::snmp::mode::interfaces',
+        'list-interfaces'  => 'os::picaos::snmp::mode::listinterfaces',
         'memory'           => 'os::picaos::snmp::mode::memory',
         'temperature'      => 'os::picaos::snmp::mode::temperature'
     );
