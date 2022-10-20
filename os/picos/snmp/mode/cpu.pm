@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'cpu', nlabel => 'cpu.utilization.percentage', set => {
+        { label => 'cpu-usage', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'CPU Usage %.2f %%',
                 perfdatas => [
@@ -88,13 +88,13 @@ Check CPU usage and temperature.
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--warning-cpu-usage>
 
-Threshold warning.
+Threshold warning for CPU usage in percentage.
 
-=item B<--critical-usage>
+=item B<--critical-cpu-usage>
 
-Threshold critical.
+Threshold critical for CPU usage in percentage.
 
 =item B<--warning-temperature>
 

@@ -148,28 +148,28 @@ sub custom_add_result {
     my $result = $self->{snmp}->map_instance(mapping => $mapping_optical, results => $self->{results}, instance => $options{instance});
 
     $self->{int}->{ $options{instance} }->{input_power} = undef;
-    if (defined($result->{input_power}) && $result->{input_power} != 0 ) {
-        $self->{int}->{ $options{instance} }->{input_power} = $result->{input_power} / 100;
+    if (defined($result->{input_power}) && $result->{input_power} =~ /(^[+-]?\d+\.?\d+)/ ) {
+        $self->{int}->{ $options{instance} }->{input_power} = $1;
     }
 
     $self->{int}->{$options{instance}}->{bias_current} = undef;
-    if (defined($result->{bias_current}) && $result->{bias_current} != 0 ) {
-        $self->{int}->{$options{instance}}->{bias_current} = $result->{bias_current} / 100;
+    if (defined($result->{bias_current}) && $result->{bias_current} =~ /(^[+-]?\d+\.?\d+)/ ) {
+        $self->{int}->{$options{instance}}->{bias_current} = $1;
     }
 
     $self->{int}->{$options{instance}}->{output_power} = undef;
-    if (defined($result->{output_power}) && $result->{output_power} != 0 ) {
-        $self->{int}->{$options{instance}}->{output_power} = $result->{output_power} / 100;
+    if (defined($result->{output_power}) && $result->{output_power} =~ /(^[+-]?\d+\.?\d+)/ ) {
+        $self->{int}->{$options{instance}}->{output_power} = $1;
     }
 
     $self->{int}->{$options{instance}}->{interface_temperature} = undef;
-    if (defined($result->{interface_temperature}) && $result->{interface_temperature} != 0 ) {
-        $self->{int}->{$options{instance}}->{interface_temperature} = $result->{interface_temperature};
+    if (defined($result->{interface_temperature}) && $result->{interface_temperature} =~ /(^[+-]?\d+\.?\d+)/ ) {
+        $self->{int}->{$options{instance}}->{interface_temperature} = $1;
     }
 
     $self->{int}->{$options{instance}}->{voltage} = undef;
-    if (defined($result->{voltage}) && $result->{voltage} != 0 && $result->{voltage} ) {
-        $self->{int}->{$options{instance}}->{voltage} = $result->{voltage} / 100;
+    if (defined($result->{voltage}) && $result->{voltage} =~ /(^[+-]?\d+\.?\d+)/ ) {
+        $self->{int}->{$options{instance}}->{voltage} = $1;
     }
 }
 
