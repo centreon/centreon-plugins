@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'CPU Usage %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', template => '%.2f', unit => '%', min => 0, max => 100 },
+                    { template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'temperature' } ],
                 output_template => 'CPU Temperature: %s C',
                 perfdatas => [
-                    { label => 'cpu', template => '%s', unit => 'C' },
+                    { template => '%s', unit => 'C' },
                 ],
             }
         }
@@ -74,8 +74,8 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_leef(oids => $oids, nothing_quit => 1);
 
     $self->{global} = { prct_used => $snmp_result->{$oid_cpuUsage},
-                     temperature => $snmp_result->{$oid_cpuTemperature} =~ s/\s\C.*//r
-                    };
+                        temperature => $snmp_result->{$oid_cpuTemperature} =~ s/\s\C.*//r
+    };
 }
 
 1;

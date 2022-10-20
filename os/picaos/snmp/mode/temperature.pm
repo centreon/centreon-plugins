@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'switch_temperature' } ],
                 output_template => 'switch temperature: %s C',
                 perfdatas => [
-                    { label => 'cpu', template => '%s', unit => 'C' },
+                    { template => '%s', unit => 'C' },
                 ]
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'chip_temperature' } ],
                 output_template => 'Chip Temperature: %s C',
                 perfdatas => [
-                    { label => 'chip', template => '%s', unit => 'C' },
+                    { template => '%s', unit => 'C' },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_temperature' } ],
                 output_template => 'CPU Temperature: %s C',
                 perfdatas => [
-                    { label => 'cpu', template => '%s', unit => 'C' },
+                    { template => '%s', unit => 'C' },
                 ],
             }
         }
