@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::picaos::snmp::mode::cpu;
+package os::picos::snmp::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 

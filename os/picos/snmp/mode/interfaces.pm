@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::picaos::snmp::mode::interfaces;
+package os::picos::snmp::mode::interfaces;
 
 use base qw(snmp_standard::mode::interfaces);
 

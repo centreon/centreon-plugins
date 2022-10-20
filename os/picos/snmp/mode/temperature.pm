@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::picaos::snmp::mode::temperature;
+package os::picos::snmp::mode::temperature;
 
 use base qw(centreon::plugins::templates::counter);
 

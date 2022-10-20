@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::picaos::snmp::mode::components::psu;
+package os::picos::snmp::mode::components::psu;
 
 use strict;
 use warnings;

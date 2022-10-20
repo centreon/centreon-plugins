@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::picaos::snmp::plugin;
+package os::picos::snmp::plugin;
 
 use strict;
 use warnings;
@@ -30,12 +30,12 @@ sub new {
     bless $self, $class;
 
     %{$self->{modes}} = (
-        'cpu'              => 'os::picaos::snmp::mode::cpu',
-        'hardware'         => 'os::picaos::snmp::mode::hardware',
-        'interfaces'       => 'os::picaos::snmp::mode::interfaces',
-        'list-interfaces'  => 'os::picaos::snmp::mode::listinterfaces',
-        'memory'           => 'os::picaos::snmp::mode::memory',
-        'temperature'      => 'os::picaos::snmp::mode::temperature'
+        'cpu'              => 'os::picos::snmp::mode::cpu',
+        'hardware'         => 'os::picos::snmp::mode::hardware',
+        'interfaces'       => 'os::picos::snmp::mode::interfaces',
+        'list-interfaces'  => 'os::picos::snmp::mode::listinterfaces',
+        'memory'           => 'os::picos::snmp::mode::memory',
+        'temperature'      => 'os::picos::snmp::mode::temperature'
     );
 
     return $self;

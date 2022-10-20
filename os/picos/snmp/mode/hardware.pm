@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::picaos::snmp::mode::hardware;
+package os::picos::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -39,7 +39,7 @@ sub set_system {
         ]
     };
     
-    $self->{components_path} = 'os::picaos::snmp::mode::components';
+    $self->{components_path} = 'os::picos::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu'];
 }
 

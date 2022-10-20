@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::picos::snmp::mode::components::fan; 
+package os::picos::snmp::mode::components::fan;
 
 use strict;
 use warnings;
