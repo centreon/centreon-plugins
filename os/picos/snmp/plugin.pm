@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Pica OS through SNMP.
+Check PICOS through SNMP.
 
 =cut
