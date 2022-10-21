@@ -30,8 +30,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -53,15 +52,14 @@ my $oid_lun_entry = '.1.3.6.1.4.1.34774.4.1.23.4.8.1'; # hwInfoLunTable
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_lun_entry
-    );
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_lun_entry);
 
     my $lun = {};
     foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{name}->{oid}\.(.*)$/);
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
-        if($result->{isexposed} == 0) {next;}
+        next if ($result->{isexposed} == 0);
+
         $lun->{$1} = $result;
     }
 
@@ -70,7 +68,7 @@ sub manage_selection {
 
 sub run {
     my ($self, %options) = @_;
-  
+
     my $lun = $self->manage_selection(%options);
     foreach (sort keys %$lun) {
         $self->{output}->output_add(
@@ -104,9 +102,7 @@ sub disco_show {
 
     my $lun = $self->manage_selection(%options);
     foreach (sort keys %$lun) { 
-        $self->{output}->add_disco_entry(
-            %{$lun->{$_}}
-        );
+        $self->{output}->add_disco_entry(%{$lun->{$_}});
     }
 }
 
@@ -116,11 +112,10 @@ __END__
 
 =head1 MODE
 
-List storage pools.
+List LUNs.
 
 =over 8
 
 =back
 
 =cut
-    
