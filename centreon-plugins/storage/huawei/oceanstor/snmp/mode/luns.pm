@@ -24,18 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_calc);
-#use storage::huawei::oceanstor::snmp::mode::resources qw($health_status $running_status);
-
-#sub custom_status_output {
-#    my ($self, %options) = @_;
-
-    #return sprintf(
-#        'health status: %s [running status: %s]',
-#        $self->{result_values}->{health_status},
-#        $self->{result_values}->{running_status}
-#    );
-#}
 
 sub custom_space_usage_output {
     my ($self, %options) = @_;
@@ -49,7 +37,7 @@ sub custom_space_usage_output {
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_space},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_space},
-        $total_prot_value . " " . $total_prot_unit, $self->{result_values}->{prot_space}
+        $total_prot_value . " " . $total_prot_unit
     );
 }
 
@@ -96,7 +84,7 @@ sub set_counters {
             }
         },
         { label => 'space-usage-free', nlabel => 'lun.space.free.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' },{ name => 'prot_space' } ],
+                key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'prot_space' } ],
                 closure_custom_output => $self->can('custom_space_usage_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total_space', unit => 'B', cast_int => 1, label_extra_instance => 1 }
@@ -104,7 +92,7 @@ sub set_counters {
             }
         },
         { label => 'space-usage-prct', nlabel => 'lun.space.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' },{ name => 'prot_space' } ],
+                key_values => [ { name => 'prct_used_space' }, { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'prot_space' } ],
                 closure_custom_output => $self->can('custom_space_usage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
@@ -112,7 +100,7 @@ sub set_counters {
             }
         },
         { label => 'space-usage-prot', nlabel => 'lun.space.prot.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'prot_space' },  { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' },{ name => 'free_space' } ],
+                key_values => [ { name => 'prot_space' },  { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'free_space' } ],
                 closure_custom_output => $self->can('custom_space_usage_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total_space', unit => 'B', cast_int => 1, label_extra_instance => 1 }
@@ -128,7 +116,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'        => { name => 'filter_name' },
+        'filter-name:s'            => { name => 'filter_name' },
         'include-non-exposed-luns' => { name => 'include_non_exposed_luns' }
     });
 
@@ -144,7 +132,6 @@ my $mapping = {
     exposed        => { oid => '.1.3.6.1.4.1.34774.4.1.23.4.8.1.14' } # hwInfoLunExposedToInitiator	
 };
 
-
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -153,7 +140,6 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-
     my $oid_sp_entry = '.1.3.6.1.4.1.34774.4.1.23.4.8.1'; # hwInfoLunTable
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_sp_entry,
@@ -161,43 +147,32 @@ sub manage_selection {
     );
 
     $self->{lun} = {};
-    
     foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{name}->{oid}\.(.*)$/);
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
-
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping LUN '" . $result->{name} . "'.", debug => 1);
             next;
         }
         
-        if (!defined($self->{option_results}->{include_non_exposed_luns}) && $result->{exposed} == 0){
+        if (!defined($self->{option_results}->{include_non_exposed_luns}) && $result->{exposed} == 0) {
             $self->{output}->output_add(long_msg => "skipping LUN '" . $result->{name} . "'.", debug => 1);
             next;
         }
-        
-        $self->{lun}->{$result->{name}} = $result; # if(defined($1));
-    }
 
-    foreach (keys %{$self->{lun}}) {
-    
-        my $result = $self->{lun}->{$_};
-        $result->{total_space} *=1024*1024;
-        $result->{used_space} *=1024*1024;
-        my $free_space=$result->{total_space} - $result->{used_space};
-        
-        $self->{lun}->{$_}->{space} = {
-            name => $_,
-            total_space => $result->{total_space},
-            used_space => $result->{used_space},
-            free_space => $free_space,
-            prot_space => $result->{prot_space}*1024,
-            prct_used_space => 100 - ($free_space * 100 / $result->{total_space}),
-            prct_free_space => ($free_space * 100 / $result->{total_space})
+        $result->{total_space} *= 1024 * 1024;
+        $result->{used_space} *= 1024 * 1024;
+        $result->{prot_space} *= 1024;
+        $self->{lun}->{ $result->{name} } = {
+            name => $result->{name},
+            storage_pool => $result->{storage_pool},
+            space => $result
         };
-        
+        $self->{lun}->{ $result->{name} }->{space}->{free_space} = $result->{total_space} - $result->{used_space};
+        $self->{lun}->{ $result->{name} }->{space}->{prct_used_space} = $result->{used_space} * 100 / $result->{total_space};
+        $self->{lun}->{ $result->{name} }->{space}->{prct_free_space} = 100 - $result->{used_space};
     }
 }
 
@@ -207,7 +182,7 @@ __END__
 
 =head1 MODE
 
-Check storage pools.
+Check LUNs.
 
 =over 8
 
