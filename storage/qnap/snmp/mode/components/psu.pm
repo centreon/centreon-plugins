@@ -70,7 +70,7 @@ sub check_psu_result {
             );
         }
 
-        if ($result->{speed} !~ /[0-9]/) {
+        if ($result->{speed} =~ /[0-9]/) {
             my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'psu.fanspeed', instance => $instance, value => $result->{speed});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
