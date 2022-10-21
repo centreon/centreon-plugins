@@ -43,7 +43,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'features', type => 3, cb_long_output => 'features_long_output', indent_long_output => '    ', message_multiple => 'All features are OK.',
+        { name => 'features', type => 3, cb_long_output => 'features_long_output', indent_long_output => '    ',
             group => [
                 { name => 'file-monitor-input', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
                 { name => 'index-processor', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
@@ -99,7 +99,8 @@ sub manage_selection {
                 status => $feature->{global_health}
         };
     }
-
+    
+    $self->{output}->output_add(severity => 'OK', short_msg => 'All features are OK.');
 }
 
 1;
