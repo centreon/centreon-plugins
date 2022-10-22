@@ -66,7 +66,7 @@ sub manage_selection {
 	    $self->{vms}->{total}++;;
 	    next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
 		     && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
-	    next if (defined($item->{tags}->{finopsstartstop}));
+	    next if (defined($item->{tags}->{$self->{option_results}->{tag_name}}));
 	    $self->{vms}->{no_tag}++;
 	    $self->{vms}->{name} .= $item->{name} . " ";	    
 	}
