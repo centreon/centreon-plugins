@@ -35,6 +35,19 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub custom_wait_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{wait} = 0;
+    my $tput = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_ios'} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_ios'});
+    if ($tput) {
+        $self->{result_values}->{wait} = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_ticks'} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_ticks'}) / $tput;
+    }
+
+    return 0;
+}
+
 sub custom_utils_calc {
     my ($self, %options) = @_;
 
@@ -122,6 +135,30 @@ sub set_counters {
                 perfdatas => [
                     { label => 'writeio', value => 'usage_persecond', template => '%d',
                       unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'read-wait', nlabel => 'device.io.read.wait.milliseconds', set => {
+                key_values => [ { name => 'rd_ios', diff => 1 }, { name => 'rd_ticks', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_wait_calc'), closure_custom_calc_extra_options => { label_ref => 'rd' },
+                output_template => 'read wait: %.2f ms',
+                output_change_bytes => 1,
+                output_use => 'wait', threshold_use => 'wait',
+                perfdatas => [
+                    { label => 'readwait', value => 'wait', template => '%.2f',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'write-wait', nlabel => 'device.io.write.wait.milliseconds', set => {
+                key_values => [ { name => 'wr_ios', diff => 1 }, { name => 'wr_ticks', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_wait_calc'), closure_custom_calc_extra_options => { label_ref => 'wr' },
+                output_template => 'write wait: %.2f ms',
+                output_change_bytes => 1,
+                output_use => 'wait', threshold_use => 'wait',
+                perfdatas => [
+                    { label => 'writewait', value => 'wait', template => '%.2f',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -219,8 +256,8 @@ sub manage_selection {
     }
 
     $self->{device} = {};
-    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+(\d+)\s+\d+\s+(\d+)\s+\d+\s+(\d+)\s+\d+\s+(\d+)\s+\d+\s+\d+\s+(\d+)\s+/mg) {
-        my ($partition_name, $read_sector, $write_sector, $rd_ios, $wr_ios, $ms_ticks) = ($1, $3, $5, $2, $4, $6);
+    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+(\d+)\s+\d+\s+(\d+)\s+(\d+)\s+(\d+)\s+\d+\s+(\d+)\s+(\d+)\s+\d+\s+(\d+)\s+/mg) {
+        my ($partition_name, $read_sector, $write_sector, $rd_ios, $rd_ticks, $wr_ios, $wr_ticks, $ms_ticks) = ($1, $3, $6, $2, $4, $5, $7, $8);
 
         next if (defined($self->{option_results}->{filter_partition_name}) && $self->{option_results}->{filter_partition_name} ne '' &&
             $partition_name !~ /$self->{option_results}->{filter_partition_name}/);
@@ -236,8 +273,10 @@ sub manage_selection {
             display => $partition_name,
             read_sectors => $read_sector, 
             write_sectors => $write_sector,
-            rd_ios => $rd_ios, 
-            wr_ios => $wr_ios, 
+            rd_ios => $rd_ios,
+            rd_ticks => $rd_ticks,
+            wr_ios => $wr_ios,
+            wr_ticks => $wr_ticks,
             ticks => $ms_ticks,
             cpu_total => $cpu_total,
             cpu_system => $cpu_system,
@@ -281,7 +320,7 @@ Command used: tail -n +1 /proc/stat /proc/diskstats 2>&1
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'read-usage', 'write-usage', 'svctime', 'utils'.
+Can be: 'read-usage', 'write-usage', 'read-wait', 'write-wait', 'svctime', 'utils'.
 
 =item B<--filter-partition-name>
 
