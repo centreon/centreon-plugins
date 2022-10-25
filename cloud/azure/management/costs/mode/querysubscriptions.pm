@@ -26,17 +26,31 @@ use strict;
 use warnings;
 use DateTime;
 
+sub resource_group_prefix_output {
+    my ($self, %options) = @_;
+
+    return sprintf( "Resource group '%s' ", $options{instance});
+}
+
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf( "Subscription costs for specified period: %.2f %s", $self->{result_values}->{subscription_cost}, $self->{result_values}->{currency});
 }
 
+sub custom_resource_group_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf( "costs for specified period: %.2f %s", $self->{result_values}->{resource_group_cost}, $self->{result_values}->{currency});
+}
+
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'resource_group', type => 1, cb_prefix_output => 'resource_group_prefix_output', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{global} = [
@@ -49,6 +63,17 @@ sub set_counters {
             }
         }
     ];
+
+    $self->{maps_counters}->{resource_group} = [
+        { label => 'resource-group-costs', nlabel => 'resourcegroup.costs', set => {
+                key_values => [ { name => 'resource_group_cost' }, { name => 'currency'} ],
+                closure_custom_output => $self->can('custom_resource_group_status_output'),
+                perfdatas => [
+                    { template => '%.2f', min => 0, label_extra_instance => 1 },
+                ]
+            }
+        }
+    ]
 
 }
 
@@ -111,22 +136,38 @@ sub manage_selection {
     my ($self, %options) = @_;
    
     my $raw_form_post = $self->create_body_payload(loopback => $self->{option_results}->{loopback}, resource_group => $self->{option_results}->{resource_group});
-    my $subscription_costs = $options{custom}->azure_get_subscription_cost_management(body_post => $raw_form_post);
+    my $costs = $options{custom}->azure_get_subscription_cost_management(body_post => $raw_form_post);
     
     my $sum_costs;
     my $currency; 
     
     if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq ""){
-        foreach my $daily_subscription_cost (@{$subscription_costs}){
+        foreach my $daily_subscription_cost (@{$costs}){
             $sum_costs += ${$daily_subscription_cost}[0];
             $currency = ${$daily_subscription_cost}[2];
         }
-
         $self->{global} = { subscription_cost => $sum_costs,
                             currency => $currency
         };
     }
+    if (defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} ne ""){
+        my $resource_group_total_costs;
 
+        foreach my $daily_resource_group_cost (@{$costs}){
+            my $resource_group = ${$daily_resource_group_cost}[2];
+            $sum_costs += ${$daily_resource_group_cost}[0];
+            $currency = ${$daily_resource_group_cost}[3];
+
+            $resource_group_total_costs->{$resource_group}->{sum} = $sum_costs;
+            $resource_group_total_costs->{$resource_group}->{currency} = $currency;
+        }
+
+        foreach my $resource_group (keys %$resource_group_total_costs){
+            $self->{resource_group}->{$resource_group} = { resource_group_cost => $resource_group_total_costs->{$resource_group}->{sum},
+                                                           currency => $resource_group_total_costs->{$resource_group}->{currency}
+            };
+        }
+    }
 }
 
 1;
