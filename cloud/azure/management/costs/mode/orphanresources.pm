@@ -76,7 +76,6 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'exclude-name:s'       => { name => 'exclude_name' },
-        'show-details'         => { name => 'show_details'},
         'skip-managed-disks'   => { name => 'skip_managed_disks' },
         'skip-nics'            => { name => 'skip_nics' },
         'skip-nsgs'            => { name => 'skip_nsgs' },

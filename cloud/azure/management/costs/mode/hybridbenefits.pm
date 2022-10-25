@@ -63,7 +63,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'show-details'          => { name => 'show_details '},
         'skip-vm'               => { name => 'skip_vm' },
         'skip-sql-vm'           => { name => 'skip_sql_vm' },
         'skip-sql-database'     => { name => 'skip_sql_database' },
