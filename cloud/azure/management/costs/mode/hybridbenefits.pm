@@ -25,20 +25,117 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub custom_orphaned_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf(" resources without hybrid benefits %s (out of: %s)", $self->{result_values}->{count}, $self->{result_values}->{total});
+    
+    return $msg;
+}
+
+sub prefix_vm_output {
+    my ($self, %options) = @_;
+
+    return 'Virtual machines';
+}
+
+sub prefix_sql_vm_output {
+    my ($self, %options) = @_;
+
+    return 'SQL Virtual machines';
+}
+
+sub prefix_sql_db_output {
+    my ($self, %options) = @_;
+
+    return 'SQL Databases';
+}
+
+sub prefix_elasticpool_output {
+    my ($self, %options) = @_;
+
+    return 'SQL Elastic Pools';
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'no-vm-hybrid-benefits'               => { name => 'no_vm_hybrid_benefits' },
-        'no-sql-vm-hybrid-benefits'           => { name => 'no_sql_vm_hybrid_benefits' },
-        'no-sql-database-hybrid-benefits'     => { name => 'no_sql_database_hybrid_benefits' },
-        'no-sql-elastic-pool-hybrid-benefits' => { name => 'no_sql_elastic_pool_hybrid_benefits' },
-	'exclude-name:s'                      => { name => 'exclude_name' }
+        'show-details'          => { name => 'show_details '},
+        'skip-vm'               => { name => 'skip_vm' },
+        'skip-sql-vm'           => { name => 'skip_sql_vm' },
+        'skip-sql-database'     => { name => 'skip_sql_database' },
+        'skip-elastic-pool'     => { name => 'skip_elastic_pool' },
+        'exclude-name:s'        => { name => 'exclude_name' }
     });
 
     return $self;
+}
+
+sub set_counters { 
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'nohybridbenefits_resources', type => 0 },
+        { name => 'nohybridbenefits_vm', type => 0, cb_prefix_output => 'prefix_vm_output' },
+        { name => 'nohybridbenefits_sql_vm', type => 0, cb_prefix_output => 'prefix_sql_vm_output' },
+        { name => 'nohybridbenefits_sql_db', type => 0, cb_prefix_output => 'prefix_sql_db_output' },
+        { name => 'nohybridbenefits_elasticpool', type => 0, cb_prefix_output => 'prefix_elasticpool_output' }
+    ];
+
+# vm, sql-vm, sql-database, elastic-pool
+    $self->{maps_counters}->{nohybridbenefits_resources} = [
+        { label => 'resources', nlabel => 'azure.resources.nohybridbenefits.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                output_template => 'Resources without hybrid benefits: %s',
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total' }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{nohybridbenefits_vm} = [
+        { label => 'vm', display_ok => 0, nlabel => 'azure.vm.nohybridbenefits.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_hybridbenefits_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total' }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{nohybridbenefits_sql_vm} = [
+        { label => 'sql-vm', display_ok => 0, nlabel => 'azure.sqlvm.nohybridbenefits.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_hybridbenefits_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total' }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{nohybridbenefits_sql_db} = [
+        { label => 'sql-database', display_ok => 0, nlabel => 'azure.sqldatabase.nohybridbenefits.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_hybridbenefits_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total' }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{nohybridbenefits_elasticpool} = [
+        { label => 'elastic-pool', display_ok => 0, nlabel => 'azure.elasticpool.nohybridbenefits.count', set => {
+                key_values => [ { name => 'count' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_hybridbenefits_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total' }
+                ]
+            }
+        }
+    ];
 }
 
 sub check_options {
@@ -49,130 +146,129 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $output_error = "";
-    my $output = "";
-    my $items;
+    my $resultset;
+    my @item_list;
+    $self->{nohybridbenefits_resources}->{count} = 0;
+    $self->{nohybridbenefits_resources}->{total} = 0;
 
-    # non HUB VMs
-    if (!defined($self->{option_results}->{no_vm_hybrid_benefits})) {
-	$items = $options{custom}->azure_list_vms(
-	    resource_group => $self->{option_results}->{resource_group},
-	    api_version_override => "2022-03-01"
-	    );
-	$self->{vm_hybrid_benefits} = {not_enabled => 0, total => 0, name => ""};
-	foreach my $item (@{$items}) {
-	    $self->{vm_hybrid_benefits}->{total}++;;
-	    next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
-		     && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
-	    next if (!defined($item->{properties}->{licenseType}) || (defined($item->{properties}->{licenseType}) && $item->{properties}->{licenseType} !~ /None/));
-	    $self->{vm_hybrid_benefits}->{not_enabled}++;
-	    $self->{vm_hybrid_benefits}->{name} .= $item->{name} . " ";
-	}
-	if ($self->{vm_hybrid_benefits}->{not_enabled}) {
-	    $output_error .= "Found " . $self->{vm_hybrid_benefits}->{not_enabled} . " VM(s) with VmHybridBenefits not enabled ( " . $self->{vm_hybrid_benefits}->{name} . ")\n";
-	}
-	else {
-	    $output .= "VmHybridBenefits is enabled on all " . $self->{vm_hybrid_benefits}->{total} . " VM(s)\n";
-	}
+    # VMs
+    if (!defined($self->{option_results}->{skip_vm})) {
+        $self->{nohybridbenefits_vm}->{count} = 0;
+        $self->{nohybridbenefits_vm}->{total} = 0;
+        $resultset = $options{custom}->azure_list_vms(
+            resource_group => $self->{option_results}->{resource_group},
+            force_api_version => "2022-03-01"
+        );
+        
+        foreach my $item (@{ $resultset}) {
+            next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
+                && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
+            $self->{vm_hybrid_benefits}->{total}++;
+            $self->{nohybridbenefits_resources}->{total}++;
+            next if (!defined($item->{properties}->{licenseType}) || (defined($item->{properties}->{licenseType}) && $item->{properties}->{licenseType} !~ /None/));
+            $self->{nohybridbenefits_vm}->{count}++;
+            $self->{nohybridbenefits_resources}->{count}++;
+            push @item_list, $item->{name};
+        }
+        if (scalar @item_list != 0) {
+            $self->{output}->output_add(long_msg => "Virtual Machines withtout hybrid benefits:" . "[" . join(", ", @item_list) . "]");
+        }
+        @item_list = ();
     }
 
-    # non HUB SQL VMs
-    if (!defined($self->{option_results}->{no_sql_vm_hybrid_benefits})) {
-        $items = $options{custom}->azure_list_sqlvms(
+    # SQL VMs
+    if (!defined($self->{option_results}->{skip_sql_vm})) {
+        $self->{nohybridbenefits_sql_vm}->{count} = 0;
+        $self->{nohybridbenefits_sql_vm}->{total} = 0;
+        $resultset = $options{custom}->azure_list_sqlvms(
             resource_group => $self->{option_results}->{resource_group},
-	    api_version_override => "2022-02-01"
-            );
-        $self->{sql_vm_hybrid_benefits} = {not_enabled => 0, total => 0, name => ""};
-        foreach my $item (@{$items}) {
-            $self->{sql_vm_hybrid_benefits}->{total}++;;
+            force_api_version => "2022-02-01"
+        );
+        foreach my $item (@{ $resultset}) {
             next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
                      && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
-	    next if ($item->{properties}->{sqlServerLicenseType } =~ /AHUB/ || $item->{properties}->{sqlImageSku} =~ /Express/);
-            $self->{sql_vm_hybrid_benefits}->{not_enabled}++;
-            $self->{sql_vm_hybrid_benefits}->{name} .= $item->{name} . " ";
+			$self->{nohybridbenefits_sql_vm}->{total}++;
+            $self->{nohybridbenefits_resources}->{total}++;
+            next if ($item->{properties}->{sqlServerLicenseType } =~ /AHUB/ || $item->{properties}->{sqlImageSku} =~ /Express/);
+            $self->{nohybridbenefits_sql_vm}->{count}++;
+            $self->{nohybridbenefits_resources}->{count}++;
+			push @item_list, $item->{name};
         }
-        if ($self->{sql_vm_hybrid_benefits}->{not_enabled}) {
-            $output_error .= "Found " . $self->{sql_vm_hybrid_benefits}->{not_enabled} . " SQL VM(s) with VmHybridBenefits not enabled ( " . $self->{sql_vm_hybrid_benefits}->{name} . ")\n";
+        if (scalar @item_list != 0) {
+            $self->{output}->output_add(long_msg => "SQL Virtual Machines withtout hybrid benefits:" . "[" . join(", ", @item_list) . "]");
         }
-        else {
-            $output .= "SqlVmHybridBenefits is enabled on all " . $self->{sql_vm_hybrid_benefits}->{total} . " SQL VM(s)\n";
-        }
+        @item_list = ();
+        
     }
 
-    if (!defined($self->{option_results}->{no_sql_database_hybrid_benefits}) || !defined($self->{option_results}->{no_sql_elastic_pool_hybrid_benefits})) {
-        $items = $options{custom}->azure_list_sqlservers(
+    if (!defined($self->{option_results}->{skip_sql_vm}) || !defined($self->{option_results}->{skip_elastic_pool})) {
+		my @item_list_sql;
+		my @item_list_elastic;
+        $resultset = $options{custom}->azure_list_sqlservers(
             resource_group => $self->{option_results}->{resource_group},
-            api_version_override => "2021-11-01"
-            );
-	$self->{sql_database_hybrid_benefits} = {not_enabled => 0, total => 0, name => ""};
-	$self->{sql_elastic_pool_hybrid_benefits} = {not_enabled => 0, total => 0, name => ""};
-        foreach my $item (@{$items}) {
-	    my @sqlserver_id = split /\//, $item->{id};
-	
-	    # non HUB SQL databases
-	    if (!defined($self->{option_results}->{no_sql_database_hybrid_benefits})) {
-		my $items_sub = $options{custom}->azure_list_sqldatabases(
-		    resource_group => $sqlserver_id[4],
-		    server => $item->{name},
-		    api_version_override => "2021-11-01"
-		    );
-		
-		foreach my $item_sub (@{$items_sub}) {
-		    next if ($item_sub->{properties}->{currentSku}->{name} =~ /ElasticPool/);
-		    next if (defined($item_sub->{properties}->{currentSku}->{tier}) && $item_sub->{properties}->{currentSku}->{tier} !~ /GeneralPurpose/);
-		    $self->{sql_database_hybrid_benefits}->{total}++;;
-		    next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
-			     && $item_sub->{name} =~ /$self->{option_results}->{exclude_name}/);
-		    next if (defined($item_sub->{properties}->{licenseType}) && $item_sub->{properties}->{licenseType} =~ /BasePrice/);
-		    if (defined($item_sub->{properties}->{licenseType})) {
-			$self->{sql_database_hybrid_benefits}->{not_enabled}++;
-			$self->{sql_database_hybrid_benefits}->{name} .= $item_sub->{name} . " ";
-		    }
-		}
-	    }
+            force_api_version => "2021-11-01"
+        );
 
-	    # non HUB Elastic pool
-	    if (!defined($self->{option_results}->{no_sql_elastic_pool_hybrid_benefits})) {
-		my $items_sub = $options{custom}->azure_list_sqlelasticpools(
-		    resource_group => $sqlserver_id[4],
-		    server => $item->{name},
-		    api_version_override => "2021-11-01"
-		    );
-		
-		foreach my $item_sub (@{$items_sub}) {
-		    $self->{sql_elastic_pool_hybrid_benefits}->{total}++;;
-		    next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
-			     && $item_sub->{name} =~ /$self->{option_results}->{exclude_name}/);
-		    next if (defined($item_sub->{properties}->{licenseType}) && $item_sub->{properties}->{licenseType} =~ /BasePrice/);
-		    $self->{sql_elastic_pool_hybrid_benefits}->{not_enabled}++;
-		    $self->{sql_elastic_pool_hybrid_benefits}->{name} .= $item_sub->{name} . " ";
-		}
-	    }
-	}
-	if (!defined($self->{option_results}->{no_sql_database_hybrid_benefits})) {
-	    if ($self->{sql_database_hybrid_benefits}->{not_enabled}) {
-		$output_error .= "Found " . $self->{sql_database_hybrid_benefits}->{not_enabled} . " SQL database(s) with SqlDatabaseHybridBenefits not enabled ( " . $self->{sql_database_hybrid_benefits}->{name} . ")\n";
-	    }
-	    else {
-		$output .= "SqlDatabaseHybridBenefits is enabled on all " . $self->{sql_database_hybrid_benefits}->{total} . " eligible SQL database(s)\n";
-	    }
-	}
+        $self->{nohybridbenefits_elasticpool}->{count} = 0;
+        $self->{nohybridbenefits_elasticpool}->{total} = 0;	 
+        $self->{nohybridbenefits_sql_db}->{count} = 0;
+        $self->{nohybridbenefits_sql_db}->{total} = 0;
 
-	if (!defined($self->{option_results}->{no_sql_elastic_pool_hybrid_benefits})) {
-	    if ($self->{sql_elastic_pool_hybrid_benefits}->{not_enabled}) {
-		$output_error .= "Found " . $self->{sql_elastic_pool_hybrid_benefits}->{not_enabled} . " SQL elastic pool(s) with SqlElasticPoolHybridBenefits not enabled ( " . $self->{sql_elastic_pool_hybrid_benefits}->{name} . ")\n";
-	    }
-	    else {
-	    $output .= "SqlElasticPoolHybridBenefits is enabled on all " . $self->{sql_elastic_pool_hybrid_benefits}->{total} . " eligible SQL elastic pool(s)\n";
-	    }	
+        foreach my $item (@{$resultset}) {
+            my @sqlserver_id = split /\//, $item->{id};
+    
+            # SQL databases
+            if (!defined($self->{option_results}->{skip_sql_database})) {			
+                my $resultset_sql = $options{custom}->azure_list_sqldatabases(
+                    resource_group => $sqlserver_id[4],
+                    server => $item->{name},
+                    force_api_version => "2021-11-01"
+                );
+
+                foreach my $item_sql (@{ $resultset_sql}) {
+                    next if ($item_sql->{properties}->{currentSku}->{name} =~ /ElasticPool/);
+                    next if (defined($item_sql->{properties}->{currentSku}->{tier}) && $item_sql->{properties}->{currentSku}->{tier} !~ /GeneralPurpose/);
+                    next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
+                         && $item_sql->{name} =~ /$self->{option_results}->{exclude_name}/);
+                    next if (defined($item_sql->{properties}->{licenseType}) && $item_sql->{properties}->{licenseType} eq "BasePrice");
+                    $self->{nohybridbenefits_sql_db}->{total}++;
+                    $self->{nohybridbenefits_resources}->{total}++;
+
+                    if (defined($item_sql->{properties}->{licenseType})) {
+                        $self->{nohybridbenefits_sql_db}->{count}++;
+                        $self->{nohybridbenefits_resources}->{count}++;
+						push @item_list_sql, $item_sql->{name};
+                    }
+                }
+			}
+
+            # SQL Elastic pools
+            if (!defined($self->{option_results}->{skip_elastic_pool})) {
+                my $resultset_elastic = $options{custom}->azure_list_sqlelasticpools(
+                    resource_group => $sqlserver_id[4],
+                    server => $item->{name},
+                    force_api_version => "2021-11-01"
+                );
+           
+                foreach my $item_ep (@{$resultset_elastic}) {		
+                    next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
+                         && $item_ep->{name} =~ /$self->{option_results}->{exclude_name}/);
+			    	$self->{nohybridbenefits_elasticpool}->{total}++;
+                    $self->{nohybridbenefits_resources}->{total}++;
+                    next if (defined($item_ep->{properties}->{licenseType}) && $item_ep->{properties}->{licenseType} =~ /BasePrice/);
+			    	$self->{nohybridbenefits_elasticpool}->{count}++;
+                    $self->{nohybridbenefits_resources}->{count}++;
+					push @item_list_elastic, $item_ep->{name};
+                }
+            }
+		}
+        if (scalar @item_list_sql != 0) {
+            $self->{output}->output_add(long_msg => "SQL Databases withtout hybrid benefits:" . "[" . join(", ", @item_list_sql) . "]");
+        }
+        if (scalar @item_list_elastic != 0) {
+            $self->{output}->output_add(long_msg => "SQL Elastic pools withtout hybrid benefits:" . "[" . join(", ", @item_list_elastic) . "]");
+        }
 	}
-    }
-    if ($output_error) {
-	$self->{output}->output_add(severity => "CRITICAL", short_msg => $output_error . $output);
-    }
-    else {
-	$self->{output}->output_add(severity => "OK", short_msg => "Everything is OK\n" . $output);
-    }
 }
 
 1;
@@ -183,26 +279,41 @@ __END__
 
 Check if hybrid benefits is enabled on eligible resources.
 
-Since there are multiple calls to multiple Rest APIs versions, api-version parameter is hardcoded in the mode code.
-
 Example: 
 perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --custommode=api --mode=hybrid-benefits
-{--resource-group='MYRESOURCEGROUP'] --exclude-name='MyDb|MyEpool.*' [--no-vm-hybrid-benefits] [--no-sql-vm-hybrid-benefits] [--no-sql-database-hybrid-benefits] [--no-sql-elastic-pool-hybrid-benefits]
+{--resource-group='MYRESOURCEGROUP'] --exclude-name='MyDb|MyEpool.*' [--skip-vm] [--skip-sql-vm] [--skip-sql-database] [--skip-sql-elastic-pool] [--show-details --verbose]
 
+Adding --verbose will display the item names.
 
 =over 8
 
 =item B<--resource-group>
 
-Set resource group (Required).
+Set resource group.
 
 =item B<--exclude-name>
 
 Exclude resource from check (Can be a regexp).
 
-=item B<--no-vm-hybrid-benefits --no-sql-vm-hybrid-benefits --no-sql-database-hybrid-benefits --no-sql-elastic-pool-hybrid-benefits>
+=item B<--warning-*>
 
-Exclude resource type from check
+Warning threshold on the number of orphaned resources. 
+Substitue '*' by the resource type amongst this list: 
+    ( elastic-pool sql-database vm sql-vm resources)
+
+=îtem B<--critical-*>
+
+Critical threshold on the number of orphaned resources. 
+Substitue '*' by the resource type amongst this list: 
+    (elastic-pool sql-database vm sql-vm resources)
+
+=item B<--skip-*>
+
+Skip a specific kind of resource. Can be multiple.
+
+Accepted values: vm, sql-vm, sql-database, elastic-pool
+
+=back
 
 =back
 

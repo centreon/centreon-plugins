@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::costs::mode::orphanresource;
+package cloud::azure::management::costs::mode::orphanresources;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -109,10 +109,10 @@ sub set_counters {
 # nics, nsgs, public-ips, route-tables, snapshots
     $self->{maps_counters}->{orphaned_resources} = [
         { label => 'orphaned-resources', nlabel => 'azure.resources.orphaned.count', set => {
-                key_values => [ { name => 'count' } ],
+                key_values => [ { name => 'count' }, { name => 'total'} ],
                 output_template => 'Orphaned resources: %s',
                 perfdatas => [
-                    { template => '%d', min => 0 }
+                    { template => '%d', min => 0, max => 'total' }
                 ]
             }
         }
@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_orphaned_output'),
                 perfdatas => [
-                    { template => '%d', min => 0 }
+                    { template => '%d', min => 0, max => 'total' }
                 ]
             }
         }
@@ -132,7 +132,7 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_orphaned_output'),
                 perfdatas => [
-                    { template => '%d', min => 0 }
+                    { template => '%d', min => 0, max => 'total' }
                 ]
             }
         }
@@ -142,7 +142,7 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_orphaned_output'),
                 perfdatas => [
-                    { template => '%d', min => 0 }
+                    { template => '%d', min => 0, max => 'total' }
                 ]
             }
         }
@@ -152,7 +152,7 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_orphaned_output'),
                 perfdatas => [
-                    { template => '%d', min => 0 }
+                    { template => '%d', min => 0, max => 'total' }
                 ]
             }
         }
@@ -162,7 +162,7 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_orphaned_output'),
                 perfdatas => [
-                    { template => '%d', min => 0 }
+                    { template => '%d', min => 0, max => 'total' }
                 ]
             }
         }
@@ -172,7 +172,7 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_orphaned_output'),
                 perfdatas => [
-                    { template => '%d', min => 0 }
+                    { template => '%d', min => 0, max => 'total'}
                 ]
             }
         }
@@ -184,7 +184,8 @@ sub manage_selection {
 
     my $resultset;
     my @item_list;
-    my $display_long = 'no';
+    $self->{orphaned_resources}->{count} = 0;
+    $self->{orphaned_resources}->{total} = 0;
 
     # orphan managed disks
     if (!defined($self->{option_results}->{skip_managed_disks})) {
@@ -198,18 +199,17 @@ sub manage_selection {
 	        next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
 	    	     && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
             $self->{orphaned_disks}->{total}++;
+            $self->{orphaned_resources}->{total}++;
 	        next if ($item->{properties}->{diskState} !~ /Unattached/);
             $self->{orphaned_disks}->{count}++;
             $self->{orphaned_resources}->{count}++;
             push @item_list, $item->{name};
 	    }
-        $display_long = 'yes';
+        if (scalar @item_list != 0) {
+            $self->{output}->output_add(long_msg => "Managed Disks orphaned list:" . "[" . join(", ", @item_list) . "]");
+        }
+        @item_list = ();
     }
-
-    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
-        $self->{output}->output_add(long_msg => "Managed Disks orphaned list:" . "[" . join(", ", @item_list) . "]");
-    }
-    @item_list = ();
 
      # orphan NICs
     if (!defined($self->{option_results}->{skip_nics})) {
@@ -223,17 +223,17 @@ sub manage_selection {
 	        next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
 	    	     && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
             $self->{orphaned_nics}->{total}++;
+            $self->{orphaned_resources}->{total}++;
             next if (scalar(keys %{$item->{properties}->{virtualMachine}}) != 0 || defined($item->{properties}->{privateEndpoint}));
             $self->{orphaned_nics}->{count}++;
             $self->{orphaned_resources}->{count}++;
             push @item_list, $item->{name};
 	    }
+        if (scalar @item_list != 0) {
+            $self->{output}->output_add(long_msg => "NICs orphaned list:" . "[" . join(", ", @item_list) . "]");
+        }
+        @item_list = (); 
     }
-
-    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
-        $self->{output}->output_add(long_msg => "NICs orphaned list:" . "[" . join(", ", @item_list) . "]");
-    }
-    @item_list = (); 
 
     # orphan NSGs
     if (!defined($self->{option_results}->{skip_nsgs})) {
@@ -248,6 +248,7 @@ sub manage_selection {
             next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
                      && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
             $self->{orphaned_nsgs}->{total}++;
+            $self->{orphaned_resources}->{total}++;
             next if (defined($item->{properties}->{subnets}) && scalar($item->{properties}->{subnets}) != 0);
             next if (defined($item->{properties}->{networkInterface}) && scalar($item->{properties}->{networkInterface}) != 0);
             next if (defined($item->{properties}->{networkInterfaces}) && scalar($item->{properties}->{networkInterfaces}) != 0);
@@ -255,12 +256,11 @@ sub manage_selection {
             $self->{orphaned_resources}->{count}++;
             push @item_list, $item->{name};
 	    }
+        if (scalar @item_list != 0) {
+            $self->{output}->output_add(long_msg => "NSGs orphaned list:" . "[" . join(", ", @item_list) . "]");
+        }
+        @item_list = (); 
     }
-
-    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
-        $self->{output}->output_add(long_msg => "NSGs orphaned list:" . "[" . join(", ", @item_list) . "]");
-    }
-    @item_list = (); 
 
     # orphan public IPs
     if (!defined($self->{option_results}->{skip_public_ips})) {
@@ -274,17 +274,19 @@ sub manage_selection {
             next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
                      && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
             $self->{orphaned_nics}->{total}++;
+            $self->{orphaned_resources}->{total}++;
             next if (defined($item->{properties}->{ipConfiguration}) && scalar($item->{properties}->{ipConfiguration}) != 0);
             $self->{orphaned_nics}->{count}++;
             $self->{orphaned_resources}->{count}++;
             push @item_list, $item->{name};
 	    }
+        if (scalar @item_list != 0) {
+            $self->{output}->output_add(long_msg => "Public IPs orphaned list:" . "[" . join(", ", @item_list) . "]");
+        }
+        @item_list = ();
     }
 
-    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
-        $self->{output}->output_add(long_msg => "Public IPs orphaned list:" . "[" . join(", ", @item_list) . "]");
-    }
-    @item_list = ();
+
 
     # orphan route tables
     if (!defined($self->{option_results}->{skip_route_tables})) {
@@ -298,17 +300,18 @@ sub manage_selection {
             next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
                      && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
             $self->{orphaned_routetables}->{total}++;
+            $self->{orphaned_resources}->{total}++;
             next if (defined($item->{properties}->{subnets}) && scalar($item->{properties}->{subnets}) != 0);
             $self->{orphaned_routetables}->{count}++;
             $self->{orphaned_resources}->{count}++;
             push @item_list, $item->{name};
 	    }
+        if (scalar @item_list != 0) {
+            $self->{output}->output_add(long_msg => "Route tables orphaned list:" . "[" . join(", ", @item_list) . "]");
+        }
+        @item_list = ();
     }
 
-    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
-        $self->{output}->output_add(long_msg => "Route tables orphaned list:" . "[" . join(", ", @item_list) . "]");
-    }
-    @item_list = ();
 
     # orphan snapshots
     if (!defined($self->{option_results}->{skip_snapshots})) {
@@ -322,17 +325,17 @@ sub manage_selection {
             next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
                      && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
             $self->{orphaned_snapshots}->{total}++;
+            $self->{orphaned_resources}->{total}++;
             next if (defined($item->{properties}->{subnets}) && scalar($item->{properties}->{subnets}) != 0);
             $self->{orphaned_snapshots}->{count}++;
             $self->{orphaned_resources}->{count}++;
             push @item_list, $item->{name};
 	    }
+        if (scalar @item_list != 0) {
+            $self->{output}->output_add(long_msg => "Snapshots orphaned list:" . "[" . join(", ", @item_list) . "]");
+        }
+        @item_list = ();
     }
-
-    if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
-        $self->{output}->output_add(long_msg => "Snapshots orphaned list:" . "[" . join(", ", @item_list) . "]");
-    }
-    @item_list = ();
 
 }
 
@@ -348,13 +351,15 @@ Example:
 perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --custommode=api --mode=orphan-resource
 {--resource-group='MYRESOURCEGROUP'] --exclude-name='MyDisk|DataDisk.*' [--skip-managed-disks] [--skip-nics] [--skip-nsgs] [--skip-public-ips] [--skip-route-tables] [--skip-snapshots]
 
+Adding --verbose will display the item names.
+
 =over 8
 
 =item B<--resource-group>
 
 Set resource group.
 
-=item B<--filter-name>
+=item B<--exclude-name>
 
 Exclude resource from check (Can be a regexp).
 
@@ -375,11 +380,6 @@ Substitue '*' by the resource type amongst this list:
 Skip a specific kind of resource. Can be multiple.
 
 Accepted values: disks, nics, nsgs, public-ips, route-tables, snapshots
-
-=item B<--show-details>
-
-Show the list of uncompliant resources in the long output.
---verbose global option needs to be also set. 
 
 =back
 

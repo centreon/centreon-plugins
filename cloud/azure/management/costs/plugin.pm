@@ -33,7 +33,7 @@ sub new {
     %{ $self->{modes} } = (
         'budgets'          => 'cloud::azure::management::costs::mode::budgets',
         'list-budgets'     => 'cloud::azure::management::costs::mode::listbudgets',
-        'orphan-resource'  => 'cloud::azure::management::costs::mode::orphanresource',
+        'orphan-resources' => 'cloud::azure::management::costs::mode::orphanresources',
         'hybrid-benefits'  => 'cloud::azure::management::costs::mode::hybridbenefits',
         'tags-compliance'  => 'cloud::azure::management::costs::mode::tagscompliance'
     );

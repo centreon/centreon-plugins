@@ -25,10 +25,16 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub custom_compliancevm_output {
+sub prefix_vm_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("VMs not having specified tags %s (out of %s)", $self->{result_values}->{count}, $self->{result_values}->{total});
+    return "Virtual Machines";
+}
+
+sub custom_compliance_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf(" not having specified tags %s (out of %s)", $self->{result_values}->{count}, $self->{result_values}->{total});
     
     return $msg;
 }
@@ -86,7 +92,7 @@ sub set_counters {
     $self->{maps_counters}->{uncompliant_vms} = [
         { label => 'uncompliant-vms', display_ok => 0, nlabel => 'azure.tags.vm.notcompliant.count', set => {
                 key_values => [ { name => 'count' }, { name => 'total' } ],
-                closure_custom_output => $self->can('custom_compliancevm_output'),
+                closure_custom_output => $self->can('custom_compliance_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total' }
                 ]
@@ -99,7 +105,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my @item_list;
-    my $display_long = 'no';
     $self->{uncompliant_resource}->{count} = 0;
     $self->{uncompliant_resource}->{total} = 0;
     
@@ -128,12 +133,11 @@ sub manage_selection {
                 $self->{uncompliant_vms}->{count}++;
                 $self->{uncompliant_resource}->{count}++;
                 push @item_list, $item->{name};
-                $display_long = 'yes';
             }
         }
 
-        if ($display_long eq 'yes' && defined($self->{option_results}->{show_details})) {
-            $self->{output}->output_add(long_msg => "VM list having tags compliance issues:" . "[" . join(", ", @item_list) . "]");
+        if (scalar @item_list != 0) {
+            $self->{output}->output_add(long_msg => "Virtual Machines with uncompliant tags:" . "[" . join(", ", @item_list) . "]");
         }
         @item_list = ();
     }
@@ -153,6 +157,8 @@ At the moment, only VMs are supported, but support will extend to other resource
 Example: 
 perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --custommode=api --mode=tag-on-resources
 {--resource-group='MYRESOURCEGROUP'] --exclude-name='MyVM1|MyVM2.*'  --tag-name='atagname' --tag-name='atagname => atagvalue' --api-version='2022-08-01'
+
+Adding --verbose will display the item names.
 
 =over 8
 
@@ -183,11 +189,6 @@ Warning threshold. '*' replacement values accepted:
 Critical threshold. '*' replacement values accepted: 
 - uncompliant-vms 
 - uncompliant-resource
-
-=item B<--show-details>
-
-Show the list of uncompliant resources in the long output.
---verbose global option needs to be also set. 
 
 =back
 
