@@ -75,14 +75,14 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'exclude-name:s'       => { name => 'exclude_name' },
         'show-details'         => { name => 'show_details'},
         'skip-managed-disks'   => { name => 'skip_managed_disks' },
         'skip-nics'            => { name => 'skip_nics' },
         'skip-nsgs'            => { name => 'skip_nsgs' },
         'skip-public-ips'      => { name => 'skip_public_ips' },
         'skip-route-tables'    => { name => 'skip_route_tables' },
-        'skip-snapshots'       => { name => 'skip_snapshots' },
-        'exclude-name:s'       => { name => 'exclude_name' }
+        'skip-snapshots'       => { name => 'skip_snapshots' }
     });
 
     return $self;
@@ -310,7 +310,7 @@ sub manage_selection {
     }
     @item_list = ();
 
-#    # orphan snapshots
+    # orphan snapshots
     if (!defined($self->{option_results}->{skip_snapshots})) {
         $self->{orphaned_snapshots}->{count} = 0;
         $self->{orphaned_snapshots}->{total} = 0;
@@ -375,6 +375,11 @@ Substitue '*' by the resource type amongst this list:
 Skip a specific kind of resource. Can be multiple.
 
 Accepted values: disks, nics, nsgs, public-ips, route-tables, snapshots
+
+=item B<--show-details>
+
+Show the list of uncompliant resources in the long output.
+--verbose global option needs to be also set. 
 
 =back
 

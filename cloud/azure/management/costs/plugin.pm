@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'budgets' => 'cloud::azure::management::costs::mode::budgets',
-        'list-budgets' => 'cloud::azure::management::costs::mode::listbudgets',
-        'orphan-resource'   => 'cloud::azure::management::costs::mode::orphanresource',
-        'hybrid-benefits'   => 'cloud::azure::management::costs::mode::hybridbenefits',
-        'tag-on-resources'  => 'cloud::azure::management::costs::mode::tagonresources'
+        'budgets'          => 'cloud::azure::management::costs::mode::budgets',
+        'list-budgets'     => 'cloud::azure::management::costs::mode::listbudgets',
+        'orphan-resource'  => 'cloud::azure::management::costs::mode::orphanresource',
+        'hybrid-benefits'  => 'cloud::azure::management::costs::mode::hybridbenefits',
+        'tags-compliance'  => 'cloud::azure::management::costs::mode::tagscompliance'
     );
 
     $self->{custom_modes}{api} = 'cloud::azure::custom::api';
