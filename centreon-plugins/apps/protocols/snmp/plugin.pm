@@ -29,9 +29,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
         'collection'      => 'apps::protocols::snmp::mode::collection',
+        'discovery'       => 'snmp_standard::mode::discovery',
         'dynamic-command' => 'snmp_standard::mode::dynamiccommand',
         'numeric-value'   => 'snmp_standard::mode::numericvalue',
         'response-time'   => 'apps::protocols::snmp::mode::responsetime',
