@@ -168,7 +168,7 @@ sub check {
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "sensor '%s' status is '%s' [instance = %s] [value = %s]",
+                "sensor '%s' alarm status is '%s' [instance = %s] [value = %s]",
                 $name, $result->{fgHwSensorEntAlarmStatus}, $instance,
                 defined($result->{fgHwSensorEntValue}) ? $result->{fgHwSensorEntValue} : '-'
             )
@@ -178,7 +178,7 @@ sub check {
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("Sensor '%s' status is '%s'", $name, $result->{fgHwSensorEntAlarmStatus})
+                short_msg => sprintf("Sensor '%s' alarm status is '%s'", $name, $result->{fgHwSensorEntAlarmStatus})
             );
         }
 
