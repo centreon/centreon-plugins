@@ -40,7 +40,7 @@ sub get_metrics_mapping {
         'BitsOutPerSecond' => {
             'output' => 'Traffic Out',
             'label'  => 'traffic-out',
-            'nlabel' => 'azexpressroute.traffic.in.bitspersecond',
+            'nlabel' => 'azexpressroute.traffic.out.bitspersecond',
             'unit'   => 'b/s',
             'min'    => '0',
             'max'    => ''
