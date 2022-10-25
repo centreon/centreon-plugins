@@ -116,15 +116,17 @@ sub manage_selection {
     my $sum_costs;
     my $currency; 
     
-    foreach my $daily_subscription_cost (@{$subscription_costs}){
-        $sum_costs += ${$daily_subscription_cost}[0];
-        $currency = ${$daily_subscription_cost}[2];
+    if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq ""){
+        foreach my $daily_subscription_cost (@{$subscription_costs}){
+            $sum_costs += ${$daily_subscription_cost}[0];
+            $currency = ${$daily_subscription_cost}[2];
+        }
 
+        $self->{global} = { subscription_cost => $sum_costs,
+                            currency => $currency
+        };
     }
-    
-    $self->{global} = { subscription_cost => $sum_costs,
-                        currency => $currency
-    };
+
 }
 
 1;
