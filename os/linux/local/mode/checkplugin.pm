@@ -102,7 +102,7 @@ sub check_options {
 sub parse_perfdatas {
     my ($self, %options) = @_;
 
-    while ($options{perfdatas} =~ /(.*?)=([0-9\.]+)([^0-9;]+?)?([0-9.@;]+?)?(?:\s+|\Z)/g) {
+    while ($options{perfdatas} =~ /(.*?)=([0-9\.]+)([^0-9;]+?)?([0-9.@;:]+?)?(?:\s+|\Z)/g) {
         my ($label, $value, $unit, $extra) = ($1, $2, $3, $4);
         $label = centreon::plugins::misc::trim($label);
         $label =~ s/^'//;
