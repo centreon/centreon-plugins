@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::costs::mode::querysubscriptions;
+package cloud::azure::management::costs::mode::costsexplorer;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -63,7 +63,6 @@ sub set_counters {
             }
         }
     ];
-
     $self->{maps_counters}->{resource_group} = [
         { label => 'resource-group-costs', nlabel => 'resourcegroup.costs', set => {
                 key_values => [ { name => 'resource_group_cost' }, { name => 'currency'} ],
@@ -82,12 +81,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "lookup-days:s"          => { name => 'lookup_days', default => 30 },
-                                    "resource-group:s@"      => { name => 'resource_group' },
-                                    "tags:s@"                => { name => 'tags' }
-                                });
+    $options{options}->add_options(arguments => {
+        "lookup-days:s"          => { name => 'lookup_days', default => 30 },
+        "resource-group:s@"      => { name => 'resource_group' },
+        "tags:s@"                => { name => 'tags' }
+    });
 
     return $self;
 }
@@ -197,13 +195,15 @@ sub manage_selection {
     my $sum_costs;
     my $currency; 
     
-    if ((!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq "") && !defined($self->{option_results}->{tags})){
+    if ((!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq "") 
+            && !defined($self->{option_results}->{tags})){
         foreach my $daily_subscription_cost (@{$costs}){
             $sum_costs += ${$daily_subscription_cost}[0];
             $currency = ${$daily_subscription_cost}[2];
         }
-        $self->{global} = { subscription_cost => $sum_costs,
-                            currency => $currency
+        $self->{global} = { 
+            subscription_cost => $sum_costs,
+            currency => $currency
         };
     }
     if (defined($self->{option_results}->{resource_group}) || defined($self->{option_results}->{tags})){
@@ -219,8 +219,9 @@ sub manage_selection {
         }
 
         foreach my $resource_group (keys %$resource_group_total_costs){
-            $self->{resource_group}->{$resource_group} = { resource_group_cost => $resource_group_total_costs->{$resource_group}->{sum},
-                                                           currency => $resource_group_total_costs->{$resource_group}->{currency}
+            $self->{resource_group}->{$resource_group} = {
+                resource_group_cost => $resource_group_total_costs->{$resource_group}->{sum},
+                currency => $resource_group_total_costs->{$resource_group}->{currency}
             };
         }
     }
