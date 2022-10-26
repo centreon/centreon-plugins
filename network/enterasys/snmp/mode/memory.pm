@@ -130,7 +130,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
+        'filter-entity-name:s' => { name => 'filter_entity_name' },
+        'filter-memory-name:s' => { name => 'filter_memory_name' }
     });
 
     return $self;
@@ -164,6 +166,9 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         next if ($result->{total} <= 0);
 
+        next if (defined($self->{option_results}->{filter_memory_name}) && $self->{option_results}->{filter_memory_name} ne '' &&
+            $result->{descr} !~ /$self->{option_results}->{filter_memory_name}/);
+
         $options{snmp}->load(oids => [ $oid_entPhysicalName . '.' . $physicalIndex ]) if (!defined($indexes->{$physicalIndex}));
         $indexes->{$physicalIndex} = 1;
 
@@ -183,7 +188,13 @@ sub manage_selection {
     if (scalar(keys %$indexes) > 0) {
         $snmp_result = $options{snmp}->get_leef();
         foreach (keys %{$self->{memory}}) {
-            $self->{memory}->{$_}->{physicalName} = $snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physicalIndex} };
+            my $entity_name = $snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physicalIndex} };
+            if (defined($self->{option_results}->{filter_entity_name}) && $self->{option_results}->{filter_entity_name} ne '' &&
+                $entity_name !~ /$self->{option_results}->{filter_entity_name}/) {
+                delete $self->{memory}->{$_};
+                next;
+            }
+            $self->{memory}->{$_}->{physicalName} = $entity_name;
         }
     }
 }
@@ -197,6 +208,14 @@ __END__
 Check memory usages.
 
 =over 8
+
+=item B<--filter-entity-name>
+
+Filter entity name (can be a regexp).
+
+=item B<--filter-memory-name>
+
+Filter memory name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
