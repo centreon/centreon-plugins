@@ -42,7 +42,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{connected_user} = [
-        { label => 'connected-user', nlabel => 'mssql.users.connected.count' set => {
+        { label => 'connected-user', nlabel => 'mssql.users.connected.count', set => {
                 key_values => [ { name => 'value' } ],
                 output_template => '%i connected user(s)',
                 perfdatas => [

@@ -32,7 +32,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{hit_ratio} = [
-        { label => 'hit-ratio', nlabel => 'mssql.cache.hitratio.percentage' set => {
+        { label => 'hit-ratio', nlabel => 'mssql.cache.hitratio.percentage', set => {
                 key_values => [ { name => 'value' } ],
                 output_template => 'Buffer cache hit ratio is %.2f%%',
                 perfdatas => [

@@ -32,7 +32,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{deadlocks} = [
-        { label => 'lockswaits', nlabel => 'mssql.lockswaits.count' set => {
+        { label => 'lockswaits', nlabel => 'mssql.lockswaits.count', set => {
                 key_values => [ { name => 'value' } ],
                 output_template => '%.2f dead locks/s',
                 perfdatas => [
@@ -74,7 +74,7 @@ sub manage_selection {
     my $query_result = $self->{sql}->fetchall_arrayref();
     $self->{lockswaits}->{value} = 0;
 
-    foreach my $row (@$result) {
+    foreach my $row (@{$query_result}) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne ''
                     && $$row[0] !~ /$self->{option_results}->{filter_database}/);
         $self->{lockswaits}->{value} += $$row[1];
