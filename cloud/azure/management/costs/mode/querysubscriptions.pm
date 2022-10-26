@@ -32,13 +32,13 @@ sub resource_group_prefix_output {
     return sprintf( "Resource group '%s' ", $options{instance});
 }
 
-sub custom_status_output {
+sub custom_subscription_output {
     my ($self, %options) = @_;
 
     return sprintf( "Subscription costs for specified period: %.2f %s", $self->{result_values}->{subscription_cost}, $self->{result_values}->{currency});
 }
 
-sub custom_resource_group_status_output {
+sub custom_resource_group_output {
     my ($self, %options) = @_;
 
     return sprintf( "costs for specified period: %.2f %s", $self->{result_values}->{resource_group_cost}, $self->{result_values}->{currency});
@@ -56,7 +56,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'subscription-costs', nlabel => 'subscription.global.costs', set => {
                 key_values => [ { name => 'subscription_cost' }, { name => 'currency' } ],
-                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_output => $self->can('custom_subscription_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0 }
                 ]
@@ -67,7 +67,7 @@ sub set_counters {
     $self->{maps_counters}->{resource_group} = [
         { label => 'resource-group-costs', nlabel => 'resourcegroup.costs', set => {
                 key_values => [ { name => 'resource_group_cost' }, { name => 'currency'} ],
-                closure_custom_output => $self->can('custom_resource_group_status_output'),
+                closure_custom_output => $self->can('custom_resource_group_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, label_extra_instance => 1 },
                 ]
