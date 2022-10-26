@@ -112,7 +112,7 @@ sub create_body_filter {
     my $filter;
     my $resource_group_filter;
 
-    # group by resource group if we want costs for whole subscription
+    # group by resource group if we want costs for one or multiple resource groups
     if (defined($self->{option_results}->{resource_group}) && $self->{option_results}->{resource_group} ne ""){ 
         $resource_group_filter->{dimensions}->{name} = "ResourceGroup";
         $resource_group_filter->{dimensions}->{operator} = "In";
