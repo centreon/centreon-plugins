@@ -136,7 +136,7 @@ sub create_body_filter {
     }
 
     # if we have at least one tag and no resource group we need to set the filter on this tag, without the 'and'
-    if (defined($self->{tags}) && keys %{$self->{tags}} >= 0 && !defined($self->{option_results}->{resource_group}) && $self->{option_results}->{resource_group} eq ""){
+    if (defined($self->{tags}) && keys %{$self->{tags}} >= 0 && (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq "")){
         foreach my $tag (keys %{$self->{tags}}){
             $filter = {
                 tags => {
@@ -197,7 +197,7 @@ sub manage_selection {
     my $sum_costs;
     my $currency; 
     
-    if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq ""){
+    if ((!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq "") && !defined($self->{option_results}->{tags})){
         foreach my $daily_subscription_cost (@{$costs}){
             $sum_costs += ${$daily_subscription_cost}[0];
             $currency = ${$daily_subscription_cost}[2];
@@ -206,7 +206,7 @@ sub manage_selection {
                             currency => $currency
         };
     }
-    if (defined($self->{option_results}->{resource_group})){
+    if (defined($self->{option_results}->{resource_group}) || defined($self->{option_results}->{tags})){
         my $resource_group_total_costs;
 
         foreach my $daily_resource_group_cost (@{$costs}){
