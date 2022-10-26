@@ -50,7 +50,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'resource_group', type => 1, cb_prefix_output => 'resource_group_prefix_output', skipped_code => { -10 => 1 } },
+        { name => 'resource_group', type => 1, cb_prefix_output => 'resource_group_prefix_output', message_multiple => 'All resource group costs are OK', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{global} = [
@@ -84,8 +84,9 @@ sub new {
 
     $options{options}->add_options(arguments =>
                                 {
-                                    "loopback:s"             => { name => 'loopback' },
-                                    "resource-group:s@"      => { name => 'resource_group' }
+                                    "lookup-days:s"          => { name => 'lookup_days', default => 30 },
+                                    "resource-group:s@"      => { name => 'resource_group' },
+                                    "tags:s@"                => { name => 'tags' }
                                 });
 
     return $self;
@@ -95,13 +96,68 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    if (defined($self->{option_results}->{tags}) && $self->{option_results}->{tags} ne '') {
+        foreach my $tag_pair (@{$self->{option_results}->{tags}}) {
+            my ($key, $value) = split / => /, $tag_pair;
+            $value = "" if !defined($value);
+            centreon::plugins::misc::trim($value) if defined($value);
+            push @{$self->{tags}->{ centreon::plugins::misc::trim($key) }}, $value;
+        }
+    }
+}
+
+sub create_body_filter {
+    my ($self, %options) = @_;
+
+    my $filter;
+    my $resource_group_filter;
+
+    # group by resource group if we want costs for whole subscription
+    if (defined($self->{option_results}->{resource_group}) && $self->{option_results}->{resource_group} ne ""){ 
+        $resource_group_filter->{dimensions}->{name} = "ResourceGroup";
+        $resource_group_filter->{dimensions}->{operator} = "In";
+        $resource_group_filter->{dimensions}->{values} = $self->{option_results}->{resource_group};
+    }
+
+    # if we have more than two elements to filter on (either several tags, or a tag and some resource groups) we need to have a 'and' array containing the elements
+    if ((defined($self->{tags}) && keys %{$self->{tags}} > 0) && (defined($self->{option_results}->{resource_group}) && $self->{option_results}->{resource_group} ne "")
+        || (defined($self->{tags}) && keys %{$self->{tags}} > 1)){
+        foreach my $tag (keys %{$self->{tags}}){
+            push @{$filter->{and}}, my $tags_filter = {
+                tags => {
+                    name => $tag,
+                    operator => "In",
+                    values => $self->{tags}->{$tag}
+                }
+            };
+        }
+        push @{$filter->{and}}, $resource_group_filter if keys %{$resource_group_filter} > 0; # we add a filter for resource group if at least one resource group was specified
+        return $filter;
+    }
+
+    # if we have at least one tag and no resource group we need to set the filter on this tag, without the 'and'
+    if (defined($self->{tags}) && keys %{$self->{tags}} >= 0 && !defined($self->{option_results}->{resource_group}) && $self->{option_results}->{resource_group} eq ""){
+        foreach my $tag (keys %{$self->{tags}}){
+            $filter = {
+                tags => {
+                    name => $tag,
+                    operator => "In",
+                    values => $self->{tags}->{$tag}
+                }
+            };
+        }
+        return $filter;
+    }
+
+    # if we only have resource group(s) specified to filter on, then we return the filter for resource group(s)
+    $filter = $resource_group_filter;
+    return $filter;
 }
 
 sub create_body_payload {
     my ($self, %options) = @_;
 
-    
-    my $start_date = DateTime->now->subtract( days => $options{loopback} );
+    my $start_date = DateTime->now->subtract( days => $self->{option_results}->{lookup_days} );
     my $end_date = DateTime->now;
 
     my $form_post = {
@@ -121,13 +177,13 @@ sub create_body_payload {
     $form_post->{timeperiod}->{from} = $start_date->ymd;
     $form_post->{timeperiod}->{to} = $end_date->ymd;
 
-    if (defined($options{resource_group}) && $options{resource_group} ne ""){
-        push @{$form_post->{dataset}->{grouping}}, { "type" => "Dimension", "name" => "ResourceGroup"};
-        $form_post->{dataset}->{filter}->{dimensions}->{name} = "ResourceGroup";
-        $form_post->{dataset}->{filter}->{dimensions}->{operator} = "In";
-        $form_post->{dataset}->{filter}->{dimensions}->{values} = $options{resource_group};
+    if ((defined($self->{option_results}->{resource_group}) && $self->{option_results}->{resource_group} ne "") || 
+        ((defined($self->{option_results}->{tags}) && $self->{option_results}->{tags} ne ""))){
+            my $filter;
+            $filter = $self->create_body_filter();
+            $form_post->{dataset}->{filter} = $filter;
+            push @{$form_post->{dataset}->{grouping}}, { "type" => "Dimension", "name" => "ResourceGroup"};
     }
-
     return $form_post;
 }
 
@@ -135,7 +191,7 @@ sub create_body_payload {
 sub manage_selection {
     my ($self, %options) = @_;
    
-    my $raw_form_post = $self->create_body_payload(loopback => $self->{option_results}->{loopback}, resource_group => $self->{option_results}->{resource_group});
+    my $raw_form_post = $self->create_body_payload();
     my $costs = $options{custom}->azure_get_subscription_cost_management(body_post => $raw_form_post);
     
     my $sum_costs;
@@ -150,7 +206,7 @@ sub manage_selection {
                             currency => $currency
         };
     }
-    if (defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} ne ""){
+    if (defined($self->{option_results}->{resource_group})){
         my $resource_group_total_costs;
 
         foreach my $daily_resource_group_cost (@{$costs}){
@@ -176,7 +232,57 @@ __END__
 
 =head1 MODE
 
+Check costs for a subscription or per resource group.
+
+If you don't specify a resource group or any tags then you will have costs for the whole subscription.
+
+You can specify resource groups and tags to filter on. 
+
+Example to get costs per subscription for the last 30 days:
+perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --mode=query-subscriptions --custommode=api --client-id='xxx' 
+--client-secret='xxx' --tenant='xxx' --subscription='xxx' --lookup-days=30 
+
+Example to get costs for a resource group:
+perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --mode=query-subscriptions --custommode=api --client-id='xxx' 
+--client-secret='xxx' --tenant='xxx' --subscription='xxx' --lookup-days=30 --resource-group=MYRESOURCEGROUP --tags='Environment => integration'
+
 =over 8
+
+=item B<--resource-group>
+
+Set resource group (Optional).
+
+If you don't, you get costs for the whole subscription.
+
+You can specify multiple resource groups. You will get results for each one of the resource groups specified.
+Example: --resource-group=MYRESOURCEGROUP1 --resource-group=MYRESOURCEGROUP2
+
+=item B<--tags>
+
+Set tags to filter on (Optional).
+
+You can specify multiple tags. You will get results for the resource groups matching all the tags specified.
+Example: --tags='Environment => DEV' --tags='managed_by => automation'
+
+=item B<--lookup-days>
+
+Days backward to look up (Default: '30').
+
+=item B<--warning-subscription-costs>
+
+Set warning threshold for subscription costs.
+
+=item B<--critical-subscription-costs>
+
+Set critical threshold for subscription costs.
+
+=item B<--warning-resource-group-costs>
+
+Set warning threshold for resource groups costs.
+
+=item B<--critical-resource-group-costs>
+
+Set critical threshold for resource groups costs.
 
 =back
 
