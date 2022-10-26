@@ -20,46 +20,44 @@
 
 package database::mssql::mode::cachehitratio;
 
-use base qw(centreon::plugins::mode);
-
 use strict;
 use warnings;
+use base qw(centreon::plugins::templates::counter);
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'hit_ratio', type => 0 },
+    ];
+
+    $self->{maps_counters}->{hit_ratio} = [
+        { label => 'hit-ratio', nlabel => 'mssql.cache.hitratio.percentage' set => {
+                key_values => [ { name => 'value' } ],
+                output_template => 'Buffer cache hit ratio is %.2f%%',
+                perfdatas => [
+                    { template => '%s', unit => '%', min => 0, max => 100 },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{
+    $options{sql}->connect();
+    $options{sql}->query(query => q{
         SELECT CAST(
             (
                 SELECT CAST (cntr_value AS BIGINT)
@@ -74,21 +72,10 @@ sub run {
             ) AS NUMERIC(6,3)
         )
     });
+
     my $hitratio = $self->{sql}->fetchrow_array();
+    $self->{hit_ratio}->{value} = $hitratio;
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $hitratio, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("Buffer cache hit ratio is %.2f%%", $hitratio));
-    $self->{output}->perfdata_add(label => 'cache_hitratio',
-                                  value => sprintf("%d",$hitratio),
-                                  unit => '%',
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0,
-                                  max => 100);
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -101,11 +88,11 @@ Check MSSQL buffer cache hit ratio.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-hit-ratio>
 
 Threshold warning.
 
-=item B<--critical>
+=item B<--critical-hit-ratio>
 
 Threshold critical.
 
