@@ -30,9 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'cpu'             => 'network::enterasys::snmp::mode::cpu',
         'interfaces'      => 'network::enterasys::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'network::enterasys::snmp::mode::memory',
+        'storage'         => 'network::enterasys::snmp::mode::storage',
         'uptime'          => 'network::enterasys::snmp::mode::uptime'
     };
 
