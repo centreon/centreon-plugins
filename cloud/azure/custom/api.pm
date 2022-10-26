@@ -310,7 +310,6 @@ sub json_decode {
 sub azure_get_subscription_cost_management_set_url {
     my ($self, %options) = @_;
 
-    my $uri = URI::Encode->new({encode_reserved => 1});
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/providers/Microsoft.CostManagement/query?api-version=" . $self->{api_version} ;
 
     return $url;
@@ -329,7 +328,6 @@ sub azure_get_subscription_cost_management {
     };
 
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-
     my $response = $self->request_api(method => 'POST', full_url => $full_url, query_form_post => $encoded_form_post, hostname => '');  
 
     return $response->{properties}->{rows};
