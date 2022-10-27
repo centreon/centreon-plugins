@@ -54,7 +54,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'subscription-costs', nlabel => 'subscription.global.costs', set => {
+        { label => 'subscription-costs', nlabel => 'azure.subscription.global.costs', set => {
                 key_values => [ { name => 'subscription_cost' }, { name => 'currency' } ],
                 closure_custom_output => $self->can('custom_subscription_output'),
                 perfdatas => [
@@ -64,7 +64,7 @@ sub set_counters {
         }
     ];
     $self->{maps_counters}->{resource_group} = [
-        { label => 'resource-group-costs', nlabel => 'resourcegroup.costs', set => {
+        { label => 'resource-group-costs', nlabel => 'azure.resourcegroup.costs', set => {
                 key_values => [ { name => 'resource_group_cost' }, { name => 'currency'} ],
                 closure_custom_output => $self->can('custom_resource_group_output'),
                 perfdatas => [
