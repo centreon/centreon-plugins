@@ -197,9 +197,6 @@ What you can do:
 - check for a key, without minding about its value: --tags='Version'
 - combine the two: --tags='Environment => Dev|Prod' --tags='Version'
 
---tags='Environment => Dev' --tags='Environment => Prod'
-UNKNOWN: Using multiple --tags option with the same key is forbiden. Please use regexp on the value instead
-
 =item B<--warning-*>
 
 Warning threshold. '*' replacement values accepted: 
