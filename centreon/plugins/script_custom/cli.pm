@@ -110,7 +110,8 @@ sub execute_command {
             command_path => defined($self->{option_results}->{command_path}) && $self->{option_results}->{command_path} ne '' ? $self->{option_results}->{command_path} : $options{command_path},
             command_options => $command_options,
             timeout => $timeout,
-            no_quit => $options{no_quit}
+            no_quit => $options{no_quit},
+            ssh_pipe => $options{ssh_pipe}
         );
     } else {
         ($stdout, $exit_code) = centreon::plugins::misc::execute(

@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output { 
     my ($self, %options) = @_;
@@ -56,7 +56,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{lvs} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{state} =~ /stale/i', set => {
                 key_values => [
                     { name => 'state' }, { name => 'mount' },
                     { name => 'lv' }, { name => 'pp' },
@@ -65,7 +65,7 @@ sub set_counters {
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -77,21 +77,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-type:s'     => { name => 'filter_type' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{state} =~ /stale/i' },
+        'filter-type:s'  => { name => 'filter_type' },
+        'filter-mount:s' => { name => 'filter_mount' }
     });
 
-    $self->{result} = {};
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 sub manage_selection {
@@ -110,12 +100,12 @@ sub manage_selection {
         foreach my $line (@lines) {
             next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
             my ($lv, $type, $lp, $pp, $pv, $lvstate, $mount) = ($1, $2, $3, $4, $5, $6, $7);
-            
+
             next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
                 $type !~ /$self->{option_results}->{filter_type}/);
             next if (defined($self->{option_results}->{filter_mount}) && $self->{option_results}->{filter_mount} ne '' &&
                 $mount !~ /$self->{option_results}->{filter_mount}/);
-            
+
             $self->{lvs}->{$mount} = {
                 lv => $lv,
                 mount => $mount,

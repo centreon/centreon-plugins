@@ -56,7 +56,7 @@ sub set_system {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_load_components => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_load_components => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -189,8 +189,8 @@ sub check {
             }
 
             $self->{output}->perfdata_add(
-                label => 'sensor', unit => $map_unit{$result->{swSensorType}},
                 nlabel => 'hardware.sensor.' . $result->{swSensorType} . '.' . $map_unit{$result->{swSensorType}},
+                unit => $map_unit{$result->{swSensorType}},
                 instances => $result->{swSensorInfo},
                 value => $result->{swSensorValue},
                 warning => $warn,

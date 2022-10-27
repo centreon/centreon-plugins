@@ -189,7 +189,9 @@ sub request_api {
         return undef if (defined($options{ignore_codes}) && defined($options{ignore_codes}->{$code}));
 
         if ($code == 429) {
-            sleep(1);
+            my ($retry) = $self->{http}->get_header(name => 'Retry-After');
+            $retry = defined($retry) && $retry =~ /^\s*(\d+)\s*/ ? $retry : 1; 
+            sleep($retry);
             next;
         }
 

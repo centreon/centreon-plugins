@@ -32,7 +32,7 @@ sub new {
     $self->{modes} = {
         'cpu'              => 'network::nortel::standard::snmp::mode::cpu',
         'hardware'         => 'network::nortel::standard::snmp::mode::hardware',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'interfaces'       => 'network::nortel::standard::snmp::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'network::nortel::standard::snmp::mode::memory',
         'stack'            => 'network::nortel::standard::snmp::mode::stack'

@@ -238,7 +238,7 @@ sub manage_selection {
             total_space => $_->{space}->{size},
             used_space => $_->{space}->{used},
             free_space => $_->{space}->{available},
-            prct_used_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{used} * 100 / $_->{space}->{size} : undef,
+            prct_used_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? (($_->{space}->{size} - $_->{space}->{available}) * 100 / $_->{space}->{size}) : undef,
             prct_free_space => (defined($_->{space}->{size}) && $_->{space}->{size} > 0) ? $_->{space}->{available} * 100 / $_->{space}->{size} : undef,
 
             read          => $_->{metric}->{throughput}->{read},
@@ -249,15 +249,15 @@ sub manage_selection {
             write_iops    => $_->{metric}->{iops}->{write},
             other_iops    => $_->{metric}->{iops}->{other},
             total_iops    => $_->{metric}->{iops}->{total},
-            read_latency  => $_->{metric}->{latency}->{read},
-            write_latency => $_->{metric}->{latency}->{write},
-            other_latency => $_->{metric}->{latency}->{other},
-            total_latency => $_->{metric}->{latency}->{total}
+            read_latency  => $_->{metric}->{latency}->{read} / 1000,
+            write_latency => $_->{metric}->{latency}->{write} / 1000,
+            other_latency => $_->{metric}->{latency}->{other} / 1000,
+            total_latency => $_->{metric}->{latency}->{total} / 1000
         };
     }
 
     if (scalar(keys %{$self->{volumes}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No volume found");
+        $self->{output}->add_option_msg(short_msg => 'No volume found');
         $self->{output}->option_exit();
     }
 }

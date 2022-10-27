@@ -76,7 +76,7 @@ sub check_options {
     $self->{ssh_hostname} = defined($self->{option_results}->{ssh_hostname}) && $self->{option_results}->{ssh_hostname} ne '' ? $self->{option_results}->{ssh_hostname} : '';
     $self->{server} = defined($self->{option_results}->{server}) && $self->{option_results}->{server} ne '' ? $self->{option_results}->{server} : '';
     $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '' ? $self->{option_results}->{port} : 26379;
-    $self->{username} = defined($self->{option_results}->{password}) && $self->{option_results}->{username} ne '' ? $self->{option_results}->{username} : '';
+    $self->{username} = defined($self->{option_results}->{username}) && $self->{option_results}->{username} ne '' ? $self->{option_results}->{username} : '';
     $self->{password} = defined($self->{option_results}->{password}) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : '';
     $self->{timeout} = defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
     $self->{tls} = defined($self->{option_results}->{tls}) ? 1 : 0;

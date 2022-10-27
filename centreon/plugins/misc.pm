@@ -458,11 +458,30 @@ sub convert_fahrenheit {
 
 sub expand_exponential {
     my (%options) = @_;
-    
+
     return $options{value} unless ($options{value} =~ /^(.*)e([-+]?)(.*)$/);
     my ($num, $sign, $exp) = ($1, $2, $3);
     my $sig = $sign eq '-' ? "." . ($exp - 1 + length $num) : '';
     return sprintf("%${sig}f", $options{value});
+}
+
+sub alert_triggered {
+    my (%options) = @_;
+
+    my ($rv_warn, $warning) = parse_threshold(threshold => $options{warning});
+    my ($rv_crit, $critical) = parse_threshold(threshold => $options{critical});
+
+    foreach ([$rv_warn, $warning], [$rv_crit, $critical]) {
+        next if ($_->[0] == 0);
+
+        if ($_->[1]->{arobase} == 0 && ($options{value} < $_->[1]->{start} || $options{value} > $_->[1]->{end})) {
+            return 1;
+        } elsif ($_->[1]->{arobase}  == 1 && ($options{value} >= $_->[1]->{start} && $options{value} <= $_->[1]->{end})) {
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 sub parse_threshold {
@@ -513,19 +532,19 @@ sub parse_threshold {
 
 sub get_threshold_litteral {
     my (%options) = @_;
-    
+
     my $perf_output = ($options{arobase} == 1 ? '@' : '') . 
-                      (($options{infinite_neg} == 0) ? $options{start} : '~') . 
-                      ':' . 
-                      (($options{infinite_pos} == 0) ? $options{end} : '');
+        (($options{infinite_neg} == 0) ? $options{start} : '~') . 
+        ':' . 
+        (($options{infinite_pos} == 0) ? $options{end} : '');
     return $perf_output;
 }
 
 sub set_timezone {
     my (%options) = @_;
-    
+
     return {} if (!defined($options{name}) || $options{name} eq '');
-     
+
     centreon::plugins::misc::mymodule_load(
         output => $options{output}, module => 'DateTime::TimeZone',
         error_msg => "Cannot load module 'DateTime::TimeZone'."
@@ -533,7 +552,7 @@ sub set_timezone {
     if (DateTime::TimeZone->is_valid_name($options{name})) {
         return { time_zone => DateTime::TimeZone->new(name => $options{name}) };
     }
-    
+
     # try to manage syntax (:Pacific/Noumea for example)
     if ($options{name} =~ /^:(.*)$/ && DateTime::TimeZone->is_valid_name($1)) {
         return { time_zone => DateTime::TimeZone->new(name => $1) };

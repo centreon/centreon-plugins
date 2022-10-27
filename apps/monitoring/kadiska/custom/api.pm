@@ -178,6 +178,37 @@ sub get_access_token {
     return $access_token;
 }
 
+sub forge_select {
+    my ($self, %options) = @_;
+
+    my %filters;
+    $filters{gateway_name} = $options{gateway_name} if defined($options{gateway_name}) && $options{gateway_name} ne '';
+    $filters{site_name} = $options{site_name} if defined($options{site_name}) && $options{site_name} ne '';
+    $filters{watcher_name} = $options{watcher_name} if defined($options{watcher_name}) && $options{watcher_name} ne '';
+    $filters{wfa} = $options{wfa} eq 'yes' ? 1 : undef ;
+
+    my @filter;
+
+    if (keys %filters > 1){
+        foreach my $filter_name (keys %filters){
+            if ($filter_name eq 'wfa'){
+                unshift(@filter, ["=", "wfa", \1]) if defined($filters{$filter_name});
+                next;
+            }
+            unshift(@filter, ["=", $filter_name,["\$", $filters{$filter_name}]]);          
+        }
+        unshift(@filter, 'and');
+        return \@filter;
+    } elsif ( keys %filters == 1) {
+        my ($filter_name) = %filters;
+        my $filter_value = $filters{$filter_name};
+        unshift(@filter, "=", $filter_name ,["\$", $filter_value ]);
+        return \@filter;
+    }
+
+    return undef;
+}
+
 sub request_api {
     my ($self, %options) = @_;
 

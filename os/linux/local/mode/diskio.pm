@@ -45,7 +45,11 @@ sub custom_utils_calc {
             ($options{new_datas}->{$self->{instance} . '_cpu_idle'} - $options{old_datas}->{$self->{instance} . '_cpu_idle'}) +
             ($options{new_datas}->{$self->{instance} . '_cpu_user'} - $options{old_datas}->{$self->{instance} . '_cpu_user'}) +
             ($options{new_datas}->{$self->{instance} . '_cpu_iowait'} - $options{old_datas}->{$self->{instance} . '_cpu_iowait'}) +
-            ($options{new_datas}->{$self->{instance} . '_cpu_system'} - $options{old_datas}->{$self->{instance} . '_cpu_system'})
+            ($options{new_datas}->{$self->{instance} . '_cpu_system'} - $options{old_datas}->{$self->{instance} . '_cpu_system'}) +
+            ($options{new_datas}->{$self->{instance} . '_cpu_hardirq'} - $options{old_datas}->{$self->{instance} . '_cpu_hardirq'}) +
+            ($options{new_datas}->{$self->{instance} . '_cpu_softirq'} - $options{old_datas}->{$self->{instance} . '_cpu_softirq'}) +
+            ($options{new_datas}->{$self->{instance} . '_cpu_nice'} - $options{old_datas}->{$self->{instance} . '_cpu_nice'}) +
+            ($options{new_datas}->{$self->{instance} . '_cpu_steal'} - $options{old_datas}->{$self->{instance} . '_cpu_steal'})
         )
         / $options{new_datas}->{$self->{instance} . '_cpu_total'} / 100;
     $self->{result_values}->{utils} = 0;
@@ -119,6 +123,10 @@ sub set_counters {
                     { name => 'cpu_user', diff => 1 },
                     { name => 'cpu_system', diff => 1 },
                     { name => 'cpu_idle', diff => 1 },
+                    { name => 'cpu_hardirq', diff => 1 },
+                    { name => 'cpu_softirq', diff => 1 },
+                    { name => 'cpu_steal', diff => 1 },
+                    { name => 'cpu_nice', diff => 1 },
                     { name => 'ticks', diff => 1 },
                     { name => 'display' }
                 ],
@@ -162,16 +170,23 @@ sub manage_selection {
     my ($cpu_parts, $disk_parts) = ($1, $2);
 
     # Manage CPU Parts
-    $cpu_parts =~ /^cpu\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/ms;
+    $cpu_parts =~ /^cpu\s+(.*)$/ms;
+    my @stats = split(/\s+/, $1);
 
-    my ($cpu_idle, $cpu_system, $cpu_user, $cpu_iowait) = ($4, $3, $1, $5);
+    my ($cpu_idle, $cpu_nice, $cpu_system, $cpu_user) = ($stats[3], $stats[1], $stats[2], $stats[0]);
+    my ($cpu_iowait, $cpu_hardirq, $cpu_softirq, $cpu_steal) = (0, 0, 0, 0);
+    $cpu_iowait = $stats[4] if (defined($stats[4]));
+    $cpu_hardirq = $stats[5] if (defined($stats[5]));
+    $cpu_softirq = $stats[6] if (defined($stats[6]));
+    $cpu_steal = $stats[7] if (defined($stats[7]));
+
     my $cpu_total = 0;
     while ($cpu_parts =~ /^cpu(\d+)/msg) {
         $cpu_total++;
     }
 
     $self->{device} = {};
-    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)/mg) {
+    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)\s+\d+\s+\d+\s+(\d+)\s+(\d+)\s+\d+\s+(\d+)\s+/mg) {
         my ($partition_name, $read_sector, $write_sector, $read_ms, $write_ms, $ms_ticks) = ($1, $2, $4, $3, $5, $6);
 
         next if (defined($self->{option_results}->{filter_partition_name}) && $self->{option_results}->{filter_partition_name} ne '' &&
@@ -195,7 +210,11 @@ sub manage_selection {
             cpu_system => $cpu_system,
             cpu_idle => $cpu_idle,
             cpu_user => $cpu_user,
-            cpu_iowait => $cpu_iowait
+            cpu_iowait => $cpu_iowait,
+            cpu_hardirq => $cpu_hardirq,
+            cpu_softirq => $cpu_softirq,
+            cpu_steal => $cpu_steal,
+            cpu_nice => $cpu_nice
         };
     }
 

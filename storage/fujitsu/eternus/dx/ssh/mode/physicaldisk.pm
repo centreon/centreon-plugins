@@ -42,7 +42,7 @@ my $thresholds = {
         ['Broken', 'CRITICAL'],
         ['Not Exist', 'CRITICAL'],
         ['Unknown', 'UNKNOWN']
-    ],
+    ]
 };
 
 sub new {
@@ -50,18 +50,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        "hostname:s"              => { name => 'hostname' },
-        "ssh-option:s@"           => { name => 'ssh_option' },
-        "ssh-path:s"              => { name => 'ssh_path' },
-        "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"               => { name => 'timeout', default => 30 },
-        "command:s"               => { name => 'command', default => 'show' },
-        "command-path:s"          => { name => 'command_path' },
-        "command-options:s"       => { name => 'command_options', default => 'disks' },
-        "filter:s@"               => { name => 'filter' },
-        "threshold-overload:s@"   => { name => 'threshold_overload' },
-        "no-component:s"          => { name => 'no_component' }
+    $options{options}->add_options(arguments => {
+        'filter:s@'             => { name => 'filter' },
+        'threshold-overload:s@' => { name => 'threshold_overload' },
+        'no-component:s'        => { name => 'no_component' }
     });
 
     $self->{no_components} = undef;
@@ -71,10 +63,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
     
     $self->{filter} = [];
     foreach my $val (@{$self->{option_results}->{filter}}) {
@@ -110,12 +98,11 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  ssh_pipe => 1,
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'show',
+        command_options => "disks\n",
+        ssh_pipe => 1
+    );
 
     #Location      Status                        Size    Type                Speed(rpm) Usage               Health(%)
     #------------- ----------------------------- ------- ------------------- ---------- ------------------- ---------
@@ -136,17 +123,23 @@ sub run {
         $self->{output}->output_add(long_msg => sprintf("Physical Disk '%s' status is '%s'", $disk_name, $disk_status));
         my $exit = $self->get_severity(section => 'disk', value => $disk_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Physical Disk '%s' status is '%s'.", $disk_name, $disk_status));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Physical Disk '%s' status is '%s'.", $disk_name, $disk_status)
+            );
         }
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %d physical disks are ok.", $total_components));
-     
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("All %d physical disks are ok.", $total_components)
+    );
+
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
-                                    short_msg => 'No components are checked.');
+        $self->{output}->output_add(
+            severity => $self->{no_components},
+            short_msg => 'No components are checked.'
+        );
     }
  
     $self->{output}->display();
@@ -174,7 +167,7 @@ sub check_filter {
 sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
-    
+
     if (defined($self->{overload_th}->{$options{section}})) {
         foreach (@{$self->{overload_th}->{$options{section}}}) {            
             if ($options{value} =~ /$_->{filter}/i) {
@@ -189,7 +182,7 @@ sub get_severity {
             return $status;
         }
     }
-    
+
     return $status;
 }
 
@@ -201,40 +194,9 @@ __END__
 
 Check Physical disks.
 
+Command used: show disks
+
 =over 8
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--command>
-
-Command to get information (Default: 'show').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: 'disks').
 
 =item B<--filter>
 

@@ -318,6 +318,7 @@ sub get_ilo_data {
         $self->get_ilo2_data();
     }
 
+    $self->{content} = $self->{output}->decode($self->{content});
     $self->{content} =~ s/\r//sg;
     $self->{output}->output_add(long_msg => $self->{content}, debug => 1);
 

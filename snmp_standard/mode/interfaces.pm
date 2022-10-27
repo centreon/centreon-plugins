@@ -405,7 +405,7 @@ sub set_counters_global {
                 ]
             }
         },
-        { label => 'global-admin-up', filter => 'add_global', nlabel => 'total.interfaces.admin.up.count', set => {
+        { label => 'total-admin-up', filter => 'add_global', nlabel => 'total.interfaces.admin.up.count', set => {
                 key_values => [ { name => 'global_admin_up' }, { name => 'total_port' } ],
                 output_template => 'AdminStatus Up : %s', output_error_template => 'AdminStatus Up : %s',
                 output_use => 'global_admin_up',  threshold_use => 'global_admin_up',

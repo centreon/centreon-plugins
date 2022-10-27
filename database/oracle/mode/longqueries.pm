@@ -81,8 +81,10 @@ sub new {
         "timezone:s"          => { name => 'timezone' },
     });
     
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime',
-                                           error_msg => "Cannot load module 'DateTime'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'DateTime',
+        error_msg => "Cannot load module 'DateTime'."
+    );
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -143,7 +145,7 @@ sub manage_selection {
             hour       => $values[2],
             minute     => $values[1],
             second     => $values[0],
-            time_zone  => 'UTC',
+            time_zone  => 'UTC'
         );
  
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
@@ -155,7 +157,8 @@ sub manage_selection {
             sql_text => defined($row[4]) ? $row[4] : '-',
             username => defined($row[5]) ? $row[5] : '-',
             since => $since,
-            generation_time => centreon::plugins::misc::change_seconds(value => $since) };
+            generation_time => centreon::plugins::misc::change_seconds(value => $since)
+        };
         $i++;
     }
     

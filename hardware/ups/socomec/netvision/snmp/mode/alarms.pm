@@ -49,8 +49,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -58,10 +57,19 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_upsAlarmsPresent = '.1.3.6.1.4.1.4555.1.1.7.1.6.1.0';    
-    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_upsAlarmsPresent ], nothing_quit => 1);
+    my $oid_upsAlarmsPresent_netvisionv6 = '.1.3.6.1.4.1.4555.1.1.7.1.6.1.0';
+    my $oid_upsAlarmsPresent_netvisionv5 = '.1.3.6.1.4.1.4555.1.1.1.1.6.1.0';
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_upsAlarmsPresent_netvisionv6,
+            $oid_upsAlarmsPresent_netvisionv5
+        ],
+        nothing_quit => 1
+    );
 
-    $self->{global} = { current_alarms => $snmp_result->{$oid_upsAlarmsPresent} };
+    $self->{global} = {
+        current_alarms => defined($snmp_result->{$oid_upsAlarmsPresent_netvisionv6}) ? $snmp_result->{$oid_upsAlarmsPresent_netvisionv6} : $snmp_result->{$oid_upsAlarmsPresent_netvisionv5}
+    };
 }
 
 1;

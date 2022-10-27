@@ -33,8 +33,7 @@ use DateTime;
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("status is '%s'", $self->{result_values}->{status});
-    return $msg;
+    return sprintf("status is '%s'", $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -47,8 +46,7 @@ sub custom_status_calc {
 sub custom_last_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("status is '%s'", $self->{result_values}->{status});
-    return $msg;
+    return sprintf("status is '%s'", $self->{result_values}->{status});
 }
 
 sub custom_last_status_calc {
@@ -73,9 +71,13 @@ sub custom_progress_perfdata {
 sub custom_progress_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{progress},
-                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{progress},
+        threshold => [
+            { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{label}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -117,9 +119,13 @@ sub custom_duration_perfdata {
 sub custom_duration_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{duration},
-                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{duration},
+        threshold => [
+            { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{label}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -146,12 +152,24 @@ sub custom_duration_calc {
     return 0;
 }
 
+sub prefix_output_current {
+    my ($self, %options) = @_;
+
+    return "Current Synchronisation ";
+}
+
+sub prefix_output_last {
+    my ($self, %options) = @_;
+
+    return "Last Synchronisation ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'current', type => 0, cb_prefix_output => 'prefix_output_current' },
-        { name => 'last', type => 0, cb_prefix_output => 'prefix_output_last' },
+        { name => 'last', type => 0, cb_prefix_output => 'prefix_output_last' }
     ];
 
     $self->{maps_counters}->{current} = [
@@ -160,7 +178,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'synchronisation-progress', set => {
@@ -168,10 +186,11 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_progress_calc'),
                 closure_custom_output => $self->can('custom_progress_output'),
                 closure_custom_perfdata => $self->can('custom_progress_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_progress_threshold'),
+                closure_custom_threshold_check => $self->can('custom_progress_threshold')
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{last} = [
         { label => 'last-synchronisation-status', threshold => 0, set => {
                 key_values => [ { name => 'LastSynchronizationResult' } ],
@@ -186,22 +205,10 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_duration_calc'),
                 closure_custom_output => $self->can('custom_duration_output'),
                 closure_custom_perfdata => $self->can('custom_duration_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_duration_threshold'),
+                closure_custom_threshold_check => $self->can('custom_duration_threshold')
             }
         },
     ];
-}
-
-sub prefix_output_current {
-    my ($self, %options) = @_;
-
-    return "Current Synchronisation ";
-}
-
-sub prefix_output_last {
-    my ($self, %options) = @_;
-
-    return "Last Synchronisation ";
 }
 
 sub new {

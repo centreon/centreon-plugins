@@ -96,6 +96,12 @@ sub custom_traffic_calc {
     return 0;
 }
 
+sub prefix_interface_output {
+    my ($self, %options) = @_;
+
+    return "Interface '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -141,16 +147,11 @@ sub new {
         'exclude-interface:s' => { name => 'exclude_interface' },
         'units:s'             => { name => 'units', default => 'b/s' },
         'speed:s'             => { name => 'speed' },
+        'guess-speed'         => { name => 'guess_speed' },
         'no-loopback'         => { name => 'no_loopback' }
     });
     
     return $self;
-}
-
-sub prefix_interface_output {
-    my ($self, %options) = @_;
-
-    return "Interface '" . $options{instance_value}->{display} . "' ";
 }
 
 sub check_options {
@@ -172,6 +173,23 @@ sub check_options {
     }
 }
 
+sub guess_speed {
+    my ($self, %options) = @_;
+
+    if ($self->{iwconfig_output} =~ /^$options{name}\s+IEEE.*?Bit\s+Rate=([0-9\.]+)\s+Mb/ms) {
+        return $1 * 1000000;
+    }
+    my ($output) = $options{custom}->execute_command(
+        command => 'ethtool ' . $options{name},
+        no_quit => 1
+    );
+    if ($output =~ /Speed:\s+(.*)Mb/) {
+        return $1 * 1000000;
+    }
+
+    return undef;
+}
+
 sub do_selection {
     my ($self, %options) = @_;
 
@@ -180,6 +198,13 @@ sub do_selection {
         command_path => '/sbin',
         command_options => '-s addr 2>&1'
     );
+
+    if (defined($self->{option_results}->{guess_speed})) {
+        ($self->{iwconfig_output}) = $options{custom}->execute_command(
+            command => 'iwconfig',
+            no_quit => 1
+        );
+    }
 
     # ifconfig
     my $interface_pattern = '^(\S+)(.*?)(\n\n|\n$)';
@@ -208,8 +233,21 @@ sub do_selection {
         $self->{interface}->{$interface_name} = {
             display => $interface_name,
             status => $states,
-            speed_in => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : '',
-            speed_out => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : '',
+            speed_in => '',
+            speed_out => ''
+        };
+
+        if (defined($self->{option_results}->{guess_speed})) {
+            my $speed = $self->guess_speed(custom => $options{custom}, name => $interface_name);
+            if (defined($speed)) {
+                $self->{interface}->{$interface_name}->{speed_in} = $speed;
+                $self->{interface}->{$interface_name}->{speed_out} = $speed;
+            }
+        }
+
+        if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
+            $self->{interface}->{$interface_name}->{speed_in} = $self->{option_results}->{speed};
+            $self->{interface}->{$interface_name}->{speed_out} = $self->{option_results}->{speed};
         };
 
         # ip addr patterns
@@ -243,7 +281,7 @@ __END__
 
 =head1 MODE
 
-Check Traffic
+Check traffic
 
 Command used: /sbin/ip -s addr 2>&1
 
@@ -300,6 +338,10 @@ Filter interfaces type (regexp can be used).
 =item B<--speed>
 
 Set interface speed (in Mb).
+
+=item B<--guess-speed>
+
+Try to guess speed with commands ethtool and iwconfig.
 
 =item B<--no-loopback>
 

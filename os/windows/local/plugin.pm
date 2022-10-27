@@ -29,14 +29,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-         'cmd-return'       => 'os::windows::local::mode::cmdreturn',
-         'list-storages'    => 'os::windows::local::mode::liststorages',
-         'pending-reboot'   => 'os::windows::local::mode::pendingreboot',
-         'sessions'         => 'os::windows::local::mode::sessions',
-         'time'             => 'os::windows::local::mode::ntp',
-    );
+    $self->{modes} = {
+         'cmd-return'     => 'os::windows::local::mode::cmdreturn',
+         'list-storages'  => 'os::windows::local::mode::liststorages',
+         'pending-reboot' => 'os::windows::local::mode::pendingreboot',
+         'sessions'       => 'os::windows::local::mode::sessions',
+         'time'           => 'os::windows::local::mode::ntp',
+         'updates'        => 'os::windows::local::mode::updates'
+    };
 
     return $self;
 }

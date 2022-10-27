@@ -89,7 +89,7 @@ sub set_counters {
                 key_values => [ { name => 'write_response_time' }, { name => 'display' } ],
                 output_template => 'Write Response Time : %d ms',
                 perfdatas => [
-                    { label => 'write_response_time', value => 'write_response_time', template => '%d',
+                    { label => 'write_response_time', template => '%d',
                       unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
@@ -138,40 +138,20 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        'hostname:s'        => { name => 'hostname' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'command:s'         => { name => 'command', default => 'show' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options', default => ' performance -type host-io' },
-        'filter-name:s'     => { name => 'filter_name' }
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        ssh_pipe => 1,
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'show',
+        command_options => "performance -type host-io\n",
+        ssh_pipe => 1
     );
 
     #Volume                                 IOPS(IOPS)            Throughput(MB/s)      Response Time(msec.)   Processing Time(msec.)  Cache Hit Rate(%)
@@ -201,6 +181,8 @@ sub manage_selection {
             next;
         }
         next if (/----|Name/i);
+        next if (/^CLI>/);
+
         my $value = centreon::plugins::misc::trim($_);
         my @matches = split(/\s+/, $value);
 
@@ -211,7 +193,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "Skipping  '" . $matches[1] . "': no matching filter name.", debug => 1);
             next;
         }
-        
+
         my %counters = ();
         for (my $i = 0; $i < scalar(@template_values); $i++) {
             $counters{$template_values[$i]->{label}} = $matches[$i + 2];
@@ -224,7 +206,7 @@ sub manage_selection {
             %counters
         };
     }
-    
+
     if (scalar(keys %{$self->{volume}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No volume found.");
         $self->{output}->option_exit();
@@ -237,57 +219,19 @@ __END__
 
 =head1 MODE
 
-Check Volume statistics.
+Check volume statistics.
+
+Command used: show performance -type host-io
 
 =over 8
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--command>
-
-Command to get information (Default: 'show').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: 'performance -type host-io').
 
 =item B<--filter-name>
 
 Filter by name (regexp can be used).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'read-iops', 'write-iops', 'read-traffic', 'write-traffic',
-'read-response-time', 'write-response-time', 'read-processing-time', 'write-processing-time',
-'read-cache-hit-rate', 'write-cache-hit-rate'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'read-iops', 'write-iops', 'read-traffic', 'write-traffic',
 'read-response-time', 'write-response-time', 'read-processing-time', 'write-processing-time',
 'read-cache-hit-rate', 'write-cache-hit-rate'.

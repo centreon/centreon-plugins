@@ -25,6 +25,21 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_cpu_avg_output {
+    my ($self, %options) = @_;
+
+    if ($self->{cpu_avg}->{count} > 0) {
+        return $self->{cpu_avg}->{count} . ' CPU(s) average usage is ';
+    }
+    return 'CPU(s) average usage is ';
+}
+
+sub prefix_cpu_core_output {
+    my ($self, %options) = @_;
+
+    return "CPU '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -38,11 +53,10 @@ sub set_counters {
                 key_values => [ { name => 'average' }, { name => 'count' } ],
                 output_template => '%.2f %%',
                 perfdatas => [
-                    { label => 'total_cpu_avg', value => 'average', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'total_cpu_avg', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{cpu_core} = [
@@ -50,24 +64,11 @@ sub set_counters {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'cpu', template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
-}
-
-sub prefix_cpu_avg_output {
-    my ($self, %options) = @_;
-
-    return $self->{cpu_avg}->{count} . " CPU(s) average usage is ";
-}
-
-sub prefix_cpu_core_output {
-    my ($self, %options) = @_;
-
-    return "CPU '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -76,6 +77,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+         'use-ucd' => { name => 'use_ucd' }
     });
 
     return $self;
@@ -86,6 +88,16 @@ sub manage_selection {
 
     $self->{cpu_avg} = {};
     $self->{cpu_core} = {};
+
+    if (defined($self->{option_results}->{use_ucd})) {
+        my $oid_ssCpuIdle = '.1.3.6.1.4.1.2021.11.11.0';
+        my $snmp_result = $options{snmp}->get_leef(oids => [$oid_ssCpuIdle], nothing_quit => 1);
+        $self->{cpu_avg} = {
+            average => 100 - $snmp_result->{$oid_ssCpuIdle},
+            count => -1
+        };
+        return ;
+    }
 
     my $oid_cputable = '.1.3.6.1.2.1.25.3.3.1.2';
     my $result = $options{snmp}->get_table(oid => $oid_cputable, nothing_quit => 1);
@@ -118,11 +130,15 @@ __END__
 
 =head1 MODE
 
-Check system CPUs (HOST-RESOURCES-MIB)
+Check system CPUs.
 (The average, over the last minute, of the percentage
 of time that this processor was not idle)
 
 =over 8
+
+=item B<--use-ucd>
+
+Use UCD mib for cpu average.
 
 =item B<--warning-average>
 
@@ -130,7 +146,7 @@ Warning threshold average CPU utilization.
 
 =item B<--critical-average>
 
-Critical  threshold average CPU utilization. 
+Critical  threshold average CPU utilization.
 
 =item B<--warning-core>
 

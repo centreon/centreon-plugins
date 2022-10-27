@@ -113,7 +113,7 @@ sub manage_selection {
     );
 
     $self->{storages} = {};
-    my @lines = split /\n/, $stdout;
+    my @lines = split(/\n/, $stdout);
     # Header not needed
     shift @lines;
     foreach my $line (@lines) {

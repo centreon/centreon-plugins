@@ -200,7 +200,7 @@ sub set_counters {
     }
 
     push @{$self->{maps_counters}->{drives}}, 
-        { label => 'drive-temperature', nlabel => 'battery.charge.remaining.percent', set => {
+        { label => 'drive-temperature', nlabel => 'drive.temperature.celsius', set => {
                 key_values => [ { name => 'temperature' }, { name => 'cage_id' }, { name => 'drive_id' } ],
                 output_template => 'temperature: %s C',
                 closure_custom_perfdata => sub {
@@ -327,11 +327,11 @@ Set thresholds for status (Default critical: '%{status} !~ /Normal/i')
 Can used special variables like: %{status}, %{cage_id}
 
 
-=item B<--unknown-firmware-status>
+=item B<--unknown-board-firmware-status>
 
-=item B<--warning-firmware-status>
+=item B<--warning-board-firmware-status>
 
-=item B<--critical-firmware-status>
+=item B<--critical-board-firmware-status>
 
 Set thresholds for status (Default critical: '%{status} !~ /Current/i')
 
@@ -339,11 +339,11 @@ Set thresholds for status (Default critical: '%{status} !~ /Current/i')
 Can used special variables like: %{status}, %{cage_id}, %{board_id}
 
 
-=item B<--unknown-[self|partner]-status>
+=item B<--unknown-board-[self|partner]-status>
 
-=item B<--warning-[self|partner]-status>
+=item B<--warning-board-[self|partner]-status>
 
-=item B<--critical-[self|partner]-status>
+=item B<--critical-board-[self|partner]-status>
 
 Set thresholds for status (Default critical: '%{status} !~ /ok/i')
 
