@@ -478,6 +478,27 @@ sub azure_list_replication_protected_items {
     return $response;
 } 
 
+sub azure_get_file_share_stats_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" .
+        $options{resource_group} . "/providers/Microsoft.Storage/storageAccounts/" . $options{storage_account} . "/fileServices/default/shares/" .
+        $options{fileshare} . "?api-version=" . $options{api_version} . "&\$expand=stats";
+
+    return $url;
+}
+
+sub azure_get_file_share_stats {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_get_file_share_stats_set_url(%options);
+
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+
+}
+
 sub azure_list_subscriptions_set_url {
     my ($self, %options) = @_;
 
