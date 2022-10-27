@@ -98,7 +98,7 @@ sub check_options {
         foreach my $tag_pair (@{$self->{option_results}->{tags}}) {
             my ($key, $value) = split / => /, $tag_pair;
             $value = "" if !defined($value);
-            centreon::plugins::misc::trim($value) if defined($value);
+            centreon::plugins::misc::trim($value);
             push @{$self->{tags}->{ centreon::plugins::misc::trim($key) }}, $value;
         }
     }
