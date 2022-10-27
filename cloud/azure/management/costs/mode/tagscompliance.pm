@@ -120,14 +120,18 @@ sub manage_selection {
                  && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
             $self->{uncompliant_vms}->{total}++;
             $self->{uncompliant_resource}->{total}++;
-            my $matched = "0";
+
+            my $matched = "0";            
             foreach my $lookup_key (keys %{ $self->{tags} }) {
                 foreach my $vm_key (keys %{ $item->{tags} }) {
-                    next if (defined($self->{tags}->{$lookup_key}) && $item->{tags}->{$vm_key} !~ /$self->{tags}->{$lookup_key}/ || !defined($self->{tags}->{$lookup_key} && $vm_key ne $lookup_key));
-                    $matched++;
+                    if (defined($self->{tags}->{$lookup_key}) && defined($item->{tags}->{$vm_key})) {
+                        $matched++ if ($item->{tags}->{$vm_key} =~ /$self->{tags}->{$lookup_key}/);
+                    }
+                    if (!defined($self->{tags}->{$lookup_key})) {
+                        $matched++ if ($vm_key eq $lookup_key);
+                    }                  
                 }
             }
-             
             if (scalar keys %{ $self->{tags} } != $matched) {
                 $self->{uncompliant_vms}->{count}++;
                 $self->{uncompliant_resource}->{count}++;
