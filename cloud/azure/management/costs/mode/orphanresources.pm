@@ -272,10 +272,10 @@ sub manage_selection {
         foreach my $item (@{$resultset}) {
             next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne ''
                      && $item->{name} =~ /$self->{option_results}->{exclude_name}/);
-            $self->{orphaned_nics}->{total}++;
+            $self->{orphaned_publicips}->{total}++;
             $self->{orphaned_resources}->{total}++;
             next if (defined($item->{properties}->{ipConfiguration}) && scalar($item->{properties}->{ipConfiguration}) != 0);
-            $self->{orphaned_nics}->{count}++;
+            $self->{orphaned_publicips}->{count}++;
             $self->{orphaned_resources}->{count}++;
             push @item_list, $item->{name};
 	    }
@@ -291,7 +291,7 @@ sub manage_selection {
     if (!defined($self->{option_results}->{skip_route_tables})) {
         $self->{orphaned_routetables}->{count} = 0;
         $self->{orphaned_routetables}->{total} = 0;
-        $resultset = $options{custom}->azure_list_publicips(
+        $resultset = $options{custom}->azure_list_route_tables(
             resource_group => $self->{option_results}->{resource_group},
             force_api_version => "2022-01-01"
         );
