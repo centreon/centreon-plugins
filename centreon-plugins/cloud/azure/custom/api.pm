@@ -530,18 +530,27 @@ sub azure_list_vms_set_url {
 
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
-    $url .= "/providers/Microsoft.Compute/virtualMachines?api-version=" . $self->{api_version};
-
+    $url .= "/providers/Microsoft.Compute/virtualMachines";
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
 sub azure_list_vms {
     my ($self, %options) = @_;
-
+    
+    my $full_response = [];
     my $full_url = $self->azure_list_vms_set_url(%options);
-    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-
-    return $response->{value};
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
+	
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
+    }
+    
+    return $full_response;
 }
 
 sub azure_list_groups_set_url {
@@ -709,18 +718,27 @@ sub azure_list_sqlservers_set_url {
 
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
-    $url .= "/providers/Microsoft.Sql/servers?api-version=" . $self->{api_version};
-
+    $url .= "/providers/Microsoft.Sql/servers";
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
 sub azure_list_sqlservers {
     my ($self, %options) = @_;
 
+    my $full_response = [];
     my $full_url = $self->azure_list_sqlservers_set_url(%options);
-    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
 
-    return $response->{value};
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
+    }
+
+    return $full_response;
 }
 
 sub azure_list_sqldatabases_set_url {
@@ -729,18 +747,26 @@ sub azure_list_sqldatabases_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Sql/servers/" . $options{server} if (defined($options{server}) && $options{server} ne '');
-    $url .= "/databases?api-version=" . $self->{api_version};
-
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
     return $url;
 }
 
 sub azure_list_sqldatabases {
     my ($self, %options) = @_;
 
+    my $full_response = [];
     my $full_url = $self->azure_list_sqldatabases_set_url(%options);
-    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
 
-    return $response->{value};
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
+    }
+
+    return $full_response;
 }
 
 sub azure_get_log_analytics_set_url {
@@ -864,7 +890,6 @@ sub azure_get_usagedetails_set_url {
     $url .= "/providers/Microsoft.Consumption/usageDetails?\$filter=properties%2FusageStart ge %27" . $options{usage_start} . "%27 and properties%2FusageEnd le %27" . $options{usage_end} . "%27";
     $url .= "&metric=actualcost";
     $url .= "&api-version=" . $self->{api_version};
-
     return $url;
 }
 
@@ -881,6 +906,230 @@ sub azure_get_usagedetails {
 
         last if (!defined($response->{nextLink}));
         $full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
+sub azure_list_compute_disks_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Compute/disks";
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
+    return $url;
+}
+
+sub azure_list_compute_disks {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_compute_disks_set_url(%options);
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
+
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
+sub azure_list_nics_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Network/networkInterfaces";
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
+    return $url;
+}
+
+sub azure_list_nics {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_nics_set_url(%options);
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
+
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
+sub azure_list_nsgs_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Network/networkSecurityGroups";
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
+    return $url;
+}
+
+sub azure_list_nsgs {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_nsgs_set_url(%options);
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
+
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
+sub azure_list_publicips_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Network/publicIPAddresses";
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
+    return $url;
+}
+
+sub azure_list_publicips {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_publicips_set_url(%options);
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
+
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
+sub azure_list_route_tables_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Network/routeTables";
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
+    return $url;
+}
+
+sub azure_list_route_tables {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_route_tables_set_url(%options);
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
+
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
+sub azure_list_snapshots_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Compute/snapshots";
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
+    return $url;
+}
+
+sub azure_list_snapshots {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_snapshots_set_url(%options);
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
+
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
+sub azure_list_sqlvms_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.SqlVirtualMachine/sqlVirtualMachines";
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version}; 
+    return $url;
+}
+
+sub azure_list_sqlvms {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_sqlvms_set_url(%options);
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
+
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
+sub azure_list_sqlelasticpools_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Sql/servers/" . $options{server} if (defined($options{server}) && $options{server} ne '');
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "/elasticPools?api-version=" . $options{force_api_version} : "/elasticPools?api-version=" . $self->{api_version};
+    return $url;
+}
+
+sub azure_list_sqlelasticpools {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_sqlelasticpools_set_url(%options);
+    while (1) {
+	my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+	foreach (@{$response->{value}}) {
+	    push @$full_response, $_;
+	}
+
+	last if (!defined($response->{nextLink}));
+	$full_url = $response->{nextLink};
     }
 
     return $full_response;
