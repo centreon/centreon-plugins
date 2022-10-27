@@ -65,7 +65,13 @@ sub check_options {
     foreach my $tag_pair (@{$self->{option_results}->{tags}}) {
         my ($key, $value) = split / => /, $tag_pair;
         centreon::plugins::misc::trim($value) if defined($value);
-        $self->{tags}->{ centreon::plugins::misc::trim($key) } = $value;
+        if (!exists($self->{tags}->{ centreon::plugins::misc::trim($key) })) {
+            $self->{tags}->{ centreon::plugins::misc::trim($key) } = $value;
+        } else {
+            $self->{output}->add_option_msg(short_msg => "Using multiple --tags option with the same key is forbiden. Please use regexp on the value instead");
+            $self->{output}->option_exit();            
+        }
+        
     }
 }
 
@@ -179,7 +185,20 @@ Skip virtual machines (don't use it until other resource type are supported)
 
 =item B<--tags>
 
-Name of the tag to check (Required).
+Can be multiple. Allow you to specify tags that should be present. All tags must match a resource's configuration
+to make it a compliant one.
+
+What you cannot do: 
+
+- specifying the same key in different options: --tags='Environment => Prod' --tags='Environment => Dev'
+
+What you can do: 
+- check for multiple value for a single key: --tags='Environment => Dev|Prod'
+- check for a key, without minding about its value: --tags='Version'
+- combine the two: --tags='Environment => Dev|Prod' --tags='Version'
+
+--tags='Environment => Dev' --tags='Environment => Prod'
+UNKNOWN: Using multiple --tags option with the same key is forbiden. Please use regexp on the value instead
 
 =item B<--warning-*>
 
