@@ -97,6 +97,7 @@ sub check_options {
     if (defined($self->{option_results}->{tags}) && $self->{option_results}->{tags} ne '') {
         foreach my $tag_pair (@{$self->{option_results}->{tags}}) {
             my ($key, $value) = split / => /, $tag_pair;
+            next if !defined($key);
             $value = "" if !defined($value);
             centreon::plugins::misc::trim($value);
             push @{$self->{tags}->{ centreon::plugins::misc::trim($key) }}, $value;
@@ -176,10 +177,10 @@ sub create_body_payload {
     $form_post->{timeperiod}->{to} = $end_date->ymd;
 
     if ((defined($self->{option_results}->{resource_group}) && $self->{option_results}->{resource_group} ne "") || 
-        ((defined($self->{option_results}->{tags}) && $self->{option_results}->{tags} ne ""))){
+        ((defined($self->{tags}) && keys %{$self->{tags}} > 0))){
             my $filter;
             $filter = $self->create_body_filter();
-            $form_post->{dataset}->{filter} = $filter;
+            $form_post->{dataset}->{filter} = $filter if defined($filter);
             push @{$form_post->{dataset}->{grouping}}, { "type" => "Dimension", "name" => "ResourceGroup"};
     }
     return $form_post;
@@ -196,7 +197,7 @@ sub manage_selection {
     my $currency; 
     
     if ((!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq "") 
-            && !defined($self->{option_results}->{tags})){
+            && keys %{$self->{tags}} == 0){
         foreach my $daily_subscription_cost (@{$costs}){
             $sum_costs += ${$daily_subscription_cost}[0];
             $currency = ${$daily_subscription_cost}[2];
@@ -224,6 +225,10 @@ sub manage_selection {
                 currency => $resource_group_total_costs->{$resource_group}->{currency}
             };
         }
+    }
+    if (scalar(keys %{$self->{global}}) <= 0 && scalar(keys %{$self->{resource_group}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->option_exit();
     }
 }
 
