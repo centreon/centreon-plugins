@@ -245,11 +245,11 @@ If you don't specify a resource group or any tags then you will have costs for t
 You can specify resource groups and tags to filter on. 
 
 Example to get costs per subscription for the last 30 days:
-perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --mode=query-subscriptions --custommode=api --client-id='xxx' 
+perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --mode=costs-explorer --custommode=api --client-id='xxx' 
 --client-secret='xxx' --tenant='xxx' --subscription='xxx' --lookup-days=30 
 
 Example to get costs for a resource group:
-perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --mode=query-subscriptions --custommode=api --client-id='xxx' 
+perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --mode=costs-explorer --custommode=api --client-id='xxx' 
 --client-secret='xxx' --tenant='xxx' --subscription='xxx' --lookup-days=30 --resource-group=MYRESOURCEGROUP --tags='Environment => integration'
 
 =over 8
