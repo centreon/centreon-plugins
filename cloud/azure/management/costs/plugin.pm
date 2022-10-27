@@ -31,9 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'budgets'             => 'cloud::azure::management::costs::mode::budgets',
-        'costs-explorer'      => 'cloud::azure::management::costs::mode::costsexplorer',
-        'list-budgets'        => 'cloud::azure::management::costs::mode::listbudgets'
+        'budgets'          => 'cloud::azure::management::costs::mode::budgets',
+        'costs-explorer'   => 'cloud::azure::management::costs::mode::costsexplorer',
+        'list-budgets'     => 'cloud::azure::management::costs::mode::listbudgets',
+        'orphan-resources' => 'cloud::azure::management::costs::mode::orphanresources',
+        'hybrid-benefits'  => 'cloud::azure::management::costs::mode::hybridbenefits',
+        'tags-compliance'  => 'cloud::azure::management::costs::mode::tagscompliance'
     );
 
     $self->{custom_modes}{api} = 'cloud::azure::custom::api';
