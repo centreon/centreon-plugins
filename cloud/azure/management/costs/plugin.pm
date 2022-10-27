@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'budgets' => 'cloud::azure::management::costs::mode::budgets',
-        'list-budgets' => 'cloud::azure::management::costs::mode::listbudgets'
+        'budgets'             => 'cloud::azure::management::costs::mode::budgets',
+        'costs-explorer'      => 'cloud::azure::management::costs::mode::costsexplorer',
+        'list-budgets'        => 'cloud::azure::management::costs::mode::listbudgets'
     );
 
     $self->{custom_modes}{api} = 'cloud::azure::custom::api';
