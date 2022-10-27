@@ -207,7 +207,7 @@ sub manage_selection {
             currency => $currency
         };
     }
-    if (defined($self->{option_results}->{resource_group}) || defined($self->{option_results}->{tags})){
+    if (defined($self->{option_results}->{resource_group}) || defined($self->{option_results}->{tags}) && keys %{$self->{tags}} > 0){
         my $resource_group_total_costs;
 
         foreach my $daily_resource_group_cost (@{$costs}){
