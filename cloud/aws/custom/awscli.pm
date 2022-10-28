@@ -954,6 +954,22 @@ Proxy URL if any
 
 Avoid certificate issuer verification. Useful when AWS resources are hosted by a third-party like Dell. 
 
+Need dirty hack that require commenting some code in the method _validate_conn from /usr/lib/python3/dist-packages/urllib3/connectionpool.py
+
+Comment the warning displayed: 
+#        if not conn.is_verified:
+#            warnings.warn(
+#                (
+#                    "Unverified HTTPS request is being made to host '%s'. "
+#                    "Adding certificate verification is strongly advised. See: "
+#                    "https://urllib3.readthedocs.io/en/latest/advanced-usage.html"
+#                    "#ssl-warnings" % conn.host
+#                ),
+#                InsecureRequestWarning,
+#            )
+
+Ref https://github.com/aws/aws-cli/issues/7375
+
 =back
 
 =head1 DESCRIPTION
