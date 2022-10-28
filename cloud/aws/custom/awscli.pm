@@ -216,7 +216,7 @@ sub cloudwatch_get_metrics_set_cmd {
         $cmd_options .= " 'Name=$entry->{Name},Value=$entry->{Value}'";
     }
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check})));
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
