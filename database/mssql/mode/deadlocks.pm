@@ -20,82 +20,65 @@
 
 package database::mssql::mode::deadlocks;
 
-use base qw(centreon::plugins::mode);
-
 use strict;
 use warnings;
+use base qw(centreon::plugins::templates::counter);
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'deadlocks', type => 0 },
+    ];
+
+    $self->{maps_counters}->{deadlocks} = [
+        { label => 'deadlocks', nlabel => 'mssql.deadlocks.count', set => {
+                key_values => [ { name => 'value' } ],
+                output_template => '%.2f dead locks/s',
+                perfdatas => [
+                    { template => '%.2f', min => 0 },
+                ],
+            }
+        },
+    ];
+}
+
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "filter:s"                => { name => 'filter', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "filter-database:s" => { name => 'filter_database' },
+    });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
+    $options{sql}->connect();
+    $options{sql}->query(query => q{
+        SELECT 
+            instance_name, cntr_value
+        FROM
+            sys.dm_os_performance_counters
+        WHERE
+            object_name = 'SQLServer:Locks'
+        AND
+            counter_name = 'Number of Deadlocks/sec%'
+    });
 
-sub run {
-    my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-    
-    $self->{sql}->connect();
-    my $query = "SELECT 
-                    instance_name, cntr_value
-                FROM
-                    sys.dm_os_performance_counters
-                WHERE
-                    object_name = 'SQLServer:Locks'
-                AND
-                    counter_name = 'Number of Deadlocks/sec%'
-                ";
-    
-    $self->{sql}->query(query => $query);
-    my $result = $self->{sql}->fetchall_arrayref();
+    my $query_result = $self->{sql}->fetchall_arrayref();
+    $self->{deadlocks}->{value} = 0;
 
-    my $locks = 0;
-
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "0 dead locks/s.");
-    foreach my $row (@$result) {
-        next if (defined($self->{option_results}->{filter}) && $$row[0] !~ /$self->{option_results}->{filter}/);
-        $locks += $$row[1];
+    foreach my $row (@{$query_result}) {
+        next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne ''
+                    && $$row[0] !~ /$self->{option_results}->{filter_database}/);
+        $self->{deadlocks}->{value} += $$row[1];
     }
-    my $exit_code = $self->{perfdata}->threshold_check(value => $locks, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(long_msg => sprintf( "%i dead locks/s.", $locks));
-    if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("%i dead locks/s.", $locks));
-    }
-    $self->{output}->perfdata_add(label => 'dead_locks',
-                                  value => $locks,
-                                  unit => '/s',
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -108,15 +91,15 @@ Check MSSQL dead locks per second
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-deadlocks>
 
 Threshold warning number of dead locks per second.
 
-=item B<--critical>
+=item B<--critical-deadlocks>
 
 Threshold critical number of dead locks per second.
 
-=item B<--filter>
+=item B<--filter-database>
 
 Filter database to check.
 
