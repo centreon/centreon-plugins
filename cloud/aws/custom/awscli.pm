@@ -216,7 +216,7 @@ sub cloudwatch_get_metrics_set_cmd {
         $cmd_options .= " 'Name=$entry->{Name},Value=$entry->{Value}'";
     }
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check})));
 
     return $cmd_options;
 }
@@ -270,7 +270,7 @@ sub discovery_set_cmd {
 
     my $cmd_options = $options{service} . " " . $options{command} . " --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -291,7 +291,7 @@ sub cloudwatch_get_alarms_set_cmd {
 
     my $cmd_options = "cloudwatch describe-alarms --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -325,7 +325,7 @@ sub cloudwatch_list_metrics_set_cmd {
     $cmd_options .= " --namespace $options{namespace}" if (defined($options{namespace}));
     $cmd_options .= " --metric-name $options{metric}" if (defined($options{metric}));
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -346,7 +346,7 @@ sub cloudwatchlogs_describe_log_groups_set_cmd {
 
     my $cmd_options = "logs describe-log-groups --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -374,7 +374,7 @@ sub cloudwatchlogs_filter_log_events_set_cmd {
         }
     }
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -395,7 +395,7 @@ sub ebs_list_volumes_set_cmd {
 
     my $cmd_options = "ec2 describe-volumes --no-dry-run --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -432,7 +432,7 @@ sub ec2_get_instances_status_set_cmd {
 
     my $cmd_options = "ec2 describe-instance-status --include-all-instances --no-dry-run --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -462,7 +462,7 @@ sub ec2spot_get_active_instances_set_cmd {
     my $cmd_options = "ec2 describe-spot-fleet-instances --no-dry-run --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
     $cmd_options .= " --spot-fleet-request-id " . $options{spot_fleet_request_id};
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -492,7 +492,7 @@ sub ec2spot_list_fleet_requests_set_cmd {
 
     my $cmd_options = "ec2 describe-spot-fleet-requests --no-dry-run --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -522,7 +522,7 @@ sub ec2_list_resources_set_cmd {
 
     my $cmd_options = "ec2 describe-instances --no-dry-run --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -591,7 +591,7 @@ sub asg_get_resources_set_cmd {
 
     my $cmd_options = "autoscaling describe-auto-scaling-groups --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -612,7 +612,7 @@ sub rds_get_instances_status_set_cmd {
 
     my $cmd_options = "rds describe-db-instances --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -638,7 +638,7 @@ sub rds_list_instances_set_cmd {
 
     my $cmd_options = "rds describe-db-instances --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -671,7 +671,7 @@ sub rds_list_clusters_set_cmd {
 
     my $cmd_options = "rds describe-db-clusters --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -703,7 +703,7 @@ sub vpn_list_connections_set_cmd {
 
     my $cmd_options = "ec2 describe-vpn-connections --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -748,7 +748,7 @@ sub health_describe_events_set_cmd {
 
     $cmd_options .= " --filter '$filter'" if ($filter ne '');
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -776,7 +776,7 @@ sub health_describe_affected_entities_set_cmd {
 
     $cmd_options .= " --filter '$filter'" if ($filter ne '');
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -801,7 +801,7 @@ sub sqs_list_queues_set_cmd {
 
     my $cmd_options = "sqs list-queues --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -822,7 +822,7 @@ sub sns_list_topics_set_cmd {
 
     my $cmd_options = "sns list-topics --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -847,7 +847,7 @@ sub tgw_list_gateways_set_cmd {
 
     my $cmd_options = "ec2 describe-transit-gateways --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
-    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check});
+    $cmd_options .= " --no-verify-ssl" if (defined($self->{option_results}->{skip_ssl_check}));
 
     return $cmd_options;
 }
@@ -949,6 +949,10 @@ Only use for testing purpose, when you want to set ALL parameters of a command b
 =item B<--proxyurl>
 
 Proxy URL if any
+
+=item B<--skip-ssl-check>
+
+Avoid certificate issuer verification. Useful when AWS resources are hosted by a third-party like Dell. 
 
 =back
 
