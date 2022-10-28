@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::datafactory::factory::mode::integrationruntime;
+package cloud::azure::datafactory::factories::mode::integrationruntime;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -46,14 +46,14 @@ sub get_metrics_mapping {
         'IntegrationRuntimeAverageTaskPickupDelay' => {
             'output' => 'Average task pickup delay',
             'label'  => 'integration-runtime-average-task-pickup-delay',
-            'nlabel' => 'azdatafactory.integrationruntime.size.seconds',
+            'nlabel' => 'azdatafactory.integrationruntime.average.pickup.delay.seconds',
             'unit'   => 's',
             'min'    => '0'
         },
         'IntegrationRuntimeCpuPercentage' => {
             'output' => 'Cpu percentage',
             'label'  => 'integration-runtime-cpu-percentage',
-            'nlabel' => 'azdatafactory.integrationruntime.size.percent',
+            'nlabel' => 'azdatafactory.integrationruntime.cpu.percentage.percent',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
@@ -61,7 +61,7 @@ sub get_metrics_mapping {
         'IntegrationRuntimeQueueLength' => {
             'output' => 'Queue length',
             'label'  => 'integration-runtime-queue-length',
-            'nlabel' => 'azdatafactory.integrationruntime.size.count',
+            'nlabel' => 'azdatafactory.integrationruntime.queue.length.count',
             'unit'   => '',
             'min'    => '0'
         }

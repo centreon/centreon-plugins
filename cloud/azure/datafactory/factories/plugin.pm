@@ -18,43 +18,42 @@
 # limitations under the License.
 #
 
-package cloud::azure::datafactory::factory::mode::discovery;
-
-use base qw(cloud::azure::management::monitor::mode::discovery);
+package cloud::azure::datafactory::factories::plugin;
 
 use strict;
 use warnings;
+use base qw(centreon::plugins::script_custom);
 
-sub check_options {
+sub new {
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    bless $self, $class;
+
+    $self->{version} = '0.1';
+    %{ $self->{modes} } = (
+        'factory-usage'          => 'cloud::azure::datafactory::factories::mode::factoryusage',
+        'integration-runtime'    => 'cloud::azure::datafactory::factories::mode::integrationruntime',
+        'discovery'             => 'cloud::azure::datafactory::factories::mode::discovery'
+    );
+
+    $self->{custom_modes}{api} = 'cloud::azure::custom::api';
+    return $self;
+}
+
+sub init {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 
-    $self->{namespace} = 'Microsoft.DataFactory';
-    $self->{type} = 'factories';
+    $self->{options}->add_options(arguments => { });
+
+    $self->SUPER::init(%options);
 }
 
 1;
 
 __END__
 
-=head1 MODE
+=head1 PLUGIN DESCRIPTION
 
-Data factory discovery.
-
-=over 8
-
-=item B<--resource-group>
-
-Specify resources resource group.
-
-=item B<--location>
-
-Specify resources location.
-
-=item B<--prettify>
-
-Prettify JSON output.
-
-=back
+Check Microsoft Azure data factories.
 
 =cut

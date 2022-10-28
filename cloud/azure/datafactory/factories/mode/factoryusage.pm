@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::datafactory::factory::mode::factoryusage;
+package cloud::azure::datafactory::factories::mode::factoryusage;
 
 use base qw(cloud::azure::custom::mode);
 
@@ -44,6 +44,20 @@ sub get_metrics_mapping {
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
+        },
+        'FactorySizeInGbUnits' => {
+            'output' => 'Factory size',
+            'label'  => 'factory-size-in-gb_units',
+            'nlabel' => 'azdatafactory.factoryusage.factory.size.count',
+            'unit'   => 'GB',
+            'min'    => '0'
+        },
+        'ResourceCount' => {
+            'output' => 'Resource count',
+            'label'  => 'resource-count',
+            'nlabel' => 'azdatafactory.factoryusage.resource.count',
+            'unit'   => '',
+            'min'    => '0'
         }
     };
 
@@ -122,42 +136,45 @@ sub manage_selection {
         timeframe          => $self->{az_timeframe}
     );
 
+    my $datas = 0;
     $self->{metrics}->{$self->{az_resource}}->{display} = $self->{az_resource};
     foreach my $aggregation (@{$self->{az_aggregations}}) {
+        next if (!defined($aggregation) && !defined($self->{option_results}->{zeroed}));
+        $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{display} = lc($aggregation);
+        $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{timeframe} = $self->{az_timeframe};
         foreach my $metric (@{$self->{az_metrics}}) {
             my $metric_name = lc($metric);
             $metric_name =~ s/ /_/g;
-            next if (!defined($metric_results{$self->{az_resource}}->{$metric_name}->{lc($aggregation)}) && !defined($aggregation) && !defined($self->{option_results}->{zeroed}));
-            next if (defined($self->{skip_aggregation}->{$metric}->{lc($aggregation)}) && $self->{skip_aggregation}->{$metric}->{lc($aggregation)} == 0);
-            $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{display} = lc($aggregation);
-            $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{timeframe} = $self->{az_timeframe};
+            next if (!defined($metric_results{$self->{az_resource}}->{$metric_name}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
             $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}->{$metric} =
                 defined($metric_results{$self->{az_resource}}->{$metric_name}->{lc($aggregation)}) ?
                 $metric_results{$self->{az_resource}}->{$metric_name}->{lc($aggregation)} : 0;
+                $datas = 1;
         }
         # Compute percentages from metrics
-        next if (!defined($self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}) && !defined($aggregation) && !defined($self->{option_results}->{zeroed}));
-        next if (defined($self->{skip_aggregation}->{statistics}->{lc($aggregation)}) && $self->{skip_aggregation}->{statistics}->{lc($aggregation)} == 0);
+        next if (!defined($self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}));
         my $metricsAggregation = $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)};
-        my $factory_size_usage = 0;
-        if (defined($metricsAggregation->{lc('MaxAllowedFactorySizeInGbUnits')})) {
-            my $max_allowed_factory_size_in_gb_units = $metricsAggregation->{lc('MaxAllowedFactorySizeInGbUnits')};
+        if (defined($metricsAggregation->{MaxAllowedFactorySizeInGbUnits}) || defined($self->{option_results}->{zeroed})) {
+            my $max_allowed_factory_size_in_gb_units = $metricsAggregation->{MaxAllowedFactorySizeInGbUnits};
             if ($max_allowed_factory_size_in_gb_units > 0) {
-                $factory_size_usage = ($metricsAggregation->{lc('FactorySizeInGbUnits')} / $max_allowed_factory_size_in_gb_units) * 100;
+                $metricsAggregation->{factory_size_usage} = ($metricsAggregation->{FactorySizeInGbUnits} / $max_allowed_factory_size_in_gb_units) * 100;
+            } else {
+                $metricsAggregation->{factory_size_usage} = 0;
             }
+            $datas = 1;
         }
-        $metricsAggregation->{factory_size_usage} = $factory_size_usage;
-        my $resource_usage = 0;
-        if (defined($metricsAggregation->{lc('MaxAllowedResourceCount')})) {
-            my $max_allowed_resource_count = $metricsAggregation->{lc('MaxAllowedResourceCount')};
+        if (defined($metricsAggregation->{MaxAllowedResourceCount}) || defined($self->{option_results}->{zeroed})) {
+            my $max_allowed_resource_count = $metricsAggregation->{MaxAllowedResourceCount};
             if ($max_allowed_resource_count > 0) {
-                $resource_usage = ($metricsAggregation->{lc('ResourceCount')} / $max_allowed_resource_count) * 100;
+                $metricsAggregation->{resource_usage} = ($metricsAggregation->{ResourceCount} / $max_allowed_resource_count) * 100;
+            } else {
+                $metricsAggregation->{resource_usage} = 0;
             }
+            $datas = 1;
         }
-        $metricsAggregation->{resource_usage} = $resource_usage;
     }
 
-    if (scalar(keys %{$self->{metrics}}) <= 0) {
+    if (!$datas) {
         $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
         $self->{output}->option_exit();
     }
