@@ -192,8 +192,6 @@ Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::datafactory::usine:::plugin --mode=factoryusage --custommode=api --subscription='test' --tenant='test' --client-id='test' --client-secret='test' --resource=test
-
 perl centreon_plugins.pl --plugin=cloud::azure::datafactory::factory::plugin --mode=factoryusage --custommode=api
 --resource=<factory_id> --resource-group=<resourcegroup_id>
 
@@ -215,11 +213,11 @@ Set resource group (Required if resource's name is used).
 
 =item B<--warning-$metric$>
 
-Thresholds warning ($metric$ can be: 'factory-size-usage', 'resource-usage').
+Thresholds warning ($metric$ can be: 'factory-size-usage', 'resource-usage', 'factory-size-in-gb_units', 'resource-count').
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'factory-size-usage', 'resource-usage').
+Thresholds critical ($metric$ can be: 'factory-size-usage', 'resource-usage', 'factory-size-in-gb_units', 'resource-count').
 
 =back
 
