@@ -538,6 +538,22 @@ sub azure_list_vms {
     return $response->{value};
 }
 
+sub azure_list_file_shares_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" . $options{resource_group} . "/providers/Microsoft.Storage/storageAccounts/" 
+    . $options{storage_account} . "/fileServices/default/shares?api-version=" . $options{api_version};
+    return $url;
+}
+
+sub azure_list_file_shares {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_list_file_shares_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+    return $response->{value};
+}
+
 sub azure_list_groups_set_url {
     my ($self, %options) = @_;
 
