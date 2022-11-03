@@ -131,6 +131,10 @@ sub check_options {
     if (defined($self->{option_results}->{aws_profile}) && $self->{option_results}->{aws_profile} ne '') {
         $ENV{AWS_PROFILE} = $self->{option_results}->{aws_profile};
     }
+    # Avoid JSON parsing error when ignoring SSL check
+    if (defined($self->{option_results}->{skip_ssl_check})) {
+        $ENV{PYTHONWARNINGS} = "ignore:Unverified HTTPS request";
+    }
 
     if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
@@ -952,23 +956,9 @@ Proxy URL if any
 
 =item B<--skip-ssl-check>
 
-Avoid certificate issuer verification. Useful when AWS resources are hosted by a third-party like Dell. 
+Avoid certificate issuer verification. Useful when AWS resources are hosted by a third-party. 
 
-Need dirty hack that require commenting some code in the method _validate_conn from /usr/lib/python3/dist-packages/urllib3/connectionpool.py
-
-Comment the warning displayed: 
-#        if not conn.is_verified:
-#            warnings.warn(
-#                (
-#                    "Unverified HTTPS request is being made to host '%s'. "
-#                    "Adding certificate verification is strongly advised. See: "
-#                    "https://urllib3.readthedocs.io/en/latest/advanced-usage.html"
-#                    "#ssl-warnings" % conn.host
-#                ),
-#                InsecureRequestWarning,
-#            )
-
-Ref https://github.com/aws/aws-cli/issues/7375
+Note that it forces the value of the PYTHONWARNINGS env variable to "ignore:Unverified HTTPS request".
 
 =back
 
