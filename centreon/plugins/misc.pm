@@ -23,6 +23,7 @@ package centreon::plugins::misc;
 use strict;
 use warnings;
 use utf8;
+use JSON::XS;
 
 sub execute {
     my (%options) = @_;
@@ -614,6 +615,53 @@ sub eval_ssl_options {
     }
 
     return $ssl_context;
+}
+
+sub slurp_file {
+    my (%options) = @_;
+
+    my $content = do {
+        local $/ = undef;
+        if (!open my $fh, '<', $options{file}) {
+            $options{output}->add_option_msg(short_msg => "Could not open file $options{file}: $!");
+            $options{output}->option_exit();
+        }
+        <$fh>;
+    };
+
+    return $content;
+}
+
+sub check_security_command {
+    my (%options) = @_;
+
+    return 0 if (!(
+        (defined($options{command}) && $options{command} ne '') ||
+        (defined($options{command_options}) && $options{command_options} ne '') ||
+        (defined($options{command_path}) && $options{command_path} ne ''))
+    );
+
+    my $security_file = '/tmp/plugins-security.json';
+
+    return 0 if (! -r $security_file || -z $security_file);
+
+    my $content = slurp_file(output => $options{output}, file => $security_file);
+
+    my $security;
+    eval {
+        $security = JSON::XS->new->utf8->decode($content);
+    };
+    if ($@) {
+        $options{output}->add_option_msg(short_msg => 'Cannot decode security file content');
+        $options{output}->option_exit();
+    }
+
+    if (defined($security->{block_command_overload}) && $security->{block_command_overload} == 1) {
+        $options{output}->add_option_msg(short_msg => 'Cannot overload command (security)');
+        $options{output}->option_exit();
+    }
+
+    return 0;
 }
 
 1;
