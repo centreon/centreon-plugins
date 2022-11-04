@@ -182,6 +182,7 @@ sub new {
         'datacenter:s'  => { name => 'datacenter' },
         'filter'        => { name => 'filter' },
         'filter-time:s' => { name => 'filter_time' },
+        'filter-type'   => { name => 'filter_type' },
         'memory'        => { name => 'memory' }
     });
     
@@ -223,6 +224,8 @@ sub manage_selection {
         $self->{datacenter}->{$datacenter_name} = { display => $datacenter_name, alarm => {}, dc_metrics => { 1 => { name => $datacenter_name } } };
         
         foreach (keys %{$response->{data}->{$datacenter_id}->{alarms}}) {
+            next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+                $response->{data}->{$datacenter_id}->{alarms}->{$_}->{type} =~ /$self->{option_results}->{filter_type}/);
             my $create_time = Date::Parse::str2time($response->{data}->{$datacenter_id}->{alarms}->{$_}->{time});
             if (!defined($create_time)) {
                 $self->{output}->output_add(severity => 'UNKNOWN',
@@ -269,7 +272,13 @@ Datacenter is a regexp.
 
 =item B<--filter-time>
 
-Don't check alarm older (value in seconds).
+Do not check alarm older than specified time (value in seconds).
+
+=item B<--filter-type>
+
+Do not check specified type. Can be a regex.
+
+Can be for example: --filter-type='VirtualMachine' 
 
 =item B<--memory>
 
