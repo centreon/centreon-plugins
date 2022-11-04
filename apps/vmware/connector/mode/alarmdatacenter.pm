@@ -182,7 +182,7 @@ sub new {
         'datacenter:s'  => { name => 'datacenter' },
         'filter'        => { name => 'filter' },
         'filter-time:s' => { name => 'filter_time' },
-        'filter-type'   => { name => 'filter_type' },
+        'filter-type:s' => { name => 'filter_type' },
         'memory'        => { name => 'memory' }
     });
     
