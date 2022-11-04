@@ -92,6 +92,13 @@ sub get_identifier {
 sub execute_command {
     my ($self, %options) = @_;
 
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        comman_path => $self->{option_results}->{command_path}
+    );
+
     my $timeout = $self->{timeout};
     if (!defined($timeout)) {
         $timeout = defined($options{timeout}) ? $options{timeout} : 45;
