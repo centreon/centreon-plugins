@@ -33,7 +33,8 @@ sub new {
         'health'     => 'apps::ceph::restapi::mode::health',
         'list-pools' => 'apps::ceph::restapi::mode::listpools',
         'osd'        => 'apps::ceph::restapi::mode::osd',
-        'pools'      => 'apps::ceph::restapi::mode::pools'
+        'pools'      => 'apps::ceph::restapi::mode::pools',
+	'df'         => 'apps::ceph::restapi::mode::df'
     };
 
     $self->{custom_modes}->{api} = 'apps::ceph::restapi::custom::api';
