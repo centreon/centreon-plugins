@@ -131,10 +131,6 @@ sub check_options {
     if (defined($self->{option_results}->{aws_profile}) && $self->{option_results}->{aws_profile} ne '') {
         $ENV{AWS_PROFILE} = $self->{option_results}->{aws_profile};
     }
-    # Avoid JSON parsing error when ignoring SSL check
-    if (defined($self->{option_results}->{skip_ssl_check})) {
-        $ENV{PYTHONWARNINGS} = "ignore:Unverified HTTPS request";
-    }
 
     if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
@@ -855,7 +851,7 @@ sub tgw_list_gateways_set_cmd {
 
     return $cmd_options;
 }
-2>/dev/null
+
 sub tgw_list_gateways {
     my ($self, %options) = @_;
 
@@ -958,7 +954,7 @@ Proxy URL if any
 
 Avoid certificate issuer verification. Useful when AWS resources are hosted by a third-party. 
 
-Note that it strips all stderr from the command result. Will be enhanced in the futur.
+Note that it strips all stderr from the command result. Will be enhanced someday. Debug will only display CLI instead of evreything. 
 
 =back
 
