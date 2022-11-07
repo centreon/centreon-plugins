@@ -447,7 +447,7 @@ sub manage_selection {
     my $raw_form_post = {
         "select" => [
             {
-                "user_id:distinct" => ["distinct","user_id"]
+                "user_id:distinct" => ["countDistinct","user_id"]
             },
             {
                 "\%errors:avg|hits" => ["avgFor","hits","error_count"]            
