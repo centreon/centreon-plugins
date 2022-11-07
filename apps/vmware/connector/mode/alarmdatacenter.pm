@@ -179,10 +179,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'datacenter:s'  => { name => 'datacenter' },
-        'filter'        => { name => 'filter' },
-        'filter-time:s' => { name => 'filter_time' },
-        'memory'        => { name => 'memory' }
+        'datacenter:s'   => { name => 'datacenter' },
+        'exclude-type:s' => { name => 'exclude_type' },
+        'filter'         => { name => 'filter' },
+        'filter-time:s'  => { name => 'filter_time' },
+        'filter-type:s'  => { name => 'filter_type' },
+        'memory'         => { name => 'memory' }
     });
     
     centreon::plugins::misc::mymodule_load(
@@ -223,6 +225,11 @@ sub manage_selection {
         $self->{datacenter}->{$datacenter_name} = { display => $datacenter_name, alarm => {}, dc_metrics => { 1 => { name => $datacenter_name } } };
         
         foreach (keys %{$response->{data}->{$datacenter_id}->{alarms}}) {
+            next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+                $response->{data}->{$datacenter_id}->{alarms}->{$_}->{type} !~ /$self->{option_results}->{filter_type}/);
+            next if (defined($self->{option_results}->{exclude_type}) && $self->{option_results}->{exclude_type} ne '' &&
+                $response->{data}->{$datacenter_id}->{alarms}->{$_}->{type} =~ /$self->{option_results}->{exclude_type}/);
+
             my $create_time = Date::Parse::str2time($response->{data}->{$datacenter_id}->{alarms}->{$_}->{time});
             if (!defined($create_time)) {
                 $self->{output}->output_add(severity => 'UNKNOWN',
@@ -263,13 +270,25 @@ Check datacenter alarms (red an yellow).
 Datacenter to check.
 If not set, we check all datacenters.
 
+=item B<--exclude-type>
+
+Exclude alarms of specified type(s). Can be a regex.
+
+Can be for example: --exclude-type='HostSystem' will not show HostSystem alarms.
+
 =item B<--filter>
 
 Datacenter is a regexp.
 
 =item B<--filter-time>
 
-Don't check alarm older (value in seconds).
+Do not check alarms older than specified time (value in seconds).
+
+=item B<--filter-type>
+
+Check only alarms for specified type(s). Can be a regex.
+
+Can be for example: --filter-type='VirtualMachine' will only show alarms for VirtualMachines. 
 
 =item B<--memory>
 
