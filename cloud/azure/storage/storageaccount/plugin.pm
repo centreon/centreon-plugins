@@ -41,6 +41,7 @@ sub new {
         'file-share-count'          => 'cloud::azure::common::storageaccount::filesharecount',
         'file-share-quota'          => 'cloud::azure::common::storageaccount::filesharequota',
         'health'                    => 'cloud::azure::common::storageaccount::health',
+        'list-fileshares'           => 'cloud::azure::common::storageaccount::listfileshares',
         'list-resources'            => 'cloud::azure::storage::storageaccount::mode::listresources',
         'queue-capacity'            => 'cloud::azure::common::storageaccount::queuecapacity',
         'queue-count'               => 'cloud::azure::common::storageaccount::queuecount',
