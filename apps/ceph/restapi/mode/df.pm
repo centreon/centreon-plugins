@@ -29,27 +29,27 @@ sub custom_rawusage_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Raw Usage: %.2f%%',
-        $self->{result_values}->{total_used_raw_ratio}
+        'Raw Usage is %.2f%%',
+        $self->{result_values}->{raw_usage_prcnt}
     );
 }
 
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Cluster df Stats -';
+    return 'Cluster df stats ';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } }
     ];
-    
+
     $self->{maps_counters}->{global} = [
-        { label => 'df-stats-rawratio', nlabel => 'df.stats.rawratio', display_ok => 0, set => {
-                key_values => [ { name => 'total_used_raw_ratio' }, { name => 'total_used_raw_bytes' }, { name => 'total_bytes' } ],
+        { label => 'raw-usage-prcnt', nlabel => 'df.stats.usage.raw.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'raw_usage_prcnt' }, { name => 'total_used_raw_ratio' }, { name => 'total_used_raw_bytes' }, { name => 'total_bytes' } ],
                 closure_custom_output => $self->can('custom_rawusage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
@@ -73,8 +73,11 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $health = $options{custom}->request_api(endpoint => '/api/health/full');
+    # We'll just set the entire stats array so it's all available for future features. 
+    $self->{global} = $health->{df}->{stats};
+    # Set a var so we have an actual percentage value based off the raw_ratio
+    $self->{global}->{raw_usage_prcnt} = $health->{df}->{stats}->{total_used_raw_ratio} * 100 ;
 
-    $self->{global} = @{$health->{df}->{stats}};
 }
 
 1;
@@ -87,7 +90,7 @@ Check object storage daemons.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-raw-usage-prcnt> B<--critical-raw-usage-prcnt>
 
 Thresholds.
 
