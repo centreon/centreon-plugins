@@ -25,49 +25,98 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub prefix_metric_output {
+sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    return "Resource '" . $options{instance_value}->{display} . "' " . $options{instance_value}->{stat} . " ";
+    my $label = 'capacity-usage';
+    my $value_perf = $self->{result_values}->{used_space};
+    
+    my %total_options = ();
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total_capacity};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(
+        label => $label, unit => 'B',
+        nlabel => 'fileshare.capacity.usage.bytes', 
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total_capacity},
+    );
+}
+
+sub custom_usage_threshold {
+    my ($self, %options) = @_;
+
+    my ($exit, $threshold_value);
+    $threshold_value = $self->{result_values}->{used_space};
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_used};
+    }
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
+                                               threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                              { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_capacity} );
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space} );
+    my $msg = sprintf("Fileshare '%s' from storage account '%s' used capacity: %s (%.2f%%), total size %s",
+                   $self->{result_values}->{fileshare},
+                   $self->{result_values}->{storageaccount},
+                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+                   $total_size_value . " " . $total_size_unit);
+    return $msg;
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{storageaccount} = $options{new_datas}->{fileshare_storage_account};
+    $self->{result_values}->{fileshare} = $options{new_datas}->{fileshare_fileshare};
+
+    $self->{result_values}->{used_space} = $options{new_datas}->{fileshare_used_space};
+    $self->{result_values}->{total_capacity} = $options{new_datas}->{fileshare_total_capacity} * ( 1024 ** 3);
+    $self->{result_values}->{prct_used} = ($self->{result_values}->{total_capacity} > 0) ? $self->{result_values}->{used_space} * 100 / $self->{result_values}->{total_capacity} : 0;
+    
+    return 0;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All count metrics are ok", skipped_code => { -10 => 1 } },
+        { name => 'fileshare', type => 0 }
     ];
 
-    foreach my $aggregation ('average', 'total') {
-        foreach my $metric ('FileShareQuota', 'FileShareCapacityQuota') {
-            my $metric_label = lc($metric);
-            my $entry = { label => 'filesharequota' . '-' . $aggregation, set => {
-                                key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
-                                output_template => $metric . ': %s %s',
-                                output_change_bytes => 1,
-                                perfdatas => [
-                                    { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation , 
-                                      template => '%s', unit => 'B', label_extra_instance => 1, instance_use => 'display',
-                                      min => 0 },
-                                ],
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
+    $self->{maps_counters}->{fileshare} = [
+        { label => 'capacity-usage', set => {
+                key_values => [ { name => 'used_space' }, { name => 'total_capacity' }, { name => 'storage_account' }, { name => 'fileshare' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
         }
-    }
+    ]
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments =>
                                 {
-                                    "filter-dimension:s"    => { name => 'filter_dimension' },
-                                    "resource:s@"           => { name => 'resource' },
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "resource-namespace:s"  => { name => 'resource_namespace' }
+                                    "resource-group:s"     => { name => 'resource_group' },
+                                    "storage-account:s"    => { name => 'storage_account' },
+                                    "units:s"              => { name => 'units', default => '%' },
+                                    "fileshare:s"          => { name => 'fileshare' }
                                 });
     
     return $self;
@@ -77,80 +126,39 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{resource})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify either --resource <name> with --resource-group option or --resource <id>.");
+    $self->{api_version} = '2021-09-01';
+
+    if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --resource-group <name>.");
         $self->{output}->option_exit();
     }
-    
-    $self->{az_resource} = $self->{option_results}->{resource};
-    $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
-    $self->{az_resource_type} = 'storageAccounts';
-    $self->{az_resource_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : 'Microsoft.Storage';
-    $self->{az_dimension} = $self->{option_results}->{filter_dimension} if (defined($self->{option_results}->{filter_dimension}));
-    $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 3600;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1H";    
-    $self->{az_aggregations} = ['Average'];
-    if (defined($self->{option_results}->{aggregation})) {
-        $self->{az_aggregations} = [];
-        foreach my $stat (@{$self->{option_results}->{aggregation}}) {
-            if ($stat ne '') {
-                push @{$self->{az_aggregations}}, ucfirst(lc($stat));
-            }
-        }
+    if (!defined($self->{option_results}->{storage_account}) || $self->{option_results}->{storage_account} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --storage-account <name>.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{fileshare}) || $self->{option_results}->{fileshare} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --fileshare <name>");
+        $self->{output}->option_exit();
     }
 
-    if ($self->{az_resource}[0] =~ /Microsoft\.ClassicStorage/) {
-        foreach my $metric ('FileShareQuota') { 
-            push @{$self->{az_metrics}}, $metric;
-        }
-    }
-    foreach my $metric ('FileShareCapacityQuota') { 
-            push @{$self->{az_metrics}}, $metric;
-    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %metric_results;
-    foreach my $resource (@{$self->{az_resource}}) {
-        my $resource_group = $self->{az_resource_group};
-        my $resource_name = $resource;
-        my $fileservice_name = '/fileServices/default';
-        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/storageAccounts\/(.*)$/) {
-            $resource_group = $1;
-            $self->{az_resource_namespace} = $2, 
-            $resource_name = $3;
-        }
+    my $results;
+    $results = $options{custom}->azure_get_file_share_stats(resource_group => $self->{option_results}->{resource_group}, storage_account => $self->{option_results}->{storage_account}, 
+                                         fileshare => $self->{option_results}->{fileshare}, api_version => $self->{api_version});
 
-        ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource_name . $fileservice_name,
-            resource_group => $resource_group,
-            resource_type => $self->{az_resource_type},
-            resource_namespace => $self->{az_resource_namespace},
-            dimension => $self->{az_dimension},
-            metrics => $self->{az_metrics},
-            aggregations => $self->{az_aggregations},
-            timeframe => $self->{az_timeframe},
-            interval => $self->{az_interval},
-        );
+    $self->{fileshare} = {
+        storage_account => $self->{option_results}->{storage_account},
+        fileshare => $self->{option_results}->{fileshare},
+        total_capacity => $results->{properties}->{shareQuota},
+        used_space => $results->{properties}->{shareUsageBytes} * 1024 ** 3
+    };
 
-        foreach my $metric (@{$self->{az_metrics}}) {
-            my $metric_name = lc($metric);
-            $metric_name =~ s/ /_/g;
-            foreach my $aggregation (@{$self->{az_aggregations}}) {
-                next if (!defined($metric_results{$resource_name}->{$metric_name}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
-
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{display} = $resource_name;
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{stat} = lc($aggregation);
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{$metric_name . "_" . lc($aggregation)} = defined($metric_results{$resource_name}->{$metric_name}->{lc($aggregation)}) ? $metric_results{$resource_name}->{$metric_name}->{lc($aggregation)} : 0;
-            }
-        }
-    }
-
-    if (scalar(keys %{$self->{metric}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
-        $self->{output}->option_exit();
+    if (scalar(keys %{$self->{fileshare}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No entry found.");
     }
 }
 
@@ -160,45 +168,47 @@ __END__
 
 =head1 MODE
 
-Check storage account resources file share quota.
+Check storage account fileshare capacity usage.
 
 Example:
 
-Using resource name :
-
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-share-quota
---resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='average' --critical-filesharequota-average='10' --verbose
-
-Using resource id :
-
-perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=file-share-quota
---resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/fileServices/default'
---aggregation='average' --critical-filesharequota-average='10' --verbose
-
-Default aggregation: 'average' / Total and average are valid.
+perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --mode=file-share-quota --custommode=api 
+--client-id='XXX' --subscription='XXX' --tenant='XXX' --client-secret='XXX' --resource-group=MYRESOURCEGROUP1 
+--storage-account=MYSTORAGEACCOUNT1 --fileshare=FILESHARE1
 
 =over 8
 
-=item B<--resource>
+=item B<--units>
 
-Set resource name or id (Required).
+Units of thresholds. Can be : '%', 'B' 
+
+Default: '%'
 
 =item B<--resource-group>
 
-Set resource group (Required if resource's name is used).
+Set resource group from which depends the storage account (Required).
 
-=item B<--resource-namespace>
+=item B<--storage-account>
 
-Specify resource namespace. Can be: 'Microsoft.Storage' or 'Microsoft.ClassicStorage'. 
-Default: 'Microsoft.Storage'.
+Set storage account from which the fileshare to monitor is from (Required).
 
-=item B<--warning-filesharequota-*>
+=item B<--fileshare>
 
-Thresholds warning (* can be: 'average', 'total').
+Set fileshare to monitor (Required).
 
-=item B<--critical-filesharequota-*>
+=item B<--warning-capacity-usage>
 
-Thresholds critical (* can be: 'average', 'total').
+Warning threshold for fileshare capacity usage.
+
+Threshold is in percentage by default.
+To specify it in Bytes please set the units option '--units=B'.
+
+=item B<--critical-capacity-usage>
+
+Critical threshold for fileshare capacity usage.
+
+Threshold is in percentage by default.
+To specify it in Bytes please set the units option '--units=B'.
 
 =back
 
