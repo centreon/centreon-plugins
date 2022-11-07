@@ -53,10 +53,11 @@ sub run {
     my $volumes = $self->manage_selection(%options);
     foreach (@{$volumes->{records}}) {
         my $vserver_name = defined($_->{svm}) && $_->{svm}->{name} ne '' ? $_->{svm}->{name} : '-';
+        my $volume_state = defined($_->{state}) && $_->{state} ne '' ? $_->{state} : '-';
         $self->{output}->output_add(long_msg => sprintf(
             '[name = %s][state = %s][vserver = %s]',
             $_->{name},
-            $_->{state},
+            $volume_state,
             $vserver_name
         ));
     }
@@ -81,10 +82,11 @@ sub disco_show {
     my $volumes = $self->manage_selection(%options);
     foreach (@{$volumes->{records}}) {
         my $vserver_name = defined($_->{svm}) && $_->{svm}->{name} ne '' ? $_->{svm}->{name} : '-';
+        my $volume_state = defined($_->{state}) && $_->{state} ne '' ? $_->{state} : '-';
         $self->{output}->add_disco_entry(
             name => $_->{name},
-            state => $_->{state},
-            vserver_name => $_->{svm}->{name}
+            state => $volume_state,
+            vserver_name => $vserver_name
         );
     }
 }
