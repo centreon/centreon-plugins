@@ -75,7 +75,6 @@ sub manage_selection {
     my $health = $options{custom}->request_api(endpoint => '/api/health/full');
 
     $self->{global} = @{$health->{df}->{stats}};
-    }
 }
 
 1;
