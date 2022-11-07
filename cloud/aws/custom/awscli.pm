@@ -326,7 +326,7 @@ sub cloudwatch_list_metrics_set_cmd {
     $cmd_options .= " --metric-name $options{metric}" if (defined($options{metric}));
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
     $cmd_options .= " --no-verify-ssl 2>/dev/null" if (defined($self->{option_results}->{skip_ssl_check}));
-
+    
     return $cmd_options;
 }
 
