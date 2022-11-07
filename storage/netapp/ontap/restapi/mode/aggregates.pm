@@ -73,6 +73,33 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
+        { label => 'usage', nlabel => 'aggregate.space.usage.bytes', set => {
+                key_values => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { value => 'used_space', template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        { label => 'usage-free', nlabel => 'aggregate.space.free.bytes', display_ok => 0, set => {
+                key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { value => 'free_space', template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        { label => 'usage-prct', nlabel => 'aggregate.space.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'prct_used_space' }, { name => 'display' } ],
+                output_template => 'used : %.2f %%',
+                perfdatas => [
+                    { value => 'prct_used_space', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
         { label => 'read', nlabel => 'aggregate.io.read.usage.bytespersecond', display_ok => 0, set => {
                 key_values => [ { name => 'read' } ],
                 output_template => 'read: %s %s/s',
@@ -183,6 +210,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-name:s'  => { name => 'filter_name' },
     });
 
     return $self;
@@ -195,6 +223,8 @@ sub manage_selection {
 
     $self->{aggregates} = {};
     foreach (@{$aggregates->{records}}) {
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+                $_->{name} !~ /$self->{option_results}->{filter_name}/);
         my $name = $_->{name};
         my $uuid = $_->{uuid};
 
@@ -206,6 +236,10 @@ sub manage_selection {
             total_space => $_->{space}->{block_storage}->{size},
             used_space => $_->{space}->{block_storage}->{used},
             free_space => $_->{space}->{block_storage}->{available},
+            prct_used_space =>
+                ($_->{space}->{block_storage}->{used} * 100 / $_->{space}->{block_storage}->{size}),
+            prct_free_space =>
+                ($_->{space}->{block_storage}->{available} * 100 / $_->{space}->{block_storage}->{size}),
             read          => $agg->{metric}->{throughput}->{read},
             write         => $agg->{metric}->{throughput}->{write},
             other         => $agg->{metric}->{throughput}->{other},
