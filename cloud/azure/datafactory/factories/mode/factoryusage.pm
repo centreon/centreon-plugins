@@ -218,11 +218,11 @@ Set resource group (Required if resource's name is used).
 
 =item B<--warning-$metric$>
 
-Thresholds warning ($metric$ can be: 'factory-size-usage', 'resource-usage', 'factory-size-in-gb_units', 'resource-count').
+Thresholds warning ($metric$ can be: 'percentage-usage', 'resource-percentage-usage', 'size-in-gb_units', 'resource-count').
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'factory-size-usage', 'resource-usage', 'factory-size-in-gb_units', 'resource-count').
+Thresholds critical ($metric$ can be: 'percentage-usage', 'resource-percentage-usage', 'size-in-gb_units', 'resource-count').
 
 =back
 

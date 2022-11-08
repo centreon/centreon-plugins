@@ -166,13 +166,13 @@ Filter metrics (Can be: 'IntegrationRuntimeAvailableMemory', 'IntegrationRuntime
 
 =item B<--warning-$metric$>
 
-Thresholds warning ($metric$ can be: 'integration-runtime-available-memory', 'integration-runtime-available-node-number',
-'integration-runtime-average-task-pickup-delay', 'integration-runtime-cpu-percentage', 'integration-runtime-queue-length').
+Thresholds warning ($metric$ can be: 'available-memory', 'available-node-number', 'average-task-pickup-delay',
+'cpu-percentage', 'queue-length').
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'integration-runtime-available-memory', 'integration-runtime-available-node-number',
-'integration-runtime-average-task-pickup-delay', 'integration-runtime-cpu-percentage', 'integration-runtime-queue-length').
+Thresholds critical ($metric$ can be: 'available-memory', 'available-node-number', 'average-task-pickup-delay',
+'cpu-percentage', 'queue-length').
 
 =back
 
