@@ -151,9 +151,9 @@ sub new {
         'scvmm-password:s'    => { name => 'scvmm_password' },
         'scvmm-port:s'        => { name => 'scvmm_port', default => 8100 },
         'timeout:s'           => { name => 'timeout', default => 50 },
-        'command:s'           => { name => 'command', default => 'powershell.exe' },
+        'command:s'           => { name => 'command' },
         'command-path:s'      => { name => 'command_path' },
-        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'command-options:s'   => { name => 'command_options' },
         'no-ps'               => { name => 'no_ps' },
         'ps-exec-only'        => { name => 'ps_exec_only' },
         'ps-display'          => { name => 'ps_display' },
@@ -178,6 +178,18 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
+    $self->{option_results}->{command} = 'powershell.exe'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command_options} = '-InputFormat none -NoLogo -EncodedCommand'
+        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
 }
 
 sub manage_selection {

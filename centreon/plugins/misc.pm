@@ -641,7 +641,7 @@ sub check_security_command {
         (defined($options{command_path}) && $options{command_path} ne ''))
     );
 
-    my $security_file = '/tmp/plugins-security.json';
+    my $security_file = '/etc/centreon-plugins/security.json';
 
     return 0 if (! -r $security_file || -z $security_file);
 
