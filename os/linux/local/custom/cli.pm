@@ -102,7 +102,7 @@ sub execute_command {
         output => $self->{output},
         command => $self->{option_results}->{command},
         command_options => $self->{option_results}->{command_options},
-        comman_path => $self->{option_results}->{command_path}
+        command_path => $self->{option_results}->{command_path}
     );
 
     my $timeout = $self->{timeout};

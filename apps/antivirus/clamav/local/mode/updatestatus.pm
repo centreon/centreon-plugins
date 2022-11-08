@@ -129,7 +129,7 @@ sub check_options {
         output => $self->{output},
         command => $self->{option_results}->{command},
         command_options => $self->{option_results}->{command_options},
-        comman_path => $self->{option_results}->{command_path}
+        command_path => $self->{option_results}->{command_path}
     );
 
     $self->{clamav_command} = 'echo "==== CLAMD ===" ; clamd -V ; echo "==== DAILY ===="; sigtool --info ' . $self->{option_results}->{dailydb_file} . '; echo "==== MAIN ====" ; sigtool --info ' . $self->{option_results}->{maindb_file};
