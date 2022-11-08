@@ -38,7 +38,7 @@ sub new {
     $self->{services} = {
         APIGATEWAY         => $self->can('discover_api'),
         BACKUP_VAULT       => $self->can('discover_backup_vault'),
-        DYNAMODB           => $self->can('discover_dynamodb_table'),
+#        DYNAMODB           => $self->can('discover_dynamodb_table'),
         EBS                => $self->can('discover_ebs'),
         EC2                => $self->can('discover_ec2'),
         EFS                => $self->can('discover_efs'),
@@ -53,7 +53,7 @@ sub new {
         SNS                => $self->can('discover_sns'),
         SPOT_FLEET_REQUEST => $self->can('discover_spotfleetrequest'),
         SQS                => $self->can('discover_sqs'),
-        VPC                => $self->can('discover_vpc'),
+#        VPC                => $self->can('discover_vpc'),
         VPN                => $self->can('discover_vpn')
     };
 
