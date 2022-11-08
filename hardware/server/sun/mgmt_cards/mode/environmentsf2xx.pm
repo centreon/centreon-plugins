@@ -32,14 +32,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"       => { name => 'hostname' },
-                                  "port:s"           => { name => 'port', default => 23 },
-                                  "username:s"       => { name => 'username' },
-                                  "password:s"       => { name => 'password' },
-                                  "timeout:s"        => { name => 'timeout', default => 30 },
-                                });
+    $options{options}->add_options(arguments => { 
+        "hostname:s"       => { name => 'hostname' },
+        "port:s"           => { name => 'port', default => 23 },
+        "username:s"       => { name => 'username' },
+        "password:s"       => { name => 'password' },
+        "timeout:s"        => { name => 'timeout', default => 30 }
+    });
+
     return $self;
 }
 

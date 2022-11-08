@@ -39,16 +39,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"       => { name => 'hostname' },
-                                  "username:s"       => { name => 'username' },
-                                  "password:s"       => { name => 'password' },
-                                  "timeout:s"        => { name => 'timeout', default => 30 },
-                                  "command-plink:s"  => { name => 'command_plink', default => 'plink' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                  "exclude:s@"              => { name => 'exclude' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "hostname:s"       => { name => 'hostname' },
+        "username:s"       => { name => 'username' },
+        "password:s"       => { name => 'password' },
+        "timeout:s"        => { name => 'timeout', default => 30 },
+        "command-plink:s"  => { name => 'command_plink' },
+        "threshold-overload:s@"   => { name => 'threshold_overload' },
+        "exclude:s@"              => { name => 'exclude' }
+    });
+
     return $self;
 }
 
@@ -82,6 +82,14 @@ sub check_options {
         }
         push @{$self->{overload_th}}, {filter => $filter, status => $status};
     }
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command_plink}
+    );
+
+    $self->{option_results}->{command} = 'plink'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
 }
 
 sub get_severity {
@@ -109,8 +117,12 @@ sub check_exclude {
 
     foreach (@{$self->{option_results}->{exclude}}) {
         if ($options{value} =~ /$_/i) {
-            $self->{output}->output_add(long_msg => sprintf("Skip Component '%s'",
-                                                            $options{value}));
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "Skip Component '%s'",
+                    $options{value}
+                )
+            );
             return 1;
         }
     }
@@ -134,29 +146,42 @@ sub check_tree {
         $long_instance = $stack[$#stack]->{long_instance} . '>' . $unit_number;
         $long_status = $stack[$#stack]->{long_status} . ' > ' . $unit_number . ' Status:' . $status;
         if ($indent > $stack[$#stack]->{indent}) {
-            push @stack, { indent => $indent, 
-                           long_instance => $stack[$#stack]->{long_instance} . '>' . $unit_number,
-                           long_status => $stack[$#stack]->{long_status} . ' > ' . $unit_number . ' Status:' . $status };
+            push @stack, {
+                indent => $indent, 
+                long_instance => $stack[$#stack]->{long_instance} . '>' . $unit_number,
+                long_status => $stack[$#stack]->{long_status} . ' > ' . $unit_number . ' Status:' . $status
+            };
         }
         
         next if ($self->check_exclude(value => $long_instance));
         
         my $exit = $self->get_severity(value => $status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Component '%s' status is '%s'",
-                                                             $unit_number, $status));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Component '%s' status is '%s'",
+                    $unit_number, $status
+                )
+            );
         }
         
-        $self->{output}->output_add(long_msg => sprintf("Component '%s' status is '%s' [%s] [%s]",
-                                                        $unit_number, $status, $long_instance, $long_status));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Component '%s' status is '%s' [%s] [%s]",
+                $unit_number, $status, $long_instance, $long_status
+            )
+        );
         $total_components++;
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components are ok.", 
-                                                     $total_components)
-                                );
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf(
+            "All %s components are ok.", 
+            $total_components
+        )
+    );
 }
 
 sub run {
@@ -167,31 +192,38 @@ sub run {
     # Command execution
     ######
     ($lerror, $self->{stdout}, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $self->{option_results}->{command_plink},
-                                                 timeout => $self->{option_results}->{timeout},
-                                                 arguments => ['-batch', '-l', $self->{option_results}->{username}, 
-                                                               '-pw', $self->{option_results}->{password},
-                                                               $self->{option_results}->{hostname}, 'showhardconf'],
-                                                 wait_exit => 1,
-                                                 redirect_stderr => 1
-                                                 );
+        command => $self->{option_results}->{command_plink},
+        timeout => $self->{option_results}->{timeout},
+        arguments => [
+            '-batch', '-l', $self->{option_results}->{username}, 
+            '-pw', $self->{option_results}->{password},
+            $self->{option_results}->{hostname}, 'showhardconf'
+        ],
+        wait_exit => 1,
+        redirect_stderr => 1
+    );
+
     $self->{stdout} =~ s/\r//g;
     if ($lerror <= -1000) {
-        $self->{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => $self->{stdout});
+        $self->{output}->output_add(
+            severity => 'UNKNOWN', 
+            short_msg => $self->{stdout}
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
     if ($exit_code != 0) {
         $self->{stdout} =~ s/\n/ - /g;
-        $self->{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command error: $self->{stdout}");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN', 
+            short_msg => "Command error: $self->{stdout}"
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
-   
+
     $self->check_tree();
- 
+
     $self->{output}->display();
     $self->{output}->exit();
 }
