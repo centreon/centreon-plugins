@@ -38,9 +38,9 @@ sub new {
         'remote-password:s' => { name => 'remote_password' },
         'no-ps'             => { name => 'no_ps' },
         'timeout:s'         => { name => 'timeout', default => 50 },
-        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command:s'         => { name => 'command' },
         'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'command-options:s' => { name => 'command_options' },
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
         'warning:s'         => { name => 'warning' },
@@ -63,6 +63,18 @@ sub change_macros {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
+    $self->{option_results}->{command} = 'powershell.exe'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command_options} = '-InputFormat none -NoLogo -EncodedCommand'
+        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
 
     $self->change_macros();
 }

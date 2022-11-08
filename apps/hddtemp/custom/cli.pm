@@ -75,6 +75,20 @@ sub check_options {
         $self->{ssh}->check_options(option_results => $self->{option_results});
     }
 
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command_drives},
+        command_options => $self->{option_results}->{command_options_drives},
+        command_path => $self->{option_results}->{command_path_drives}
+    );
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command_hddtemp},
+        command_options => $self->{option_results}->{command_options_hddtemp},
+        command_path => $self->{option_results}->{command_path_hddtemp}
+    );
+
     return 0;
 }
 
