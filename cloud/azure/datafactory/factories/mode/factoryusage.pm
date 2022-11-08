@@ -29,17 +29,17 @@ sub get_metrics_mapping {
     my ($self, %options) = @_;
 
     my $metrics_mapping = {
-        'factory_size_usage' => {
+        'factory_percentage_usage' => {
             'output' => 'Factory usage',
-            'label'  => 'factory-size-usage',
+            'label'  => 'percentage-usage',
             'nlabel' => 'azdatafactory.factoryusage.size.percentage',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
         },
-        'resource_usage' => {
+        'resource_percentage_usage' => {
             'output' => 'Resource usage',
-            'label'  => 'resource-usage',
+            'label'  => 'resource-percentage-usage',
             'nlabel' => 'azdatafactory.factoryusage.resource.percentage',
             'unit'   => '%',
             'min'    => '0',
@@ -47,10 +47,11 @@ sub get_metrics_mapping {
         },
         'FactorySizeInGbUnits' => {
             'output' => 'Factory size',
-            'label'  => 'factory-size-in-gb_units',
-            'nlabel' => 'azdatafactory.factoryusage.factory.size.count',
-            'unit'   => 'GB',
-            'min'    => '0'
+            'label'  => 'size-in-gb_units',
+            'nlabel' => 'azdatafactory.factoryusage.size.count',
+            'unit'   => 'B',
+            'min'    => '0',
+            'change_bytes' => '2'
         },
         'ResourceCount' => {
             'output' => 'Resource count',
@@ -154,21 +155,25 @@ sub manage_selection {
         # Compute percentages from metrics
         next if (!defined($self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}));
         my $metricsAggregation = $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)};
+        if (defined($metricsAggregation->{FactorySizeInGbUnits})) {
+            $metricsAggregation->{FactorySizeInGbUnits} = $metricsAggregation->{FactorySizeInGbUnits} * 1024;
+        }
         if (defined($metricsAggregation->{MaxAllowedFactorySizeInGbUnits}) || defined($self->{option_results}->{zeroed})) {
+            $metricsAggregation->{MaxAllowedFactorySizeInGbUnits} = $metricsAggregation->{MaxAllowedFactorySizeInGbUnits} * 1024;
             my $max_allowed_factory_size_in_gb_units = $metricsAggregation->{MaxAllowedFactorySizeInGbUnits};
             if ($max_allowed_factory_size_in_gb_units > 0) {
-                $metricsAggregation->{factory_size_usage} = ($metricsAggregation->{FactorySizeInGbUnits} / $max_allowed_factory_size_in_gb_units) * 100;
+                $metricsAggregation->{factory_percentage_usage} = ($metricsAggregation->{FactorySizeInGbUnits} / $max_allowed_factory_size_in_gb_units) * 100;
             } else {
-                $metricsAggregation->{factory_size_usage} = 0;
+                $metricsAggregation->{factory_percentage_usage} = 0;
             }
             $datas = 1;
         }
         if (defined($metricsAggregation->{MaxAllowedResourceCount}) || defined($self->{option_results}->{zeroed})) {
             my $max_allowed_resource_count = $metricsAggregation->{MaxAllowedResourceCount};
             if ($max_allowed_resource_count > 0) {
-                $metricsAggregation->{resource_usage} = ($metricsAggregation->{ResourceCount} / $max_allowed_resource_count) * 100;
+                $metricsAggregation->{resource_percentage_usage} = ($metricsAggregation->{ResourceCount} / $max_allowed_resource_count) * 100;
             } else {
-                $metricsAggregation->{resource_usage} = 0;
+                $metricsAggregation->{resource_percentage_usage} = 0;
             }
             $datas = 1;
         }

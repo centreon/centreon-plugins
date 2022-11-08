@@ -31,28 +31,28 @@ sub get_metrics_mapping {
     my $metrics_mapping = {
         'IntegrationRuntimeAvailableMemory' => {
             'output' => 'Available memory',
-            'label'  => 'integration-runtime-available-memory',
+            'label'  => 'available-memory',
             'nlabel' => 'azdatafactory.integrationruntime.available.memory.bytes',
             'unit'   => 'B',
             'min'    => '0'
         },
         'IntegrationRuntimeAvailableNodeNumber' => {
             'output' => 'Available node number',
-            'label'  => 'integration-runtime-available-node-number',
+            'label'  => 'available-node-number',
             'nlabel' => 'azdatafactory.integrationruntime.available.node.number.count',
             'unit'   => '',
             'min'    => '0'
         },
         'IntegrationRuntimeAverageTaskPickupDelay' => {
             'output' => 'Average task pickup delay',
-            'label'  => 'integration-runtime-average-task-pickup-delay',
+            'label'  => 'average-task-pickup-delay',
             'nlabel' => 'azdatafactory.integrationruntime.average.pickup.delay.seconds',
             'unit'   => 's',
             'min'    => '0'
         },
         'IntegrationRuntimeCpuPercentage' => {
             'output' => 'Cpu percentage',
-            'label'  => 'integration-runtime-cpu-percentage',
+            'label'  => 'cpu-percentage',
             'nlabel' => 'azdatafactory.integrationruntime.cpu.percentage.percent',
             'unit'   => '%',
             'min'    => '0',
@@ -60,7 +60,7 @@ sub get_metrics_mapping {
         },
         'IntegrationRuntimeQueueLength' => {
             'output' => 'Queue length',
-            'label'  => 'integration-runtime-queue-length',
+            'label'  => 'queue-length',
             'nlabel' => 'azdatafactory.integrationruntime.queue.length.count',
             'unit'   => '',
             'min'    => '0'
