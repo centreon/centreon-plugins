@@ -76,6 +76,13 @@ sub check_options {
         $self->{ssh}->check_options(option_results => $self->{option_results});
     }
 
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
     return 0;
 }
 
@@ -92,12 +99,6 @@ sub get_identifier {
 sub execute_command {
     my ($self, %options) = @_;
 
-    centreon::plugins::misc::check_security_command(
-        output => $self->{output},
-        command => $self->{option_results}->{command},
-        command_options => $self->{option_results}->{command_options},
-        command_path => $self->{option_results}->{command_path}
-    );
 
     my $timeout = $self->{timeout};
     if (!defined($timeout)) {
