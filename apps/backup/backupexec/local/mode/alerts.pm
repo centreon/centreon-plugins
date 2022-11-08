@@ -118,7 +118,6 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-
     $self->SUPER::check_options(%options);
 
     centreon::plugins::misc::check_security_command(
