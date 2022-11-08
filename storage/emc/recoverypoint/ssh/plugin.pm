@@ -22,18 +22,19 @@ package storage::emc::recoverypoint::ssh::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'monitored-parameters' => 'storage::emc::recoverypoint::ssh::mode::monitoredparameters',
-        'system-status'        => 'storage::emc::recoverypoint::ssh::mode::systemstatus',
-    );
+        'system-status'        => 'storage::emc::recoverypoint::ssh::mode::systemstatus'
+    };
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }

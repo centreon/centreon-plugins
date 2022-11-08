@@ -31,18 +31,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'get_system_status' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => 'category=system summary=yes' },
-                                });
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -51,28 +41,19 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (!defined($self->{option_results}->{hostname})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify hostname.");
-       $self->{output}->option_exit();
-    }
-    
-    if (!defined($self->{option_results}->{command})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify command option.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Need to specify hostname.");
+        $self->{output}->option_exit();
     }
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{remote} = 1;
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'get_system_status',
+        command_options => 'category=system summary=yes'
+    );
 
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
-                                                                options => $self->{option_results},
-                                                                sudo => $self->{option_results}->{sudo},
-                                                                command => $self->{option_results}->{command},
-                                                                command_path => $self->{option_results}->{command_path},
-                                                                command_options => $self->{option_results}->{command_options},
-                                                                );
     my $long_msg = $stdout;
     $long_msg =~ s/\|/~/mg;
 
@@ -89,15 +70,19 @@ sub run {
         }
     }    
 
-    $exit_code = 'ok';
+    my $exit_code = 'ok';
     if (($system !~ /OK/im) || ($clusters !~ /OK/im) || ($wans !~ /OK/im) || ($groups !~ /OK/im)) {
         $exit_code = 'critical'
     }
 
     $self->{output}->output_add(long_msg => $long_msg);
-    $self->{output}->output_add(severity => $exit_code, 
-                                short_msg => sprintf("System %s, Clusters %s, WANs %s, Groups %s.",
-                                            $system, $clusters, $wans, $groups));
+    $self->{output}->output_add(
+        severity => $exit_code, 
+        short_msg => sprintf(
+            "System %s, Clusters %s, WANs %s, Groups %s.",
+            $system, $clusters, $wans, $groups)
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -108,46 +93,11 @@ __END__
 
 =head1 MODE
 
-Check system status.
+Check system status
+
+Command used: 'get_system_status category=system summary=yes'
 
 =over 8
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-pw=password').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to test (Default: get_system_status).
-You can use 'sh' to use '&&' or '||'.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: category=system summary=yes).
 
 =back
 
