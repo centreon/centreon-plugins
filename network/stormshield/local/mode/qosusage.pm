@@ -25,53 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'qos', type => 1, cb_prefix_output => 'prefix_qos_output', message_multiple => 'All QoS are ok', skipped_code => { -10 => 1 } },
-    ];
-    
-    $self->{maps_counters}->{qos} = [
-        { label => 'in', set => {
-                key_values => [ { name => 'in' }, { name => 'display' }, { name => 'speed_in' } ],
-                closure_custom_calc => $self->can('custom_qos_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
-                closure_custom_output => $self->can('custom_qos_output'),
-                closure_custom_perfdata => $self->can('custom_qos_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_qos_threshold'),
-            }
-        },
-        { label => 'in-peak', set => {
-                key_values => [ { name => 'in_peak' }, { name => 'display' } ],
-                output_template => 'In Peak : %s %s/s',
-                output_change_bytes => 2,
-                perfdatas => [
-                    { label => 'traffic_in_peak', value => 'in_peak', template => '%.2f',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        { label => 'out', set => {
-                key_values => [ { name => 'out' }, { name => 'display' }, { name => 'speed_out' } ],
-                closure_custom_calc => $self->can('custom_qos_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
-                closure_custom_output => $self->can('custom_qos_output'),
-                closure_custom_perfdata => $self->can('custom_qos_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_qos_threshold'),
-            }
-        },
-        { label => 'out-peak', set => {
-                key_values => [ { name => 'out_peak' }, { name => 'display' } ],
-                output_template => 'Out Peak : %s %s/s',
-                output_change_bytes => 2,
-                perfdatas => [
-                    { label => 'traffic_out_peak', value => 'out_peak', template => '%.2f',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-    ];
-}
-
 sub custom_qos_perfdata {
     my ($self, %options) = @_;
 
@@ -138,6 +91,59 @@ sub custom_qos_calc {
     return 0;
 }
 
+sub prefix_qos_output {
+    my ($self, %options) = @_;
+    
+    return "QoS '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'qos', type => 1, cb_prefix_output => 'prefix_qos_output', message_multiple => 'All QoS are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{qos} = [
+        { label => 'in', set => {
+                key_values => [ { name => 'in' }, { name => 'display' }, { name => 'speed_in' } ],
+                closure_custom_calc => $self->can('custom_qos_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_qos_output'),
+                closure_custom_perfdata => $self->can('custom_qos_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_qos_threshold')
+            }
+        },
+        { label => 'in-peak', set => {
+                key_values => [ { name => 'in_peak' }, { name => 'display' } ],
+                output_template => 'In Peak : %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'traffic_in_peak', template => '%.2f',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'out', set => {
+                key_values => [ { name => 'out' }, { name => 'display' }, { name => 'speed_out' } ],
+                closure_custom_calc => $self->can('custom_qos_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_qos_output'),
+                closure_custom_perfdata => $self->can('custom_qos_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_qos_threshold')
+            }
+        },
+        { label => 'out-peak', set => {
+                key_values => [ { name => 'out_peak' }, { name => 'display' } ],
+                output_template => 'Out Peak : %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'traffic_out_peak', template => '%.2f',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -149,38 +155,10 @@ sub new {
         "speed-in:s"          => { name => 'speed_in' },
         "speed-out:s"         => { name => 'speed_out' },
         "units-traffic:s"     => { name => 'units_traffic', default => '%' },
-        "hostname:s"          => { name => 'hostname' },
-        "ssh-option:s@"       => { name => 'ssh_option' },
-        "ssh-path:s"          => { name => 'ssh_path' },
-        "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"           => { name => 'timeout', default => 30 },
-        "sudo"                => { name => 'sudo' },
-        "command:s"           => { name => 'command', default => 'tail' },
-        "command-path:s"      => { name => 'command_path' },
-        "command-options:s"   => { name => 'command_options', default => '-1 /log/l_monitor' },
-        "config-speed-file:s" => { name => 'config_speed_file' },
+        "config-speed-file:s" => { name => 'config_speed_file' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
-    $self->{hostname} = $self->{option_results}->{hostname};
-    if (!defined($self->{hostname})) {
-        $self->{hostname} = 'me';
-    }    
-}
-
-sub prefix_qos_output {
-    my ($self, %options) = @_;
-    
-    return "QoS '" . $options{instance_value}->{display} . "' ";
 }
 
 sub load_speed_config {
@@ -215,14 +193,12 @@ sub load_speed_config {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     #id=firewall time="2017-01-31 16:56:36" fw="XXXX" tz=+0100 startime="2017-01-31 16:56:36" security=70 system=1 CPU=3,2,1 Pvm=0,0,0,0,0,0,0,0,0,0,0 Vlan96=VLAN-XXX-DMZ,15140,17768,21952,28280 Vlan76=dmz-xxx-xxx,769592,948320,591584,795856
-    my $content = centreon::plugins::misc::execute(output => $self->{output},
-                                                   options => $self->{option_results},
-                                                   sudo => $self->{option_results}->{sudo},
-                                                   command => $self->{option_results}->{command},
-                                                   command_path => $self->{option_results}->{command_path},
-                                                   command_options => $self->{option_results}->{command_options});
+    my ($content) = $options{custom}->execute_command(
+        command => 'tail',
+        command_options => "-1 /log/l_monitor"
+    );
     
     $self->load_speed_config();    
     $self->{qos} = {};
@@ -232,7 +208,7 @@ sub manage_selection {
     if ($content !~ /$pattern/) {
         $pattern = '(\S+?)=([^,]+?),(\d+),(\d+),(\d+),(\d+),\d+,\d+(?:\s|\Z)';
     }
-    
+
     while ($content =~ /$pattern/msg) {
         my ($vlan, $name, $in, $in_max, $out, $out_max) = ($1, $2, $3, $4, $5, $6);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -245,15 +221,16 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $vlan . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $self->{qos}->{$name} = { 
             display => $name, 
             in => $in, in_peak => $in_max,
             out => $out, out_peak => $out_max,
             speed_in => defined($self->{config_speeds}->{$name}->{speed_in}) ? $self->{config_speeds}->{$name}->{speed_in} : 0,
-            speed_out => defined($self->{config_speeds}->{$name}->{speed_out}) ? $self->{config_speeds}->{$name}->{speed_out} : 0};
+            speed_out => defined($self->{config_speeds}->{$name}->{speed_out}) ? $self->{config_speeds}->{$name}->{speed_out} : 0
+        };
     }
-    
+
     if (scalar(keys %{$self->{qos}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No QoS found.");
         $self->{output}->option_exit();
@@ -278,43 +255,6 @@ Filter by QoS name (can be a regexp).
 
 Filter by vlan name (can be a regexp).
 
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'tail').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-1 /log/l_monitor').
-
 =item B<--speed-in>
 
 Set interface speed for incoming traffic (in Mb).
@@ -331,15 +271,9 @@ File with speed configurations.
 
 Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'in', 'in-peak', 'out', 'out-peak'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Threshold warning.
+Thresholds.
 Can be: 'in', 'in-peak', 'out', 'out-peak'.
 
 =back
