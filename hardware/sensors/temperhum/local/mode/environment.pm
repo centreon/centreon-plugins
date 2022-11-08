@@ -26,6 +26,12 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+sub prefix_device_output {
+    my ($self, %options) = @_;
+
+    return "'" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -78,38 +84,51 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'tempered' },
-                                  "command-path:s"    => { name => 'command_path', default => '/opt/PCsensor/TEMPered/utils/' },
-                                  "command-options:s" => { name => 'command_options' },
-                                  "filter-drive:s"    => { name => 'filter_drive', default => '.*' },
-                                });
+    $options{options}->add_options(arguments => {
+        "remote"            => { name => 'remote' },
+        "ssh-option:s@"     => { name => 'ssh_option' },
+        "ssh-path:s"        => { name => 'ssh_path' },
+        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"         => { name => 'timeout', default => 30 },
+        "sudo"              => { name => 'sudo' },
+        "command:s"         => { name => 'command' },
+        "command-path:s"    => { name => 'command_path' },
+        "command-options:s" => { name => 'command_options' },
+        "filter-drive:s"    => { name => 'filter_drive', default => '.*' }
+    });
+
     return $self;
 }
 
-sub prefix_device_output {
+sub check_options {
     my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
 
-    return "'" . $options{instance_value}->{display} . "' ";
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
+    $self->{option_results}->{command} = 'tempered'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command_path} = '/opt/PCsensor/TEMPered/utils/'
+        if (!defined($self->{option_results}->{command_path}) || $self->{option_results}->{command_path} eq '');
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{drive} = {};
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my $stdout = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
 
     foreach (split(/\n/, $stdout)) {
         next if !/(\/dev\/[a-z0-9]+).*temperature\s(\d*\.?\d+).*relative\shumidity\s(\d*\.?\d+).*dew\spoint\s(\d*\.?\d+)/;

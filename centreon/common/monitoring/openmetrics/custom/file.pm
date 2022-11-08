@@ -95,7 +95,7 @@ sub scrape {
         sudo => $self->{option_results}->{sudo},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options},
+        command_options => $self->{option_results}->{command_options}
     );
 }
 

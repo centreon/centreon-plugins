@@ -22,6 +22,7 @@ package cloud::aws::custom::awscli;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use DateTime;
 use JSON::XS;
 
@@ -54,9 +55,9 @@ sub new {
             'zeroed'              => { name => 'zeroed' },
             'timeout:s'           => { name => 'timeout', default => 50 },
             'sudo'                => { name => 'sudo' },
-            'command:s'           => { name => 'command', default => 'aws' },
+            'command:s'           => { name => 'command' },
             'command-path:s'      => { name => 'command_path' },
-            'command-options:s'   => { name => 'command_options', default => '' },
+            'command-options:s'   => { name => 'command_options' },
             'skip-ssl-check'      => { name => 'skip_ssl_check' },
             'proxyurl:s'          => { name => 'proxyurl' }
         });
@@ -148,22 +149,31 @@ sub check_options {
 
     $self->{endpoint_url} = (defined($self->{option_results}->{endpoint_url})) ? $self->{option_results}->{endpoint_url} : undef;
 
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
     return 0;
 }
 
 sub execute {
     my ($self, %options) = @_;
 
+    my $command = defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : 'aws';
+
     my $cmd_options = $options{cmd_options};
     $cmd_options .= " --debug" if ($self->{output}->is_debug());
 
-    $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $cmd_options . "'", debug => 1);
+    $self->{output}->output_add(long_msg => "Command line: '" . $command . " " . $cmd_options . "'", debug => 1);
 
     my ($response) = centreon::plugins::misc::execute(
         output => $self->{output},
         options => $self->{option_results},
         sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
+        command => $command,
         command_path => $self->{option_results}->{command_path},
         command_options => $cmd_options,
         redirect_stderr => ($self->{output}->is_debug()) ? 0 : 1
