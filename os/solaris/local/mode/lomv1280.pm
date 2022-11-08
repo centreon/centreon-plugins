@@ -31,19 +31,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'lom' },
-                                  "command-path:s"    => { name => 'command_path', default => '/usr/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => '-fpv 2>&1' },
-                                });
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
@@ -55,18 +44,20 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'lom',
+        command_options => '-fpv 2>&1',
+        command_path => '/usr/sbin'
+    );
+
     my $long_msg = $stdout;
     $long_msg =~ s/\|/~/mg;
     $self->{output}->output_add(long_msg => $long_msg);
-    
-    $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "No problems detected.");
+
+    $self->{output}->output_add(
+        severity => 'OK', 
+        short_msg => "No problems detected."
+    );
 
     if ($stdout =~ /^Fans:(.*?):/ims) {
         #Fans:
@@ -80,12 +71,14 @@ sub run {
             my ($fan_name, $status) = ($2, $4);
             
             if ($status !~ /OK/i) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Fan '$fan_name' status is '$status'");
+                $self->{output}->output_add(
+                    severity => 'CRITICAL', 
+                    short_msg => "Fan '$fan_name' status is '$status'"
+                );
             }
         }
     }
-    
+
     if ($stdout =~ /^PSUs:(.*?):/ims) {
         #PSUs:
         # PS0 OK
@@ -98,8 +91,10 @@ sub run {
             my ($psu_num, $status) = ($1, $2);
             
             if ($status !~ /OK/i) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Psu '$psu_num' status is '$status'");
+                $self->{output}->output_add(
+                    severity => 'CRITICAL', 
+                    short_msg => "Psu '$psu_num' status is '$status'"
+                );
             }
         }
     }
@@ -123,8 +118,10 @@ sub run {
             my $status = $1;
             my $name = join(' ', @fields);
             if ($status !~ /OK/i) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Supply voltage '$name' status is '$status'");
+                $self->{output}->output_add(
+                    severity => 'CRITICAL', 
+                    short_msg => "Supply voltage '$name' status is '$status'"
+                );
             }
         }
     }
@@ -150,8 +147,10 @@ sub run {
             my $status = $1;
             my $name = join(' ', @fields);
             if ($status !~ /OK/i) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "System '$name' flag status is '$status'");
+                $self->{output}->output_add(
+                    severity => 'CRITICAL', 
+                    short_msg => "System '$name' flag status is '$status'"
+                );
             }
         }
     }
@@ -166,50 +165,11 @@ __END__
 
 =head1 MODE
 
-Check Hardware Status for 'v1280' (use 'lom' command).
+Check hardware status for 'v1280'.
+
+Command used '/usr/sbin/lom -fpv 2>&1'
 
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'lom').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/usr/sbin').
-
-=item B<--command-options>
-
-Command options (Default: '-fpv 2>&1').
 
 =back
 

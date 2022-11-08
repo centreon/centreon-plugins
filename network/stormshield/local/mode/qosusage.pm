@@ -245,6 +245,8 @@ __END__
 
 Check QoS usage.
 
+Command used: 'tail -1 /log/l_monitor'
+
 =over 8
 
 =item B<--filter-name>

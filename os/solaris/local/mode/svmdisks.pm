@@ -24,32 +24,17 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"         => { name => 'hostname' },
-                                  "remote"             => { name => 'remote' },
-                                  "ssh-option:s@"      => { name => 'ssh_option' },
-                                  "ssh-path:s"         => { name => 'ssh_path' },
-                                  "ssh-command:s"      => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"          => { name => 'timeout', default => 30 },
-                                  "sudo1"              => { name => 'sudo1' },
-                                  "command1:s"         => { name => 'command1', default => 'metastat' },
-                                  "command1-path:s"    => { name => 'command1_path', default => '/usr/sbin' },
-                                  "command1-options:s" => { name => 'command1_options', default => '2>&1' },
-                                  "sudo2"              => { name => 'sudo2' },
-                                  "command2:s"         => { name => 'command2', default => 'metadb' },
-                                  "command2-path:s"    => { name => 'command2_path', default => '/usr/sbin' },
-                                  "command2-options:s" => { name => 'command2_options', default => '2>&1' },
-                                  "warning:s"          => { name => 'warning', },
-                                  "critical:s"         => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' }
+    });
+
     return $self;
 }
 
@@ -58,34 +43,34 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo1},
-                                                  command => $self->{option_results}->{command1},
-                                                  command_path => $self->{option_results}->{command1_path},
-                                                  command_options => $self->{option_results}->{command1_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'metastat',
+        command_options => '2>&1',
+        command_path => '/usr/sbin'
+    );
+
     my $long_msg = $stdout;
     $long_msg =~ s/\|/~/mg;
     $self->{output}->output_add(long_msg => $long_msg);
 
-    my $stdout2 = centreon::plugins::misc::execute(output => $self->{output},
-                                                   options => $self->{option_results},
-                                                   sudo => $self->{option_results}->{sudo2},
-                                                   command => $self->{option_results}->{command2},
-                                                   command_path => $self->{option_results}->{command2_path},
-                                                   command_options => $self->{option_results}->{command2_options});
+    my ($stdout2) = $options{custom}->execute_command(
+        command => 'metadb',
+        command_options => '2>&1',
+        command_path => '/usr/sbin'
+    );
+
     $long_msg = $stdout2;
     $long_msg =~ s/\|/~/mg;
     $self->{output}->output_add(long_msg => $long_msg); 
@@ -164,24 +149,36 @@ sub run {
         }
     }
 
-    my ($exit_code) = $self->{perfdata}->threshold_check(value => $num_metastat_errors, 
-                                                         threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]); 
+    my ($exit_code) = $self->{perfdata}->threshold_check(
+        value => $num_metastat_errors, 
+        threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
     if ($num_metastat_errors > 0) {
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Some metadevices need maintenance:" . $metastat_name));
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf("Some metadevices need maintenance:" . $metastat_name)
+        );
     } else {
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No problems on metadevices");
+        $self->{output}->output_add(
+            severity => 'OK', 
+            short_msg => "No problems on metadevices"
+        );
     }
     
-    ($exit_code) = $self->{perfdata}->threshold_check(value => $num_metadb_errors, 
-                                                      threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
+    ($exit_code) = $self->{perfdata}->threshold_check(
+        value => $num_metadb_errors, 
+        threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
     if ($num_metadb_errors > 0) {
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Some replicas have problems:" . $metadb_name));
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf("Some replicas have problems:" . $metadb_name)
+        );
     } else {
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No problems on replicas");
+        $self->{output}->output_add(
+            severity => 'OK', 
+            short_msg => "No problems on replicas"
+        );
     }
  
     $self->{output}->display();
@@ -194,7 +191,9 @@ __END__
 
 =head1 MODE
 
-Check SolarisVm disk status (use 'metastat' and 'metadb' command).
+Check SolarisVm disk status
+
+Command used: '/usr/sbin/metastat 2>&1' and '/usr/sbin/metadb 2>&1'
 
 =over 8
 
@@ -205,64 +204,6 @@ Threshold warning.
 =item B<--critical>
 
 Threshold critical.
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo1>
-
-Use 'sudo' to execute the command.
-
-=item B<--command1>
-
-Command to get information (Default: 'metastat').
-Can be changed if you have output in a file.
-
-=item B<--command1-path>
-
-Command path (Default: '/usr/sbin').
-
-=item B<--command1-options>
-
-Command options (Default: '2>&1').
-
-=item B<--sudo2>
-
-Use 'sudo' to execute the command.
-
-=item B<--command2>
-
-Command to get information (Default: 'metadb').
-Can be changed if you have output in a file.
-
-=item B<--command2-path>
-
-Command path (Default: '/usr/sbin').
-
-=item B<--command2-options>
-
-Command options (Default: '2>&1').
 
 =back
 
