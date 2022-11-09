@@ -31,8 +31,8 @@ sub get_metrics_mapping {
     my $metrics_mapping = {
         'factory_percentage_usage' => {
             'output' => 'Factory usage',
-            'label'  => 'percentage-usage',
-            'nlabel' => 'azdatafactory.factoryusage.size.percentage',
+            'label'  => 'factory-percentage-usage',
+            'nlabel' => 'azdatafactory.factoryusage.percentage',
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
@@ -47,7 +47,7 @@ sub get_metrics_mapping {
         },
         'FactorySizeInGbUnits' => {
             'output' => 'Factory size',
-            'label'  => 'size-in-gb_units',
+            'label'  => 'factory-size',
             'nlabel' => 'azdatafactory.factoryusage.size.count',
             'unit'   => 'B',
             'min'    => '0',
@@ -218,11 +218,11 @@ Set resource group (Required if resource's name is used).
 
 =item B<--warning-$metric$>
 
-Thresholds warning ($metric$ can be: 'percentage-usage', 'resource-percentage-usage', 'size-in-gb_units', 'resource-count').
+Thresholds warning ($metric$ can be: 'factory-percentage-usage', 'resource-percentage-usage', 'factory-size', 'resource-count').
 
 =item B<--critical-$metric$>
 
-Thresholds critical ($metric$ can be: 'percentage-usage', 'resource-percentage-usage', 'size-in-gb_units', 'resource-count').
+Thresholds critical ($metric$ can be: 'factory-percentage-usage', 'resource-percentage-usage', 'factory-size', 'resource-count').
 
 =back
 
