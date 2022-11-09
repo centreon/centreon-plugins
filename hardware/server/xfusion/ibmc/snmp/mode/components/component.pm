@@ -29,7 +29,7 @@ my %map_status = (
     3 => 'major',
     4 => 'critical',
     5 => 'absence',
-    6 => 'unknown',
+    6 => 'unknown'
 );
 
 my %map_type = (
@@ -38,13 +38,13 @@ my %map_type = (
     3 => 'amcController',
     4 => 'mmcController',
     5 => 'hddBackPlane',
-    6 => 'raidCard',
+    6 => 'raidCard'
 );
 
 my $mapping = {
     componentName               => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.10.50.1.1' },
     componentType               => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.10.50.1.2', map => \%map_type },
-    componentStatus             => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.10.50.1.5', map => \%map_status },
+    componentStatus             => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.10.50.1.5', map => \%map_status }
 };
 my $oid_componentDescriptionEntry = '.1.3.6.1.4.1.58132.2.235.1.1.10.50.1';
 
@@ -70,15 +70,22 @@ sub check {
         next if ($result->{componentStatus} =~ /absence/);
         $self->{components}->{component}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("Component '%s' of type '%s' status is '%s' [instance = %s]",
-                                    $result->{componentName}, $result->{componentType}, $result->{componentStatus}, $instance, 
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "component '%s' of type '%s' status is '%s' [instance: %s]",
+                $result->{componentName}, $result->{componentType}, $result->{componentStatus}, $instance, 
+            )
+        );
    
         my $exit = $self->get_severity(label => 'default', section => 'component', value => $result->{componentStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Component '%s' of type '%s' status is '%s'",
-                                            $result->{componentName}, $result->{componentType}, $result->{componentStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Component '%s' of type '%s' status is '%s'",
+                    $result->{componentName}, $result->{componentType}, $result->{componentStatus}
+                )
+            );
         }
     }
 }

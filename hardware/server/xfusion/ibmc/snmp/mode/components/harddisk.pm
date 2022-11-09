@@ -29,20 +29,20 @@ my %map_status = (
     3 => 'major',
     4 => 'critical',
     5 => 'absence',
-    6 => 'unknown',
+    6 => 'unknown'
 );
 
 my %map_installation_status = (
     1 => 'absence',
     2 => 'presence',
-    3 => 'unknown',
+    3 => 'unknown'
 );
 
 my $mapping = {
     hardDiskPresence             => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.18.50.1.2', map => \%map_installation_status },
     hardDiskStatus               => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.18.50.1.3', map => \%map_status },
     hardDiskDevicename           => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.18.50.1.6' },
-    hardDiskTemperature          => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.18.50.1.20' },
+    hardDiskTemperature          => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.18.50.1.20' }
 };
 my $oid_hardDiskDescriptionEntry = '.1.3.6.1.4.1.58132.2.235.1.1.18.50.1';
 
@@ -52,7 +52,7 @@ sub load {
     push @{$self->{request}}, {
         oid => $oid_hardDiskDescriptionEntry,
         start => $mapping->{hardDiskPresence}->{oid},
-        end => $mapping->{hardDiskTemperature}->{oid},
+        end => $mapping->{hardDiskTemperature}->{oid}
     };
 }
 
@@ -76,13 +76,15 @@ sub check {
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'harddisk', instance => $instance, value => $result->{hardDiskTemperature});
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Hard Disk '%s' temperature is %s celsius degrees", $result->{hardDiskDevicename}, $result->{hardDiskTemperature}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Hard Disk '%s' temperature is %s celsius degrees", $result->{hardDiskDevicename}, $result->{hardDiskTemperature})
+                );
             }
 
             $self->{output}->perfdata_add(
-                label => 'temperature', unit => 'C',
-                nlabel => 'hardware.harddisk.temperature.celsius', 
+                nlabel => 'hardware.harddisk.temperature.celsius',
+                unit => 'C',
                 instances => $result->{hardDiskDevicename},
                 value => $result->{hardDiskTemperature},
                 warning => $warn,
@@ -91,14 +93,19 @@ sub check {
             );
         }
         
-        $self->{output}->output_add(long_msg => sprintf("Hard disk '%s' status is '%s' [instance = %s]",
-                                    $result->{hardDiskDevicename}, $result->{hardDiskStatus}, $instance, 
-                                    ));
-   
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "hard disk '%s' status is '%s' [instance: %s]",
+                $result->{hardDiskDevicename}, $result->{hardDiskStatus}, $instance, 
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'harddisk', value => $result->{hardDiskStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Hard disk '%s' status is '%s'", $result->{hardDiskDevicename}, $result->{hardDiskStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Hard disk '%s' status is '%s'", $result->{hardDiskDevicename}, $result->{hardDiskStatus})
+            );
         }
     }
 }

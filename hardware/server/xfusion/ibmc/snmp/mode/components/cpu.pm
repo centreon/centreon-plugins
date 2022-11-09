@@ -29,12 +29,12 @@ my %map_status = (
     3 => 'major',
     4 => 'critical',
     5 => 'absence',
-    6 => 'unknown',
+    6 => 'unknown'
 );
 
 my $mapping = {
     cpuStatus     => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.15.50.1.6', map => \%map_status },
-    cpuDevicename => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.15.50.1.10' },
+    cpuDevicename => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.15.50.1.10' }
 };
 my $oid_cpuDescriptionEntry = '.1.3.6.1.4.1.58132.2.235.1.1.15.50.1';
 
@@ -44,7 +44,7 @@ sub load {
     push @{$self->{request}}, { 
         oid => $oid_cpuDescriptionEntry, 
         start => $mapping->{cpuStatus}->{oid},
-        end => $mapping->{cpuDevicename}->{oid},
+        end => $mapping->{cpuDevicename}->{oid}
     };
 }
 
@@ -64,14 +64,19 @@ sub check {
         next if ($result->{cpuStatus} =~ /absence/);
         $self->{components}->{cpu}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("Cpu '%s' status is '%s' [instance = %s]",
-                                    $result->{cpuDevicename}, $result->{cpuStatus}, $instance, 
-                                    ));
-   
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "cpu '%s' status is '%s' [instance: %s]",
+                $result->{cpuDevicename}, $result->{cpuStatus}, $instance, 
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'cpu', value => $result->{cpuStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Cpu '%s' status is '%s'", $result->{cpuDevicename}, $result->{cpuStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Cpu '%s' status is '%s'", $result->{cpuDevicename}, $result->{cpuStatus})
+            );
         }
     }
 }
