@@ -40,7 +40,7 @@ sub new {
         'subinstance:s'         => { name => 'subinstance' },
         'filter-instance:s'     => { name => 'filter_instance' },
         'filter-subinstance:s'  => { name => 'filter_subinstance' },
-        'new-perfdata'          => { name => 'new_perfdata' },
+        'new-perfdata'          => { name => 'new_perfdata' }
     });
    
     return $self;
@@ -51,19 +51,19 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->{metrics} = centreon::common::monitoring::openmetrics::scrape::parse(%options,strip_chars => "[\"']");
+    $self->{metrics} = centreon::common::monitoring::openmetrics::scrape::parse(%options, strip_chars => "[\"']");
 
     my @exits;
     my $short_msg = 'All metrics are ok';
@@ -100,8 +100,11 @@ sub run {
 
             push @exits, $self->{perfdata}->threshold_check(
                 value => $data->{value},
-                threshold => [ { label => 'critical', exit_litteral => 'critical' },
-                               { label => 'warning', exit_litteral => 'warning' } ]);
+                threshold => [
+                    { label => 'critical', exit_litteral => 'critical' },
+                    { label => 'warning', exit_litteral => 'warning' }
+                ]
+            );
 
             $self->{output}->perfdata_add(
                 label => $label,
@@ -110,11 +113,15 @@ sub run {
                 critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
             );
 
-            $self->{output}->output_add(long_msg => sprintf("Metric '%s' value is '%s' [Help: \"%s\"] [Type: '%s'] [Dimensions: \"%s\"]",
-                $metric, $data->{value}, 
-                (defined($self->{metrics}->{$metric}->{help})) ? $self->{metrics}->{$metric}->{help} : '-',
-                (defined($self->{metrics}->{$metric}->{type})) ? $self->{metrics}->{$metric}->{type} : '-',
-                $data->{dimensions_string}));
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "Metric '%s' value is '%s' [Help: \"%s\"] [Type: '%s'] [Dimensions: \"%s\"]",
+                    $metric, $data->{value}, 
+                    (defined($self->{metrics}->{$metric}->{help})) ? $self->{metrics}->{$metric}->{help} : '-',
+                    (defined($self->{metrics}->{$metric}->{type})) ? $self->{metrics}->{$metric}->{type} : '-',
+                    $data->{dimensions_string}
+                )
+            );
         }
     }
 
@@ -122,7 +129,7 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "No metrics found.");
         $self->{output}->option_exit();
     }
-    
+
     my $exit = $self->{output}->get_most_critical(status => \@exits);
     $short_msg = 'Some metrics are not ok' if ($exit !~ /OK/i);
     $self->{output}->output_add(severity => $exit, short_msg => $short_msg);
@@ -153,7 +160,7 @@ Examples:
 --custommode=file --command-options='/tmp/metrics' --filter-metrics='cpu' --verbose
 
 # perl centreon_plugins.pl --plugin=apps::monitoring::openmetrics::plugin --mode=scrape-metrics
---custommode=file --hostname=10.2.3.4 --ssh-option='-l=centreon-engine' --ssh-option='-p=52'
+--custommode=file --hostname=10.2.3.4 --ssh-username='centreon-engine' --ssh-port='52'
 --command-options='/my/app/path/metrics' --verbose
 
 =over 8

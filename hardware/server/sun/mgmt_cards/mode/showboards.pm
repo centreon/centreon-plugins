@@ -33,19 +33,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"       => { name => 'hostname' },
-                                  "port:s"           => { name => 'port', default => 23 },
-                                  "username:s"       => { name => 'username' },
-                                  "password:s"       => { name => 'password' },
-                                  "timeout:s"        => { name => 'timeout', default => 50 },
-                                  "memory"           => { name => 'memory' },
-                                  "command-plink:s"  => { name => 'command_plink', default => 'plink' },
-                                  "ssh"              => { name => 'ssh' },
-                                  "exclude:s"        => { name => 'exclude' },
-                                  "no-component:s"   => { name => 'no_component' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "hostname:s"       => { name => 'hostname' },
+        "port:s"           => { name => 'port', default => 23 },
+        "username:s"       => { name => 'username' },
+        "password:s"       => { name => 'password' },
+        "timeout:s"        => { name => 'timeout', default => 50 },
+        "memory"           => { name => 'memory' },
+        "command-plink:s"  => { name => 'command_plink' },
+        "ssh"              => { name => 'ssh' },
+        "exclude:s"        => { name => 'exclude' },
+        "no-component:s"   => { name => 'no_component' }
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{components} = {};
     $self->{no_components} = undef;
@@ -77,7 +77,7 @@ sub check_options {
     if (!defined($self->{option_results}->{ssh})) {
         require hardware::server::sun::mgmt_cards::lib::telnet;
     }
-    
+
     if (defined($self->{option_results}->{no_component})) {
         if ($self->{option_results}->{no_component} ne '') {
             $self->{no_components} = $self->{option_results}->{no_component};
@@ -85,6 +85,14 @@ sub check_options {
             $self->{no_components} = 'critical';
         }
     }
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command_plink}
+    );
+
+    $self->{option_results}->{command} = 'plink'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
 }
 
 sub telnet_shell_plateform {
@@ -114,10 +122,11 @@ sub ssh_command {
     my $cmd_in = "0" . $username . $self->{option_results}->{password} . '\nshowboards\ndisconnect\n';
     my $cmd = "echo -e '$cmd_in' | " . $self->{option_results}->{command_plink} . " -batch " . $self->{option_results}->{hostname} . " 2>&1";
     my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $cmd,
-                                                 timeout => $self->{option_results}->{timeout},
-                                                 wait_exit => 1
-                                                 );
+        command => $cmd,
+        timeout => $self->{option_results}->{timeout},
+        wait_exit => 1
+    );
+
     $stdout =~ s/\r//g;
     if ($lerror <= -1000) {
         $self->{output}->output_add(severity => 'UNKNOWN', 

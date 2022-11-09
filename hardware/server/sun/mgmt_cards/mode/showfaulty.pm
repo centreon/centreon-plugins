@@ -38,7 +38,7 @@ sub new {
         'password:s'       => { name => 'password' },
         'timeout:s'        => { name => 'timeout', default => 30 },
         'memory'           => { name => 'memory' },
-        'command-plink:s'  => { name => 'command_plink', default => 'plink' },
+        'command-plink:s'  => { name => 'command_plink' }
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -65,6 +65,14 @@ sub check_options {
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
     }
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command_plink}
+    );
+
+    $self->{option_results}->{command} = 'plink'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
 }
 
 sub run {

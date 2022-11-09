@@ -31,7 +31,7 @@ sub new {
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
         $options{options}->add_options(arguments => {
-            'sshcli-command:s' => { name => 'sshcli_command', default => 'ssh' },
+            'sshcli-command:s' => { name => 'sshcli_command' },
             'sshcli-path:s'    => { name => 'sshcli_path' },
             'sshcli-option:s@' => { name => 'sshcli_option' }
         });
@@ -56,6 +56,13 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'sshcli backend cannot use ssh password. please use backend plink or libssh');
         $self->{output}->option_exit();
     }
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $options{option_results}->{sshcli_command},
+        command_options => join('', @{$self->{ssh_option}}),
+        command_path => $self->{ssh_path}
+    );
 
     push @{$self->{ssh_option}}, '-o=BatchMode=yes';
     push @{$self->{ssh_option}}, '-l=' . $self->{ssh_username} if (defined($self->{ssh_username}) && $self->{ssh_username} ne '');

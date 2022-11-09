@@ -52,7 +52,10 @@ sub run {
 
     $disco_stats->{start_time} = time();
 
-    my $result = $options{custom}->ansible_list_hosts(host_pattern => $self->{option_results}->{host_pattern});
+    my $result = $options{custom}->execute_command(
+        command => 'ANSIBLE_LOAD_CALLBACK_PLUGINS=true ANSIBLE_STDOUT_CALLBACK=json ansible',
+        command_options => "'" . $self->{option_results}->{host_pattern} . "' --module-name=setup",
+    );
 
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
@@ -99,6 +102,8 @@ __END__
 =head1 MODE
 
 Resources discovery.
+
+Command used: ANSIBLE_LOAD_CALLBACK_PLUGINS=true ANSIBLE_STDOUT_CALLBACK=json ansible %(host_pattern) --module-name=setup
 
 =over 8
 

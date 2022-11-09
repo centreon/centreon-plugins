@@ -123,12 +123,31 @@ sub new {
         'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
         'timeout:s'         => { name => 'timeout', default => 30 },
         'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'impexp' },
-        'command-path:s'    => { name => 'command_path', default => '/quadstorvtl/bin' },
-        'command-options:s' => { name => 'command_options', default => '-l' }
+        'command:s'         => { name => 'command' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
+    $self->{option_results}->{command} = 'impexp'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command_options} = '-l'
+        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
+    $self->{option_results}->{command_path} = '/quadstorvtl/bin'
+        if (!defined($self->{option_results}->{command_path}) || $self->{option_results}->{command_path} eq '');
 }
 
 sub manage_selection {

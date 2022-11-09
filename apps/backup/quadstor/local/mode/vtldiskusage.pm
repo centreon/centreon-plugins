@@ -109,6 +109,12 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_disk_output {
+    my ($self, %options) = @_;
+
+    return "Disk '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -141,24 +147,23 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'bdconfig' },
-                                  "command-path:s"    => { name => 'command_path', default => '/quadstorvtl/bin' },
-                                  "command-options:s" => { name => 'command_options', default => '-l -c' },
-                                  "filter-name:s"     => { name => 'filter_name' },
-                                  "warning-status:s"  => { name => 'warning_status', default => '' },
-                                  "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /active/i' },
-                                  "units:s"           => { name => 'units', default => '%' },
-                                  "free"              => { name => 'free' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "hostname:s"        => { name => 'hostname' },
+        "remote"            => { name => 'remote' },
+        "ssh-option:s@"     => { name => 'ssh_option' },
+        "ssh-path:s"        => { name => 'ssh_path' },
+        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"         => { name => 'timeout', default => 30 },
+        "sudo"              => { name => 'sudo' },
+        "command:s"         => { name => 'command' },
+        "command-path:s"    => { name => 'command_path' },
+        "command-options:s" => { name => 'command_options' },
+        "filter-name:s"     => { name => 'filter_name' },
+        "warning-status:s"  => { name => 'warning_status', default => '' },
+        "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /active/i' },
+        "units:s"           => { name => 'units', default => '%' },
+        "free"              => { name => 'free' },
+    });
     
     return $self;
 }
@@ -167,24 +172,35 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
+    $self->{option_results}->{command} = 'bdconfig'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command_options} = '-l -c'
+        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
+    $self->{option_results}->{command_path} = '/quadstorvtl/bin'
+        if (!defined($self->{option_results}->{command_path}) || $self->{option_results}->{command_path} eq '');
+
     $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-sub prefix_disk_output {
-    my ($self, %options) = @_;
-
-    return "Disk '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    sudo => $self->{option_results}->{sudo},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
+
     $self->{disk} = {};
     #ID  Vendor Model    SerialNumber Name     Pool    Size     Used     Status
     #1   Msft   Virtual             /dev/sdb Default 1024.00  21.28    Active

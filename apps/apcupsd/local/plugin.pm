@@ -76,24 +76,26 @@ package apps::apcupsd::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                'batterycharge'       => 'apps::apcupsd::local::mode::batterycharge',   # BCHARGE
-                'temperature'          => 'apps::apcupsd::local::mode::temperature',    # ITEMP
-                'timeleft'            => 'apps::apcupsd::local::mode::timeleft',        # TIMELEFT MAXTIME MINTIMEL
-                'linevoltage'         => 'apps::apcupsd::local::mode::linevoltage',     # LINEV
-                'batteryvoltage'      => 'apps::apcupsd::local::mode::batteryvoltage',  # BATTV
-                'outputvoltage'       => 'apps::apcupsd::local::mode::outputvoltage',   # OUTPUTV
-                'linefrequency'       => 'apps::apcupsd::local::mode::linefrequency',   # LINEFREQ
-                'loadpercentage'      => 'apps::apcupsd::local::mode::loadpercentage',  # LOADPCT
-                        );
+    $self->{modes} = {
+        'batterycharge'  => 'apps::apcupsd::local::mode::batterycharge',   # BCHARGE
+        'temperature'    => 'apps::apcupsd::local::mode::temperature',     # ITEMP
+        'timeleft'       => 'apps::apcupsd::local::mode::timeleft',        # TIMELEFT MAXTIME MINTIMEL
+        'linevoltage'    => 'apps::apcupsd::local::mode::linevoltage',     # LINEV
+        'batteryvoltage' => 'apps::apcupsd::local::mode::batteryvoltage',  # BATTV
+        'outputvoltage'  => 'apps::apcupsd::local::mode::outputvoltage',   # OUTPUTV
+        'linefrequency'  => 'apps::apcupsd::local::mode::linefrequency',   # LINEFREQ
+        'loadpercentage' => 'apps::apcupsd::local::mode::loadpercentage'   # LOADPCT
+    };
+
+    $self->{custom_modes}->{cli} = 'apps::apcupsd::local::custom::cli';
+
     return $self;
 }
 

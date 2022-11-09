@@ -22,15 +22,14 @@ package os::solaris::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'prtdiag'              => 'os::solaris::local::mode::prtdiag',
         'cpu'                  => 'os::solaris::local::mode::cpu',
         'fc-connected'         => 'os::solaris::local::mode::fcconnected',
@@ -41,8 +40,10 @@ sub new {
         'hwraidctl-status'     => 'os::solaris::local::mode::hwraidctl',
         'hwsas2ircu-status'    => 'os::solaris::local::mode::hwsas2ircu',
         'lom-v120-status'      => 'os::solaris::local::mode::lomv120',
-        'lom-v1280-status'     => 'os::solaris::local::mode::lomv1280',
-    );
+        'lom-v1280-status'     => 'os::solaris::local::mode::lomv1280'
+    };
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }

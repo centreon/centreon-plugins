@@ -162,9 +162,9 @@ sub new {
         'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
         'timeout:s'         => { name => 'timeout', default => 30 },
         'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'vcconfig' },
-        'command-path:s'    => { name => 'command_path', default => '/quadstorvtl/bin' },
-        'command-options:s' => { name => 'command_options', default => '-l -v %{vtl_name}' },
+        'command:s'         => { name => 'command' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options' },
         'vtl-name:s'        => { name => 'vtl_name' },
         'filter-name:s'     => { name => 'filter_name' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
@@ -184,6 +184,20 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to set vtl-name option.");
         $self->{output}->option_exit();
     }
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
+    $self->{option_results}->{command} = 'vcconfig'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command_options} = '-l -v %{vtl_name}'
+        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
+    $self->{option_results}->{command_path} = '/quadstorvtl/bin'
+        if (!defined($self->{option_results}->{command_path}) || $self->{option_results}->{command_path} eq '');
 
     $self->{option_results}->{command_options} =~ s/%\{vtl_name\}/$self->{option_results}->{vtl_name}/;
     $self->change_macros(macros => ['warning_status', 'critical_status']);

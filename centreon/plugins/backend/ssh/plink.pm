@@ -31,7 +31,7 @@ sub new {
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
         $options{options}->add_options(arguments => {
-            'plink-command:s' => { name => 'plink_command', default => 'plink' },
+            'plink-command:s' => { name => 'plink_command' },
             'plink-path:s'    => { name => 'plink_path' },
             'plink-option:s@' => { name => 'plink_option' }
         });
@@ -53,6 +53,13 @@ sub check_options {
     $self->{ssh_priv_key} = $options{option_results}->{ssh_priv_key};
     $self->{ssh_username} = $options{option_results}->{ssh_username};
     $self->{ssh_password} = $options{option_results}->{ssh_password};
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $options{option_results}->{plink_command},
+        command_options => join('', @{$self->{ssh_option}}),
+        command_path => $self->{ssh_path}
+    );
 
     push @{$self->{ssh_option}}, '-batch';
     push @{$self->{ssh_option}}, '-l=' .  $self->{ssh_username} if (defined($self->{ssh_username}) && $self->{ssh_username} ne '');

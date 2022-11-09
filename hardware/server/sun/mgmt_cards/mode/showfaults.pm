@@ -31,14 +31,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"       => { name => 'hostname' },
-                                  "username:s"       => { name => 'username' },
-                                  "password:s"       => { name => 'password' },
-                                  "timeout:s"        => { name => 'timeout', default => 30 },
-                                  "command-plink:s"  => { name => 'command_plink', default => 'plink' },
-                                });
+    $options{options}->add_options(arguments => {
+        "hostname:s"       => { name => 'hostname' },
+        "username:s"       => { name => 'username' },
+        "password:s"       => { name => 'password' },
+        "timeout:s"        => { name => 'timeout', default => 30 },
+        "command-plink:s"  => { name => 'command_plink' }
+    });
+
     return $self;
 }
 
@@ -58,6 +58,14 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Need to specify a password.");
        $self->{output}->option_exit(); 
     }
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command_plink}
+    );
+
+    $self->{option_results}->{command} = 'plink'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
 }
 
 sub run {
@@ -68,10 +76,11 @@ sub run {
     ######
     my $cmd = "echo -e '" . $self->{option_results}->{username} . "\n" . $self->{option_results}->{password} . "\nshowfaults\nlogout\n' | " . $self->{option_results}->{command_plink} . ' -T -batch ' . $self->{option_results}->{hostname} . " 2>&1";
     my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $cmd,
-                                                 timeout => $self->{option_results}->{timeout},
-                                                 wait_exit => 1
-                                                 );
+        command => $cmd,
+        timeout => $self->{option_results}->{timeout},
+        wait_exit => 1
+    );
+
     $stdout =~ s/\r//g;
     if ($lerror <= -1000) {
         $self->{output}->output_add(severity => 'UNKNOWN', 

@@ -34,21 +34,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'prtdiag' },
-                                  "command-path:s"    => { name => 'command_path', default => '/usr/platform/`/sbin/uname -i`/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => '-v 2>&1' },
-                                  "config-file:s"     => { name => 'config_file' },
-                                  "exclude:s@"        => { name => 'exclude' },
-                                });
+    $options{options}->add_options(arguments => {
+        'config-file:s' => { name => 'config_file' },
+        'exclude:s@'    => { name => 'exclude' }
+    });
+
     $self->{conf} = {};
     $self->{excludes} = {};
     $self->{syst} = undef;
@@ -63,7 +53,7 @@ sub check_options {
     } else {
         $self->{config_file} = dirname(__FILE__) . '/../conf/prtdiag.conf';
     }
-    
+
     foreach (@{$self->{option_results}->{exclude}}) {
         next if (! /^(.*?),(.*?),(.*)$/);
         my ($section, $tpl, $filter) = ($1, $2, $3);
@@ -94,17 +84,19 @@ sub check_exclude {
 
 sub prtdiag {
     my ($self, %options) = @_;
-    
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options},
-                                                  no_errors => { 1 => 1 });
-    
-    my @diag = split (/\n/, $stdout);
-    
+
+    my ($stdout, $exit_code) = $options{custom}->execute_command(
+        command => 'prtdiag',
+        command_options => '-v 2>&1',
+        command_path => '/usr/platform/`/sbin/uname -i`/sbin'
+    );
+    if ($exit_code != 0 && $exit_code != 1) {
+        $self->{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $self->{output}->option_exit();
+    }
+
+    my @diag = split(/\n/, $stdout);
+
     # Look for system type
     unless( defined($self->{syst}) ) {
         FSYS:
@@ -121,30 +113,38 @@ sub prtdiag {
 
     # Check for unidentified system type
     unless( defined($self->{syst}) ) {
-        $self->{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Unable to identify system type !");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN', 
+            short_msg => "Unable to identify system type !"
+        );
         return ;
     }
     $self->{output}->output_add(long_msg => "Using system type : $self->{syst}");
                
     # Further config checks
     unless( defined($self->{conf}->{$self->{syst}}->{'system.checks'}) ) {
-        $self->{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Initialization failed - Missing 'system.checks' entry for section '$self->{syst}' in file '$self->{config_file}' !");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN', 
+            short_msg => "Initialization failed - Missing 'system.checks' entry for section '$self->{syst}' in file '$self->{config_file}' !"
+        );
         return ;
     }
     my @checks = split(/\s*,\s*/,$self->{conf}->{$self->{syst}}->{'system.checks'});
     if( scalar(@checks) == 0 ) {
-        $self->{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "No check defined in 'system.checks' entry for section '$self->{syst}' in file '$self->{config_file}' !");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN', 
+            short_msg => "No check defined in 'system.checks' entry for section '$self->{syst}' in file '$self->{config_file}' !"
+        );
         return ;
     }
     foreach my $check ( @checks ) {
         foreach my $param ( "description", "begin_match", "end_match", "data_match", "data_labels", "ok_condition", "output_string" ) {
             my $param_name = "checks.$check.$param";
             unless( defined($self->{conf}->{$self->{syst}}->{$param_name}) ) {
-                $self->{output}->output_add(severity => 'UNKNOWN', 
-                                            short_msg => "Initialization error - Missing '$param_name' entry for section '$self->{syst}' in file '$self->{config_file}' !");
+                $self->{output}->output_add(
+                    severity => 'UNKNOWN', 
+                    short_msg => "Initialization error - Missing '$param_name' entry for section '$self->{syst}' in file '$self->{config_file}' !"
+                );
                 return ;
             }
         }
@@ -162,7 +162,7 @@ sub prtdiag {
         my $dcount = 0;
         my $lcount = 0;
         my %data = ();
-        
+
         $self->{output}->output_add(long_msg => "Checking $description:");
 
         # Parse prtdiag output
@@ -266,15 +266,21 @@ sub prtdiag {
     
     my $checked = scalar(@passed) + scalar(@failed);
     if( scalar(@failed) > 0 ) {
-        $self->{output}->output_add(severity => 'CRITICAL', 
-                                    short_msg => "Checked $checked component" . ( $checked le 1 ? "" : "s") . ", found " . scalar(@failed) . " errors : " . join(', ',@failed));
+        $self->{output}->output_add(
+            severity => 'CRITICAL', 
+            short_msg => "Checked $checked component" . ( $checked le 1 ? "" : "s") . ", found " . scalar(@failed) . " errors : " . join(', ',@failed)
+        );
         $self->{output}->output_add(long_msg => join("\n",@passed));
     } elsif( $checked == 0 ) {
-        $self->{output}->output_add(severity => 'WARNING', 
-                                    short_msg => "Found nothing to check !");
+        $self->{output}->output_add(
+            severity => 'WARNING', 
+            short_msg => "Found nothing to check !"
+        );
     } else {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Successfully checked $checked component" . ( $checked le 1 ? "" : "s"));
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "Successfully checked $checked component" . ( $checked le 1 ? "" : "s")
+        );
         $self->{output}->output_add(long_msg => join("\n", @passed));
     }
 }
@@ -283,7 +289,7 @@ sub run {
     my ($self, %options) = @_;
 
     $self->load_prtdiag_config();
-    $self->prtdiag();
+    $self->prtdiag(custom => $options{custom});
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -292,8 +298,10 @@ sub load_prtdiag_config {
     my ($self, %options) = @_;
 
     unless( open(CONFIG,"<$self->{config_file}") ) {
-        $self->{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Initialization error - unable to open file '" . $self->{config_file} . "' : $!");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN', 
+            short_msg => "Initialization error - unable to open file '" . $self->{config_file} . "' : $!"
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -323,50 +331,11 @@ __END__
 
 =head1 MODE
 
-Check Sun Hardware with 'prtdiag' command.
+Check Sun hardware.
+
+Command used: '/usr/platform/`/sbin/uname -i`/sbin/prtdiag -v 2>&1'
 
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'prtdiag').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/usr/platform/`/sbin/uname -i`/sbin').
-
-=item B<--command-options>
-
-Command options (Default: '-v 2>&1').
 
 =item B<--config-file>
 

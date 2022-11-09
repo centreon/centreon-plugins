@@ -22,6 +22,7 @@ package cloud::kubernetes::custom::kubectl;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use JSON::XS;
 
 sub new {
@@ -48,9 +49,9 @@ sub new {
             'config-file:s'     => { name => 'config_file', default => '~/.kube/config' },
             'context:s'         => { name => 'context' },
             'sudo'              => { name => 'sudo' },
-            'command:s'         => { name => 'command', default => 'kubectl' },
+            'command:s'         => { name => 'command', default => '' },
             'command-path:s'    => { name => 'command_path' },
-            'command-options:s' => { name => 'command_options', default => '' },
+            'command-options:s' => { name => 'command_options' },
             'proxyurl:s'        => { name => 'proxyurl' },
         });
     }
@@ -95,12 +96,21 @@ sub check_options {
         $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
         $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
     }
-    
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
     return 0;
 }
 
 sub execute {
     my ($self, %options) = @_;
+
+    my $command = defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : 'kubectl';
 
     my $cmd_options = $options{cmd_options};
     # See https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-output-verbosity-and-debugging
@@ -110,13 +120,13 @@ sub execute {
         $cmd_options = $self->{option_results}->{command_options};
     }
 
-    $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $cmd_options . "'", debug => 1);
+    $self->{output}->output_add(long_msg => "Command line: '" . $command . " " . $cmd_options . "'", debug => 1);
     
     my ($response, $exit_code) = centreon::plugins::misc::execute(
         output => $self->{output},
         options => $self->{option_results},
         sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
+        command => $command,
         command_path => $self->{option_results}->{command_path},
         command_options => $cmd_options,
         redirect_stderr => ($self->{output}->is_debug()) ? 0 : 1,

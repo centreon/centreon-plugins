@@ -29,12 +29,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = ( 
-        'scrape-metrics' => 'apps::monitoring::openmetrics::mode::scrapemetrics',
-    );
-    $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';
-    $self->{custom_modes}{file} = 'centreon::common::monitoring::openmetrics::custom::file';
+    $self->{modes} = {
+        'scrape-metrics' => 'apps::monitoring::openmetrics::mode::scrapemetrics'
+    };
+
+    $self->{custom_modes}->{web} = 'centreon::common::monitoring::openmetrics::custom::web';
+    $self->{custom_modes}->{file} = 'centreon::common::monitoring::openmetrics::custom::file';
     return $self;
 }
 
