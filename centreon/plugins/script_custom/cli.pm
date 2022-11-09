@@ -50,7 +50,8 @@ sub new {
         });
     }
 
-    $options{options}->add_help(package => __PACKAGE__, sections => 'CLI OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'CLI OPTIONS', once => 1)
+        if (!defined($options{nohelp}));
 
     $self->{output} = $options{output};
     $self->{ssh} = centreon::plugins::ssh->new(%options);

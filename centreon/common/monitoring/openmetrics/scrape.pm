@@ -28,7 +28,7 @@ sub parse {
     my (%options) = @_;
 
     my $result;
-    my $response = $options{custom}->scrape;
+    my $response = $options{custom}->scrape();
 
     foreach my $line (split /\n/, $response) {
         $result->{metrics}->{$1}->{type} = $2 if ($line =~ /^#\sTYPE\s(\w+)\s(.*)$/);

@@ -20,6 +20,8 @@
 
 package centreon::common::monitoring::openmetrics::custom::file;
 
+use base qw(centreon::plugins::script_custom::cli);
+
 use strict;
 use warnings;
 use centreon::plugins::misc;
@@ -27,51 +29,29 @@ use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, nohelp => 1);
     bless $self, $class;
 
-    if (!defined($options{output})) {
-        print "Class Custom: Need to specify 'output' argument.\n";
-        exit 3;
-    }
-    if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
-    }
-    
-    if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => {
-            'hostname:s'        => { name => 'hostname' },
-            'ssh-option:s@'     => { name => 'ssh_option' },
-            'ssh-path:s'        => { name => 'ssh_path' },
-            'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-            'timeout:s'         => { name => 'timeout', default => 10 },
-            'sudo'              => { name => 'sudo' },
-            'command:s'         => { name => 'command', default => 'cat' },
-            'command-path:s'    => { name => 'command_path' },
-            'command-options:s' => { name => 'command_options' }
-        });
-    }
     $options{options}->add_help(package => __PACKAGE__, sections => 'FILE OPTIONS', once => 1);
-
-    $self->{output} = $options{output};
 
     return $self;
 }
 
-sub set_options {
-    my ($self, %options) = @_;
-
-    $self->{option_results} = $options{option_results};
-}
-
-sub set_defaults {}
-
 sub check_options {
     my ($self, %options) = @_;
 
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path}
+    );
+
+    $self->{option_results}->{command} = 'cat'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+
+    if (defined($self->{option_results}->{command_options})) {
+        # we remove illegal characters
+        $self->{option_results}->{command_options} =~ s/[`;!&]//g;
     }
 
     return 0;
@@ -89,14 +69,8 @@ sub get_uuid {
 sub scrape {
     my ($self, %options) = @_;
 
-    return centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
-    );
+    my ($stdout) = $self->SUPER::execute_command(%options);
+    return $stdout;
 }
 
 1;
@@ -117,27 +91,7 @@ Openmetrics file custom mode
 
 =item B<--hostname>
 
-Endpoint hostname (If remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (Example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (Default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (Default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
+Hostname to query (with ssh).
 
 =item B<--command>
 
@@ -149,11 +103,7 @@ Command path.
 
 =item B<--command-options>
 
-Command options).
-
-=item B<--timeout>
-
-Set SSH timeout (Default: 10).
+Command options.
 
 =back
 
