@@ -29,13 +29,13 @@ my %map_status = (
     3 => 'major',
     4 => 'critical',
     5 => 'absence',
-    6 => 'unknown',
+    6 => 'unknown'
 );
 
 my %map_installation_status = (
     1 => 'absence',
     2 => 'presence',
-    3 => 'unknown',
+    3 => 'unknown'
 );
 
 my $mapping = {
@@ -43,7 +43,7 @@ my $mapping = {
     powerSupplyStatus       => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.6.50.1.7', map => \%map_status },
     powerSupplyInputPower   => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.6.50.1.8' },
     powerSupplyPresence     => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.6.50.1.9', map => \%map_installation_status },
-    powerSupplyDevicename   => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.6.50.1.13' },
+    powerSupplyDevicename   => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.6.50.1.13' }
 };
 my $oid_powerSupplyDescriptionEntry = '.1.3.6.1.4.1.58132.2.235.1.1.6.50.1';
 
@@ -52,7 +52,7 @@ sub load {
     
     push @{$self->{request}}, {
         oid => $oid_powerSupplyDescriptionEntry,
-        start => $mapping->{powerSupplyPowerRating}->{oid},
+        start => $mapping->{powerSupplyPowerRating}->{oid}
     };
 }
 
@@ -77,13 +77,15 @@ sub check {
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu', instance => $instance, value => $result->{powerSupplyInputPower});
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Power supply '%s' power is %s watts", $result->{powerSupplyDevicename}, $result->{powerSupplyInputPower}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Power supply '%s' power is %s watts", $result->{powerSupplyDevicename}, $result->{powerSupplyInputPower})
+                );
             }
 
             $self->{output}->perfdata_add(
-                label => 'power', unit => 'W',
                 nlabel => 'hardware.powersupply.power.watt',
+                unit => 'W',
                 instances => $result->{powerSupplyDevicename},
                 value => $result->{powerSupplyInputPower},
                 warning => $warn,
@@ -93,14 +95,19 @@ sub check {
             );
         }
         
-        $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is '%s' [instance = %s]",
-                                    $result->{powerSupplyDevicename}, $result->{powerSupplyStatus}, $instance, 
-                                    ));
-   
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' status is '%s' [instance: %s]",
+                $result->{powerSupplyDevicename}, $result->{powerSupplyStatus}, $instance, 
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'psu', value => $result->{powerSupplyStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power supply '%s' status is '%s'", $result->{powerSupplyDevicename}, $result->{powerSupplyStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Power supply '%s' status is '%s'", $result->{powerSupplyDevicename}, $result->{powerSupplyStatus})
+            );
         }
     }
 }

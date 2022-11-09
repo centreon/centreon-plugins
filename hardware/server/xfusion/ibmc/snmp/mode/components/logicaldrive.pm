@@ -28,13 +28,13 @@ my %map_state = (
     2 => 'partial degraded',
     3 => 'degraded',
     4 => 'optimal',
-    255 => 'unknown',
+    255 => 'unknown'
 );
 
 my $mapping = {
     logicalDriveRAIDControllerIndex  => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.37.50.1.1' },
     logicalDriveIndex                => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.37.50.1.2' },
-    logicalDriveState                => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.37.50.1.4', map => \%map_state },
+    logicalDriveState                => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.37.50.1.4', map => \%map_state }
 };
 my $oid_logicalDriveDescriptionEntry = '.1.3.6.1.4.1.58132.2.235.1.1.37.50.1';
 
@@ -43,7 +43,7 @@ sub load {
     
     push @{$self->{request}}, {
         oid => $oid_logicalDriveDescriptionEntry,
-        end => $mapping->{logicalDriveState}->{oid},
+        end => $mapping->{logicalDriveState}->{oid}
     };
 }
 
@@ -62,17 +62,24 @@ sub check {
         next if ($self->check_filter(section => 'logicaldrive', instance => $instance));
         $self->{components}->{logicaldrive}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Logical drive '%s.%s' status is '%s' [instance = %s]",
-                                    $result->{logicalDriveRAIDControllerIndex}, $result->{logicalDriveIndex}, $result->{logicalDriveState}, $instance, 
-                                    ));
-   
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "logical drive '%s.%s' status is '%s' [instance: %s]",
+                $result->{logicalDriveRAIDControllerIndex}, $result->{logicalDriveIndex}, $result->{logicalDriveState}, $instance, 
+            )
+        );
+
         my $exit = $self->get_severity(section => 'logicaldrive', value => $result->{logicalDriveState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Logical drive '%s.%s' status is '%s'", 
-                                            $result->{logicalDriveRAIDControllerIndex},
-                                            $result->{logicalDriveIndex},
-                                            $result->{logicalDriveState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Logical drive '%s.%s' status is '%s'", 
+                    $result->{logicalDriveRAIDControllerIndex},
+                    $result->{logicalDriveIndex},
+                    $result->{logicalDriveState}
+                )
+            );
         }
     }
 }

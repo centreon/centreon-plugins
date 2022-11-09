@@ -29,12 +29,12 @@ my %map_status = (
     3 => 'major',
     4 => 'critical',
     5 => 'absence',
-    6 => 'unknown',
+    6 => 'unknown'
 );
 
 my $mapping = {
     memoryStatus               => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.16.50.1.6', map => \%map_status },
-    memoryDevicename           => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.16.50.1.10' },
+    memoryDevicename           => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.16.50.1.10' }
 };
 my $oid_memoryDescriptionEntry = '.1.3.6.1.4.1.58132.2.235.1.1.16.50.1';
 
@@ -44,7 +44,7 @@ sub load {
     push @{$self->{request}}, {
         oid => $oid_memoryDescriptionEntry,
         start => $mapping->{memoryStatus}->{oid},
-        end => $mapping->{memoryDevicename}->{oid},
+        end => $mapping->{memoryDevicename}->{oid}
     };
 }
 
@@ -64,14 +64,19 @@ sub check {
         next if ($result->{memoryStatus} =~ /absence/);
         $self->{components}->{memory}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("Memory '%s' status is '%s' [instance = %s]",
-                                    $result->{memoryDevicename}, $result->{memoryStatus}, $instance, 
-                                    ));
-   
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "memory '%s' status is '%s' [instance: %s]",
+                $result->{memoryDevicename}, $result->{memoryStatus}, $instance, 
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'memory', value => $result->{memoryStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Memory '%s' status is '%s'", $result->{memoryDevicename}, $result->{memoryStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Memory '%s' status is '%s'", $result->{memoryDevicename}, $result->{memoryStatus})
+            );
         }
     }
 }

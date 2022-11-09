@@ -29,20 +29,20 @@ my %map_status = (
     3 => 'major',
     4 => 'critical',
     5 => 'absence',
-    6 => 'unknown',
+    6 => 'unknown'
 );
 
 my %map_installation_status = (
     1 => 'absence',
     2 => 'presence',
-    3 => 'unknown',
+    3 => 'unknown'
 );
 
 my $mapping = {
     fanSpeed                => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.8.50.1.2' },
     fanPresence             => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.8.50.1.3', map => \%map_installation_status },
     fanStatus               => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.8.50.1.4', map => \%map_status },
-    fanDevicename           => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.8.50.1.7' },
+    fanDevicename           => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.8.50.1.7' }
 };
 my $oid_fanDescriptionEntry = '.1.3.6.1.4.1.58132.2.235.1.1.8.50.1';
 
@@ -72,13 +72,15 @@ sub check {
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{fanSpeed});
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Fan '%s' speed is %s RPM", $result->{fanDevicename}, $result->{fanSpeed}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Fan '%s' speed is %s RPM", $result->{fanDevicename}, $result->{fanSpeed})
+                );
             }
 
             $self->{output}->perfdata_add(
-                label => 'speed', unit => 'rpm',
                 nlabel => 'hardware.fan.speed.rpm',
+                unit => 'rpm',
                 instances => $result->{fanDevicename},
                 value => $result->{fanSpeed},
                 warning => $warn,
@@ -87,14 +89,19 @@ sub check {
             );
         }
         
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is '%s' [instance = %s]",
-                                    $result->{fanDevicename}, $result->{fanStatus}, $instance, 
-                                    ));
-   
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s' status is '%s' [instance: %s]",
+                $result->{fanDevicename}, $result->{fanStatus}, $instance, 
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'fan', value => $result->{fanStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' status is '%s'", $result->{fanDevicename}, $result->{fanStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '%s' status is '%s'", $result->{fanDevicename}, $result->{fanStatus})
+            );
         }
     }
 }

@@ -25,7 +25,7 @@ use warnings;
 
 my $mapping = {
     raidControllerComponentName     => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.36.50.1.4' },
-    raidControllerHealthStatus      => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.36.50.1.7' },
+    raidControllerHealthStatus      => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.36.50.1.7' }
 };
 my $oid_raidControllerDescriptionEntry = '.1.3.6.1.4.1.58132.2.235.1.1.36.50.1';
 
@@ -66,16 +66,21 @@ sub check {
         $self->{components}->{raidcontroller}->{total}++;
       
         if (defined($map_status{$result->{raidControllerHealthStatus}})) {
-            $self->{output}->output_add(long_msg => sprintf("Raid controller '%s' status is '%s' [instance = %s]",
-                                        $result->{raidControllerComponentName}, $map_status{$result->{raidControllerHealthStatus}}, $instance, 
-                                        ));
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "raid controller '%s' status is '%s' [instance: %s]",
+                    $result->{raidControllerComponentName}, $map_status{$result->{raidControllerHealthStatus}}, $instance, 
+                )
+            );
    
             my $exit = $self->get_severity(section => 'raidcontroller', value => $map_status{$result->{raidControllerHealthStatus}});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Raid controller '%s' status is '%s'", $result->{raidControllerComponentName}, $map_status{$result->{raidControllerHealthStatus}}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Raid controller '%s' status is '%s'", $result->{raidControllerComponentName}, $map_status{$result->{raidControllerHealthStatus}})
+                );
             }
-            
+
             next;
         }
         
@@ -83,14 +88,19 @@ sub check {
             next if (!($result->{raidControllerHealthStatus} & (1 << $i)));
             
             my $status = $bitmap_status{$i};
-            $self->{output}->output_add(long_msg => sprintf("Raid controller '%s' status is '%s' [instance = %s]",
-                                        $result->{raidControllerComponentName}, $status, $instance, 
-                                        ));
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "raid controller '%s' status is '%s' [instance: %s]",
+                    $result->{raidControllerComponentName}, $status, $instance, 
+                )
+            );
    
             my $exit = $self->get_severity(section => 'raidcontroller', value => $status);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Raid controller '%s' status is '%s'", $result->{raidControllerComponentName}, $status));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Raid controller '%s' status is '%s'", $result->{raidControllerComponentName}, $status)
+                );
             }
         }
     }
