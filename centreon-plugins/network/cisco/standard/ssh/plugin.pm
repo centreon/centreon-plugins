@@ -29,13 +29,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cpu'               => 'network::cisco::standard::ssh::mode::cpu',
-        'voice-dial-peer'   => 'network::cisco::standard::ssh::mode::voicedialpeer',
-    );
+    $self->{modes} = {
+        'cpu'             => 'network::cisco::standard::ssh::mode::cpu',
+        'voice-dial-peer' => 'network::cisco::standard::ssh::mode::voicedialpeer'
+    };
 
-    $self->{custom_modes}{ssh} = 'network::cisco::standard::ssh::custom::custom';
+    $self->{custom_modes}->{ssh} = 'network::cisco::standard::ssh::custom::custom';
     return $self;
 }
 

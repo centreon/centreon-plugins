@@ -41,9 +41,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{volume} = [
@@ -52,7 +52,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'volume-overhead', set => {
@@ -60,9 +60,9 @@ sub set_counters {
                 output_template => 'Raid Overhead : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'volume_overhead', value => 'overhead', template => '%d',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'volume_overhead', template => '%d',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'volume-replay', set => {
@@ -70,11 +70,11 @@ sub set_counters {
                 output_template => 'Replay : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'volume_replay', value => 'replay', template => '%d',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'volume_replay', template => '%d',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -186,16 +186,16 @@ sub new {
         'cem-port:s'        => { name => 'cem_port', default => 3033 },
         'sdk-path-dll:s'    => { name => 'sdk_path_dll' },
         'timeout:s'         => { name => 'timeout', default => 50 },
-        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command:s'         => { name => 'command' },
         'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'command-options:s' => { name => 'command_options' },
         'no-ps'             => { name => 'no_ps' },
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
         'ps-sc-filter:s'    => { name => 'ps_sc_filter' },
         'ps-sc-volume:s'    => { name => 'ps_sc_volume' },
         'units:s'           => { name => 'units', default => '%' },
-        'free'              => { name => 'free' },
+        'free'              => { name => 'free' }
     });
 
     return $self;
@@ -212,7 +212,19 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label_opt . " option.");
             $self->{output}->option_exit();
         }
-    }    
+    }
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
+    $self->{option_results}->{command} = 'powershell.exe'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command_options} = '-InputFormat none -NoLogo -EncodedCommand'
+        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
 }
 
 sub manage_selection {

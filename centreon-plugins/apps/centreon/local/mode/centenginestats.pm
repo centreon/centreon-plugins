@@ -162,8 +162,8 @@ sub set_counters {
                         threshold_use => $_->[0] ,
                         closure_custom_output => $self->can('custom_' . $type . '_execution_time_output'),
                         perfdatas => [
-                            { value => $_->[0] , template => '%.3f', min => 0, unit => 's' },
-                        ],
+                            { value => $_->[0] , template => '%.3f', min => 0, unit => 's' }
+                        ]
                     }
                 }
             ;
@@ -183,8 +183,8 @@ sub set_counters {
                         threshold_use => $_->[0] ,
                         closure_custom_output => $self->can('custom_' . $type . '_checked_output'),
                         perfdatas => [
-                            { value => $_->[0] , template => '%d', min => 0 },
-                        ],
+                            { value => $_->[0] , template => '%d', min => 0 }
+                        ]
                     }
                 }
             ;
@@ -226,8 +226,8 @@ sub set_counters {
                     threshold_use => $_->[0] ,
                     closure_custom_output => $self->can('custom_hosts_status_output'),
                     perfdatas => [
-                        { value => $_->[0] , template => '%s', min => 0, max => 'total' },
-                    ],
+                        { value => $_->[0] , template => '%s', min => 0, max => 'total' }
+                    ]
                 }
             }
         ;
@@ -247,8 +247,8 @@ sub set_counters {
                     threshold_use => $_->[0] ,
                     closure_custom_output => $self->can('custom_services_status_output'),
                     perfdatas => [
-                        { value => $_->[0] , template => '%s', min => 0, max => 'total' },
-                    ],
+                        { value => $_->[0] , template => '%s', min => 0, max => 'total' }
+                    ]
                 }
             }
         ;
@@ -268,8 +268,8 @@ sub set_counters {
                     threshold_use => $_->[0] ,
                     closure_custom_output => $self->can('custom_commands_buffer_output'),
                     perfdatas => [
-                        { value => $_->[0] , template => '%s', min => 0, max => 'total' },
-                    ],
+                        { value => $_->[0] , template => '%s', min => 0, max => 'total' }
+                    ]
                 }
             }
         ;
@@ -282,19 +282,38 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'command:s'         => { name => 'command', default => 'centenginestats' },
-        'command-path:s'    => { name => 'command_path', default => '/usr/sbin' },
-        'command-options:s' => { name => 'command_options', default => '2>&1' },
+        'command:s'         => { name => 'command' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options' },
         'hostname:s'        => { name => 'hostname' },
         'remote'            => { name => 'remote' },
         'ssh-option:s@'     => { name => 'ssh_option' },
         'ssh-path:s'        => { name => 'ssh_path' },
         'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
         'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
+        'sudo'              => { name => 'sudo' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
+    $self->{option_results}->{command} = 'centenginestats'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command_options} = '2>&1'
+        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
+    $self->{option_results}->{command_path} = '/usr/sbin'
+        if (!defined($self->{option_results}->{command_path}) || $self->{option_results}->{command_path} eq '');
 }
 
 sub manage_selection {

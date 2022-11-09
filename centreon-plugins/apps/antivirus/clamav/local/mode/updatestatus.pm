@@ -124,7 +124,14 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
     $self->{clamav_command} = 'echo "==== CLAMD ===" ; clamd -V ; echo "==== DAILY ===="; sigtool --info ' . $self->{option_results}->{dailydb_file} . '; echo "==== MAIN ====" ; sigtool --info ' . $self->{option_results}->{maindb_file};
 }
 

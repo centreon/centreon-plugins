@@ -79,7 +79,7 @@ sub new {
         'username:s'       => { name => 'username' },
         'password:s'       => { name => 'password' },
         'timeout:s'        => { name => 'timeout', default => 30 },
-        'command-plink:s'  => { name => 'command_plink', default => 'plink' },
+        'command-plink:s'  => { name => 'command_plink' },
         'ssh'              => { name => 'ssh' }
     });
 
@@ -106,6 +106,14 @@ sub check_options {
     if (!defined($self->{option_results}->{ssh})) {
         require hardware::server::sun::mgmt_cards::lib::telnet;
     }
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command_plink}
+    );
+
+    $self->{option_results}->{command} = 'plink'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
 }
 
 sub ssh_command {

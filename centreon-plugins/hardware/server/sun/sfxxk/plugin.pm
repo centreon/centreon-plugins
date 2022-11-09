@@ -22,19 +22,20 @@ package hardware::server::sun::sfxxk::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'boards'        => 'hardware::server::sun::sfxxk::mode::boards',
         'environment'   => 'hardware::server::sun::sfxxk::mode::environment',
-        'failover'      => 'hardware::server::sun::sfxxk::mode::failover',
-    );
+        'failover'      => 'hardware::server::sun::sfxxk::mode::failover'
+    };
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }

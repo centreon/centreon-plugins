@@ -23,7 +23,7 @@ package centreon::common::powershell::backupexec::disks;
 use strict;
 use warnings;
 use centreon::common::powershell::functions;
-use centreon::common::powershell::veeam::functions;
+use centreon::common::powershell::backupexec::functions;
 
 sub get_powershell {
     my (%options) = @_;

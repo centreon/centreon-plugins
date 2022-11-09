@@ -49,9 +49,9 @@ sub new {
             'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
             'timeout:s'         => { name => 'timeout', default => 45 },
             'sudo'              => { name => 'sudo' },
-            'command:s'         => { name => 'command', default => 'dsmadmc' },
-            'command-path:s'    => { name => 'command_path', default => '/opt/tivoli/tsm/client/ba/bin' },
-            'command-options:s' => { name => 'command_options', default => '' }
+            'command:s'         => { name => 'command' },
+            'command-path:s'    => { name => 'command_path' },
+            'command-options:s' => { name => 'command_options' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'TSM CLI OPTIONS', once => 1);
@@ -84,6 +84,18 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to set tsm-password option.");
         $self->{output}->option_exit();
     }
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
+    $self->{option_results}->{command} = 'dsmadmc'
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command_path} = '/opt/tivoli/tsm/client/ba/bin'
+        if (!defined($self->{option_results}->{command_path}) || $self->{option_results}->{command_path} eq '');
  
     return 0;
 }

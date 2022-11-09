@@ -47,9 +47,9 @@ sub new {
             'manager-system:s'   => { name => 'manager_system' },
             'timeout:s'          => { name => 'timeout', default => 50 },
             'sudo'               => { name => 'sudo' },
-            'command:s'          => { name => 'command', default => 'sssu_linux_x64' },
+            'command:s'          => { name => 'command', default => '' },
             'command-path:s'     => { name => 'command_path' },
-            'command-options:s'  => { name => 'command_options', default => '' }
+            'command-options:s'  => { name => 'command_options' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'SSU CLI OPTIONS', once => 1);
@@ -87,6 +87,13 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => $self->{option_results}->{command},
+        command_options => $self->{option_results}->{command_options},
+        command_path => $self->{option_results}->{command_path}
+    );
+
     return 0;
 }
 
@@ -103,20 +110,24 @@ sub ssu_build_options {
 
 sub ssu_execute {
     my ($self, %options) = @_;
-    
+
     $self->ssu_build_options(%options);
-    my ($response) = centreon::plugins::misc::execute(output => $self->{output},
-                                                      options => $self->{option_results},
-                                                      sudo => $self->{option_results}->{sudo},
-                                                      command => $self->{option_results}->{command},
-                                                      command_path => $self->{option_results}->{command_path},
-                                                      command_options => $self->{option_results}->{command_options});
+    my $command = defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : 'sssu_linux_x64';
+    my ($response) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $command,
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
+
     my $xml_root = '<root>';
     while ($response =~ /(<object>.*?<\/object>)/msig) {
         $xml_root .= $1;
     }
     $xml_root .= '</root>';
-    
+
     my $xml_result;
     eval {
         $xml_result = XMLin($xml_root, 
@@ -128,7 +139,7 @@ sub ssu_execute {
         $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
         $self->{output}->option_exit();
     }
-    
+
     $self->{output}->output_add(long_msg => $response, debug => 1);
     return $xml_result;
 }

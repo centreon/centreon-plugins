@@ -24,28 +24,17 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'raidctl' },
-                                  "command-path:s"    => { name => 'command_path', default => '/usr/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => '-S 2>&1' },
-                                  "warning:s"         => { name => 'warning', },
-                                  "critical:s"        => { name => 'critical', },
-                                });
+
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' }
+    });
+
     return $self;
 }
 
@@ -54,24 +43,24 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'raidctl',
+        command_options => '-S 2>&1',
+        command_path => '/usr/sbin'
+    );
+
     my $long_msg = $stdout;
     $long_msg =~ s/\|/~/mg;
     $self->{output}->output_add(long_msg => $long_msg);
@@ -88,11 +77,11 @@ sub run {
         #0.2.0 GOOD
         #0.3.0 GOOD
         #4 "LSI_1030"
-        
+
         # For Disk
         if (/^\s*(\S+)\s+(FAILED)$/i ) {
             my $disk = $1;
-            
+
             $disks_errors++;
             $disks .= ' [' . $disk . '/FAILED' . ']';
         } elsif (/^\s*(\S+).*?(DEGRADED|FAILED)$/i) {
@@ -101,26 +90,38 @@ sub run {
         }
     }
 
-    my ($exit_code) = $self->{perfdata}->threshold_check(value => $volumes_errors, 
-                                                         threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]); 
+    my ($exit_code) = $self->{perfdata}->threshold_check(
+        value => $volumes_errors, 
+        threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
     if ($volumes_errors > 0) {
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Some volumes problems:" . $volumes));
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf("Some volumes problems:" . $volumes)
+        );
     } else {
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No problems on volumes");
+        $self->{output}->output_add(
+            severity => 'OK', 
+            short_msg => "No problems on volumes"
+        );
     }
-    
-    ($exit_code) = $self->{perfdata}->threshold_check(value => $disks_errors, 
-                                                      threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+
+    ($exit_code) = $self->{perfdata}->threshold_check(
+        value => $disks_errors, 
+        threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
     if ($disks_errors > 0) {
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Some disks problems:" . $disks));
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf("Some disks problems:" . $disks)
+        );
     } else {
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No problems on disks");
+        $self->{output}->output_add(
+            severity => 'OK', 
+            short_msg => "No problems on disks"
+        );
     }
- 
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -131,7 +132,9 @@ __END__
 
 =head1 MODE
 
-Check Hardware Raid Status (use 'raidctl' command).
+Check hardware raid status
+
+Command used: '/usr/sbin/raidctl -S 2>&1'
 
 =over 8
 
@@ -142,47 +145,6 @@ Threshold warning.
 =item B<--critical>
 
 Threshold critical.
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'raidctl').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/usr/sbin').
-
-=item B<--command-options>
-
-Command options (Default: '-S 2>&1').
 
 =back
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::standard::ssh::custom::custom;
+package apps::apcupsd::local::custom::cli;
 
 use base qw(centreon::plugins::script_custom::cli);
 
@@ -28,16 +28,27 @@ use warnings;
 sub execute_command {
     my ($self, %options) = @_;
 
-    my $append = '';
-    foreach (@{$options{commands}}) {
-       $options{command} .= $append . " $_"; 
-       $append = "\n";
+    my ($stdout) = $self->SUPER::execute_command(%options);
+
+    my $searchpattern = $options{searchpattern};
+    my ($valueok, $value) = (0);
+    foreach (split(/\n/, $stdout)) {
+        if (/^$searchpattern\s*:\s*(.*)\s(Percent Load Capacity|Percent|Minutes|Seconds|Volts|Hz|seconds|C Internal|F Internal|C|F)/i) {
+            $valueok = 1;
+            $value = $1;
+        };
+    };
+
+    if ($valueok != 1) {
+        $self->{output}->output_add(
+            severity => 'CRITICAL',
+            short_msg => 'NO DATA FOUND'
+        );
+        $self->{output}->display();
+        $self->{output}->exit();
     }
 
-    my ($stdout) = $self->SUPER::execute_command(%options, ssh_pipe => 1,);
-    $stdout =~ s/\r//mg;
-
-    return $stdout;
+    return $value;
 }
 
 1;
