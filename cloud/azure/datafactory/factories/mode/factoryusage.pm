@@ -156,10 +156,10 @@ sub manage_selection {
         next if (!defined($self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)}));
         my $metricsAggregation = $self->{metrics}->{$self->{az_resource}}->{statistics}->{lc($aggregation)};
         if (defined($metricsAggregation->{FactorySizeInGbUnits})) {
-            $metricsAggregation->{FactorySizeInGbUnits} = $metricsAggregation->{FactorySizeInGbUnits} * 1024;
+            $metricsAggregation->{FactorySizeInGbUnits} = $metricsAggregation->{FactorySizeInGbUnits} * 1024 * 1024 * 1024;
         }
         if (defined($metricsAggregation->{MaxAllowedFactorySizeInGbUnits}) || defined($self->{option_results}->{zeroed})) {
-            $metricsAggregation->{MaxAllowedFactorySizeInGbUnits} = $metricsAggregation->{MaxAllowedFactorySizeInGbUnits} * 1024;
+            $metricsAggregation->{MaxAllowedFactorySizeInGbUnits} = $metricsAggregation->{MaxAllowedFactorySizeInGbUnits} * 1024 * 1024 * 1024;
             my $max_allowed_factory_size_in_gb_units = $metricsAggregation->{MaxAllowedFactorySizeInGbUnits};
             if ($max_allowed_factory_size_in_gb_units > 0) {
                 $metricsAggregation->{factory_percentage_usage} = ($metricsAggregation->{FactorySizeInGbUnits} / $max_allowed_factory_size_in_gb_units) * 100;
