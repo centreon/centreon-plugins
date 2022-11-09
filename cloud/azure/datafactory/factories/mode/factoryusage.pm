@@ -48,7 +48,7 @@ sub get_metrics_mapping {
         'FactorySizeInGbUnits' => {
             'output' => 'Factory size',
             'label'  => 'factory-size',
-            'nlabel' => 'azdatafactory.factoryusage.size.count',
+            'nlabel' => 'azdatafactory.factoryusage.size.bytes',
             'unit'   => 'B',
             'min'    => '0',
             'change_bytes' => '2'
