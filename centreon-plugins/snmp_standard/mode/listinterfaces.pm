@@ -34,11 +34,11 @@ sub set_oids_status {
 
     $self->{oid_adminstatus} = '.1.3.6.1.2.1.2.2.1.7';
     $self->{oid_adminstatus_mapping} = {
-        1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown', 5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown'
+        0 => 'noStatus', 1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown', 5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown'
     };
     $self->{oid_opstatus} = '.1.3.6.1.2.1.2.2.1.8';
     $self->{oid_opstatus_mapping} = {
-        1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown', 5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown'
+        0 => 'noStatus', 1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown', 5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown'
     };
     $self->{oid_mac_address} = '.1.3.6.1.2.1.2.2.1.6';
     $self->{oid_iftype} = '.1.3.6.1.2.1.2.2.1.3';
