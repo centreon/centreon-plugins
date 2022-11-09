@@ -642,8 +642,11 @@ sub check_security_command {
     );
 
     my $security_file = '/etc/centreon-plugins/security.json';
+    if ($^O eq 'MSWin32') {
+        $security_file = 'C:/Program Files/centreon-plugins/security.json';
+    }
 
-    return 0 if (! -r $security_file || -z $security_file);
+    return 0 if (! -r "$security_file" || -z "$security_file");
 
     my $content = slurp_file(output => $options{output}, file => $security_file);
 
