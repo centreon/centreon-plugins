@@ -25,7 +25,7 @@ use warnings;
 
 my $mapping = {
     temperatureObject               => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.26.50.1.2' },
-    temperatureReading              => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.26.50.1.3' },
+    temperatureReading              => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.26.50.1.3' }
 };
 my $oid_temperatureDescriptionEntry = '.1.3.6.1.4.1.58132.2.235.1.1.26.50.1';
 
@@ -54,19 +54,24 @@ sub check {
         next if ($self->check_filter(section => 'temperature', instance => $instance));
         next if ($result->{temperatureReading} == 65535);
         $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Temperature of '%s' is '%s' celsius degrees [instance = %s]",
-                                    $result->{temperatureObject}, $result->{temperatureReading} / 10, $instance, 
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature of '%s' is '%s' celsius degrees [instance: %s]",
+                $result->{temperatureObject}, $result->{temperatureReading} / 10, $instance, 
+            )
+        );
    
         my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{temperatureReading} / 10);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature of '%s' is '%s' celsius degrees", $result->{temperatureObject}, $result->{temperatureReading} / 10));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Temperature of '%s' is '%s' celsius degrees", $result->{temperatureObject}, $result->{temperatureReading} / 10)
+            );
         }
-        
+
         $self->{output}->perfdata_add(
-            label => 'temperature', unit => 'C', 
             nlabel => 'hardware.temperature.celsius',
+            unit => 'C',
             instances => $result->{temperatureObject},
             value => $result->{temperatureReading} / 10,
             warning => $warn,

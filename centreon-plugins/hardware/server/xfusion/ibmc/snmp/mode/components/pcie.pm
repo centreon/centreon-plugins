@@ -29,19 +29,19 @@ my %map_status = (
     3 => 'major',
     4 => 'critical',
     5 => 'absence',
-    6 => 'unknown',
+    6 => 'unknown'
 );
 
 my %map_installation_status = (
     1 => 'absence',
     2 => 'presence',
-    3 => 'unknown',
+    3 => 'unknown'
 );
 
 my $mapping = {
     pCIePresence             => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.24.50.1.2', map => \%map_installation_status },
     pCIeStatus               => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.24.50.1.3', map => \%map_status },
-    pCIeDevicename           => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.24.50.1.7' },
+    pCIeDevicename           => { oid => '.1.3.6.1.4.1.58132.2.235.1.1.24.50.1.7' }
 };
 my $oid_pCIeDescriptionEntry = '.1.3.6.1.4.1.58132.2.235.1.1.24.50.1';
 
@@ -51,7 +51,7 @@ sub load {
     push @{$self->{request}}, {
         oid => $oid_pCIeDescriptionEntry,
         start => $mapping->{pCIePresence}->{oid},
-        end => $mapping->{pCIeDevicename}->{oid},
+        end => $mapping->{pCIeDevicename}->{oid}
     };
 }
 
@@ -71,14 +71,19 @@ sub check {
         next if ($result->{pCIePresence} !~ /presence/);
         $self->{components}->{pcie}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("PCIe '%s' status is '%s' [instance = %s]",
-                                    $result->{pCIeDevicename}, $result->{pCIeStatus}, $instance, 
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "PCIe '%s' status is '%s' [instance: %s]",
+                $result->{pCIeDevicename}, $result->{pCIeStatus}, $instance
+            )
+        );
    
         my $exit = $self->get_severity(label => 'default', section => 'pcie', value => $result->{pCIeStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("PCIe '%s' status is '%s'", $result->{pCIeDevicename}, $result->{pCIeStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("PCIe '%s' status is '%s'", $result->{pCIeDevicename}, $result->{pCIeStatus})
+            );
         }
     }
 }
