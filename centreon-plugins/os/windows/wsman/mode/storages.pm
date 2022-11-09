@@ -142,6 +142,8 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $type !~ /$self->{option_results}->{filter_type}/);
 
+        next if (!defined($_->{Capacity}) || $_->{Capacity} eq '' || $_->{Capacity} == 0);
+
         my ($total, $free) = ($_->{Capacity}, $_->{FreeSpace});
         $self->{storages}->{ $_->{Name} } = {
             name => $_->{Name},
