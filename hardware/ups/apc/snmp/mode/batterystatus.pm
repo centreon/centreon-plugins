@@ -106,6 +106,14 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
+        { label => 'timeon', nlabel => 'battery.timeon.minutes', set => {
+                key_values => [ { name => 'upsBasicBatteryTimeOnBattery' } ],
+                output_template => 'running on battery: %.2f minutes',
+                perfdatas => [
+                    { label => 'timeon', template => '%.2f', min => 0, unit => 'm' }
+                ]
+            }
+        },
         { label => 'load', nlabel => 'battery.charge.remaining.percent', set => {
                 key_values => [ { name => 'upsAdvBatteryCapacity' } ],
                 output_template => 'remaining capacity: %s %%',
@@ -377,7 +385,7 @@ Can used special variables like: %{status}
 
 Thresholds.
 Can be: 'load', 'voltage', 'current', 
-'temperature', 'time', 'replace-lasttime'.
+'temperature', 'time', 'replace-lasttime', 'timeon'.
 
 =back
 
