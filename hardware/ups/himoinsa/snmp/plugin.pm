@@ -29,6 +29,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'fuel-level'      => 'hardware::ups::himoinsa::snmp::mode::fuellevel',
         'frequency'       => 'hardware::ups::himoinsa::snmp::mode::frequency',
         'phase'           => 'hardware::ups::himoinsa::snmp::mode::phase',
         'uptime'          => 'snmp_standard::mode::uptime',
