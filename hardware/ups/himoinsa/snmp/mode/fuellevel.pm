@@ -34,11 +34,11 @@ sub set_counters {
     ];
         
     $self->{maps_counters}->{global} = [
-        { label => 'fuel-level', nlabel => 'fuel.level', set => {
+        { label => 'fuel-level', nlabel => 'fuel.level.percentage', set => {
                 key_values => [ { name => 'fuelLevel' } ],
-                output_template => 'Fuel level: %s',
+                output_template => 'Fuel level: %s%',
                 perfdatas => [
-                    { value => 'fuelLevel', template => '%s' },
+                    { value => 'fuelLevel', template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
         }
@@ -62,14 +62,14 @@ sub check_options {
     
 }
 
-my $oid_fuelLevel = '.1.3.6.1.4.1.41809.1.27';
+my $oid_fuelLevel = '.1.3.6.1.4.1.41809.1.27.0';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $snmp_result = $options{snmp}->get_leef(oids => [$oid_fuelLevel]);
 
-    $self->{global}->{fuelLevel} = $snmp_result->{$oid_fuelLevel} if defined($snmp_result->{$oid_fuelLevel});
+    $self->{global}->{fuelLevel} = $snmp_result->{$oid_fuelLevel} / 10 if defined($snmp_result->{$oid_fuelLevel});
 
     if (scalar(keys %{$self->{global}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
@@ -83,7 +83,7 @@ __END__
 
 =head1 MODE
 
-Check fuel level.
+Check fuel level in percentage.
 
 =over 8
 
