@@ -632,6 +632,15 @@ sub slurp_file {
     return $content;
 }
 
+sub sanitize_command_param {
+    my (%options) = @_;
+
+    return if (!defined($options{value}));
+
+    $options{value} =~ s/[`;!&]//g;
+    return $options{value};
+}
+
 sub check_security_command {
     my (%options) = @_;
 

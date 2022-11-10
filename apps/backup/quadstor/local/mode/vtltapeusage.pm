@@ -169,6 +169,8 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to set vtl-name option.");
         $self->{output}->option_exit();
     }
+
+    $self->{option_results}->{vtl_name} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{vtl_name});
 }
 
 sub manage_selection {
@@ -227,7 +229,7 @@ __END__
 
 Check vtl tape usage.
 
-Commnand used: '/quadstorvtl/bin/vcconfig -l -v %(vtl-name)'
+Command used: '/quadstorvtl/bin/vcconfig -l -v %(vtl-name)'
 
 =over 8
 

@@ -61,6 +61,9 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         self->{output}->option_exit();
     }
+
+    $self->{option_results}->{apchost} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{apchost});
+    $self->{option_results}->{apcport} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{apcport});
 }
 
 sub run {

@@ -29,7 +29,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
         'actlog'   => 'apps::backup::tsm::local::mode::actlog',
         'drives'   => 'apps::backup::tsm::local::mode::drives',
@@ -38,7 +37,7 @@ sub new {
         'volumes'  => 'apps::backup::tsm::local::mode::volumes',
     };
 
-    $self->{custom_modes}{api} = 'apps::backup::tsm::local::custom::api';
+    $self->{custom_modes}->{api} = 'apps::backup::tsm::local::custom::api';
     return $self;
 }
 

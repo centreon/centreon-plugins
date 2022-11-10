@@ -111,6 +111,14 @@ sub new {
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{option_results}->{maindb_file} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{maindb_file});
+    $self->{option_results}->{dailydb_file} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{dailydb_file});
+}
+
 sub get_clamav_last_update {
     my ($self, %options) = @_;
 

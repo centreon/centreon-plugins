@@ -32,23 +32,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-         {
-         "remote"                  => { name => 'remote' },
-         "hostname:s"              => { name => 'hostname' },
-         "ssh-option:s@"           => { name => 'ssh_option' },
-         "ssh-path:s"              => { name => 'ssh_path' },
-         "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-         "sudo"                    => { name => 'sudo' },
-         "command:s"               => { name => 'command', default => 'jmeter' },
-         "command-path:s"          => { name => 'command_path' },
-         "command-extra-options:s" => { name => 'command_extra_options' },
-         "timeout:s"               => { name => 'timeout', default => 50 },
-         "directory:s"             => { name => 'directory' },
-         "scenario:s"              => { name => 'scenario' },
-         "warning:s"               => { name => 'warning' },
-         "critical:s"              => { name => 'critical' },
-         });
+    $options{options}->add_options(arguments => {
+         'command-extra-options:s' => { name => 'command_extra_options' },
+         'timeout:s'               => { name => 'timeout', default => 50 },
+         'directory:s'             => { name => 'directory' },
+         'scenario:s'              => { name => 'scenario' },
+         'warning:s'               => { name => 'warning' },
+         'critical:s'              => { name => 'critical' }
+    });
+
     return $self;
 }
 
@@ -68,13 +60,21 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please specify a scenario name.");
         $self->{output}->option_exit();
     }
+    if (!defined($self->{option_results}->{directory})) { 
+        $self->{output}->add_option_msg(short_msg => "Please specify a directory.");
+        $self->{output}->option_exit();
+    }
+
+    $self->{option_results}->{directory} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{directory});
+    $self->{option_results}->{scenario} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{scenario});
+    $self->{option_results}->{command_extra_options} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{command_extra_options});
 }
 
 sub run {
     my ($self, %options) = @_;
 
     my $filename = $self->{option_results}->{directory} . '/' . $self->{option_results}->{scenario} . '.jmx';
-    my $command_options .= '-t ' . $filename;
+    my $command_options = '-t ' . $filename;
 
     # Temporary write result on stderr
     $command_options .= ' -l /dev/stderr';
@@ -92,12 +92,10 @@ sub run {
     # Redirect result on stdout and default stdout to trash
     $command_options .= ' 2>&1 >/dev/null';
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $command_options);
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'jmeter',
+        command_options => $command_options
+    );
 
     my $p = XML::Parser->new(NoLWP => 1);
     my $xp = XML::XPath->new(parser => $p, xml => $stdout);
@@ -170,29 +168,41 @@ sub run {
     my $timeelapsed = ($timing1 - $timing0) / 1000;
     my $availability = sprintf("%d", $stepOk * 100 / $step);
 
-    my $exit2 = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit2 = $self->{perfdata}->threshold_check(
+        value => $timeelapsed,
+        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
     if (!defined($first_failed_label)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("%d/%d steps (%.3fs)", $stepOk, $step, $timeelapsed));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("%d/%d steps (%.3fs)", $stepOk, $step, $timeelapsed)
+        );
     } else {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("%d/%d steps (%.3fs) - %s", $stepOk, $step, $timeelapsed, $first_failed_label));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("%d/%d steps (%.3fs) - %s", $stepOk, $step, $timeelapsed, $first_failed_label)
+        );
     }
-    $self->{output}->perfdata_add(label => "time", unit => 's',
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  min => 0,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
-    $self->{output}->perfdata_add(label => "steps",
-                                  value => sprintf('%d', $stepOk),
-                                  min => 0,
-                                  max => $step);
-    $self->{output}->perfdata_add(label => "availability", unit => '%',
-                                  value => sprintf('%d', $availability),
-                                  min => 0,
-                                  max => 100);
+    $self->{output}->perfdata_add(
+        label => "time", unit => 's',
+        value => sprintf('%.3f', $timeelapsed),
+        min => 0,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
+    );
+    $self->{output}->perfdata_add(
+        label => "steps",
+        value => sprintf('%d', $stepOk),
+        min => 0,
+        max => $step
+    );
+    $self->{output}->perfdata_add(
+        label => "availability", unit => '%',
+        value => sprintf('%d', $availability),
+        min => 0,
+        max => 100
+    );
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -204,49 +214,15 @@ __END__
 
 =head1 MODE
 
-Check scenario execution
+Check scenario execution.
+
+Command used: 'jmeter -t %(directory)/%(scenario).jmx -l /dev/stderr -j /dev/null -n -J jmeter.save.saveservice.output_format=xml %(command-extra-options) 2>&1 >/dev/null'
 
 =over 8
 
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none).
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (default: 'jmeter').
-
-=item B<--command-path>
-
-Command path (default: none).
-
 =item B<--command-extra-options>
 
-Command extra options (default: none).
-
-=item B<--timeout>
-
-Timeout in seconds for the command (default: 50).
+Command extra options.
 
 =item B<--directory>
 
