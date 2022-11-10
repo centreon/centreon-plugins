@@ -156,7 +156,7 @@ my ssh
 
 =item B<--hostname>
 
-Hostname to query.
+Hostname to query in ssh.
 
 =item B<--timeout>
 
