@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check UPS Himoinsa through SNMP.
+Check Himoinsa UPS device through SNMP.
 
 =cut
