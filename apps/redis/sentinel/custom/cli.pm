@@ -96,6 +96,10 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    $self->{server} = centreon::plugins::misc::sanitize_command_param(value => $self->{server});
+    $self->{port} = centreon::plugins::misc::sanitize_command_param(value => $self->{port});
+    $self->{cacert} = centreon::plugins::misc::sanitize_command_param(value => $self->{cacert});
+
     return 0;
 }
 
