@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::ssh;
 use JSON;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -42,7 +42,6 @@ sub custom_status_output {
     }
     return $msg;
 }
-
 
 sub prefix_endpoint_output {
     my ($self, %options) = @_;
@@ -103,14 +102,12 @@ sub new {
     $options{options}->add_options(arguments => { 
         'broker-stats-file:s@' => { name => 'broker_stats_file' },
         'hostname:s'           => { name => 'hostname' },
-        'remote'               => { name => 'remote' },
-        'ssh-option:s@'        => { name => 'ssh_option' },
-        'ssh-path:s'           => { name => 'ssh_path' },
-        'ssh-command:s'        => { name => 'ssh_command', default => 'ssh' },
         'timeout:s'            => { name => 'timeout', default => 30 },
         'sudo'                 => { name => 'sudo' },
         'filter-name:s'        => { name => 'filter_name' }
     });
+
+    $self->{ssh} = centreon::plugins::ssh->new(%options);
 
     return $self;
 }
@@ -123,6 +120,34 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set broker-stats-file option.");
         $self->{output}->option_exit();
     }
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        $self->{ssh}->check_options(option_results => $self->{option_results});
+    }
+}
+
+sub execute_command {
+    my ($self, %options) = @_;
+
+    my ($stdout, $exit_code);
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        ($stdout, $exit_code) = $self->{ssh}->execute(
+            hostname => $self->{option_results}->{hostname},
+            sudo => $self->{option_results}->{sudo},
+            command => $options{command},
+            command_options => $options{command_options},
+            timeout => $self->{option_results}->{timeout}
+        );
+    } else {
+        ($stdout, $exit_code) = centreon::plugins::misc::execute(
+            output => $self->{output},
+            sudo => $self->{option_results}->{sudo},
+            options => { timeout => $self->{option_results}->{timeout} },
+            command => $options{command},
+            command_options => $options{command_options}
+        );
+    }
+
+    return ($stdout, $exit_code);
 }
 
 sub manage_selection {
@@ -130,10 +155,7 @@ sub manage_selection {
 
     $self->{endpoint} = {};
     foreach my $config (@{$self->{option_results}->{broker_stats_file}}) {
-        my ($stdout) = centreon::plugins::misc::execute(
-            output => $self->{output},
-            options => $self->{option_results},
-            sudo => $self->{option_results}->{sudo},
+        my ($stdout) = $self->execute_command(
             command => 'cat',
             command_options => $config
         );
@@ -195,25 +217,9 @@ Check Centreon Broker statistics files.
 
 =over 8
 
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
 =item B<--hostname>
 
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
+Hostname to query in ssh.
 
 =item B<--timeout>
 
@@ -231,14 +237,9 @@ Specify the centreon-broker json stats file (Required). Can be multiple.
 
 Filter endpoint name.
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'speed-events', 'queued-events', 'unacknowledged-events'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'speed-events', 'queued-events', 'unacknowledged-events'.
 
 =item B<--warning-status>

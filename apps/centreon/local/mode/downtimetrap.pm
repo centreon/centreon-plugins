@@ -55,23 +55,23 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                 "oid-trap:s"           => { name => 'oid_trap', default => '.1.3.6.1.4.1.50000.1.1' },
-                                 "oid-hostname:s"       => { name => 'oid_hostname', default => '.1.3.6.1.4.1.50000.2.1' },
-                                 "oid-start:s"          => { name => 'oid_start', default => '.1.3.6.1.4.1.50000.2.2' },
-                                 "oid-end:s"            => { name => 'oid_end', default => '.1.3.6.1.4.1.50000.2.4' },
-                                 "oid-author:s"         => { name => 'oid_author', default => '.1.3.6.1.4.1.50000.2.5' },
-                                 "oid-comment:s"        => { name => 'oid_comment', default => '.1.3.6.1.4.1.50000.2.6' },
-                                 "oid-duration:s"       => { name => 'oid_duration', default => '.1.3.6.1.4.1.50000.2.7' },
-                                 "centreon-server:s"    => { name => 'centreon_server' },
-                                 "author:s"             => { name => 'author', default => 'system reboot' },
-                                 "comment:s"            => { name => 'comment', default => 'the system reboots.' },
-                                 "duration:s"           => { name => 'duration', default => 300 },
-                                 "wait:s"               => { name => 'wait' },
-                                 "snmptrap-command:s"   => { name => 'snmptrap_command', default => 'snmptrap' },
-                                 "display-options"      => { name => 'display_options' },
-                                });
+    $options{options}->add_options(arguments => {
+        "oid-trap:s"           => { name => 'oid_trap', default => '.1.3.6.1.4.1.50000.1.1' },
+        "oid-hostname:s"       => { name => 'oid_hostname', default => '.1.3.6.1.4.1.50000.2.1' },
+        "oid-start:s"          => { name => 'oid_start', default => '.1.3.6.1.4.1.50000.2.2' },
+        "oid-end:s"            => { name => 'oid_end', default => '.1.3.6.1.4.1.50000.2.4' },
+        "oid-author:s"         => { name => 'oid_author', default => '.1.3.6.1.4.1.50000.2.5' },
+        "oid-comment:s"        => { name => 'oid_comment', default => '.1.3.6.1.4.1.50000.2.6' },
+        "oid-duration:s"       => { name => 'oid_duration', default => '.1.3.6.1.4.1.50000.2.7' },
+        "centreon-server:s"    => { name => 'centreon_server' },
+        "author:s"             => { name => 'author', default => 'system reboot' },
+        "comment:s"            => { name => 'comment', default => 'the system reboots.' },
+        "duration:s"           => { name => 'duration', default => 300 },
+        "wait:s"               => { name => 'wait' },
+        "snmptrap-command:s"   => { name => 'snmptrap_command', default => 'snmptrap' },
+        "display-options"      => { name => 'display_options' }
+    });
+
     return $self;
 }
 
