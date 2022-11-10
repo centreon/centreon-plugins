@@ -22,15 +22,17 @@ package hardware::sensors::temperhum::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'environment' => 'hardware::sensors::temperhum::local::mode::environment',
-    );
+
+    $self->{modes} = {
+        'environment' => 'hardware::sensors::temperhum::local::mode::environment'
+    };
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;}
 1;
@@ -39,6 +41,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check temperature, humidity and dew point  for TemPerHum Sensors (the plugin can use SSH).
+Check temperature, humidity and dew point for TemPerHum Sensors (the plugin can use SSH).
 
 =cut
