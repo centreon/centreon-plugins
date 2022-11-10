@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub set_system {
     my ($self, %options) = @_;
@@ -46,14 +45,10 @@ sub set_system {
 
 sub cmd_execute {
     my ($self, %options) = @_;
-    
-    ($self->{stdout}) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'ctconf',
+        command_options => '-v'
     );
 
     $self->{stdout} =~ s/\r//msg;
@@ -63,9 +58,19 @@ sub cmd_execute {
     $fm_status = $1 if ($self->{stdout} =~ /^FM Status\s+:\s+(.*?)\s*\n/msi);
     $transport_mode = $1 if ($self->{stdout} =~ /^Transport Mode\s+:\s+(.*?)\s*\n/msi);
     $security_mode = $1 if ($self->{stdout} =~ /^Security Mode\s+:\s+(.*?)\s*\n/msi);
-    $self->{output}->output_add(long_msg => sprintf("model: %s, firmware version: %s", $model, $firmware));
-    $self->{output}->output_add(long_msg => sprintf("fm status: '%s', transport mode: '%s', security mode: '%s'", 
-                                                    $fm_status, $transport_mode, $security_mode));
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "model: %s, firmware version: %s",
+            $model,
+            $firmware
+        )
+    );
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "fm status: '%s', transport mode: '%s', security mode: '%s'", 
+            $fm_status, $transport_mode, $security_mode
+        )
+    );
 }
 
 sub display {
@@ -82,37 +87,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options' }
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    centreon::plugins::misc::check_security_command(
-        output => $self->{output},
-        command => $self->{option_results}->{command},
-        command_options => $self->{option_results}->{command_options},
-        command_path => $self->{option_results}->{command_path}
-    );
-
-    $self->{option_results}->{command} = 'ctconf'
-        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
-    $self->{option_results}->{command_options} = '-v'
-        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
 }
 
 1;
@@ -123,11 +100,13 @@ __END__
 
 Check HSM hardware status.
 
+Command used: 'ctconf -v'
+
 =over 8
 
 =item B<--component>
 
-Which component to check (Default: '.*').
+Which component to check.
 Can be: 'hwstatus', 'temperature', 'memory'.
 
 =item B<--filter>
@@ -150,48 +129,6 @@ Example: --warning='temperature,.*,50'
 Set critical threshold for 'temperature', 'memory' (syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,60'
 
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'ctconf').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '').
-
-=item B<--command-options>
-
-Command options (Default: '-v').
-
 =back
 
 =cut
-    
