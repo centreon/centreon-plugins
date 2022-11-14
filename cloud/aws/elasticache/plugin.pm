@@ -35,6 +35,7 @@ sub new {
         'commands-redis'        => 'cloud::aws::elasticache::mode::commandsredis',
         'connections'           => 'cloud::aws::elasticache::mode::connections',
         'cpu'                   => 'cloud::aws::elasticache::mode::cpu',
+        'discovery'             => 'cloud::aws::elasticache::mode::discovery',
         'evictions'             => 'cloud::aws::elasticache::mode::evictions',
         'items'                 => 'cloud::aws::elasticache::mode::items',
         'network'               => 'cloud::aws::elasticache::mode::network',
