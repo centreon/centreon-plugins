@@ -637,7 +637,7 @@ sub sanitize_command_param {
 
     return if (!defined($options{value}));
 
-    $options{value} =~ s/[`;!&]//g;
+    $options{value} =~ s/[`;!&|]//g;
     return $options{value};
 }
 
