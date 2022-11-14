@@ -25,36 +25,41 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_measure_output {
+    my ($self, %options) = @_;
+
+    return "Measure '" . $options{instance} . "' current ";
+}
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'measures', type => 1, cb_prefix_output => 'prefix_measure_output', message_multiple => 'All current measures are ok', skipped_code => { -10 => 1 } }
     ];
         
-    $self->{maps_counters}->{global} = [
+    $self->{maps_counters}->{measures} = [
         { label => 'phase1', nlabel => 'phase1.current.ampere', set => {
                 key_values => [ { name => 'ph1AmpConm' } ],
-                output_template => '1 phase current: %s A',
+                output_template => 'phase 1: %s A',
                 perfdatas => [
-                    { value => 'ph1AmpConm', template => '%s', unit => 'A', },
+                    { template => '%s', unit => 'A', label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'phase2', nlabel => 'phase2.current.ampere', set => {
                 key_values => [ { name => 'ph2AmpConm' } ],
-                output_template => '2 phase current: %s A',
+                output_template => 'phase 2: %s A',
                 perfdatas => [
-                    { value => 'ph2AmpConm', template => '%s', unit => 'A', },
+                    { template => '%s', unit => 'A', label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'phase3', nlabel => 'phase3.current.ampere', set => {
                 key_values => [ { name => 'ph3AmpConm' } ],
-                output_template => '3 phase current: %s A',
+                output_template => 'phase 3: %s A',
                 perfdatas => [
-                    { value => 'ph3AmpConm', template => '%s', unit => 'A', },
+                    { template => '%s', unit => 'A', label_extra_instance => 1 }
                 ]
             }
         }
@@ -65,23 +70,17 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-}
-
 my $mapping = {
-    ph1AmpConm         => { oid => '.1.3.6.1.4.1.41809.1.49.1.15' },
-    ph2AmpConm         => { oid => '.1.3.6.1.4.1.41809.1.49.1.15' },
-    ph3AmpConm         => { oid => '.1.3.6.1.4.1.41809.1.49.1.16' }
+    ph1AmpConm => { oid => '.1.3.6.1.4.1.41809.1.49.1.15' },
+    ph2AmpConm => { oid => '.1.3.6.1.4.1.41809.1.49.1.15' },
+    ph3AmpConm => { oid => '.1.3.6.1.4.1.41809.1.49.1.16' }
 };
 my $oid_conmutationmeasuresEntry = '.1.3.6.1.4.1.41809.1.49.1';
 
@@ -91,20 +90,17 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_conmutationmeasuresEntry,
         start => $mapping->{ph1AmpConm}->{oid},
-        end => $mapping->{ph3AmpConm}->{oid}
+        end => $mapping->{ph3AmpConm}->{oid},
+        nothing_quit => 1
     );
 
-    foreach my $oid (keys %{$snmp_result}) {
+    $self->{measures} = {};
+    foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{ph1AmpConm}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        $self->{global} = { %$result };
-
-        if (scalar(keys %{$self->{global}}) <= 0) {
-            $self->{output}->add_option_msg(short_msg => "No entry found.");
-            $self->{output}->option_exit();
-        }
+        $self->{measures}->{$instance} = $result;
     }
 }
 
@@ -118,17 +114,11 @@ Check phases current.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold in amperes.
+Threshold in amperes.
 
 Where '*' can be: 'phase1', 'phase2", 'phase3'
-
-=item B<--critical-*>
-
-Critical threshold in amperes.
-
-Where '*' can be: 'phase1', 'phase2', 'phase3'
 
 =back
 

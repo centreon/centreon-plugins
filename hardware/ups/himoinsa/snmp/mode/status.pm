@@ -29,36 +29,36 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub status_long_output {
     my ($self, %options) = @_;
 
-    return 'checking components status';
+    return 'checking component status';
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return "'" . $self->{result_values}->{display} . "'" . " status: '" . $self->{result_values}->{status} . "'";
+    return $self->{result_values}->{display} . " status: " . $self->{result_values}->{status};
 }
 
 sub custom_status_commutator_output {
     my ($self, %options) = @_;
 
-    return "'" . $self->{result_values}->{display} . "'" . ": '" . $self->{result_values}->{status} . "'";
+    return $self->{result_values}->{display} . ": " . $self->{result_values}->{status};
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'component', type => 3, cb_long_output => 'status_long_output', indent_long_output => '    ',
+        { name => 'components', type => 3, cb_long_output => 'status_long_output', indent_long_output => '    ',
             group => [
-                { name => 'motor-status', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
-                { name => 'mode-status', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
-                { name => 'transfer-pump-status', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
-                { name => 'alarm-status', type => 0, display_short => 0, skipped_code => { -10 => 1 } },
-                { name => 'closed-commutator', type => 0, display_short => 0, skipped_code => { -10 => 1 } }
+                { name => 'motor-status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'mode-status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'transfer-pump-status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'alarm-status', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'closed-commutator', type => 0, skipped_code => { -10 => 1 } }
             ]
         }
     ];
-        
+
     $self->{maps_counters}->{'motor-status'} = [
          { label => 'motor-status', type => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
@@ -66,7 +66,7 @@ sub set_counters {
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{'mode-status'} = [
@@ -76,7 +76,7 @@ sub set_counters {
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{'transfer-pump-status'} = [
@@ -86,7 +86,7 @@ sub set_counters {
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{'alarm-status'} = [
@@ -96,7 +96,7 @@ sub set_counters {
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{'closed-commutator'} = [
@@ -106,12 +106,11 @@ sub set_counters {
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
 # mapping for CEA7 and CEM7 device
-
 my $mapping_motor_status = {
     0 => 'unknown', 1 => 'running', 2 => 'stopped'
 };
@@ -133,7 +132,6 @@ my $mapping_closed_commutator = {
 };
 
 # mapping for CEC7 device 
-
 my $cec7_mapping_alarm_status = {
     0 => 'no alarm', 1 => 'alarm'
 };
@@ -194,7 +192,6 @@ sub get_cec7_closed_commutator {
     return ($options{value} & 32) | ($options{value} & 64);
 }
 
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
@@ -206,81 +203,46 @@ sub new {
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-}
-
 my $oid_conmutationmeasuresEntry = '.1.3.6.1.4.1.41809.1.46.0';
 my $oid_cec7_conmutationmeasuresEntry = '.1.3.6.1.4.1.41809.1.55.1.28.0';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_conmutationmeasuresEntry]);
-    if (scalar(keys %{$snmp_result}) >= 1 && defined($snmp_result->{$oid_conmutationmeasuresEntry})) {
-        my $motor_status = $self->get_motor_status(value => $snmp_result->{$oid_conmutationmeasuresEntry});
-        my $mode_status = $self->get_mode_status(value => $snmp_result->{$oid_conmutationmeasuresEntry});
-        my $transfer_pump_status = $self->get_transfer_pump_status(value => $snmp_result->{$oid_conmutationmeasuresEntry});
-        my $alarm_status = $self->get_alarm_status(value => $snmp_result->{$oid_conmutationmeasuresEntry});
-        my $closed_commutator = $self->get_closed_commutator(value => $snmp_result->{$oid_conmutationmeasuresEntry});
+    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_conmutationmeasuresEntry], nothing_quit => 1);
 
-        $self->{component}->{global}->{'motor-status'} = {
-            status => $mapping_motor_status->{$motor_status},
-            display => 'motor',
-        };
+    my $motor_status = $self->get_motor_status(value => $snmp_result->{$oid_conmutationmeasuresEntry});
+    my $mode_status = $self->get_mode_status(value => $snmp_result->{$oid_conmutationmeasuresEntry});
+    my $transfer_pump_status = $self->get_transfer_pump_status(value => $snmp_result->{$oid_conmutationmeasuresEntry});
+    my $alarm_status = $self->get_alarm_status(value => $snmp_result->{$oid_conmutationmeasuresEntry});
+    my $closed_commutator = $self->get_closed_commutator(value => $snmp_result->{$oid_conmutationmeasuresEntry});
 
-        $self->{component}->{global}->{'mode-status'} = {
-            status => $mapping_mode_status->{$mode_status},
-            display => 'commutator mode',
-        };
+    $self->{components} = { global => {} };
 
-        $self->{component}->{global}->{'transfer-pump-status'} = {
-            status => $mapping_transfer_pump_status->{$transfer_pump_status},
-            display => 'transfer pump',
-        };
+    $self->{components}->{global}->{'motor-status'} = {
+        status => $mapping_motor_status->{$motor_status},
+        display => 'motor'
+    };
 
-        $self->{component}->{global}->{'alarm-status'} = {
-            status => $mapping_alarm_status->{$alarm_status},
-            display => 'alarm',
-        };
+    $self->{components}->{global}->{'mode-status'} = {
+        status => $mapping_mode_status->{$mode_status},
+        display => 'commutator mode'
+    };
 
-        $self->{component}->{global}->{'closed-commutator'} = {
-            status => $mapping_closed_commutator->{$closed_commutator},
-            display => 'closed commutator',
-        };
-    }
+    $self->{components}->{global}->{'transfer-pump-status'} = {
+        status => $mapping_transfer_pump_status->{$transfer_pump_status},
+        display => 'transfer pump'
+    };
 
-    my $cec7_snmp_result = $options{snmp}->get_leef(oids => [$oid_cec7_conmutationmeasuresEntry]);
-    if (scalar(keys %{$cec7_snmp_result}) >= 1 && defined($cec7_snmp_result->{$oid_cec7_conmutationmeasuresEntry})) {
+    $self->{components}->{global}->{'alarm-status'} = {
+        status => $mapping_alarm_status->{$alarm_status},
+        display => 'alarm'
+    };
 
-        my $mode_status = $self->get_cec7_mode_status(value => $snmp_result->{$oid_cec7_conmutationmeasuresEntry});
-        my $alarm_status = $self->get_cec7_alarm_status(value => $snmp_result->{$oid_cec7_conmutationmeasuresEntry});
-        my $closed_commutator = $self->get_cec7_closed_commutator(value => $snmp_result->{$oid_cec7_conmutationmeasuresEntry});
-
-        $self->{component}->{global}->{'mode-status'} = {
-            status => $cec7_mapping_mode_status->{$mode_status},
-            display => 'commutator mode',
-        };
-
-        $self->{component}->{global}->{'alarm-status'} = {
-            status => $cec7_mapping_alarm_status->{$alarm_status},
-            display => 'alarm',
-        };
-
-        $self->{component}->{global}->{'closed-commutator'} = {
-            status => $cec7_mapping_closed_commutator->{$closed_commutator},
-            display => 'closed commutator',
-        };        
-    } 
-
-    if ((scalar(keys %{$cec7_snmp_result}) <= 0 || !defined($cec7_snmp_result->{$oid_cec7_conmutationmeasuresEntry})) && (scalar(keys %{$snmp_result}) <= 0 || !defined($snmp_result->{$oid_conmutationmeasuresEntry}))) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
-        $self->{output}->option_exit();
-    }
-
-    $self->{output}->output_add(severity => 'OK', short_msg => 'All components are OK.');
+    $self->{components}->{global}->{'closed-commutator'} = {
+        status => $mapping_closed_commutator->{$closed_commutator},
+        display => 'closed commutator'
+    };
 }
 
 1;
@@ -295,43 +257,43 @@ Check Himoinsa device status.
 
 =item B<--warning-alarm-status>
 
-Warning threshold for alarm. (Default: '%{status} =~ /^alarm/').
-Can use special variables like: '%{status}'
+Warning threshold for alarm (Default: '%{status} =~ /^alarm/').
+Can use special variables like: %{status}
 
 =item B<--critical-alarm-status>
 
-Critical threshold for alarm. (Default: '').
-Can use special variables like: '%{status}'
+Critical threshold for alarm.
+Can use special variables like: %{status}
 
 =item B<--warning-motor-status>
 
-Warning threshold for motor status. (Default: '').
-Can use special variables like: '%{status}'
+Warning threshold for motor status.
+Can use special variables like: %{status}
 
 =item B<--critical-motor-status>
 
-Critical threshold for motor status. (Default: '').
-Can use special variables like: '%{status}'
+Critical threshold for motor status.
+Can use special variables like: %{status}
 
 =item B<--warning-mode-status>
 
-Warning threshold for commutator mode status. (Default: '').
-Can use special variables like: '%{status}'
+Warning threshold for commutator mode status.
+Can use special variables like: %{status}
 
 =item B<--critical-mode-status>
 
-Critical threshold for commutator mode status. (Default: '').
-Can use special variables like: '%{status}'
+Critical threshold for commutator mode status.
+Can use special variables like: %{status}
 
 =item B<--warning-closed-commutator>
 
-Warning threshold for commutator currently closed. (Default: '').
-Can use special variables like: '%{status}'
+Warning threshold for commutator currently closed.
+Can use special variables like: %{status}
 
 =item B<--critical-closed-commutator>
 
-Critical threshold for commutator currently closed. (Default: '').
-Can use special variables like: '%{status}'
+Critical threshold for commutator currently closed.
+Can use special variables like: %{status}
 
 For example if you want to get an alert if the closed commutator is mains:
 
@@ -339,13 +301,13 @@ For example if you want to get an alert if the closed commutator is mains:
 
 =item B<--warning-transfer-pump-status>
 
-Warning threshold for transfer pump status. (Default: '').
-Can use special variables like: '%{status}'
+Warning threshold for transfer pump status.
+Can use special variables like: %{status}
 
 =item B<--critical-transfer-pump-status>
 
-Critical threshold for transfer pump status. (Default: '').
-Can use special variables like: '%{status}'
+Critical threshold for transfer pump status.
+Can use special variables like: %{status}
 
 =back
 
