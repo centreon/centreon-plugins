@@ -37,6 +37,7 @@ sub new {
     $self->{options} = {};
     @{$self->{pod_package}} = ();
     $self->{pod_packages_once} = {};
+    $self->{extra_arguments} = [];
 
     if ($alternative == 0) {
         require Getopt::Long;
@@ -144,6 +145,9 @@ sub parse_options {
             $self->{output}->option_exit(nolabel => 1);
         };
     }
+
+    # Store all arguments placed after the special argument "--" in the 'extra_arguments' list
+    $self->{options}->{'_double_dash_'} = \$self->{extra_arguments};
 
     GetOptions(
        %{$self->{options}}
