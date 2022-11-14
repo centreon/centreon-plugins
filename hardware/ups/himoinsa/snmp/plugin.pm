@@ -32,7 +32,7 @@ sub new {
         'frequency'       => 'hardware::ups::himoinsa::snmp::mode::frequency',
         'phase'           => 'hardware::ups::himoinsa::snmp::mode::phase',
         'status'          => 'hardware::ups::himoinsa::snmp::mode::status',
-        'uptime'          => 'snmp_standard::mode::uptime',
+        'uptime'          => 'hardware::ups::himoinsa::snmp::mode::uptime',
         'voltage'         => 'hardware::ups::himoinsa::snmp::mode::voltage'
     };
 
