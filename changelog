@@ -1,3 +1,12 @@
+2022-11-15 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Thales Mistral VS9 Rest API
+ * Plugin added: PICOS SNMP
+ * Plugin added: Enterasys SNMP
+ * Plugin added: xFusion iBMC SNMP
+ * Plugin added: Azure Datafactory
+ * Plugin added: Himoinsa SNMP
+ * Thanks @lchrdn and @Sims24! See you soon!
+
 2022-10-17 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Aruba Orchestrator Rest API
  * Plugin added: Splunk
