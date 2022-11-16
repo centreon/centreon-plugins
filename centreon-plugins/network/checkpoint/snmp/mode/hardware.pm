@@ -49,6 +49,7 @@ sub set_system {
             ['false', 'OK']
         ],
         psu => [
+            ['ok', 'OK'],
             ['up', 'OK'],
             ['down', 'CRITICAL'],
             ['dummy', 'OK'],
