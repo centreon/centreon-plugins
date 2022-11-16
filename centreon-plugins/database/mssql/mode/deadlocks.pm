@@ -71,7 +71,7 @@ sub manage_selection {
             counter_name = 'Number of Deadlocks/sec%'
     });
 
-    my $query_result = $self->{sql}->fetchall_arrayref();
+    my $query_result = $options{sql}->fetchall_arrayref();
     $self->{deadlocks}->{value} = 0;
 
     foreach my $row (@{$query_result}) {

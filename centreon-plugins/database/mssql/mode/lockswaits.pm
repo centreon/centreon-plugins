@@ -31,7 +31,7 @@ sub set_counters {
         { name => 'lockswaits', type => 0 },
     ];
 
-    $self->{maps_counters}->{deadlocks} = [
+    $self->{maps_counters}->{lockswaits} = [
         { label => 'lockswaits', nlabel => 'mssql.lockswaits.count', set => {
                 key_values => [ { name => 'value' } ],
                 output_template => '%.2f dead locks/s',
@@ -71,7 +71,7 @@ sub manage_selection {
             counter_name = 'Lock Waits/sec%'
     });
 
-    my $query_result = $self->{sql}->fetchall_arrayref();
+    my $query_result = $options{sql}->fetchall_arrayref();
     $self->{lockswaits}->{value} = 0;
 
     foreach my $row (@{$query_result}) {
