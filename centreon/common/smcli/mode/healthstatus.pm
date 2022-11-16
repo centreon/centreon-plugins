@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "storage-command:s"       => { name => 'storage_command', },
+        'storage-command:s' => { name => 'storage_command' }
     });
 
     return $self;
@@ -49,13 +49,17 @@ sub run {
     my $response = $smcli->execute_command(cmd => $self->{option_results}->{storage_command});
     # IBM smcli: Storage Subsystem health status = optimal.
     # Dell smcli: Storage array health status = optimal.
-    
+
     my $match_ok_regexp = 'health status.*optimal';
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("storage health status is optimal"));
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("storage health status is optimal")
+    );
     if ($response !~ /$match_ok_regexp/msi) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Some failures have been found (verbose mode for more details)"));
+        $self->{output}->output_add(
+            severity => 'CRITICAL',
+            short_msg => sprintf("Some failures have been found (verbose mode for more details)")
+        );
         $self->{output}->output_add(long_msg => $response);
     }
 

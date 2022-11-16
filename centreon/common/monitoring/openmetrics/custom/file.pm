@@ -50,8 +50,7 @@ sub check_options {
         if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
 
     if (defined($self->{option_results}->{command_options})) {
-        # we remove illegal characters
-        $self->{option_results}->{command_options} =~ s/[`;!&]//g;
+        $self->{option_results}->{command_options} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{command_options});
     }
 
     return 0;

@@ -25,27 +25,21 @@ use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
-    
+    my ($class, %options) = @_;    
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'health-status'  => 'centreon::common::smcli::mode::healthstatus',
-    );
+    $self->{modes} = {
+        'health-status'  => 'centreon::common::smcli::mode::healthstatus'
+    };
 
-    $self->{custom_modes}{smcli} = 'centreon::common::smcli::custom::custom';
+    $self->{custom_modes}->{smcli} = 'storage::dell::MD3000::cli::custom::cli';
     $self->{default} = {
         'health-status' => { 
             storage_command => 'show storageArray healthstatus;',
         }
     };
-    $self->{customdefault} = {
-        'smcli' => { 
-            smcli_path => '/opt/dell/mdstoragemanager/client', 
-        }
-    };
+
     return $self;
 }
 

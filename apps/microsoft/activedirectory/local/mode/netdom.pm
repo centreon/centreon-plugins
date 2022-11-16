@@ -31,7 +31,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'domain:s'      => { name => 'domain' },
         'workstation:s' => { name => 'workstation' },
@@ -44,6 +44,9 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    $self->{option_results}->{domain} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{domain});
+    $self->{option_results}->{workstation} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{workstation});
 }
 
 sub netdom {
@@ -57,19 +60,25 @@ sub netdom {
         $netdom_cmd .= ' ' . Win32::NodeName();
     }
     
-    my ($stdout, $exit_code) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                          timeout => $self->{option_results}->{timeout},
-                                                          command => $netdom_cmd,
-                                                          command_path => undef,
-                                                          command_options => undef,
-                                                          no_quit => 1);
+    my ($stdout, $exit_code) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $netdom_cmd,
+        command_path => undef,
+        command_options => undef,
+        no_quit => 1
+    );
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Secure channel has been verified.');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'Secure channel has been verified.'
+    );
     if ($exit_code != 0) {
         $self->{output}->output_add(long_msg => $stdout);
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => 'Secure channel had a problem (see additional info).');
+        $self->{output}->output_add(
+            severity => 'CRITICAL',
+            short_msg => 'Secure channel had a problem (see additional info).'
+        );
     }
 }
 

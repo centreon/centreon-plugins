@@ -100,7 +100,6 @@ sub get_identifier {
 sub execute_command {
     my ($self, %options) = @_;
 
-
     my $timeout = $self->{timeout};
     if (!defined($timeout)) {
         $timeout = defined($options{timeout}) ? $options{timeout} : 45;
@@ -157,7 +156,7 @@ my ssh
 
 =item B<--hostname>
 
-Hostname to query.
+Hostname to query in ssh.
 
 =item B<--timeout>
 

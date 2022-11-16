@@ -24,13 +24,14 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
         'exec-command:s'         => { name => 'exec_command' },
         'exec-command-path:s'    => { name => 'exec_command_path' },
         'exec-command-options:s' => { name => 'exec_command_options' },
@@ -77,6 +78,13 @@ sub check_options {
         $self->{expressions}->[$i]->{test} =~ s/%\{(.*?)\}/\$values->{$1}/g;
         $self->{expressions}->[$i]->{test} =~ s/%\((.*?)\)/\$values->{$1}/g;
     }
+
+    centreon::plugins::misc::check_security_whitelist(
+        output => $self->{output},
+        command => $self->{option_results}->{exec_command},
+        command_path => $self->{option_results}->{exec_command_path},
+        command_options => $self->{option_results}->{exec_command_options}
+    );
 }
 
 sub run {
@@ -92,7 +100,7 @@ sub run {
     my $long_msg = $stdout;
     $long_msg =~ s/\|/~/mg;
     $self->{output}->output_add(long_msg => $long_msg);
-    
+
     my $matched = 0;
     my $values = { code => $exit_code, output => $stdout };
     foreach (@{$self->{expressions}}) {

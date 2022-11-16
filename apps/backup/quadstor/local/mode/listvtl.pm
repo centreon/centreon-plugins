@@ -31,18 +31,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        "hostname:s"        => { name => 'hostname' },
-        "remote"            => { name => 'remote' },
-        "ssh-option:s@"     => { name => 'ssh_option' },
-        "ssh-path:s"        => { name => 'ssh_path' },
-        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"         => { name => 'timeout', default => 30 },
-        "sudo"              => { name => 'sudo' },
-        "command:s"         => { name => 'command' },
-        "command-path:s"    => { name => 'command_path' },
-        "command-options:s" => { name => 'command_options' },
-        "filter-name:s"     => { name => 'filter_name' }
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -51,20 +41,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    centreon::plugins::misc::check_security_command(
-        output => $self->{output},
-        command => $self->{option_results}->{command},
-        command_options => $self->{option_results}->{command_options},
-        command_path => $self->{option_results}->{command_path}
-    );
-
-    $self->{option_results}->{command} = 'vtconfig'
-        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
-    $self->{option_results}->{command_options} = '-l'
-        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
-    $self->{option_results}->{command_path} = '/quadstorvtl/bin'
-        if (!defined($self->{option_results}->{command_path}) || $self->{option_results}->{command_path} eq '');
 }
 
 sub run {
@@ -76,8 +52,10 @@ sub run {
         $self->{output}->output_add(long_msg => "'" . $_ . "' [type = " . $self->{vtl}->{$_}->{type}  . "]");
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List VTL:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List VTL:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -93,21 +71,21 @@ sub disco_show {
 
     $self->manage_selection(%options);
     foreach (sort keys %{$self->{vtl}}) {
-        $self->{output}->add_disco_entry(name => $_,
-                                         active => $self->{vtl}->{$_}->{type}
-                                         );
+        $self->{output}->add_disco_entry(
+            name => $_,
+            active => $self->{vtl}->{$_}->{type}
+        );
     }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    sudo => $self->{option_results}->{sudo},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'vtconfig',
+        command_options => '-l',
+        command_path => '/quadstorvtl/bin'
+    );
 
     #Name                           DevType  Type
     #BV00002                        VTL      IBM IBM System Storage TS3100
@@ -136,48 +114,9 @@ __END__
 
 List VTL.
 
+Command used: '/quadstorvtl/bin/vtconfig -l'
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'vtconfig').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/quadstorvtl/bin').
-
-=item B<--command-options>
-
-Command options (Default: '-l').
 
 =item B<--filter-name>
 

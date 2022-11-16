@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::ssh;
 use centreon::plugins::misc;
 
 sub custom_hosts_execution_time_output {
@@ -141,9 +142,9 @@ sub set_counters {
                 { name => 'services_active_checked', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'services_active_latency', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'services_status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'commands_buffer', type => 0, skipped_code => { -10 => 1 } },
-            ],
-        },
+                { name => 'commands_buffer', type => 0, skipped_code => { -10 => 1 } }
+            ]
+        }
     ];
 
     foreach my $type ('hosts', 'services') {
@@ -204,8 +205,8 @@ sub set_counters {
                         threshold_use => $_->[0] ,
                         closure_custom_output => $self->can('custom_' . $type . '_latency_output'),
                         perfdatas => [
-                            { value => $_->[0] , template => '%.3f', min => 0, unit => 's' },
-                        ],
+                            { value => $_->[0] , template => '%.3f', min => 0, unit => 's' }
+                        ]
                     }
                 }
             ;
@@ -286,13 +287,11 @@ sub new {
         'command-path:s'    => { name => 'command_path' },
         'command-options:s' => { name => 'command_options' },
         'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
         'timeout:s'         => { name => 'timeout', default => 30 },
         'sudo'              => { name => 'sudo' }
     });
+
+    $self->{ssh} = centreon::plugins::ssh->new(%options);
 
     return $self;
 }
@@ -314,22 +313,49 @@ sub check_options {
         if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
     $self->{option_results}->{command_path} = '/usr/sbin'
         if (!defined($self->{option_results}->{command_path}) || $self->{option_results}->{command_path} eq '');
+
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        $self->{ssh}->check_options(option_results => $self->{option_results});
+    }
+}
+
+sub execute_command {
+    my ($self, %options) = @_;
+
+    my ($stdout, $exit_code);
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        ($stdout, $exit_code) = $self->{ssh}->execute(
+            hostname => $self->{option_results}->{hostname},
+            sudo => $self->{option_results}->{sudo},
+            command => $options{command},
+            command_options => $options{command_options},
+            command_path => $options{command_path},
+            timeout => $self->{option_results}->{timeout}
+        );
+    } else {
+        ($stdout, $exit_code) = centreon::plugins::misc::execute(
+            output => $self->{output},
+            sudo => $self->{option_results}->{sudo},
+            options => { timeout => $self->{option_results}->{timeout} },
+            command => $options{command},
+            command_path => $options{command_path},
+            command_options => $options{command_options}
+        );
+    }
+
+    return ($stdout, $exit_code);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
+    my ($stdout) = $self->execute_command(
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
         command_options => $self->{option_results}->{command_options}
     );
 
     $self->{stats} = {};
-
     if ($stdout =~ /^Active\s+Host\s+Execution\s+Time\s*:\s*(\S+)\s*\/\s*(\S+)\s*\/\s*(\S+)/mi) {
         $self->{stats}->{0} = { hosts_active_execution_time => { min => $1, max => $2, avg => $3 } };
     }
@@ -371,40 +397,26 @@ __END__
 
 Check centengine statistics.
 
+Command used: '/usr/sbin/centenginestats '2>&1
+
 =over 8
 
 =item B<--command>
 
-Command to get information (Default: 'centenginestats').
+Command to get information.
 Can be changed if you have output in a file.
 
 =item B<--command-path>
 
-Command path (Default: '/usr/sbin').
+Command path.
 
 =item B<--command-options>
 
-Command options (Default: '2>&1').
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
+Command options.
 
 =item B<--hostname>
 
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
+Hostname to query in ssh.
 
 =item B<--timeout>
 
