@@ -31,8 +31,9 @@ sub new {
 
     $self->{modes} = {
         'cluster-status'         => 'centreon::common::bluearc::snmp::mode::clusterstatus',
-        'interfaces'             => 'snmp_standard::mode::interfaces',
-        'list-interfaces'        => 'snmp_standard::mode::listinterfaces',
+        'interfaces'             => 'centreon::common::bluearc::snmp::mode::interfaces',
+        'list-interfaces'        => 'centreon::common::bluearc::snmp::mode::listinterfaces',
+        'list-volumes'           => 'centreon::common::bluearc::snmp::mode::listvolumes',
         'hardware'               => 'centreon::common::bluearc::snmp::mode::hardware',
         'virtual-volumes-quotas' => 'centreon::common::bluearc::snmp::mode::virtualvolumesquotas',
         'volume-usage'           => 'centreon::common::bluearc::snmp::mode::volumeusage'

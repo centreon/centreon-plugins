@@ -146,7 +146,7 @@ sub new {
     return $self;
 }
 
-my %map_volume_status = ( 
+my %map_volume_status = (
     1 => 'unformatted',
     2 => 'mounted',
     3 => 'formatted',
