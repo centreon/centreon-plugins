@@ -69,7 +69,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'update', type => 0, message_separator => ' - ' },
+        { name => 'update', type => 0, message_separator => ' - ' }
     ];
     
     $self->{maps_counters}->{update} = [
@@ -101,23 +101,13 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options' },
+
+    $options{options}->add_options(arguments => {
         'nameservers:s@'    => { name => 'nameservers' },
         'maindb-file:s'     => { name => 'maindb_file', default => '/var/lib/clamav/main.cvd' },
         'dailydb-file:s'    => { name => 'dailydb_file', default => '/var/lib/clamav/daily.cvd' }
     });
-    
+
     return $self;
 }
 
@@ -125,14 +115,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    centreon::plugins::misc::check_security_command(
-        output => $self->{output},
-        command => $self->{option_results}->{command},
-        command_options => $self->{option_results}->{command_options},
-        command_path => $self->{option_results}->{command_path}
-    );
-
-    $self->{clamav_command} = 'echo "==== CLAMD ===" ; clamd -V ; echo "==== DAILY ===="; sigtool --info ' . $self->{option_results}->{dailydb_file} . '; echo "==== MAIN ====" ; sigtool --info ' . $self->{option_results}->{maindb_file};
+    $self->{option_results}->{maindb_file} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{maindb_file});
+    $self->{option_results}->{dailydb_file} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{dailydb_file});
 }
 
 sub get_clamav_last_update {
@@ -180,7 +164,7 @@ sub get_clamav_current_signature_info {
             second     => 0,
             time_zone  => $6,
         );
-        $self->{'current_' . $options{label} . 'db_timediff'}  = time() - $dt->epoch;
+        $self->{'current_' . $options{label} . 'db_timediff'}  = time() - $dt->epoch();
     }
 }
 
@@ -188,14 +172,11 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->get_clamav_last_update();
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{clamav_command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef
+
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'echo "==== CLAMD ===" ; clamd -V ; echo "==== DAILY ===="; sigtool --info ' . $self->{option_results}->{dailydb_file} . '; echo "==== MAIN ====" ; sigtool --info ' . $self->{option_results}->{maindb_file}
     );
+
     #==== CLAMD ===
     #ClamAV 0.99.2/21723/Mon Jun 13 14:53:00 2016
     #==== DAILY ====
@@ -245,52 +226,14 @@ __END__
 
 Check antivirus update status.
 
+Command used: 'clamd -V ; sigtool --info %(dailydb-file) ; sigtool --info %(maindb-file)'
+
 =over 8
 
 =item B<--nameservers>
 
 Set nameserver to query (can be multiple).
 The system configuration is used by default.
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information. Used it you have output in a file.
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options (Default: '-report -most_columns').
 
 =item B<--maindb-file>
 

@@ -104,9 +104,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_frozen_calc'),
                 closure_custom_output => $self->can('custom_frozen_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_frozen_threshold'),
+                closure_custom_threshold_check => $self->can('custom_frozen_threshold')
             }
-        },
+        }
     ];
 }
 
@@ -115,55 +115,23 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options' }
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    centreon::plugins::misc::check_security_command(
-        output => $self->{output},
-        command => $self->{option_results}->{command},
-        command_options => $self->{option_results}->{command_options},
-        command_path => $self->{option_results}->{command_path}
-    );
-
-    $self->{option_results}->{command} = 'impexp'
-        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
-    $self->{option_results}->{command_options} = '-l'
-        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
-    $self->{option_results}->{command_path} = '/quadstorvtl/bin'
-        if (!defined($self->{option_results}->{command_path}) || $self->{option_results}->{command_path} eq '');
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'quadstor_' . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
+    $self->{cache_name} = 'quadstor_' . $self->{mode} . '_' . $options{custom}->get_identifier() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
-    );    
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'impexp',
+        command_options => '-l',
+        command_path => '/quadstorvtl/bin'
+    );
+
     $self->{jobs}->{global} = { job => {} };
     #JobID  Type     Source           State        Transfer       Elapsed
     #252    Import   701831L2         Error        36.00 GB       572
@@ -171,7 +139,7 @@ sub manage_selection {
     #254    Export   701850L2         Completed    16.05 GB       1072
     #255    Export   701854L2         Completed    6.31 GB        142
     my $current_time = time();
-    my @lines = split /\n/, $stdout;
+    my @lines = split(/\n/, $stdout);
     shift @lines;
     foreach (@lines) {
         next if (! /^(\d+)\s+\S+\s+(\S+)\s+(\S+)\s+([0-9\.]+)\s+\S+\s+(\d+)/);
@@ -202,48 +170,9 @@ __END__
 
 Check job status.
 
+Command used: '/quadstorvtl/bin/impexp -l'
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'impexp').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/quadstorvtl/bin').
-
-=item B<--command-options>
-
-Command options (Default: '-l').
 
 =item B<--warning-status>
 

@@ -22,20 +22,21 @@ package apps::backup::quadstor::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'list-vtl'         => 'apps::backup::quadstor::local::mode::listvtl',
         'vtl-disk-usage'   => 'apps::backup::quadstor::local::mode::vtldiskusage',
         'vtl-job-status'   => 'apps::backup::quadstor::local::mode::vtljobstatus',
         'vtl-tape-usage'   => 'apps::backup::quadstor::local::mode::vtltapeusage',
-    );
+    };
+
+    $self->{custom_modes}->{cli} = 'centreon::plugins::script_custom::cli';
 
     return $self;
 }

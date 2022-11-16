@@ -18,41 +18,25 @@
 # limitations under the License.
 #
 
-package storage::ibm::DS4000::cli::plugin;
+package storage::dell::MD3000::cli::custom::cli;
+
+use base qw(centreon::common::smcli::custom::custom);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
 
-sub new {
-    my ($class, %options) = @_;    
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
+sub default_command {
+    my ($self, %options) = @_;
 
-    $self->{modes} = {
-        'health-status'  => 'centreon::common::smcli::mode::healthstatus'
-    };
-    $self->{custom_modes}->{smcli} = 'centreon::common::smcli::custom::custom';
+    return 'SMcli';
+}
 
-    $self->{default} = {
-        'health-status' => { 
-            storage_command => 'show storageSubsystem healthstatus;',
-        }
-    };
-    
-    return $self;
+sub default_command_path {
+    my ($self, %options) = @_;
+
+    return '/opt/dell/mdstoragemanager/client';
 }
 
 1;
 
 __END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check IBM DS4000 series.
-
-=over 8
-
-=back
-
-=cut

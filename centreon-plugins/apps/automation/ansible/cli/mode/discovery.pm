@@ -42,6 +42,8 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    $self->{option_results}->{host_pattern} = centreon::plugins::misc::sanitize_command_param(value => $self->{option_results}->{host_pattern});
 }
 
 sub run {

@@ -26,27 +26,20 @@ use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
-    
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'health-status'  => 'centreon::common::smcli::mode::healthstatus',
-    );
-    $self->{custom_modes}{smcli} = 'centreon::common::smcli::custom::custom';
-    
+    $self->{modes} = {
+        'health-status'  => 'centreon::common::smcli::mode::healthstatus'
+    };
+    $self->{custom_modes}->{smcli} = 'centreon::common::smcli::custom::custom';
+
     $self->{default} = {
         'health-status' => { 
             storage_command => 'show storageSubsystem healthstatus;',
         }
     };
-    $self->{customdefault} = {
-        'smcli' => { 
-            smcli_path => '/opt/IBM_DS/client', 
-        }
-    };
-    
+
     return $self;
 }
 

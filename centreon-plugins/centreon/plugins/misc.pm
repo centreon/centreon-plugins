@@ -632,6 +632,22 @@ sub slurp_file {
     return $content;
 }
 
+sub sanitize_command_param {
+    my (%options) = @_;
+
+    return if (!defined($options{value}));
+
+    $options{value} =~ s/[`;!&|]//g;
+    return $options{value};
+}
+
+my $security_file = '/etc/centreon-plugins/security.json';
+my $whitelist_file = '/etc/centreon-plugins/whitelist.json';
+if ($^O eq 'MSWin32') {
+    $security_file = 'C:/Program Files/centreon-plugins/security.json';
+    $whitelist_file = 'C:/Program Files/centreon-plugins/whitelist.json';
+}
+
 sub check_security_command {
     my (%options) = @_;
 
@@ -640,11 +656,6 @@ sub check_security_command {
         (defined($options{command_options}) && $options{command_options} ne '') ||
         (defined($options{command_path}) && $options{command_path} ne ''))
     );
-
-    my $security_file = '/etc/centreon-plugins/security.json';
-    if ($^O eq 'MSWin32') {
-        $security_file = 'C:/Program Files/centreon-plugins/security.json';
-    }
 
     return 0 if (! -r "$security_file" || -z "$security_file");
 
@@ -661,6 +672,65 @@ sub check_security_command {
 
     if (defined($security->{block_command_overload}) && $security->{block_command_overload} == 1) {
         $options{output}->add_option_msg(short_msg => 'Cannot overload command (security)');
+        $options{output}->option_exit();
+    }
+
+    return 0;
+}
+
+sub check_security_whitelist {
+    my (%options) = @_;
+
+    my $command = $options{command};
+    $command = $options{command_path} . '/' . $options{command} if (defined($options{command_path}) && $options{command_path} ne '');
+    $command .= ' ' . $options{command_options} if (defined($options{command_options}) && $options{command_options} ne '');
+
+    return 0 if (! -r "$security_file" || -z "$security_file");
+
+    my $content = slurp_file(output => $options{output}, file => $security_file);
+
+    my $security;
+    eval {
+        $security = JSON::XS->new->utf8->decode($content);
+    };
+    if ($@) {
+        $options{output}->add_option_msg(short_msg => 'Cannot decode security file content');
+        $options{output}->option_exit();
+    }
+
+    return 0 if (!defined($security->{whitelist_enabled}) || $security->{whitelist_enabled} !~ /^(?:1|true)$/i);
+
+    if (! -r "$whitelist_file") {
+        $options{output}->add_option_msg(short_msg => 'Cannot read whitelist security file content');
+        $options{output}->option_exit();
+    }
+
+    if (-z "$whitelist_file") {
+        $options{output}->add_option_msg(short_msg => 'Cannot execute command (security)');
+        $options{output}->option_exit();
+    }
+
+    $content = slurp_file(output => $options{output}, file => $whitelist_file);
+
+    my $whitelist;
+    eval {
+        $whitelist = JSON::XS->new->utf8->decode($content);
+    };
+    if ($@) {
+        $options{output}->add_option_msg(short_msg => 'Cannot decode whitelist security file content');
+        $options{output}->option_exit();
+    }
+
+    my $matched = 0;
+    foreach (@$whitelist) {
+        if ($command =~ /$_/) {
+            $matched = 1;
+            last;
+        }
+    }
+
+    if ($matched == 0) {
+        $options{output}->add_option_msg(short_msg => 'Cannot execute command (security)');
         $options{output}->option_exit();
     }
 

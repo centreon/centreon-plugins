@@ -25,21 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return 'status : ' . $self->{result_values}->{status};
 }
 
 sub custom_usage_perfdata {
@@ -88,10 +79,12 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+    my $msg = sprintf(
+        "Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
     return $msg;
 }
 
@@ -123,12 +116,11 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{disk} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'status', type => 2, critical_default => '%{status} !~ /active/i', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'usage', set => {
@@ -136,7 +128,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
     ];
@@ -159,8 +151,6 @@ sub new {
         "command-path:s"    => { name => 'command_path' },
         "command-options:s" => { name => 'command_options' },
         "filter-name:s"     => { name => 'filter_name' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /active/i' },
         "units:s"           => { name => 'units', default => '%' },
         "free"              => { name => 'free' },
     });
@@ -168,37 +158,13 @@ sub new {
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    centreon::plugins::misc::check_security_command(
-        output => $self->{output},
-        command => $self->{option_results}->{command},
-        command_options => $self->{option_results}->{command_options},
-        command_path => $self->{option_results}->{command_path}
-    );
-
-    $self->{option_results}->{command} = 'bdconfig'
-        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
-    $self->{option_results}->{command_options} = '-l -c'
-        if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
-    $self->{option_results}->{command_path} = '/quadstorvtl/bin'
-        if (!defined($self->{option_results}->{command_path}) || $self->{option_results}->{command_path} eq '');
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'bdconfig',
+        command_options => '-l -c',
+        command_path => '/quadstorvtl/bin'
     );
 
     $self->{disk} = {};
@@ -241,48 +207,9 @@ __END__
 
 Check vtl disk usage.
 
+Command used: '/quadstorvtl/bin/bdconfig -l -c'
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'bdconfig').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/quadstorvtl/bin').
-
-=item B<--command-options>
-
-Command options (Default: '-l -c').
 
 =item B<--filter-name>
 
