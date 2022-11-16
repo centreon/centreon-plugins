@@ -73,7 +73,7 @@ sub manage_selection {
         )
     });
 
-    my $hitratio = $self->{sql}->fetchrow_array();
+    my $hitratio = $options{sql}->fetchrow_array();
     $self->{hit_ratio}->{value} = $hitratio;
 
 }

@@ -59,7 +59,7 @@ sub manage_selection {
     $options{sql}->connect();
     $options{sql}->query(query => q{SELECT count(*) FROM master..sysprocesses WHERE spid >= '51'});
 
-    my $connected_count = $self->{sql}->fetchrow_array();
+    my $connected_count = $options{sql}->fetchrow_array();
     $self->{connected_user}->{value} = $connected_count;
 
 }
