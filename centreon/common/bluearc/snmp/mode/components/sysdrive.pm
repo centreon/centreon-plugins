@@ -27,18 +27,18 @@ my %map_status = (
     1 => 'online', 2 => 'corrupt', 3 => 'failed',
     4 => 'notPresent', 5 => 'disconnected',
     6 => 'offline', 7 => 'initializing',
-    8 => 'formatting', 9 => 'unknown',
+    8 => 'formatting', 9 => 'unknown'
 );
 
 my $mapping = {
     sysDriveWWN     => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.3.4.2.1.2' },
-    sysDriveStatus  => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.3.4.2.1.4', map => \%map_status },
+    sysDriveStatus  => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.3.4.2.1.4', map => \%map_status }
 };
 my $oid_sysDriveEntry = '.1.3.6.1.4.1.11096.6.1.1.1.3.4.2.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_sysDriveEntry };
 }
 
@@ -57,15 +57,22 @@ sub check {
         next if ($self->check_filter(section => 'sysdrive', instance => $result->{sysDriveWWN}));
         $self->{components}->{sysdrive}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("system drive '%s' status is '%s' [instance: %s].",
-                                    $result->{sysDriveWWN}, $result->{sysDriveStatus},
-                                    $result->{sysDriveWWN}
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "system drive '%s' status is '%s' [instance: %s].",
+                $result->{sysDriveWWN}, $result->{sysDriveStatus},
+                $result->{sysDriveWWN}
+            )
+        );
         my $exit = $self->get_severity(section => 'sysdrive', value => $result->{sysDriveStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("System drive '%s' status is '%s'",
-                                                             $result->{sysDriveWWN}, $result->{sysDriveStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "System drive '%s' status is '%s'",
+                    $result->{sysDriveWWN}, $result->{sysDriveStatus}
+                )
+            );
         }
     }
 }

@@ -38,7 +38,7 @@ my %map_status = (
 );
 
 my $mapping = {
-    batteryStatus => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.2.1.17.1.3', map => \%map_status },
+    batteryStatus => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.2.1.17.1.3', map => \%map_status }
 };
 my $oid_batteryEntry = '.1.3.6.1.4.1.11096.6.1.1.1.2.1.17.1';
 
@@ -56,22 +56,30 @@ sub check {
     return if ($self->check_filter(section => 'battery'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_batteryEntry}})) {
-        next if ($oid !~ /^$mapping->{batteryStatus}->{oid}\.(.*)$/);
-        my $instance = $1;
+        next if ($oid !~ /^$mapping->{batteryStatus}->{oid}\.(.*)\.(.*)$/);
+        my $name = $self->{pnodes}->{$1} . '.' . $2;
+        my $instance = $1 . '.' . $2;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_batteryEntry}, instance => $instance);
 
         next if ($self->check_filter(section => 'battery', instance => $instance));
         $self->{components}->{battery}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Battery '%s' status is '%s' [instance: %s].",
-                                    $instance, $result->{batteryStatus},
-                                    $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "battery '%s' status is '%s' [instance: %s].",
+                $name, $result->{batteryStatus},
+                $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'battery', value => $result->{batteryStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Battery '%s' status is '%s'",
-                                                             $instance, $result->{batteryStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Battery '%s' status is '%s'",
+                    $name, $result->{batteryStatus}
+                )
+            );
         }
     }
 }
