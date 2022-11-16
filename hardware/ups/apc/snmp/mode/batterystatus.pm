@@ -122,6 +122,14 @@ sub set_counters {
                 ]
             }
         },
+        { label => 'timeon', nlabel => 'battery.timeon.minutes', set => {
+                key_values => [ { name => 'upsBasicBatteryTimeOnBattery' } ],
+                output_template => 'time on battery: %.2f minutes',
+                perfdatas => [
+                    { label => 'timeon', template => '%.2f', min => 0, unit => 'm' }
+                ]
+            }
+        },
         { label => 'current', nlabel => 'battery.current.ampere', set => {
                 key_values => [ { name => 'upsAdvBatteryCurrent' } ],
                 output_template => 'current: %s A',
@@ -301,6 +309,8 @@ sub manage_selection {
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_upsBasicBattery}, instance => '0');
     my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{$oid_upsAdvBattery}, instance => '0');
 
+    $result->{upsBasicBatteryTimeOnBattery} = sprintf('%.0f', $result->{upsBasicBatteryTimeOnBattery} / 100 / 60)
+        if (defined($result->{upsBasicBatteryTimeOnBattery}));
     $result2->{upsAdvBatteryRunTimeRemaining} = sprintf("%.0f", $result2->{upsAdvBatteryRunTimeRemaining} / 100 / 60)
         if (defined($result2->{upsAdvBatteryRunTimeRemaining}));
     $self->{global} = { %$result, %$result2 };
@@ -377,7 +387,7 @@ Can used special variables like: %{status}
 
 Thresholds.
 Can be: 'load', 'voltage', 'current', 
-'temperature', 'time', 'replace-lasttime'.
+'temperature', 'time', 'replace-lasttime', 'timeon'.
 
 =back
 
