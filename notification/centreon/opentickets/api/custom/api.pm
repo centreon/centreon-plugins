@@ -293,7 +293,7 @@ API username
 
 API password
 
-=item B<--timeout>
+=item B<--api-timeout>
 
 HTTP timeout
 
