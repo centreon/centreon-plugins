@@ -34,6 +34,7 @@ sub new {
         'errors'                => 'cloud::aws::cloudfront::mode::errors',
         'requests'              => 'cloud::aws::cloudfront::mode::requests',
         'throughput'            => 'cloud::aws::cloudfront::mode::throughput',
+        'discovery'             => 'cloud::aws::cloudfront::mode::discovery',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
