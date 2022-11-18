@@ -32,7 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'system'    => 'network::patton::smartnode::snmp::mode::system',
-        # 'call'      => 'network::patton::smartnode::snmp::mode::call'
+        'call'      => 'network::patton::smartnode::snmp::mode::call'
     );
 
     return $self;

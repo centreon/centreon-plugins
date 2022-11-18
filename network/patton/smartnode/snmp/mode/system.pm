@@ -27,17 +27,17 @@ use warnings;
 
 sub prefix_cpu_output {
     my ($self, %options) = @_;
-    return "'".$options{instance_value}->{display}."' CPU: ";
+    return "CPU '".$options{instance_value}->{display}."' ";
 }
 
 sub prefix_memory_output {
     my ($self, %options) = @_;
-    return "'".$options{instance_value}->{display}."' memory:";
+    return "Memory pool '".$options{instance_value}->{display}."' ";
 }
 
 sub prefix_temperature_output {
     my ($self, %options) = @_;
-    return "'".$options{instance_value}->{display}."' temperature:";
+    return "Temperature probe '".$options{instance_value}->{display}."' ";
 }
 
 sub custom_usage_output {
@@ -165,7 +165,7 @@ sub manage_selection {
     my $snmp_results = $options{snmp}->get_multiple_table(oids => [
         { oid => $cpuEntry_oid },
         { oid => $memoryPoolEntry_oid },
-        { oid => $tempProbeEntry_oid },
+        { oid => $tempProbeEntry_oid }
     ], nothing_quit => 1);
 
     my $cpuEntry = $snmp_results->{$cpuEntry_oid};
