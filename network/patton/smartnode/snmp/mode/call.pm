@@ -46,25 +46,25 @@ sub set_counters {
     $self->{maps_counters}->{gateway} = [
         { label => 'gateway-current-connected-calls', nlabel => 'gateway.current.connected.calls', set => {
                 key_values => [ { name => 'gateway_current_connected_calls' }, { name => 'display' } ],
-                output_template => 'connected calls: %.2f',
+                output_template => 'connected calls: %d',
                 perfdatas => [
-                    { template => '%.2f', min => 0, unit => '', label_extra_instance => 1 }
+                    { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'gateway-current-ongoing-calls', nlabel => 'gateway.current.ongoing.calls', set => {
                 key_values => [ { name => 'gateway_current_ongoing_calls' }, { name => 'display' } ],
-                output_template => 'ongoing calls: %.2f',
+                output_template => 'ongoing calls: %d',
                 perfdatas => [
-                    { template => '%.2f', min => 0, unit => '', label_extra_instance => 1 }
+                    { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'gateway-total-accumulated-calls', nlabel => 'gateway.total.accumulated.calls', set => {
                 key_values => [ { name => 'gateway_total_accumulated_calls' }, { name => 'display' } ],
-                output_template => 'total accumulated calls: %.2f',
+                output_template => 'total accumulated calls: %d',
                 perfdatas => [
-                    { template => '%.2f', min => 0, unit => '', label_extra_instance => 1 }
+                    { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
                 ]
             }
         }
@@ -73,25 +73,25 @@ sub set_counters {
     $self->{maps_counters}->{isdn} = [
         { label => 'isdn-current-connected-calls', nlabel => 'isdn.current.connected.calls', set => {
                 key_values => [ { name => 'isdn_current_connected_calls' }, { name => 'display' } ],
-                output_template => 'connected calls: %.2f',
+                output_template => 'connected calls: %d',
                 perfdatas => [
-                    { template => '%.2f', min => 0, unit => '', label_extra_instance => 1 }
+                    { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'isdn-current-ongoing-calls', nlabel => 'isdn.current.ongoing.calls', set => {
                 key_values => [ { name => 'isdn_current_ongoing_calls' }, { name => 'display' } ],
-                output_template => 'ongoing calls: %.2f',
+                output_template => 'ongoing calls: %d',
                 perfdatas => [
-                    { template => '%.2f', min => 0, unit => '', label_extra_instance => 1 }
+                    { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'isdn-total-accumulated-calls', nlabel => 'isdn.total.accumulated.calls', set => {
                 key_values => [ { name => 'isdn_total_accumulated_calls' }, { name => 'display' } ],
-                output_template => 'total accumulated calls: %.2f',
+                output_template => 'total accumulated calls: %d',
                 perfdatas => [
-                    { template => '%.2f', min => 0, unit => '', label_extra_instance => 1 }
+                    { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
                 ]
             }
         }
