@@ -39,7 +39,9 @@ sub set_system {
             ['critical', 'CRITICAL'], # alarmStatus
             ['ok', 'OK'],             # commStatus
             ['notInstalled', 'OK'],   # commStatus
-            ['lost', 'WARNING']       # commStatus
+            ['lost', 'WARNING'],      # commStatus
+            ['^active', 'OK'],        # commStatus
+            ['inactive', 'OK']        # commStatus
         ]
     };
 
@@ -54,6 +56,7 @@ sub snmp_execute {
 
     $self->{snmp} = $options{snmp};
     $self->{checked_module_sensors} = 0;
+    $self->{checked_wireless_sensors} = 0;
 
     my $oid_module_name = '.1.3.6.1.4.1.318.1.1.10.4.1.2.1.2';
     my $snmp_result = $self->{snmp}->get_table(oid => $oid_module_name);
@@ -62,6 +65,10 @@ sub snmp_execute {
         /$oid_module_name\.(.*)$/;
         $self->{modules_name}->{$1} = $snmp_result->{$_};
     }
+
+    my $oid_emsStatusSysTempUnits = '.1.3.6.1.4.1.318.1.1.10.3.12.11.0';
+    $snmp_result = $self->{snmp}->get_leef(oids => [$oid_emsStatusSysTempUnits]);
+    $self->{temp_unit} = $snmp_result->{$oid_emsStatusSysTempUnits} == 1 ? 'C' : 'F';
 }
 
 sub new {

@@ -27,10 +27,11 @@ use Exporter;
 our $map_alarm_status;
 our $map_comm_status;
 our $map_comm_status2;
+our $map_comm_status3;
 our $map_fluid_state;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw($map_alarm_status $map_fluid_state $map_comm_status $map_comm_status2);
+our @EXPORT_OK = qw($map_alarm_status $map_fluid_state $map_comm_status $map_comm_status2 $map_comm_status3);
 
 $map_alarm_status = {
     1 => 'normal',
@@ -47,6 +48,11 @@ $map_comm_status = {
 $map_comm_status2 = {
     1 => 'ok',
     2 => 'lost'
+};
+
+$map_comm_status3 = {
+    0 => 'inactive',
+    1 => 'active'
 };
 
 $map_fluid_state = {

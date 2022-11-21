@@ -22,7 +22,7 @@ package hardware::sensors::apc::snmp::mode::components::temperature;
 
 use strict;
 use warnings;
-use hardware::sensors::apc::snmp::mode::components::resources qw($map_alarm_status $map_comm_status);
+use hardware::sensors::apc::snmp::mode::components::resources qw($map_alarm_status $map_comm_status $map_comm_status3);
 
 sub load {}
 
@@ -53,6 +53,8 @@ sub check_module_temp {
             results => $self->{snmp_module_sensors},
             instance => $instance
         );
+
+        $instance = 'module.' . $instance;
 
         next if ($self->check_filter(section => 'temperature', instance => $instance));
         $self->{components}->{temperature}->{total}++;
@@ -92,22 +94,125 @@ sub check_module_temp {
                 )
             );
         }
-             
+
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{temp});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit2,
                 short_msg => sprintf(
-                    "Temperature '%s' is %s C",
+                    "Temperature '%s' is %s %s",
                     $name,
-                    $result->{temp}
+                    $result->{temp},
+                    $self->{temp_unit}
                 )
             );
         }
 
         $self->{output}->perfdata_add(
-            nlabel => 'hardware.sensor.temperature.celsius',
-            unit => 'C',
+            nlabel => 'hardware.sensor.temperature.' . ($self->{temp_unit} eq 'C' ? 'celsius' : 'fahrenheit'),
+            unit => $self->{temp_unit},
+            instances => $name,
+            value => $result->{temp},
+            warning => $warn,
+            critical => $crit
+        );
+    }
+}
+
+sub check_wireless_temp {
+    my ($self) = @_;
+
+    my $oid_wirelessSensorStatusTable = '.1.3.6.1.4.1.318.1.1.10.5.1.1';
+    my $oid_wirelessSensorStatusMinHumidityThresh = '.1.3.6.1.4.1.318.1.1.10.5.1.1.1.15';
+    my $mapping = {
+        name        => { oid => '.1.3.6.1.4.1.318.1.1.10.5.1.1.1.3' }, # wirelessSensorStatusName
+        temp        => { oid => '.1.3.6.1.4.1.318.1.1.10.5.1.1.1.5' }, # wirelessSensorStatusTemperature
+        highWarn    => { oid => '.1.3.6.1.4.1.318.1.1.10.5.1.1.1.6' }, # wirelessSensorStatusHighTempThresh
+        lowWarn     => { oid => '.1.3.6.1.4.1.318.1.1.10.5.1.1.1.7' }, # wirelessSensorStatusLowTempThresh
+        commStatus  => { oid => '.1.3.6.1.4.1.318.1.1.10.5.1.1.1.11', map => $map_comm_status3 }, # wirelessSensorStatusCommStatus
+        highCrit    => { oid => '.1.3.6.1.4.1.318.1.1.10.5.1.1.1.12' }, # wirelessSensorStatusHighTempThresh
+        lowCrit     => { oid => '.1.3.6.1.4.1.318.1.1.10.5.1.1.1.13' }  # wirelessSensorStatusLowTempThresh
+    };
+
+    my $snmp_result = $self->{snmp_wireless_sensors};
+    if ($self->{checked_wireless_sensors} == 0) {
+        $self->{snmp_wireless_sensors} = $self->{snmp}->get_table(oid => $oid_wirelessSensorStatusTable, end => $oid_wirelessSensorStatusMinHumidityThresh);
+        $self->{checked_wireless_sensors} = 1;
+    }
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{snmp_wireless_sensors}})) {
+        next if ($oid !~ /^$mapping->{commStatus}->{oid}\.(\d+)$/);
+
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(
+            mapping => $mapping,
+            results => $self->{snmp_wireless_sensors},
+            instance => $instance
+        );
+
+        $instance = 'wireless.' . $instance;
+
+        next if ($self->check_filter(section => 'temperature', instance => $instance));
+        $self->{components}->{temperature}->{total}++;
+
+        my $name = $result->{name};
+        $result->{temp} *= 0.1;
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' is %s %s [instance: %s] [comm: %s]",
+                $name,
+                $result->{temp},
+                $self->{temp_unit},
+                $instance, 
+                $result->{commStatus}
+            )
+        );
+
+        my $exit = $self->get_severity(label => 'default', section => 'temperature.comm', value => $result->{commStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Temperature '%s' communication status is %s",
+                    $name,
+                    $result->{commStatus}
+                )
+            );
+        }
+
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{temp});
+        if ($checked == 0) {
+            my $warn_th = ($result->{lowWarn} * 0.1) . ':' . ($result->{highCrit} * 0.1);
+            my $crit_th = ($result->{lowCrit} * 0.1) . ':' . ($result->{highCrit} * 0.1);
+            $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
+            $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
+            $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
+            $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
+            $exit = $self->{perfdata}->threshold_check(
+                value => $result->{temp},
+                threshold => [
+                    { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' },
+                    { label => 'warning-temperature-instance-' . $instance, exit_litteral => 'warning' }
+                ]
+            );
+        }
+
+        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf(
+                    "Temperature '%s' is %s %s",
+                    $name,
+                    $result->{temp},
+                    $self->{temp_unit}
+                )
+            );
+        }
+
+        $self->{output}->perfdata_add(
+            nlabel => 'hardware.sensor.temperature.' . ($self->{temp_unit} eq 'C' ? 'celsius' : 'fahrenheit'),
+            unit => $self->{temp_unit},
             instances => $name,
             value => $result->{temp},
             warning => $warn,
@@ -124,6 +229,7 @@ sub check {
     return if ($self->check_filter(section => 'temperature'));
 
     check_module_temp($self);
+    check_wireless_temp($self);
 }
 
 1;
