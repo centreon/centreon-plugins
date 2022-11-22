@@ -44,24 +44,24 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{gateway} = [
-        { label => 'gateway-current-connected-calls', nlabel => 'gateway.current.connected.calls', set => {
-                key_values => [ { name => 'gateway_current_connected_calls' }, { name => 'display' } ],
+        { label => 'gateway-calls-connected-count', nlabel => 'gateway.calls.connected.count', set => {
+                key_values => [ { name => 'gateway_calls_connected_count' }, { name => 'display' } ],
                 output_template => 'connected calls: %d',
                 perfdatas => [
                     { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'gateway-current-ongoing-calls', nlabel => 'gateway.current.ongoing.calls', set => {
-                key_values => [ { name => 'gateway_current_ongoing_calls' }, { name => 'display' } ],
+        { label => 'gateway-calls-ongoing-count', nlabel => 'gateway.calls.ongoing.count', set => {
+                key_values => [ { name => 'gateway_calls_ongoing_count' }, { name => 'display' } ],
                 output_template => 'ongoing calls: %d',
                 perfdatas => [
                     { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'gateway-total-accumulated-calls', nlabel => 'gateway.total.accumulated.calls', set => {
-                key_values => [ { name => 'gateway_total_accumulated_calls' }, { name => 'display' } ],
+        { label => 'gateway-calls-accumulated-count', nlabel => 'gateway.calls.accumulated.count', set => {
+                key_values => [ { name => 'gateway_calls_accumulated_count' }, { name => 'display' } ],
                 output_template => 'total accumulated calls: %d',
                 perfdatas => [
                     { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
@@ -71,24 +71,24 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{isdn} = [
-        { label => 'isdn-current-connected-calls', nlabel => 'isdn.current.connected.calls', set => {
-                key_values => [ { name => 'isdn_current_connected_calls' }, { name => 'display' } ],
+        { label => 'isdn-calls-connected-count', nlabel => 'isdn.calls.connected.count', set => {
+                key_values => [ { name => 'isdn_calls_connected_count' }, { name => 'display' } ],
                 output_template => 'connected calls: %d',
                 perfdatas => [
                     { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'isdn-current-ongoing-calls', nlabel => 'isdn.current.ongoing.calls', set => {
-                key_values => [ { name => 'isdn_current_ongoing_calls' }, { name => 'display' } ],
+        { label => 'isdn-calls-ongoing-count', nlabel => 'isdn.calls.ongoing.count', set => {
+                key_values => [ { name => 'isdn_calls_ongoing_count' }, { name => 'display' } ],
                 output_template => 'ongoing calls: %d',
                 perfdatas => [
                     { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'isdn-total-accumulated-calls', nlabel => 'isdn.total.accumulated.calls', set => {
-                key_values => [ { name => 'isdn_total_accumulated_calls' }, { name => 'display' } ],
+        { label => 'isdn-calls-accumulated-count', nlabel => 'isdn.calls.accumulated.count', set => {
+                key_values => [ { name => 'isdn_calls_accumulated_count' }, { name => 'display' } ],
                 output_template => 'total accumulated calls: %d',
                 perfdatas => [
                     { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
@@ -109,48 +109,44 @@ sub new {
     return $self;
 }
 
-my $gwEntry_oid = '.1.3.6.1.4.1.1768.100.70.40.2.1';
-my $gwDescr_oid = '.1.3.6.1.4.1.1768.100.70.40.2.1.1';
-my $gwCurrentConnectedCalls_oid = '.1.3.6.1.4.1.1768.100.70.40.2.1.2';
-my $gwCurrentOngoingCalls_oid = '.1.3.6.1.4.1.1768.100.70.40.2.1.3';
-my $gwTotalAccumulatedCalls_oid = '.1.3.6.1.4.1.1768.100.70.40.2.1.4';
+my $gwEntry = '.1.3.6.1.4.1.1768.100.70.40.2.1';
+my $isdnPortEntry = '.1.3.6.1.4.1.1768.100.70.50.2.1';
 
-my $isdnPortEntry_oid = '.1.3.6.1.4.1.1768.100.70.50.2.1';
-my $isdnPortDescr_oid = '.1.3.6.1.4.1.1768.100.70.50.2.1.1';
-my $isdnPortCurrentConnectedCalls_oid = '.1.3.6.1.4.1.1768.100.70.50.2.1.2';
-my $isdnPortCurrentOngoingCalls_oid = '.1.3.6.1.4.1.1768.100.70.50.2.1.3';
-my $isdnPortTotalAccumulatedCalls_oid = '.1.3.6.1.4.1.1768.100.70.50.2.1.4';
+my $mappingGw = {
+    display => { oid => '.1.3.6.1.4.1.1768.100.70.40.2.1.1' }, # gwDescr
+    gateway_calls_connected_count => { oid => '.1.3.6.1.4.1.1768.100.70.40.2.1.2' }, # gwCurrentConnectedCalls
+    gateway_calls_ongoing_count => { oid => '.1.3.6.1.4.1.1768.100.70.40.2.1.3' }, # gwCurrentOngoingCalls
+    gateway_calls_accumulated_count => { oid => '.1.3.6.1.4.1.1768.100.70.40.2.1.4' } # gwTotalAccumulatedCalls
+};
+my $mappingIsdn = {
+    display => { oid => '.1.3.6.1.4.1.1768.100.70.50.2.1.1' }, # isdnPortDescr
+    isdn_calls_connected_count => { oid => '.1.3.6.1.4.1.1768.100.70.50.2.1.2' }, # isdnPortCurrentConnectedCalls
+    isdn_calls_ongoing_count => { oid => '.1.3.6.1.4.1.1768.100.70.50.2.1.3' }, # isdnPortCurrentOngoingCalls
+    isdn_calls_accumulated_count => { oid => '.1.3.6.1.4.1.1768.100.70.50.2.1.4' } # isdnPortTotalAccumulatedCalls
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $snmp_results = $options{snmp}->get_multiple_table(oids => [
-        { oid => $gwEntry_oid },
-        { oid => $isdnPortEntry_oid }
+        { oid => $gwEntry },
+        { oid => $isdnPortEntry }
     ], nothing_quit => 1);
 
-    my $gatewayEntry = $snmp_results->{$gwEntry_oid};
     my $numGateway = 1;
-    $self->{gateway} = {};
-    while ($gatewayEntry->{$gwDescr_oid.".".$numGateway}) {
-        my $gatewayObj = $self->{gateway}->{ $gatewayEntry->{$gwDescr_oid.".".$numGateway} } = {};
-        $gatewayObj->{display} = $gatewayEntry->{$gwDescr_oid.".".$numGateway};
-        $gatewayObj->{gateway_current_connected_calls} = $gatewayEntry->{$gwCurrentConnectedCalls_oid.".".$numGateway};
-        $gatewayObj->{gateway_current_ongoing_calls} = $gatewayEntry->{$gwCurrentOngoingCalls_oid.".".$numGateway};
-        $gatewayObj->{gateway_total_accumulated_calls} = $gatewayEntry->{$gwTotalAccumulatedCalls_oid.".".$numGateway};
+    my $gatewayEntry = $options{snmp}->map_instance(mapping => $mappingGw, results => $snmp_results->{$gwEntry}, instance => $numGateway);
+    while (defined($gatewayEntry->{display})) {
+        $self->{gateway}->{ $gatewayEntry->{display} } = $gatewayEntry;
         $numGateway++;
+        $gatewayEntry = $options{snmp}->map_instance(mapping => $mappingGw, results => $snmp_results->{$gwEntry}, instance => $numGateway);
     }
 
-    my $isdnEntry = $snmp_results->{$isdnPortEntry_oid};
     my $numIsdn = 1;
-    $self->{isdn} = {};
-    while ($isdnEntry->{$isdnPortDescr_oid.".".$numIsdn}) {
-        my $isdnObj = $self->{isdn}->{ $isdnEntry->{$isdnPortDescr_oid.".".$numIsdn} } = {};
-        $isdnObj->{display} = $isdnEntry->{$isdnPortDescr_oid.".".$numIsdn};
-        $isdnObj->{isdn_current_connected_calls} = $isdnEntry->{$isdnPortCurrentConnectedCalls_oid.".".$numIsdn};
-        $isdnObj->{isdn_current_ongoing_calls} = $isdnEntry->{$isdnPortCurrentOngoingCalls_oid.".".$numIsdn};
-        $isdnObj->{isdn_total_accumulated_calls} = $isdnEntry->{$isdnPortTotalAccumulatedCalls_oid.".".$numIsdn};
+    my $isdnEntry = $options{snmp}->map_instance(mapping => $mappingIsdn, results => $snmp_results->{$isdnPortEntry}, instance => $numIsdn);
+    while (defined($isdnEntry->{display})) {
+        $self->{isdn}->{ $isdnEntry->{display} } = $isdnEntry;
         $numIsdn++;
+        $isdnEntry = $options{snmp}->map_instance(mapping => $mappingIsdn, results => $snmp_results->{$isdnPortEntry}, instance => $numIsdn);
     }
 }
 
