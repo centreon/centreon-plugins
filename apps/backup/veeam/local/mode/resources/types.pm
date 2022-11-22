@@ -63,7 +63,7 @@ $job_type = {
     53 => 'LicenseAutoUpdate', 54 => 'OracleLogBackup',
     55 => 'TapeMarkAsFree', 56 => 'TapeDeleteFromLibrary',
     57 => 'TapeMoveToMediaPool', 58 => 'TapeCatalogueDecrypted',
-    63 => 'SimpleBackupCopyWorker', 64 => 'QuickMigrationCheck', 
+    63 => 'SimpleBackupCopyWorker', 64 => 'QuickMigrationCheck',
     65 => 'BackupCopy', 100 => 'ConfBackup',
     101 => 'ConfRestore', 102 => 'ConfResynchronize',
     103 => 'WaGlobalDedupFill', 104 => 'DatabaseMaintenance',
