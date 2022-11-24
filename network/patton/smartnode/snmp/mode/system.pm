@@ -25,6 +25,15 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_cpu_avg_output {
+    my ($self, %options) = @_;
+
+    if ($self->{cpu_average}->{count} > 0) {
+        return $self->{cpu_average}->{count} . ' CPU(s) average usage is ';
+    }
+    return 'CPU(s) average usage is ';
+}
+
 sub prefix_cpu_output {
     my ($self, %options) = @_;
     return "CPU '".$options{instance_value}->{display}."' ";
@@ -44,44 +53,57 @@ sub custom_usage_output {
     my ($self, %options) = @_;
 
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_total_bytes});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_allocated_bytes});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_usage_bytes});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_free_bytes});
+
     return sprintf(
         'memory usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{memory_allocated_percent},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{memory_free_percent}
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{memory_usage_percentage},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{memory_free_percentage}
     );
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
-     $self->{maps_counters_type} = [
+    $self->{maps_counters_type} = [
+        { name => 'cpu_average', type => 0, cb_prefix_output => 'prefix_cpu_avg_output' },
         { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPU usages are ok' },
         { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memory usages are ok' },
         { name => 'temperature', type => 1, cb_prefix_output => 'prefix_temperature_output', message_multiple => 'All temperatures are ok' }
     ];
 
+    $self->{maps_counters}->{cpu_average} = [
+        { label => 'average', nlabel => 'cpus.utilization.average.percentage', set => {
+                key_values => [ { name => 'average' }, { name => 'count' } ],
+                output_template => '%.2f %%',
+                perfdatas => [
+                    { label => 'total_cpu_avg', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        }
+    ];
+
     $self->{maps_counters}->{cpu} = [
-        { label => 'cpu-workload-current', nlabel => 'cpu.workload.current', set => {
-                key_values => [ { name => 'cpu_workload_current' }, { name => 'display' } ],
+        { label => 'cpu-utilization-current-percentage', nlabel => 'cpu.utilization.current.percentage', set => {
+                key_values => [ { name => 'cpu_utilization_current_percentage' }, { name => 'display' } ],
                 output_template => 'cpu workload: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'cpu-workload-1m', nlabel => 'cpu.workload.1m', set => {
-                key_values => [ { name => 'cpu_workload_1m' }, { name => 'display' } ],
+        { label => 'cpu-utilization-1m-percentage', nlabel => 'cpu.utilization.1m.percentage', set => {
+                key_values => [ { name => 'cpu_utilization_1m_percentage' }, { name => 'display' } ],
                 output_template => 'cpu workload 1 minute average: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'cpu-workload-5m', nlabel => 'cpu.workload.5m', set => {
-                key_values => [ { name => 'cpu_workload_5m' }, { name => 'display' } ],
+        { label => 'cpu-utilization-5m-percentage', nlabel => 'cpu.utilization.5m.percentage', set => {
+                key_values => [ { name => 'cpu_utilization_5m_percentage' }, { name => 'display' } ],
                 output_template => 'cpu workload 5 minutes average: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
@@ -91,8 +113,8 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'memory-allocated-bytes', nlabel => 'memory.allocated.bytes', set => {
-                key_values => [ { name => 'memory_allocated_bytes' }, { name => 'memory_free_bytes' }, { name => 'memory_allocated_percent' }, { name => 'memory_free_percent' }, { name => 'memory_total_bytes' } ],
+        { label => 'memory-usage-bytes', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'memory_usage_bytes' }, { name => 'memory_free_bytes' }, { name => 'memory_usage_percentage' }, { name => 'memory_free_percentage' }, { name => 'memory_total_bytes' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'memory_total_bytes', unit => 'B', cast_int => 1, label_extra_instance => 1 }
@@ -100,15 +122,15 @@ sub set_counters {
             }
         },
         { label => 'memory-free-bytes', nlabel => 'memory.free.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'memory_free_bytes' }, { name => 'memory_allocated_bytes' }, { name => 'memory_allocated_percent' }, { name => 'memory_free_percent' }, { name => 'memory_total_bytes' } ],
+                key_values => [ { name => 'memory_free_bytes' }, { name => 'memory_usage_bytes' }, { name => 'memory_usage_percentage' }, { name => 'memory_free_percentage' }, { name => 'memory_total_bytes' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { template => '%d', min => 0, max => 'memory_total_bytes', unit => 'B', cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'memory-allocated-percentage', nlabel => 'memory.allocated.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'memory_allocated_percent' }, { name => 'memory_allocated_bytes' }, { name => 'memory_free_bytes' }, { name => 'memory_free_percent' }, { name => 'memory_total_bytes' } ],
+        { label => 'memory-usage-percentage', nlabel => 'memory.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'memory_usage_percentage' }, { name => 'memory_usage_bytes' }, { name => 'memory_free_bytes' }, { name => 'memory_free_percentage' }, { name => 'memory_total_bytes' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
@@ -118,9 +140,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{temperature} = [
-        { label => 'temperature-current-celsius', nlabel => 'temperature.current.celsius', set => {
-                key_values => [ { name => 'temperature_current_celsius' }, { name => 'display' } ],
-                output_template => 'temperature probe: %.2f C',
+        { label => 'probe-temperature-celsius', nlabel => 'probe.temperature.celsius', set => {
+                key_values => [ { name => 'probe_temperature_celsius' }, { name => 'display' } ],
+                output_template => 'probe temperature: %.2f C',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => 'C', label_extra_instance => 1 }
                 ]
@@ -141,23 +163,26 @@ sub new {
 }
 
 my $cpuEntry_oid = '.1.3.6.1.4.1.1768.100.70.10.2.1';
-my $cpuDescr_oid = '.1.3.6.1.4.1.1768.100.70.10.2.1.1';
-my $cpuWorkloadCurrent_oid = '.1.3.6.1.4.1.1768.100.70.10.2.1.2';
-my $cpuWorkload1MinuteAverage_oid = '.1.3.6.1.4.1.1768.100.70.10.2.1.3';
-my $cpuWorkload5MinuteAverage_oid = '.1.3.6.1.4.1.1768.100.70.10.2.1.4';
+my $mappingCpu = {
+    display => { oid => '.1.3.6.1.4.1.1768.100.70.10.2.1.1' }, # cpuDescr
+    cpu_utilization_current_percentage => { oid => '.1.3.6.1.4.1.1768.100.70.10.2.1.2' }, # cpuWorkloadCurrent
+    cpu_utilization_1m_percentage => { oid => '.1.3.6.1.4.1.1768.100.70.10.2.1.3' }, # cpuWorkload1MinuteAverage
+    cpu_utilization_5m_percentage => { oid => '.1.3.6.1.4.1.1768.100.70.10.2.1.4' } # cpuWorkload5MinuteAverage
+};
 
 my $memoryPoolEntry_oid = '.1.3.6.1.4.1.1768.100.70.20.2.1';
-my $memDescr_oid = '.1.3.6.1.4.1.1768.100.70.20.2.1.1';
-my $memTotalBytes_oid = '.1.3.6.1.4.1.1768.100.70.20.2.1.2';
-my $memAllocatedBytes_oid = '.1.3.6.1.4.1.1768.100.70.20.2.1.3';
-my $memFreeBytes_oid = '.1.3.6.1.4.1.1768.100.70.20.2.1.4';
-my $memLargestFreeBlock_oid = '.1.3.6.1.4.1.1768.100.70.20.2.1.5';
-my $memAllocatedBlocks_oid = '.1.3.6.1.4.1.1768.100.70.20.2.1.6';
-my $memFreeBlocks_oid = '.1.3.6.1.4.1.1768.100.70.20.2.1.7';
+my $mappingMemory = {
+    display => { oid => '.1.3.6.1.4.1.1768.100.70.20.2.1.1' }, # memDescr
+    memory_total_bytes => { oid => '.1.3.6.1.4.1.1768.100.70.20.2.1.2' }, # memTotalBytes
+    memory_usage_bytes => { oid => '.1.3.6.1.4.1.1768.100.70.20.2.1.3' }, # memAllocatedBytes
+    memory_free_bytes => { oid => '.1.3.6.1.4.1.1768.100.70.20.2.1.4' } # memFreeBytes
+};
 
 my $tempProbeEntry_oid = '.1.3.6.1.4.1.1768.100.70.30.2.1';
-my $tempProbeDescr_oid = '.1.3.6.1.4.1.1768.100.70.30.2.1.1';
-my $currentDegreesCelsius_oid = '.1.3.6.1.4.1.1768.100.70.30.2.1.2';
+my $mappingTemperature = {
+    display => { oid => '.1.3.6.1.4.1.1768.100.70.30.2.1.1' }, # tempProbeDescr
+    probe_temperature_celsius => { oid => '.1.3.6.1.4.1.1768.100.70.30.2.1.2' } # currentDegreesCelsius
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -168,45 +193,45 @@ sub manage_selection {
         { oid => $tempProbeEntry_oid }
     ], nothing_quit => 1);
 
-    my $cpuEntry = $snmp_results->{$cpuEntry_oid};
     my $numCpu = 1;
-    $self->{cpu} = {};
-    while ($cpuEntry->{$cpuDescr_oid.".".$numCpu}) {
-        my $cpuObj = $self->{cpu}->{ $cpuEntry->{$cpuDescr_oid.".".$numCpu} } = {};
-        $cpuObj->{display} = $cpuEntry->{$cpuDescr_oid.".".$numCpu};
-        $cpuObj->{cpu_workload_current} = $cpuEntry->{$cpuWorkloadCurrent_oid.".".$numCpu};
-        $cpuObj->{cpu_workload_1m} = $cpuEntry->{$cpuWorkload1MinuteAverage_oid.".".$numCpu};
-        $cpuObj->{cpu_workload_5m} = $cpuEntry->{$cpuWorkload5MinuteAverage_oid.".".$numCpu};
+    my $cpuTotal = 0;
+    my $cpuEntry = $options{snmp}->map_instance(mapping => $mappingCpu, results => $snmp_results->{$cpuEntry_oid}, instance => $numCpu);
+    while (defined($cpuEntry->{display})) {
+        $cpuTotal += $cpuEntry->{cpu_utilization_current_percentage};
+        $self->{cpu}->{ $cpuEntry->{display} } = $cpuEntry;
         $numCpu++;
+        $cpuEntry = $options{snmp}->map_instance(mapping => $mappingCpu, results => $snmp_results->{$cpuEntry_oid}, instance => $numCpu);
     }
 
-    my $memoryPoolEntry = $snmp_results->{$memoryPoolEntry_oid};
+    if ($numCpu > 1) {
+        $self->{cpu_average} = {
+            average => $cpuTotal / ($numCpu - 1),
+            count => ($numCpu - 1)
+        };
+    }
+
     my $numMem = 1;
-    $self->{memory} = {};
-    while ($memoryPoolEntry->{$memDescr_oid.".".$numMem}) {
-        my $memoryObj = $self->{memory}->{ $memoryPoolEntry->{$memDescr_oid.".".$numMem} } = {};
-        $memoryObj->{display} = $memoryPoolEntry->{$memDescr_oid.".".$numMem};
-        $memoryObj->{memory_total_bytes} = $memoryPoolEntry->{$memTotalBytes_oid.".".$numMem};
-        $memoryObj->{memory_allocated_bytes} = $memoryPoolEntry->{$memAllocatedBytes_oid.".".$numMem};
-        $memoryObj->{memory_free_bytes} = $memoryPoolEntry->{$memFreeBytes_oid.".".$numMem};
-        if ($memoryObj->{memory_total_bytes} > 0) {
-            $memoryObj->{memory_allocated_percent} = $memoryObj->{memory_allocated_bytes} * 100 / $memoryObj->{memory_total_bytes};
-            $memoryObj->{memory_free_percent} = $memoryObj->{memory_free_bytes} * 100 / $memoryObj->{memory_total_bytes};
+    my $memoryPoolEntry = $options{snmp}->map_instance(mapping => $mappingMemory, results => $snmp_results->{$memoryPoolEntry_oid}, instance => $numMem);
+    while (defined($memoryPoolEntry->{display})) {
+        if ($memoryPoolEntry->{memory_total_bytes} > 0) {
+            $memoryPoolEntry->{memory_usage_percentage} = $memoryPoolEntry->{memory_usage_bytes} * 100 / $memoryPoolEntry->{memory_total_bytes};
+            $memoryPoolEntry->{memory_free_percentage} = $memoryPoolEntry->{memory_free_bytes} * 100 / $memoryPoolEntry->{memory_total_bytes};
         } else {
-            $memoryObj->{memory_allocated_percent} = 0;
-            $memoryObj->{memory_free_percent} = 0;
+            $memoryPoolEntry->{memory_usage_percentage} = 0;
+            $memoryPoolEntry->{memory_free_percentage} = 0;
         }
+
+        $self->{memory}->{ $memoryPoolEntry->{display} } = $memoryPoolEntry;
         $numMem++;
+        $memoryPoolEntry = $options{snmp}->map_instance(mapping => $mappingMemory, results => $snmp_results->{$memoryPoolEntry_oid}, instance => $numMem);
     }
 
-    my $tempProbeEntry = $snmp_results->{$tempProbeEntry_oid};
     my $numTemp = 1;
-    $self->{temperature} = {};
-    while ($tempProbeEntry->{$tempProbeDescr_oid.".".$numTemp}) {
-        my $temperatureObj = $self->{temperature}->{ $tempProbeEntry->{$tempProbeDescr_oid.".".$numTemp} } = {};
-        $temperatureObj->{display} = $tempProbeEntry->{$tempProbeDescr_oid.".".$numTemp};
-        $temperatureObj->{temperature_current_celsius} = $tempProbeEntry->{$currentDegreesCelsius_oid.".".$numTemp};
+    my $tempProbeEntry = $options{snmp}->map_instance(mapping => $mappingTemperature, results => $snmp_results->{$tempProbeEntry_oid}, instance => $numTemp);
+    while (defined($tempProbeEntry->{display})) {
+        $self->{temperature}->{ $tempProbeEntry->{display} } = $tempProbeEntry;
         $numTemp++;
+        $tempProbeEntry = $options{snmp}->map_instance(mapping => $mappingTemperature, results => $snmp_results->{$tempProbeEntry_oid}, instance => $numTemp);
     }
 }
 
@@ -223,13 +248,13 @@ Check system usage.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^cpu-workload-current$'
+Example: --filter-counters='^cpu-utilization-current-percentage$'
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'cpu-workload-current' (%), 'cpu-workload-1m' (%), 'cpu-workload-5m' (%), 'memory-allocated-bytes',
-'memory-free-bytes', 'memory-allocated-percentage', 'temperature-current-celsius'.
+Can be: 'cpu-average', 'cpu-utilization-current-percentage', 'cpu-utilization-1m-percentage', 'cpu-utilization-5m-percentage',
+'memory-usage-bytes', 'memory-free-bytes', 'memory-usage-percentage', 'probe-temperature-celsius'.
 
 =back
 

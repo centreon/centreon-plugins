@@ -163,13 +163,13 @@ Check system usage.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^gateway-current-connected-calls$'
+Example: --filter-counters='^gateway-calls-connected-count$'
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'gateway-current-connected-calls', 'gateway-current-ongoing-calls', 'gateway-total-accumulated-calls',
-'isdn-current-connected-calls', 'isdn-current-ongoing-calls', 'isdn-total-accumulated-calls'.
+Can be: 'gateway-calls-connected-count', 'gateway-calls-ongoing-count', 'gateway-calls-accumulated-count',
+'isdn-calls-connected-count', 'isdn-calls-ongoing-count', 'isdn-calls-accumulated-count'.
 
 =back
 
