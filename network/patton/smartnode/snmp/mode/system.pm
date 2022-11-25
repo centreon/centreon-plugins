@@ -193,16 +193,21 @@ sub manage_selection {
         { oid => $tempProbeEntry_oid }
     ], nothing_quit => 1);
 
-    my $numCpu = 1;
+    $self->{cpu} = {};
+    my $numCpu = 0;
     my $cpuTotal = 0;
-    my $cpuEntry = $options{snmp}->map_instance(mapping => $mappingCpu, results => $snmp_results->{$cpuEntry_oid}, instance => $numCpu);
-    while (defined($cpuEntry->{display})) {
+    foreach my $oid (keys %{$snmp_results->{$cpuEntry_oid}}) {
+        next if ($oid !~ /^$mappingCpu->{display}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $cpuEntry = $options{snmp}->map_instance(mapping => $mappingCpu, results => $snmp_results->{$cpuEntry_oid}, instance => $instance);
+        $self->{cpu}->{$instance} = { display => $instance,
+            %$cpuEntry
+        };
         $cpuTotal += $cpuEntry->{cpu_utilization_current_percentage};
-        $self->{cpu}->{ $cpuEntry->{display} } = $cpuEntry;
         $numCpu++;
-        $cpuEntry = $options{snmp}->map_instance(mapping => $mappingCpu, results => $snmp_results->{$cpuEntry_oid}, instance => $numCpu);
     }
 
+    $self->{cpu_average} = {};
     if ($numCpu > 1) {
         $self->{cpu_average} = {
             average => $cpuTotal / ($numCpu - 1),
@@ -210,9 +215,11 @@ sub manage_selection {
         };
     }
 
-    my $numMem = 1;
-    my $memoryPoolEntry = $options{snmp}->map_instance(mapping => $mappingMemory, results => $snmp_results->{$memoryPoolEntry_oid}, instance => $numMem);
-    while (defined($memoryPoolEntry->{display})) {
+    $self->{memory} = {};
+    foreach my $oid (keys %{$snmp_results->{$memoryPoolEntry_oid}}) {
+        next if ($oid !~ /^$mappingMemory->{display}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $memoryPoolEntry = $options{snmp}->map_instance(mapping => $mappingMemory, results => $snmp_results->{$memoryPoolEntry_oid}, instance => $instance);
         if ($memoryPoolEntry->{memory_total_bytes} > 0) {
             $memoryPoolEntry->{memory_usage_percentage} = $memoryPoolEntry->{memory_usage_bytes} * 100 / $memoryPoolEntry->{memory_total_bytes};
             $memoryPoolEntry->{memory_free_percentage} = $memoryPoolEntry->{memory_free_bytes} * 100 / $memoryPoolEntry->{memory_total_bytes};
@@ -220,18 +227,19 @@ sub manage_selection {
             $memoryPoolEntry->{memory_usage_percentage} = 0;
             $memoryPoolEntry->{memory_free_percentage} = 0;
         }
-
-        $self->{memory}->{ $memoryPoolEntry->{display} } = $memoryPoolEntry;
-        $numMem++;
-        $memoryPoolEntry = $options{snmp}->map_instance(mapping => $mappingMemory, results => $snmp_results->{$memoryPoolEntry_oid}, instance => $numMem);
+        $self->{memory}->{$instance} = { display => $instance,
+            %$memoryPoolEntry
+        };
     }
 
-    my $numTemp = 1;
-    my $tempProbeEntry = $options{snmp}->map_instance(mapping => $mappingTemperature, results => $snmp_results->{$tempProbeEntry_oid}, instance => $numTemp);
-    while (defined($tempProbeEntry->{display})) {
-        $self->{temperature}->{ $tempProbeEntry->{display} } = $tempProbeEntry;
-        $numTemp++;
-        $tempProbeEntry = $options{snmp}->map_instance(mapping => $mappingTemperature, results => $snmp_results->{$tempProbeEntry_oid}, instance => $numTemp);
+    $self->{temperature} = {};
+    foreach my $oid (keys %{$snmp_results->{$tempProbeEntry_oid}}) {
+        next if ($oid !~ /^$mappingTemperature->{display}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $tempProbeEntry = $options{snmp}->map_instance(mapping => $mappingTemperature, results => $snmp_results->{$tempProbeEntry_oid}, instance => $instance);
+        $self->{temperature}->{$instance} = { display => $instance,
+            %$tempProbeEntry
+        };
     }
 }
 
