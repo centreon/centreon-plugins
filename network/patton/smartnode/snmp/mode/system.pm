@@ -75,7 +75,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cpu_average} = [
-        { label => 'average', nlabel => 'cpus.utilization.average.percentage', set => {
+        { label => 'cpu-average', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'average' }, { name => 'count' } ],
                 output_template => '%.2f %%',
                 perfdatas => [
@@ -86,7 +86,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cpu} = [
-        { label => 'cpu-utilization-current-percentage', nlabel => 'cpu.utilization.current.percentage', set => {
+        { label => 'core-cpu-utilization', nlabel => 'core.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_utilization_current_percentage' }, { name => 'display' } ],
                 output_template => 'cpu workload: %.2f %%',
                 perfdatas => [
@@ -94,7 +94,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'cpu-utilization-1m-percentage', nlabel => 'cpu.utilization.1m.percentage', set => {
+        { label => 'core-cpu-utilization-1m', nlabel => 'core.cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => 'cpu_utilization_1m_percentage' }, { name => 'display' } ],
                 output_template => 'cpu workload 1 minute average: %.2f %%',
                 perfdatas => [
@@ -102,7 +102,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'cpu-utilization-5m-percentage', nlabel => 'cpu.utilization.5m.percentage', set => {
+        { label => 'core-cpu-utilization-5m', nlabel => 'core.cpu.utilization.5m.percentage', set => {
                 key_values => [ { name => 'cpu_utilization_5m_percentage' }, { name => 'display' } ],
                 output_template => 'cpu workload 5 minutes average: %.2f %%',
                 perfdatas => [
@@ -113,7 +113,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'memory-usage-bytes', nlabel => 'memory.usage.bytes', set => {
+        { label => 'memory-usage', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'memory_usage_bytes' }, { name => 'memory_free_bytes' }, { name => 'memory_usage_percentage' }, { name => 'memory_free_percentage' }, { name => 'memory_total_bytes' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -121,7 +121,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'memory-free-bytes', nlabel => 'memory.free.bytes', display_ok => 0, set => {
+        { label => 'memory-free', nlabel => 'memory.free.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'memory_free_bytes' }, { name => 'memory_usage_bytes' }, { name => 'memory_usage_percentage' }, { name => 'memory_free_percentage' }, { name => 'memory_total_bytes' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -129,7 +129,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'memory-usage-percentage', nlabel => 'memory.usage.percentage', display_ok => 0, set => {
+        { label => 'memory-usage', nlabel => 'memory.usage.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'memory_usage_percentage' }, { name => 'memory_usage_bytes' }, { name => 'memory_free_bytes' }, { name => 'memory_free_percentage' }, { name => 'memory_total_bytes' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -140,7 +140,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{temperature} = [
-        { label => 'probe-temperature-celsius', nlabel => 'probe.temperature.celsius', set => {
+        { label => 'probe-temperature', nlabel => 'probe.temperature.celsius', set => {
                 key_values => [ { name => 'probe_temperature_celsius' }, { name => 'display' } ],
                 output_template => 'probe temperature: %.2f C',
                 perfdatas => [
@@ -194,7 +194,6 @@ sub manage_selection {
     ], nothing_quit => 1);
 
     $self->{cpu} = {};
-    my $numCpu = 0;
     my $cpuTotal = 0;
     foreach my $oid (keys %{$snmp_results->{$cpuEntry_oid}}) {
         next if ($oid !~ /^$mappingCpu->{display}->{oid}\.(.*)$/);
@@ -204,9 +203,9 @@ sub manage_selection {
             %$cpuEntry
         };
         $cpuTotal += $cpuEntry->{cpu_utilization_current_percentage};
-        $numCpu++;
     }
 
+    $numCpu = keys %{$self->{cpu}};
     $self->{cpu_average} = {};
     if ($numCpu > 1) {
         $self->{cpu_average} = {
@@ -256,13 +255,13 @@ Check system usage.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^cpu-utilization-current-percentage$'
+Example: --filter-counters='^core-cpu-utilization$'
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'cpu-average', 'cpu-utilization-current-percentage', 'cpu-utilization-1m-percentage', 'cpu-utilization-5m-percentage',
-'memory-usage-bytes', 'memory-free-bytes', 'memory-usage-percentage', 'probe-temperature-celsius'.
+Can be: 'cpu-average' (%), 'core-cpu-utilization' (%), 'core-cpu-utilization-1m' (%), 'core-cpu-utilization-5m' (%),
+'memory-usage' (B), 'memory-free' (B), 'memory-usage-percentage', 'probe-temperature' (C).
 
 =back
 
