@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
 
 sub prefix_gateway_output {
     my ($self, %options) = @_;
@@ -61,7 +62,7 @@ sub set_counters {
             }
         },
         { label => 'gateway-calls-accumulated-count', nlabel => 'gateway.calls.accumulated.count', set => {
-                key_values => [ { name => 'gateway_calls_accumulated_count' }, { name => 'display' } ],
+                key_values => [ { name => 'gateway_calls_accumulated_count', diff => 1 }, { name => 'display' } ],
                 output_template => 'total accumulated calls: %d',
                 perfdatas => [
                     { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
@@ -88,7 +89,7 @@ sub set_counters {
             }
         },
         { label => 'isdn-calls-accumulated-count', nlabel => 'isdn.calls.accumulated.count', set => {
-                key_values => [ { name => 'isdn_calls_accumulated_count' }, { name => 'display' } ],
+                key_values => [ { name => 'isdn_calls_accumulated_count', diff => 1 }, { name => 'display' } ],
                 output_template => 'total accumulated calls: %d',
                 perfdatas => [
                     { template => '%d', min => 0, unit => '', label_extra_instance => 1 }
@@ -100,7 +101,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -127,6 +128,10 @@ my $mappingIsdn = {
 
 sub manage_selection {
     my ($self, %options) = @_;
+
+    $self->{cache_name} = 'patton_smartnode_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     my $snmp_results = $options{snmp}->get_multiple_table(oids => [
         { oid => $gwEntry },
