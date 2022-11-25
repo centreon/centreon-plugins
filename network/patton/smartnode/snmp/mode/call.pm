@@ -133,20 +133,24 @@ sub manage_selection {
         { oid => $isdnPortEntry }
     ], nothing_quit => 1);
 
-    my $numGateway = 1;
-    my $gatewayEntry = $options{snmp}->map_instance(mapping => $mappingGw, results => $snmp_results->{$gwEntry}, instance => $numGateway);
-    while (defined($gatewayEntry->{display})) {
-        $self->{gateway}->{ $gatewayEntry->{display} } = $gatewayEntry;
-        $numGateway++;
-        $gatewayEntry = $options{snmp}->map_instance(mapping => $mappingGw, results => $snmp_results->{$gwEntry}, instance => $numGateway);
+    $self->{gateway} = {};
+    foreach my $oid (keys %{$snmp_results->{$gwEntry}}) {
+        next if ($oid !~ /^$mappingGw->{display}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mappingGw, results => $snmp_results->{$gwEntry}, instance => $instance);
+        $self->{gateway}->{$instance} = { display => $instance,
+            %$result
+        };
     }
 
-    my $numIsdn = 1;
-    my $isdnEntry = $options{snmp}->map_instance(mapping => $mappingIsdn, results => $snmp_results->{$isdnPortEntry}, instance => $numIsdn);
-    while (defined($isdnEntry->{display})) {
-        $self->{isdn}->{ $isdnEntry->{display} } = $isdnEntry;
-        $numIsdn++;
-        $isdnEntry = $options{snmp}->map_instance(mapping => $mappingIsdn, results => $snmp_results->{$isdnPortEntry}, instance => $numIsdn);
+    $self->{isdn} = {};
+    foreach my $oid (keys %{$snmp_results->{$isdnPortEntry}}) {
+        next if ($oid !~ /^$mappingIsdn->{display}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mappingIsdn, results => $snmp_results->{$isdnPortEntry}, instance => $instance);
+        $self->{isdn}->{$instance} = { display => $instance,
+            %$result
+        };
     }
 }
 
