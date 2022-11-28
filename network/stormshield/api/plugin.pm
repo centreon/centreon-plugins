@@ -30,7 +30,8 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'interfaces' => 'network::stormshield::api::mode::interfaces'
+        'interfaces'      => 'network::stormshield::api::mode::interfaces',
+        'list-interfaces' => 'network::stormshield::api::mode::listinterfaces',
     };
 
     $self->{custom_modes}->{api} = 'network::stormshield::api::custom::api';
