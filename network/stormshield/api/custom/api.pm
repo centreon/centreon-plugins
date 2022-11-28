@@ -206,7 +206,7 @@ sub get_session_id {
         my (@cookies) = $self->{http}->get_first_header(name => 'Set-Cookie');
         $cookie = '';
         foreach my $cookie (@cookies) {
-            $cookie = $1 if ($cookie =~ /^NETASQ_sslclient=(.+?);/);
+            $cookie = $1 if ($cookie =~ /^(NETASQ_sslclient=.+?);/);
         }
 
 =pod
