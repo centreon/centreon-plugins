@@ -45,7 +45,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{gateway} = [
-        { label => 'gateway-calls-connected-count', nlabel => 'gateway.calls.connected.count', set => {
+        { label => 'gateway-calls-connected', nlabel => 'gateway.calls.connected.count', set => {
                 key_values => [ { name => 'gateway_calls_connected_count' }, { name => 'display' } ],
                 output_template => 'connected calls: %d',
                 perfdatas => [
@@ -53,7 +53,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'gateway-calls-ongoing-count', nlabel => 'gateway.calls.ongoing.count', set => {
+        { label => 'gateway-calls-ongoing', nlabel => 'gateway.calls.ongoing.count', set => {
                 key_values => [ { name => 'gateway_calls_ongoing_count' }, { name => 'display' } ],
                 output_template => 'ongoing calls: %d',
                 perfdatas => [
@@ -61,7 +61,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'gateway-calls-accumulated-count', nlabel => 'gateway.calls.accumulated.count', set => {
+        { label => 'gateway-calls-accumulated', nlabel => 'gateway.calls.accumulated.count', set => {
                 key_values => [ { name => 'gateway_calls_accumulated_count', diff => 1 }, { name => 'display' } ],
                 output_template => 'total accumulated calls: %d',
                 perfdatas => [
@@ -72,7 +72,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{isdn} = [
-        { label => 'isdn-calls-connected-count', nlabel => 'isdn.calls.connected.count', set => {
+        { label => 'isdn-calls-connected', nlabel => 'isdn.calls.connected.count', set => {
                 key_values => [ { name => 'isdn_calls_connected_count' }, { name => 'display' } ],
                 output_template => 'connected calls: %d',
                 perfdatas => [
@@ -80,7 +80,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'isdn-calls-ongoing-count', nlabel => 'isdn.calls.ongoing.count', set => {
+        { label => 'isdn-calls-ongoing', nlabel => 'isdn.calls.ongoing.count', set => {
                 key_values => [ { name => 'isdn_calls_ongoing_count' }, { name => 'display' } ],
                 output_template => 'ongoing calls: %d',
                 perfdatas => [
@@ -88,7 +88,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'isdn-calls-accumulated-count', nlabel => 'isdn.calls.accumulated.count', set => {
+        { label => 'isdn-calls-accumulated', nlabel => 'isdn.calls.accumulated.count', set => {
                 key_values => [ { name => 'isdn_calls_accumulated_count', diff => 1 }, { name => 'display' } ],
                 output_template => 'total accumulated calls: %d',
                 perfdatas => [
@@ -172,13 +172,13 @@ Check system usage.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^gateway-calls-connected-count$'
+Example: --filter-counters='^gateway-calls-connected$'
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'gateway-calls-connected-count', 'gateway-calls-ongoing-count', 'gateway-calls-accumulated-count',
-'isdn-calls-connected-count', 'isdn-calls-ongoing-count', 'isdn-calls-accumulated-count'.
+Can be: 'gateway-calls-connected', 'gateway-calls-ongoing', 'gateway-calls-accumulated',
+'isdn-calls-connected', 'isdn-calls-ongoing', 'isdn-calls-accumulated'.
 
 =back
 

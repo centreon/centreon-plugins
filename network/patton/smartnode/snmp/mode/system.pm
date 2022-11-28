@@ -121,7 +121,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'memory-free', nlabel => 'memory.free.bytes', display_ok => 0, set => {
+        { label => 'memory-usage-free', nlabel => 'memory.free.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'memory_free_bytes' }, { name => 'memory_usage_bytes' }, { name => 'memory_usage_percentage' }, { name => 'memory_free_percentage' }, { name => 'memory_total_bytes' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -129,7 +129,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'memory-usage', nlabel => 'memory.usage.percentage', display_ok => 0, set => {
+        { label => 'memory-usage-prct', nlabel => 'memory.usage.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'memory_usage_percentage' }, { name => 'memory_usage_bytes' }, { name => 'memory_free_bytes' }, { name => 'memory_free_percentage' }, { name => 'memory_total_bytes' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -261,7 +261,7 @@ Example: --filter-counters='^core-cpu-utilization$'
 
 Thresholds.
 Can be: 'cpu-average' (%), 'core-cpu-utilization' (%), 'core-cpu-utilization-1m' (%), 'core-cpu-utilization-5m' (%),
-'memory-usage' (B), 'memory-free' (B), 'memory-usage-percentage', 'probe-temperature' (C).
+'memory-usage' (B), 'memory-usage-free' (B), 'memory-usage-prct', 'probe-temperature' (C).
 
 =back
 
