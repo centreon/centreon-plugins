@@ -113,7 +113,7 @@ sub connect {
     $self->{imap} = Mail::IMAPClient->new();
     $self->{imap}->Server($self->{hostname});
     $self->{imap}->Ssl(1) if ($self->{use_ssl} == 1);
-    $self->{imap}->port($self->{port}) if ($self->{port} ne '');
+    $self->{imap}->Port($self->{port}) if ($self->{port} ne '');
     $self->{imap}->Timeout($self->{timeout}) if ($self->{timeout} ne '');
     if ($self->{output}->is_debug()) {
         $self->{imap}->Debug(1);
@@ -125,7 +125,12 @@ sub connect {
             push @$sslargs, $_, $self->{ssl_context}->{$_};
         }
     }
-    my $rv = $self->{imap}->connect(Ssl => $sslargs);
+    my $rv;
+    if (scalar(@$sslargs) > 0) {
+        $rv = $self->{imap}->connect(Ssl => $sslargs);
+    } else {
+        $rv = $self->{imap}->connect();
+    }
     if (!defined($rv)) {
         $self->{output}->output_add(
             severity => $connection_exit,
