@@ -205,7 +205,7 @@ sub manage_selection {
         $cpuTotal += $cpuEntry->{cpu_utilization_current_percentage};
     }
 
-    $numCpu = keys %{$self->{cpu}};
+    my $numCpu = keys %{$self->{cpu}};
     $self->{cpu_average} = {};
     if ($numCpu > 1) {
         $self->{cpu_average} = {
