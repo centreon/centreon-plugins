@@ -40,11 +40,9 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-my @labels = ('user_name', 'real_name', 'status'); 
-my $map_state = {
-    0 => 'down',
-    1 => 'up'
-};
+my @labels = ('user_name', 'real_name', 'state', 'plugged'); 
+my $map_state = { 0 => 'disabled', 1 => 'enabled' };
+my $map_plugged = { 0 => 'unplugged', 1 => 'plugged' };
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -57,7 +55,8 @@ sub manage_selection {
         $results->{$real_name} = {
             real_name => $real_name,
             user_name => $user_name,
-            status => $map_state->{ $_->{state} },
+            state => $map_state->{ $_->{state} },
+            plugged => $map_state->{ $_->{plugged} }
         };
     }
 
