@@ -209,12 +209,10 @@ sub get_session_id {
             $cookie = $1 if ($cookie =~ /^(NETASQ_sslclient=.+?);/);
         }
 
-=pod
         if (!defined($cookie) || $cookie eq '') {
             $self->{output}->add_option_msg(short_msg => 'Cannot get cookie');
             $self->{output}->option_exit();
         }
-=cut
 
         ($content) = $self->{http}->request(
             method => 'POST',
