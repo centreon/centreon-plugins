@@ -32,8 +32,10 @@ sub new {
     $self->{modes} = {
         'cpu'             => 'network::stormshield::api::mode::cpu',
         'hardware'        => 'network::stormshield::api::mode::hardware',
+        'health'          => 'network::stormshield::api::mode::health',
         'interfaces'      => 'network::stormshield::api::mode::interfaces',
-        'list-interfaces' => 'network::stormshield::api::mode::listinterfaces'
+        'list-interfaces' => 'network::stormshield::api::mode::listinterfaces',
+        'uptime'          => 'network::stormshield::api::mode::uptime'
     };
 
     $self->{custom_modes}->{api} = 'network::stormshield::api::custom::api';
