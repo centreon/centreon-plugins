@@ -81,6 +81,14 @@ sub set_counters {
                     { label => 'memdrop', template => '%.2f', unit => '/s', min => 0 }
                 ]
             }
+        },
+        { label => 'states', nlabel => 'states',set => {
+                key_values => [ { name => 'pfCounterStates', per_second => 0 } ],
+                output_template => 'States : %d',
+                perfdatas => [
+                    { label => 'states', template => '%d', unit => '', min => 0 }
+                ]
+            }
         }
     ];
 }
@@ -109,7 +117,8 @@ sub manage_selection {
         pfCounterFragment   => '.1.3.6.1.4.1.12325.1.200.1.2.3.0',
         pfCounterShort      => '.1.3.6.1.4.1.12325.1.200.1.2.4.0',
         pfCounterNormalize  => '.1.3.6.1.4.1.12325.1.200.1.2.5.0',
-        pfCounterMemDrop    => '.1.3.6.1.4.1.12325.1.200.1.2.6.0'
+        pfCounterMemDrop    => '.1.3.6.1.4.1.12325.1.200.1.2.6.0',
+        pfCounterStates     => '.1.3.6.1.4.1.12325.1.200.1.3.1.0'
     );
     my $snmp_result = $options{snmp}->get_leef(oids => [values %oids], nothing_quit => 1);
     $self->{global} = {};
