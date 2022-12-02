@@ -95,6 +95,13 @@ sub discovery_device {
         $entry->{gateway_private_address} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{privateAddress}->{address} : '';
         $entry->{gateway_private_address_netmask} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{privateAddress}->{netmask} : '';
 
+        $entry->{gateway_blackIpRemote_address} = '';
+        $entry->{gateway_blackIpRemote_address_netmask} = '';
+        if (defined($device->{gatewayConf}) && defined($device->{gatewayConf}->{gatewayBlackIpRemote})) {
+            $entry->{gateway_blackIpRemote_address} = $device->{gatewayConf}->{gatewayBlackIpRemote}->{address};
+            $entry->{gateway_blackIpRemote_address_netmask} = $device->{gatewayConf}->{gatewayBlackIpRemote}->{netmask};
+        }
+
         push @$disco_data, $entry;
     }
 
