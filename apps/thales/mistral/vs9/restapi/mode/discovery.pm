@@ -46,7 +46,7 @@ sub check_options {
     if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
         $self->{option_results}->{resource_type} = 'device';
     }
-    if ($self->{option_results}->{resource_type} !~ /^device$/) {
+    if ($self->{option_results}->{resource_type} !~ /^device|mmc$/) {
         $self->{output}->add_option_msg(short_msg => 'unknown resource type');
         $self->{output}->option_exit();
     }
@@ -108,6 +108,27 @@ sub discovery_device {
     return $disco_data;
 }
 
+sub discovery_mmc {
+    my ($self, %options) = @_;
+
+    my $mmcs = $options{custom}->request_api(
+        endpoint => '/managementCenters',
+        get_param => ['projection=managementCenterSmall']
+    );
+
+    my $disco_data = [];
+    foreach my $mmc (@{$mmcs->{content}}) {
+        my $entry = {};
+        $entry->{id} = $mmc->{id};
+        $entry->{name} = $mmc->{name};
+        $entry->{ip} = $mmc->{ipAddress};
+
+        push @$disco_data, $entry;
+    }
+
+    return $disco_data;
+}
+
 sub run {
     my ($self, %options) = @_;
 
@@ -117,6 +138,10 @@ sub run {
     my $results = [];
     if ($self->{option_results}->{resource_type} eq 'device') {
         $results = $self->discovery_device(
+            custom => $options{custom}
+        );
+    } elsif ($self->{option_results}->{resource_type} eq 'mmc') {
+        $results = $self->discovery_mmc(
             custom => $options{custom}
         );
     }
@@ -155,7 +180,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'device').
+Choose the type of resources to discover (Can be: 'device', 'mmc').
 
 =back
 
