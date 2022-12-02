@@ -205,8 +205,8 @@ sub get_session_id {
 
         my (@cookies) = $self->{http}->get_first_header(name => 'Set-Cookie');
         $cookie = '';
-        foreach my $cookie (@cookies) {
-            $cookie = $1 if ($cookie =~ /^(NETASQ_sslclient=.+?);/);
+        foreach (@cookies) {
+            $cookie = $1 if (/(NETASQ_sslclient=.+?);/);
         }
 
         if (!defined($cookie) || $cookie eq '') {
