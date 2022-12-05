@@ -56,7 +56,7 @@ sub manage_selection {
     # Header not needed
     shift @lines;
     foreach my $line (@lines) {
-        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
+        next if ($line !~ /^(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(.*)/);
         my ($fs, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6);
         
         if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
