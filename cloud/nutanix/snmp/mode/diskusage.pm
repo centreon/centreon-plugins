@@ -32,7 +32,7 @@ sub prefix_controllervm_output {
     
     return sprintf(
         "ControllerVM '%s' ",
-        $options{instance_value}->{name}
+        $options{instance}
     );
 }
 
@@ -41,7 +41,7 @@ sub controllervm_long_output {
 
     return sprintf(
         "checking ControllerVM '%s'",
-        $options{instance_value}->{name}
+        $options{instance}
     );
 }
 
@@ -50,7 +50,7 @@ sub prefix_disk_output {
 
     return sprintf(
         "Disk '%s' ",
-        $options{instance_value}->{display}
+        $options{instance}
     );
 }
 
@@ -66,22 +66,22 @@ sub custom_status_output {
 sub custom_status_calc {
     my ($self, %options) = @_;
 
+    $self->{result_values}->{crtName} = $options{new_datas}->{$self->{instance} . '_crtName'};
+    $self->{result_values}->{diskId} = $options{new_datas}->{$self->{instance} . '_diskId'};
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_dstState'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my ($label, $nlabel) = ('used', $self->{nlabel});
+    my $nlabel = 'disk.storage.space.usage.bytes';
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        ($label, $nlabel) = ('free', 'disk.storage.space.free.bytes');
+        $nlabel = 'disk.storage.space.free.bytes';
         $value_perf = $self->{result_values}->{free};
     }
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+
     my %total_options = ();
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
@@ -89,10 +89,10 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => $label . $extra_label, unit => 'B',
-        value => $value_perf,
         nlabel => $nlabel,
-        instances => [ $self->{result_values}->{name}, $self->{result_values}->{display} ],
+        unit => 'B',
+        value => $value_perf,
+        instances => [ $self->{result_values}->{crtName}, $self->{result_values}->{diskId} ],
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $self->{result_values}->{total}
@@ -136,8 +136,8 @@ sub custom_usage_output {
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
+    $self->{result_values}->{crtName} = $options{new_datas}->{$self->{instance} . '_crtName'};
+    $self->{result_values}->{diskId} = $options{new_datas}->{$self->{instance} . '_diskId'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_dstNumTotalBytes'};
     $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_dstNumFreeBytes'};
     $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
@@ -161,15 +161,15 @@ sub set_counters {
 
     $self->{maps_counters}->{disk} = [
         { label => 'status', type => 2, set => {
-                key_values => [ { name => 'dstState' }, { name => 'display' } ],
+                key_values => [ { name => 'dstState' }, { name => 'diskId' }, { name => 'crtName' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'usage',  nlabel => 'disk.storage.space.usage.bytes', set => {
-                key_values => [ { name => 'name' }, { name => 'display' }, { name => 'dstNumFreeBytes' }, { name => 'dstNumTotalBytes' } ],
+        { label => 'usage', set => {
+                key_values => [ { name => 'dstNumFreeBytes' }, { name => 'dstNumTotalBytes' }, { name => 'diskId' }, { name => 'crtName' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -177,11 +177,10 @@ sub set_counters {
             }
         },
         { label => 'inodes', nlabel => 'disk.storage.inodes.usage.percentage', set => {
-                key_values => [ { name => 'inodes_used' }, { name => 'display' } ],
+                key_values => [ { name => 'inodes_used' } ],
                 output_template => 'inodes used: %s %%',
                 perfdatas => [
-                    { label => 'inodes', template => '%s', unit => '%',
-                      min => 0, label_extra_instance => 1 }
+                    { template => '%s', unit => '%', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
@@ -189,17 +188,15 @@ sub set_counters {
                 key_values => [ { name => 'dstAverageLatency' } ],
                 output_template => 'average latency: %.3f ms',
                 perfdatas => [
-                    { label => 'avg_latency', template => '%.3f', unit => 'ms',
-                      min => 0, label_extra_instance => 1 }
+                    { template => '%.3f', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'iops', nlabel => 'disk.operations.iops', set => {
-                key_values => [ { name => 'dstNumberIops' }, { name => 'display' } ],
+                key_values => [ { name => 'dstNumberIops' } ],
                 output_template => 'IOPs: %s',
                 perfdatas => [
-                    { label => 'iops', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1 }
+                    { template => '%s', unit => 'iops', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -208,7 +205,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -272,8 +269,6 @@ sub manage_selection {
         }
 
         $self->{controllervm}->{ $controllervm_result->{crtName} } = {
-            id => $controllervm_result->{crtControllerVMId},
-            name => $controllervm_result->{crtName},
             disk => {}
         };
 
@@ -285,7 +280,7 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    foreach my $oid (keys %{$disk_snmp_result}) {
+    foreach my $oid (keys %$disk_snmp_result) {
         next if ($oid !~ /^$disk_mapping->{dstDiskId}->{oid}\.(.*)$/);
         my $disk_instance = $1;
         my $disk_result = $options{snmp}->map_instance(mapping => $disk_mapping, results => $disk_snmp_result, instance => $disk_instance);
@@ -308,8 +303,8 @@ sub manage_selection {
         $disk_result->{dstAverageLatency} /= 1000;
 
         $self->{controllervm}->{ $controllervm_name_mapping->{ $disk_result->{dstControllerVMId} } }->{disk}->{ $disk_result->{dstDiskId} } = {
-            name => $controllervm_name_mapping->{$disk_result->{dstControllerVMId}},
-            display => $disk_result->{dstDiskId}, 
+            crtName => $controllervm_name_mapping->{ $disk_result->{dstControllerVMId} },
+            diskId => $disk_result->{dstDiskId}, 
             %$disk_result,
             inodes_used => $inodes_used          
         };
@@ -359,12 +354,12 @@ Filter controllervm name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{state}, %{display}
+Can used special variables like: %{state}, %{crtName}, %{diskId}
 
 =item B<--critical-status>
 
 Set critical threshold for status.
-Can used special variables like: %{state}, %{display}
+Can used special variables like: %{state}, %{crtName}, %{diskId}
 
 =item B<--warning-*>
 
