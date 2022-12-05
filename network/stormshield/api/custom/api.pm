@@ -135,7 +135,7 @@ sub decode_xml {
     return $decoded;
 }
 
-use constant {
+my $map_api_code = {
     SSL_SERVERD_OK => 100,
     SSL_SERVERD_REQUEST_ERROR => 200,
     SSL_SERVERD_UNKNOWN_COMMAND => 201,
@@ -150,19 +150,19 @@ use constant {
     SSL_SERVERD_DISCONNECTED => 502,
     SSL_SERVERD_INTERNAL_ERROR => 900
 };
-my $map_api_error = {
-    SSL_SERVERD_REQUEST_ERROR => "Request error",
-    SSL_SERVERD_UNKNOWN_COMMAND => "Unknown command",
-    SSL_SERVERD_ERROR_COMMAND => "Command error",
-    SSL_SERVERD_INVALID_SESSION => "Invalid session",
-    SSL_SERVERD_EXPIRED_SESSION => "Expired session",
-    SSL_SERVERD_AUTH_ERROR => "Authentication error",
-    SSL_SERVERD_PENDING_TRANSFER => "Pending transfer",
-    SSL_SERVERD_PENDING_UPLOAD => "Upload pending",
-    SSL_SERVERD_OVERHEAT => "Server overheat",
-    SSL_SERVERD_UNREACHABLE => "Server unreachable",
-    SSL_SERVERD_DISCONNECTED => "Server disconnected",
-    SSL_SERVERD_INTERNAL_ERROR => "Internal error"
+my $map_api_msg = {
+    $map_api_code->{SSL_SERVERD_REQUEST_ERROR} => "request error",
+    $map_api_code->{SSL_SERVERD_UNKNOWN_COMMAND} => "unknown command",
+    $map_api_code->{SSL_SERVERD_ERROR_COMMAND} => "command error",
+    $map_api_code->{SSL_SERVERD_INVALID_SESSION} => "invalid session",
+    $map_api_code->{SSL_SERVERD_EXPIRED_SESSION} => "expired session",
+    $map_api_code->{SSL_SERVERD_AUTH_ERROR} => "authentication error",
+    $map_api_code->{SSL_SERVERD_PENDING_TRANSFER} => "pending transfer",
+    $map_api_code->{SSL_SERVERD_PENDING_UPLOAD} => "upload pending",
+    $map_api_code->{SSL_SERVERD_OVERHEAT} => "server overheat",
+    $map_api_code->{SSL_SERVERD_UNREACHABLE} => "server unreachable",
+    $map_api_code->{SSL_SERVERD_DISCONNECTED} => "server disconnected",
+    $map_api_code->{SSL_SERVERD_INTERNAL_ERROR} => "internal error"
 };
 
 sub get_session_id {
@@ -229,8 +229,8 @@ sub get_session_id {
         );
 
         $decoded = $self->decode_xml(content => $content);
-        if ($decoded->{code} != SSL_SERVERD_OK) {
-            $self->{output}->add_option_msg(short_msg => "Can't get serverd session: " . $map_api_error->{ $decoded->{code} });
+        if ($decoded->{code} != $map_api_code->{SSL_SERVERD_OK}) {
+            $self->{output}->add_option_msg(short_msg => "Can't get serverd session: " . $map_api_msg->{ $decoded->{code} });
             $self->{output}->option_exit();
         }
         if (!defined($decoded->{sessionid})) {
@@ -301,9 +301,9 @@ sub request {
     }
 
     my $decoded = $self->decode_xml(content => $content);
-    if ($decoded->{code} == SSL_SERVERD_INVALID_SESSION ||
-        $decoded->{code}== SSL_SERVERD_EXPIRED_SESSION ||
-        $decoded->{code} == SSL_SERVERD_DISCONNECTED) {
+    if ($decoded->{code} == $map_api_code->{SSL_SERVERD_INVALID_SESSION} ||
+        $decoded->{code} == $map_api_code->{SSL_SERVERD_EXPIRED_SESSION} ||
+        $decoded->{code} == $map_api_code->{SSL_SERVERD_DISCONNECTED}) {
         $self->clean_session_id();
         $content = $self->request_api_internal(
             command => $options{command},
@@ -314,8 +314,8 @@ sub request {
         $decoded = $self->decode_xml(content => $content);
     }
 
-    if ($decoded->{code} != SSL_SERVERD_OK) {
-        $self->{output}->add_option_msg(short_msg => "Command error: " . $map_api_error->{ $decoded->{code} });
+    if ($decoded->{code} != $map_api_code->{SSL_SERVERD_OK}) {
+        $self->{output}->add_option_msg(short_msg => "Command error: " . $map_api_msg->{ $decoded->{code} });
         $self->{output}->option_exit();
     }
 
@@ -326,8 +326,8 @@ sub parse_format {
     my ($self, %options) = @_;
 
     my $code = scalar(@{$options{xml}->{serverd}}) > 1 ? $options{xml}->{serverd}->[1]->{ret} : $options{xml}->{serverd}->[0]->{ret};
-    if ($code != SSL_SERVERD_OK) {
-        $self->{output}->add_option_msg(short_msg => "Command error: " . $map_api_error->{ $code });
+    if ($code != $map_api_code->{SSL_SERVERD_OK}) {
+        $self->{output}->add_option_msg(short_msg => "Command error: " . $map_api_msg->{ $code });
         $self->{output}->option_exit();
     }
     if ($options{xml}->{serverd}->[0]->{data}->{format} eq 'section') {
