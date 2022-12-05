@@ -27,6 +27,7 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use MIME::Base64;
 use XML::LibXML::Simple;
+use URI::Encode;
 
 sub new {
     my ($class, %options) = @_;
@@ -263,12 +264,12 @@ sub request_api_internal {
 
     $self->settings();
     my ($cookie, $session_id) = $self->get_session_id();
+
+    my $uri = URI::Encode->new({encode_reserved => 1});
+
+    # stormshield doesnt like the space separator +
     my ($content) = $self->{http}->request(
-        url_path => '/api/command',
-        get_param => [
-            'sessionid=' . $session_id,
-            'cmd=' . $options{command}
-        ],
+        url_path => '/api/command?sessionid=' . $session_id . '&cmd=' . $uri->encode($options{command}),
         header => ['Cookie: ' . $cookie],
         unknown_status => $options{unknown_status},
         warning_status => $options{warning_status},
