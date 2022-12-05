@@ -232,6 +232,12 @@ sub get_session_id {
             $self->{output}->add_option_msg(short_msg => "Can't get serverd session: " . $map_api_error->{ $decoded->{code} });
             $self->{output}->option_exit();
         }
+        if (!defined($decoded->{sessionid})) {
+            $self->{output}->add_option_msg(short_msg => "Can't get serverd session");
+            $self->{output}->option_exit();
+        }
+
+        $session_id = $decoded->{sessionid};
 
         my $datas = {
             updated => time(),
