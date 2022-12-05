@@ -174,7 +174,7 @@ sub check_pdu2 {
         module => { oid => '.1.3.6.1.4.1.3808.1.1.6.6.1.4.1.2' }, # ePDU2OutletSwitchedStatusModuleIndex
         number => { oid => '.1.3.6.1.4.1.3808.1.1.6.6.1.4.1.3' }, # ePDU2OutletSwitchedStatusNumber
         name   => { oid => '.1.3.6.1.4.1.3808.1.1.6.6.1.4.1.4' }, # ePDU2OutletSwitchedStatusName
-        state  => { oid => '.1.3.6.1.4.1.3808.1.1.6.6.1.4.1.5', map => $map_pdu2_status } # ePDU2OutletSwitchedStatusState,
+        state  => { oid => '.1.3.6.1.4.1.3808.1.1.6.6.1.4.1.5', map => $map_pdu2_status } # ePDU2OutletSwitchedStatusState
     };
 
     my $mapping_metered = {
@@ -210,12 +210,13 @@ sub check_pdu2 {
         next if (! /^$mapping_metered->{module}->{oid}\.(.*)$/);
 
         my $result = $options{snmp}->map_instance(mapping => $mapping_metered, results => $snmp_result_metered, instance => $1);
+
         $result_metered->{ $result->{module} . ':' . $result->{bank} . ':' . $result->{number} } = $result;
     }
 
     my $duplicated = {};
     foreach (keys %$snmp_result_switched) {
-        next if (! /^$mapping_switched->{module}->{oid}\.(.*)$/);
+        next if (! /^$mapping_switched->{state}->{oid}\.(.*)$/);
         my $result = $options{snmp}->map_instance(mapping => $mapping_switched, results => $snmp_result_switched, instance => $1);
 
         my $device_name = $options{devices}->{ $oid_ePDU2DeviceConfigName . '.' . $result->{module} };
@@ -238,12 +239,16 @@ sub check_pdu2 {
             $name = $instance;
         }
 
-        $result_metered->{ $result->{module} . ':' . $result->{bank} . ':' . $result->{number} }->{current} /= 10;
+        $result_metered->{ $result->{module} . ':' . $result->{bank} . ':' . $result->{number} }->{current} /= 10
+            if (defined($result_metered->{ $result->{module} . ':' . $result->{bank} . ':' . $result->{number} }->{current}));
         $self->{devices}->{$device_name}->{outlets}->{$name} = {
             instance => $instance,
             display => $name,
+            bank => $result->{bank},
             state => $result->{state},
-            %{$result_metered->{ $result->{module} . ':' . $result->{bank} . ':' . $result->{number} }}
+            current => $result_metered->{ $result->{module} . ':' . $result->{bank} . ':' . $result->{number} }->{current},
+            phase => defined($result_metered->{ $result->{module} . ':' . $result->{bank} . ':' . $result->{number} }->{phase}) ? 
+                $result_metered->{ $result->{module} . ':' . $result->{bank} . ':' . $result->{number} }->{phase} : '-'
         };
     }
 }
