@@ -28,7 +28,7 @@ my %map_sensor_status = (
     2 => 'normal',
     4 => 'entityAbsent',
     81 => 'sensorError',
-    91 => 'hardwareFaulty',
+    91 => 'hardwareFaulty'
 );
 
 sub check {
@@ -49,54 +49,70 @@ sub check {
     my @instances = $self->get_instance_class(class => { 8 => 1 });
     return if (scalar(@instances) == 0);
     
-    $self->{snmp}->load(oids => [$mapping2->{EntityExtTemperature}->{oid}, $mapping2->{EntityExtTemperatureThreshold}->{oid}],
-                        instances => [@instances]);
+    $self->{snmp}->load(
+        oids => [$mapping2->{EntityExtTemperature}->{oid}, $mapping2->{EntityExtTemperatureThreshold}->{oid}],
+        instances => [@instances]
+    );
     my $results = $self->{snmp}->get_leef();
-    
+
     my ($exit, $warn, $crit, $checked);
     foreach my $instance (sort @instances) {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$self->{branch} . '.19'}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $results, instance => $instance);
-        
+
         next if (!defined($result->{EntityExtErrorStatus}));
         next if ($self->check_filter(section => 'sensor', instance => $instance));
         if ($result->{EntityExtErrorStatus} =~ /entityAbsent/i) {
             $self->absent_problem(section => 'sensor', instance => $instance);
             next;
         }
-        
+
         my $name = '';
         $name = $self->get_short_name(instance => $instance) if (defined($self->{short_name}) && $self->{short_name} == 1);
         $name = $self->get_long_name(instance => $instance) unless (defined($self->{short_name}) && $self->{short_name} == 1 && defined($name) && $name ne '');
         $self->{components}->{sensor}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("Sensor '%s' status is '%s' [instance = %s]",
-                                                        $name, $result->{EntityExtErrorStatus}, $instance));
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Sensor '%s' status is '%s' [instance: %s]",
+                $name, $result->{EntityExtErrorStatus}, $instance
+            )
+        );
         $exit = $self->get_severity(section => 'sensor', value => $result->{EntityExtErrorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Sensor '%s' status is '%s'", $name, $result->{EntityExtErrorStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Sensor '%s' status is '%s'", $name, $result->{EntityExtErrorStatus})
+            );
         }
-            
-        next if (defined($result2->{EntityExtTemperature}) && $result2->{EntityExtTemperature} <= 0);
-            
+
+        next if (defined($result2->{EntityExtTemperature}) && ($result2->{EntityExtTemperature} <= 0 || $result2->{EntityExtTemperature} == 65535));
+
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result2->{EntityExtTemperature});
         if ($checked == 0 && defined($result2->{EntityExtTemperatureThreshold}) &&
             $result2->{EntityExtTemperatureThreshold} > 0 && $result2->{EntityExtTemperatureThreshold} < 65535) {
             my $crit_th = '~:' . $result2->{EntityExtTemperatureThreshold};
             $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => undef);
             $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
-            
-            $exit = $self->{perfdata}->threshold_check(value => $result2->{EntityExtTemperature}, threshold => [ { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' }, 
-                                                                                                                { label => 'warning-temperature-instance-' . $instance, exit_litteral => 'warning' } ]);
+
+            $exit = $self->{perfdata}->threshold_check(
+                value => $result2->{EntityExtTemperature},
+                threshold => [
+                    { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' }, 
+                    { label => 'warning-temperature-instance-' . $instance, exit_litteral => 'warning' }
+                ]
+            );
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
         }
-        
+
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature sensor '%s' is %s degree centigrade", $name, $result2->{EntityExtTemperature}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Temperature sensor '%s' is %s degree centigrade", $name, $result2->{EntityExtTemperature})
+            );
         }
+
         $self->{output}->perfdata_add(
             label => 'temp', unit => 'C', 
             nlabel => 'hardware.sensor.temperature.celsius',

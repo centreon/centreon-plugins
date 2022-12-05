@@ -40,7 +40,7 @@ my %map_default_status = (
     61 => 'rpsError',
     71 => 'moduleFaulty',
     81 => 'sensorError',
-    91 => 'hardwareFaulty',
+    91 => 'hardwareFaulty'
 );
 
 sub check {
@@ -51,7 +51,7 @@ sub check {
     return if ($self->check_filter(section => $options{component}));
 
     my $mapping = {
-        EntityExtErrorStatus => { oid => $self->{branch} . '.19', map => \%map_default_status },
+        EntityExtErrorStatus => { oid => $self->{branch} . '.19', map => \%map_default_status }
     };
 
     foreach my $instance (sort $self->get_instance_class(class => { $options{component_class} => 1 })) {
@@ -63,17 +63,23 @@ sub check {
             $self->absent_problem(section => $options{component}, instance => $instance);
             next;
         }
-        
+
         my $name = '';
         $name = $self->get_short_name(instance => $instance) if (defined($self->{short_name}) && $self->{short_name} == 1);
         $name = $self->get_long_name(instance => $instance) unless (defined($self->{short_name}) && $self->{short_name} == 1 && defined($name) && $name ne '');
         $self->{components}->{$options{component}}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("%s '%s' status is '%s' [instance = %s]",
-                                                        ucfirst($options{component}), $name, $result->{EntityExtErrorStatus}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "%s '%s' status is '%s' [instance = %s]",
+                ucfirst($options{component}), $name, $result->{EntityExtErrorStatus}, $instance
+            )
+        );
         my $exit = $self->get_severity(section => $options{component}, value => $result->{EntityExtErrorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("%s '%s' status is '%s'", $options{component}, $name, $result->{EntityExtErrorStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("%s '%s' status is '%s'", $options{component}, $name, $result->{EntityExtErrorStatus})
+            );
         }
     }
 }
