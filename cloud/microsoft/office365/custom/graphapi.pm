@@ -477,6 +477,15 @@ sub get_services_health {
     return $response;
 }
 
+sub list_subscribed_skus {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->{graph_endpoint} . '/v1.0/subscribedSkus';
+    my $response = $self->request_api_json(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
 sub get_applications {
     my ($self, %options) = @_;
 
