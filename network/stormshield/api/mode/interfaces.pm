@@ -355,10 +355,10 @@ sub manage_selection {
     $self->{interfaces} = {};
     foreach my $interface (@$interfaces) {
         my ($user_name, $real_name) = split(/,/, $interface->{name});
-        next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
-            $_->{Name} !~ /$self->{option_results}->{filter_interface}/);
-        next if (defined($self->{option_results}->{exclude_interface}) && $self->{option_results}->{exclude_interface} ne '' &&
-            $_->{Name} =~ /$self->{option_results}->{exclude_interface}/);
+        next if (defined($self->{option_results}->{filter_user_name}) && $self->{option_results}->{filter_user_name} ne '' &&
+            $user_name !~ /$self->{option_results}->{filter_user_name}/);
+        next if (defined($self->{option_results}->{filter_real_name}) && $self->{option_results}->{filter_real_name} ne '' &&
+            $real_name !~ /$self->{option_results}->{filter_real_name}/);
 
         my ($traffic_out) = split(/,/, $interface->{byte_out});
         my ($traffic_in) = split(/,/, $interface->{byte});
