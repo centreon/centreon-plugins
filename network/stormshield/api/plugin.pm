@@ -35,6 +35,7 @@ sub new {
         'health'          => 'network::stormshield::api::mode::health',
         'interfaces'      => 'network::stormshield::api::mode::interfaces',
         'list-interfaces' => 'network::stormshield::api::mode::listinterfaces',
+        'memory'          => 'network::stormshield::api::mode::memory',
         'uptime'          => 'network::stormshield::api::mode::uptime'
     };
 

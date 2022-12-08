@@ -88,7 +88,8 @@ sub manage_selection {
 
         next if (defined($self->{option_results}->{filter_core}) && $self->{option_results}->{filter_core} ne '' &&
             $num !~ /$self->{option_results}->{filter_core}/);
-        my ($used) = split(/,/, $system->{STAT_Result}->{$label});
+        my @values = split(/,/, $system->{STAT_Result}->{$label});
+        my $used = $values[0] + $values[1] + $values[2];
         $self->{cpu_core}->{$num} = { used => $used };
         $cpu += $used;
     }
