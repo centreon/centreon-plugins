@@ -90,7 +90,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'unit:s' => { name => 'unit', default => 's' }
+        'add-system-info' => { name => 'add_system_info' },
+        'unit:s'          => { name => 'unit', default => 's' }
     });
 
     return $self;
@@ -115,6 +116,16 @@ sub manage_selection {
     $self->{global} = {
         uptime => ($day * 86400) + ($hour * 3600) + ($min * 60) + $sec
     };
+
+    if (defined($self->{option_results}->{add_system_info})) {
+        $system = $options{custom}->request(command => 'globaladmin getinfos');
+        $self->{output}->output_add(short_msg => sprintf(
+                'product: %s, firmware: %s',
+                $system->{Information}->{ProductModel},
+                $system->{Information}->{Firmware}
+            )
+        );
+    }
 }
 
 1;
@@ -127,10 +138,14 @@ Check uptime.
 
 =over 8
 
+=item B<--add-system-info>
+
+Display product and firmware informations
+
 =item B<--unit>
 
 Select the unit for performance data and thresholds. May be 's' for seconds, 'm' for minutes,
-'h' for hours, 'd' for days, 'w' for weeks.  Default is seconds
+'h' for hours, 'd' for days, 'w' for weeks. Default is seconds
 
 =item B<--warning-*> B<--critical-*>
 
