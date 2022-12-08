@@ -185,7 +185,7 @@ sub set_counters {
                 closure_custom_threshold_check => sub {
                     my ($self, %options) = @_;
 
-                    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{free}, threshold => [ { label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel} . '-' . $self->{instance}, exit_litteral => 'warning' } ]);
+                    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{free}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
                 },
                 closure_custom_perfdata => sub {
                     my ($self, %options) = @_;
@@ -195,8 +195,8 @@ sub set_counters {
                         unit => 'B',
                         instances => [$self->{result_values}->{name}, $self->{result_values}->{fsLabel}, $self->{result_values}->{target}],
                         value => $self->{result_values}->{free},
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{instance}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0,
                         max => $self->{result_values}->{usageLimit}
                     );
@@ -213,7 +213,7 @@ sub set_counters {
                 closure_custom_threshold_check => sub {
                     my ($self, %options) = @_;
 
-                    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{usagePrct}, threshold => [ { label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel} . '-' . $self->{instance}, exit_litteral => 'warning' } ]);
+                    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{usagePrct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
                 },
                 closure_custom_perfdata => sub {
                     my ($self, %options) = @_;
@@ -223,8 +223,8 @@ sub set_counters {
                         unit => '%',
                         instances => [$self->{result_values}->{name}, $self->{result_values}->{fsLabel}, $self->{result_values}->{target}],
                         value => $self->{result_values}->{usagePrct},
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{instance}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0,
                         max => 100
                     );
@@ -266,7 +266,7 @@ sub set_counters {
                 closure_custom_threshold_check => sub {
                     my ($self, %options) = @_;
 
-                    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{fileFreeCount}, threshold => [ { label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel} . '-' . $self->{instance}, exit_litteral => 'warning' } ]);
+                    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{fileFreeCount}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
                 },
                 closure_custom_perfdata => sub {
                     my ($self, %options) = @_;
@@ -275,8 +275,8 @@ sub set_counters {
                         nlabel => $self->{nlabel},
                         instances => [$self->{result_values}->{name}, $self->{result_values}->{fsLabel}, $self->{result_values}->{target}],
                         value => $self->{result_values}->{fileFreeCount},
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{instance}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0
                     );
                 }
@@ -292,7 +292,7 @@ sub set_counters {
                 closure_custom_threshold_check => sub {
                     my ($self, %options) = @_;
 
-                    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{filePrct}, threshold => [ { label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel} . '-' . $self->{instance}, exit_litteral => 'warning' } ]);
+                    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{filePrct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
                 },
                 closure_custom_perfdata => sub {
                     my ($self, %options) = @_;
@@ -302,8 +302,8 @@ sub set_counters {
                         unit => '%',
                         instances => [$self->{result_values}->{name}, $self->{result_values}->{fsLabel}, $self->{result_values}->{target}],
                         value => $self->{result_values}->{filePrct},
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel} . '-' . $self->{instance}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel} . '-' . $self->{instance}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0,
                         max => 100
                     );
