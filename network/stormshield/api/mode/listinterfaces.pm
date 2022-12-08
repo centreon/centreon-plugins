@@ -50,7 +50,7 @@ sub manage_selection {
     my $interfaces = $options{custom}->request(command => 'monitor interface');
 
     my $results = {};
-    foreach (@$interfaces) {
+    foreach (@{$interfaces->{Result}}) {
         my ($user_name, $real_name) = split(/,/, $_->{name});
         $results->{$real_name} = {
             real_name => $real_name,
