@@ -353,7 +353,7 @@ sub manage_selection {
     my $interfaces = $options{custom}->request(command => 'monitor interface');
 
     $self->{interfaces} = {};
-    foreach my $interface (@$interfaces) {
+    foreach my $interface (@{$interfaces->{Result}}) {
         my ($user_name, $real_name) = split(/,/, $interface->{name});
         next if (defined($self->{option_results}->{filter_user_name}) && $self->{option_results}->{filter_user_name} ne '' &&
             $user_name !~ /$self->{option_results}->{filter_user_name}/);

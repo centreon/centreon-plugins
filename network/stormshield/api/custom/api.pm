@@ -209,12 +209,12 @@ sub get_session_id {
         foreach (@cookies) {
             $cookie = $1 if (/(NETASQ_sslclient=.+?);/);
         }
-=pod
+
         if (!defined($cookie) || $cookie eq '') {
             $self->{output}->add_option_msg(short_msg => 'Cannot get cookie');
             $self->{output}->option_exit();
         }
-=cut
+
         ($content) = $self->{http}->request(
             method => 'POST',
             url_path => '/api/auth/login',
@@ -343,14 +343,16 @@ sub parse_format {
     }
 
     if ($options{xml}->{serverd}->[0]->{data}->{format} eq 'section_line') {
-        my $result = [];
+        my $result = {};
         foreach my $section (@{$options{xml}->{serverd}->[0]->{data}->{section}}) {
+            $result->{ $section->{title} } = [];
             foreach my $line (@{$section->{line}}) {
                 my $entry = {};
                 foreach (@{$line->{key}}) {
                     $entry->{ $_->{name} } = $_->{value};
                 }
-                push @$result, $entry;
+
+                push @{$result->{ $section->{title} }}, $entry;
             }
         }
 

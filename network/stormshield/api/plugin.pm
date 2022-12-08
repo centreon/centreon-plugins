@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'cpu'             => 'network::stormshield::api::mode::cpu',
+        'ha'              => 'network::stormshield::api::mode::ha',
         'hardware'        => 'network::stormshield::api::mode::hardware',
         'health'          => 'network::stormshield::api::mode::health',
         'interfaces'      => 'network::stormshield::api::mode::interfaces',
