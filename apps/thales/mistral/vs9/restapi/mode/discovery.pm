@@ -86,7 +86,8 @@ sub discovery_device {
 
         $entry->{gateway_name} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{name} : '';
         $entry->{gateway_responder_only} = '';
-        $entry->{gateway_responder_only} = $device->{gatewayConf}->{responderOnly} =~ /true|1/i ? 'yes' : 'no' if (defined($device->{gatewayConf}));
+        $entry->{gateway_responder_only} = $device->{gatewayConf}->{responderOnly} =~ /true|1/i ? 'yes' : 'no'
+            if (defined($device->{gatewayConf}) && defined($device->{gatewayConf}->{responderOnly}));
         $entry->{gateway_administration_ip} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{administrationIp} : '';
         $entry->{gateway_active} = '';
         $entry->{gateway_active} = $device->{gatewayConf}->{active} =~ /true|1/i ? 'yes' : 'no' if (defined($device->{gatewayConf}));
