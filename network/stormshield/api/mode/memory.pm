@@ -39,14 +39,6 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'memory.usage.percentage', set => {
-                key_values => [ { name => 'total' } ],
-                output_template => 'total: %.2f %%',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%' }
-                ]
-            }
-        },
         { label => 'host', nlabel => 'memory.protected_host.percentage', set => {
                 key_values => [ { name => 'host' } ],
                 output_template => 'protected host: %.2f %%',
@@ -128,7 +120,6 @@ sub manage_selection {
     my $fields = scalar(@values);
     if ($fields == 7) {
         $self->{global} = { 
-            total => $values[0] + $values[1] + $values[2] + $values[3] + $values[4] + $values[5] + $values[6],
             host => $values[0],
             frag => $values[1],
             icmp => $values[2],
@@ -139,7 +130,6 @@ sub manage_selection {
         };
     } elsif ($fields == 6) {
         $self->{global} = { 
-            total => $values[0] + $values[1] + $values[2] + $values[3] + $values[4] + $values[5],
             host => $values[0],
             frag => $values[1],
             icmp => $values[2],
@@ -163,7 +153,7 @@ Check memory.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total', 'host', 'frag', 'conn', 'icmp',
+Can be: 'host', 'frag', 'conn', 'icmp',
 'dtrack', 'dyn', 'etherstate'. 
 
 =back
