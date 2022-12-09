@@ -56,12 +56,12 @@ sub manage_selection {
             { "site:group" => "site_name" }, 
             { "gateway:group" => "gateway_name" }
         ],
-            "from" => "rum",
-            "groupby" => [
-                "watcher_name", 
-                "site:group", 
-                "gateway:group"
-            ],
+        "from" => "rum",
+        "groupby" => [
+            "watcher_name", 
+            "site:group", 
+            "gateway:group"
+        ],
         "options" => {"sampling" => \1 }
     };  
 

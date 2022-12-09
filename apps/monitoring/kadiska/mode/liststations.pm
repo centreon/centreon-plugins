@@ -56,11 +56,11 @@ sub manage_selection {
             "station_name",
             "station_id"
         ],
-            "from" => "traceroute",
-            "groupby" => [
+        "from" => "traceroute",
+        "groupby" => [
             "station_id"
-            ],
-        "options" => {"sampling" => \1 }
+        ],
+        "options" => { "sampling" => \1 }
     };  
 
     my $results = $options{custom}->request_api(

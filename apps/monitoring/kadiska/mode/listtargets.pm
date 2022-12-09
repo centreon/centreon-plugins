@@ -37,12 +37,6 @@ sub new {
     return $self;
 }
 
-sub set_options {
-    my ($self, %options) = @_;
-
-    $self->{option_results} = $options{option_results};
-}
-
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
@@ -66,7 +60,7 @@ sub manage_selection {
         ],
         "offset" => 0,
         "options" => {"sampling" => \1 }
-    };  
+    };
 
     $raw_form_post->{where} = ["=","station_name",["\$", $self->{option_results}->{station_name}]];
 
@@ -75,14 +69,12 @@ sub manage_selection {
         endpoint => 'query',
         query_form_post => $raw_form_post
     );
-
 }
 
 sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-
     foreach my $target (@{$self->{targets}->{data}}){
         $self->{output}->output_add(
             long_msg => sprintf("[target = %s][station = %s]", 
@@ -113,8 +105,8 @@ sub disco_show {
 
     foreach my $target (@{$self->{targets}->{data}}){
         $self->{output}->add_disco_entry( 
-                target => $target->{target_name},
-                station => $self->{option_results}->{station_name}
+            target => $target->{target_name},
+            station => $self->{option_results}->{station_name}
         );
     }
 }
