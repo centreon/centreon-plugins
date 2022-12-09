@@ -117,96 +117,96 @@ sub set_counters {
                 key_values => [ { name => 'dtt_spent' } ],
                 output_template => 'DTT spent: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'errors-prct', nlabel => 'isp.errors.percentage', set => {
                 key_values => [ { name => 'errors_prct' } ],
                 output_template => 'Errors: %.2f%%',
                 perfdatas => [
-                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'full-time-network-spent', nlabel => 'isp.network.spent.time.milliseconds', set => {
                 key_values => [ { name => 'full_time_network_spent' } ],
                 output_template => 'Full time network spent: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'sessions', nlabel => 'isp.sessions.count', set => {
                 key_values => [ { name => 'sessions' } ],
                 output_template => 'Sessions: %s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'srt_spent', nlabel => 'isp.srt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'srt_spent' } ],
                 output_template => 'SRT spent: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'requests', nlabel => 'isp.requests.count', set => {
                 key_values => [ { name => 'requests' } ],
                 output_template => 'Requests: %s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'redirect-time-avg', nlabel => 'isp.redirect.time.milliseconds', set => {
                 key_values => [ { name => 'redirect_time_avg' } ],
                 output_template => 'Redirect time avg: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'loading-page', nlabel => 'isp.loading.page.duration.milliseconds', set => {
                 key_values => [ { name => 'loading_page' } ],
                 output_template => 'Loading page duration: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },   
         { label => 'pages', nlabel => 'isp.pages.count', set => {
                 key_values => [ { name => 'pages' } ],
                 output_template => 'Loaded pages: %d',
                 perfdatas => [
-                    { template => '%d', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'processing', nlabel => 'isp.processing.duration.milliseconds', set => {
                 key_values => [ { name => 'processing' } ],
                 output_template => 'API Processing duration: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },  
         { label => 'users', nlabel => 'users.count', set => {
                 key_values => [ { name => 'users' } ],
                 output_template => 'Connected users: %s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'waiting-time-avg', nlabel => 'isp.waiting.time.milliseconds', set => {
                 key_values => [ { name => 'waiting_time_avg' } ],
                 output_template => 'Waiting time avg: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         } 
     ];
@@ -216,96 +216,96 @@ sub set_counters {
                 key_values => [ { name => 'dtt_spent' } ],
                 output_template => 'DTT spent: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'errors-prct', nlabel => 'watcher.errors.percentage', set => {
                 key_values => [ { name => 'errors_prct' } ],
                 output_template => 'Errors: %.2f%%',
                 perfdatas => [
-                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'full-time-network-spent', nlabel => 'watcher.network.spent.time.milliseconds', set => {
                 key_values => [ { name => 'full_time_network_spent' } ],
                 output_template => 'Full time network spent: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'sessions', nlabel => 'watcher.sessions.count', set => {
                 key_values => [ { name => 'sessions' } ],
                 output_template => 'Sessions: %s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'srt_spent', nlabel => 'watcher.srt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'srt_spent' } ],
                 output_template => 'SRT spent: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'requests', nlabel => 'watcher.requests.count', set => {
                 key_values => [ { name => 'requests' } ],
                 output_template => 'Requests: %s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
                 key_values => [ { name => 'redirect_time_avg' } ],
                 output_template => 'Redirect time avg: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'loading-page', nlabel => 'watchers.loading.page.duration.milliseconds', set => {
                 key_values => [ { name => 'loading_page' } ],
                 output_template => 'Loading page duration: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },   
         { label => 'pages', nlabel => 'watchers.pages.count', set => {
                 key_values => [ { name => 'pages' } ],
                 output_template => 'Loaded pages: %d',
                 perfdatas => [
-                    { template => '%d', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'processing', nlabel => 'watchers.processing.duration.milliseconds', set => {
                 key_values => [ { name => 'processing' } ],
                 output_template => 'API Processing duration: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         },  
         { label => 'users', nlabel => 'users.count', set => {
                 key_values => [ { name => 'users' } ],
                 output_template => 'Connected users: %s',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'waiting-time-avg', nlabel => 'watchers.waiting.time.milliseconds', set => {
                 key_values => [ { name => 'waiting_time_avg' } ],
                 output_template => 'Waiting time avg: %.2f ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
+                ]
             }
         } 
     ];
@@ -419,23 +419,18 @@ sub set_counters {
     ];
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'country:s'             => { name => 'country'},
-        'isp:s'                 => { name => 'isp'},
+        'country:s'             => { name => 'country' },
+        'isp:s'                 => { name => 'isp' },
         'select-watcher-name:s' => { name => 'watcher_name' },
-        'select-site-name:s'    => { name => 'site_name'},
-        'select-gateway-name:s' => { name => 'gateway_name'},
-        'wfa:s'                 => { name => 'wfa'}
+        'select-site-name:s'    => { name => 'site_name' },
+        'select-gateway-name:s' => { name => 'gateway_name' },
+        'wfa:s'                 => { name => 'wfa' }
     });
 
     return $self;
