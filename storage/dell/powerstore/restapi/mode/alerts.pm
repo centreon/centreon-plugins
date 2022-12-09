@@ -131,6 +131,7 @@ sub manage_selection {
 
     foreach my $entry (@$results) {
         next if ($entry->{state} eq 'CLEARED');
+        next if ($entry->{is_acknowledged});
 
         if (defined($self->{option_results}->{memory})) {
             if (defined($alerts_mem) && defined($alerts_mem->{ $entry->{id} })) {
