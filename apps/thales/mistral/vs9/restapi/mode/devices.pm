@@ -33,13 +33,27 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
 
+sub custom_certificate_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'revoked: %s',
+        $self->{result_values}->{revoked}
+    );
+}
+
 sub custom_certificate_expires_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{time_certificate_unit} },
         unit => $self->{instance_mode}->{option_results}->{time_certificate_unit},
-        instances => [$self->{result_values}->{sn}, $self->{result_values}->{name}],
+        instances => [
+            $self->{result_values}->{sn},
+            $self->{result_values}->{certSn},
+            $self->{result_values}->{subjectCommonName},
+            $self->{result_values}->{issuerCommonName}
+        ],
         value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{time_certificate_unit} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -110,9 +124,10 @@ sub custom_mistral_version_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'firmware version: %s (current) %s (other)',
+        'firmware version: %s (current) %s (other), configurationId: %s',
         $self->{result_values}->{firmwareCurrentVersion},
-        $self->{result_values}->{firmwareOtherVersion}
+        $self->{result_values}->{firmwareOtherVersion},
+        $self->{result_values}->{configurationId}
     );
 }
 
@@ -281,8 +296,11 @@ sub prefix_certificate_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "certificate '%s' ",
-        $options{instance_value}->{name}
+        "certificate '%s' [subject: %s, issuer: %s, usages: %s] ",
+        $options{instance_value}->{certSn},
+        $options{instance_value}->{subjectCommonName},
+        $options{instance_value}->{issuerCommonName},
+        $options{instance_value}->{usages}
     );
 }
 
@@ -364,7 +382,7 @@ sub set_counters {
             label => 'mistral-version',
             type => 2,
             set => {
-                key_values => [ { name => 'firmwareCurrentVersion' }, { name => 'firmwareOtherVersion' } ],
+                key_values => [ { name => 'firmwareCurrentVersion' }, { name => 'firmwareOtherVersion' }, { name => 'configurationId' } ],
                 closure_custom_output => $self->can('custom_mistral_version_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -482,8 +500,26 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{certificates} = [
+        {
+            label => 'certificate-status',
+            type => 2,
+            set => {
+                key_values => [
+                    { name => 'revoked' },
+                    { name => 'certSn' }, { name => 'subjectCommonName' }, { name => 'issuerCommonName' },
+                    { name => 'sn' }
+                ],
+                closure_custom_output => $self->can('custom_certificate_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
         { label => 'certificate-expires', nlabel => 'certificate.expires', set => {
-                key_values      => [ { name => 'expires_seconds' }, { name => 'expires_human' }, { name => 'name' }, { name => 'sn' } ],
+                key_values      => [
+                    { name => 'expires_seconds' }, { name => 'expires_human' },
+                    { name => 'certSn' }, { name => 'subjectCommonName' }, { name => 'issuerCommonName' },
+                    { name => 'sn' }
+                ],
                 output_template => 'expires in %s',
                 output_use => 'expires_human',
                 closure_custom_perfdata => $self->can('custom_certificate_expires_perfdata'),
@@ -562,6 +598,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-id:s'             => { name => 'filter_id' },
         'filter-sn:s'             => { name => 'filter_sn' },
+        'filter-cert-revoked'     => { name => 'filter_cert_revoked' },
         'add-interfaces'          => { name => 'add_interfaces' },
         'add-status'              => { name => 'add_status' },
         'add-system'              => { name => 'add_system' },
@@ -722,6 +759,7 @@ sub add_mistral {
         sn => $options{device}->{serialNumber},
         firmwareCurrentVersion => $mistral->{firmwareCurrent}->{version},
         firmwareOtherVersion => $mistral->{firmwareOther}->{version},
+        configurationId => $mistral->{configurationId},
         operatingState => lc($mistral->{operatingState}),
         temperature => $mistral->{temperature}
     };
@@ -751,9 +789,17 @@ sub add_certificates {
                 second     => $6,
                 time_zone  => $7
             );
+
+            my $revoked = $cert->{revoked} =~ /true|1/i ? 'yes' : 'no';
+            next if (defined($self->{option_results}->{filter_cert_revoked}) && $revoked eq 'yes');
+
             $self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} } = {
                 sn => $options{device}->{serialNumber},
-                name => $cert->{gwCertificateName},
+                certSn => $cert->{serialNumber},
+                subjectCommonName => $cert->{subjectCommonName},
+                issuerCommonName => defined($cert->{issuerCommonName}) ? $cert->{issuerCommonName} : '',
+                usages => join(' ', @{$cert->{usages}}),
+                revoked => $revoked,
                 expires_seconds => $dt->epoch() - time()
             };
             $self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} }->{expires_seconds} = 0
@@ -880,6 +926,10 @@ Filter devices by id.
 
 Filter devices by serial number.
 
+=item B<--filter-cert-revoked>
+
+Skip revoked certificates.
+
 =item B<--add-status>
 
 Check connection status.
@@ -903,6 +953,21 @@ Check certificates.
 =item B<--add-tunnels>
 
 Check tunnels.
+
+=item B<--unknown-certificate-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
+
+=item B<--warning-certificate-status>
+
+Set warning threshold for status.
+Can used special variables like: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
+
+=item B<--critical-certificate-status>
+
+Set critical threshold for status.
+Can used special variables like: %{revoked}, %{sn}, %{certSn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--unknown-connection-status>
 
