@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return ' status: ' . $self->{result_values}->{cluster_status};
+    return 'status: ' . $self->{result_values}->{trunkstatus};
 }
 
 sub custom_usage_perfdata {
@@ -37,7 +37,7 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
-        instances => $self->{result_values}->{display},
+        instances => $self->{result_values}->{name},
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -61,27 +61,30 @@ sub custom_usage_threshold {
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $self->{result_values}->{total},
-                      $self->{result_values}->{used}, $self->{result_values}->{prct_used},
-                      $self->{result_values}->{free}, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "channels usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
+        $self->{result_values}->{total},
+        $self->{result_values}->{used}, $self->{result_values}->{prct_used},
+        $self->{result_values}->{free}, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_trunk_usage_calc {
     my ($self, %options) = @_;
 
-    if ($options{new_datas}->{$self->{instance} . '_cacAllowed'} <= 0) {
-        $self->{error_msg} = "skipped (no allowed)";
-        return -2;
-    }
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . 'freechan'};
+    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
+    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_freechan'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_busychan'};
     $self->{result_values}->{total} = $self->{result_values}->{free} + $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     return 0;
+}
+
+sub prefix_trunk_output {
+    my ($self, %options) = @_;
+
+    return "Trunk '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -99,29 +102,23 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'channel-usage', nlabel => 'trunk.channels.current.count', set => {
-                key_values => [ { name => 'busychan' }, { name => 'freechan' }, { name => 'display '} ],
+        { label => 'channel-usage', nlabel => 'trunk.channels.usage.count', set => {
+                key_values => [ { name => 'busychan' }, { name => 'freechan' }, { name => 'name' } ],
                 closure_custom_calc => $self->can('custom_trunk_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'channel-outofservice', nlabel => 'trunk.channels.outofservice.count', set => {
                 key_values => [ { name => 'ooschan' } ],
-                output_template => 'channel out of service %s',
+                output_template => 'channels out of service %s',
                 perfdatas => [
                     { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
     ];
-}
-
-sub prefix_trunk_output {
-    my ($self, %options) = @_;
-
-    return "Trunk '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -136,29 +133,26 @@ sub new {
     return $self;
 }
 
-my $map_trunk_status = {
-    0 => 'OOS', 
-    1 => 'INS'
-};
+my $map_trunk_status = { 0 => 'OOS', 1 => 'INS' };
 
 my $mapping = {
-    trunkname    => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.2' },
-    crystalno    => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.3' }, # not used
-    couplerno    => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.4' }, # not used
-    trunktype    => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.5' }, # not used
-    nodepbx      => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.6' }, # not used
-    freechan     => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.7' },
-    busychan     => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.8' },
-    ooschan      => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.9' },
-    trunkstatus  => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.10', map => $map_trunk_status },
-    cumuloos     => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.11' }, # not used
-    cumuloverrun => { oid => '1.3.6.1.4.1.637.64.4400.1.9.1.12' }, # not used
+    trunkname    => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.2' },
+    crystalno    => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.3' }, # not used
+    couplerno    => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.4' }, # not used
+    trunktype    => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.5' }, # not used
+    nodepbx      => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.6' }, # not used
+    freechan     => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.7' },
+    busychan     => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.8' },
+    ooschan      => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.9' },
+    trunkstatus  => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.10', map => $map_trunk_status },
+    cumuloos     => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.11' }, # not used
+    cumuloverrun => { oid => '.1.3.6.1.4.1.637.64.4400.1.9.1.12' }  # not used
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
  
-    my $oid_trunkEntry = '1.3.6.1.4.1.637.64.4400.1.9.1';
+    my $oid_trunkEntry = '.1.3.6.1.4.1.637.64.4400.1.9.1';
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_trunkEntry,
         nothing_quit => 1
@@ -169,14 +163,12 @@ sub manage_selection {
         next if ($oid !~ /^$mapping->{trunkname}->{oid}\.(\d+)/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        if (defined($self->{option_results}->{filter_trunk}) && $self->{option_results}->{filter_trunk} ne '' &&
-            $result->{trunkname} !~ /$self->{option_results}->{filter_trunk}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $result->{trunkname} . "': no matching filter.", debug => 1);
-            next;
-        }
 
-        $self->{trunk}->{$result->{trunkname}} = { 
-            display => $result->{trunkname},
+        next if (defined($self->{option_results}->{filter_trunk}) && $self->{option_results}->{filter_trunk} ne '' &&
+            $result->{trunkname} !~ /$self->{option_results}->{filter_trunk}/);
+
+        $self->{trunk}->{ $result->{trunkname} } = { 
+            name => $result->{trunkname},
             %{$result}
         };
     }
