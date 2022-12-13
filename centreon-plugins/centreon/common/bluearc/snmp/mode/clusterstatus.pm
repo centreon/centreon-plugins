@@ -24,7 +24,19 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return 'state : ' . $self->{result_values}->{state};
+}
+
+sub prefix_node_output {
+    my ($self, %options) = @_;
+
+    return "Node '" . $options{instance_value}->{display} . "' ";
+}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -34,36 +46,19 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{node} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status',
+            type => 2,
+            unknown_default => '%{state} =~ /unknown/',
+            critical_default => '%{state} =~ /offline/i',
+            set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
-}
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    my $msg = 'state : ' . $self->{result_values}->{state};
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
-
-sub prefix_node_output {
-    my ($self, %options) = @_;
-
-    return "Node '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -71,33 +66,22 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-name:s"           => { name => 'filter_name' },
-                                "unknown-status:s"        => { name => 'unknown_status', default => '%{state} =~ /unknown/' },
-                                "warning-status:s"        => { name => 'warning_status', default => '' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{state} =~ /offline/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 my %map_vnode_status = (
     1 => 'unknown',
     2 => 'onLine',
-    3 => 'offLine',
+    3 => 'offLine'
 );
 
 my $mapping = {
     clusterVNodeName    => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.2.5.11.1.2' },
-    clusterVNodeStatus  => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.2.5.11.1.4', map => \%map_vnode_status },
+    clusterVNodeStatus  => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.2.5.11.1.4', map => \%map_vnode_status }
 };
 my $oid_clusterVNodeEntry = '.1.3.6.1.4.1.11096.6.1.1.1.2.5.11.1';
 
@@ -105,8 +89,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{node} = {};
-    $self->{results} = $options{snmp}->get_table(oid => $oid_clusterVNodeEntry,
-                                                 nothing_quit => 1);
+    $self->{results} = $options{snmp}->get_table(oid => $oid_clusterVNodeEntry, nothing_quit => 1);
     foreach my $oid (keys %{$self->{results}}) {
         next if ($oid !~ /^$mapping->{clusterVNodeStatus}->{oid}\.(.*)$/);
         my $instance = $1;
@@ -117,13 +100,17 @@ sub manage_selection {
             next;
         }
 
-        $self->{node}->{$instance} = { display => $result->{clusterVNodeName},
-                                       state => $result->{clusterVNodeStatus}};
+        $self->{node}->{$instance} = {
+            display => $result->{clusterVNodeName},
+            state => $result->{clusterVNodeStatus}
+        };
     }
 
     if (scalar(keys %{$self->{node}}) <= 0) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'No node(s) found');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'No node(s) found'
+        );
     }
 }
 

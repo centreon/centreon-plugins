@@ -37,13 +37,13 @@ sub set_system {
             ['ok', 'OK'],
             ['failed', 'CRITICAL'],
             ['notFitted', 'WARNING'],
-            ['unknown', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN']
         ],
         'fan.speed' => [
             ['ok', 'OK'],
             ['warning', 'WARNING'],
             ['severe', 'CRITICAL'],
-            ['unknown', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN']
         ],
         temperature => [
             ['ok', 'OK'],
@@ -51,7 +51,7 @@ sub set_system {
             ['tempSevere', 'CRITICAL'],
             ['tempSensorFailed', 'CRITICAL'],
             ['tempSensorWarning', 'CRITICAL'],
-            ['unknown', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN']
         ],
         sysdrive => [
             ['online', 'OK'],
@@ -62,7 +62,7 @@ sub set_system {
             ['offline', 'OK'],
             ['initializing', 'OK'],
             ['formatting', 'OK'],
-            ['unknown', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN']
         ],
         battery => [
             ['ok', 'OK'],
@@ -75,8 +75,8 @@ sub set_system {
             ['notResponding', 'CRITICAL'],
             ['low', 'WARNING'],
             ['veryLow', 'CRITICAL'],
-            ['ignore', 'UNKNOWN'],
-        ],
+            ['ignore', 'UNKNOWN']
+        ]
     };
 
     $self->{components_path} = 'centreon::common::bluearc::snmp::mode::components';
@@ -86,13 +86,22 @@ sub set_system {
 sub snmp_execute {
     my ($self, %options) = @_;
 
+    my $oid_clusterPNodeName = '.1.3.6.1.4.1.11096.6.1.1.1.2.5.9.1.2';
+    push @{$self->{request}}, { oid => $oid_clusterPNodeName };
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+
+    $self->{pnodes} = {};
+    foreach (keys %{$self->{results}->{$oid_clusterPNodeName}}) {
+        /^$oid_clusterPNodeName\.(.*)$/;
+        $self->{pnodes}->{$1} = $self->{results}->{$oid_clusterPNodeName}->{$_};
+    }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
