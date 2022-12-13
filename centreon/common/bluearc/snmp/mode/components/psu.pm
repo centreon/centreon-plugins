@@ -27,7 +27,7 @@ my %map_status = (
     1 => 'ok',
     2 => 'failed',
     3 => 'notFitted',
-    4 => 'unknown',
+    4 => 'unknown'
 );
 
 my $mapping = {
@@ -49,22 +49,30 @@ sub check {
     return if ($self->check_filter(section => 'psu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_psuEntry}})) {
-        next if ($oid !~ /^$mapping->{psuStatus}->{oid}\.(.*)$/);
-        my $instance = $1;
+        next if ($oid !~ /^$mapping->{psuStatus}->{oid}\.(.*)\.(.*)$/);
+        my $name = $self->{pnodes}->{$1} . '.' . $2;
+        my $instance = $1 . '.' . $2;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_psuEntry}, instance => $instance);
 
         next if ($self->check_filter(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is '%s' [instance: %s].",
-                                    $instance, $result->{psuStatus},
-                                    $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' status is '%s' [instance: %s].",
+                $name, $result->{psuStatus},
+                $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'psu', value => $result->{psuStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Power supply '%s' status is '%s'",
-                                                             $instance, $result->{psuStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Power supply '%s' status is '%s'",
+                    $name, $result->{psuStatus}
+                )
+            );
         }
     }
 }

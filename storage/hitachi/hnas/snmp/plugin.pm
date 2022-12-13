@@ -29,14 +29,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cluster-status'   => 'centreon::common::bluearc::snmp::mode::clusterstatus',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'hardware'         => 'centreon::common::bluearc::snmp::mode::hardware',
-        'volume-usage'     => 'centreon::common::bluearc::snmp::mode::volumeusage',
-    );
+    $self->{modes} = {
+        'cluster-status'         => 'centreon::common::bluearc::snmp::mode::clusterstatus',
+        'interfaces'             => 'centreon::common::bluearc::snmp::mode::interfaces',
+        'list-interfaces'        => 'centreon::common::bluearc::snmp::mode::listinterfaces',
+        'list-volumes'           => 'centreon::common::bluearc::snmp::mode::listvolumes',
+        'hardware'               => 'centreon::common::bluearc::snmp::mode::hardware',
+        'virtual-volumes-quotas' => 'centreon::common::bluearc::snmp::mode::virtualvolumesquotas',
+        'volume-usage'           => 'centreon::common::bluearc::snmp::mode::volumeusage'
+    };
 
     return $self;
 }

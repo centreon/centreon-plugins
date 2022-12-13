@@ -27,12 +27,12 @@ my %map_speed_status = (
     1 => 'ok',
     2 => 'warning',
     3 => 'severe',
-    4 => 'unknown',
+    4 => 'unknown'
 );
 
 my $mapping = {
     fanSpeedStatus  => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.2.1.11.1.4', map => \%map_speed_status },
-    fanSpeed        => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.2.1.11.1.5' },
+    fanSpeed        => { oid => '.1.3.6.1.4.1.11096.6.1.1.1.2.1.11.1.5' }
 };
 my $oid_fanEntry = '.1.3.6.1.4.1.11096.6.1.1.1.2.1.11.1';
 
@@ -50,35 +50,43 @@ sub check {
     return if ($self->check_filter(section => 'fan'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanEntry}})) {
-        next if ($oid !~ /^$mapping->{fanSpeedStatus}->{oid}\.(.*)$/);
-        my $instance = $1;
+        next if ($oid !~ /^$mapping->{fanSpeedStatus}->{oid}\.(.*)\.(.*)$/);
+        my $name = $self->{pnodes}->{$1} . '.' . $2;
+        my $instance = $1 . '.' . $2;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanEntry}, instance => $instance);
         
         next if ($self->check_filter(section => 'fan', instance => $instance));
         $self->{components}->{fan}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("fan '%s' status is '%s' [instance = %s] [value = %s]",
-                                    $instance, $result->{fanSpeedStatus}, $instance, 
-                                    $result->{fanSpeedStatus}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s' status is '%s' [instance: %s] [value: %s]",
+                $name, $result->{fanSpeedStatus}, $instance, 
+                $result->{fanSpeedStatus}
+            )
+        );
+
         my $exit = $self->get_severity(section => 'fan.speed', value => $result->{fanSpeedStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' status is '%s'", $instance, $result->{fanSpeedStatus}));
-            next;
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '%s' status is '%s'", $name, $result->{fanSpeedStatus})
+            );
         }
-     
+
         if (defined($result->{fanSpeedStatus}) && $result->{fanSpeedStatus} =~ /[0-9]/) {
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{temperatureSensorCReading});
-            
+
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("Fan '%s' is %s rpm", $instance, $result->{fanSpeedStatus}));
+                $self->{output}->output_add(
+                    severity => $exit2,
+                    short_msg => sprintf("Fan '%s' is %s rpm", $name, $result->{fanSpeedStatus})
+                );
             }
             $self->{output}->perfdata_add(
-                label => 'fan', unit => 'rpm',
                 nlabel => 'hardware.fan.speed.rpm',
-                instances => $instance,
+                unit => 'rpm',
+                instances => $name,
                 value => $result->{fanSpeedStatus},
                 warning => $warn,
                 critical => $crit,
