@@ -46,7 +46,7 @@ sub check_options {
     if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
         $self->{option_results}->{resource_type} = 'device';
     }
-    if ($self->{option_results}->{resource_type} !~ /^device$/) {
+    if ($self->{option_results}->{resource_type} !~ /^device|mmc$/) {
         $self->{output}->add_option_msg(short_msg => 'unknown resource type');
         $self->{output}->option_exit();
     }
@@ -86,7 +86,8 @@ sub discovery_device {
 
         $entry->{gateway_name} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{name} : '';
         $entry->{gateway_responder_only} = '';
-        $entry->{gateway_responder_only} = $device->{gatewayConf}->{responderOnly} =~ /true|1/i ? 'yes' : 'no' if (defined($device->{gatewayConf}));
+        $entry->{gateway_responder_only} = $device->{gatewayConf}->{responderOnly} =~ /true|1/i ? 'yes' : 'no'
+            if (defined($device->{gatewayConf}) && defined($device->{gatewayConf}->{responderOnly}));
         $entry->{gateway_administration_ip} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{administrationIp} : '';
         $entry->{gateway_active} = '';
         $entry->{gateway_active} = $device->{gatewayConf}->{active} =~ /true|1/i ? 'yes' : 'no' if (defined($device->{gatewayConf}));
@@ -94,6 +95,34 @@ sub discovery_device {
         $entry->{gateway_offline} = $device->{gatewayConf}->{offline} =~ /true|1/i ? 'yes' : 'no' if (defined($device->{gatewayConf}));
         $entry->{gateway_private_address} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{privateAddress}->{address} : '';
         $entry->{gateway_private_address_netmask} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{privateAddress}->{netmask} : '';
+
+        $entry->{gateway_blackIpRemote_address} = '';
+        $entry->{gateway_blackIpRemote_address_netmask} = '';
+        if (defined($device->{gatewayConf}) && defined($device->{gatewayConf}->{gatewayBlackIpRemote})) {
+            $entry->{gateway_blackIpRemote_address} = $device->{gatewayConf}->{gatewayBlackIpRemote}->{address};
+            $entry->{gateway_blackIpRemote_address_netmask} = $device->{gatewayConf}->{gatewayBlackIpRemote}->{netmask};
+        }
+
+        push @$disco_data, $entry;
+    }
+
+    return $disco_data;
+}
+
+sub discovery_mmc {
+    my ($self, %options) = @_;
+
+    my $mmcs = $options{custom}->request_api(
+        endpoint => '/managementCenters',
+        get_param => ['projection=managementCenterSmall']
+    );
+
+    my $disco_data = [];
+    foreach my $mmc (@{$mmcs->{content}}) {
+        my $entry = {};
+        $entry->{id} = $mmc->{id};
+        $entry->{name} = $mmc->{name};
+        $entry->{ip} = $mmc->{ipAddress};
 
         push @$disco_data, $entry;
     }
@@ -110,6 +139,10 @@ sub run {
     my $results = [];
     if ($self->{option_results}->{resource_type} eq 'device') {
         $results = $self->discovery_device(
+            custom => $options{custom}
+        );
+    } elsif ($self->{option_results}->{resource_type} eq 'mmc') {
+        $results = $self->discovery_mmc(
             custom => $options{custom}
         );
     }
@@ -148,7 +181,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (Can be: 'device').
+Choose the type of resources to discover (Can be: 'device', 'mmc').
 
 =back
 

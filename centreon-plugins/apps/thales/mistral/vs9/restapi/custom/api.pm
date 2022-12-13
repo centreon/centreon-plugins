@@ -227,6 +227,26 @@ sub request_api {
     return $decoded;
 }
 
+sub get_clusters {
+    my ($self, %options) = @_;
+
+    my $has_cache_file = $self->{cache}->read(statefile => 'thales_mistral_clusters_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
+    my $updated = $self->{cache}->get(name => 'updated');
+    my $clusters = $self->{cache}->get(name => 'clusters');
+    if ($has_cache_file == 0 || !defined($updated) || ((time() - $updated) > (($self->{option_results}->{reload_cache_time} * 60)))) {
+        my $cache = { updated => time() };
+        my $result = $self->request_api(
+            endpoint => '/clusters'
+        );
+        $clusters = $result;
+
+        $cache->{clusters} = $clusters;
+        $self->{cache}->write(data => $cache);
+    }
+
+    return $clusters;
+}
+
 sub get_gateway_inventory {
     my ($self, %options) = @_;
 

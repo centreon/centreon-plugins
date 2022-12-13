@@ -27,9 +27,20 @@ use warnings;
 use DateTime;
 use POSIX;
 use centreon::plugins::misc;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
+
+sub custom_certificate_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'active: %s [revoked: %s]',
+        $self->{result_values}->{active},
+        $self->{result_values}->{revoked}
+    );
+}
 
 sub custom_certificate_expires_perfdata {
     my ($self, %options) = @_;
@@ -37,7 +48,11 @@ sub custom_certificate_expires_perfdata {
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{time_certificate_unit} },
         unit => $self->{instance_mode}->{option_results}->{time_certificate_unit},
-        instances => $self->{result_values}->{name},
+        instances => [
+            $self->{result_values}->{sn},
+            $self->{result_values}->{subjectCommonName},
+            $self->{result_values}->{issuerCommonName}
+        ],
         value => floor($self->{result_values}->{expires_seconds} / $unitdiv->{ $self->{instance_mode}->{option_results}->{time_certificate_unit} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -62,8 +77,11 @@ sub prefix_certificate_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "certificate '%s' ",
-        $options{instance_value}->{name}
+        "certificate '%s' [subject: %s, issuer: %s, usages: %s] ",
+        $options{instance_value}->{sn},
+        $options{instance_value}->{subjectCommonName},
+        $options{instance_value}->{issuerCommonName},
+        $options{instance_value}->{usages}
     );
 }
 
@@ -75,8 +93,24 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{certificates} = [
+        {
+            label => 'certificate-status',
+            type => 2,
+            set => {
+                key_values => [
+                    { name => 'active' }, { name => 'revoked' },
+                    { name => 'sn' }, { name => 'subjectCommonName' }, { name => 'issuerCommonName' }
+                ],
+                closure_custom_output => $self->can('custom_certificate_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
         { label => 'certificate-expires', nlabel => 'certificate.expires', set => {
-                key_values      => [ { name => 'expires_seconds' }, { name => 'expires_human' }, { name => 'name' } ],
+                key_values      => [
+                    { name => 'expires_seconds' }, { name => 'expires_human' },
+                    { name => 'sn' }, { name => 'subjectCommonName' }, { name => 'issuerCommonName' }
+                ],
                 output_template => 'expires in %s',
                 output_use => 'expires_human',
                 closure_custom_perfdata => $self->can('custom_certificate_expires_perfdata'),
@@ -92,7 +126,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'time-certificate-unit:s' => { name => 'time_certificate_unit', default => 's' }
+        'time-certificate-unit:s' => { name => 'time_certificate_unit', default => 's' },
+        'filter-cert-inactive'    => { name => 'filter_cert_inactive' },
+        'filter-cert-revoked'     => { name => 'filter_cert_revoked' }
     });
 
     return $self;
@@ -121,14 +157,32 @@ sub add_certificate {
         second     => $6,
         time_zone  => $7
     );
-    $self->{certificates}->{ $options{cert}->{subjectCommonName} } = {
-        name => $options{cert}->{subjectCommonName},
+
+    my $revoked;
+    if (defined($options{cert}->{revoked})) {
+        $revoked = $options{cert}->{revoked} =~ /true|1/i ? 'yes' : 'no';
+        return if (defined($self->{option_results}->{filter_cert_revoked}) && $revoked eq 'yes');
+    }
+
+    my $active;
+    if (defined($options{cert}->{active})) {
+        $active = $options{cert}->{active} =~ /true|1/i ? 'yes' : 'no';
+        return if (defined($self->{option_results}->{filter_cert_inactive}) && $active eq 'no');
+    }
+
+    $self->{certificates}->{ $options{cert}->{serialNumber} } = {
+        sn => $options{cert}->{serialNumber},
+        subjectCommonName => $options{cert}->{subjectCommonName},
+        issuerCommonName => defined($options{cert}->{issuerCommonName}) ? $options{cert}->{issuerCommonName} : '',
+        usages => join(' ', @{$options{cert}->{usages}}),
+        active => $active,
+        revoked => $revoked,
         expires_seconds => $dt->epoch() - time()
     };
-    $self->{certificates}->{ $options{cert}->{subjectCommonName} }->{expires_seconds} = 0
-        if ($self->{certificates}->{ $options{cert}->{subjectCommonName} }->{expires_seconds} < 0);
-    $self->{certificates}->{ $options{cert}->{subjectCommonName} }->{expires_human} = centreon::plugins::misc::change_seconds(
-        value =>  $self->{certificates}->{ $options{cert}->{subjectCommonName} }->{expires_seconds}
+    $self->{certificates}->{ $options{cert}->{serialNumber} }->{expires_seconds} = 0
+        if ($self->{certificates}->{ $options{cert}->{serialNumber} }->{expires_seconds} < 0);
+    $self->{certificates}->{ $options{cert}->{serialNumber} }->{expires_human} = centreon::plugins::misc::change_seconds(
+        value =>  $self->{certificates}->{ $options{cert}->{serialNumber} }->{expires_seconds}
     );
 }
 
@@ -163,6 +217,29 @@ Check certificates.
 
 Select the time unit for certificate threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
+
+=item B<--filter-cert-inactive>
+
+Skip inactive certificates.
+
+=item B<--filter-cert-revoked>
+
+Skip revoked certificates.
+
+=item B<--unknown-certificate-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
+
+=item B<--warning-certificate-status>
+
+Set warning threshold for status.
+Can used special variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
+
+=item B<--critical-certificate-status>
+
+Set critical threshold for status.
+Can used special variables like: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
 =item B<--warning-*> B<--critical-*>
 
