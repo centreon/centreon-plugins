@@ -131,8 +131,17 @@ sub get_hostname {
 sub request_api {
     my ($self, %options) = @_;
 
-    $self->settings();
+    my $content = do {
+        local $/ = undef;
+        if (!open my $fh, "<", "/home/qgarnier/clients/plugins/netapp/api/netapp.json") {
+            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
+            $self->{output}->option_exit();
+        }
+        <$fh>;
+    };
 
+=pod
+    $self->settings();
     my $content = $self->{http}->request(
         url_path => $options{endpoint},
         unknown_status => $self->{unknown_http_status},
@@ -144,6 +153,7 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
+=cut
 
     my $decoded;
     eval {
