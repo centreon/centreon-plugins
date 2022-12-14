@@ -260,64 +260,45 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $volumes = $options{custom}->request_api(endpoint => '/api/storage/volumes?fields=*');
+    my $quotas = $options{custom}->request_api(endpoint => '/api/storage/quota/reports?fields=*');
 
     $self->{duplicated} = {};
 
-    my $infos = $self->get_informations(snmp => $options{snmp});
     # theres are differents types: user, group and qtree
     $self->{quotas} = {};
-    foreach my $oid (keys %$infos) {
-        next if ($oid !~ /^$mapping_infos->{qtree}->{oid}\.(\d+)\.(\d+)$/);
-        my $instance = $1 . '.' . $2;
-        my $index = $2;
-        my $result = $options{snmp}->map_instance(mapping => $mapping_infos, results => $infos, instance => $instance);
-
-        $result->{volume} = '' if (!defined($result->{volume}));
-        $result->{vserver} = '' if (!defined($result->{vserver}));
+    foreach my $quota (@{$quotas->{records}}) {
+        my $index = $quota->{index};
+        my $qtree = defined($quota->{qtree}) && defined($quota->{qtree}->{name}) ? $quota->{qtree}->{name} : '';
+        my $volume = defined($quota->{volume}) && defined($quota->{volume}->{name}) ? $quota->{volume}->{name} : '';
+        my $vserver = defined($quota->{svm}) && defined($quota->{svm}->{name}) ? $quota->{svm}->{name} : '';
 
         next if (defined($self->{option_results}->{filter_index}) && $self->{option_results}->{filter_index} ne '' &&
             $index !~ /$self->{option_results}->{filter_index}/);
-        next if (defined($self->{option_results}->{filter_qtree}) && $self->{option_results}->{filter_qtree} ne '' &&
-            $result->{qtree} !~ /$self->{option_results}->{filter_qtree}/);
-        next if ($result->{volume} ne '' && defined($self->{option_results}->{filter_volume}) && $self->{option_results}->{filter_volume} ne '' &&
-            $result->{volume} !~ /$self->{option_results}->{filter_volume}/);
-        next if ($result->{vserver} ne '' &&defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
-            $result->{vserver} !~ /$self->{option_results}->{filter_vserver}/);
-        my $path = $result->{vserver} . $result->{volume} . $result->{qtree};
+        next if ($qtree ne '' && defined($self->{option_results}->{filter_qtree}) && $self->{option_results}->{filter_qtree} ne '' &&
+            $qtree !~ /$self->{option_results}->{filter_qtree}/);
+        next if ($volume ne '' && defined($self->{option_results}->{filter_volume}) && $self->{option_results}->{filter_volume} ne '' &&
+            $volume !~ /$self->{option_results}->{filter_volume}/);
+        next if ($vserver ne '' &&defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
+            $vserver !~ /$self->{option_results}->{filter_vserver}/);
+
+        my $path = $vserver . $volume . $qtree;
         $self->{duplicated}->{$path} = 0 if (!defined($self->{duplicated}->{$path}));
         $self->{duplicated}->{$path}++;
 
-        $self->{quotas}->{$instance} = $result;
-        $self->{quotas}->{$instance}->{index} = $index;
+        $self->{quotas}->{$index} = {
+            index => $index,
+            qtree => $qtree,
+            volume => $volume,
+            vserver => $vserver,
+            used => $quota->{space}->{used}->{total},
+            total => $quota->{space}->{hard_limit},
+            soft_limit => defined($quota->{space}->{soft_limit}) ? $quota->{space}->{soft_limit} : 0
+        };
     }
-
-    my $multi = 1;
-    $multi = 1024 unless defined($self->{option_results}->{not_kbytes});
 
     if (scalar(keys %{$self->{quotas}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No quota found');
         $self->{output}->option_exit();
-    }
-
-    $options{snmp}->load(
-        oids => [ map($_->{oid}, values(%$mapping_datas)) ],
-        instances => [ map($_, keys(%{$self->{quotas}})) ],
-        instance_regexp => '^(.*)$'
-    );
-    my $snmp_result = $options{snmp}->get_leef();
-    foreach my $instance (keys %{$self->{quotas}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping_datas, results => $snmp_result, instance => $instance);
-        $self->{quotas}->{$instance}->{used} = $result->{used} * $multi;
-        $self->{quotas}->{$instance}->{total} = $result->{total} * $multi;
-
-        # we use the lower limit
-        $result->{threshold} *= $multi;
-        my $soft_limit = $result->{soft_limit} * $multi;
-        if ($result->{threshold} > 0 && ($soft_limit == 0 || $result->{threshold} < $soft_limit)) {
-            $soft_limit = $result->{threshold};
-        }
-        $self->{quotas}->{$instance}->{soft_limit} = $soft_limit;
     }
 }
 
