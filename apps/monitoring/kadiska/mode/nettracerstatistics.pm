@@ -152,18 +152,18 @@ sub manage_selection {
     );
 
     $self->{targets} = {};
-    foreach my $station (@{$results->{data}}) {
+    foreach my $runner (@{$results->{data}}) {
         next if (defined($self->{option_results}->{filter_target_name}) && $self->{option_results}->{filter_target_name} ne ''
-            && $station->{'target:group'} !~ /^$self->{option_results}->{filter_target_name}$/);
+            && $runner->{'target:group'} !~ /^$self->{option_results}->{filter_target_name}$/);
 
-        my $instance = $station->{"target:group"};
+        my $instance = $runner->{"target:group"};
 
         $self->{targets}->{$instance} = {
             instance => $instance,
             runner_name => $runner_name,
-            round_trip => ($station->{'rtt_furthest:avg'} / 1000),
-            packets_loss_prct => $station->{'loss_furthest:avg'},
-            path_length => $station->{'length_furthest:avg'}
+            round_trip => ($runner->{'rtt_furthest:avg'} / 1000),
+            packets_loss_prct => $runner->{'loss_furthest:avg'},
+            path_length => $runner->{'length_furthest:avg'}
         };
     };
 
@@ -185,7 +185,7 @@ Check Kadiska net tracer targets' statistics during the period specified.
 
 =item B<--filter-runner-name>
 
-Filter on runner name to display net tracer targets' statistics linked to a particular station. 
+Filter on runner name to display net tracer targets' statistics linked to a particular runner. 
 
 =item B<--filter-target-name>
 

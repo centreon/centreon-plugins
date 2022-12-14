@@ -117,7 +117,7 @@ __END__
 
 =head1 MODE
 
-List tracer targets for a given station.
+List tracer targets for a given runner.
 
 =over 8
 
