@@ -41,35 +41,60 @@ sub set_counters {
 
     $self->{maps_counters}->{targets} = [
         { label => 'round-trip', nlabel => 'tracer.round.trip.persecond', set => {
-                key_values => [ { name => 'round_trip' }],
-                output_template => 'Round trip: %.2f ms',
-                perfdatas => [
-                    { template => '%.2f', unit => 'ms', min => 0, label_extra_instance => 1 },
-                ],
+                key_values => [ { name => 'round_trip' }, { name => 'instance' }, { name => 'runner_name' } ],
+                output_template => 'round trip: %.2f ms',
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => 'ms',
+                        instances => [$self->{result_values}->{instance}, $self->{result_values}->{runner_name}],
+                        value => sprintf('%.2f', $self->{result_values}->{round_trip}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
+                    );
+                }
             }
         },
         { label => 'path-length', nlabel => 'tracer.path.length', set => {
-                key_values => [ { name => 'path_length' } ],
-                output_template => 'Path length: %.2f',
-                perfdatas => [
-                    { template => '%.2f', min => 0, label_extra_instance => 1 },
-                ],
+                key_values => [ { name => 'path_length' }, { name => 'instance' }, { name => 'runner_name' } ],
+                output_template => 'path length: %.2f',
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        instances => [$self->{result_values}->{instance}, $self->{result_values}->{runner_name}],
+                        value => sprintf('%.2f', $self->{result_values}->{path_length}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0
+                    );
+                }
             }
         },
         { label => 'packets-loss-prct', nlabel => 'tracer.packets.loss.percentage', set => {
-                key_values => [ { name => 'packets_loss_prct' } ],
-                output_template => 'Packets Loss: %.2f %%',
-                perfdatas => [
-                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                key_values => [ { name => 'packets_loss_prct' }, { name => 'instance' }, { name => 'runner_name' } ],
+                output_template => 'packets loss: %.2f %%',
+                closure_custom_perfdata => sub {
+                    my ($self, %options) = @_;
+
+                    $self->{output}->perfdata_add(
+                        nlabel => $self->{nlabel},
+                        unit => '%',
+                        instances => [$self->{result_values}->{instance}, $self->{result_values}->{runner_name}],
+                        value => sprintf('%.2f', $self->{result_values}->{packets_loss_prct}),
+                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+                        min => 0,
+                        max => 100
+                    );
+                }
             }
         }          
     ];
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 }
 
 sub new {
@@ -78,8 +103,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-station-name:s'      => { name => 'filter_station_name' },
-        'filter-target-name:s'       => { name => 'filter_target_name' }
+        'filter-runner-name:s' => { name => 'filter_runner_name' },
+        'filter-target-name:s' => { name => 'filter_target_name' }
     });
 
     return $self;
@@ -97,7 +122,7 @@ sub manage_selection {
                 "length_furthest:avg" => ["avg","length_furthest"]
             },
             {
-                "loss_furthest:avg" => ["*",100,["avg","loss_furthest"]]
+                "loss_furthest:avg" => ["*",100, ["avg","loss_furthest"] ]
             },
             {
                 "rtt_furthest:avg" => ["avg","rtt_furthest"]
@@ -114,8 +139,10 @@ sub manage_selection {
         "options" => {"sampling" => \1 }
     };  
 
-    if (defined($self->{option_results}->{filter_station_name}) && $self->{option_results}->{filter_station_name} ne ''){
-        $raw_form_post->{where} = ["=","station_name",["\$", $self->{option_results}->{filter_station_name}]],
+    my $runner_name = 'runner:all';
+    if (defined($self->{option_results}->{filter_runner_name}) && $self->{option_results}->{filter_runner_name} ne ''){
+        $raw_form_post->{where} = ["=", "runner_name", ["\$", $self->{option_results}->{filter_runner_name}]];
+        $runner_name = $self->{option_results}->{filter_runner_name};
     }
 
     my $results = $options{custom}->request_api(
@@ -132,9 +159,11 @@ sub manage_selection {
         my $instance = $station->{"target:group"};
 
         $self->{targets}->{$instance} = {
+            instance => $instance,
+            runner_name => $runner_name,
             round_trip => ($station->{'rtt_furthest:avg'} / 1000),
             packets_loss_prct => $station->{'loss_furthest:avg'},
-            path_length => $station->{'length_furthest:avg'},
+            path_length => $station->{'length_furthest:avg'}
         };
     };
 
@@ -142,7 +171,6 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No instances or results found.");
         $self->{output}->option_exit();
     }
-
 }
 
 1;
@@ -155,9 +183,9 @@ Check Kadiska net tracer targets' statistics during the period specified.
 
 =over 8
 
-=item B<--filter-station-name>
+=item B<--filter-runner-name>
 
-Filter on station name to display net tracer targets' statistics linked to a particular station. 
+Filter on runner name to display net tracer targets' statistics linked to a particular station. 
 
 =item B<--filter-target-name>
 

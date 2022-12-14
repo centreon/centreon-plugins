@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'station-name:s'    => { name => 'station_name' }
+        'runner-name:s'    => { name => 'runner_name' }
     });
 
     return $self;
@@ -41,8 +41,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{station_name}) || $self->{option_results}->{station_name} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --station-name option.");
+    if (!defined($self->{option_results}->{runner_name}) || $self->{option_results}->{runner_name} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --runner-name option.");
         $self->{output}->option_exit();
     }
 }
@@ -62,7 +62,7 @@ sub manage_selection {
         "options" => {"sampling" => \1 }
     };
 
-    $raw_form_post->{where} = ["=","station_name",["\$", $self->{option_results}->{station_name}]];
+    $raw_form_post->{where} = ["=","runner_name",["\$", $self->{option_results}->{runner_name}]];
 
     $self->{targets} = $options{custom}->request_api(
         method => 'POST',
@@ -77,9 +77,9 @@ sub run {
     $self->manage_selection(%options);
     foreach my $target (@{$self->{targets}->{data}}){
         $self->{output}->output_add(
-            long_msg => sprintf("[target = %s][station = %s]", 
+            long_msg => sprintf("[target: %s][runner: %s]", 
                 $target->{target_name},
-                $self->{option_results}->{station_name}
+                $self->{option_results}->{runner_name}
             )
         );
     }
@@ -95,7 +95,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['target', 'station']);
+    $self->{output}->add_disco_format(elements => ['target', 'runner']);
 }
 
 sub disco_show {
@@ -106,7 +106,7 @@ sub disco_show {
     foreach my $target (@{$self->{targets}->{data}}){
         $self->{output}->add_disco_entry( 
             target => $target->{target_name},
-            station => $self->{option_results}->{station_name}
+            runner => $self->{option_results}->{runner_name}
         );
     }
 }
@@ -121,9 +121,9 @@ List tracer targets for a given station.
 
 =over 8
 
-=item B<--station-name>
+=item B<--runner-name>
 
-Specify station name to list linked tracer targets. 
+Specify runner name to list linked tracer targets. 
 
 =back
 

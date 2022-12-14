@@ -56,20 +56,20 @@ sub custom_usage_perfdata {
 sub country_prefix_output {
     my ($self, %options) = @_;
 
-    return sprintf( "Country '%s' ", $options{instance});
+    return sprintf("Country '%s' ", $options{instance});
 }
 
 sub isp_prefix_output {
     my ($self, %options) = @_;
 
-    return sprintf( "ISP '%s' ", $options{instance});
+    return sprintf("ISP '%s' ", $options{instance});
 }
 
 sub watcher_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking watcher '%s' [Site name: %s] [Gateway: %s]:",
+        "checking watcher '%s' [site name: %s] [gateway: %s]:",
         $options{instance_value}->{watcher_name},
         $options{instance_value}->{site_name},
         $options{instance_value}->{gateway_name}
@@ -80,7 +80,7 @@ sub prefix_watcher_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Watcher '%s' [Site name: %s] [Gateway: %s] : ",
+        "Watcher '%s' [site name: %s] [gateway: %s] : ",
         $options{instance_value}->{watcher_name},
         $options{instance_value}->{site_name},
         $options{instance_value}->{gateway_name}
@@ -91,9 +91,9 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'country', type => 1, cb_prefix_output => 'country_prefix_output', message_multiple => 'All countries are OK'},
-        { name => 'isp', type => 1, cb_prefix_output => 'isp_prefix_output', message_multiple => 'All ISP are OK'},
-        { name => 'watcher', type => 3, cb_prefix_output => 'prefix_watcher_output', message_multiple => 'All watchers are OK', 
+        { name => 'country', type => 1, cb_prefix_output => 'country_prefix_output', message_multiple => 'All countries are ok' },
+        { name => 'isp', type => 1, cb_prefix_output => 'isp_prefix_output', message_multiple => 'All ISP are ok' },
+        { name => 'watcher', type => 3, cb_prefix_output => 'prefix_watcher_output', message_multiple => 'All watchers are ok', 
           cb_long_output => 'watcher_long_output', indent_long_output => '    ',
             group => [
                 { name => 'dtt_spent', type => 0, skipped_code => { -10 => 1 }},
@@ -430,7 +430,7 @@ sub new {
         'select-watcher-name:s' => { name => 'watcher_name' },
         'select-site-name:s'    => { name => 'site_name' },
         'select-gateway-name:s' => { name => 'gateway_name' },
-        'wfa:s'                 => { name => 'wfa' }
+        'wfa'                   => { name => 'wfa' }
     });
 
     return $self;
@@ -656,7 +656,6 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No instances or results found.");
         $self->{output}->option_exit();
     }
-
 }
 
 1;
@@ -691,13 +690,13 @@ Leave empty to get statistics from all countries, or specify particular country.
 
 =item B<--isp>
 
-Display statistics per ISP. 
+Display statistics per ISP.
 
 Leave empty to get statistics from all ISP, or specify particular ISP.
 
 =item B<--wfa>
 
-Display statistics for watchers used by work-from-anywhere users. 
+Display statistics for watchers used by work-from-anywhere users.
 
 =item B<--warning-errors-prct>
 
