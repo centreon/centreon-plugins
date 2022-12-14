@@ -29,10 +29,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
         'list-watchers'         => 'apps::monitoring::kadiska::mode::listwatchers',
-        'list-stations'         => 'apps::monitoring::kadiska::mode::liststations',
+        'list-runners'          => 'apps::monitoring::kadiska::mode::listrunners',
         'list-targets'          => 'apps::monitoring::kadiska::mode::listtargets',
         'watcher-statistics'    => 'apps::monitoring::kadiska::mode::watcherstatistics',
         'nettracer-statistics'  => 'apps::monitoring::kadiska::mode::nettracerstatistics'

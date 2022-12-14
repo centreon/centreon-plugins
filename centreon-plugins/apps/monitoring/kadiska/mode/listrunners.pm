@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::kadiska::mode::liststations;
+package apps::monitoring::kadiska::mode::listrunners;
 
 use base qw(centreon::plugins::mode);
 
@@ -53,14 +53,14 @@ sub manage_selection {
 
     my $raw_form_post = {
         "select" => [
-            "station_name",
-            "station_id"
+            "runner_name",
+            "runner_id"
         ],
-            "from" => "traceroute",
-            "groupby" => [
-            "station_id"
-            ],
-        "options" => {"sampling" => \1 }
+        "from" => "traceroute",
+        "groupby" => [
+            "runner_id"
+        ],
+        "options" => { "sampling" => \1 }
     };  
 
     my $results = $options{custom}->request_api(
@@ -71,8 +71,8 @@ sub manage_selection {
 
     foreach my $current_station (@{$results->{data}}) {
         my %station;
-        $station{station_name} = $current_station->{station_name};
-        $station{station_id} = $current_station->{station_id};
+        $station{runner_name} = $current_station->{runner_name};
+        $station{runner_id} = $current_station->{runner_id};
         push @disco_data, \%station;
     }
     
@@ -111,7 +111,7 @@ __END__
 
 =head1 MODE
 
-Kadiska hosts discovery for stations.
+Kadiska hosts discovery for runners.
 
 =over 8
 
