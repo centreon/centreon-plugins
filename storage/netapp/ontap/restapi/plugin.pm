@@ -29,18 +29,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
+        'aggregates'   => 'storage::netapp::ontap::restapi::mode::aggregates',
         'cluster'      => 'storage::netapp::ontap::restapi::mode::cluster',
         'hardware'     => 'storage::netapp::ontap::restapi::mode::hardware',
         'list-volumes' => 'storage::netapp::ontap::restapi::mode::listvolumes',
         'luns'         => 'storage::netapp::ontap::restapi::mode::luns',
+        'quotas'       => 'storage::netapp::ontap::restapi::mode::quotas',
         'snapmirrors'  => 'storage::netapp::ontap::restapi::mode::snapmirrors',
-        'volumes'      => 'storage::netapp::ontap::restapi::mode::volumes',
-        'aggregates'   => 'storage::netapp::ontap::restapi::mode::aggregates'
+        'volumes'      => 'storage::netapp::ontap::restapi::mode::volumes'
     };
 
-    $self->{custom_modes}{api} = 'storage::netapp::ontap::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'storage::netapp::ontap::restapi::custom::api';
     return $self;
 }
 
