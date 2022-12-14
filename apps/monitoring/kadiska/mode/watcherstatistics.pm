@@ -113,7 +113,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{isp} = [
-        { label => 'dtt_spent', nlabel => 'isp.dtt.spent.time.milliseconds', set => {
+        { label => 'isp-dtt-spent', nlabel => 'isp.dtt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'dtt_spent' } ],
                 output_template => 'DTT spent: %.2f ms',
                 perfdatas => [
@@ -121,7 +121,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'errors-prct', nlabel => 'isp.errors.percentage', set => {
+        { label => 'isp-errors-prct', nlabel => 'isp.errors.percentage', set => {
                 key_values => [ { name => 'errors_prct' } ],
                 output_template => 'Errors: %.2f%%',
                 perfdatas => [
@@ -129,7 +129,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'full-time-network-spent', nlabel => 'isp.network.spent.time.milliseconds', set => {
+        { label => 'isp-full-time-network-spent', nlabel => 'isp.network.spent.time.milliseconds', set => {
                 key_values => [ { name => 'full_time_network_spent' } ],
                 output_template => 'Full time network spent: %.2f ms',
                 perfdatas => [
@@ -137,7 +137,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'sessions', nlabel => 'isp.sessions.count', set => {
+        { label => 'isp-sessions', nlabel => 'isp.sessions.count', set => {
                 key_values => [ { name => 'sessions' } ],
                 output_template => 'Sessions: %s',
                 perfdatas => [
@@ -145,7 +145,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'srt_spent', nlabel => 'isp.srt.spent.time.milliseconds', set => {
+        { label => 'isp-srt-spent', nlabel => 'isp.srt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'srt_spent' } ],
                 output_template => 'SRT spent: %.2f ms',
                 perfdatas => [
@@ -153,7 +153,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'requests', nlabel => 'isp.requests.count', set => {
+        { label => 'isp-requests', nlabel => 'isp.requests.count', set => {
                 key_values => [ { name => 'requests' } ],
                 output_template => 'Requests: %s',
                 perfdatas => [
@@ -161,7 +161,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'redirect-time-avg', nlabel => 'isp.redirect.time.milliseconds', set => {
+        { label => 'isp-redirect-time-avg', nlabel => 'isp.redirect.time.milliseconds', set => {
                 key_values => [ { name => 'redirect_time_avg' } ],
                 output_template => 'Redirect time avg: %.2f ms',
                 perfdatas => [
@@ -169,7 +169,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'loading-page', nlabel => 'isp.loading.page.duration.milliseconds', set => {
+        { label => 'isp-loading-page', nlabel => 'isp.loading.page.duration.milliseconds', set => {
                 key_values => [ { name => 'loading_page' } ],
                 output_template => 'Loading page duration: %.2f ms',
                 perfdatas => [
@@ -177,7 +177,7 @@ sub set_counters {
                 ]
             }
         },   
-        { label => 'pages', nlabel => 'isp.pages.count', set => {
+        { label => 'isp-pages', nlabel => 'isp.pages.count', set => {
                 key_values => [ { name => 'pages' } ],
                 output_template => 'Loaded pages: %d',
                 perfdatas => [
@@ -185,7 +185,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'processing', nlabel => 'isp.processing.duration.milliseconds', set => {
+        { label => 'isp-processing', nlabel => 'isp.processing.duration.milliseconds', set => {
                 key_values => [ { name => 'processing' } ],
                 output_template => 'API Processing duration: %.2f ms',
                 perfdatas => [
@@ -193,7 +193,7 @@ sub set_counters {
                 ]
             }
         },  
-        { label => 'users', nlabel => 'users.count', set => {
+        { label => 'isp-users', nlabel => 'isp.users.count', set => {
                 key_values => [ { name => 'users' } ],
                 output_template => 'Connected users: %s',
                 perfdatas => [
@@ -201,7 +201,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'waiting-time-avg', nlabel => 'isp.waiting.time.milliseconds', set => {
+        { label => 'isp-waiting-time-avg', nlabel => 'isp.waiting.time.milliseconds', set => {
                 key_values => [ { name => 'waiting_time_avg' } ],
                 output_template => 'Waiting time avg: %.2f ms',
                 perfdatas => [
@@ -212,7 +212,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{country} = [
-        { label => 'dtt_spent', nlabel => 'watcher.dtt.spent.time.milliseconds', set => {
+        { label => 'country-dtt-spent', nlabel => 'watcher.dtt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'dtt_spent' } ],
                 output_template => 'DTT spent: %.2f ms',
                 perfdatas => [
@@ -220,7 +220,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'errors-prct', nlabel => 'watcher.errors.percentage', set => {
+        { label => 'country-errors-prct', nlabel => 'watcher.errors.percentage', set => {
                 key_values => [ { name => 'errors_prct' } ],
                 output_template => 'Errors: %.2f%%',
                 perfdatas => [
@@ -228,7 +228,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'full-time-network-spent', nlabel => 'watcher.network.spent.time.milliseconds', set => {
+        { label => 'country-full-time-network-spent', nlabel => 'watcher.network.spent.time.milliseconds', set => {
                 key_values => [ { name => 'full_time_network_spent' } ],
                 output_template => 'Full time network spent: %.2f ms',
                 perfdatas => [
@@ -236,7 +236,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'sessions', nlabel => 'watcher.sessions.count', set => {
+        { label => 'country-sessions', nlabel => 'watcher.sessions.count', set => {
                 key_values => [ { name => 'sessions' } ],
                 output_template => 'Sessions: %s',
                 perfdatas => [
@@ -244,7 +244,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'srt_spent', nlabel => 'watcher.srt.spent.time.milliseconds', set => {
+        { label => 'country-srt-spent', nlabel => 'watcher.srt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'srt_spent' } ],
                 output_template => 'SRT spent: %.2f ms',
                 perfdatas => [
@@ -252,7 +252,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'requests', nlabel => 'watcher.requests.count', set => {
+        { label => 'country-requests', nlabel => 'watcher.requests.count', set => {
                 key_values => [ { name => 'requests' } ],
                 output_template => 'Requests: %s',
                 perfdatas => [
@@ -260,7 +260,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
+        { label => 'country-redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
                 key_values => [ { name => 'redirect_time_avg' } ],
                 output_template => 'Redirect time avg: %.2f ms',
                 perfdatas => [
@@ -268,7 +268,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'loading-page', nlabel => 'watchers.loading.page.duration.milliseconds', set => {
+        { label => 'country-loading-page', nlabel => 'watchers.loading.page.duration.milliseconds', set => {
                 key_values => [ { name => 'loading_page' } ],
                 output_template => 'Loading page duration: %.2f ms',
                 perfdatas => [
@@ -276,7 +276,7 @@ sub set_counters {
                 ]
             }
         },   
-        { label => 'pages', nlabel => 'watchers.pages.count', set => {
+        { label => 'country-pages', nlabel => 'watchers.pages.count', set => {
                 key_values => [ { name => 'pages' } ],
                 output_template => 'Loaded pages: %d',
                 perfdatas => [
@@ -284,7 +284,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'processing', nlabel => 'watchers.processing.duration.milliseconds', set => {
+        { label => 'country-processing', nlabel => 'watchers.processing.duration.milliseconds', set => {
                 key_values => [ { name => 'processing' } ],
                 output_template => 'API Processing duration: %.2f ms',
                 perfdatas => [
@@ -292,7 +292,7 @@ sub set_counters {
                 ]
             }
         },  
-        { label => 'users', nlabel => 'users.count', set => {
+        { label => 'country-users', nlabel => 'watchers.users.count', set => {
                 key_values => [ { name => 'users' } ],
                 output_template => 'Connected users: %s',
                 perfdatas => [
@@ -300,7 +300,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'waiting-time-avg', nlabel => 'watchers.waiting.time.milliseconds', set => {
+        { label => 'country-waiting-time-avg', nlabel => 'watchers.waiting.time.milliseconds', set => {
                 key_values => [ { name => 'waiting_time_avg' } ],
                 output_template => 'Waiting time avg: %.2f ms',
                 perfdatas => [
@@ -311,7 +311,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{dtt_spent} = [
-        { label => 'dtt-spent', nlabel => 'watcher.dtt.spent.time.milliseconds', set => {
+        { label => 'watcher-dtt-spent', nlabel => 'watcher.dtt.spent.time.milliseconds', set => {
                 key_values => [ { name => 'dtt_spent' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'DTT spent: %.2f ms',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
@@ -320,7 +320,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{errors_prct} = [
-        { label => 'errors-prct', nlabel => 'watcher.errors.percentage', set => {
+        { label => 'watcher-errors-prct', nlabel => 'watcher.errors.percentage', set => {
                 key_values => [ { name => 'errors_prct' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Errors: %.2f%%',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata')
@@ -329,7 +329,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{full_network_time_spent} = [
-        { label => 'full-network-time-spent',  nlabel => 'watcher.network.spent.time.milliseconds', set => {
+        { label => 'watcher-full-network-time-spent',  nlabel => 'watcher.network.spent.time.milliseconds', set => {
                 key_values => [ { name => 'full_network_time_spent' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Full network time spent: %.2f ms',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
@@ -338,7 +338,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{loading_page} = [
-        { label => 'loading-page', nlabel => 'watcher.loading.page.duration.milliseconds', set => {
+        { label => 'watcher-loading-page', nlabel => 'watcher.loading.page.duration.milliseconds', set => {
                 key_values => [ { name => 'loading_page' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Loading page duration: %.2f ms',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
@@ -347,7 +347,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{pages} = [
-        { label => 'pages', nlabel => 'watcher.pages.count', set => {
+        { label => 'watcher-pages', nlabel => 'watcher.pages.count', set => {
                 key_values => [ { name => 'pages' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Loaded pages: %d',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata')
@@ -356,7 +356,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{processing} = [
-        { label => 'processing', nlabel => 'watcher.processing.duration.milliseconds', set => {
+        { label => 'watcher-processing', nlabel => 'watcher.processing.duration.milliseconds', set => {
                 key_values => [ { name => 'processing' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'API Processing duration: %.2f ms',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
@@ -365,7 +365,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{redirect_time_avg} = [
-        { label => 'redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
+        { label => 'watcher-redirect-time-avg', nlabel => 'watcher.redirect.time.milliseconds', set => {
                 key_values => [ { name => 'redirect_time_avg' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Redirect time avg: %.2f ms',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
@@ -374,7 +374,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{requests} = [
-        { label => 'requests', nlabel => 'watcher.requests.count', set => {
+        { label => 'watcher-requests', nlabel => 'watcher.requests.count', set => {
                 key_values => [ { name => 'requests' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
                 output_template => 'Requests: %s',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata')
@@ -383,8 +383,8 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{sessions} = [
-        { label => 'sessions', nlabel => 'watcher.sessions.count', set => {
-                key_values => [ { name => 'sessions' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
+        { label => 'watcher-sessions', nlabel => 'watcher.sessions.count', set => {
+                key_values => [ { name => 'sessions' }, { name => 'watcher_name' }, { name => 'site_name' }, { name => 'gateway_name'} ],
                 output_template => 'Sessions: %s',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
@@ -392,8 +392,8 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{srt_spent} = [
-        { label => 'srt-spent', nlabel => 'watcher.srt.spent.time.milliseconds', set => {
-                key_values => [ { name => 'srt_spent' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
+        { label => 'watcher-srt-spent', nlabel => 'watcher.srt.spent.time.milliseconds', set => {
+                key_values => [ { name => 'srt_spent' }, { name => 'watcher_name' }, { name => 'site_name' }, { name => 'gateway_name'} ],
                 output_template => 'SRT spent: %.2f ms',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
             }
@@ -401,17 +401,17 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{users} = [
-        { label => 'users', nlabel => 'users.count', set => {
-                key_values => [ { name => 'connected_users' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
+        { label => 'watcher-users', nlabel => 'watcher.users.count', set => {
+                key_values => [ { name => 'connected_users' }, { name => 'watcher_name' }, { name => 'site_name' }, { name => 'gateway_name'} ],
                 output_template => 'Connected users: %s',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata')
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{waiting_time} = [
-        { label => 'waiting-time', nlabel => 'watcher.waiting.time.milliseconds', set => {
-                key_values => [ { name => 'waiting_time' }, { name => 'watcher_name' }, { name => 'site_name'}, { name => 'gateway_name'} ],
+        { label => 'watcher-waiting-time', nlabel => 'watcher.waiting.time.milliseconds', set => {
+                key_values => [ { name => 'waiting_time' }, { name => 'watcher_name' }, { name => 'site_name' }, { name => 'gateway_name'} ],
                 output_template => 'Waiting time: %.2f ms',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata_ms')
             }
@@ -698,45 +698,12 @@ Leave empty to get statistics from all ISP, or specify particular ISP.
 
 Display statistics for watchers used by work-from-anywhere users.
 
-=item B<--warning-errors-prct>
+=item B<--warning-[country|isp|watcher]-*> B<--critical-[country|isp|watcher]-*> 
 
-Warning threshold for web browser errors (4xx and 5xx types) in percentage.
-
-=item B<--critical-errors-prct>
-
-Critical threshold for web browser errors (4xx and 5xx types) in percentage.
-
-=item B<--warning-sessions>
-
-Warning threshold for web sessions number.
-
-=item B<--critical-sessions>
-
-Critical threshold for web sessions number.
-
-=item B<--warning-request>
-
-Warning threshold for requests number.
-
-=item B<--critical-request>
-
-Critical threshold for requests number.
-
-=item B<--warning-pages>
-
-Warning threshold for requested pages by the application.
-
-=item B<--critical-pages>
-
-Critical threshold for requested pages by the application.
-
-=item B<--warning-loading-page>
-
-Warning threshold loading page duration in milliseconds.
-
-=item B<--critical-loading-page>
-
-Critical threshold for loading page duration in milliseconds.
+Thresholds. Can be:
+'dtt-spent', 'errors-prct', 'full-time-network-spent',
+'sessions', 'srt-spent', 'requests', 'redirect-time-avg',
+'loading-page', 'pages', 'processing', 'users', 'waiting-time-avg'.
 
 =back
 
