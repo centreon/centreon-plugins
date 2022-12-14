@@ -328,6 +328,16 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/').
 Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 
+=item B<--warning-radio-status>
+
+Set warning threshold for status.
+Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+
+=item B<--critical-radio-status>
+
+Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} eq "down"').
+Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
