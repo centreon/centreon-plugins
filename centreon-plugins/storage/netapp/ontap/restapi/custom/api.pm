@@ -132,7 +132,6 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-
     my $content = $self->{http}->request(
         url_path => $options{endpoint},
         unknown_status => $self->{unknown_http_status},
