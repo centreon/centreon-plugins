@@ -40,7 +40,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => 'checking power supplies');
     $self->{components}->{psu} = { name => 'psu', total => 0, skip => 0 };
-    return if ($self->check_filter(section => 'disk'));
+    return if ($self->check_filter(section => 'psu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $oid_psuEntry }})) {
         next if ($oid !~ /^$mapping->{status}->{oid}\.(.*)$/);
