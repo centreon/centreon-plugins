@@ -1,3 +1,23 @@
+#
+# Copyright 2022 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 package cloud::aws::cloudfront::mode::discovery;
 
 use base qw(centreon::plugins::mode);
@@ -36,17 +56,11 @@ sub run {
 
     foreach my $cft_instance (@{$instances->{DistributionList}->{Items}}) {   
         next if (!defined($cft_instance->{Id}));
-            my %cft;    
-            
-              # $cft{type}= "cloudfront";
-            $cft{id} = $cft_instance->{Id};
-            $cft{status} = $cft_instance->{Status};
-            $cft{domain_name} = $cft_instance->{DomainName};
-            $cft{aliases} = $cft_instance->{Aliases}->{Items};
-        #  foreach my $aliases (@{$cft_instance->{Items}}) {
-
-        #     push @{$cft{security_groups}}, { status => $aliases->{Status}, security_group_id => $aliases->{SecurityGroupId} };
-        # }
+        my %cft;    
+        $cft{id} = $cft_instance->{Id};
+        $cft{status} = $cft_instance->{Status};
+        $cft{domain_name} = $cft_instance->{DomainName};
+        $cft{aliases} = $cft_instance->{Aliases}->{Items};
         push @disco_data, \%cft;       
     }
 
@@ -80,30 +94,19 @@ sub run {
 
 __END__
 
+
 =head1 MODE
+
+AWS ClouFront discovery.
 
 =over 8
 
-=item B<--id>
+=item B<--prettify>
 
-Set the instance id (Required) (Can be multiple).
-
-=item B<--filter-metric>
-
-Filter metrics (Can be: 'TotalErrorRate', '4xxErrorRate', '5xxErrorRate') 
-(Can be a regexp).
-
-=item B<--warning-*>
-
-Thresholds warning (Can be: 'errorrate-total',
-'errorrate-4xx', 'errorrate-5xx').
-
-=item B<--critical-*>
-
-Thresholds critical (Can be: 'errorrate-total',
-'errorrate-4xx', 'errorrate-5xx').
+Prettify JSON output.
 
 =back
 
 =cut
+
 
