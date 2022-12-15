@@ -2,7 +2,7 @@
 env.REF_BRANCH = 'master'
 if ((env.BRANCH_NAME == env.REF_BRANCH)) {
   env.BUILD = 'REFERENCE'
-  env.REPO = '22.04-unstable'
+  env.REPO = '22.10-unstable'
 }
 
 stage('Source') {
