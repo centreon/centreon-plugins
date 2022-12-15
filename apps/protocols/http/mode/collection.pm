@@ -435,6 +435,8 @@ sub parse_structure {
         $self->{output}->option_exit();
     }
 
+    $options{conf}->{path} = $self->substitute_string(value => $options{conf}->{path});
+
     my $jpath = JSON::Path->new($options{conf}->{path});
     my @values = $jpath->values($options{content});
 
