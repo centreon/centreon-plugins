@@ -241,7 +241,7 @@ sub manage_selection {
             status => {
                 clusterName => $cluster->{name},
                 gatewaysClusterStatus => $cluster->{gatewaysClusterStatus},
-                availableForSwitching => $cluster->{availableForSwitching} =~ /true|1/i ? 'yes' : 'no'
+                availableForSwitching => defined($cluster->{availableForSwitching}) && $cluster->{availableForSwitching} =~ /true|1/i ? 'yes' : 'no'
             },
             members => {}
         };
