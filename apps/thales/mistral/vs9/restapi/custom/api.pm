@@ -60,6 +60,7 @@ sub new {
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     $self->{cache} = centreon::plugins::statefile->new(%options);
+    $self->{cache_connect} = centreon::plugins::statefile->new(output => $options{output});
 
     return $self;
 }
@@ -99,6 +100,7 @@ sub check_options {
     }
 
     $self->{cache}->check_options(option_results => $self->{option_results});
+    $self->{cache_connect}->check_options(option_results => $self->{option_results});
 
     return 0;
 }
@@ -121,9 +123,9 @@ sub get_connection_info {
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile => 'thales_mistral_connect_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
-    my $token = $self->{cache}->get(name => 'token');
-    my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
+    my $has_cache_file = $self->{cache_connect}->read(statefile => 'thales_mistral_connect_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
+    my $token = $self->{cache_connect}->get(name => 'token');
+    my $md5_secret_cache = $self->{cache_connect}->get(name => 'md5_secret');
     my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
 
     if ($has_cache_file == 0 ||
@@ -169,7 +171,7 @@ sub get_token {
             token => $token,
             md5_secret => $md5_secret
         };
-        $self->{cache}->write(data => $datas);
+        $self->{cache_connect}->write(data => $datas);
     }
 
     return $token;
