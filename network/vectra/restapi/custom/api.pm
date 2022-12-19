@@ -131,6 +131,10 @@ sub request_api {
     my $file;
     if ($options{endpoint} =~ /cpu/) {
         $file = '/home/qgarnier/clients/plugins/vectra/json/health_cpu.json';
+    } elsif ($options{endpoint} =~ /memory/) {
+        $file = '/home/qgarnier/clients/plugins/vectra/json/health_memory.json';
+    } elsif ($options{endpoint} =~ /system/) {
+        $file = '/home/qgarnier/clients/plugins/vectra/json/health_system.json';
     }
 
     my $content = do {

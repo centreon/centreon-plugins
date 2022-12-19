@@ -18,12 +18,13 @@
 # limitations under the License.
 #
 
-package network::viptela::snmp::mode::memory;
+package network::vectra::restapi::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_usage_output {
     my ($self, %options) = @_;
@@ -38,15 +39,22 @@ sub custom_usage_output {
     );
 }
 
+sub prefix_dimm_output {
+    my ($self, %options) = @_;
+
+    return "Dimm '" . $options{instance_value}->{name} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'ram', type => 0, skipped_code => { -10 => 1 } }
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'dimm', type => 1, cb_prefix_output => 'prefix_dimm_output', message_multiple => 'All dimm are ok', skipped_code => { -10 => 1 } }
     ];
 
-    $self->{maps_counters}->{ram} = [
-        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
+    $self->{maps_counters}->{global} = [
+        { label => 'memory-usage', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -54,7 +62,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
+        { label => 'memory-usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -62,30 +70,22 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
+        { label => 'memory-usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
-        },
-        { label => 'buffer', nlabel => 'memory.buffer.bytes', set => {
-                key_values => [ { name => 'buffers' } ],
-                output_template => 'buffer: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { template => '%d', min => 0, unit => 'B' }
-                ]
-            }
-        },
-        { label => 'cached', nlabel => 'memory.cached.bytes', set => {
-                key_values => [ { name => 'cached' } ],
-                output_template => 'cached: %s %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { template => '%d', min => 0, unit => 'B' }
-                ]
+        }
+    ];
+
+     $self->{maps_counters}->{dimm} = [
+        { label => 'dimm-status', type => 2, critical_default => '%{status} !~ /ok/i', set => {
+                key_values => [ { name => 'status' }, { name => 'name' } ],
+                output_template => 'status: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -104,36 +104,23 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $mapping = {
-        total   => { oid => '.1.3.6.1.4.1.41916.11.1.17' }, # systemStatusMemTotal
-        used    => { oid => '.1.3.6.1.4.1.41916.11.1.18' }, # systemStatusMemUsed
-        free    => { oid => '.1.3.6.1.4.1.41916.11.1.19' }, # systemStatusMemFree
-        buffers => { oid => '.1.3.6.1.4.1.41916.11.1.20' }, # systemStatusMemBuffers
-        cached  => { oid => '.1.3.6.1.4.1.41916.11.1.21' }  # systemStatusMemCached
+    my $result = $options{custom}->request_api(endpoint => '/health/memory');
+
+    $self->{global} = {
+        total => $result->{memory}->{total_bytes},
+        used => $result->{memory}->{used_bytes},
+        free  => $result->{memory}->{free_bytes},
+        prct_used => $result->{memory}->{used_bytes} * 100 / $result->{memory}->{total_bytes},
+        prct_free => $result->{memory}->{free_bytes} * 100 / $result->{memory}->{total_bytes}
     };
 
-    my $snmp_result = $options{snmp}->get_leef(
-        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
-        nothing_quit => 1
-    );
-
-    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
-
-    my $used = $result->{used};
-    $used -= (defined($result->{cached}) ? $result->{cached} : 0) - (defined($result->{buffers}) ? $result->{buffers} : 0);
-    $used *= 1024;
-
-    $result->{total} *= 1024;
-
-    $self->{ram} = {
-        total => $result->{total},
-        used => $used,
-        free  => $result->{total} - $used,
-        prct_used => $used * 100 / $result->{total},
-        prct_free => 100 - ($used * 100 / $result->{total}),
-        cached => $result->{cached} * 1024,
-        buffers => $result->{buffers} * 1024
-    };
+    $self->{dimm} = {};
+    foreach (@{$result->{memory}->{dimm_status}}) {
+        $self->{dimm}->{ $_->{dimm} } = {
+            name => $_->{dimm},
+            status => lc($_->{status})
+        };
+    }
 }
 
 1;
@@ -146,34 +133,25 @@ Check memory usage.
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--unknown-dimm-status>
 
-Warning threshold on used memory (in B).
+Set warning threshold for status.
+Can used special variables like: %{status}, %{name}
 
-=item B<--critical-usage>
+=item B<--warning-dimm-status>
 
-Critical threshold on used memory (in B)
+Set warning threshold for status.
+Can used special variables like: %{status}, %{name}
 
-=item B<--warning-usage-prct>
+=item B<--critical-dimm-status>
 
-Warning threshold on used memory (in %).
-
-=item B<--critical-usage-prct>
-
-Critical threshold on percentage used memory (in %)
-
-=item B<--warning-usage-free>
-
-Warning threshold on free memory (in B).
-
-=item B<--critical-usage-free>
-
-Critical threshold on free memory (in B)
+Set critical threshold for status (Default: '%{status} !~ /ok/i').
+Can used special variables like: %{status}, %{name}
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds (in B) on other metrics where '*' can be:
-buffer, cached
+Thresholds. Can be:
+'memory-usage', 'memory-usage-free', 'memory-usage-prct'
 
 =back
 
