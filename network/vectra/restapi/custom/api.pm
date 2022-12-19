@@ -137,6 +137,10 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/vectra/json/health_system.json';
     } elsif ($options{endpoint} =~ /disk/) {
         $file = '/home/qgarnier/clients/plugins/vectra/json/health_disk.json';
+    } elsif ($options{endpoint} =~ /sensors/) {
+        $file = '/home/qgarnier/clients/plugins/vectra/json/health_sensors.json';
+    } elsif ($options{endpoint} =~ /trafficdrop/) {
+        $file = '/home/qgarnier/clients/plugins/vectra/json/health_trafficdrop.json';
     }
 
     my $content = do {
