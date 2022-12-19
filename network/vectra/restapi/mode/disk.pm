@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::vectra::restapi::mode::memory;
+package network::vectra::restapi::mode::disk;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -30,7 +30,7 @@ sub custom_usage_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Ram total: %s %s used: %s %s (%.2f%%) free: %s %s (%.2f%%)',
+        'Disk total: %s %s used: %s %s (%.2f%%) free: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
         $self->{result_values}->{prct_used},
@@ -39,10 +39,10 @@ sub custom_usage_output {
     );
 }
 
-sub prefix_dimm_output {
+sub prefix_raid_output {
     my ($self, %options) = @_;
 
-    return "Dimm '" . $options{instance_value}->{name} . "' ";
+    return "Raid '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -50,11 +50,11 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'dimm', type => 1, cb_prefix_output => 'prefix_dimm_output', message_multiple => 'All dimm are ok', skipped_code => { -10 => 1 } }
+        { name => 'raids', type => 1, cb_prefix_output => 'prefix_raid_output', message_multiple => 'All raid statuses are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'memory-usage', nlabel => 'memory.usage.bytes', set => {
+        { label => 'disk-usage', nlabel => 'disk.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -62,7 +62,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'memory-usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
+        { label => 'disk-usage-free', display_ok => 0, nlabel => 'disk.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -70,7 +70,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'memory-usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
+        { label => 'disk-usage-prct', display_ok => 0, nlabel => 'disk.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -80,8 +80,8 @@ sub set_counters {
         }
     ];
 
-     $self->{maps_counters}->{dimm} = [
-        { label => 'dimm-status', type => 2, critical_default => '%{status} !~ /ok/i', set => {
+     $self->{maps_counters}->{raids} = [
+        { label => 'raid-status', type => 2, critical_default => '%{status} !~ /ok/i', set => {
                 key_values => [ { name => 'status' }, { name => 'name' } ],
                 output_template => 'status: %s',
                 closure_custom_perfdata => sub { return 0; },
@@ -104,23 +104,21 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->request_api(endpoint => '/health/memory');
+    my $result = $options{custom}->request_api(endpoint => '/health/disk');
 
     $self->{global} = {
-        total => $result->{memory}->{total_bytes},
-        used => $result->{memory}->{used_bytes},
-        free  => $result->{memory}->{free_bytes},
-        prct_used => $result->{memory}->{used_bytes} * 100 / $result->{memory}->{total_bytes},
-        prct_free => $result->{memory}->{free_bytes} * 100 / $result->{memory}->{total_bytes}
+        total => $result->{disk}->{disk_utilization}->{total_bytes},
+        used => $result->{disk}->{disk_utilization}->{used_bytes},
+        free  => $result->{disk}->{disk_utilization}->{free_bytes},
+        prct_used => $result->{disk}->{disk_utilization}->{used_bytes} * 100 / $result->{disk}->{disk_utilization}->{total_bytes},
+        prct_free => $result->{disk}->{disk_utilization}->{free_bytes} * 100 / $result->{disk}->{disk_utilization}->{total_bytes}
     };
 
-    $self->{dimm} = {};
-    foreach (@{$result->{memory}->{dimm_status}}) {
-        $self->{dimm}->{ $_->{dimm} } = {
-            name => $_->{dimm},
-            status => lc($_->{status})
-        };
-    }
+    $self->{raids} = {
+        disks => { name => 'disks', status => lc($result->{disk}->{disk_raid}->{status}) },
+        disks_missing => { name => 'disks_missing', status => lc($result->{disk}->{raid_disks_missing}->{status}) },
+        degraded_volume => { name => 'degraded_volume', status => lc($result->{disk}->{degraded_raid_volume}->{status}) }
+    };
 }
 
 1;
@@ -129,21 +127,21 @@ __END__
 
 =head1 MODE
 
-Check memory usage.
+Check disks.
 
 =over 8
 
-=item B<--unknown-dimm-status>
+=item B<--unknown-raid-status>
 
 Set warning threshold for status.
 Can used special variables like: %{status}, %{name}
 
-=item B<--warning-dimm-status>
+=item B<--warning-raid-status>
 
 Set warning threshold for status.
 Can used special variables like: %{status}, %{name}
 
-=item B<--critical-dimm-status>
+=item B<--critical-raid-status>
 
 Set critical threshold for status (Default: '%{status} !~ /ok/i').
 Can used special variables like: %{status}, %{name}
@@ -151,7 +149,7 @@ Can used special variables like: %{status}, %{name}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds. Can be:
-'memory-usage', 'memory-usage-free', 'memory-usage-prct'
+'disk-usage', 'disk-usage-free', 'disk-usage-prct'
 
 =back
 

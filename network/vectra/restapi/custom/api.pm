@@ -135,6 +135,8 @@ sub request_api {
         $file = '/home/qgarnier/clients/plugins/vectra/json/health_memory.json';
     } elsif ($options{endpoint} =~ /system/) {
         $file = '/home/qgarnier/clients/plugins/vectra/json/health_system.json';
+    } elsif ($options{endpoint} =~ /disk/) {
+        $file = '/home/qgarnier/clients/plugins/vectra/json/health_disk.json';
     }
 
     my $content = do {

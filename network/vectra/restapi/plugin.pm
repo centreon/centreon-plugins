@@ -31,8 +31,9 @@ sub new {
 
     $self->{modes} = {
         'cpu'    => 'network::vectra::restapi::mode::cpu',
+        'disk'   => 'network::vectra::restapi::mode::disk',
         'memory' => 'network::vectra::restapi::mode::memory',
-        'uptime' => 'network::vectra::restapi::mode::uptime',
+        'uptime' => 'network::vectra::restapi::mode::uptime'
     };
 
     $self->{custom_modes}->{api} = 'network::vectra::restapi::custom::api';
