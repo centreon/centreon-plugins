@@ -61,10 +61,10 @@ sub run {
         $cft{status} = $cft_instance->{Status};
         $cft{domain_name} = $cft_instance->{DomainName};
        
-        if($cft_instance->{Aliases}->{Quantity} > 0){
+        if ($cft_instance->{Aliases}->{Quantity} < 0) {
             $cft{aliases} = $cft_instance->{Aliases}->{Items};
         }
-        else{
+        else {
             $cft{aliases} = $cft_instance->{Aliases}->{Quantity};
         }
          push @disco_data, \%cft;     
@@ -75,7 +75,7 @@ sub run {
     $disco_stats->{discovered_items} = @disco_data;
     $disco_stats->{results} = \@disco_data;
     
-    my $encoded_data;
+    my $encoded_data; 
     eval {
         if (defined($self->{option_results}->{prettify})) {
             $encoded_data = JSON::XS->new->utf8->pretty->encode($disco_stats);
