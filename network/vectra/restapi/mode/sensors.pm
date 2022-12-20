@@ -265,7 +265,7 @@ Can used special variables like: %{status}, %{interfaceName}, %{sensorName}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds. Can be:
-'memory-usage', 'memory-usage-free', 'memory-usage-prct'
+'interface-peak-traffic'.
 
 =back
 

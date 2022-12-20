@@ -128,35 +128,6 @@ sub get_port {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /cpu/) {
-        $file = '/home/qgarnier/clients/plugins/vectra/json/health_cpu.json';
-    } elsif ($options{endpoint} =~ /memory/) {
-        $file = '/home/qgarnier/clients/plugins/vectra/json/health_memory.json';
-    } elsif ($options{endpoint} =~ /system/) {
-        $file = '/home/qgarnier/clients/plugins/vectra/json/health_system.json';
-    } elsif ($options{endpoint} =~ /disk/) {
-        $file = '/home/qgarnier/clients/plugins/vectra/json/health_disk.json';
-    } elsif ($options{endpoint} =~ /sensors/) {
-        $file = '/home/qgarnier/clients/plugins/vectra/json/health_sensors.json';
-    } elsif ($options{endpoint} =~ /trafficdrop/) {
-        $file = '/home/qgarnier/clients/plugins/vectra/json/health_trafficdrop.json';
-    } elsif ($options{endpoint} =~ /connectivity/) {
-        $file = '/home/qgarnier/clients/plugins/vectra/json/health_connectivity.json';
-    } elsif ($options{endpoint} =~ /network/) {
-        $file = '/home/qgarnier/clients/plugins/vectra/json/health_network.json';
-    }
-
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $file : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     $self->settings();
     my $content = $self->{http}->request(
         url_path => $self->{api_path} . $options{endpoint},
@@ -167,7 +138,6 @@ sub request_api {
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
     );
-=cut
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");

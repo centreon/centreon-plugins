@@ -30,12 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'          => 'network::vectra::restapi::mode::cpu',
-        'disk'         => 'network::vectra::restapi::mode::disk',
-        'list-sensors' => 'network::vectra::restapi::mode::listsensors',
-        'memory'       => 'network::vectra::restapi::mode::memory',
-        'sensors'      => 'network::vectra::restapi::mode::sensors',
-        'uptime'       => 'network::vectra::restapi::mode::uptime'
+        'cpu'             => 'network::vectra::restapi::mode::cpu',
+        'disk'            => 'network::vectra::restapi::mode::disk',
+        'interfaces'      => 'network::vectra::restapi::mode::interfaces',
+        'list-interfaces' => 'network::vectra::restapi::mode::listinterfaces',
+        'list-sensors'    => 'network::vectra::restapi::mode::listsensors',
+        'memory'          => 'network::vectra::restapi::mode::memory',
+        'sensors'         => 'network::vectra::restapi::mode::sensors',
+        'uptime'          => 'network::vectra::restapi::mode::uptime'
     };
 
     $self->{custom_modes}->{api} = 'network::vectra::restapi::custom::api';
