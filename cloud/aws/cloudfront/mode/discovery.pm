@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+ 
 package cloud::aws::cloudfront::mode::discovery;
 
 use base qw(centreon::plugins::mode);
@@ -60,8 +60,14 @@ sub run {
         $cft{id} = $cft_instance->{Id};
         $cft{status} = $cft_instance->{Status};
         $cft{domain_name} = $cft_instance->{DomainName};
-        $cft{aliases} = $cft_instance->{Aliases}->{Items};
-        push @disco_data, \%cft;       
+       
+        if($cft_instance->{Aliases}->{Quantity} > 0){
+            $cft{aliases} = $cft_instance->{Aliases}->{Items};
+        }
+        else{
+            $cft{aliases} = $cft_instance->{Aliases}->{Quantity};
+        }
+         push @disco_data, \%cft;     
     }
 
     $disco_stats->{end_time} = time();
