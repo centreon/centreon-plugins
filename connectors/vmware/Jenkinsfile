@@ -8,11 +8,6 @@ stage('Source') {
     source = readProperties file: 'source.properties'
     env.VERSION = "${source.VERSION}"
     env.RELEASE = "${source.RELEASE}"
-    if (env.BRANCH_NAME == 'master') {
-      withSonarQubeEnv('SonarQubeDev') {
-        sh './centreon-build/jobs/vmware/vmware-analysis.sh'
-      }
-    }
   }
 }
 
