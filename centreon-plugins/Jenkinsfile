@@ -16,16 +16,6 @@ stage('Source') {
     source = readProperties file: 'source.properties'
     env.VERSION = "${source.VERSION}"
     env.RELEASE = "${source.RELEASE}"
-    // Run sonarQube analysis
-    withSonarQubeEnv('SonarQubeDev') {
-      sh './centreon-build/jobs/plugins/plugins-analysis.sh'
-    }
-    timeout(time: 10, unit: 'MINUTES') {
-      def qualityGate = waitForQualityGate()
-      if (qualityGate.status != 'OK') {
-        currentBuild.result = 'FAIL'
-      }
-    }
   }
 }
 
