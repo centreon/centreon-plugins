@@ -88,6 +88,9 @@ sub manage_selection {
 
     $self->{interfaces} = {};
     foreach my $interface_name (keys %{$result->{network}->{interfaces}->{brain}}) {
+        next if (defined($self->{option_results}->{filter_interface_name}) && $self->{option_results}->{filter_interface_name} ne '' &&
+            $interface_name !~ /$self->{option_results}->{filter_interface_name}/);
+
         $self->{interfaces}->{$interface_name} = {
             name => $interface_name,
             status => lc($result->{network}->{interfaces}->{brain}->{$interface_name}->{link})
