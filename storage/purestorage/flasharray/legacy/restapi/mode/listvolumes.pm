@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::purestorage::restapi::mode::listpgroups;
+package storage::purestorage::flasharray::legacy::restapi::mode::listvolumes;
 
 use base qw(centreon::plugins::mode);
 
@@ -44,19 +44,21 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{pgroups} = $options{custom}->get_object(path => '/pgroup');
+    $self->{volumes} = $options{custom}->get_object(path => '/volume');
 }
 
 sub run {
     my ($self, %options) = @_;
   
     $self->manage_selection(%options);
-    foreach (@{$self->{pgroups}}) {
+    foreach (@{$self->{volumes}}) {
         $self->{output}->output_add(long_msg => "[name = '" . $_->{name} . "']");
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List protection groups:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List volumes:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -71,7 +73,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach (@{$self->{pgroups}}) {             
+    foreach (@{$self->{volumes}}) {             
         $self->{output}->add_disco_entry(name => $_->{name});
     }
 }
@@ -82,11 +84,10 @@ __END__
 
 =head1 MODE
 
-List protection groups.
+List volumes.
 
 =over 8
 
 =back
 
 =cut
-    

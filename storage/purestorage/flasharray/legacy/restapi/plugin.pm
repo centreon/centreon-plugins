@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::purestorage::restapi::plugin;
+package storage::purestorage::flasharray::legacy::restapi::plugin;
 
 use strict;
 use warnings;
@@ -29,18 +29,17 @@ sub new {
     my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
-        'alarms'             => 'storage::purestorage::restapi::mode::alarms',
-        'arrays'             => 'storage::purestorage::restapi::mode::arrays',
-        'hardware'           => 'storage::purestorage::restapi::mode::hardware',
-        'list-pgroups'       => 'storage::purestorage::restapi::mode::listpgroups',
-        'list-volumes'       => 'storage::purestorage::restapi::mode::listvolumes',
-        'pgroup-replication' => 'storage::purestorage::restapi::mode::pgroupreplication',
-        'volume-usage'       => 'storage::purestorage::restapi::mode::volumeusage'
+        'alarms'             => 'storage::purestorage::flasharray::legacy::restapi::mode::alarms',
+        'arrays'             => 'storage::purestorage::flasharray::legacy::restapi::mode::arrays',
+        'hardware'           => 'storage::purestorage::flasharray::legacy::restapi::mode::hardware',
+        'list-pgroups'       => 'storage::purestorage::flasharray::legacy::restapi::mode::listpgroups',
+        'list-volumes'       => 'storage::purestorage::flasharray::legacy::restapi::mode::listvolumes',
+        'pgroup-replication' => 'storage::purestorage::flasharray::legacy::restapi::mode::pgroupreplication',
+        'volume-usage'       => 'storage::purestorage::flasharray::legacy::restapi::mode::volumeusage'
     };
 
-    $self->{custom_modes}->{api} = 'storage::purestorage::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'storage::purestorage::flasharray::legacy::restapi::custom::api';
     return $self;
 }
 
@@ -50,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Pure Storage through HTTP/REST API.
+Check Pure Storage FlashArray through legacy HTTP/REST API.
 
 =cut
