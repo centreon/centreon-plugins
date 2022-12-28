@@ -76,6 +76,9 @@ sub custom_trunk_usage_calc {
     $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_freechan'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_busychan'};
     $self->{result_values}->{total} = $self->{result_values}->{free} + $self->{result_values}->{used};
+
+    return -10 if ($self->{result_values}->{total} <= 0);
+
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     return 0;
