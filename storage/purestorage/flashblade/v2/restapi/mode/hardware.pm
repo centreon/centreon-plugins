@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::purestorage::flasharray::v2::restapi::mode::hardware;
+package storage::purestorage::flashblade::v2::restapi::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -34,7 +34,8 @@ sub set_system {
     
     $self->{thresholds} = {
         default => [
-            ['ok', 'OK'],
+            ['unhealthy', 'CRITICAL'],
+            ['healthy', 'OK'],
             ['unused', 'OK'],
             ['unknown', 'UNKNOWN'],
             ['critical', 'CRITICAL'],
@@ -43,8 +44,8 @@ sub set_system {
         ]
     };
     
-    $self->{components_path} = 'storage::purestorage::flasharray::v2::restapi::mode::components';
-    $self->{components_module} = ['chassis', 'controller', 'cooling', 'drive', 'ethport', 'fcport', 'nvram', 'psu', 'sasport', 'temperature'];
+    $self->{components_path} = 'storage::purestorage::flashblade::v2::restapi::mode::components';
+    $self->{components_module} = ['chassis', 'ethport', 'fan', 'fb', 'fm', 'mgmtport', 'psu'];
 }
 
 sub api_execute {
@@ -76,12 +77,12 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'chassis', 'controller', 'cooling', 'drive', 'ethport', 'fcport', 'nvram', 'psu', 'sasport', 'temperature'.
+Can be: 'chassis', 'ethport', 'fan', 'fb', 'fm', 'mgmtport', 'psu'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=controller)
-Can also exclude specific instance: --filter=drive,1
+Exclude some parts (comma seperated list) (Example: --filter=fan)
+Can also exclude specific instance: --filter=fan,1
 
 =item B<--no-component>
 
@@ -92,17 +93,7 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='temperature,OK,identifying'
-
-=item B<--warning>
-
-Set warning threshold (syntax: type,regexp,threshold)
-Example: --warning='temperature,.*,30'
-
-=item B<--critical>
-
-Set critical threshold (syntax: type,regexp,threshold)
-Example: --critical='temperature,.*,40'
+Example: --threshold-overload='fb,WARNING,unused'
 
 =back
 
