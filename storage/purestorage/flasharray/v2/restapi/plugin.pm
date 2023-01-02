@@ -1,5 +1,5 @@
 #
-# Copyright 2022 Centreon (http://www.centreon.com/)
+# Copyright 2023 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'alerts' => 'storage::purestorage::flasharray::v2::restapi::mode::alerts'
+        'alerts'      => 'storage::purestorage::flasharray::v2::restapi::mode::alerts',
+        'arrays'      => 'storage::purestorage::flasharray::v2::restapi::mode::arrays',
+        'list-arrays' => 'storage::purestorage::flasharray::v2::restapi::mode::listarrays'
     };
 
     $self->{custom_modes}->{api} = 'storage::purestorage::flasharray::v2::restapi::custom::api';

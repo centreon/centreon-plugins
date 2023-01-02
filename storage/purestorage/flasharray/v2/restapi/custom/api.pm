@@ -1,5 +1,5 @@
 #
-# Copyright 2022 Centreon (http://www.centreon.com/)
+# Copyright 2023 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -121,10 +121,10 @@ sub get_connection_info {
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile => 'purestorage_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
+    my $has_cache_file = $self->{cache}->read(statefile => 'purestorage_' . md5_hex($self->get_connection_info() . '_' . $self->{api_token}));
     my $token = $self->{cache}->get(name => 'token');
     my $md5_secret_cache = $self->{cache}->get(name => 'md5_secret');
-    my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
+    my $md5_secret = md5_hex($self->{api_token});
 
     if ($has_cache_file == 0 ||
         !defined($token) ||
@@ -170,24 +170,8 @@ sub clean_token {
 sub request {
     my ($self, %options) = @_;
 
-    my $file;
-    if ($options{endpoint} =~ /alerts/) {
-        $file = '/home/qgarnier/clients/plugins/purestorage/FlashArray/alerts.json';
-    }
-
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $file) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $file : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-
-=pod
     $self->settings();
     my $token = $self->get_token();
-=cut
 
     my $decoded;
     my $items = [];
@@ -197,7 +181,6 @@ sub request {
         push @$get_param, @{$options{get_param}} if (defined($options{get_param}));
         push @$get_param, 'continuation_token=' . $decoded->{continuation_token} if (defined($decoded) && defined($decoded->{continuation_token}));
 
-=pod
         my ($content) = $self->{http}->request(
             url_path => '/api/' . $self->{api_version} . $options{endpoint},
             get_param => $options{get_param},
@@ -220,7 +203,6 @@ sub request {
                 critical_status => $self->{critical_http_status}
             );
         }
-=cut
 
         eval {
             $decoded = decode_json($content);

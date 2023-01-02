@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2022 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::purestorage::flasharray::legacy::restapi::mode::listpgroups;
+package storage::purestorage::flasharray::v2::restapi::mode::listarrays;
 
 use base qw(centreon::plugins::mode);
 
@@ -29,7 +29,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {});
 
     return $self;
@@ -40,23 +40,38 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
+my @labels = ('id', 'name', 'capacity'); 
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{pgroups} = $options{custom}->get_object(path => '/pgroup');
+    my $items = $options{custom}->request(endpoint => '/arrays/space');
+
+    my $results = {};
+    foreach my $item (@$items) {
+        $results->{ $item->{id} } = {
+            id => $item->{id},
+            name => $item->{name},
+            capacity => $item->{capacity}
+        };
+    }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
-  
-    $self->manage_selection(%options);
-    foreach (@{$self->{pgroups}}) {
-        $self->{output}->output_add(long_msg => "[name = '" . $_->{name} . "']");
+
+    my $results = $self->manage_selection(custom => $options{custom});
+    foreach my $instance (sort keys %$results) {
+        $self->{output}->output_add(long_msg => 
+            join('', map("[$_: " . $results->{$instance}->{$_} . ']', @labels))
+        );
     }
-    
+
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List protection groups:'
+        short_msg => 'List arrays:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -64,26 +79,27 @@ sub run {
 
 sub disco_format {
     my ($self, %options) = @_;
-    
-    $self->{output}->add_disco_format(elements => ['name']);
+
+    $self->{output}->add_disco_format(elements => [@labels]);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach (@{$self->{pgroups}}) {             
-        $self->{output}->add_disco_entry(name => $_->{name});
+    my $results = $self->manage_selection(custom => $options{custom});
+    foreach (sort keys %$results) {
+        $self->{output}->add_disco_entry(
+            %{$results->{$_}}
+        );
     }
 }
-
 1;
 
 __END__
 
 =head1 MODE
 
-List protection groups.
+List arrays.
 
 =over 8
 
