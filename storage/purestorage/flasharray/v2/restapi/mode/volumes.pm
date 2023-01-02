@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::purestorage::flasharray::v2::restapi::mode::arrays;
+package storage::purestorage::flasharray::v2::restapi::mode::volumes;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -39,16 +39,16 @@ sub custom_usage_output {
     );
 }
 
-sub array_long_output {
+sub volume_long_output {
     my ($self, %options) = @_;
 
-    return "checking array '" . $options{instance_value}->{name} . "'";
+    return "checking volume '" . $options{instance_value}->{name} . "'";
 }
 
-sub prefix_array_output {
+sub prefix_volume_output {
     my ($self, %options) = @_;
 
-    return "Array '" . $options{instance_value}->{name} . "' ";
+    return "Volume '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -56,8 +56,8 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         {
-            name => 'arrays', type => 3, cb_prefix_output => 'prefix_array_output', cb_long_output => 'array_long_output', indent_long_output => '    ',
-            message_multiple => 'All arrays are ok',
+            name => 'volumes', type => 3, cb_prefix_output => 'prefix_volume_output', cb_long_output => 'volume_long_output', indent_long_output => '    ',
+            message_multiple => 'All volumes are ok',
             group => [
                 { name => 'space', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'reduction', type => 0, skipped_code => { -10 => 1 } },
@@ -67,7 +67,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{space} = [
-        { label => 'space-usage', nlabel => 'array.space.usage.bytes', set => {
+        { label => 'space-usage', nlabel => 'volume.space.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -75,7 +75,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'space-usage-free', display_ok => 0, nlabel => 'array.space.free.bytes', set => {
+        { label => 'space-usage-free', display_ok => 0, nlabel => 'volume.space.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -83,7 +83,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'space-usage-prct', display_ok => 0, nlabel => 'array.space.usage.percentage', set => {
+        { label => 'space-usage-prct', display_ok => 0, nlabel => 'volume.space.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -94,7 +94,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{reduction} = [
-        { label => 'data-reduction', nlabel => 'array.data.reduction.count', set => {
+        { label => 'data-reduction', nlabel => 'volume.data.reduction.count', set => {
                 key_values => [ { name => 'data' } ],
                 output_template => 'data reduction: %.3f',
                 perfdatas => [
@@ -105,7 +105,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{perf} = [
-        { label => 'read', nlabel => 'array.io.read.usage.bytespersecond', set => {
+        { label => 'read', nlabel => 'volume.io.read.usage.bytespersecond', set => {
                 key_values => [ { name => 'read_bytes' }, { name => 'name' }, { name => 'resolution' } ],
                 output_template => 'read: %s %s/s',
                 output_change_bytes => 1,
@@ -124,7 +124,7 @@ sub set_counters {
                 }
             }
         },
-        { label => 'write', nlabel => 'array.io.write.usage.bytespersecond', set => {
+        { label => 'write', nlabel => 'volume.io.write.usage.bytespersecond', set => {
                 key_values => [ { name => 'write_bytes' }, { name => 'name' }, { name => 'resolution' } ],
                 output_template => 'write: %s %s/s',
                 output_change_bytes => 1,
@@ -182,55 +182,35 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $items = $options{custom}->request(endpoint => '/arrays/space');
-    my $perfs = $options{custom}->request(endpoint => '/arrays/performance', get_param => ['resolution=' . $map_resolution->{ $self->{option_results}->{perf_resolution} }]);
+    my $items = $options{custom}->request(endpoint => '/volumes');
+    my $perfs = $options{custom}->request(endpoint => '/volumes/performance', get_param => ['resolution=' . $map_resolution->{ $self->{option_results}->{perf_resolution} }]);
 
-    #{
-    #    "capacity": 29159353378407,
-    #    "id": "1dcca71d-8bca-4951-9ba5-10ca0f5744d8",
-    #    "name": "filer-c",
-    #    "parity": 1.0,
-    #    "space": {
-    #        "data_reduction": 3.808265875566517,
-    #        "replication": 0,
-    #        "shared": 2182502918574,
-    #        "snapshots": 0,
-    #        "system": 0,
-    #        "thin_provisioning": 0.3114475926111792,
-    #        "total_physical": 17760870565810,
-    #        "total_provisioned": 98232344510464,
-    #        "total_reduction": 5.5308293670898685,
-    #        "unique": 15578367647236,
-    #        "virtual": 67638117296128
-    #     },
-    #    "time": 1670839151850
-    #}
-    $self->{arrays} = {};
+    $self->{volumes} = {};
     foreach my $item (@$items) {
         next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
             $item->{id} !~ /$self->{option_results}->{filter_id}/);
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $item->{name} !~ /$self->{option_results}->{filter_name}/);
 
-        $self->{arrays}->{ $item->{name} } = {
+        $self->{volumes}->{ $item->{name} } = {
             name => $item->{name},
             reduction => {
                 data => $item->{space}->{data_reduction}
             },
             space => {
-                total => $item->{capacity},
+                total => $item->{provisioned},
                 used => $item->{space}->{total_physical},
-                free => $item->{capacity} - $item->{space}->{total_physical},
-                prct_used => $item->{space}->{total_physical} * 100 / $item->{capacity},
-                prct_free => (100 - ($item->{space}->{total_physical} * 100 / $item->{capacity}))
+                free => $item->{provisioned} - $item->{space}->{total_physical},
+                prct_used => $item->{space}->{total_physical} * 100 / $item->{provisioned},
+                prct_free => (100 - ($item->{space}->{total_physical} * 100 / $item->{provisioned}))
             }
         };
     }
     
     foreach my $perf (@$perfs) {
-        next if (!defined($self->{arrays}->{ $perf->{name} }));
+        next if (!defined($self->{volumes}->{ $perf->{name} }));
 
-        $self->{arrays}->{ $perf->{name} }->{perf} = {
+        $self->{volumes}->{ $perf->{name} }->{perf} = {
             name => $perf->{name},
             resolution => $self->{option_results}->{perf_resolution},
             read_bytes => $perf->{read_bytes_per_sec},
@@ -245,7 +225,7 @@ __END__
 
 =head1 MODE
 
-Check arrays.
+Check volumes.
 
 =over 8
 
@@ -256,11 +236,11 @@ Example: --filter-counters='data-reduction'
 
 =item B<--filter-id>
 
-Filter arrays by id (can be a regexp).
+Filter volumes by id (can be a regexp).
 
 =item B<--filter-name>
 
-Filter arrays by name (can be a regexp).
+Filter volumes by name (can be a regexp).
 
 =item B<--filter-resolution>
 

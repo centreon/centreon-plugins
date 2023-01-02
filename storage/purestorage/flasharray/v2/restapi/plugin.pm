@@ -30,9 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'alerts'      => 'storage::purestorage::flasharray::v2::restapi::mode::alerts',
-        'arrays'      => 'storage::purestorage::flasharray::v2::restapi::mode::arrays',
-        'list-arrays' => 'storage::purestorage::flasharray::v2::restapi::mode::listarrays'
+        'alerts'       => 'storage::purestorage::flasharray::v2::restapi::mode::alerts',
+        'arrays'       => 'storage::purestorage::flasharray::v2::restapi::mode::arrays',
+        'hardware'     => 'storage::purestorage::flasharray::v2::restapi::mode::hardware',
+        'list-arrays'  => 'storage::purestorage::flasharray::v2::restapi::mode::listarrays',
+        'list-volumes' => 'storage::purestorage::flasharray::v2::restapi::mode::listvolumes',
+        'volumes'      => 'storage::purestorage::flasharray::v2::restapi::mode::volumes'
     };
 
     $self->{custom_modes}->{api} = 'storage::purestorage::flasharray::v2::restapi::custom::api';
